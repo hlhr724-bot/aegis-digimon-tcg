@@ -3336,7 +3336,7 @@
   },
   "BT18-039": {
     "<Barrier>[OnPlay][WhenDigivolving]Bytrashingthetopcardofyoursecuritystack,changetheoriginalDPof1Digimonto6000untiltheendofyouropponent'sturn.": "《방벽》 【등장 시】【진화 시】자신의 시큐리티를 위에서부터 1장 파기하는 것으로, 상대의 턴 종료까지 디지몬 1마리의 원래 DP를 6000으로 변경한다.",
-    "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,unsuspendthisDigimon.": "【서로의 턴】[턴에 1회]자신의 시큐리티가 줄어들었을 때, 이 디지몬을 액티브로 할 수 있다."
+    "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,youmayunsuspendthisDigimon.": "【서로의 턴】[턴에 1회]자신의 시큐리티가 줄어들었을 때, 이 디지몬을 액티브로 할 수 있다."
   },
   "BT18-040": {
     "[Hand][Counter]<BlastDigivolve>.<Raid>[OnPlay][WhenDigivolving][WhenAttacking]Bytrashingthetopcardofyoursecuritystack,1ofyouropponent'sDigimongets-6000DPuntiltheendoftheirturn.[AllTurns]Whileyouhave3orfewersecuritycards,thisDigimongains<Blocker>andgets+4000DP.": "[패]【카운터】《블래스트 진화》(자신의 디지몬을 이 카드로 코스트를 지불하지 않고 진화시킬 수 있다) 《돌진》 【등장 시】【진화 시】【어택 시】자신의 시큐리티를 위에서부터 1장 파기하는 것으로, 상대의 턴 종료까지 상대의 디지몬 1마리를 DP -6000. 【서로의 턴】자신의 시큐리티가 3장 이하인 동안, 이 디지몬은 《블로커》를 얻고, DP +4000."

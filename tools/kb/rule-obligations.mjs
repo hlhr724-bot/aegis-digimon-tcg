@@ -361,12 +361,12 @@ export function validateInventory(inventory, index, { root = ROOT } = {}) {
   const isConfinedTestFile = (testPath, workspace) => {
     if (!hasText(testPath) || isAbsolute(testPath)) return false;
     const path = resolve(rootPath, testPath);
-    const fromRoot = relative(rootPath, path);
+    const fromRoot = relative(rootPath, path).replace(/\\/g, "/");
     if (!fromRoot || fromRoot === ".." || fromRoot.startsWith("../") || isAbsolute(fromRoot)) return false;
     if (!fromRoot.startsWith(`apps/${workspace}/`)) return false;
     try {
       const actualPath = realpathSync(path);
-      const actualFromRoot = relative(rootPath, actualPath);
+      const actualFromRoot = relative(rootPath, actualPath).replace(/\\/g, "/");
       return actualFromRoot.startsWith(`apps/${workspace}/`) && statSync(actualPath).isFile();
     } catch {
       return false;

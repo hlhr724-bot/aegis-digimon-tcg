@@ -66,7 +66,7 @@ it("resolves the revealed Option for free and leaves no card in hand or pending 
     );
     expect(s.state.players[0]!.battleArea).toHaveLength(1);
     expect(s.state.pendingDecision).toBeUndefined();
-    expect(s.decisions.some(({ req }) => req.kind === "chooseOption" && req.options.choices?.includes("play"))).toBe(
+    expect(s.decisions.some(({ req }) => req.kind === "chooseOption" && req.options?.choices?.includes("play"))).toBe(
       false,
     );
   } finally {

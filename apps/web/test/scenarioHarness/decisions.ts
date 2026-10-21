@@ -19,15 +19,19 @@ export async function resolveNextTriggerThroughUi(opponent: HeadlessOpponent): P
 
   const decisionId = pending.decisionId;
   const dialog = await screen.findByRole("dialog", {}, { timeout: 10_000 });
-  const [triggerButton] = within(dialog).getAllByRole("button", { pressed: false });
-
-  if (triggerButton === undefined) {
-    throw new Error("orderTriggers overlay did not render a selectable trigger");
+  const selectAll = within(dialog).queryByRole("button", { name: "Select all, top to bottom", exact: true });
+  if (selectAll) {
+    fireEvent.click(selectAll);
+  } else {
+    const [triggerButton] = within(dialog).getAllByRole("button", { pressed: false });
+    if (triggerButton === undefined) {
+      throw new Error("orderTriggers overlay did not render a selectable trigger");
+    }
+    fireEvent.click(triggerButton);
   }
 
   // The resolve label depends on the picked order, so read it only after picking one effect.
-  fireEvent.click(triggerButton);
-  fireEvent.click(within(dialog).getByRole("button", { name: /resolve (?:next )?effect/i }));
+  fireEvent.click(within(dialog).getByRole("button", { name: /^resolve (?:next effect|in this order|effect)$/i }));
   await waitFor(() => expect(opponent.room.state.pendingDecision?.decisionId).not.toBe(decisionId), {
     timeout: 10_000,
   });

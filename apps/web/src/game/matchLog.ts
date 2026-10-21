@@ -65,6 +65,8 @@ export function describeEvent({
 }: DescribeEventParams): (LogLine & { actorSeat?: Seat }) | null {
   const mine = (seat: Seat): LogKind => (seat === viewerSeat ? "you" : "opp");
   switch (event.kind) {
+    case "manualAction":
+      return { text: `${seatNames[event.seat]}: ${event.action}`, kind: mine(event.seat), actorSeat: event.seat };
     case "matchStarted":
       return { text: t("log.matchStarted", { player: seatNames[event.firstSeat] }), kind: "sys" };
     case "phaseChanged":

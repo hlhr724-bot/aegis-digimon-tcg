@@ -104,7 +104,7 @@ describe("Turn player's Retaliation before a blocker's battle-win effect", () =>
         s.engine.applyIntent(0, {
           type: "attack",
           attackerPermanentId: fixturePermanentId("paladin"),
-          target: { kind: "digimon", permanentId: fixturePermanentId("deadlyaxemon") },
+          target: { kind: "permanent", permanentId: fixturePermanentId("deadlyaxemon") },
         }),
       ).toEqual({ ok: true });
       await acceptEveryDecision(s);

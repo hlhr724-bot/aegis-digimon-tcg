@@ -66,10 +66,12 @@ function scanTestFiles(): { viteRunnerFiles: string[]; batchCandidates: string[]
   }
   mkdirSync(dirname(cachePath), { recursive: true });
   writeFileSync(cachePath, JSON.stringify(next));
-  const files = Object.keys(next);
+  const files = Object.keys(next).map((file) => ({ path: file, pattern: file.replace(/\\/g, "/") }));
   return {
-    viteRunnerFiles: files.filter((file) => next[file]![2]),
-    batchCandidates: files.filter((file) => file.startsWith("src/cards/") && next[file]![3] === true),
+    viteRunnerFiles: files.filter((file) => next[file.path]![2]).map((file) => file.pattern),
+    batchCandidates: files
+      .filter((file) => file.pattern.startsWith("src/cards/") && next[file.path]![3] === true)
+      .map((file) => file.pattern),
   };
 }
 

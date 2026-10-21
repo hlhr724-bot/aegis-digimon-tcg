@@ -66,7 +66,7 @@ function sourceFiles(dir: string): string[] {
 function offendingFiles(): string[] {
   const offenders = new Set<string>();
   for (const file of sourceFiles(ENGINE_DIR)) {
-    const rel = relative(ENGINE_DIR, file);
+    const rel = relative(ENGINE_DIR, file).replace(/\\/g, "/");
     if (rel === SEAM_FILE) continue;
     if (hasRawMutation(readFileSync(file, "utf8"))) offenders.add(rel);
   }

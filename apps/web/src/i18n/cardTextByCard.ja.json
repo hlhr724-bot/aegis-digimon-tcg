@@ -3512,7 +3512,7 @@
   },
   "BT18-039": {
     "<Barrier>[OnPlay][WhenDigivolving]Bytrashingthetopcardofyoursecuritystack,changetheoriginalDPof1Digimonto6000untiltheendofyouropponent'sturn.": "≪防壁≫\n【登場時】【進化時】自分のセキュリティを上から1枚破棄することで、相手のターン終了まで、デジモン1体の元々のDPを6000に変更する。",
-    "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,unsuspendthisDigimon.": "【お互いのターン】[ターンに1回]自分のセキュリティが減ったとき、このデジモンをアクティブにできる。"
+    "[AllTurns][OncePerTurn]Whenacardisremovedfromyoursecuritystack,youmayunsuspendthisDigimon.": "【お互いのターン】[ターンに1回]自分のセキュリティが減ったとき、このデジモンをアクティブにできる。"
   },
   "BT18-040": {
     "[Hand][Counter]<BlastDigivolve>.<Raid>[OnPlay][WhenDigivolving][WhenAttacking]Bytrashingthetopcardofyoursecuritystack,1ofyouropponent'sDigimongets-6000DPuntiltheendoftheirturn.[AllTurns]Whileyouhave3orfewersecuritycards,thisDigimongains<Blocker>andgets+4000DP.": "[手札]【カウンター】≪ブラスト進化≫（自分のデジモンをこのカードにコストを支払わずに進化できる）\n≪突進≫\n【登場時】【進化時】【アタック時】自分のセキュリティを上から1枚破棄することで、相手のターン終了まで、相手のデジモン1体をDP-6000。\n【お互いのターン】自分のセキュリティが3枚以下の間、このデジモンは≪ブロッカー≫を得て、DP+4000。\n\n≪オーバーフロー《-4》≫（エリアかカードの下から、それ以外の場所に送られる場合、メモリー-4）"

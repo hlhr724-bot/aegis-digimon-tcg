@@ -6,6 +6,7 @@ import { resolveCardText } from "@/i18n/resolveCardText";
 
 const translations = await loadPrintedCardTranslations();
 const templates = [
+  "＜Material Save 2＞: When this Digimon would be deleted, you may place up to 2 of its specified digivolution cards under one of your Tamers.",
   "＜Fragment (2)＞: trash 2 of this Digimon's digivolution cards to prevent its deletion?",
   "＜Fragment (3)＞: choose 3 of this Digimon's digivolution cards to trash.",
   "＜Digisorption -3＞: suspend 1 Digimon to reduce the digivolution cost by 3?",
@@ -65,6 +66,7 @@ it("covers engine-authored keyword descriptions separately from printed card tex
 }, 30000);
 
 it.each([
+  "＜Material Save 2＞: When this Digimon would be deleted, you may place up to 3 of its specified digivolution cards under one of your Tamers.",
   "＜Fragment (2)＞: trash 3 of this Digimon's digivolution cards to prevent its deletion?",
   "＜Fragment (-2)＞: trash -2 of this Digimon's digivolution cards to prevent its deletion?",
   "＜Digisorption -3＞: suspend 2 Digimon to reduce the digivolution cost by 3?",

@@ -33,7 +33,7 @@ function startedRoom(options: {
   for (const [sessionId, displayName] of [
     ["first", "Taichi"],
     ["second", "Sora"],
-  ]) {
+  ] as const) {
     const player = client(sessionId!);
     room.clients.push(player);
     room.onJoin(player, { displayName, deck: structuredClone(RED_DECK) });
@@ -50,7 +50,7 @@ function startedRoom(options: {
 const bothAccounts = { first: "first-account", second: "second-account" };
 
 describe("live match listing", () => {
-  it.each([
+  it.each<Record<string, AccountPreferences>>([
     {},
     { "first-account": { listLiveMatches: true } },
     { "first-account": { listLiveMatches: true }, "second-account": { listLiveMatches: true } },
@@ -115,6 +115,7 @@ describe("live match listing", () => {
       const watcher = client("watcher");
       room.clients.push(watcher);
       room.onJoin(watcher, {
+        displayName: "Watcher",
         spectator: true,
         roomCode: room.state.spectatorCode,
         deck: { mainDeck: [], eggDeck: [] },
@@ -144,7 +145,12 @@ it("withholds opted-out identity in listings and encoded spectator state while r
     room.state.players[0]!.avatarId = "secret-avatar";
     const watcher = client("watcher");
     room.clients.push(watcher);
-    room.onJoin(watcher, { spectator: true, roomCode: room.state.spectatorCode, deck: { mainDeck: [], eggDeck: [] } });
+    room.onJoin(watcher, {
+      displayName: "Watcher",
+      spectator: true,
+      roomCode: room.state.spectatorCode,
+      deck: { mainDeck: [], eggDeck: [] },
+    });
 
     const spectator = new Decoder(new GameState());
     decodeClient({ encoder, target: watcher, decoder: spectator });
@@ -198,6 +204,7 @@ it("authenticates spectator names and shows the roster only to players", async (
     expect(participant.state.players[0]!.spectatorNamesJson).toBe('["Mimi"]');
     expect(
       await room.onAuth(client("invalid"), {
+        displayName: "Watcher",
         spectator: true,
         roomCode: room.state.spectatorCode,
         authTicket: "invalid",

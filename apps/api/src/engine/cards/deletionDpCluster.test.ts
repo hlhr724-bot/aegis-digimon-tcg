@@ -381,13 +381,9 @@ describe("deletion-DP cluster A3 — EX6-031 SA-sign-swap is a wired catalog act
     // proves both producer and consume-site behavior. Keep this structural guard so the shared
     // catalog cannot regress back to the old MissingPrimitive marker.
     const fs = await import("node:fs");
-    const url = await import("node:url");
-    const here = url.fileURLToPath(import.meta.url);
-    const root = here.slice(0, here.indexOf("/apps/api/"));
-    const catalog = JSON.parse(fs.readFileSync(`${root}/packages/shared/src/effects/effects.json`, "utf8")) as Record<
-      string,
-      { effects?: { actions?: { kind?: string; primitive?: string }[] }[] }
-    >;
+    const catalog = JSON.parse(
+      fs.readFileSync(new URL("../../../../../packages/shared/src/effects/effects.json", import.meta.url), "utf8"),
+    ) as Record<string, { effects?: { actions?: { kind?: string; primitive?: string }[] }[] }>;
     const effects = catalog["EX6-031"]?.effects ?? [];
     const hasMissingPrimitive = effects.some((e) =>
       (e.actions ?? []).some((a) => a.kind === "MissingPrimitive" && a.primitive === "security-attack-sign-inversion"),

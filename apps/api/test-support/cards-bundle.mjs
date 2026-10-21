@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync, globSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const apiRoot = fileURLToPath(new URL("..", import.meta.url));
@@ -27,7 +27,7 @@ function cardModulesBySet() {
     .sort();
   const sets = new Map();
   for (const file of files) {
-    const set = file.slice(cardsRoot.length + 1).split("/")[0];
+    const set = relative(cardsRoot, file).split(sep)[0];
     if (!sets.has(set)) sets.set(set, []);
     sets.get(set).push(file);
   }
@@ -64,7 +64,7 @@ function resolveLocalModule({ specifier, resolveDirectory }) {
   if (specifier.startsWith("#api/")) {
     base = resolve(apiRoot, "src", specifier.slice("#api/".length));
     if (!base.endsWith(".ts") && !base.endsWith(".js")) base += ".ts";
-  } else if (specifier.startsWith("/")) {
+  } else if (isAbsolute(specifier)) {
     base = specifier;
   } else if (specifier.startsWith(".")) {
     base = resolve(resolveDirectory, specifier);

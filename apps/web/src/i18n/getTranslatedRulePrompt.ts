@@ -28,6 +28,12 @@ export function getTranslatedRulePrompt({ text, translations, cardId }: Params):
   if (digisorption) {
     return `${keyword(`＜Digisorption -${digisorption[1]}＞`)}：要将1只数码宝贝转换为休息状态，使进化费用减少${digisorption[1]}吗？`;
   }
+  const saveDescription = text.match(
+    /^＜Material Save ([1-9]\d?)＞: When this Digimon would be deleted, you may place up to \1 of its specified digivolution cards under one of your Tamers\.$/,
+  );
+  if (saveDescription) {
+    return `${keyword(`＜Material Save ${saveDescription[1]}＞`)}：此数码宝贝将被消灭时，可将其指定的最多${saveDescription[1]}张进化源，置于我方1只驯兽师下方。`;
+  }
   const save = text.match(
     /^＜Material Save ([1-9]\d?)＞: place up to \1 of this Digimon's specified digivolution cards under 1 of your Tamers\?$/,
   );

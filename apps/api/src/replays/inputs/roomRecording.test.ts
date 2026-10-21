@@ -110,6 +110,7 @@ describe("AegisRoom replay recording", () => {
         randomKey: expect.stringMatching(/^[a-f0-9]{64}$/),
         serverRevision: "abc1234",
         deckFormat: "standard",
+        gameMode: "automatic",
         unlimited: false,
         betaBattle: false,
       },

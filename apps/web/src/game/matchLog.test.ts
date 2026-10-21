@@ -3,6 +3,16 @@ import { describe, expect, it } from "vitest";
 import { translator } from "../i18n";
 import { buildMatchLog } from "./matchLog";
 
+it.each([0, 1] as const)("records manual table actions with their actor (seat: %s)", (seat) => {
+  const lines = buildMatchLog([{ kind: "manualAction", seat, action: "set statuses" }], 0, new Map(), translator("en"));
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toMatchObject({
+    text: `${seat === 0 ? "You" : "Opponent"}: set statuses`,
+    kind: seat === 0 ? "you" : "opp",
+    actorSeat: seat,
+  });
+});
+
 const kakkinmon = {
   seat: 1 as const,
   sourceCardId: "P-245",

@@ -11,7 +11,7 @@ describe("training material selection", () => {
     expect(isTrainingMaterialSelectionComplete({ options, cards, selected: ids.slice(0, 4) })).toBe(false);
     expect(isTrainingMaterialSelectionComplete({ options, cards, selected: ids })).toBe(true);
     const result = chooseDecisionIntent(
-      { decisionId: "materials", seat: 0, kind: "selectCards", options },
+      { decisionId: "materials", seat: 0, kind: "selectCards", promptText: "Choose Assembly materials", options },
       cards,
       () => 0,
     );

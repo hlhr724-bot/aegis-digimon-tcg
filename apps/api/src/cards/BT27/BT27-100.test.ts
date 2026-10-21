@@ -56,8 +56,8 @@ describe("Hjaðningar Waltz", () => {
 
   it.each([
     { card: "BT3-075", turnSeat: 0 },
-    { card: "BT27-070", turnSeat: 0 },
-    { card: "BT3-075", turnSeat: 1 },
+    { card: "BT27-070", turnSeat: 0 as const },
+    { card: "BT3-075", turnSeat: 1 as const },
   ])(
     "trashes Delay when $card suspends on seat $turnSeat turn, de-digivolves all, then deletes the newly tied lowest costs",
     async ({ card, turnSeat }) => {

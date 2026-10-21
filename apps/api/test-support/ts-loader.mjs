@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { registerHooks } from "node:module";
 import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { deserialize, serialize } from "node:v8";
 import { transformSync } from "oxc-transform";
 import { loadManifest, stubSource } from "./cards-bundle.mjs";
@@ -51,16 +51,23 @@ function transformedSource(path) {
 registerHooks({
   // Source imports use the emitted `.js` specifier; point it at the `.ts` file when only that exists.
   resolve(specifier, context, nextResolve) {
-    if (specifier.startsWith(".") && specifier.endsWith(".js") && context.parentURL?.startsWith("file:")) {
-      const tsUrl = new URL(specifier.slice(0, -3) + ".ts", context.parentURL);
-      if (existsSync(fileURLToPath(tsUrl))) return nextResolve(tsUrl.href, context);
+    const parentURL =
+      context.parentURL && /^[A-Za-z]:[\\/]/.test(context.parentURL)
+        ? pathToFileURL(context.parentURL).href
+        : context.parentURL;
+    const resolvedContext = parentURL === context.parentURL ? context : { ...context, parentURL };
+    if (specifier.startsWith(".") && specifier.endsWith(".js") && parentURL?.startsWith("file:")) {
+      const tsUrl = new URL(specifier.slice(0, -3) + ".ts", parentURL);
+      if (existsSync(fileURLToPath(tsUrl))) return nextResolve(tsUrl.href, resolvedContext);
     }
-    return nextResolve(specifier, context);
+    const moduleSpecifier = /^[A-Za-z]:[\\/]/.test(specifier) ? pathToFileURL(specifier).href : specifier;
+    return nextResolve(moduleSpecifier, resolvedContext);
   },
   load(url, context, nextLoad) {
-    if (!url.startsWith("file:") || !url.endsWith(".ts") || url.includes("/node_modules/"))
-      return nextLoad(url, context);
-    const path = fileURLToPath(url);
+    const moduleUrl = /^[A-Za-z]:[\\/]/.test(url) ? pathToFileURL(url).href : url;
+    if (!moduleUrl.startsWith("file:") || !moduleUrl.endsWith(".ts") || moduleUrl.includes("/node_modules/"))
+      return nextLoad(moduleUrl, context);
+    const path = fileURLToPath(moduleUrl);
     const bundled = bundledCards?.[path];
     if (bundled) return { format: "module", source: stubSource(bundled), shortCircuit: true };
     return { format: "module", source: transformedSource(path), shortCircuit: true };

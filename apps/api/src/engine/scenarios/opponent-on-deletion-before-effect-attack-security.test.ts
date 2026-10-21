@@ -15,9 +15,12 @@ const GALLANTMON = fixtureInstanceId("ad1-gallantmon-hand-card");
 
 function withOpponentSecurity(count: number): ScenarioFixture {
   const opponent = fixture.board["1"]!;
+  if (!Array.isArray(opponent.security)) {
+    throw new Error("The opponent fixture must provide explicit security cards");
+  }
   return {
     ...fixture,
-    board: { ...fixture.board, "1": { ...opponent, security: opponent.security!.slice(0, count) } },
+    board: { ...fixture.board, "1": { ...opponent, security: opponent.security.slice(0, count) } },
   };
 }
 

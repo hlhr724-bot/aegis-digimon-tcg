@@ -22,6 +22,7 @@
     "`＜Fragment (${n})＞: trash ${n} of this Digimon's digivolution cards to prevent its deletion?`"
   ],
   "apps/api/src/engine/effects/verbs/placeUnder.ts": [
+    "`＜Material Save ${n}＞: When this Digimon would be deleted, you may place up to ${n} of its specified digivolution cards under one of your Tamers.`",
     "`＜Material Save ${n}＞: choose ${requiredCount} specified digivolution card${requiredCount === 1 ? \"\" : \"s\"} to place under the Tamer, in order.`",
     "`＜Material Save ${n}＞: place up to ${n} of this Digimon's specified digivolution cards under 1 of your Tamers?`"
   ],

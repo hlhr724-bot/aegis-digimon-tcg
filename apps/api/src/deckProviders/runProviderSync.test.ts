@@ -23,6 +23,9 @@ async function prepare() {
   }
   const store = new AccountStore(new (db.adapters.createPg().Pool)() as Pool);
   stores.push(store);
+  if (typeof deckProviders.up !== "function") {
+    throw new Error("The deck provider migration must expose its executable setup");
+  }
   await deckProviders.up(store.pool);
   vi.spyOn(store, "ensureReady").mockResolvedValue(undefined);
   return store;

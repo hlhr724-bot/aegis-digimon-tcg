@@ -27,15 +27,15 @@ describe("Chiropmon optional recovery after payment", () => {
         }),
       ).toEqual({ ok: true });
       await settle(
-        () => s.state.pendingDecision?.kind === "optional" && s.state.pendingDecision.decisionId !== cost.decisionId,
+        () => s.state.pendingDecision?.kind === "selectCards" && s.state.pendingDecision.decisionId !== cost.decisionId,
       );
       const recovery = s.decisions.at(-1)!.req;
-      expect(recovery.promptText).toContain("Return");
+      expect(recovery.options).toMatchObject({ min: 0, max: 1 });
       expect(
         s.engine.applyIntent(0, {
           type: "respondDecision",
           decisionId: recovery.decisionId,
-          response: { kind: "optional", accept: false },
+          response: { kind: "selectCards", instanceIds: [] },
         }),
       ).toEqual({ ok: true });
       await settle(() => s.state.pendingDecision === undefined);

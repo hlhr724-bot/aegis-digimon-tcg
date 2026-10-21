@@ -38,7 +38,7 @@ scenario("app-fusion", () => {
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: DECK.mainDeck, eggDeck: DECK.eggDeck },
-      seed: 6,
+      seed: 114,
     };
     let protagonistRoom: Room<GameState> | undefined;
     const originalJoinOrCreate = Client.prototype.joinOrCreate;

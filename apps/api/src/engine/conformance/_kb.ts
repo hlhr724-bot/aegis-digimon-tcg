@@ -106,9 +106,10 @@ const notTestableByFile = new Map<string, Set<string>>();
 function callerFile(): string | undefined {
   const stack = new Error().stack?.split("\n").slice(1) ?? [];
   for (const line of stack) {
-    const match = line.match(/\(?(?:file:\/\/)?(\/[^\s()]+):\d+:\d+\)?\s*$/);
-    const file = match?.[1];
-    if (!file) continue;
+    const match = line.match(/\(?((?:file:\/\/\/|[A-Za-z]:[\\/]|\/)[^()]+):\d+:\d+\)?\s*$/);
+    const location = match?.[1];
+    if (!location) continue;
+    const file = location.startsWith("file:") ? fileURLToPath(location) : resolve(location);
     if (file === SELF_FILE) continue;
     if (file.startsWith("node:")) continue;
     return file;

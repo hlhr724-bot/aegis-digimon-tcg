@@ -8,7 +8,7 @@ import "../../cards/index.js";
 
 const cases = ([0, 1] as const).flatMap((seat) => [
   { seat, payer: -1, returned: -1 },
-  ...[0, 1].flatMap((payer) => [0, 1, 2].map((returned) => ({ seat, payer, returned }))),
+  ...[0, 1].flatMap((payer) => [-1, 0, 1, 2].map((returned) => ({ seat, payer, returned }))),
 ]);
 
 describe("Chiropmon payment followed by retrieval through the asynchronous policy", () => {
@@ -98,10 +98,13 @@ describe("Chiropmon payment followed by retrieval through the asynchronous polic
       payer < 0 ? [] : [payerIds],
     );
     expect(retrievalWindows.map((window) => window.actions.map((action) => action.sourceId))).toEqual(
-      payer < 0 ? [] : [eligible],
+      payer < 0 ? [] : [[...eligible, undefined]],
+    );
+    expect(retrievalWindows.map((window) => window.actions.at(-1)?.label)).toEqual(
+      payer < 0 ? [] : ["Finish selection"],
     );
     expect(setup.state.players[seat]!.hand.map((card) => card.instanceId)).toEqual(
-      payer < 0 ? [] : [eligible[returned]],
+      payer < 0 || returned < 0 ? [] : [eligible[returned]],
     );
     expect(setup.state.players[seat]!.trash.map((card) => card.instanceId)).toEqual(
       [...originalTrash, ...(payer < 0 ? [] : [costs[payer]])].filter((id) => id !== eligible[returned]),

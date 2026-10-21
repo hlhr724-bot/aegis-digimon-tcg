@@ -25,8 +25,8 @@ const compiled: CompiledCard = {
           actions: [
             {
               kind: "Return",
-              optional: true,
               target: {
+                upTo: true,
                 filter: {
                   zone: "trash",
                   controller: "mine",

@@ -794,7 +794,9 @@ describe("manual guided turn preparation", () => {
     const player = state.players[0]!;
     const raising = player.breeding!;
     const egg = raising.topCard;
-    const digimon = player.hand.find((card) => getCardDefinition(card.cardId)?.kinds.includes(CardKind.Digimon))!;
+    const digimon = player.hand.find(
+      (card) => getCardDefinition(card.cardId)?.kinds.includes(CardKind.Digimon) === true,
+    )!;
     expect(
       send(0, {
         action: "move",

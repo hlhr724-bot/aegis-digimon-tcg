@@ -3544,6 +3544,8 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
   // to the same shape; see the corresponding regression coverage, "an API that makes
   // silent no-ops easy"). The optional-call idiom hid it from every existing test.
   const ALL_PRIMITIVE_KEYS: Record<keyof Primitives, true> = {
+    orderDnaMaterials: true,
+    seatStackTrashLock: true,
     addColorGrant: true,
     addDeletionMaxDp: true,
     addDpDeleteBudget: true,

@@ -14,11 +14,14 @@ test("Chiropmon can pay its Tamer cost and decline the recovery", async ({ scena
     (decision) => {
       expect(decision.sourceCardId).toBe("ST23-12");
       if (decision.kind === "optional") {
-        if (!paid) {
-          paid = true;
-          return { accept: true };
-        }
-        expect(decision.promptText).toContain("Return");
+        expect(paid).toBe(false);
+        paid = true;
+        return { accept: true };
+      }
+      if (decision.kind === "selectCards") {
+        expect(paid).toBe(true);
+        expect(decision.options.min).toBe(0);
+        expect(decision.options.max).toBe(1);
         declined = true;
         return { accept: false };
       }

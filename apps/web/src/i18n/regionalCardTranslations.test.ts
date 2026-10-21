@@ -5,6 +5,17 @@ import { getTranslatedCardText } from "@/i18n/getTranslatedCardText";
 import { normalizePrintedTextKey } from "@/i18n/normalizePrintedTextKey";
 
 describe("official Japanese and Korean printed text", () => {
+  it.each([
+    ["ja", "アクティブにできる"],
+    ["ko", "액티브로 할 수 있다"],
+  ] as const)("translates the current optional inherited effect in %s", async (locale, expected) => {
+    const translations = await loadPrintedCardTranslations(locale);
+    const card = allCards().find((entry) => entry.cardId === "BT18-039")!;
+    expect(getTranslatedCardText({ text: card.inheritedEffectText!, translations, cardId: card.cardId })).toContain(
+      expected,
+    );
+  });
+
   it("translates the complete Japanese inherited effect from the reported card", async () => {
     const translations = await loadPrintedCardTranslations("ja");
     const card = allCards().find((entry) => entry.cardId === "EX13-004")!;
