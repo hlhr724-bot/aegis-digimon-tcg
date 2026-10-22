@@ -168,8 +168,7 @@ export const battleLessonsZhCN = {
   "learn.lesson.drill-barrier.step.intro.hint": "你有1张安防可以支付Barrier，防止Angemon的战斗消灭。",
   "learn.lesson.drill-barrier.step.barrier":
     "用Angemon攻击玩家。出现Barrier提示时接受，丢弃你的安防顶卡并保住Angemon。",
-  "learn.lesson.drill-barrier.step.barrier.hint":
-    "Barrier防止这次战斗消灭。丢弃的安防卡是费用，不会发动其Security效果。",
+  "learn.lesson.drill-barrier.step.barrier.hint": "Barrier防止这次战斗消灭。丢弃的安防卡是费用，不会发动其安防效果。",
   "learn.lesson.drill-barrier.step.end-turn": "Angemon存活，双方都没有安防。点击“结束回合”。",
   "learn.lesson.drill-barrier.step.end-turn.hint": "电脑场上没有数码宝贝，因此此处可以安全地结束回合。",
   "learn.lesson.drill-barrier.step.your-turn": "等待你的下一个主要阶段。",
@@ -207,7 +206,7 @@ export const battleLessonsZhCN = {
   "learn.lesson.drill-decoy.goal2": "用Decoy持有者支付费用，再发起反攻",
   "learn.lesson.drill-decoy.done": "Machmon支付Decoy费用，BigMamemon存活，并由这只获救的数码宝贝获胜。",
   "learn.lesson.drill-decoy.step.intro":
-    "另一只自己的黑色数码宝贝将被对手效果消灭时，Decoy (Black)可让Machmon消灭自身。电脑即将用Gaia Force指定你唯一的另一只数码宝贝BigMamemon。",
+    "另一只自己的黑色数码宝贝将被对手效果消灭时，Decoy (黑色)可让Machmon消灭自身。电脑即将用Gaia Force指定你唯一的另一只数码宝贝BigMamemon。",
   "learn.lesson.drill-decoy.step.intro.hint":
     "规则16-18。该关键词保护另一只符合条件的数码宝贝，Machmon不能用它保护自身。",
   "learn.lesson.drill-decoy.step.react": "出现Decoy提示时，接受Machmon的保护。若需要选择保护方式，选择Machmon的Decoy。",
@@ -231,42 +230,43 @@ export const battleLessonsZhCN = {
   "learn.lesson.drill-armor-purge.step.your-turn.hint": "Armor Purge仅防止这一次消灭，不会永久免疫后续效果。",
   "learn.lesson.drill-armor-purge.step.attack-player": "点击Gabumon，选择攻击，并指定对手的空安防区。",
   "learn.lesson.drill-armor-purge.step.attack-player.hint": "下方存活的卡牌将完成最后一击。",
-  "learn.lesson.drill-save.title": "Save：将资源保存在Tamer下方",
+  "learn.lesson.drill-save.title": "Save：将资源保存在驯兽师下方",
   "learn.lesson.drill-save.summary": "Save保存Shoutmon，再利用同一张卡组建具有Rush的获胜数码宝贝。",
-  "learn.lesson.drill-save.goal1": "将被消灭的卡以Save置于自己的Tamer下方",
-  "learn.lesson.drill-save.goal2": "将保存的卡重新用作DigiXros素材",
-  "learn.lesson.drill-save.done": "保存的Shoutmon成为King Version的进化源，赋予其获胜所需的Rush。",
+  "learn.lesson.drill-save.goal1": "将被消灭的卡以Save置于自己的驯兽师下方",
+  "learn.lesson.drill-save.goal2": "将保存的卡重新用作数码合体素材",
+  "learn.lesson.drill-save.done": "保存的Shoutmon成为王者形态的进化源，赋予其获胜所需的Rush。",
   "learn.lesson.drill-save.step.intro":
-    "Gaia Force将消灭Shoutmon。它的【消灭时】Save可将该卡置于Taiki下方，而非留在弃牌区。手牌中的Shoutmon (King Version)可将其用于DigiXros。",
+    "Gaia Force将消灭Shoutmon。它的【消灭时】Save可将该卡置于工藤大器下方，而非留在弃牌区。手牌中的高吼兽（王者形态）可将其用于数码合体。",
   "learn.lesson.drill-save.step.intro.hint": "规则16-20。Save保留卡牌作为资源，但不会防止Shoutmon被消灭。",
-  "learn.lesson.drill-save.step.react": "结算Shoutmon的【消灭时】效果并接受Save。若需选择接收的Tamer，选择Taiki Kudo。",
-  "learn.lesson.drill-save.step.react.hint": "Shoutmon此时应位于Taiki下方，你的战斗区不再有数码宝贝。",
+  "learn.lesson.drill-save.step.react":
+    "结算Shoutmon的【消灭时】效果并接受Save。若需选择接收的驯兽师，选择Taiki Kudo。",
+  "learn.lesson.drill-save.step.react.hint": "Shoutmon此时应位于工藤大器下方，你的战斗区不再有数码宝贝。",
   "learn.lesson.drill-save.step.your-turn": "等待你的主要阶段。你将有3点内存值来重新利用保存的Shoutmon。",
-  "learn.lesson.drill-save.step.your-turn.hint": "Taiki可以休息，让DigiXros使用你的Tamer下方的卡。",
+  "learn.lesson.drill-save.step.your-turn.hint": "工藤大器可以休息，让数码合体使用你的驯兽师下方的卡。",
   "learn.lesson.drill-save.step.reuse":
-    "选择手牌中的Shoutmon (King Version)并选择DigiXros。选择Taiki作为要休息的Tamer，再选择其下保存的Shoutmon作为素材并确认。",
+    "选择手牌中的高吼兽（王者形态）并选择数码合体。选择工藤大器作为要休息的驯兽师，再选择其下保存的Shoutmon作为素材并确认。",
   "learn.lesson.drill-save.step.reuse.hint":
     "一张素材将费用从5减至3。Shoutmon的进化源效果会赋予这只名称含Shoutmon的数码宝贝Rush。",
-  "learn.lesson.drill-save.step.attack-player": "用Shoutmon (King Version)攻击对手的空安防区。",
+  "learn.lesson.drill-save.step.attack-player": "用高吼兽（王者形态）攻击对手的空安防区。",
   "learn.lesson.drill-save.step.attack-player.hint":
     "若没有保存的进化源，这只刚登场的数码宝贝便没有现在攻击所需的继承Rush。",
   "learn.lesson.drill-material-save.title": "Material Save：救回进化源",
-  "learn.lesson.drill-material-save.summary": "保存两张DigiXros素材，再重组MetalGreymon以Rush攻击获胜。",
+  "learn.lesson.drill-material-save.summary": "保存两张数码合体素材，再重组MetalGreymon以Rush攻击获胜。",
   "learn.lesson.drill-material-save.goal1": "从被消灭的叠卡中救出指定素材",
   "learn.lesson.drill-material-save.goal2": "重新利用两张获救卡来减少费用",
   "learn.lesson.drill-material-save.done": "两张获救素材以3点内存值重组MetalGreymon，并以Rush攻击获胜。",
   "learn.lesson.drill-material-save.step.intro":
-    "MetalGreymon下方有Greymon和MailBirdramon。Gaia Force即将消灭它，Material Save 2可将这些指定DigiXros素材置于Kiriha下方。",
+    "MetalGreymon下方有Greymon和MailBirdramon。Gaia Force即将消灭它，Material Save 2可将这些指定数码合体素材置于苍沼切羽下方。",
   "learn.lesson.drill-material-save.step.intro.hint":
     "规则16-21。保存的是符合条件的进化源，而不是被消灭的MetalGreymon本身。",
   "learn.lesson.drill-material-save.step.react":
     "接受Material Save 2，选择Greymon和MailBirdramon，并在提示时将它们置于Kiriha Aonuma下方。",
   "learn.lesson.drill-material-save.step.react.hint":
-    "使用两张符合条件的进化源。MetalGreymon进入弃牌区，素材则保存在Kiriha下方。",
+    "使用两张符合条件的进化源。MetalGreymon进入弃牌区，素材则保存在苍沼切羽下方。",
   "learn.lesson.drill-material-save.step.your-turn": "等待你的主要阶段。你有3点内存值，手牌中还有另一张MetalGreymon。",
-  "learn.lesson.drill-material-save.step.your-turn.hint": "Kiriha可以休息，允许DigiXros使用你的Tamer下方的素材。",
+  "learn.lesson.drill-material-save.step.your-turn.hint": "苍沼切羽可以休息，允许数码合体使用你的驯兽师下方的素材。",
   "learn.lesson.drill-material-save.step.reuse":
-    "选择手牌中的MetalGreymon并进行DigiXros。选择Kiriha作为要休息的Tamer，再选择其下两张保存的素材并确认。结算其【登场时】选择。",
+    "选择手牌中的MetalGreymon并进行数码合体。选择苍沼切羽作为要休息的驯兽师，再选择其下两张保存的素材并确认。结算其【登场时】选择。",
   "learn.lesson.drill-material-save.step.reuse.hint":
     "两张素材将费用从7减至3。其【登场时】效果赋予Rush，因此重组的数码宝贝可立即攻击。",
   "learn.lesson.drill-material-save.step.attack-player": "用重组的MetalGreymon攻击对手的空安防区。",
@@ -343,8 +343,8 @@ export const battleLessonsZhCN = {
     "Sistermon Blanc (Awakened)拥有Decode (Sistermon Blanc)，下方有该确切名称的卡。电脑的Cocytus Breath将觉醒形态返回你的手牌。",
   "learn.lesson.drill-decode.step.intro.hint": "规则16-36。此次返回手牌不是战斗离场，因此可以响应Decode。",
   "learn.lesson.drill-decode.step.react":
-    "接受Decode并从进化源中选择Sistermon Blanc。若有提示，结算Blanc的【登场时】Draw 1。",
-  "learn.lesson.drill-decode.step.react.hint": "Blanc作为独立数码宝贝登场。觉醒卡仍返回手牌，Decode不会阻止它离场。",
+    "接受Decode并从进化源中选择Sistermon Blanc。若有提示，结算修女兽白的【登场时】抽卡 1。",
+  "learn.lesson.drill-decode.step.react.hint": "修女兽白作为独立数码宝贝登场。觉醒卡仍返回手牌，Decode不会阻止它离场。",
   "learn.lesson.drill-decode.step.your-turn":
     "等待你的主要阶段。通过Decode登场的Sistermon Blanc现在是你唯一的数码宝贝。",
   "learn.lesson.drill-decode.step.your-turn.hint": "它在电脑回合登场，因此可以在你的回合攻击。",
@@ -407,71 +407,69 @@ export const battleLessonsZhCN = {
   "learn.lesson.drill-digi-burst.step.attack-security.hint": "已休息的Monochromon不能阻挡。",
   "learn.lesson.drill-digi-burst.step.attack-player": "用Birdramon攻击玩家获胜。",
   "learn.lesson.drill-digi-burst.step.attack-player.hint": "仅除去最后一张安防并不会直接获胜。",
-  "learn.lesson.drill-delay.title": "Delay：兑现准备好的Option",
-  "learn.lesson.drill-delay.summary": "用Reinforcing Memory Boost!获得获胜Rush攻击所需的内存值。",
+  "learn.lesson.drill-delay.title": "Delay：兑现准备好的选项卡",
+  "learn.lesson.drill-delay.summary": "用增援·内存值推进!获得获胜Rush攻击所需的内存值。",
   "learn.lesson.drill-delay.goal1": "在放置回合之后发动Delay",
-  "learn.lesson.drill-delay.goal2": "将保留的Option转化为3点内存值",
+  "learn.lesson.drill-delay.goal2": "将保留的选项卡转化为3点内存值",
   "learn.lesson.drill-delay.done": "Delay提供了BushiAgumon的费用，随后它用Rush获胜。",
-  "learn.lesson.drill-delay.step.intro":
-    "Reinforcing Memory Boost!已在先前回合置于战斗区，现在可以使用Delay。你只有2点内存值。",
+  "learn.lesson.drill-delay.step.intro": "增援·内存值推进!已在先前回合置于战斗区，现在可以使用Delay。你只有2点内存值。",
   "learn.lesson.drill-delay.step.intro.hint": "不能在该卡被放置的同一回合使用Delay。",
-  "learn.lesson.drill-delay.step.delay": "选择Reinforcing Memory Boost!并发动Delay。丢弃它以获得3点内存值。",
+  "learn.lesson.drill-delay.step.delay": "选择增援·内存值推进!并发动Delay。丢弃它以获得3点内存值。",
   "learn.lesson.drill-delay.step.delay.hint": "你的内存值由2升至5。",
   "learn.lesson.drill-delay.step.play-rush": "从手牌支付5点内存值登场BushiAgumon。",
   "learn.lesson.drill-delay.step.play-rush.hint": "Delay带来的内存值让你支付后仍能停在零。",
   "learn.lesson.drill-delay.step.attack-player": "用BushiAgumon攻击玩家获胜。",
   "learn.lesson.drill-delay.step.attack-player.hint": "Rush允许这只刚登场的数码宝贝攻击。",
   "learn.lesson.drill-blast-digivolve.title": "Blast Digivolve：攻击中进化",
-  "learn.lesson.drill-blast-digivolve.summary": "用WarGreymon的Counter应对电脑攻击，阻挡后在下回合获胜。",
-  "learn.lesson.drill-blast-digivolve.goal1": "在Counter时点免费进化",
+  "learn.lesson.drill-blast-digivolve.summary": "用WarGreymon的反击应对电脑攻击，阻挡后在下回合获胜。",
+  "learn.lesson.drill-blast-digivolve.goal1": "在反击时点免费进化",
   "learn.lesson.drill-blast-digivolve.goal2": "在阻挡时点前获得Blocker",
   "learn.lesson.drill-blast-digivolve.done": "Blast Digivolve及时形成WarGreymon，挡下致命攻击，并在之后获胜。",
   "learn.lesson.drill-blast-digivolve.step.intro":
     "你有0张安防，电脑即将攻击。你的MetalGreymon没有Blocker，但手牌WarGreymon可通过Blast Digivolve进化为阻挡者。",
-  "learn.lesson.drill-blast-digivolve.step.intro.hint": "Counter时点发生在阻挡时点之前。",
+  "learn.lesson.drill-blast-digivolve.step.intro.hint": "反击时点发生在阻挡时点之前。",
   "learn.lesson.drill-blast-digivolve.step.counter":
-    "出现Counter提示时，选择手牌WarGreymon，在MetalGreymon上使用Blast Digivolve。",
+    "出现反击提示时，选择手牌WarGreymon，在MetalGreymon上使用Blast Digivolve。",
   "learn.lesson.drill-blast-digivolve.step.counter.hint": "符合条件的进化不支付内存值，且仍会抽一张卡。",
   "learn.lesson.drill-blast-digivolve.step.block": "用新形成的WarGreymon阻挡来袭的Ikkakumon。",
   "learn.lesson.drill-blast-digivolve.step.block.hint": "WarGreymon有11000 DP，Ikkakumon有5000 DP。",
   "learn.lesson.drill-blast-digivolve.step.your-turn": "你存活了。等待电脑结束回合，并让你的数码宝贝解除休息。",
-  "learn.lesson.drill-blast-digivolve.step.your-turn.hint": "使用Counter并不意味着你的回合已经开始。",
+  "learn.lesson.drill-blast-digivolve.step.your-turn.hint": "使用反击并不意味着你的回合已经开始。",
   "learn.lesson.drill-blast-digivolve.step.attack-player": "用WarGreymon攻击玩家获胜。",
   "learn.lesson.drill-blast-digivolve.step.attack-player.hint": "电脑已没有安防，也没有阻挡者。",
-  "learn.lesson.drill-mind-link.title": "Mind Link：将Tamer变为进化源",
-  "learn.lesson.drill-mind-link.summary": "将Eiji通过Mind Link置于Loogarmon下方，使用获得的Alliance，再结束对局。",
-  "learn.lesson.drill-mind-link.goal1": "将符合条件的Tamer置入进化源",
+  "learn.lesson.drill-mind-link.title": "Mind Link：将驯兽师变为进化源",
+  "learn.lesson.drill-mind-link.summary": "将永住瑛士通过Mind Link置于Loogarmon下方，使用获得的Alliance，再结束对局。",
+  "learn.lesson.drill-mind-link.goal1": "将符合条件的驯兽师置入进化源",
   "learn.lesson.drill-mind-link.goal2": "使用通过Mind Link获得的进化源效果",
-  "learn.lesson.drill-mind-link.done": "Eiji成为进化源并赋予Alliance，帮助Loogarmon清除两张安防。",
+  "learn.lesson.drill-mind-link.done": "永住瑛士成为进化源并赋予Alliance，帮助Loogarmon清除两张安防。",
   "learn.lesson.drill-mind-link.step.intro":
-    "Eiji Nagasumi可与没有Tamer进化源的Dark Animal或SoC数码宝贝进行Mind Link。Loogarmon符合条件。",
-  "learn.lesson.drill-mind-link.step.intro.hint": "Eiji成为进化源后，其进化源效果赋予Alliance和Blocker。",
-  "learn.lesson.drill-mind-link.step.mind-link": "选择Eiji并发动其主要阶段Mind Link效果，以Loogarmon为放置对象。",
-  "learn.lesson.drill-mind-link.step.mind-link.hint": "Eiji移至Loogarmon下方，不再是战斗区中独立的Tamer。",
+    "Eiji Nagasumi可与没有驯兽师进化源的Dark Animal或SoC数码宝贝进行Mind Link。Loogarmon符合条件。",
+  "learn.lesson.drill-mind-link.step.intro.hint": "永住瑛士成为进化源后，其进化源效果赋予Alliance和Blocker。",
+  "learn.lesson.drill-mind-link.step.mind-link": "选择永住瑛士并发动其主要阶段Mind Link效果，以Loogarmon为放置对象。",
+  "learn.lesson.drill-mind-link.step.mind-link.hint": "永住瑛士移至Loogarmon下方，不再是战斗区中独立的驯兽师。",
   "learn.lesson.drill-mind-link.step.alliance":
     "用Loogarmon攻击玩家，以任意顺序结算攻击触发。使用Alliance时接受并休息Birdramon作为支援。Loogarmon可选的手牌费用效果可以拒绝，或丢弃1张卡来结算。两项触发都完成后再检查2张安防。",
   "learn.lesson.drill-mind-link.step.alliance.hint": "Alliance选择Birdramon，并让Dracomon保持未休息以完成最后一击。",
   "learn.lesson.drill-mind-link.step.attack-player": "用Dracomon攻击玩家获胜。",
   "learn.lesson.drill-mind-link.step.attack-player.hint": "Birdramon支付了Alliance，因此Dracomon仍可行动。",
-  "learn.lesson.drill-blast-dna-digivolve.title": "Blast DNA Digivolve：结合场上与手牌",
-  "learn.lesson.drill-blast-dna-digivolve.summary": "使用场上的数码宝贝及手牌素材，在Counter时点形成RagnaLoardmon。",
-  "learn.lesson.drill-blast-dna-digivolve.goal1": "在Counter期间提供两种指定DNA素材",
-  "learn.lesson.drill-blast-dna-digivolve.goal2": "攻击继续前结算仅限DNA的除去效果",
+  "learn.lesson.drill-blast-dna-digivolve.title": "突风合步：结合场上与手牌",
+  "learn.lesson.drill-blast-dna-digivolve.summary": "使用场上的数码宝贝及手牌素材，在反击时点形成RagnaLoardmon。",
+  "learn.lesson.drill-blast-dna-digivolve.goal1": "在反击期间提供两种指定合步素材",
+  "learn.lesson.drill-blast-dna-digivolve.goal2": "攻击继续前结算仅限合步的除去效果",
   "learn.lesson.drill-blast-dna-digivolve.done": "RagnaLoardmon免费结合两种素材，除去攻击者，并在下回合获胜。",
   "learn.lesson.drill-blast-dna-digivolve.step.intro":
     "你没有安防，电脑即将攻击。Durandamon在战斗区，BryweLudramon与RagnaLoardmon在手牌。",
-  "learn.lesson.drill-blast-dna-digivolve.step.intro.hint":
-    "Blast DNA Digivolve需要场上的指定数码宝贝，以及手牌中另一张指定卡。",
+  "learn.lesson.drill-blast-dna-digivolve.step.intro.hint": "突风合步需要场上的指定数码宝贝，以及手牌中另一张指定卡。",
   "learn.lesson.drill-blast-dna-digivolve.step.counter":
-    "在Counter时使用RagnaLoardmon。选择Durandamon与手牌的BryweLudramon进行Blast DNA Digivolve。结算效果，并选择正在攻击的Plesiomon消灭。",
+    "在反击时使用RagnaLoardmon。选择Durandamon与手牌的BryweLudramon进行突风合步。结算效果，并选择正在攻击的Plesiomon消灭。",
   "learn.lesson.drill-blast-dna-digivolve.step.counter.hint":
-    "其进化效果丢弃对手最后一张安防，DNA专属效果会在攻击命中你之前消灭攻击者。",
+    "其进化效果丢弃对手最后一张安防，合步专属效果会在攻击命中你之前消灭攻击者。",
   "learn.lesson.drill-blast-dna-digivolve.step.your-turn":
     "等待电脑结束回合。新形成的RagnaLoardmon已准备好迎接你的回合。",
-  "learn.lesson.drill-blast-dna-digivolve.step.your-turn.hint": "DNA创造新的数码宝贝，并将两种素材结合为其进化源。",
+  "learn.lesson.drill-blast-dna-digivolve.step.your-turn.hint": "合步创造新的数码宝贝，并将两种素材结合为其进化源。",
   "learn.lesson.drill-blast-dna-digivolve.step.attack-player": "用RagnaLoardmon攻击玩家获胜。",
   "learn.lesson.drill-blast-dna-digivolve.step.attack-player.hint":
-    "攻击者在Counter期间被消灭，因此你即使没有安防也存活了。",
+    "攻击者在反击期间被消灭，因此你即使没有安防也存活了。",
   "learn.lesson.drill-link.title": "Link +：保留额外链接",
   "learn.lesson.drill-link.summary": "为Deusmon添加第二张链接卡，同时保留第一张。",
   "learn.lesson.drill-link.goal1": "支付链接费用以链接一张手牌",
@@ -486,18 +484,18 @@ export const battleLessonsZhCN = {
   "learn.lesson.drill-link.step.attack-security.hint": "两张链接卡仍附着时，其链接DP加成持续有效。",
   "learn.lesson.drill-link.step.attack-player": "用Birdramon攻击玩家获胜。",
   "learn.lesson.drill-link.step.attack-player.hint": "最后一击与安防检查是不同的攻击。",
-  "learn.lesson.drill-use-req.title": "Use Req.：以特征代替颜色条件",
+  "learn.lesson.drill-use-req.title": "使用条件：以特征代替颜色条件",
   "learn.lesson.drill-use-req.summary": "在场上只提供黄色的情况下使用白色e-Pulse。",
-  "learn.lesson.drill-use-req.goal1": "阅读Use Req.的指定条件",
-  "learn.lesson.drill-use-req.goal2": "仅无视颜色要求，仍支付Option费用",
-  "learn.lesson.drill-use-req.done": "Liollmon满足Use Req.，e-Pulse招来另一只数码宝贝，原本的Liollmon随后获胜。",
+  "learn.lesson.drill-use-req.goal1": "阅读使用条件的指定条件",
+  "learn.lesson.drill-use-req.goal2": "仅无视颜色要求，仍支付选项卡费用",
+  "learn.lesson.drill-use-req.done": "Liollmon满足使用条件，e-Pulse招来另一只数码宝贝，原本的Liollmon随后获胜。",
   "learn.lesson.drill-use-req.step.intro":
-    "e-Pulse是白色，但你的战斗区只有黄色Liollmon。其Use Req.接受自己场上的BEATBREAK卡。",
+    "e-Pulse是白色，但你的战斗区只有黄色Liollmon。其使用条件接受自己场上的BEATBREAK卡。",
   "learn.lesson.drill-use-req.step.intro.hint": "Liollmon具有BEATBREAK，因此可以无视白色要求。",
   "learn.lesson.drill-use-req.step.use-option":
     "从手牌支付3点内存值使用e-Pulse。接受其效果，不支付登场费用登场手牌中的另一张Liollmon。",
   "learn.lesson.drill-use-req.step.use-option.hint":
-    "Use Req.免除的是颜色要求，而非3点内存值的使用费用。之后e-Pulse留在战斗区。",
+    "使用条件免除的是颜色要求，而非3点内存值的使用费用。之后e-Pulse留在战斗区。",
   "learn.lesson.drill-use-req.step.attack-player": "用原本就在战斗区的Liollmon攻击玩家获胜。",
   "learn.lesson.drill-use-req.step.attack-player.hint": "新登场的Liollmon本回合不能攻击，请选择原本那一只。",
   "learn.lesson.drill-ascension.title": "Ascension：将消灭转化为安防",
@@ -511,7 +509,7 @@ export const battleLessonsZhCN = {
   "learn.lesson.drill-ascension.step.ascend":
     "用ScourgeChiropmon攻击已休息的Plesiomon。它会战败。接受Ascension，将ScourgeChiropmon置于自己的安防最上方。",
   "learn.lesson.drill-ascension.step.ascend.hint":
-    "ScourgeChiropmon有8000 DP，Plesiomon有12000 DP。它的另一项消灭效果没有可用的Tamer费用。",
+    "ScourgeChiropmon有8000 DP，Plesiomon有12000 DP。它的另一项消灭效果没有可用的驯兽师费用。",
   "learn.lesson.drill-ascension.step.end-turn": "新的安防卡已就位。结束你的回合。",
   "learn.lesson.drill-ascension.step.end-turn.hint": "Birdramon在登场的本回合仍不能攻击。",
   "learn.lesson.drill-ascension.step.your-turn": "让电脑攻击你的新安防卡，再等待你的回合。",
@@ -529,7 +527,7 @@ export const battleLessonsZhCN = {
   "learn.lesson.drill-detach.step.detach":
     "出现离场提示时，接受Detach并丢弃链接的Roleplaymon，让Weatherdramon留在战斗区。",
   "learn.lesson.drill-detach.step.detach.hint": "链接卡进入弃牌区。Weatherdramon失去链接DP，但不会返回手牌。",
-  "learn.lesson.drill-detach.step.your-turn": "电脑已使用完Option，等待它结束回合。",
+  "learn.lesson.drill-detach.step.your-turn": "电脑已使用完选项卡，等待它结束回合。",
   "learn.lesson.drill-detach.step.your-turn.hint": "Detach防止离场，并非重新登场Weatherdramon。",
   "learn.lesson.drill-detach.step.attack-player": "用Weatherdramon攻击玩家获胜。",
   "learn.lesson.drill-detach.step.attack-player.hint": "因为保持了原本的场上存在，它可以在你的回合攻击。",
@@ -570,7 +568,7 @@ export const battleLessonsZhCN = {
   "learn.lesson.practice-game-preparation.step.move.hint":
     "移动不属于登场新数码宝贝。Greymon在移出养成区的本回合就可以攻击。",
   "learn.lesson.practice-game-preparation.step.ultimate":
-    "支付三点内存值，将Greymon进化为Garudamon。Greymon的进化源效果Security Attack +1会让Garudamon进行两次检查。",
+    "支付三点内存值，将Greymon进化为Garudamon。Greymon的进化源效果安防攻击 +1会让Garudamon进行两次检查。",
   "learn.lesson.practice-game-preparation.step.ultimate.hint":
     "进化源卡的普通效果与进化源效果不同，请阅读Greymon的下方效果栏。",
   "learn.lesson.practice-game-preparation.step.first-checks": "用Garudamon攻击玩家，从电脑的五张安防中逐张检查两张。",
@@ -588,19 +586,19 @@ export const battleLessonsZhCN = {
   "learn.lesson.practice-game-preparation.step.win.hint":
     "清空安防后仍需要这一次独立的成功攻击。Biyomon在之前的回合登场，现在可以攻击。",
   "learn.lesson.practice-rule-checks.title": "规则检查：消灭零DP数码宝贝",
-  "learn.lesson.practice-rule-checks.summary": "用黄色Option将阻挡者的DP减至零以下，观察规则消灭，再用Salamon获胜。",
-  "learn.lesson.practice-rule-checks.goal1": "满足Option的颜色条件并结算DP削减",
+  "learn.lesson.practice-rule-checks.summary": "用黄色选项卡将阻挡者的DP减至零以下，观察规则消灭，再用Salamon获胜。",
+  "learn.lesson.practice-rule-checks.goal1": "满足选项卡的颜色条件并结算DP削减",
   "learn.lesson.practice-rule-checks.goal2": "区分规则检查造成的消灭与效果直接指示的消灭",
   "learn.lesson.practice-rule-checks.done":
     "Seven Heavens降低Monochromon的DP，规则检查将其消灭，让Salamon完成获胜攻击。",
   "learn.lesson.practice-rule-checks.step.intro":
     "电脑没有安防，但Monochromon能阻挡Salamon。Seven Heavens给予-10000 DP；战斗区中DP为零或更低的数码宝贝会被规则消灭。",
-  "learn.lesson.practice-rule-checks.step.intro.hint": "Salamon满足Option的黄色要求。你有九点内存值，Option费用为七。",
+  "learn.lesson.practice-rule-checks.step.intro.hint": "Salamon满足选项卡的黄色要求。你有九点内存值，选项卡费用为七。",
   "learn.lesson.practice-rule-checks.step.reduce-dp":
     "从手牌使用Seven Heavens，选择电脑的Monochromon并确认对象。观察效果结算后它进入弃牌区。",
   "learn.lesson.practice-rule-checks.step.reduce-dp.hint":
-    "Option仅给予DP削减。最终DP为零或更低时，由规则17-1-3-1-1执行消灭。",
+    "选项卡仅给予DP削减。最终DP为零或更低时，由规则17-1-3-1-1执行消灭。",
   "learn.lesson.practice-rule-checks.step.win": "阻挡者已离场。用Salamon攻击玩家获胜。",
   "learn.lesson.practice-rule-checks.step.win.hint":
-    "Salamon在本回合开始前已在战斗区。使用Option后还剩两点内存值，因此回合仍属于你。",
+    "Salamon在本回合开始前已在战斗区。使用选项卡后还剩两点内存值，因此回合仍属于你。",
 } satisfies Record<keyof typeof newDrillsEn, string>;

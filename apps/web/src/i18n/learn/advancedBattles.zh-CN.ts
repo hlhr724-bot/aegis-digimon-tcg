@@ -15,7 +15,7 @@ export const advancedBattlesZhCN = {
   "learn.lesson.practice-derived-trash-triggers.step.attack-and-discard":
     "用Ogremon攻击玩家。接受其攻击效果，丢弃一张Monodramon，并选择对手的Monochromon使其休息。保留Birdramon完成最后一击。",
   "learn.lesson.practice-derived-trash-triggers.step.attack-and-discard.hint":
-    "这次弃牌同时触发Goblimon从弃牌区进化的进化源效果与Tsunomon的进化源Draw 1。攻击尚未进入Counter、阻挡或安防处理。",
+    "这次弃牌同时触发Goblimon从弃牌区进化的进化源效果与Tsunomon的进化源抽卡 1。攻击尚未进入反击、阻挡或安防处理。",
   "learn.lesson.practice-derived-trash-triggers.step.first-upgrade":
     "在同时触发面板中，将Goblimon的进化源效果排在Tsunomon之前。接受进化并选择弃牌区的SkullGreymon，其费用减少1。",
   "learn.lesson.practice-derived-trash-triggers.step.first-upgrade.hint":
@@ -31,7 +31,7 @@ export const advancedBattlesZhCN = {
   "learn.lesson.practice-derived-trash-triggers.step.finish-checks":
     "结算Titamon的【进化时】，丢弃Phoenixmon并消灭对手DP最高的数码宝贝。因为Titamon是通过效果进化，还要丢弃对手最上方安防。结算新触发的最低DP消灭效果，然后让攻击检查剩余两张安防。",
   "learn.lesson.practice-derived-trash-triggers.step.finish-checks.hint":
-    "Titamon的弃牌产生另一个派生触发。现在作为进化源的SkullGreymon会赋予Titamon Security Attack +1。它的13000 DP可在两次12000 DP Plesiomon安防战斗中存活。丢弃第一张安防并不是检查。",
+    "Titamon的弃牌产生另一个派生触发。现在作为进化源的SkullGreymon会赋予Titamon 安防攻击 +1。它的13000 DP可在两次12000 DP Plesiomon安防战斗中存活。丢弃第一张安防并不是检查。",
   "learn.lesson.practice-derived-trash-triggers.step.win":
     "三张安防和两只防守数码宝贝都已被除去。用Birdramon攻击玩家获胜。",
   "learn.lesson.practice-derived-trash-triggers.step.win.hint":
@@ -45,7 +45,7 @@ export const advancedBattlesZhCN = {
   "learn.lesson.practice-order-before-digivolving.done":
     "你在进化效果前抽到Beowolfmon，以Jamming撑过安防战斗，并在结算KendoGarurumon的进化源抽牌后获胜。",
   "learn.lesson.practice-order-before-digivolving.step.intro":
-    "KendoGarurumon有两个独立的【攻击时】效果：Draw 1，以及费用减少1的可选Hybrid进化。手牌中的DaiPenmon没有Jamming。下一次攻击效果抽牌将找到有Jamming的Beowolfmon。电脑最后一张安防是12000 DP的Plesiomon。",
+    "KendoGarurumon有两个独立的【攻击时】效果：抽卡 1，以及费用减少1的可选Hybrid进化。手牌中的DaiPenmon没有Jamming。下一次攻击效果抽牌将找到有Jamming的Beowolfmon。电脑最后一张安防是12000 DP的Plesiomon。",
   "learn.lesson.practice-order-before-digivolving.step.intro.hint":
     "规则15-4-3、15-4-4-4、15-3和16-9。6000 DP的KendoGarurumon与7000 DP的DaiPenmon通常都无法在这场安防战斗中存活，Beowolfmon的Jamming能提供必要保护。",
   "learn.lesson.practice-order-before-digivolving.step.declare-attack":
@@ -53,13 +53,13 @@ export const advancedBattlesZhCN = {
   "learn.lesson.practice-order-before-digivolving.step.declare-attack.hint":
     "攻击宣言使KendoGarurumon休息一次。其效果在安防前结算，进化不会宣言另一次攻击。",
   "learn.lesson.practice-order-before-digivolving.step.draw-first":
-    "将KendoGarurumon的Draw 1排在前面，Hybrid进化排在后面。先结算抽牌，将Beowolfmon加入手牌，再选择进化卡。",
+    "将KendoGarurumon的抽卡 1排在前面，Hybrid进化排在后面。先结算抽牌，将Beowolfmon加入手牌，再选择进化卡。",
   "learn.lesson.practice-order-before-digivolving.step.draw-first.hint":
     "选择依据效果发动时的状态进行。这次抽牌为另一个待处理效果提供了新的合法选择。",
   "learn.lesson.practice-order-before-digivolving.step.digivolve":
     "接受剩余的Hybrid进化效果，并选择刚抽到的Beowolfmon。其费用由3降至2。继续结算额外抽牌及安防检查。",
   "learn.lesson.practice-order-before-digivolving.step.digivolve.hint":
-    "请选择Beowolfmon，而非DaiPenmon。Beowolfmon虽只有7000 DP，却可用Jamming撑过12000 DP的安防战斗。若先进行进化，旧顶卡待处理的普通Draw 1会消失；之后的进化额外抽牌已来不及改变此次进化选择。",
+    "请选择Beowolfmon，而非DaiPenmon。Beowolfmon虽只有7000 DP，却可用Jamming撑过12000 DP的安防战斗。若先进行进化，旧顶卡待处理的普通抽卡 1会消失；之后的进化额外抽牌已来不及改变此次进化选择。",
   "learn.lesson.practice-order-before-digivolving.step.end-turn":
     "Beowolfmon存活，对手没有安防。结束你的回合，让休息的攻击者能再次行动。",
   "learn.lesson.practice-order-before-digivolving.step.end-turn.hint":
@@ -69,7 +69,7 @@ export const advancedBattlesZhCN = {
   "learn.lesson.practice-order-before-digivolving.step.your-turn.hint":
     "KendoGarurumon现在是进化源。即使原本的普通效果已消失，下方的进化源效果仍可在下次攻击时触发。",
   "learn.lesson.practice-order-before-digivolving.step.win":
-    "用Beowolfmon攻击玩家。在直接攻击获胜前，先结算KendoGarurumon的进化源Draw 1。",
+    "用Beowolfmon攻击玩家。在直接攻击获胜前，先结算KendoGarurumon的进化源抽卡 1。",
   "learn.lesson.practice-order-before-digivolving.step.win.hint":
     "这次进化源抽牌是本次攻击产生的新触发，并非上一回合待处理的普通抽牌。普通效果与进化源效果的作用不同。",
   "learn.lesson.practice-inherited-sacrifice-recruit.title": "进化源保护：将牺牲转化为新攻击者",
@@ -110,11 +110,11 @@ export const advancedBattlesZhCN = {
   "learn.lesson.practice-inherited-unsuspend-engage.done":
     "MetalMamemon的进化源效果先让Chaosdramon解除休息。随后Engage产生合法的获胜攻击，虽然内存值仍在电脑一侧，却在其回合开始前获胜。",
   "learn.lesson.practice-inherited-unsuspend-engage.step.intro":
-    "Chaosdramon有Security Attack +1和Engage，进化源为MetalMamemon EX9-018及HiAndromon BT2-064。MetalMamemon的进化源【你的回合结束时】效果可使自己一只数码宝贝解除休息。你需要该进化源文本准备回合结束时的第二次攻击。",
+    "Chaosdramon有安防攻击 +1和Engage，进化源为MetalMamemon EX9-018及HiAndromon BT2-064。MetalMamemon的进化源【你的回合结束时】效果可使自己一只数码宝贝解除休息。你需要该进化源文本准备回合结束时的第二次攻击。",
   "learn.lesson.practice-inherited-unsuspend-engage.step.intro.hint":
     "请阅读MetalMamemon的进化源效果栏：仅因它位于Chaosdramon下方，不会使用其普通【登场时】和【进化时】除去文本。两个回合结束效果都属于你，因此由你选择结算顺序。",
   "learn.lesson.practice-inherited-unsuspend-engage.step.clear-security":
-    "用Chaosdramon攻击玩家。Security Attack +1会逐张检查电脑的两张安防。等待攻击完成；Chaosdramon会处于休息状态，电脑将没有安防。",
+    "用Chaosdramon攻击玩家。安防攻击 +1会逐张检查电脑的两张安防。等待攻击完成；Chaosdramon会处于休息状态，电脑将没有安防。",
   "learn.lesson.practice-inherited-unsuspend-engage.step.clear-security.hint":
     "清除两张卡尚未获胜。已休息的Chaosdramon不能正常攻击。此处无需支付其可选的两张卡除去费用，若出现提示可以拒绝。",
   "learn.lesson.practice-inherited-unsuspend-engage.step.order-effects":

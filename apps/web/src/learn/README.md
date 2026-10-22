@@ -42,3 +42,9 @@ Every official keyword has a playable bot match. `keywordDrills` combines the or
 2. Register it in `getTutorialScenario` (lessons) or `getKeywordDrillScenario` (drills).
 3. Add the entry and its steps to `tutorialLessons` or `keywordDrills`. Each step's goal must become true only through the action that step asks for.
 4. Add English text under `learn.lesson.<id>.*` in `i18n/learn/lessons.en.ts` or `i18n/learn/drills.en.ts`, then translate it in every locale file under `i18n/learn/`.
+
+## Simplified Chinese terminology
+
+`getChineseLearnDictionary` normalizes `learn.*` messages when the Simplified Chinese dictionary loads, using the maintained card-name, keyword, reminder, and trait dictionaries. New lessons reuse those translations automatically. Full names take precedence over shorter names, and interpolation placeholders and identifiers remain unchanged. Other pages and locales keep their existing behavior.
+
+Write Chinese prose for new lessons and use complete card names where possible. Unknown terms and new sentences still need translation. The learning dictionary regression suite rejects missing Chinese prose and messages that fall back to the English learning dictionary, including fallback text whose known terminology has already been normalized.
