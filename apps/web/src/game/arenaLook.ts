@@ -9,12 +9,17 @@ import { arenaPaletteStyle, useArenaPalette, type ArenaDeckColors } from "../des
 import { resolveBattlefield, useBattlefieldId } from "../design/battlefield";
 import { useMediaQuery } from "../design/useMediaQuery";
 import { PORTRAIT_ARENA_QUERY } from "./screen/queries";
+import type { ArenaEnvironment } from "@/game/arena3d/ArenaEnvironment";
+import { arenaEnvironmentPreference } from "@/game/arena3d/arenaEnvironmentPreference";
+import { resolveArenaEnvironment } from "@/game/arena3d/resolveArenaEnvironment";
 
 export interface ArenaBoardLook {
   /** Palette and art custom properties for the element that holds the board. */
   style: CSSProperties;
   /** A battlefield image sits under the board, so the board surface turns to glass. */
   hasArt: boolean;
+  artSrc: string | undefined;
+  environment: ArenaEnvironment;
   deckColors: ArenaDeckColors;
 }
 
@@ -68,6 +73,7 @@ export function useArenaBoardLook({
   const opponentColor = mainCardColor(opponent);
   const palette = useArenaPalette({ player: playerColor, opponent: opponentColor });
   const battlefield = resolveBattlefield(useBattlefieldId(), matchKey);
+  const environment = resolveArenaEnvironment({ choice: arenaEnvironmentPreference.useChoice(), matchKey });
   const portrait = useMediaQuery(PORTRAIT_ARENA_QUERY);
   const art = portrait ? (battlefield.portraitSrc ?? battlefield.src) : battlefield.src;
   return useMemo(
@@ -77,8 +83,10 @@ export function useArenaBoardLook({
         "--arena-art": art ? `url("${art}")` : "none",
       } as CSSProperties,
       hasArt: Boolean(art),
+      artSrc: art,
+      environment,
       deckColors: { player: playerColor, opponent: opponentColor },
     }),
-    [palette, art, playerColor, opponentColor],
+    [palette, art, environment, playerColor, opponentColor],
   );
 }

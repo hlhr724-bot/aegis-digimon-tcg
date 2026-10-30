@@ -40,4 +40,10 @@ export const foundationPtBR: Record<keyof typeof foundationEn, string> = {
   "redesign.foundation.battlefield.cyber-hub": "Central Cibernética",
   "redesign.foundation.battlefield.wire-woods": "Bosque dos Fios",
   "redesign.foundation.battlefield.random": "Aleatório",
+  "redesign.foundation.arena.environment": "Ambiente 3D",
+  "redesign.foundation.environment.prism": "Prismas flutuantes",
+  "redesign.foundation.environment.grid": "Grade cibernética",
+  "redesign.foundation.environment.halo": "Anéis de halo",
+  "redesign.foundation.environment.aurora": "Céu bicolor",
+  "redesign.foundation.environment.random": "Aleatório a cada partida",
 };

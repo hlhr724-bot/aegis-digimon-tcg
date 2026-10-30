@@ -38,4 +38,10 @@ export const foundationEn = {
   "redesign.foundation.battlefield.cyber-hub": "Cyber Hub",
   "redesign.foundation.battlefield.wire-woods": "Wire Woods",
   "redesign.foundation.battlefield.random": "Random",
+  "redesign.foundation.arena.environment": "3D environment",
+  "redesign.foundation.environment.prism": "Floating Prisms",
+  "redesign.foundation.environment.grid": "Cyber Grid",
+  "redesign.foundation.environment.halo": "Halo Rings",
+  "redesign.foundation.environment.aurora": "Duotone Sky",
+  "redesign.foundation.environment.random": "Random each match",
 } as const;

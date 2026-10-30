@@ -18,6 +18,8 @@ import { ArenaInput } from "@/game/input/ArenaInput";
 import { useArenaInputEnabled } from "@/game/input/useArenaInputEnabled";
 import type { LowTimeWarning } from "@/game/useLowTimeWarning";
 import { RollbackControls } from "@/game/RollbackControls";
+import { ArenaBackdrop } from "@/game/arena3d/ArenaBackdrop";
+import "@/game/arena3d/arena3d.css";
 /* The arena itself: the opponent's bar, the narration and the ticker, the field's three
    columns, the player's dock, and the free-floating cue layers over all of it.
 
@@ -462,6 +464,7 @@ export function BoardStage({
           ref={anchors.board}
           data-arena-enlarged={scaleFactor > 1 || undefined}
           data-art={look.hasArt || undefined}
+          data-arena-3d
           data-timer-decision={viewerDecisionTimed(state, viewerSeat) || undefined}
           style={{
             ...({
@@ -477,6 +480,29 @@ export function BoardStage({
             flexDirection: "column",
           }}
         >
+          <ArenaBackdrop
+            board={anchors.board}
+            paletteKey={look.style}
+            artSrc={look.artSrc}
+            environment={look.environment}
+            viewerSeat={viewerSeat}
+            displayedTurnSeat={readouts.displayedTurnSeat}
+            permanents={anchors.permanents}
+            attackAnnouncement={cues.attackAnnouncement}
+            turnTransition={cues.turnTransition}
+            combatImpactIds={cues.combatImpactIds}
+            permanentBursts={cues.permanentBursts}
+            securityHitSeat={cues.securityHitSeat}
+            fieldClash={cues.fieldClash}
+            viewerBattleArea={shownViewer.battleArea}
+            opponentBattleArea={shownOpponent.battleArea}
+            pileCounts={{
+              viewerDeck: shownViewer.deckCount,
+              opponentDeck: shownOpponent.deckCount,
+              viewerTrash: shownViewer.trash.length,
+              opponentTrash: shownOpponent.trash.length,
+            }}
+          />
           <OpponentBar
             spectating={spectating}
             spectatorCode={!state.gameOver ? state.spectatorCode : undefined}

@@ -290,3 +290,7 @@
     transition-duration: 1ms;
   }
 }
+
+.aegis-arena-look--environment {
+  margin-block: var(--ds-space-6);
+}
