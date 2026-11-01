@@ -4,7 +4,8 @@ import { EffectText } from "@/game/EffectText";
 import { getCardDefinition } from "@aegis/shared/cards/registry";
 import { useState, useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { CardFull } from "../../../design/cards";
+import { CardZoomArt } from "@/game/overlay/viewer/cardViewer3d/CardZoomArt";
+import { cardZoomPresence } from "@/game/overlay/viewer/cardZoomPresence";
 import { useTranslation } from "../../../i18n";
 import { PrintedCardInfo } from "./PrintedCardInfo";
 import { useCardZoomPrintedText } from "./useCardZoomPrintedText";
@@ -32,6 +33,7 @@ export function CardZoomOverlay({
   const hasPrintedText = Boolean(card?.effectText || card?.inheritedEffectText || card?.securityEffectText);
   const showPrintedText = hasPrintedText && printedTextShown;
   const width = useCardZoomWidth(showPrintedText);
+  useEffect(() => (inline ? undefined : cardZoomPresence.register()), [inline]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -48,7 +50,7 @@ export function CardZoomOverlay({
       aria-label={getCardName(cardId)}
       onClick={onClose}
     >
-      <CardFull cardId={cardId} artId={artId} width={width} />
+      <CardZoomArt cardId={cardId} artId={artId} width={width} />
       <div className="card-zoom__details card-action-sheet__info" onClick={(e) => e.stopPropagation()}>
         {details ?? <PrintedCardInfo cardId={cardId} />}
         {showPrintedText && card?.effectText ? (

@@ -13,7 +13,7 @@ import { ArenaAudioSettings } from "./ArenaAudioSettings";
 import { ArenaBoardSettings } from "./ArenaBoardSettings";
 import { InterfaceThemePicker } from "../../../design/InterfaceThemePicker";
 import { setDarkMode, useDarkMode } from "../../../design/darkMode";
-import { ArenaEnvironmentSettings } from "@/game/arena3d/ArenaEnvironmentSettings";
+import { BoardStyleSettings } from "@/game/arena3d/boardStyle/BoardStyleSettings";
 
 export function ArenaLookDialog({ deckColors, onClose }: { deckColors: ArenaDeckColors; onClose: () => void }) {
   const { t } = useTranslation();
@@ -45,7 +45,7 @@ export function ArenaLookDialog({ deckColors, onClose }: { deckColors: ArenaDeck
         </h3>
         <InterfaceThemePicker dark={dark} onToggleDark={setDarkMode} deckColors={deckColors} />
       </section>
-      <ArenaEnvironmentSettings />
+      <BoardStyleSettings />
       <ArenaLookSettings deckColors={deckColors} />
     </Dialog>
   );

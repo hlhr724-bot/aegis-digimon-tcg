@@ -10,4 +10,6 @@ export type ArenaPulse = {
   side: Side;
   screenPoint?: ScreenPoint;
   targetPoint?: ScreenPoint;
+  permanentId?: string;
+  targetPermanentId?: string;
 };

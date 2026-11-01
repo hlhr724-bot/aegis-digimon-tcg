@@ -218,6 +218,7 @@ export function Pile({
         ) : null}
       </div>
       <span
+        className="game-pile__label"
         style={{
           fontFamily: "var(--ds-font-mono)",
           fontSize: compact ? 8 : 10,

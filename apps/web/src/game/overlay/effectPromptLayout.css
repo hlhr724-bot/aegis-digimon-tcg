@@ -383,7 +383,10 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   border: 0;
   background: none;
 }
-.aegis-arena :is(.game-field, .game-player-dock) > .game-breeding-dock > .game-breeding-hint {
+.aegis-arena
+  :is(.game-field, .game-field > .arena-3d-field, .game-player-dock)
+  > .game-breeding-dock
+  > .game-breeding-hint {
   font: 600 var(--ds-text-sm) / 1.45 var(--ds-font-body);
   text-transform: none;
   letter-spacing: 0;

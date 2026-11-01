@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import type { Permanent } from "@aegis/shared";
 import { COLORS } from "@/design/theme";
-import type { ArenaPulse } from "@/game/arena3d/ArenaPulse";
+import type { ArenaPulse, ScreenPoint } from "@/game/arena3d/ArenaPulse";
 import { ArenaPulseKind } from "@/game/arena3d/ArenaPulseKind";
 import type { ArenaSideColors } from "@/game/arena3d/ArenaSideColors";
 import { ArenaZone } from "@/game/arena3d/ArenaZone";
+import { getArenaDeleteBurstCenter } from "@/game/arena3d/cues/getArenaDeleteBurstCenter";
 import { findArenaZoneElement } from "@/game/arena3d/findArenaZoneElement";
 import { findAttackerPermanentId } from "@/game/arena3d/findAttackerPermanentId";
 import { getElementCenter } from "@/game/arena3d/getElementCenter";
 import { getOppositeSide } from "@/game/arena3d/getOppositeSide";
 import type { FieldClashScene } from "@/game/fieldClash";
-import type { TurnTransitionCue } from "@/game/match/types";
+import type { DeleteBurst, TurnTransitionCue } from "@/game/match/types";
 import type { BurstVariant, PermanentBurst } from "@/game/showcases";
 import type { AttackAnnouncement } from "@/game/sidePanels";
 import { Side } from "@/game/side";
@@ -34,6 +35,7 @@ type Params = {
   turnTransition: TurnTransitionCue | null;
   combatImpactIds: ReadonlySet<string>;
   permanentBursts: ReadonlyMap<string, PermanentBurst>;
+  deleteBursts: readonly DeleteBurst[];
   securityHitSeat: number | null;
   pileCounts: PileCounts;
 };
@@ -47,6 +49,10 @@ type PileWatch = {
 };
 
 const MAX_PULSES = 24;
+function getPointSide(board: HTMLElement | null, point: ScreenPoint): Side {
+  const rect = board?.getBoundingClientRect();
+  return rect && point.y < rect.top + rect.height / 2 ? Side.Opponent : Side.Viewer;
+}
 
 function getBurstKind(variant: BurstVariant): ArenaPulseKind {
   if (variant === "evolve") {
@@ -109,12 +115,14 @@ export function useArenaPulses({
   turnTransition,
   combatImpactIds,
   permanentBursts,
+  deleteBursts,
   securityHitSeat,
   pileCounts,
 }: Params): readonly ArenaPulse[] {
   const [pulses, setPulses] = useState<readonly ArenaPulse[]>([]);
   const seenImpacts = useRef(new Set<string>());
   const seenBursts = useRef(new Set<number>());
+  const seenDeletions = useRef(new Set<number>());
   const previousPiles = useRef<PileWatch[] | null>(null);
   const colors = useRef(sideColors);
   colors.current = sideColors;
@@ -149,6 +157,7 @@ export function useArenaPulses({
       side,
       screenPoint: getElementCenter(attacker),
       targetPoint: getElementCenter(security),
+      permanentId: attackerId,
     });
   }, [attackAnnouncement, board, permanents, emit, getSideColor]);
 
@@ -166,6 +175,8 @@ export function useArenaPulses({
       side,
       screenPoint: getElementCenter(attacker),
       targetPoint: getElementCenter(defender),
+      permanentId: fieldClash.attacker.permanentId,
+      targetPermanentId: fieldClash.defender.permanentId,
     });
   }, [fieldClash, permanents, emit, getSideColor]);
 
@@ -196,6 +207,7 @@ export function useArenaPulses({
         color: getSideColor(getOppositeSide(side)),
         side,
         screenPoint: getElementCenter(element),
+        permanentId,
       });
     }
     for (const permanentId of seenImpacts.current) {
@@ -222,9 +234,31 @@ export function useArenaPulses({
         color: COLORS[burst.color].base,
         side,
         screenPoint: getElementCenter(anchor),
+        permanentId: burst.permanentId,
       });
     }
   }, [permanentBursts, permanents, board, emit]);
+
+  useEffect(() => {
+    for (const burst of deleteBursts) {
+      if (seenDeletions.current.has(burst.key) || burst.stackStrip) {
+        continue;
+      }
+      seenDeletions.current.add(burst.key);
+      const point = getArenaDeleteBurstCenter({ board: board.current, burst });
+      if (!point) {
+        continue;
+      }
+      const side = getPointSide(board.current, point);
+      emit({
+        key: `field-delete:${burst.key}`,
+        kind: ArenaPulseKind.DELETE.value,
+        color: burst.color ? COLORS[burst.color].base : getSideColor(side),
+        side,
+        screenPoint: point,
+      });
+    }
+  }, [deleteBursts, board, emit, getSideColor]);
 
   useEffect(() => {
     if (securityHitSeat === null) {

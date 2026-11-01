@@ -1,3 +1,7 @@
+import { BoardStyle } from "@/game/arena3d/boardStyle/BoardStyle";
+import { Arena3dField } from "@/game/arena3d/field/Arena3dField";
+import { Arena3dLayer } from "@/game/arena3d/field/Arena3dLayer";
+import { createArenaFieldStore } from "@/game/arena3d/field/createArenaFieldStore";
 import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
 import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 import { useArenaViewport } from "@/game/screen/hooks/useArenaViewport";
@@ -18,8 +22,6 @@ import { ArenaInput } from "@/game/input/ArenaInput";
 import { useArenaInputEnabled } from "@/game/input/useArenaInputEnabled";
 import type { LowTimeWarning } from "@/game/useLowTimeWarning";
 import { RollbackControls } from "@/game/RollbackControls";
-import { ArenaBackdrop } from "@/game/arena3d/ArenaBackdrop";
-import "@/game/arena3d/arena3d.css";
 /* The arena itself: the opponent's bar, the narration and the ticker, the field's three
    columns, the player's dock, and the free-floating cue layers over all of it.
 
@@ -193,6 +195,7 @@ export function BoardStage({
   room,
   chat,
   look,
+  boardStyle,
   layout,
   anchors,
   cues,
@@ -232,6 +235,7 @@ export function BoardStage({
   /** Absent when there is no live room to talk through, as in a demo. */
   chat?: MatchChat;
   look: ArenaBoardLook;
+  boardStyle: BoardStyle;
   layout: ReturnType<typeof useArenaLayout>;
   anchors: BoardAnchors;
   cues: MatchCues;
@@ -252,7 +256,7 @@ export function BoardStage({
     /** What releasing here would do, or nothing while the pointer is over no drop area. */
     hoveredIntent: DragIntent | undefined;
   };
-  /** The raising area, which a portrait screen puts in the field instead of the dock. */
+  /** The raising area, which a portrait screen and the 3D board put in the field instead of the dock. */
   breedingDock: ReactNode;
   overlayStack: ReactNode;
   /** The app's stage element, when the document has one to portal the overlays into. */
@@ -282,6 +286,10 @@ export function BoardStage({
         )
       : undefined;
   const arenaInputEnabled = useArenaInputEnabled();
+  const arena3d = boardStyle === BoardStyle.ARENA_3D.value;
+  const dockViewerPiles = layout.dockViewerPiles && !arena3d;
+  const breedingMode = guards.breedingActionsOpen ? <div className="game-breeding-mode" aria-hidden="true" /> : null;
+  const arenaFieldStore = useMemo(createArenaFieldStore, []);
   useBreedingTransferOrigins(anchors.board);
   useFieldShatterOrigins(anchors.board);
   const other = otherSeat(viewerSeat);
@@ -316,6 +324,12 @@ export function BoardStage({
   // A spectator watches from one player's seat but is not that player.
   const viewerName = spectating ? viewer.displayName || t("log.player", { n: viewer.seat + 1 }) : t("chat.you");
   const { shownViewer, shownOpponent, breedingViewer, breedingOpponent } = seats;
+  const viewerSecurityCount =
+    cues.securityDealCounts.get(viewerSeat) ??
+    shieldSecurityCount(shownViewer.securityCount, cues.heldSecurityCounts.get(viewerSeat));
+  const opponentSecurityCount =
+    cues.securityDealCounts.get(other) ??
+    shieldSecurityCount(shownOpponent.securityCount, cues.heldSecurityCounts.get(other));
   const surrenderDialog =
     !state.gameOver && !spectating && overlays.surrenderConfirmOpen ? (
       <SurrenderDialog
@@ -329,7 +343,7 @@ export function BoardStage({
   const viewerPiles = (
     <ViewerPiles
       viewer={shownViewer}
-      docked={layout.dockViewerPiles}
+      docked={dockViewerPiles}
       pileWidth={layout.arenaPileWidth}
       compactPiles={layout.compactPiles}
       viewerDeckRef={anchors.viewerDeck}
@@ -362,6 +376,155 @@ export function BoardStage({
     spectating,
   });
   const opponentIdle = !!state.pendingDecision || !!state.combatWindow || !cues.presenting;
+
+  const leftPileColumn = (
+    <LeftPileColumn
+      opponent={shownOpponent}
+      viewer={shownViewer}
+      pileWidth={layout.arenaPileWidth}
+      compactPiles={layout.compactPiles}
+      opponentDeckRef={anchors.opponentDeck}
+      viewerSecurityRef={anchors.viewerSecurity}
+      opponentDeckRiffling={cues.deckRiffles.get(`${other}:deck`) ?? false}
+      opponentTrashClassName={chrome.trashEffectSource(other) ?? ""}
+      opponentTrashEffectCard={trashEffectCardFromSources(cues.effectSources, other, shownOpponent.trash)}
+      securityCount={viewerSecurityCount}
+      securityBreak={cues.securityBreak}
+      securityBreakMine={cues.securityBreak?.seat === viewerSeat}
+      securityHit={cues.securityHitSeat === viewerSeat}
+      securityLanding={cues.securityFlights.get(viewerSeat)}
+      onOpenOpponentTrash={shownOpponent.trash.length ? () => overlays.setTrashView(Side.Opponent) : undefined}
+      onOpenOpponentDeck={
+        seats.revealed ? () => overlays.setRevealedZoneView({ side: Side.Opponent, zone: "deck" }) : undefined
+      }
+      onOpenViewerSecurity={shownViewer.securityCount ? () => overlays.setSecurityView(Side.Viewer) : undefined}
+    />
+  );
+  const fieldEffectIndicators = (
+    <>
+      <FieldEffectsIndicator
+        json={shownOpponent.fieldEffectsJson}
+        ownField={false}
+        playerNames={[
+          shownState.players[0]?.displayName || t("log.player", { n: 1 }),
+          shownState.players[1]?.displayName || t("log.player", { n: 2 }),
+        ]}
+      />
+      <FieldEffectsIndicator
+        json={shownViewer.fieldEffectsJson}
+        ownField
+        playerNames={[
+          shownState.players[0]?.displayName || t("log.player", { n: 1 }),
+          shownState.players[1]?.displayName || t("log.player", { n: 2 }),
+        ]}
+      />
+    </>
+  );
+  const opponentBattleRow = (
+    <OpponentBattleRow
+      permanents={shownOpponent.battleArea}
+      chrome={{
+        ...chrome.permanentChrome,
+        suspendDelayMs: chrome.unsuspendStagger,
+      }}
+      attackerPermanent={targeting.attackerPermanent}
+      draggedAttackerPermanent={targeting.draggedAttackerPermanent}
+      vortexMode={selection.vortexMode}
+      dropIntentAttrs={chrome.dropIntentAttrs}
+      isDecisionCandidate={targeting.isDecisionCandidate}
+      onPermanentClick={actions.onOppPerm}
+      onPermanentInspect={onInspectPermanent.opponent}
+    />
+  );
+  const memoryBand = (
+    <MemoryBand
+      phaseBanner={cues.phaseBanner}
+      memory={readouts.memory}
+      compact={layout.compactPiles}
+      displayedPhase={
+        state.gameMode === GameMode.MANUAL.value
+          ? displayPhase
+          : (cues.displayedPhase ?? getGamePhase({ state: shownState }))
+      }
+      phaseSweeping={cues.unsuspendSweep !== null}
+      memoryPrediction={readouts.memoryPrediction}
+      turnControlState={turnControlState({ phase: displayPhase, turnSeat: state.turnSeat, viewerSeat })}
+      endPhaseBlocked={guards.endPhaseBlocked}
+      onEndPhase={endTurnConfirmation.request}
+    />
+  );
+  const viewerBattleRow = (
+    <ViewerBattleRow
+      permanents={shownViewer.battleArea}
+      chrome={{
+        ...chrome.permanentChrome,
+        suspendDelayMs: chrome.unsuspendStagger,
+      }}
+      dragIsPlay={drag.isPlay}
+      selectedAttackerPermanentId={selection.selPerm}
+      isBasePermanent={targeting.isBasePermanent}
+      isDecisionCandidate={targeting.isDecisionCandidate}
+      draggable={(perm) => !guards.mainActionBlocked && !selection.handSel && !selection.linkSel && canAttackWith(perm)}
+      dropIntentAttrs={chrome.dropIntentAttrs}
+      baseDropIntentAttrs={chrome.baseDropIntentAttrs}
+      onPermanentClick={actions.onYourPerm}
+      onPermanentPointerDown={onStartPermanentDrag}
+      onPermanentInspect={onInspectPermanent.viewer}
+    />
+  );
+  const rightPileColumn = (
+    <RightPileColumn
+      opponent={shownOpponent}
+      opponentBreeding={breedingOpponent}
+      viewerPiles={dockViewerPiles ? null : viewerPiles}
+      pileWidth={layout.arenaPileWidth}
+      raisingWidth={layout.arenaRaisingWidth}
+      compactPiles={layout.compactPiles}
+      opponentSecurityRef={anchors.opponentSecurity}
+      opponentEggDeckRiffling={cues.deckRiffles.get(`${other}:eggDeck`) ?? false}
+      breedingBurst={
+        breedingOpponent.breeding ? cues.permanentBursts.get(breedingOpponent.breeding.permanentId) : undefined
+      }
+      breedingEffectSource={
+        !!breedingOpponent.breeding &&
+        chrome.permanentChrome.effectSourcePermanentIds.has(breedingOpponent.breeding.permanentId)
+      }
+      breedingEffectLinked={
+        !!breedingOpponent.breeding &&
+        chrome.permanentChrome.effectLinkedPermanentIds.has(breedingOpponent.breeding.permanentId)
+      }
+      breedingHighlight={
+        !!breedingOpponent.breeding &&
+        chrome.permanentChrome.decisionHighlightPermanentId === breedingOpponent.breeding.permanentId
+      }
+      securityCount={opponentSecurityCount}
+      securityBreak={cues.securityBreak}
+      securityBreakMine={cues.securityBreak?.seat === other}
+      securityHit={cues.securityHitSeat === other}
+      securityLanding={cues.securityFlights.get(other)}
+      securityDrop={{ "data-drop": "opp-security", ...chrome.dropIntentAttrs("opp-security") }}
+      attackable={
+        targeting.securityDecision !== undefined ||
+        targeting.canAttackSecurity ||
+        canAttackPlayerWith(targeting.draggedAttackerPermanent, false)
+      }
+      selected={targeting.securityDecision?.selected}
+      onOpenOpponentBreeding={
+        opponentBreeding ? () => actions.showCardMenu(opponentBreeding.permanentId, Side.Opponent) : undefined
+      }
+      onAttackSecurity={
+        targeting.securityDecision
+          ? targeting.securityDecision.onToggle
+          : selection.selPerm && targeting.canAttackSecurity
+            ? () => senders.attack(selection.selPerm!, { kind: "player" }, selection.vortexMode)
+            : undefined
+      }
+      onOpenOpponentSecurity={shownOpponent.securityCount ? () => overlays.setSecurityView(Side.Opponent) : undefined}
+      onOpenOpponentEggDeck={
+        seats.revealed ? () => overlays.setRevealedZoneView({ side: Side.Opponent, zone: "eggDeck" }) : undefined
+      }
+    />
+  );
 
   return (
     // Every surface that names a card — notices, side panels, combat prompts,
@@ -464,7 +627,7 @@ export function BoardStage({
           ref={anchors.board}
           data-arena-enlarged={scaleFactor > 1 || undefined}
           data-art={look.hasArt || undefined}
-          data-arena-3d
+          data-board-style={boardStyle}
           data-timer-decision={viewerDecisionTimed(state, viewerSeat) || undefined}
           style={{
             ...({
@@ -480,29 +643,45 @@ export function BoardStage({
             flexDirection: "column",
           }}
         >
-          <ArenaBackdrop
-            board={anchors.board}
-            paletteKey={look.style}
-            artSrc={look.artSrc}
-            environment={look.environment}
-            viewerSeat={viewerSeat}
-            displayedTurnSeat={readouts.displayedTurnSeat}
-            permanents={anchors.permanents}
-            attackAnnouncement={cues.attackAnnouncement}
-            turnTransition={cues.turnTransition}
-            combatImpactIds={cues.combatImpactIds}
-            permanentBursts={cues.permanentBursts}
-            securityHitSeat={cues.securityHitSeat}
-            fieldClash={cues.fieldClash}
-            viewerBattleArea={shownViewer.battleArea}
-            opponentBattleArea={shownOpponent.battleArea}
-            pileCounts={{
-              viewerDeck: shownViewer.deckCount,
-              opponentDeck: shownOpponent.deckCount,
-              viewerTrash: shownViewer.trash.length,
-              opponentTrash: shownOpponent.trash.length,
-            }}
-          />
+          {arena3d ? (
+            <Arena3dLayer
+              board={anchors.board}
+              store={arenaFieldStore}
+              paletteKey={look.style}
+              artSrc={look.artSrc}
+              environment={look.environment}
+              viewerSeat={viewerSeat}
+              displayedTurnSeat={readouts.displayedTurnSeat}
+              memory={readouts.memory}
+              memoryPrediction={readouts.memoryPrediction}
+              permanents={anchors.permanents}
+              attackAnnouncement={cues.attackAnnouncement}
+              turnTransition={cues.turnTransition}
+              combatImpactIds={cues.combatImpactIds}
+              permanentBursts={cues.permanentBursts}
+              deleteBursts={cues.deleteBursts}
+              securityHitSeat={cues.securityHitSeat}
+              fieldClash={cues.fieldClash}
+              viewerBattleArea={shownViewer.battleArea}
+              opponentBattleArea={shownOpponent.battleArea}
+              opponentBreeding={breedingOpponent.breeding}
+              viewerBreeding={breedingViewer.breeding}
+              viewerZones={{
+                deckCount: shownViewer.deckCount,
+                trash: shownViewer.trash,
+                eggCount: breedingViewer.eggDeckCount,
+                securityCount: viewerSecurityCount,
+              }}
+              opponentZones={{
+                deckCount: shownOpponent.deckCount,
+                trash: shownOpponent.trash,
+                eggCount: breedingOpponent.eggDeckCount,
+                securityCount: opponentSecurityCount,
+              }}
+              viewerFieldEffects={readFieldEffects(shownViewer.fieldEffectsJson)}
+              opponentFieldEffects={readFieldEffects(shownOpponent.fieldEffectsJson)}
+            />
+          ) : null}
           <OpponentBar
             spectating={spectating}
             spectatorCode={!state.gameOver ? state.spectatorCode : undefined}
@@ -624,7 +803,7 @@ export function BoardStage({
             {/* The breeding step is about one slot: the field dims behind the dock,
                 which keeps the raising area, the hand that digivolves into it and
                 the turn control lit. Notices, panels and dialogs all sit above. */}
-            {guards.breedingActionsOpen ? <div className="game-breeding-mode" aria-hidden="true" /> : null}
+            {arena3d ? null : breedingMode}
             {/* Outlines mark the cards the server offered without dimming the field.
                 The cards underneath keep every pointer event. */}
             {targeting.spotlight.open ? (
@@ -634,161 +813,39 @@ export function BoardStage({
                 height={targeting.boardSize.height}
               />
             ) : null}
-            <LeftPileColumn
-              opponent={shownOpponent}
-              viewer={shownViewer}
-              pileWidth={layout.arenaPileWidth}
-              compactPiles={layout.compactPiles}
-              opponentDeckRef={anchors.opponentDeck}
-              viewerSecurityRef={anchors.viewerSecurity}
-              opponentDeckRiffling={cues.deckRiffles.get(`${other}:deck`) ?? false}
-              opponentTrashClassName={chrome.trashEffectSource(other) ?? ""}
-              opponentTrashEffectCard={trashEffectCardFromSources(cues.effectSources, other, shownOpponent.trash)}
-              securityCount={
-                cues.securityDealCounts.get(viewerSeat) ??
-                shieldSecurityCount(shownViewer.securityCount, cues.heldSecurityCounts.get(viewerSeat))
-              }
-              securityBreak={cues.securityBreak}
-              securityBreakMine={cues.securityBreak?.seat === viewerSeat}
-              securityHit={cues.securityHitSeat === viewerSeat}
-              securityLanding={cues.securityFlights.get(viewerSeat)}
-              onOpenOpponentTrash={shownOpponent.trash.length ? () => overlays.setTrashView(Side.Opponent) : undefined}
-              onOpenOpponentDeck={
-                seats.revealed ? () => overlays.setRevealedZoneView({ side: Side.Opponent, zone: "deck" }) : undefined
-              }
-              onOpenViewerSecurity={shownViewer.securityCount ? () => overlays.setSecurityView(Side.Viewer) : undefined}
-            />
-
-            <FieldEffectsIndicator
-              json={shownOpponent.fieldEffectsJson}
-              ownField={false}
-              playerNames={[
-                shownState.players[0]?.displayName || t("log.player", { n: 1 }),
-                shownState.players[1]?.displayName || t("log.player", { n: 2 }),
-              ]}
-            />
-            <FieldEffectsIndicator
-              json={shownViewer.fieldEffectsJson}
-              ownField
-              playerNames={[
-                shownState.players[0]?.displayName || t("log.player", { n: 1 }),
-                shownState.players[1]?.displayName || t("log.player", { n: 2 }),
-              ]}
-            />
-            <BattleZones
-              opponentFieldEffects={readFieldEffects(shownOpponent.fieldEffectsJson).length > 0}
-              viewerFieldEffects={readFieldEffects(shownViewer.fieldEffectsJson).length > 0}
-            >
-              <OpponentBattleRow
-                permanents={shownOpponent.battleArea}
-                chrome={{
-                  ...chrome.permanentChrome,
-                  suspendDelayMs: chrome.unsuspendStagger,
-                }}
-                attackerPermanent={targeting.attackerPermanent}
-                draggedAttackerPermanent={targeting.draggedAttackerPermanent}
-                vortexMode={selection.vortexMode}
-                dropIntentAttrs={chrome.dropIntentAttrs}
-                isDecisionCandidate={targeting.isDecisionCandidate}
-                onPermanentClick={actions.onOppPerm}
-                onPermanentInspect={onInspectPermanent.opponent}
-              />
-              <MemoryBand
-                phaseBanner={cues.phaseBanner}
-                memory={readouts.memory}
-                compact={layout.compactPiles}
-                displayedPhase={
-                  state.gameMode === GameMode.MANUAL.value
-                    ? displayPhase
-                    : (cues.displayedPhase ?? getGamePhase({ state: shownState }))
-                }
-                phaseSweeping={cues.unsuspendSweep !== null}
-                memoryPrediction={readouts.memoryPrediction}
-                turnControlState={turnControlState({ phase: displayPhase, turnSeat: state.turnSeat, viewerSeat })}
-                endPhaseBlocked={guards.endPhaseBlocked}
-                onEndPhase={endTurnConfirmation.request}
-              />
-              <ViewerBattleRow
-                permanents={shownViewer.battleArea}
-                chrome={{
-                  ...chrome.permanentChrome,
-                  suspendDelayMs: chrome.unsuspendStagger,
-                }}
-                dragIsPlay={drag.isPlay}
-                selectedAttackerPermanentId={selection.selPerm}
-                isBasePermanent={targeting.isBasePermanent}
-                isDecisionCandidate={targeting.isDecisionCandidate}
-                draggable={(perm) =>
-                  !guards.mainActionBlocked && !selection.handSel && !selection.linkSel && canAttackWith(perm)
-                }
-                dropIntentAttrs={chrome.dropIntentAttrs}
-                baseDropIntentAttrs={chrome.baseDropIntentAttrs}
-                onPermanentClick={actions.onYourPerm}
-                onPermanentPointerDown={onStartPermanentDrag}
-                onPermanentInspect={onInspectPermanent.viewer}
-              />
-            </BattleZones>
-
-            {layout.portraitArena ? breedingDock : null}
-
-            <RightPileColumn
-              opponent={shownOpponent}
-              opponentBreeding={breedingOpponent}
-              viewerPiles={layout.dockViewerPiles ? null : viewerPiles}
-              pileWidth={layout.arenaPileWidth}
-              raisingWidth={layout.arenaRaisingWidth}
-              compactPiles={layout.compactPiles}
-              opponentSecurityRef={anchors.opponentSecurity}
-              opponentEggDeckRiffling={cues.deckRiffles.get(`${other}:eggDeck`) ?? false}
-              breedingBurst={
-                breedingOpponent.breeding ? cues.permanentBursts.get(breedingOpponent.breeding.permanentId) : undefined
-              }
-              breedingEffectSource={
-                !!breedingOpponent.breeding &&
-                chrome.permanentChrome.effectSourcePermanentIds.has(breedingOpponent.breeding.permanentId)
-              }
-              breedingEffectLinked={
-                !!breedingOpponent.breeding &&
-                chrome.permanentChrome.effectLinkedPermanentIds.has(breedingOpponent.breeding.permanentId)
-              }
-              breedingHighlight={
-                !!breedingOpponent.breeding &&
-                chrome.permanentChrome.decisionHighlightPermanentId === breedingOpponent.breeding.permanentId
-              }
-              securityCount={
-                cues.securityDealCounts.get(other) ??
-                shieldSecurityCount(shownOpponent.securityCount, cues.heldSecurityCounts.get(other))
-              }
-              securityBreak={cues.securityBreak}
-              securityBreakMine={cues.securityBreak?.seat === other}
-              securityHit={cues.securityHitSeat === other}
-              securityLanding={cues.securityFlights.get(other)}
-              securityDrop={{ "data-drop": "opp-security", ...chrome.dropIntentAttrs("opp-security") }}
-              attackable={
-                targeting.securityDecision !== undefined ||
-                targeting.canAttackSecurity ||
-                canAttackPlayerWith(targeting.draggedAttackerPermanent, false)
-              }
-              selected={targeting.securityDecision?.selected}
-              onOpenOpponentBreeding={
-                opponentBreeding ? () => actions.showCardMenu(opponentBreeding.permanentId, Side.Opponent) : undefined
-              }
-              onAttackSecurity={
-                targeting.securityDecision
-                  ? targeting.securityDecision.onToggle
-                  : selection.selPerm && targeting.canAttackSecurity
-                    ? () => senders.attack(selection.selPerm!, { kind: "player" }, selection.vortexMode)
-                    : undefined
-              }
-              onOpenOpponentSecurity={
-                shownOpponent.securityCount ? () => overlays.setSecurityView(Side.Opponent) : undefined
-              }
-              onOpenOpponentEggDeck={
-                seats.revealed
-                  ? () => overlays.setRevealedZoneView({ side: Side.Opponent, zone: "eggDeck" })
-                  : undefined
-              }
-            />
+            {arena3d ? (
+              <Arena3dField
+                board={anchors.board}
+                store={arenaFieldStore}
+                pileWidth={layout.arenaPileWidth}
+                raisingWidth={layout.arenaRaisingWidth}
+                portrait={layout.portraitArena}
+              >
+                {breedingMode}
+                {leftPileColumn}
+                {fieldEffectIndicators}
+                {opponentBattleRow}
+                {memoryBand}
+                {viewerBattleRow}
+                {breedingDock}
+                {rightPileColumn}
+              </Arena3dField>
+            ) : (
+              <>
+                {leftPileColumn}
+                {fieldEffectIndicators}
+                <BattleZones
+                  opponentFieldEffects={readFieldEffects(shownOpponent.fieldEffectsJson).length > 0}
+                  viewerFieldEffects={readFieldEffects(shownViewer.fieldEffectsJson).length > 0}
+                >
+                  {opponentBattleRow}
+                  {memoryBand}
+                  {viewerBattleRow}
+                </BattleZones>
+                {layout.portraitArena ? breedingDock : null}
+                {rightPileColumn}
+              </>
+            )}
           </div>
 
           <PlayerDock
@@ -804,8 +861,8 @@ export function BoardStage({
             playerEquippedRankedTier={viewer.equippedRankedTier}
             playerBotPersonaId={viewer.botPersonaId}
             actingLabel={actingPlateKeys.viewer ? t(actingPlateKeys.viewer) : undefined}
-            breedingDock={!layout.portraitArena ? breedingDock : null}
-            pileDock={layout.dockViewerPiles ? viewerPiles : null}
+            breedingDock={layout.portraitArena || arena3d ? null : breedingDock}
+            pileDock={dockViewerPiles ? viewerPiles : null}
             handDockRef={anchors.viewerHandDock}
             cardWidth={layout.handCardWidth}
             minExposure={layout.handMinExposure}
@@ -835,13 +892,15 @@ export function BoardStage({
 
           <AttackArrowLayer preview={targeting.previewArrow} tracking={targeting.trackingArrow} />
 
-          <FieldClashGhosts
-            scene={cues.fieldClash}
-            permanentRefs={anchors.permanents}
-            permanentCenters={anchors.permanentCenters}
-            permanentCardIds={anchors.permanentCardIds}
-            combatImpactIds={cues.combatImpactIds}
-          />
+          {arena3d ? null : (
+            <FieldClashGhosts
+              scene={cues.fieldClash}
+              permanentRefs={anchors.permanents}
+              permanentCenters={anchors.permanentCenters}
+              permanentCardIds={anchors.permanentCardIds}
+              combatImpactIds={cues.combatImpactIds}
+            />
+          )}
 
           <BoardBurstLayer
             deleteBursts={cues.deleteBursts}

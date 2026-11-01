@@ -7,6 +7,10 @@ import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 
 import type { CSSProperties } from "react";
 import type { Permanent } from "@aegis/shared";
+import { useContext } from "react";
+import { Arena3dFieldContext } from "@/game/arena3d/field/Arena3dFieldContext";
+import { Arena3dPositionedRow } from "@/game/arena3d/field/Arena3dPositionedRow";
+import { Side } from "@/game/side";
 import { FieldLayout, useFieldLayout } from "../../../design/fieldLayout";
 import { useTranslation } from "../../../i18n";
 import { BattleRow, suspendedCardEdgeClearance } from "../../BattleRow";
@@ -44,6 +48,7 @@ export function OpponentBattleRow({
 }) {
   const { t } = useTranslation();
   const fieldLayout = useFieldLayout();
+  const arena3d = useContext(Arena3dFieldContext);
   const groupIdenticalTamers = useTamerGrouping();
   const isSuspended = (p: Permanent) => p.isSuspended || chrome.heldSuspendedIds.has(p.permanentId);
   const playOrder = new Map(permanents.map((permanent, index) => [permanent.permanentId, index]));
@@ -115,12 +120,35 @@ export function OpponentBattleRow({
     );
   }
 
-  if (fieldLayout === FieldLayout.Organized) {
-    const arrangement = arrangeField(permanents, {
+  const buildArrangement = () =>
+    arrangeField(permanents, {
       groupIdenticalTamers,
       isSuspended,
       isSingledOut: (p) => isSingledOut(p, chrome) || isCandidate(p),
     });
+  const organizedRowProps = {
+    "data-arena-region": ArenaInputRegion.OPPONENT_FIELD.value,
+    className: "game-battle-row game-battle-row--opp",
+    role: "group",
+    "aria-label": t("game.oppBattleArea"),
+    style: rowStyle,
+  };
+
+  if (arena3d) {
+    return (
+      <Arena3dPositionedRow
+        side={Side.Opponent}
+        arrangement={buildArrangement()}
+        isSuspended={isSuspended}
+        renderCard={renderCard}
+        rowProps={organizedRowProps}
+        emptyLabel={emptyLabel}
+      />
+    );
+  }
+
+  if (fieldLayout === FieldLayout.Organized) {
+    const arrangement = buildArrangement();
     return (
       <OrganizedBattleRow
         arrangement={arrangement}
@@ -131,13 +159,7 @@ export function OpponentBattleRow({
         emptyLabel={emptyLabel}
         renderCard={renderCard}
         isSuspended={isSuspended}
-        rowProps={{
-          "data-arena-region": ArenaInputRegion.OPPONENT_FIELD.value,
-          className: "game-battle-row game-battle-row--opp",
-          role: "group",
-          "aria-label": t("game.oppBattleArea"),
-          style: rowStyle,
-        }}
+        rowProps={organizedRowProps}
       />
     );
   }

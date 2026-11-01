@@ -8,8 +8,12 @@ export const ARENA_RIPPLE_GLSL = `
   uniform float uSweepStart;
   uniform float uSweepDirection;
   uniform vec3 uSweepColor;
+  uniform float uRippleActive;
 
   vec4 getArenaRipple(vec2 point) {
+    if (uRippleActive < 0.5) {
+      return vec4(0.0);
+    }
     vec3 light = vec3(0.0);
     float wave = 0.0;
     for (int index = 0; index < RIPPLE_SLOTS; index++) {
@@ -17,11 +21,11 @@ export const ARENA_RIPPLE_GLSL = `
       float age = uTime - ripple.z;
       if (ripple.w > 0.0 && age >= 0.0 && age < ${RIPPLE_LIFETIME_SECONDS.toFixed(1)}) {
         float life = 1.0 - age / ${RIPPLE_LIFETIME_SECONDS.toFixed(1)};
-        float front = age * 7.5;
+        float front = age * 6.0;
         float gap = abs(length(point - ripple.xy) - front);
-        float ring = exp(-gap * gap * 2.5) * life * ripple.w;
+        float ring = exp(-gap * gap * 3.5) * life * life * ripple.w;
         float core = exp(-length(point - ripple.xy) * 1.2) * life * life * ripple.w;
-        light += uRippleColors[index] * (ring + core * 0.8);
+        light += uRippleColors[index] * (ring * 0.7 + core * 0.4);
         wave += ring;
       }
     }
@@ -31,8 +35,8 @@ export const ARENA_RIPPLE_GLSL = `
       float front = mix(-16.0, 16.0, progress) * uSweepDirection;
       float gap = abs(point.y - front);
       float band = exp(-gap * gap * 0.6) * (1.0 - progress);
-      light += uSweepColor * band * 1.4;
-      wave += band * 1.15;
+      light += uSweepColor * band * 0.6;
+      wave += band * 0.4;
     }
     return vec4(light, wave);
   }

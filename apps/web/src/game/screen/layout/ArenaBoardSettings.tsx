@@ -23,6 +23,8 @@ import { arenaInputPreference } from "@/game/input/arenaInputPreference";
 import { useArenaInputEnabled } from "@/game/input/useArenaInputEnabled";
 import { hoverZoomPreference } from "@/design/hoverZoomPreference";
 import { useHoverZoomPreference } from "@/design/useHoverZoomPreference";
+import { cardViewer3dPreference } from "@/game/overlay/viewer/cardViewer3d/cardViewer3dPreference";
+import { useCardViewer3dEnabled } from "@/game/overlay/viewer/cardViewer3d/useCardViewer3dEnabled";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../../noticeDuration";
 import { EFFECT_SPEEDS, getEffectSpeed, setEffectSpeed, type EffectSpeed } from "../../pacing";
 
@@ -37,6 +39,7 @@ export function ArenaBoardSettings() {
   const titleId = useId();
   const pileCountsShown = usePileCountsShown();
   const hoverZoom = useHoverZoomPreference();
+  const cardViewer3d = useCardViewer3dEnabled();
   const textScale = useTextScale();
   const handAutoSort = useHandAutoSort();
   const arenaInputEnabled = useArenaInputEnabled();
@@ -211,6 +214,14 @@ export function ArenaBoardSettings() {
             label={t("settings.hoverZoom")}
             description={t("settings.hoverZoomDesc")}
             onChange={hoverZoomPreference.setEnabled}
+          />
+        </div>
+        <div className="game-arena-settings__row">
+          <Switch
+            checked={cardViewer3d}
+            label={t("redesign.foundation.cardViewer3d.title")}
+            description={t("redesign.foundation.cardViewer3d.description")}
+            onChange={cardViewer3dPreference.setEnabled}
           />
         </div>
       </div>

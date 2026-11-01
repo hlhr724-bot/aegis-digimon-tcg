@@ -1,0 +1,22 @@
+.aegis-board-style {
+  display: grid;
+  gap: var(--ds-space-5);
+  margin-block: var(--ds-space-6);
+}
+
+.aegis-board-style .aegis-arena-look--environment {
+  margin-block: 0;
+}
+
+.aegis-board-style__qualities {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--ds-space-2);
+}
+
+.aegis-board-style__quality {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-2) var(--ds-space-3);
+}

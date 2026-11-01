@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { AdditiveBlending, Color, NormalBlending, ShaderMaterial, type Group } from "three";
+import { AdditiveBlending, Color, NormalBlending, ShaderMaterial } from "three";
 import type { ArenaSideColors } from "@/game/arena3d/ArenaSideColors";
 import { SIDE_DEPTH } from "@/game/arena3d/arenaSceneLayout";
 
@@ -19,6 +19,8 @@ type SigilProps = {
   isLight: boolean;
   reducedMotion: boolean;
 };
+
+const SIGIL_HEIGHT = 0.012;
 
 const VERTEX_SHADER = `
   varying vec2 vUv;
@@ -67,7 +69,6 @@ const FRAGMENT_SHADER = `
 `;
 
 function Sigil({ color, accent, depth, spin, active, isLight, reducedMotion }: SigilProps) {
-  const group = useRef<Group>(null);
   const material = useMemo(
     () =>
       new ShaderMaterial({
@@ -101,13 +102,10 @@ function Sigil({ color, accent, depth, spin, active, isLight, reducedMotion }: S
     uniforms.uTime!.value = reducedMotion ? 0 : time;
     const target = active ? 0.5 : 0.2;
     uniforms.uPower!.value += (target - uniforms.uPower!.value) * Math.min(1, delta * 2.5);
-    if (group.current && !reducedMotion) {
-      group.current.position.y = 0.04 + Math.sin(time * 1.3 + depth) * 0.03;
-    }
   });
 
   return (
-    <group ref={group} position={[0, 0.04, depth]}>
+    <group position={[0, SIGIL_HEIGHT, depth]}>
       <mesh rotation-x={-Math.PI / 2} material={material}>
         <planeGeometry args={[7.6, 7.6]} />
       </mesh>
@@ -122,7 +120,7 @@ export function ArenaSigils({ colors, activeSide, reducedMotion }: Props) {
         color={colors.player}
         accent={colors.playerAccent}
         depth={SIDE_DEPTH}
-        spin={0.18}
+        spin={0.03}
         active={activeSide > 0}
         isLight={colors.isLight}
         reducedMotion={reducedMotion}
@@ -131,7 +129,7 @@ export function ArenaSigils({ colors, activeSide, reducedMotion }: Props) {
         color={colors.opponent}
         accent={colors.opponentAccent}
         depth={-SIDE_DEPTH}
-        spin={-0.18}
+        spin={-0.03}
         active={activeSide < 0}
         isLight={colors.isLight}
         reducedMotion={reducedMotion}

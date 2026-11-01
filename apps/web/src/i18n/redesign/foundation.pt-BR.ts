@@ -46,4 +46,19 @@ export const foundationPtBR: Record<keyof typeof foundationEn, string> = {
   "redesign.foundation.environment.halo": "Anéis de halo",
   "redesign.foundation.environment.aurora": "Céu bicolor",
   "redesign.foundation.environment.random": "Aleatório a cada partida",
+  "redesign.foundation.environment.hologram": "Arena holográfica",
+  "redesign.foundation.boardStyle.title": "Estilo do tabuleiro",
+  "redesign.foundation.boardStyle.classic": "2D clássico",
+  "redesign.foundation.boardStyle.arena3d": "Arena 3D",
+  "redesign.foundation.boardStyle.arena3dDesc": "Experimental. Cartas e efeitos aparecem em 3D e gastam mais bateria.",
+  "redesign.foundation.boardStyle.unsupported":
+    "Este dispositivo não consegue mostrar a arena 3D, então as partidas usam o tabuleiro clássico.",
+  "redesign.foundation.arena3dQuality.title": "Qualidade 3D",
+  "redesign.foundation.arena3dQuality.auto": "Automática",
+  "redesign.foundation.arena3dQuality.low": "Baixa",
+  "redesign.foundation.arena3dQuality.medium": "Média",
+  "redesign.foundation.arena3dQuality.high": "Alta",
+  "redesign.foundation.cardViewer3d.title": "Visualização de carta em 3D",
+  "redesign.foundation.cardViewer3d.description":
+    "Mostra as cartas ampliadas em 3D com brilho holográfico. Arraste uma carta para virá-la.",
 };

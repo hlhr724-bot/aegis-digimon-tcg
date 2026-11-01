@@ -2342,6 +2342,22 @@ const interfaceMessages = {
   "redesign.foundation.environment.halo": "Cincin Halo",
   "redesign.foundation.environment.aurora": "Langit Dua Warna",
   "redesign.foundation.environment.random": "Acak setiap pertandingan",
+  "redesign.foundation.environment.hologram": "Arena Hologram",
+  "redesign.foundation.boardStyle.title": "Gaya papan",
+  "redesign.foundation.boardStyle.classic": "2D klasik",
+  "redesign.foundation.boardStyle.arena3d": "Arena 3D",
+  "redesign.foundation.boardStyle.arena3dDesc":
+    "Eksperimental. Kartu dan efek ditampilkan dalam 3D dan memakai lebih banyak baterai.",
+  "redesign.foundation.boardStyle.unsupported":
+    "Perangkat ini tidak bisa menampilkan arena 3D, jadi pertandingan memakai papan klasik.",
+  "redesign.foundation.arena3dQuality.title": "Kualitas 3D",
+  "redesign.foundation.arena3dQuality.auto": "Otomatis",
+  "redesign.foundation.arena3dQuality.low": "Rendah",
+  "redesign.foundation.arena3dQuality.medium": "Sedang",
+  "redesign.foundation.arena3dQuality.high": "Tinggi",
+  "redesign.foundation.cardViewer3d.title": "Tampilan kartu 3D",
+  "redesign.foundation.cardViewer3d.description":
+    "Tampilkan kartu yang diperbesar dalam 3D dengan kilau foil. Seret kartu untuk membaliknya.",
   "redesign.shell.playNow": "Main sekarang",
   "redesign.shell.theme.useLight": "Gunakan tema terang",
   "redesign.shell.theme.useDark": "Gunakan tema gelap",

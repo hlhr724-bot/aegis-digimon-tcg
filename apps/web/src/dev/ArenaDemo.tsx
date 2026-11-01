@@ -1,3 +1,5 @@
+import { boardStylePreference } from "@/game/arena3d/boardStyle/boardStylePreference";
+import { findBoardStyleEntry } from "@/game/arena3d/boardStyle/findBoardStyleEntry";
 /* Visual preview of the current arena, using the real match screen without a server. */
 import { PHASES } from "../game/screen/constants";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
@@ -255,6 +257,12 @@ export function createArenaDemoState(
 
 export function ArenaDemo() {
   const { locale, t } = useTranslation();
+  useEffect(() => {
+    const requested = findBoardStyleEntry(new URLSearchParams(window.location.search).get("board"));
+    if (requested) {
+      boardStylePreference.setStyle(requested.value);
+    }
+  }, []);
   const portuguese = locale === "pt-BR";
   const securityScenario = new URLSearchParams(window.location.search).get("scenario") === "security";
   const hatchScenario = new URLSearchParams(window.location.search).get("scenario") === "hatch";

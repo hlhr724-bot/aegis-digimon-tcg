@@ -1,4 +1,10 @@
 export const ArenaEnvironment = {
+  HOLOGRAM: {
+    name: "HOLOGRAM",
+    value: "hologram",
+    labelKey: "redesign.foundation.environment.hologram",
+    swatch: "radial-gradient(circle, #9fe9ff 0%, #3c7bff 34%, #1a2a5c 58%, #ff5f7e 100%)",
+  },
   PRISM: {
     name: "PRISM",
     value: "prism",

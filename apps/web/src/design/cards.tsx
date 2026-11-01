@@ -59,6 +59,8 @@ export function CardBack({
       : DEFAULT_CARD_SLEEVE;
   return (
     <div
+      data-card-back
+      data-selected={selected || undefined}
       style={{
         width,
         height: h,
@@ -326,6 +328,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
   const dpReadout =
     dpValue > 0 ? (
       <span
+        data-card-dp
         style={{
           flexShrink: 0,
           fontFamily: "var(--ds-font-mono)",
@@ -352,7 +355,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
       </span>
     ) : null;
   return (
-    <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+    <div data-card-info style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
       {def.isDualCard ? (
         <span
           data-card-kind="dual"
@@ -405,6 +408,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
       ) : null}
       {showLevel ? (
         <span
+          data-card-level
           style={{
             position: "absolute",
             top: px(4),
@@ -423,6 +427,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
         </span>
       ) : null}
       <div
+        data-card-footer
         data-dp-layout={stacked ? "stacked" : undefined}
         style={{
           position: "absolute",
@@ -436,6 +441,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta }: TokenInfoParams) 
         {stacked ? <div style={{ display: "flex", justifyContent: "flex-end" }}>{dpReadout}</div> : null}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: px(3) }}>
           <span
+            data-card-name
             style={{
               color: "#fff",
               fontSize: px(9.5),
@@ -518,6 +524,8 @@ export function CardMini({
   return (
     <div
       data-state={suspended ? "suspended" : "active"}
+      data-selected={selected || undefined}
+      data-attackable={attackable || undefined}
       onClick={onClick}
       onMouseMove={zoomEnabled && zoomOnHover ? (e) => setMousePos({ x: e.clientX, y: e.clientY }) : undefined}
       onMouseLeave={zoomEnabled && zoomOnHover ? () => setMousePos(null) : undefined}

@@ -2237,6 +2237,22 @@ const interfaceMessages = {
   "redesign.foundation.environment.halo": "Anelli di alone",
   "redesign.foundation.environment.aurora": "Cielo bicolore",
   "redesign.foundation.environment.random": "Casuale a ogni partita",
+  "redesign.foundation.environment.hologram": "Arena olografica",
+  "redesign.foundation.boardStyle.title": "Stile del tabellone",
+  "redesign.foundation.boardStyle.classic": "2D classico",
+  "redesign.foundation.boardStyle.arena3d": "Arena 3D",
+  "redesign.foundation.boardStyle.arena3dDesc":
+    "Sperimentale. Carte ed effetti vengono mostrati in 3D e consumano più batteria.",
+  "redesign.foundation.boardStyle.unsupported":
+    "Questo dispositivo non può mostrare l'arena 3D, quindi le partite usano il tabellone classico.",
+  "redesign.foundation.arena3dQuality.title": "Qualità 3D",
+  "redesign.foundation.arena3dQuality.auto": "Automatica",
+  "redesign.foundation.arena3dQuality.low": "Bassa",
+  "redesign.foundation.arena3dQuality.medium": "Media",
+  "redesign.foundation.arena3dQuality.high": "Alta",
+  "redesign.foundation.cardViewer3d.title": "Vista carta in 3D",
+  "redesign.foundation.cardViewer3d.description":
+    "Mostra le carte ingrandite in 3D con effetto olografico. Trascina una carta per girarla.",
   "redesign.shell.playNow": "Gioca ora",
   "redesign.shell.theme.useLight": "Usa il tema chiaro",
   "redesign.shell.theme.useDark": "Usa il tema scuro",

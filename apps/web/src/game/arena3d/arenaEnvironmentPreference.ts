@@ -4,7 +4,7 @@ import { RANDOM_ARENA_ENVIRONMENT, type ArenaEnvironmentChoice } from "@/game/ar
 import { findArenaEnvironmentEntry } from "@/game/arena3d/findArenaEnvironmentEntry";
 
 const STORAGE_KEY = "aegis.arena-environment";
-const DEFAULT_CHOICE: ArenaEnvironmentChoice = ArenaEnvironment.GRID.value;
+const DEFAULT_CHOICE: ArenaEnvironmentChoice = ArenaEnvironment.HOLOGRAM.value;
 const listeners = new Set<() => void>();
 
 function parseChoice(value: unknown): ArenaEnvironmentChoice | undefined {

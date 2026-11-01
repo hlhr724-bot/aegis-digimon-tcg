@@ -268,7 +268,8 @@
     display: none !important;
   }
 
-  .game-field > .game-breeding-dock > .game-breeding-hint {
+  .game-field > .game-breeding-dock > .game-breeding-hint,
+  .game-field > .arena-3d-field > .game-breeding-dock > .game-breeding-hint {
     position: absolute;
     z-index: 8;
     bottom: calc(var(--arena-utility-height) + 4px);

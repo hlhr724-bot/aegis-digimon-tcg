@@ -854,3 +854,20 @@ the sheet to the room under the source card when that room holds eight clause li
 (`MINIMUM_PROMPT_SPACE_PX`); otherwise the usual full sheet shows. The board decision
 rail carries the same move handle as the activation dialog (`PromptMoveHandle.tsx`),
 out of the Tab cycle, and a dragged sheet keeps the viewport gutters.
+
+## 3D card view in the card zoom
+
+The full-screen card zoom (`overlay/viewer/CardZoomOverlay.tsx`) shows the card as a 3D card with foil when the **3D card view** setting is on. The setting is on by default. Players change it in the match settings board section or on the Settings screen. Both board styles share the zoom, so the view works on the classic and Arena 3D boards.
+
+| Part      | File                                                    | Role                                                                                                  |
+| --------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Frame     | `overlay/viewer/cardViewer3d/CardZoomArt.tsx`           | Keeps the flat `CardFull` in place, lazy-loads the canvas, handles drag and hover tilt.               |
+| Canvas    | `overlay/viewer/cardViewer3d/CardViewer3d.tsx`          | Loads the face and sleeve textures, renders both faces, and disposes textures and materials on close. |
+| Setting   | `overlay/viewer/cardViewer3d/cardViewer3dPreference.ts` | Stored in `aegis.card-viewer-3d`.                                                                     |
+| Shared GL | `design/webglCard/`                                     | Face material, foil shader, finish choice, and drag grip. Shared with pack opening.                   |
+
+- The finish follows the booster rules in `design/webglCard/getCardFinish.ts`. Alternate art is prismatic. R is holo, SR is starlight, UR is gold, and SEC is prismatic. Other rarities have no foil.
+- The flat card stays in the layout and in the accessibility tree. It is hidden only after the first 3D frame renders. The view falls back to the flat card when WebGL is missing, the face image fails to load, the canvas throws, or the context is lost.
+- The canvas extends 18% past the card on each side, so tilt and rotation do not clip. It ignores pointer events. The card frame handles them, so the details, the **Show card text** button, and tap-to-close keep working. A drag turns the card and then settles on the nearest face. A drag does not close the zoom.
+- With reduced motion on, the card has no idle sway, no inertia, and no reveal sweep. It tilts only toward a mouse or pen pointer near the card.
+- There is no post-processing pass. Bloom and vignette on a transparent canvas would darken the backdrop. A CSS glow in the finish color stands in for bloom.

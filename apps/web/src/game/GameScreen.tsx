@@ -1,3 +1,4 @@
+import { useBoardStyle } from "@/game/arena3d/boardStyle/useBoardStyle";
 import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
 import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
 import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
@@ -836,6 +837,7 @@ function GameScreenSession({
   }
 
   const arenaLook = useArenaBoardLook({ viewer: you, opponent: opp, matchKey: connectedRoom?.roomId });
+  const boardStyle = useBoardStyle();
 
   // A play written into a dropping socket can be lost without the server ever refusing it, so a
   // reconnect rolls the hide back: the resumed state alone says whether the card left the hand.
@@ -1787,6 +1789,7 @@ function GameScreenSession({
       room={spectating ? undefined : room}
       chat={connectedRoom ? chat : undefined}
       look={arenaLook}
+      boardStyle={boardStyle}
       layout={layout}
       anchors={anchors}
       cues={cues}

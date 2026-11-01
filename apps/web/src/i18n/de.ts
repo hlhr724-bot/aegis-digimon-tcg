@@ -2390,6 +2390,22 @@ const interfaceMessages = {
   "redesign.foundation.environment.halo": "Halo-Ringe",
   "redesign.foundation.environment.aurora": "Zweifarbiger Himmel",
   "redesign.foundation.environment.random": "Zufällig pro Match",
+  "redesign.foundation.environment.hologram": "Hologramm-Arena",
+  "redesign.foundation.boardStyle.title": "Spielfeldstil",
+  "redesign.foundation.boardStyle.classic": "Klassisch 2D",
+  "redesign.foundation.boardStyle.arena3d": "Arena 3D",
+  "redesign.foundation.boardStyle.arena3dDesc":
+    "Experimentell. Karten und Effekte werden in 3D dargestellt und verbrauchen mehr Akku.",
+  "redesign.foundation.boardStyle.unsupported":
+    "Dieses Gerät kann die 3D-Arena nicht anzeigen, daher nutzen Matches das klassische Spielfeld.",
+  "redesign.foundation.arena3dQuality.title": "3D-Qualität",
+  "redesign.foundation.arena3dQuality.auto": "Automatisch",
+  "redesign.foundation.arena3dQuality.low": "Niedrig",
+  "redesign.foundation.arena3dQuality.medium": "Mittel",
+  "redesign.foundation.arena3dQuality.high": "Hoch",
+  "redesign.foundation.cardViewer3d.title": "3D-Kartenansicht",
+  "redesign.foundation.cardViewer3d.description":
+    "Zeigt vergrößerte Karten in 3D mit Folienglanz. Ziehen Sie eine Karte, um sie umzudrehen.",
   "redesign.shell.playNow": "Jetzt spielen",
   "redesign.shell.theme.useLight": "Helles Design verwenden",
   "redesign.shell.theme.useDark": "Dunkles Design verwenden",

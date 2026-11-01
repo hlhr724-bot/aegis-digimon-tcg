@@ -1,0 +1,51 @@
+.card-zoom-art {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+}
+
+.card-zoom-art > :first-child {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.card-zoom-art[data-viewer="3d"] {
+  touch-action: none;
+  cursor: grab;
+}
+
+.card-zoom-art[data-viewer="3d"]:active {
+  cursor: grabbing;
+}
+
+.card-zoom-art[data-viewer="3d"] > :first-child {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.card-zoom-art__stage {
+  position: absolute;
+  pointer-events: none;
+}
+
+.card-zoom-art[data-viewer="3d"]:not([data-finish="none"])::before {
+  content: "";
+  position: absolute;
+  inset: 6%;
+  border-radius: 8%;
+  box-shadow: 0 0 72px 18px color-mix(in srgb, var(--card-zoom-art-glow) 38%, transparent);
+  pointer-events: none;
+}
+
+:root[data-motion="full"] .card-zoom-art[data-viewer="3d"]:not([data-finish="none"])::before {
+  animation: card-zoom-art-glow 4.8s ease-in-out infinite alternate;
+}
+
+@keyframes card-zoom-art-glow {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
