@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, type RefObject } from "react";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { Group, Mesh, Vector3, type Texture } from "three";
-import { CardFinish, type CardFinishEntry } from "@/packOpening/CardFinish";
+import { CardFinish, type CardFinishEntry } from "@/design/webglCard/CardFinish";
 import { buildCardAuraMaterial } from "@/packOpening/scene/buildCardAuraMaterial";
-import { buildCardFaceMaterial } from "@/packOpening/scene/buildCardFaceMaterial";
-import { CARD_DIMENSIONS } from "@/packOpening/scene/cardDimensions";
+import { buildCardFaceMaterial } from "@/design/webglCard/buildCardFaceMaterial";
+import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
 import { CardRevealState } from "@/packOpening/scene/CardRevealState";
-import type { CardGrip } from "@/packOpening/scene/createCardGrip";
-import { dragCardGrip } from "@/packOpening/scene/dragCardGrip";
+import type { CardGrip } from "@/design/webglCard/createCardGrip";
+import { dragCardGrip } from "@/design/webglCard/dragCardGrip";
 
 type Vector = [number, number, number];
 
@@ -102,8 +102,14 @@ export function RevealedCard({
   const revealedAt = useRef<number | undefined>(undefined);
   const target = useMemo(() => new Vector3(), []);
   const foiled = finish.value !== CardFinish.NONE.value;
-  const frontMaterial = useMemo(() => buildCardFaceMaterial({ finish, glowColor }), [finish, glowColor]);
-  const backMaterial = useMemo(() => buildCardFaceMaterial({ finish: CardFinish.NONE, glowColor: undefined }), []);
+  const frontMaterial = useMemo(
+    () => buildCardFaceMaterial({ finishShaderIndex: finish.shaderIndex, glowColor }),
+    [finish, glowColor],
+  );
+  const backMaterial = useMemo(
+    () => buildCardFaceMaterial({ finishShaderIndex: CardFinish.NONE.shaderIndex, glowColor: undefined }),
+    [],
+  );
   const auraMaterial = useMemo(
     () =>
       buildCardAuraMaterial({

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { cardImageUrls } from "@aegis/shared/cards/images";
-import { CardFinish } from "@/packOpening/CardFinish";
-import { getCardFinish } from "@/packOpening/getCardFinish";
+import { CardFinish } from "@/design/webglCard/CardFinish";
+import { getCardFinish } from "@/design/webglCard/getCardFinish";
 import type { PackCard } from "@/packOpening/PackCard";
 
 type Props = {

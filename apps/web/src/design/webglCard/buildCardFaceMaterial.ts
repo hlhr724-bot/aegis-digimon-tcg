@@ -1,10 +1,9 @@
 import { Color, ShaderMaterial, Vector2 } from "three";
-import type { CardFinishEntry } from "@/packOpening/CardFinish";
-import { CARD_DIMENSIONS } from "@/packOpening/scene/cardDimensions";
-import { FOIL_SHADER_CHUNK } from "@/packOpening/scene/foilShaderChunk";
+import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
+import { FOIL_SHADER_CHUNK } from "@/design/webglCard/foilShaderChunk";
 
 type Params = {
-  finish: CardFinishEntry;
+  finishShaderIndex: number;
   glowColor: string | undefined;
 };
 
@@ -135,7 +134,7 @@ const FRAGMENT_SHADER = `
   }
 `;
 
-export function buildCardFaceMaterial({ finish, glowColor }: Params): ShaderMaterial {
+export function buildCardFaceMaterial({ finishShaderIndex, glowColor }: Params): ShaderMaterial {
   return new ShaderMaterial({
     vertexShader: VERTEX_SHADER,
     fragmentShader: FRAGMENT_SHADER,
@@ -143,7 +142,7 @@ export function buildCardFaceMaterial({ finish, glowColor }: Params): ShaderMate
       uMap: { value: null },
       uHasMap: { value: 0 },
       uBaseColor: { value: new Color("#16324d") },
-      uFinish: { value: finish.shaderIndex },
+      uFinish: { value: finishShaderIndex },
       uTime: { value: 0 },
       uPointer: { value: new Vector2() },
       uGlowColor: { value: new Color(glowColor ?? "#ffffff") },

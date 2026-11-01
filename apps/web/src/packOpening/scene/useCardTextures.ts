@@ -4,7 +4,7 @@ import type { PackCard } from "@/packOpening/PackCard";
 import { cardImageUrls } from "@aegis/shared/cards/images";
 
 import { getPackCardKey } from "@/packOpening/getPackCardKey";
-import { CARD_DIMENSIONS } from "@/packOpening/scene/cardDimensions";
+import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
 
 const loader = new TextureLoader().setCrossOrigin("anonymous");
 

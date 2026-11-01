@@ -1,6 +1,6 @@
 import { AdditiveBlending, Color, ShaderMaterial } from "three";
-import { CARD_DIMENSIONS } from "@/packOpening/scene/cardDimensions";
-import { FOIL_SHADER_CHUNK } from "@/packOpening/scene/foilShaderChunk";
+import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
+import { FOIL_SHADER_CHUNK } from "@/design/webglCard/foilShaderChunk";
 
 type Params = {
   glowColor: string | undefined;
