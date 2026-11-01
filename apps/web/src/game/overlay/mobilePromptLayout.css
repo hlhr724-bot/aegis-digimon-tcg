@@ -514,7 +514,7 @@
 
 @media (width < 768px), (height < 520px) and (orientation: landscape) {
   .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] {
-    padding: var(--ds-space-3) !important;
+    padding: var(--ds-space-3) var(--ds-space-3) calc(var(--ds-space-3) + env(safe-area-inset-bottom, 0px)) !important;
   }
   .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__text {
     font-size: var(--ds-text-sm);
@@ -524,7 +524,7 @@
     font-size: var(--ds-text-xs);
   }
   .board-prompt.combat-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions > button {
-    min-height: 36px;
+    min-height: var(--ds-touch-target);
     padding: var(--ds-space-1) var(--ds-space-2);
     font-size: var(--ds-text-xs);
     line-height: 1.25;
@@ -552,6 +552,127 @@
 }
 
 @media (width < 768px), (height < 520px) and (orientation: landscape) {
+  .board-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ds-space-2);
+  }
+  .board-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions > button {
+    grid-column: auto;
+  }
+  .board-prompt[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__actions
+    > button:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  .aegis-stage:has(.board-prompt) .game-end-turn-orb {
+    visibility: hidden;
+  }
+}
+
+@media (width < 768px), (height < 520px) and (orientation: landscape) {
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"] {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "art eyebrow eyebrow"
+      "art text text"
+      "art detail toggle"
+      "clause clause clause"
+      "actions actions actions";
+    row-gap: var(--ds-space-1);
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]:has(
+      .board-prompt__budget
+    ) {
+    grid-template-areas:
+      "art eyebrow eyebrow"
+      "art text text"
+      "art detail toggle"
+      "clause clause clause"
+      "budget budget budget"
+      "actions actions actions";
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"][data-text-hidden] {
+    grid-template-areas:
+      "art eyebrow eyebrow"
+      "art text text"
+      "art detail toggle"
+      "actions actions actions";
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"][data-text-hidden]:has(
+      .board-prompt__budget
+    ) {
+    grid-template-areas:
+      "art eyebrow eyebrow"
+      "art text text"
+      "art detail toggle"
+      "budget budget budget"
+      "actions actions actions";
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    :is(.board-prompt__heading, .board-prompt__body) {
+    display: contents;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"] .board-prompt__art {
+    grid-area: art;
+    align-self: start;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__clause {
+    grid-area: clause;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__detail {
+    grid-area: detail;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__budget {
+    grid-area: budget;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__actions {
+    grid-area: actions;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__move-handle {
+    top: var(--ds-space-1);
+    right: var(--ds-space-1);
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    :is(.board-prompt__eyebrow, .board-prompt__text) {
+    margin: 0;
+    padding-right: calc(var(--ds-touch-target) - var(--ds-space-2));
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__eyebrow {
+    grid-area: eyebrow;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__text {
+    grid-area: text;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__detail {
+    align-self: center;
+    margin: 0;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__toggle-text {
+    grid-area: toggle;
+    align-self: center;
+    justify-self: end;
+    min-height: var(--ds-touch-target);
+    margin: calc(-1 * var(--ds-space-2)) calc(-1 * var(--ds-space-2)) calc(-1 * var(--ds-space-2)) 0;
+    padding-inline: var(--ds-space-2);
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    :is(.board-prompt__clause, .board-prompt__budget, .board-prompt__actions) {
+    margin-top: var(--ds-space-2);
+  }
+}
+
+@media (width < 768px), (height < 520px) and (orientation: landscape) {
   .game-modal__panel.effect-prompt-family[data-prompt-surface],
   .board-prompt[data-prompt-surface][data-variant],
   .board-prompt.combat-prompt[data-prompt-surface][data-variant] {
@@ -560,5 +681,116 @@
   }
   .game-modal__panel.effect-prompt-family[data-prompt-surface] .decision-overlay__footer {
     flex-shrink: 0;
+  }
+}
+
+@media (height < 520px) and (orientation: landscape) {
+  .board-prompt.board-prompt[data-prompt-surface][data-variant] {
+    left: auto !important;
+    right: 0 !important;
+    width: calc(clamp(15rem, 36vw, 22rem) + env(safe-area-inset-right, 0px)) !important;
+    max-width: calc(clamp(15rem, 36vw, 22rem) + env(safe-area-inset-right, 0px)) !important;
+    max-height: calc(
+      100dvh - var(--mobile-prompt-hand-clearance, 0px) - 3.5rem - env(safe-area-inset-top, 0px)
+    ) !important;
+    border-radius: var(--ds-radius-lg) 0 0 0 !important;
+    border-right: 0 !important;
+  }
+  .board-prompt.board-prompt[data-prompt-surface][data-variant="selection"] {
+    width: calc(clamp(17.5rem, 42vw, 24rem) + env(safe-area-inset-right, 0px)) !important;
+    max-width: calc(clamp(17.5rem, 42vw, 24rem) + env(safe-area-inset-right, 0px)) !important;
+    border-radius: var(--ds-radius-lg) 0 0 var(--ds-radius-lg) !important;
+  }
+  .board-prompt.board-prompt[data-prompt-surface][data-variant="selection"]:not(:has(.board-prompt__clause)) {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "body heading"
+      "detail detail"
+      "actions actions";
+    column-gap: var(--ds-space-3);
+    align-items: start;
+  }
+  .board-prompt.board-prompt[data-prompt-surface][data-variant="selection"]:not(:has(.board-prompt__clause)):has(
+      .board-prompt__budget
+    ) {
+    grid-template-areas:
+      "body heading"
+      "detail detail"
+      "budget budget"
+      "actions actions";
+  }
+  .board-prompt.board-prompt[data-prompt-surface][data-variant] .board-prompt__eyebrow {
+    font-size: var(--ds-text-xs);
+  }
+  .board-prompt.board-prompt[data-prompt-surface][data-variant] .board-prompt__text {
+    font-size: var(--ds-text-base) !important;
+  }
+  .board-prompt.board-prompt[data-prompt-surface][data-variant] .board-prompt__detail {
+    white-space: nowrap;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__detail {
+    color: var(--ds-accent);
+    font-weight: 700;
+  }
+  .board-prompt.board-prompt[data-prompt-surface][data-variant] .board-prompt__clause {
+    font-size: var(--ds-text-xs);
+    line-height: 1.45;
+  }
+  .board-prompt.board-prompt[data-prompt-surface][data-variant] .board-prompt__actions > button {
+    min-height: var(--ds-touch-target);
+    padding: var(--ds-space-1) var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+    line-height: 1.25;
+    gap: var(--ds-space-1);
+  }
+  .board-prompt.board-prompt[data-prompt-surface][data-variant] .board-prompt__actions > button svg {
+    width: 16px;
+    height: 16px;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"] {
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "art eyebrow eyebrow"
+      "art text text"
+      "detail detail toggle"
+      "clause clause clause"
+      "actions actions actions";
+    column-gap: var(--ds-space-3);
+    overflow: hidden !important;
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]:has(
+      .board-prompt__budget
+    ) {
+    grid-template-areas:
+      "art eyebrow eyebrow"
+      "art text text"
+      "detail detail toggle"
+      "clause clause clause"
+      "budget budget budget"
+      "actions actions actions";
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"][data-text-hidden] {
+    grid-template-areas:
+      "art eyebrow eyebrow"
+      "art text text"
+      "detail detail toggle"
+      "actions actions actions";
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"][data-text-hidden]:has(
+      .board-prompt__budget
+    ) {
+    grid-template-areas:
+      "art eyebrow eyebrow"
+      "art text text"
+      "detail detail toggle"
+      "budget budget budget"
+      "actions actions actions";
+  }
+  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
+    .board-prompt__clause {
+    min-height: 0;
+    overflow: hidden auto;
+    overscroll-behavior: contain;
   }
 }

@@ -808,19 +808,6 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   .board-prompt[data-prompt-surface][data-variant]:not([data-variant="field-selection"]) {
     max-height: calc(100dvh - env(safe-area-inset-top, 0px) - var(--ds-space-3)) !important;
   }
-  .board-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
-    .board-prompt__actions
-    > button:first-child:nth-last-child(odd) {
-    grid-column: auto;
-  }
-  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
-    .board-prompt__select-on-board {
-    grid-column: 1 / -1;
-  }
   .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"] {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
