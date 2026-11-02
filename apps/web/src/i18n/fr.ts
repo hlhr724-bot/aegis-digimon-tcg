@@ -2157,6 +2157,8 @@ const interfaceMessages = {
     "Choisissez au moins un critère de départage, sans doublon, parmi ceux de cette structure.",
   "tournaments.standings.tiebreakOrder":
     "Les égalités de points sont départagées dans cet ordre : {order}. Un tirage au sort règle toute égalité restante.",
+  "tournaments.reason.pointsInvalid":
+    "Utilisez des nombres entiers de 0 à 10. Une victoire doit valoir plus qu'un nul, et un nul au moins autant qu'une défaite.",
   "tournaments.badge.noTopCut": "No Top Cut (too few players)",
   "tournaments.standings.rank": "Rank",
   "tournaments.standings.player": "Player",

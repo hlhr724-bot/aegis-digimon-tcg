@@ -225,4 +225,15 @@ export const tournamentDetailFr = {
   "tournaments.tiebreakerHelp.opponent_points": "La somme des points de tous vos adversaires.",
   "tournaments.tiebreakerHelp.defeated_opponent_points": "La somme des points des adversaires que vous avez battus.",
   "tournaments.tiebreakerHelp.game_difference": "Parties gagnées moins parties perdues.",
+  "tournaments.tiebreaker.last_opponent_rank": "Rang du dernier adversaire",
+  "tournaments.tiebreakerColumn.last_opponent_rank": "Dern. adv.",
+  "tournaments.tiebreakerHelp.last_opponent_rank":
+    "Le rang de votre dernier adversaire. Affronter un joueur mieux classé au dernier match vous fait monter.",
+  "tournaments.format.points": "Points",
+  "tournaments.formatHelp.points": "Les points donnés par chaque match. Un bye vaut autant qu'une victoire.",
+  "tournaments.format.pointsWin": "Victoire",
+  "tournaments.format.pointsDraw": "Nul",
+  "tournaments.format.pointsLoss": "Défaite",
+  "tournaments.format.pointsValue": "Victoire {win} · Nul {draw} · Défaite {loss}",
+  "tournaments.create.pointsAuto": "Auto (3/1/0)",
 };

@@ -14,6 +14,7 @@ import { useTranslation } from "@/i18n/useTranslation";
 import type { Translate } from "@/i18n/translationTypes";
 import { tournamentApi, type ApiError } from "@/tournaments/client";
 import { reasonKey, structureKey } from "@/tournaments/labels";
+import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
 import type { TournamentValidationError } from "@/tournaments/types";
 import { formatCircuitWeekday } from "@/tournaments/circuits/formatCircuitWeekday";
 import "@/tournaments/circuits/circuits.css";
@@ -114,7 +115,7 @@ export function CreateCircuitForm({ onCreated, onCancel }: Props) {
       template: {
         structure,
         bestOf,
-        topCut: structure === "swiss" && topCut,
+        topCut: playsScoredRounds(structure) && topCut,
         maxPlayers,
         allowBots,
         banlist: { mode: "none" },
@@ -314,7 +315,7 @@ export function CreateCircuitForm({ onCreated, onCancel }: Props) {
               value={structure}
               onChange={(event) => setStructure(event.target.value as TournamentStructure)}
             >
-              {(["swiss", "single_elimination"] as const).map((option) => (
+              {(["swiss", "round_robin", "single_elimination"] as const).map((option) => (
                 <option key={option} value={option}>
                   {t(structureKey(option))}
                 </option>
@@ -349,7 +350,7 @@ export function CreateCircuitForm({ onCreated, onCancel }: Props) {
             onChange={(event) => setMaxPlayers(Number(event.target.value))}
           />
         </div>
-        {structure === "swiss" ? (
+        {playsScoredRounds(structure) ? (
           <Switch label={t("tournaments.badge.topCut")} checked={topCut} onChange={setTopCut} />
         ) : null}
         <Switch label={t("tournaments.badge.bots")} checked={allowBots} onChange={setAllowBots} />

@@ -213,4 +213,15 @@ export const tournamentDetailKo = {
   "tournaments.tiebreakerHelp.opponent_points": "대전한 모든 상대의 승점 합계입니다.",
   "tournaments.tiebreakerHelp.defeated_opponent_points": "이긴 상대들의 승점 합계입니다.",
   "tournaments.tiebreakerHelp.game_difference": "이긴 게임 수에서 진 게임 수를 뺀 값입니다.",
+  "tournaments.tiebreaker.last_opponent_rank": "마지막 상대의 순위",
+  "tournaments.tiebreakerColumn.last_opponent_rank": "마지막 상대",
+  "tournaments.tiebreakerHelp.last_opponent_rank":
+    "마지막으로 만난 상대의 순위입니다. 마지막 대전에서 더 높은 순위의 상대를 만났다면 더 위에 섭니다.",
+  "tournaments.format.points": "승점",
+  "tournaments.formatHelp.points": "각 대전에서 얻는 승점입니다. 부전승은 승리와 같은 승점입니다.",
+  "tournaments.format.pointsWin": "승",
+  "tournaments.format.pointsDraw": "무",
+  "tournaments.format.pointsLoss": "패",
+  "tournaments.format.pointsValue": "승 {win} · 무 {draw} · 패 {loss}",
+  "tournaments.create.pointsAuto": "자동 (3/1/0)",
 };

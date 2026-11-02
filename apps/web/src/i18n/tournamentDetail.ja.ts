@@ -212,4 +212,15 @@ export const tournamentDetailJa = {
   "tournaments.tiebreakerHelp.opponent_points": "対戦した相手全員の勝ち点の合計です。",
   "tournaments.tiebreakerHelp.defeated_opponent_points": "勝った相手の勝ち点の合計です。",
   "tournaments.tiebreakerHelp.game_difference": "勝ったゲーム数から負けたゲーム数を引いた数です。",
+  "tournaments.tiebreaker.last_opponent_rank": "最後の対戦相手の順位",
+  "tournaments.tiebreakerColumn.last_opponent_rank": "最終相手",
+  "tournaments.tiebreakerHelp.last_opponent_rank":
+    "最後に当たった相手の順位です。最終戦で上位の相手と当たっていれば、あなたが上になります。",
+  "tournaments.format.points": "勝ち点",
+  "tournaments.formatHelp.points": "各対戦で得る勝ち点です。不戦勝は勝ちと同じ勝ち点です。",
+  "tournaments.format.pointsWin": "勝ち",
+  "tournaments.format.pointsDraw": "引き分け",
+  "tournaments.format.pointsLoss": "負け",
+  "tournaments.format.pointsValue": "勝ち {win}・引き分け {draw}・負け {loss}",
+  "tournaments.create.pointsAuto": "自動(3/1/0)",
 };

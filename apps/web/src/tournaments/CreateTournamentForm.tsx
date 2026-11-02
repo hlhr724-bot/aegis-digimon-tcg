@@ -10,6 +10,8 @@ import { roundRobinRoundCount } from "@aegis/shared/tournaments/roundRobinRoundC
 import type { TournamentTiebreaker } from "@aegis/shared/tournaments/TournamentTiebreaker";
 import { MAX_SWISS_ROUNDS, TOURNAMENT_TOP_CUT_SIZES } from "@aegis/shared/tournaments/TournamentTopCutSize";
 import { TournamentTiebreakerPicker } from "@/tournaments/TournamentTiebreakerPicker";
+import { TournamentPointsField } from "@/tournaments/TournamentPointsField";
+import type { TournamentPoints } from "@aegis/shared/tournaments/TournamentPoints";
 import {
   swissRoundCount,
   topCutSize,
@@ -96,6 +98,7 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
   const [topCutChoice, setTopCutChoice] = useState<number | null>(null);
   const [rounds, setRounds] = useState<number | null>(null);
   const [tiebreakers, setTiebreakers] = useState<TournamentTiebreaker[] | null>(null);
+  const [points, setPoints] = useState<TournamentPoints | null>(null);
   const [allowBots, setAllowBots] = useState(false);
   const [randomBotStyles, setRandomBotStyles] = useState(false);
   const [banlistMode, setBanlistMode] = useState<BanlistMode>("none");
@@ -130,6 +133,7 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
       setRounds(null);
     }
     if (!playsScoredRounds(next)) {
+      setPoints(null);
       setTopCut(false);
       setTopCutChoice(null);
     }
@@ -164,6 +168,7 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
       topCutSize: topCut ? topCutChoice : null,
       rounds: structure === "swiss" ? rounds : null,
       tiebreakers: playsScoredRounds(structure) ? tiebreakers : null,
+      points: playsScoredRounds(structure) ? points : null,
       bestOf,
       startsAt: startsAtMs,
       maxPlayers,
@@ -382,6 +387,10 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
                 onChange={setTiebreakers}
                 error={errorFor("tiebreakers")}
               />
+            ) : null}
+
+            {playsScoredRounds(structure) ? (
+              <TournamentPointsField value={points} onChange={setPoints} error={errorFor("points")} />
             ) : null}
 
             <div className="create-tournament__wide">

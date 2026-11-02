@@ -2051,6 +2051,7 @@ const interfaceMessages = {
   "tournaments.reason.roundsInvalid": "請選擇 1 到 10 輪。只有瑞士輪賽事可以設定。",
   "tournaments.reason.tiebreakersInvalid": "請從此賽制提供的選項中選擇至少一項破同分規則,不能重複。",
   "tournaments.standings.tiebreakOrder": "積分相同時依此順序排名:{order}。仍相同時抽籤決定。",
+  "tournaments.reason.pointsInvalid": "請使用 0 到 10 的整數。勝的積分必須高於和,和不能低於負。",
   "tournaments.badge.noTopCut": "No Top Cut (too few players)",
   "tournaments.standings.rank": "Rank",
   "tournaments.standings.player": "Player",

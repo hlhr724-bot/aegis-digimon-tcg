@@ -373,6 +373,55 @@ describe("tournament detail", () => {
     ).toBeTruthy();
   });
 
+  it("shows the event's points and the last opponent's rank in the standings", async () => {
+    mockDetail({
+      status: "running",
+      rules: {
+        ...RULES_FOR_FORMAT,
+        standings: {
+          ...RULES_FOR_FORMAT.standings,
+          winPoints: 2,
+          drawPoints: 1,
+          lossPoints: 0,
+          byePoints: 2,
+          tiebreakers: ["last_opponent_rank", "judge_random_draw"],
+        },
+      },
+      standings: [
+        {
+          participantId: "p-1",
+          rank: 1,
+          points: 2,
+          wins: 1,
+          losses: 0,
+          draws: 0,
+          byes: 0,
+          matchWinRate: 1,
+          opponentMatchWinRate: 0.33,
+          lastOpponentRank: 3,
+        },
+      ],
+    });
+    renderDetail("acc-player", undefined, false, TournamentTab.BRACKET.value);
+    const standings = (await screen.findByRole("heading", { name: "Standings" })).closest(
+      ".aegis-panel",
+    ) as HTMLElement;
+    expect(within(standings).getByRole("columnheader", { name: "Last opp." })).toBeTruthy();
+    expect(within(standings).getByText("#3")).toBeTruthy();
+  });
+
+  it("states the event's points per win, draw and loss in the Format panel", async () => {
+    mockDetail({
+      rules: {
+        ...RULES_FOR_FORMAT,
+        standings: { ...RULES_FOR_FORMAT.standings, winPoints: 2, drawPoints: 1, lossPoints: 0, byePoints: 2 },
+      },
+    });
+    renderDetail("acc-player");
+    const format = (await screen.findByRole("heading", { name: "Format" })).closest(".aegis-panel") as HTMLElement;
+    expect(within(format).getByText("Win 2 · Draw 1 · Loss 0")).toBeTruthy();
+  });
+
   it("shows the official badge to players without endorsement controls", async () => {
     mockDetail({ category: "official" });
     renderDetail("acc-player");

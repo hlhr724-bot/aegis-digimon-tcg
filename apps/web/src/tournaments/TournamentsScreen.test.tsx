@@ -434,7 +434,7 @@ describe("tournament creation form", () => {
     fireEvent.click(screen.getByRole("switch", { name: /Top Cut/ }));
     fireEvent.change(screen.getByLabelText("Top Cut size"), { target: { value: "4" } });
     fireEvent.change(screen.getByLabelText("Swiss rounds"), { target: { value: "6" } });
-    fireEvent.click(screen.getByRole("button", { name: "Custom" }));
+    fireEvent.click(within(screen.getByRole("group", { name: /Tiebreakers/ })).getByRole("button", { name: "Custom" }));
     fireEvent.click(screen.getByRole("button", { name: "Move Game win rate (GW%) up" }));
     fireEvent.click(screen.getByRole("button", { name: "Remove Opponents' opponents' match win rate (OOMW%)" }));
     fireEvent.change(screen.getByLabelText("Add a tiebreaker"), { target: { value: "head_to_head" } });
@@ -478,6 +478,33 @@ describe("tournament creation form", () => {
       topCutSize: null,
       rounds: null,
       tiebreakers: null,
+    });
+  });
+
+  it("submits the organizer's points per win, draw and loss", async () => {
+    const fetchMock = mockApi({
+      "GET /tournaments": { body: [] },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true, roles: ["admin"] } },
+      "POST /tournaments": { status: 201, body: { ...LIGHTNING, banlistCards: [] } },
+    });
+    await openForm();
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "League points" } });
+    fireEvent.click(screen.getByRole("radio", { name: /Round robin/ }));
+    const points = screen.getByRole("group", { name: /Points/ });
+    fireEvent.click(within(points).getByRole("button", { name: "Custom" }));
+    fireEvent.change(screen.getByLabelText("Win"), { target: { value: "2" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create tournament" }));
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some((args: unknown[]) => (args[1] as RequestInit | undefined)?.method === "POST"),
+      ).toBe(true),
+    );
+    const call = fetchMock.mock.calls.find(
+      (args: unknown[]) => (args[1] as RequestInit | undefined)?.method === "POST",
+    )!;
+    expect(JSON.parse(String((call[1] as RequestInit).body))).toMatchObject({
+      structure: "round_robin",
+      points: { win: 2, draw: 1, loss: 0 },
     });
   });
 

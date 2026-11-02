@@ -2166,6 +2166,8 @@ const interfaceMessages = {
     "Wählen Sie mindestens einen Tiebreaker, jeden nur einmal, aus denen, die diese Struktur bietet.",
   "tournaments.standings.tiebreakOrder":
     "Punktgleichstände werden in dieser Reihenfolge entschieden: {order}. Ein Los entscheidet jeden verbleibenden Gleichstand.",
+  "tournaments.reason.pointsInvalid":
+    "Nutzen Sie ganze Zahlen von 0 bis 10. Ein Sieg muss mehr zählen als ein Unentschieden, ein Unentschieden mindestens so viel wie eine Niederlage.",
   "tournaments.badge.noTopCut": "No Top Cut (too few players)",
   "tournaments.standings.rank": "Rank",
   "tournaments.standings.player": "Player",

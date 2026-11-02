@@ -1889,6 +1889,8 @@ export const ptBR: Record<keyof typeof en, string> = {
     "Escolha pelo menos um critério de desempate, sem repetir, entre os que essa estrutura oferece.",
   "tournaments.standings.tiebreakOrder":
     "Empates em pontos são decididos nesta ordem: {order}. Um sorteio decide qualquer empate que sobrar.",
+  "tournaments.reason.pointsInvalid":
+    "Use números inteiros de 0 a 10. Vitória deve valer mais que empate, e empate pelo menos o mesmo que derrota.",
   "tournaments.badge.noTopCut": "Sem Top Cut (poucos jogadores)",
   "tournaments.standings.rank": "Posição",
   "tournaments.standings.player": "Jogador",

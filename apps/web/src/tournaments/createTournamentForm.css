@@ -642,6 +642,10 @@
   height: 22px;
 }
 
+.tournaments-tiebreakers__list .aegis-help-tip::before {
+  inset: -11px;
+}
+
 .tournaments-tiebreakers__actions {
   display: inline-flex;
   gap: var(--ds-space-1);
@@ -667,4 +671,10 @@
 .tournaments-tiebreakers__actions button:focus-visible {
   outline: 2px solid var(--ds-focus);
   outline-offset: 1px;
+}
+
+.tournaments-points__fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ds-space-3);
 }

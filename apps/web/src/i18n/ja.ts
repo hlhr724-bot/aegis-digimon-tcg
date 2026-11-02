@@ -2118,6 +2118,8 @@ const interfaceMessages = {
   "tournaments.reason.roundsInvalid": "ラウンド数は1〜10で選んでください。設定できるのはスイスドローだけです。",
   "tournaments.reason.tiebreakersInvalid": "この形式で使えるタイブレークから、重複なしで1つ以上選んでください。",
   "tournaments.standings.tiebreakOrder": "同点のときは次の順で順位を決めます:{order}。それでも同じなら抽選で決めます。",
+  "tournaments.reason.pointsInvalid":
+    "0〜10の整数を使ってください。勝ちは引き分けより多く、引き分けは負け以上にしてください。",
   "tournaments.badge.noTopCut": "No Top Cut (too few players)",
   "tournaments.standings.rank": "Rank",
   "tournaments.standings.player": "Player",

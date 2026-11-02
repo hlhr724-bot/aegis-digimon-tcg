@@ -1880,6 +1880,8 @@ export const en = {
     "Pick at least one tiebreaker, without repeats, from the ones this structure offers.",
   "tournaments.standings.tiebreakOrder":
     "Ties on points are broken in this order: {order}. A random draw settles any tie left.",
+  "tournaments.reason.pointsInvalid":
+    "Use whole numbers from 0 to 10. A win must be worth more than a draw, and a draw at least as much as a loss.",
   "tournaments.badge.noTopCut": "No Top Cut (too few players)",
   "tournaments.standings.rank": "Rank",
   "tournaments.standings.player": "Player",

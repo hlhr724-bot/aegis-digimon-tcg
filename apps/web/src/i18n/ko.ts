@@ -2101,6 +2101,7 @@ const interfaceMessages = {
   "tournaments.reason.tiebreakersInvalid": "이 방식에서 쓸 수 있는 타이브레이커를 중복 없이 하나 이상 고르세요.",
   "tournaments.standings.tiebreakOrder":
     "승점이 같으면 다음 순서로 정합니다: {order}. 그래도 같으면 추첨으로 정합니다.",
+  "tournaments.reason.pointsInvalid": "0~10의 정수를 쓰세요. 승은 무보다 커야 하고, 무는 패 이상이어야 합니다.",
   "tournaments.badge.noTopCut": "No Top Cut (too few players)",
   "tournaments.standings.rank": "Rank",
   "tournaments.standings.player": "Player",

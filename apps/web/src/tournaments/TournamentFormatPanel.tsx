@@ -213,6 +213,16 @@ export function TournamentFormatPanel({ detail }: Props) {
           </FormatRow>
         ) : null}
 
+        {scoredRounds && detail.rules ? (
+          <FormatRow label={t("tournaments.format.points")} help={<p>{t("tournaments.formatHelp.points")}</p>}>
+            {t("tournaments.format.pointsValue", {
+              win: detail.rules.standings.winPoints,
+              draw: detail.rules.standings.drawPoints,
+              loss: detail.rules.standings.lossPoints,
+            })}
+          </FormatRow>
+        ) : null}
+
         <FormatRow
           label={t("tournaments.detail.cardPool")}
           help={

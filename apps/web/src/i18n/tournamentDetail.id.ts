@@ -222,4 +222,15 @@ export const tournamentDetailId = {
   "tournaments.tiebreakerHelp.opponent_points": "Total poin semua lawan Anda.",
   "tournaments.tiebreakerHelp.defeated_opponent_points": "Total poin lawan yang Anda kalahkan.",
   "tournaments.tiebreakerHelp.game_difference": "Game menang dikurangi game kalah.",
+  "tournaments.tiebreaker.last_opponent_rank": "Peringkat lawan terakhir",
+  "tournaments.tiebreakerColumn.last_opponent_rank": "Lawan akhir",
+  "tournaments.tiebreakerHelp.last_opponent_rank":
+    "Peringkat lawan terakhir Anda. Melawan pemain berperingkat lebih tinggi di pertandingan terakhir membuat Anda lebih tinggi.",
+  "tournaments.format.points": "Poin",
+  "tournaments.formatHelp.points": "Poin dari setiap pertandingan. Bye bernilai sama dengan menang.",
+  "tournaments.format.pointsWin": "Menang",
+  "tournaments.format.pointsDraw": "Seri",
+  "tournaments.format.pointsLoss": "Kalah",
+  "tournaments.format.pointsValue": "Menang {win} · Seri {draw} · Kalah {loss}",
+  "tournaments.create.pointsAuto": "Otomatis (3/1/0)",
 };

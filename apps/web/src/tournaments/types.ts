@@ -129,6 +129,7 @@ export const TOURNAMENT_VALIDATION_CODES = [
   "top_cut_size_invalid",
   "rounds_invalid",
   "tiebreakers_invalid",
+  "points_invalid",
   "banlist_mode_unknown",
   "banlist_set_unknown",
   "max_players_out_of_range",

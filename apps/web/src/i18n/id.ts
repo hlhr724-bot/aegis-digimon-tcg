@@ -2129,6 +2129,8 @@ const interfaceMessages = {
     "Pilih minimal satu tiebreaker, tanpa duplikat, dari yang tersedia untuk struktur ini.",
   "tournaments.standings.tiebreakOrder":
     "Seri poin ditentukan dengan urutan ini: {order}. Undian menentukan seri yang tersisa.",
+  "tournaments.reason.pointsInvalid":
+    "Gunakan bilangan bulat 0 sampai 10. Menang harus lebih besar dari seri, dan seri minimal sama dengan kalah.",
   "tournaments.badge.noTopCut": "No Top Cut (too few players)",
   "tournaments.standings.rank": "Rank",
   "tournaments.standings.player": "Player",

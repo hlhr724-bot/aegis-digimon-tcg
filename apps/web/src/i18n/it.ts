@@ -2022,6 +2022,8 @@ const interfaceMessages = {
     "Scegli almeno uno spareggio, senza ripetizioni, tra quelli offerti da questa struttura.",
   "tournaments.standings.tiebreakOrder":
     "I pareggi a punti si risolvono in quest'ordine: {order}. Un sorteggio decide ogni pareggio rimasto.",
+  "tournaments.reason.pointsInvalid":
+    "Usa numeri interi da 0 a 10. La vittoria deve valere più del pareggio, e il pareggio almeno quanto la sconfitta.",
   "tournaments.badge.noTopCut": "No Top Cut (too few players)",
   "tournaments.standings.rank": "Rank",
   "tournaments.standings.player": "Player",

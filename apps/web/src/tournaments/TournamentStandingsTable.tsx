@@ -11,7 +11,7 @@ type TournamentStandingsTableParams = {
   rules?: TournamentRules | null;
 };
 
-type ColumnValue = { kind: "rate" | "count"; read: (row: StandingsRow) => number | undefined };
+type ColumnValue = { kind: "rate" | "count" | "rank"; read: (row: StandingsRow) => number | null | undefined };
 
 const COLUMN_VALUES: Partial<Record<TournamentTiebreaker, ColumnValue>> = {
   [TournamentTiebreaker.MATCH_WIN_RATE.value]: { kind: "rate", read: (row) => row.matchWinRate },
@@ -24,6 +24,7 @@ const COLUMN_VALUES: Partial<Record<TournamentTiebreaker, ColumnValue>> = {
   [TournamentTiebreaker.GAME_DIFFERENCE.value]: { kind: "count", read: (row) => row.gameDifference },
   [TournamentTiebreaker.OPPONENT_POINTS.value]: { kind: "count", read: (row) => row.opponentPoints },
   [TournamentTiebreaker.DEFEATED_OPPONENT_POINTS.value]: { kind: "count", read: (row) => row.defeatedOpponentPoints },
+  [TournamentTiebreaker.LAST_OPPONENT_RANK.value]: { kind: "rank", read: (row) => row.lastOpponentRank },
 };
 
 const LEGACY_COLUMNS: TournamentTiebreaker[] = [
@@ -47,7 +48,8 @@ export function TournamentStandingsTable({ standings, participants, rules }: Tou
   function formatValue(tiebreaker: TournamentTiebreaker, row: StandingsRow): string {
     const column = COLUMN_VALUES[tiebreaker]!;
     const value = column.read(row);
-    if (value === undefined) return "—";
+    if (value === undefined || value === null) return "—";
+    if (column.kind === "rank") return `#${value}`;
     return column.kind === "rate" ? percent.format(value) : String(value);
   }
 

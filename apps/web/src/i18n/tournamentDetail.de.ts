@@ -221,4 +221,15 @@ export const tournamentDetailDe = {
   "tournaments.tiebreakerHelp.opponent_points": "Die Summe der Punkte aller Gegner.",
   "tournaments.tiebreakerHelp.defeated_opponent_points": "Die Summe der Punkte der Gegner, die Sie besiegt haben.",
   "tournaments.tiebreakerHelp.game_difference": "Gewonnene minus verlorene Spiele.",
+  "tournaments.tiebreaker.last_opponent_rank": "Platz des letzten Gegners",
+  "tournaments.tiebreakerColumn.last_opponent_rank": "Letzt. Gegn.",
+  "tournaments.tiebreakerHelp.last_opponent_rank":
+    "Der Platz Ihres letzten Gegners. Ein besser platzierter letzter Gegner bringt Sie nach oben.",
+  "tournaments.format.points": "Punkte",
+  "tournaments.formatHelp.points": "Die Punkte pro Match. Ein Freilos zählt so viel wie ein Sieg.",
+  "tournaments.format.pointsWin": "Sieg",
+  "tournaments.format.pointsDraw": "Unentschieden",
+  "tournaments.format.pointsLoss": "Niederlage",
+  "tournaments.format.pointsValue": "Sieg {win} · Unentschieden {draw} · Niederlage {loss}",
+  "tournaments.create.pointsAuto": "Automatisch (3/1/0)",
 };

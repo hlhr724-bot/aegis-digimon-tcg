@@ -33,8 +33,8 @@ export function TournamentTiebreakerPicker({ structure, value, onChange, error }
 
   return (
     <div className="create-tournament__wide create-tournament__group tournaments-tiebreakers">
-      <span className="create-tournament__label tournaments-tiebreakers__label" id={labelId}>
-        {t("tournaments.format.tiebreakers")}
+      <span className="create-tournament__label tournaments-tiebreakers__label">
+        <span id={labelId}>{t("tournaments.format.tiebreakers")}</span>
         <HelpTip label={t("tournaments.formatHelp.label", { setting: t("tournaments.format.tiebreakers") })}>
           <p>{t("tournaments.formatHelp.tiebreakers")}</p>
         </HelpTip>

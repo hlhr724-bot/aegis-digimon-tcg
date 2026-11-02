@@ -1849,6 +1849,8 @@ export const es: Record<keyof typeof en, string> = {
     "Elige al menos un desempate, sin repetir, entre los que ofrece esta estructura.",
   "tournaments.standings.tiebreakOrder":
     "Los empates en puntos se deciden en este orden: {order}. Un sorteo decide cualquier empate restante.",
+  "tournaments.reason.pointsInvalid":
+    "Usa números enteros de 0 a 10. La victoria debe valer más que el empate, y el empate al menos lo mismo que la derrota.",
   "tournaments.badge.noTopCut": "Sin Top Cut (pocos jugadores)",
   "tournaments.standings.rank": "Puesto",
   "tournaments.standings.player": "Jugador",
