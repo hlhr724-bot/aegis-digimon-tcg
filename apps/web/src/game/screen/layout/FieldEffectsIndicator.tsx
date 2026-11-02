@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { type FieldEffectView } from "@aegis/shared";
 import { Layers, Clock } from "lucide-react";
 import { fieldEffectExpiry } from "@/game/fieldEffectExpiry";
+import { isHarmfulFieldEffect } from "@/game/isHarmfulFieldEffect";
 import { readFieldEffects } from "@/game/readFieldEffects";
 import { useTranslation, type TranslationKey } from "../../../i18n";
 import "./fieldEffects.css";
@@ -171,9 +172,7 @@ export function FieldEffectsIndicator({
     }
   }
   const summary = effects.length === 1 ? label(effects[0]!) : t("game.fieldEffects.count", { count: effects.length });
-  const harmful = effects.some(
-    (effect) => effect.kind === "restriction" || (effect.kind === "dp" && Number(effect.value) < 0),
-  );
+  const harmful = effects.some(isHarmfulFieldEffect);
   if (effects.length === 0) return null;
   const badge = (
     <details

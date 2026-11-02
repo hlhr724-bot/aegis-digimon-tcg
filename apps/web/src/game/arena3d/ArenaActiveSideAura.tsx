@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { AdditiveBlending, NormalBlending, Vector2, type Mesh, type ShaderMaterial } from "three";
-import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
 import { buildActiveSideAuraMaterial } from "@/game/arena3d/buildActiveSideAuraMaterial";
 import type { ArenaPulse } from "@/game/arena3d/ArenaPulse";
 import { ArenaPulseKind } from "@/game/arena3d/ArenaPulseKind";
 import type { ArenaSideColors } from "@/game/arena3d/ArenaSideColors";
 import type { ArenaLayoutVariantEntry } from "@/game/arena3d/field/ArenaLayoutVariant";
-import { ARENA_ROW_LAYOUT } from "@/game/arena3d/field/arenaWorldLayout";
 import type { Arena3dQualityEntry } from "@/game/arena3d/quality/Arena3dQuality";
+import { measureArenaSlotGrid } from "@/game/arena3d/slots/measureArenaSlotGrid";
 import { Side } from "@/game/side";
 import { FINALE_IMPACT_AT_MS } from "@/game/timings";
 
@@ -57,7 +56,6 @@ const VISIBLE_WEIGHT = 0.001;
 const FADE_IN_RATE = 6;
 const FADE_OUT_RATE = 1.2;
 const SWEEP_CLEAR_SECONDS = 2.2;
-const CARD_DEPTH = ARENA_ROW_LAYOUT.cardWidth * CARD_DIMENSIONS.height;
 const AURA_MARGIN_X = 1.5;
 const AURA_MARGIN_Z = 0.55;
 const BOUNDS_OVERSHOOT = 0.5;
@@ -67,12 +65,10 @@ const SURGE_SECONDS = 2.6;
 const CALM_SURGE_PEAK = 0.45;
 
 function measureAuraRegion({ lanes }: ArenaLayoutVariantEntry): AuraRegion {
-  const gridHalfWidth = ((ARENA_ROW_LAYOUT.columns - 1) / 2) * lanes.columnPitch + ARENA_ROW_LAYOUT.cardWidth / 2;
-  const gridNear = lanes.digimonDepth - CARD_DEPTH / 2;
-  const gridFar = lanes.supportDepth + CARD_DEPTH / 2;
+  const grid = measureArenaSlotGrid(lanes);
   return {
-    halfSize: new Vector2(gridHalfWidth + AURA_MARGIN_X, (gridFar - gridNear) / 2 + AURA_MARGIN_Z),
-    centerDepth: (gridNear + gridFar) / 2,
+    halfSize: new Vector2(grid.halfWidth + AURA_MARGIN_X, grid.halfDepth + AURA_MARGIN_Z),
+    centerDepth: grid.centerDepth,
   };
 }
 
