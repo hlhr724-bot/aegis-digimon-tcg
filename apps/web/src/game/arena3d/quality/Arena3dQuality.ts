@@ -5,8 +5,7 @@ export const Arena3dQuality = {
     labelKey: "redesign.foundation.arena3dQuality.low",
     rank: 0,
     maxDpr: 1,
-    idleFrameRate: 10,
-    pacedFrameRate: 10,
+    frameRate: 30,
     antialias: false,
     textureWidth: 384,
     textureBudgetBytes: 48 * 1024 * 1024,
@@ -23,8 +22,7 @@ export const Arena3dQuality = {
     labelKey: "redesign.foundation.arena3dQuality.medium",
     rank: 1,
     maxDpr: 1.5,
-    idleFrameRate: 20,
-    pacedFrameRate: 30,
+    frameRate: 60,
     antialias: true,
     textureWidth: 512,
     textureBudgetBytes: 96 * 1024 * 1024,
@@ -41,8 +39,7 @@ export const Arena3dQuality = {
     labelKey: "redesign.foundation.arena3dQuality.high",
     rank: 2,
     maxDpr: 2,
-    idleFrameRate: 20,
-    pacedFrameRate: 30,
+    frameRate: 60,
     antialias: true,
     textureWidth: 768,
     textureBudgetBytes: 160 * 1024 * 1024,
@@ -65,8 +62,7 @@ export type Arena3dQualityEntry = {
   labelKey: Arena3dQualityTier["labelKey"];
   rank: number;
   maxDpr: number;
-  idleFrameRate: number;
-  pacedFrameRate: number;
+  frameRate: number;
   antialias: boolean;
   textureWidth: number;
   textureBudgetBytes: number;

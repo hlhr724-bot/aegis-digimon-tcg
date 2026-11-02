@@ -1,40 +1,70 @@
-import { useEffect, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import { useThree } from "@react-three/fiber";
 import type { ArenaActivity } from "@/game/arena3d/ArenaActivity";
+import { ArenaFrameVerdict } from "@/game/arena3d/ArenaFrameVerdict";
+import { createArenaFramePacer } from "@/game/arena3d/createArenaFramePacer";
 import { cardZoomPresence } from "@/game/overlay/viewer/cardZoomPresence";
 
 type Props = {
   activity: RefObject<ArenaActivity>;
-  idleFrameRate: number;
-  pacedFrameRate: number;
+  frameRate: number;
+  reducedMotion: boolean;
 };
 
-const FRAME_JITTER_MILLISECONDS = 4;
+type Settings = {
+  frameRate: number;
+  reducedMotion: boolean;
+};
 
-function getFrameGap(frameRate: number): number {
-  return 1000 / frameRate - FRAME_JITTER_MILLISECONDS;
-}
-
-export function ArenaFrameDriver({ activity, idleFrameRate, pacedFrameRate }: Props) {
-  const invalidate = useThree((state) => state.invalidate);
+export function ArenaFrameDriver({ activity, frameRate, reducedMotion }: Props) {
+  const get = useThree((state) => state.get);
+  const set = useThree((state) => state.set);
+  const settings = useRef<Settings>({ frameRate, reducedMotion });
 
   useEffect(() => {
-    const idleGap = getFrameGap(idleFrameRate);
-    const pacedGap = getFrameGap(Math.max(idleFrameRate, pacedFrameRate));
+    settings.current = { frameRate, reducedMotion };
+  }, [frameRate, reducedMotion]);
+
+  useEffect(() => {
+    const { clock } = get();
+    clock.autoStart = false;
+    clock.stop();
+    const pacer = createArenaFramePacer();
+    const previousInvalidate = get().invalidate;
+    let dirty = true;
+    let origin: number | undefined;
     let frame = 0;
-    let lastFrame = 0;
+    set({
+      invalidate: () => {
+        dirty = true;
+      },
+    });
     const tick = (now: number) => {
-      const { busyUntil, pacedUntil } = activity.current;
-      const gap = now < busyUntil ? 0 : now < pacedUntil ? pacedGap : idleGap;
-      if (now - lastFrame >= gap && !cardZoomPresence.isOpen()) {
-        lastFrame = now;
-        invalidate();
-      }
       frame = requestAnimationFrame(tick);
+      origin ??= now;
+      const scene = activity.current;
+      const verdict = pacer.decideFrame({
+        now,
+        frameRate: Math.min(settings.current.frameRate, scene.frameRateCap),
+        animating: !settings.current.reducedMotion || dirty || now < scene.busyUntil || now < scene.pacedUntil,
+        paused: cardZoomPresence.isOpen(),
+      });
+      if (verdict === ArenaFrameVerdict.SKIP.value) {
+        return;
+      }
+      dirty = false;
+      scene.renderedFrames += 1;
+      if (verdict === ArenaFrameVerdict.LATE.value) {
+        scene.lateFrames += 1;
+      }
+      get().advance((now - origin) / 1000, true);
     };
     frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [activity, idleFrameRate, pacedFrameRate, invalidate]);
+    return () => {
+      cancelAnimationFrame(frame);
+      set({ invalidate: previousInvalidate });
+    };
+  }, [activity, get, set]);
 
   return null;
 }

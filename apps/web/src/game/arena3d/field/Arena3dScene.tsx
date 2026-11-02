@@ -117,7 +117,13 @@ function ArenaSceneContents(props: Props) {
   const ripples = useMemo(createArenaRippleBuffer, []);
   const impulse = useRef<ArenaCameraImpulse>({ strength: 0, startedAt: -100 });
   const energy = useRef(0);
-  const activity = useRef<ArenaActivity>({ busyUntil: 0, pacedUntil: 0 });
+  const activity = useRef<ArenaActivity>({
+    busyUntil: 0,
+    pacedUntil: 0,
+    frameRateCap: Number.POSITIVE_INFINITY,
+    renderedFrames: 0,
+    lateFrames: 0,
+  });
   const EnvironmentScene = ENVIRONMENT_SCENES[environment];
 
   useEffect(() => () => cache.dispose(), [cache]);
@@ -237,16 +243,13 @@ function ArenaSceneContents(props: Props) {
       />
       <Arena3dCameraRig base={cameraBase} impulse={impulse} store={props.store} reducedMotion={reducedMotion} />
       <EnergyDecay energy={energy} />
-      <ArenaFrameDriver
-        activity={activity}
-        idleFrameRate={quality.idleFrameRate}
-        pacedFrameRate={quality.pacedFrameRate}
-      />
+      <ArenaFrameDriver activity={activity} frameRate={quality.frameRate} reducedMotion={reducedMotion} />
       <ArenaQualityGovernor
         automatic={props.automaticQuality}
         canDowngrade={quality.rank > 0}
         activity={activity}
         onDowngrade={props.onDowngrade}
+        frameRate={quality.frameRate}
         onContextLost={props.onContextLost}
       />
       {quality.bloom ? <ArenaPostEffects isLight={colors.isLight} /> : null}
@@ -262,7 +265,7 @@ function Arena3dCanvas(props: Props) {
       key={quality.antialias ? "smooth" : "sharp"}
       className="arena-3d-scene__canvas"
       dpr={[1, quality.maxDpr]}
-      frameloop="demand"
+      frameloop="never"
       resize={{ debounce: { scroll: 50, resize: 150 } }}
       gl={{ antialias: quality.antialias, alpha: false, powerPreference: "high-performance", stencil: false }}
       camera={{ fov: CAMERA_FOV_DEGREES, near: 0.1, far: 200, position: [0, 15, 8] }}

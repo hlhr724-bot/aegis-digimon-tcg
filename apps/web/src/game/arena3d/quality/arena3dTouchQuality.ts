@@ -11,8 +11,7 @@ export const ARENA_3D_TOUCH_QUALITY: Readonly<Record<Arena3dQuality, Arena3dQual
   [Arena3dQuality.MEDIUM.value]: {
     ...Arena3dQuality.MEDIUM,
     maxDpr: 2,
-    idleFrameRate: 15,
-    pacedFrameRate: 20,
+    frameRate: 30,
     antialias: false,
     textureBudgetBytes: 64 * MEGABYTE,
     floorSegments: 64,
@@ -21,8 +20,7 @@ export const ARENA_3D_TOUCH_QUALITY: Readonly<Record<Arena3dQuality, Arena3dQual
   },
   [Arena3dQuality.HIGH.value]: {
     ...Arena3dQuality.HIGH,
-    idleFrameRate: 15,
-    pacedFrameRate: 20,
+    frameRate: 30,
     textureBudgetBytes: 112 * MEGABYTE,
     floorSegments: 96,
     moteCount: 140,

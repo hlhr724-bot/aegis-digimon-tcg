@@ -29,6 +29,7 @@ const { values } = parseArgs({
     capture: { type: "string" },
     seed: { type: "string" },
     board: { type: "string", default: "arena3d" },
+    trace: { type: "boolean", default: false },
   },
 });
 
@@ -47,6 +48,7 @@ const SCENARIOS = new Set([
   "decision",
   "landing",
   "rotate",
+  "cadence",
 ]);
 const BOARD_STYLES = new Set(["arena3d", "classic"]);
 const BENCH_EFFECTS = [
@@ -62,6 +64,18 @@ const BENCH_EFFECTS = [
   "finale",
 ];
 const CAPTURE_OFFSETS = [0.12, 0.3, 0.55, 0.9];
+const CADENCE_WINDOWS = [
+  { name: "play", effect: "arrival" },
+  { name: "digivolve", effect: "evolve" },
+  { name: "attack", effect: "attack" },
+  { name: "security", effect: "security" },
+  { name: "delete", effect: "delete" },
+  { name: "wipe", effect: "wipe" },
+  { name: "finale", effect: "finale" },
+  { name: "turn change", effect: "turn", prop: "activeSide" },
+  { name: "breeding focus", component: "ArenaBreedingFocus", prop: "active" },
+];
+const CADENCE_TAIL_MILLISECONDS = 2600;
 const DEVICES = {
   desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, isMobile: false, hasTouch: false },
   "phone-landscape": { viewport: { width: 844, height: 390 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
@@ -572,9 +586,20 @@ async function inspectScenes() {
   for (const renderer of probe.liveRenderers()) {
     renderer.info.reset();
   }
-  await new Promise((resolve) => requestAnimationFrame(resolve));
-  await waitForRenderedTick();
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  const stores = probe
+    .liveScenes()
+    .map((scene) => scene.__r3f?.root)
+    .filter((store) => store?.getState?.().frameloop === "never");
+  if (stores.length > 0) {
+    for (const store of stores) {
+      const state = store.getState();
+      state.advance(state.clock.elapsedTime, true);
+    }
+  } else {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await waitForRenderedTick();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
   for (const renderer of probe.liveRenderers()) {
     frameTotals.set(renderer, {
       calls: renderer.info.render.calls,
@@ -1020,11 +1045,12 @@ async function forceRenderEveryFrame(page, milliseconds) {
     const probe = window.arenaPerfProbe;
     const renderer = probe.findArenaRenderer();
     const scene = probe.liveScenes().find((candidate) => candidate.__r3f?.root?.getState?.().gl === renderer);
-    const invalidate = scene?.__r3f?.root?.getState?.().invalidate;
+    const store = scene?.__r3f?.root;
     const endsAt = performance.now() + duration;
     await new Promise((resolve) => {
       const tick = (now) => {
-        invalidate?.();
+        const state = store?.getState();
+        state?.advance(state.clock.elapsedTime, true);
         if (now < endsAt) {
           requestAnimationFrame(tick);
         } else {
@@ -1384,6 +1410,16 @@ async function installEffectBench() {
     ],
     arrival: () => [{ at: 0, run: () => land(proxies("you").slice(0, 1)) }],
     "arrival-burst": () => [{ at: 0, run: () => land(proxies("you").slice(0, 5)) }],
+    turn: () => [
+      {
+        at: 0,
+        run: () => {
+          const pulse = { key: nextKey("turn"), kind: "turn", color: sideColor("opp"), side: "opp" };
+          emitPulses([pulse]);
+          override("ArenaActiveSideAura", "pulses", [pulse]);
+        },
+      },
+    ],
     finale: () => [
       {
         at: 0,
@@ -1450,16 +1486,20 @@ async function installEffectBench() {
       };
     },
     freeze(time) {
-      const state = readState();
-      state.clock.autoStart = false;
-      state.clock.running = false;
-      state.clock.elapsedTime = time;
-      state.invalidate();
+      bench.frozenTime = time;
+      const renderer = probe.findArenaRenderer();
+      const store = probe.liveScenes().find((candidate) => candidate.__r3f?.root?.getState?.().gl === renderer)
+        ?.__r3f.root;
+      if (store && !bench.frozen) {
+        bench.frozen = true;
+        const advance = store.getState().advance;
+        store.setState({ advance: (_, runGlobalEffects) => advance(bench.frozenTime, runGlobalEffects) });
+      }
+      readState().invalidate();
     },
     setTime(time) {
-      const state = readState();
-      state.clock.elapsedTime = time;
-      state.invalidate();
+      bench.frozenTime = time;
+      readState().invalidate();
     },
   };
 }
@@ -2036,6 +2076,227 @@ async function runRotate({ page, session, report, context, probeArgs }) {
   };
 }
 
+async function installCadenceProbe() {
+  const probe = window.arenaPerfProbe;
+  const hook = window.__REACT_DEVTOOLS_GLOBAL_HOOK__;
+  const sceneRenderer = [...hook.renderers.values()].find(
+    (renderer) => renderer.rendererPackageName === "@react-three/fiber",
+  );
+  const sceneSource = await fetch("/src/game/arena3d/field/Arena3dScene.tsx").then((response) => response.text());
+  const fiberModule = await import(sceneSource.match(/from "([^"]*@react-three_fiber\.js[^"]*)"/)[1]);
+  const findHolders = ({ component, prop }) => {
+    const holders = [];
+    for (const reference of probe.roots) {
+      const stack = reference.deref()?.current ? [reference.deref().current] : [];
+      while (stack.length > 0) {
+        const node = stack.pop();
+        const named = component === undefined || node.type?.name === component;
+        if (typeof node.type === "function" && named && node.memoizedProps && prop in node.memoizedProps) {
+          holders.push(node);
+        }
+        if (node.sibling) {
+          stack.push(node.sibling);
+        }
+        if (node.child) {
+          stack.push(node.child);
+        }
+      }
+    }
+    return holders;
+  };
+  const cadence = { frames: [], ticks: [], recording: false };
+  let frameStart = 0;
+  let lastFrame = -1;
+  fiberModule.addEffect(() => {
+    frameStart = performance.now();
+  });
+  fiberModule.addAfterEffect(() => {
+    const frame = probe.findArenaRenderer()?.info.render.frame ?? -1;
+    if (frame === lastFrame) {
+      return;
+    }
+    lastFrame = frame;
+    if (cadence.recording) {
+      cadence.frames.push({ at: document.timeline.currentTime, work: performance.now() - frameStart });
+    }
+  });
+  const tick = (now) => {
+    if (cadence.recording) {
+      cadence.ticks.push(now);
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  const readMemory = () => {
+    const renderer = probe.findArenaRenderer();
+    return {
+      programs: renderer?.info.programs?.length ?? 0,
+      textures: renderer?.info.memory.textures ?? 0,
+      geometries: renderer?.info.memory.geometries ?? 0,
+    };
+  };
+  cadence.start = () => {
+    cadence.frames = [];
+    cadence.ticks = [];
+    probe.longTasks = [];
+    probe.recording = true;
+    cadence.recording = true;
+    cadence.memoryBefore = readMemory();
+  };
+  cadence.stop = () => {
+    cadence.recording = false;
+    probe.recording = false;
+    return {
+      frames: cadence.frames,
+      ticks: cadence.ticks,
+      longTasks: probe.longTasks,
+      memoryBefore: cadence.memoryBefore,
+      memoryAfter: readMemory(),
+    };
+  };
+  cadence.toggle = (target) => {
+    const holders = findHolders(target);
+    const current = holders[0]?.memoizedProps[target.prop];
+    const next = typeof current === "boolean" ? !current : current === 0 ? 1 : 0;
+    for (const node of holders) {
+      sceneRenderer.overrideProps(node, [target.prop], next);
+    }
+    return holders.length;
+  };
+  window.arenaCadence = cadence;
+}
+
+function summarizeCadence({ frames, ticks, longTasks, memoryBefore, memoryAfter }) {
+  const vsync = summarizeIntervals(ticks).medianMs || 16.67;
+  const times = frames.map((frame) => frame.at);
+  const intervals = times.slice(1).map((time, index) => time - times[index]);
+  const sorted = [...intervals].sort((a, b) => a - b);
+  const pick = (ratio) => sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * ratio))] ?? 0;
+  const vsyncCounts = {};
+  for (const interval of intervals) {
+    const key = Math.max(1, Math.round(interval / vsync));
+    vsyncCounts[key] = (vsyncCounts[key] ?? 0) + 1;
+  }
+  const typical = Number(Object.entries(vsyncCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 1);
+  const work = frames.map((frame) => frame.work).sort((a, b) => a - b);
+  const span = (times.at(-1) ?? 0) - (times[0] ?? 0);
+  const longest = intervals.indexOf(Math.max(0, ...intervals));
+  const slowestWork = frames.reduce(
+    (slowest, frame) => (frame.work > (slowest?.work ?? -1) ? frame : slowest),
+    undefined,
+  );
+  return {
+    renderedFps: span > 0 ? round((intervals.length * 1000) / span, 1) : 0,
+    vsyncMs: vsync,
+    intervalMs: {
+      p50: round(pick(0.5)),
+      p95: round(pick(0.95)),
+      p99: round(pick(0.99)),
+      max: round(sorted.at(-1) ?? 0),
+    },
+    intervalsInVsyncs: vsyncCounts,
+    overOneAndHalfTypical: intervals.filter((interval) => interval > typical * vsync * 1.5).length,
+    rafMaxMs: summarizeIntervals(ticks).maxMs,
+    longestGapAtMs: longest >= 0 ? round(times[longest] - (ticks[0] ?? times[0])) : undefined,
+    slowestWorkAtMs: slowestWork ? round(slowestWork.at - (ticks[0] ?? slowestWork.at)) : undefined,
+    frameWorkMs: {
+      p50: round(work[Math.floor(work.length / 2)] ?? 0),
+      max: round(work.at(-1) ?? 0),
+    },
+    longTasks: { count: longTasks.length, maxMs: round(Math.max(0, ...longTasks.map((task) => task.duration))) },
+    programsCompiled: memoryAfter.programs - memoryBefore.programs,
+    texturesAdded: memoryAfter.textures - memoryBefore.textures,
+    geometriesAdded: memoryAfter.geometries - memoryBefore.geometries,
+  };
+}
+
+async function measureCadenceWindow({ page, milliseconds, action }) {
+  await page.evaluate(() => window.arenaCadence.start());
+  const startedAt = Date.now();
+  if (action) {
+    await action();
+  }
+  await sleep(Math.max(0, milliseconds - (Date.now() - startedAt)));
+  return summarizeCadence(await page.evaluate(() => window.arenaCadence.stop()));
+}
+
+function summarizeLongTaskTrace(events) {
+  const complete = events.filter((event) => event.ph === "X" && event.dur);
+  const tasks = complete.filter((event) => event.name === "RunTask" && event.dur > 40000);
+  return tasks.map((task) => {
+    const inside = complete.filter(
+      (event) => event !== task && event.tid === task.tid && event.ts >= task.ts && event.ts < task.ts + task.dur,
+    );
+    const byName = {};
+    for (const event of inside) {
+      const detail = event.args?.data?.url?.split("/").at(-1) ?? event.args?.data?.functionName ?? "";
+      const key = detail ? `${event.name} ${detail}` : event.name;
+      byName[key] = round((byName[key] ?? 0) + event.dur / 1000);
+    }
+    return {
+      durationMs: round(task.dur / 1000),
+      top: Object.entries(byName)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8),
+    };
+  });
+}
+
+async function traceLongTasks({ session, run }) {
+  const events = [];
+  const collect = (payload) => events.push(...payload.value);
+  session.on("Tracing.dataCollected", collect);
+  const complete = new Promise((resolve) => session.once("Tracing.tracingComplete", resolve));
+  await session.send("Tracing.start", {
+    categories: "devtools.timeline,v8,disabled-by-default-devtools.timeline,disabled-by-default-v8.gc,toplevel",
+    transferMode: "ReportEvents",
+  });
+  const result = await run();
+  await session.send("Tracing.end");
+  await complete;
+  session.off("Tracing.dataCollected", collect);
+  return { ...result, longTaskTrace: summarizeLongTaskTrace(events) };
+}
+
+async function runCadenceWindow({ page, entry }) {
+  const target = { component: entry.component, prop: entry.prop };
+  const toggle = () => (entry.prop ? page.evaluate((holder) => window.arenaCadence.toggle(holder), target) : undefined);
+  const lastStepMs = entry.effect
+    ? await page.evaluate((effect) => window.arenaEffectBench.plan(effect), entry.effect)
+    : 0;
+  const result = await measureCadenceWindow({
+    page,
+    milliseconds: lastStepMs + CADENCE_TAIL_MILLISECONDS,
+    action: async () => {
+      await toggle();
+      if (entry.effect) {
+        await page.evaluate((effect) => window.arenaEffectBench.trigger(effect), entry.effect);
+      }
+    },
+  });
+  if (entry.prop) {
+    await toggle();
+    await page.waitForTimeout(1500);
+  }
+  return result;
+}
+
+async function runCadence({ page, session, report }) {
+  await openEffectBench(page);
+  await page.evaluate(installCadenceProbe);
+  report.tier = await readTier(page);
+  report.idle = await measureCadenceWindow({ page, milliseconds: seconds * 1000 });
+  report.windows = [];
+  for (const pass of ["first", "second"]) {
+    for (const entry of CADENCE_WINDOWS) {
+      const run = () => runCadenceWindow({ page, entry });
+      const result = values.trace ? await traceLongTasks({ session, run }) : await run();
+      report.windows.push({ pass, name: entry.name, ...result });
+      await page.waitForTimeout(800);
+    }
+  }
+}
+
 async function main() {
   const browser = await chromium.launch({ headless: true, args: GL_ARGS[values.gl] });
   const report = { options: values, consoleErrors: [], startedAt: new Date().toISOString() };
@@ -2082,6 +2343,8 @@ async function main() {
       await runRotate({ page, session, report, context, probeArgs });
     } else if (values.scenario === "mobile") {
       await runMobile({ page, session, report });
+    } else if (values.scenario === "cadence") {
+      await runCadence({ page, session, report });
     } else if (values.scenario === "effects") {
       await runEffects({ page, session, report });
     } else if (values.scenario === "crowded" || values.scenario === "classic") {
