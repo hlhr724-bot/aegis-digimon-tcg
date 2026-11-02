@@ -78,8 +78,12 @@ export function createScopedEffectPrimitives(params: ScopedPrimitiveParams): Pri
   } else {
     throw new Error("Unknown scoped primitive kind");
   }
+  const objects = ctx.game?.runtimeObjects;
+  if (objects !== undefined && !objects.snapshotsEnabled) {
+    return fx;
+  }
   scopedPrimitiveDescriptors.set(fx, { params, fields: new Map(Object.entries(fx)) });
-  ctx.game?.runtimeObjects?.track({ value: ctx, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
-  ctx.game?.runtimeObjects?.track({ value: fx, key: EngineRuntimeObjectKind.SCOPED_PRIMITIVES.value });
+  objects?.track({ value: ctx, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
+  objects?.track({ value: fx, key: EngineRuntimeObjectKind.SCOPED_PRIMITIVES.value });
   return fx;
 }

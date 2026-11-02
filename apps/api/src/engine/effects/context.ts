@@ -291,7 +291,9 @@ export function createEffectContext(parts: {
     conferralGranterInstanceId: parts.conferralGranterInstanceId,
     discardedStackSourceProof: parts.discardedStackSourceProof,
   };
-  parts.game.runtimeObjects?.track({ value: context, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
+  if (parts.game.runtimeObjects?.snapshotsEnabled === true) {
+    parts.game.runtimeObjects.track({ value: context, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
+  }
   return context;
 }
 

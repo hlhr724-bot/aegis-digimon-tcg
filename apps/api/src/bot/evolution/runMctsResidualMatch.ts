@@ -113,6 +113,7 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
   const simulate = async (
     engineSnapshot: GameEngineSnapshot,
     root: TrainingWindow,
+    expectedInformation: string,
     choose: (window: TrainingWindow) => number,
     sampleSeed: number,
     signal: AbortSignal,
@@ -121,9 +122,9 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
     let result;
     try {
       result = await runReplayContinuation({
-        engineSnapshot: structuredClone(engineSnapshot),
+        engineSnapshot,
         seat: searchSeat,
-        expectedInformation: informationKey(root),
+        expectedInformation,
         sampleSeed,
         seenOpponentCards: options.seenOpponentCards,
         program: programs[searchSeat]!,
@@ -173,6 +174,7 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
         const start = performance.now();
         const signal = choice.signal ?? new AbortController().signal;
         let leafEvaluations = 0;
+        const expectedInformation = informationKey(root);
         const search = await searchMcts({
           root,
           seat: searchSeat,
@@ -185,6 +187,7 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
             const result = await simulate(
               engineSnapshot,
               root,
+              expectedInformation,
               choose,
               (options.searchSeed + transcript.length * 7919 + simulation * 104729) >>> 0,
               signal,

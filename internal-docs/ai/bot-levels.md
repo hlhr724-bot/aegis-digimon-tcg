@@ -278,6 +278,40 @@ must stay JSON-safe: finite numbers only, and no meaning in `undefined` fields. 
 the only fields JSON drops are undefined `level` values in the root observation, and
 the root checks already compare the observation through JSON.
 
+**Rollout bookkeeping (November 2026).** A CPU profile of residual MCTS games
+(`runMctsResidualMatch`, 32 rollouts per search, one-turn horizon) found three costs that
+only serve snapshots or repeat work:
+
+| Cost                                                                                         | Share of profile | Change                                                                              |
+| -------------------------------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------- |
+| `structuredClone` of the engine snapshot before every rollout                                | 9.5%             | Rollouts restore from the shared snapshot, as live search already does              |
+| Scoped static primitives built a field map and two registry entries in every continuous pass | 6.3%             | Skipped when the engine has snapshots disabled, which every rollout engine has      |
+| Effect contexts and re-materialized IR effects registered for snapshots                      | about 2%         | Skipped, or checked before copying the effect metadata, when snapshots are disabled |
+
+The root information key is also computed once per search instead of once per rollout.
+Only engines with snapshots disabled skip the bookkeeping, so live matches still snapshot
+the same objects.
+
+The measurement ran the same three games (seeds 719, 811 and 913, 16 rollouts, 6
+searches each, 272 rollouts per run) with the old and new builds side by side, three
+times, on a shared 10-core machine with load averages of 8 to 20. Wall time was
+unusable at that load, so the table uses main-thread CPU time, minus the CPU of the same
+game without search:
+
+| Round | Before (rollouts per CPU second) | After | Change |
+| ----- | -------------------------------- | ----- | ------ |
+| 1     | 12.0                             | 15.0  | +25%   |
+| 2     | 13.2                             | 15.8  | +19%   |
+| 3     | 14.0                             | 17.2  | +22%   |
+
+On a quiet moment before the load rose, the old build ran 43 to 44 rollouts per wall
+second on the same games. Every run of both builds produced the same search reports,
+decisions and winner digests. `residualMctsDecisionIdentity.test.ts` pins the root
+visits, mean rewards and chosen actions of a fixed-seed, fixed-count residual search;
+an intentional change to search or rules behavior must update it. What remains is
+engine work: continuous recompute (about 30%), continuous-state publish (16%) and
+snapshot restore (9%). The opportunities table above still applies.
+
 ### Snapshot coverage and combat search
 
 **Continuation snapshots.** A search snapshot no longer needs a settled Main
