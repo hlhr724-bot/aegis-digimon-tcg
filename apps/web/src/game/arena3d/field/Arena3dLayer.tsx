@@ -59,6 +59,7 @@ type Props = {
 
 const DEFAULT_SLEEVE = "/sleeves/digimon-standard.webp";
 
+  breedingFocus: boolean;
 const Arena3dScene = createLazyComponent({
   load: () => import("@/game/arena3d/field/Arena3dScene"),
   pick: (module) => module.Arena3dScene,
@@ -199,6 +200,7 @@ function Arena3dLayerScene(props: Props) {
         </Suspense>
       </ClientErrorBoundary>
     </div>
+            breedingFocus={props.breedingFocus}
   );
 }
 

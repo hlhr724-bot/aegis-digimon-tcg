@@ -27,6 +27,7 @@ type FootprintParams = {
 
 const LAYOUTS = Object.values(ArenaLayoutVariant);
 const BREEDING_ZONES = [ArenaZone.EGGS.value, ArenaZone.RAISING.value];
+const SAME_COLUMN_TOLERANCE = 0.01;
 
 function measureZoneSize(zone: ArenaZone): { width: number; depth: number } {
   if (zone === ArenaZone.SECURITY.value) {
@@ -72,6 +73,17 @@ describe.each(LAYOUTS)("the $name world layout", (layout) => {
       expect(viewer).toBeDefined();
       expect(viewer!.x).toBeCloseTo(-opponent!.x, 6);
       expect(viewer!.z).toBeCloseTo(-opponent!.z, 6);
+    }
+  });
+
+  it("puts the viewer's egg deck before the raising slot in reading order, as the classic board does", () => {
+    const eggs = layout.zones[`${Side.Viewer}:${ArenaZone.EGGS.value}`]!;
+    const raising = layout.zones[`${Side.Viewer}:${ArenaZone.RAISING.value}`]!;
+    if (Math.abs(eggs.x - raising.x) > SAME_COLUMN_TOLERANCE) {
+      expect(eggs.x).toBeLessThan(raising.x);
+      expect(eggs.z).toBeCloseTo(raising.z, 6);
+    } else {
+      expect(eggs.z).toBeLessThan(raising.z);
     }
   });
 

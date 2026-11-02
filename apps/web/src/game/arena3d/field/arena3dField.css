@@ -608,19 +608,19 @@
   .arena-3d-field[data-arena-layout="wide"]
   .game-breeding-dock
   > .game-breeding-hint {
-  top: var(--arena-3d-you-eggs-y);
-  left: calc(var(--arena-3d-you-eggs-x) - var(--arena-3d-you-eggs-w) / 2);
-  max-width: calc(var(--arena-3d-you-eggs-w) * 2.6);
-  translate: 0 calc(-100% - var(--arena-3d-you-eggs-w) * 0.7 - 0.75rem);
+  top: var(--arena-3d-you-raising-y);
+  left: calc(var(--arena-3d-you-raising-x) - var(--arena-3d-you-raising-w) / 2);
+  max-width: calc(var(--arena-3d-you-raising-w) * 2.4);
+  translate: 0 calc(-100% - var(--arena-3d-you-raising-w) * 0.7 - 0.75rem);
 }
 
 .game-board[data-board-style="arena3d"]
   .arena-3d-field[data-arena-layout="short"]
   .game-breeding-dock
   > .game-breeding-hint {
-  top: calc(var(--arena-3d-you-eggs-y) + var(--arena-3d-you-eggs-w) * 0.7);
-  left: calc(var(--arena-3d-you-eggs-x) + var(--arena-3d-you-eggs-w) / 2 + 0.75rem);
-  max-width: min(26rem, calc(100% - var(--arena-3d-you-eggs-x) - var(--arena-3d-you-eggs-w) / 2 - 1.75rem));
+  top: calc(var(--arena-3d-you-raising-y) + var(--arena-3d-you-raising-w) * 0.7);
+  left: calc(var(--arena-3d-you-raising-x) + var(--arena-3d-you-raising-w) / 2 + 0.75rem);
+  max-width: min(26rem, calc(100% - var(--arena-3d-you-raising-x) - var(--arena-3d-you-raising-w) / 2 - 1.75rem));
   padding: 0.375rem 0.625rem;
   font-size: var(--ds-text-xs);
   line-height: 1.35;
@@ -673,22 +673,42 @@
 }
 
 .game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field > .game-breeding-mode {
-  --arena-3d-breeding-spot-pad: 0.75rem;
-  --arena-3d-eggs-spot-w: calc(var(--arena-3d-you-eggs-w) + 2 * var(--arena-3d-breeding-spot-pad));
-  --arena-3d-eggs-spot-h: calc(var(--arena-3d-you-eggs-w) * 1.4 + 2 * var(--arena-3d-breeding-spot-pad));
-  --arena-3d-raising-spot-w: calc(var(--arena-3d-you-raising-w) + 2 * var(--arena-3d-breeding-spot-pad));
-  --arena-3d-raising-spot-h: calc(var(--arena-3d-you-raising-w) * 1.4 + 2 * var(--arena-3d-breeding-spot-pad));
-  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-repeat: no-repeat;
-  mask-size:
-    100% 100%,
-    var(--arena-3d-eggs-spot-w) var(--arena-3d-eggs-spot-h),
-    var(--arena-3d-raising-spot-w) var(--arena-3d-raising-spot-h);
-  mask-position:
-    0 0,
-    calc(var(--arena-3d-you-eggs-x) - var(--arena-3d-eggs-spot-w) / 2)
-      calc(var(--arena-3d-you-eggs-y) - var(--arena-3d-eggs-spot-h) / 2),
-    calc(var(--arena-3d-you-raising-x) - var(--arena-3d-raising-spot-w) / 2)
-      calc(var(--arena-3d-you-raising-y) - var(--arena-3d-raising-spot-h) / 2);
-  mask-composite: exclude;
+  display: none;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  :is(
+    .game-opponent-bar,
+    .game-player-dock,
+    .arena-3d-field .arena-3d-slot,
+    .arena-3d-field .game-field-effects,
+    .arena-3d-field .game-utility-slot:not(.game-utility-slot--you-eggs, .game-utility-slot--you-raising)
+  ) {
+  transition: filter var(--t-dialog-in, 180ms) ease-out;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas):has(.arena-3d-field > .game-breeding-mode)
+  :is(
+    .game-opponent-bar,
+    .game-player-dock,
+    .arena-3d-field .arena-3d-slot,
+    .arena-3d-field .game-field-effects,
+    .arena-3d-field .game-security-pile,
+    .arena-3d-field .game-utility-slot:not(.game-utility-slot--you-eggs, .game-utility-slot--you-raising)
+  ) {
+  filter: brightness(0.38) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+    :is(
+      .game-opponent-bar,
+      .game-player-dock,
+      .arena-3d-field .arena-3d-slot,
+      .arena-3d-field .game-field-effects,
+      .arena-3d-field .game-security-pile,
+      .arena-3d-field .game-utility-slot
+    ) {
+    transition: none;
+  }
 }

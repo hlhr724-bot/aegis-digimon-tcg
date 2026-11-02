@@ -16,26 +16,26 @@ const WIDE_ZONES: ArenaZoneSlots = {
   [`${Side.Opponent}:${ArenaZone.DECK.value}`]: { x: -7.75, z: -1.9 },
   [`${Side.Opponent}:${ArenaZone.TRASH.value}`]: { x: -7.75, z: -3.75 },
   [`${Side.Viewer}:${ArenaZone.SECURITY.value}`]: { x: -7.75, z: 1.9 },
-  [`${Side.Opponent}:${ArenaZone.EGGS.value}`]: { x: 6.4, z: -4 },
-  [`${Side.Opponent}:${ArenaZone.RAISING.value}`]: { x: 7.75, z: -4 },
+  [`${Side.Opponent}:${ArenaZone.EGGS.value}`]: { x: 7.75, z: -4 },
+  [`${Side.Opponent}:${ArenaZone.RAISING.value}`]: { x: 6.4, z: -4 },
   [`${Side.Opponent}:${ArenaZone.SECURITY.value}`]: { x: 7.75, z: -1.9 },
   [`${Side.Viewer}:${ArenaZone.DECK.value}`]: { x: 7.75, z: 1.9 },
   [`${Side.Viewer}:${ArenaZone.TRASH.value}`]: { x: 7.75, z: 3.75 },
-  [`${Side.Viewer}:${ArenaZone.EGGS.value}`]: { x: -6.4, z: 4 },
-  [`${Side.Viewer}:${ArenaZone.RAISING.value}`]: { x: -7.75, z: 4 },
+  [`${Side.Viewer}:${ArenaZone.EGGS.value}`]: { x: -7.75, z: 4 },
+  [`${Side.Viewer}:${ArenaZone.RAISING.value}`]: { x: -6.4, z: 4 },
 };
 
 const SHORT_ZONES: ArenaZoneSlots = {
   [`${Side.Opponent}:${ArenaZone.DECK.value}`]: { x: -7.75, z: -1.7 },
   [`${Side.Opponent}:${ArenaZone.TRASH.value}`]: { x: -7.75, z: -3.4 },
   [`${Side.Viewer}:${ArenaZone.SECURITY.value}`]: { x: -7.75, z: 1.7 },
-  [`${Side.Opponent}:${ArenaZone.EGGS.value}`]: { x: 9.3, z: -3.25 },
-  [`${Side.Opponent}:${ArenaZone.RAISING.value}`]: { x: 9.3, z: -1.55 },
+  [`${Side.Opponent}:${ArenaZone.EGGS.value}`]: { x: 9.3, z: -1.55 },
+  [`${Side.Opponent}:${ArenaZone.RAISING.value}`]: { x: 9.3, z: -3.25 },
   [`${Side.Opponent}:${ArenaZone.SECURITY.value}`]: { x: 7.75, z: -1.7 },
   [`${Side.Viewer}:${ArenaZone.DECK.value}`]: { x: 7.75, z: 1.7 },
   [`${Side.Viewer}:${ArenaZone.TRASH.value}`]: { x: 7.75, z: 3.4 },
-  [`${Side.Viewer}:${ArenaZone.EGGS.value}`]: { x: -9.3, z: 3.25 },
-  [`${Side.Viewer}:${ArenaZone.RAISING.value}`]: { x: -9.3, z: 1.55 },
+  [`${Side.Viewer}:${ArenaZone.EGGS.value}`]: { x: -9.3, z: 1.55 },
+  [`${Side.Viewer}:${ArenaZone.RAISING.value}`]: { x: -9.3, z: 3.25 },
 };
 
 const TALL_PILE_DEPTH = 4.95;

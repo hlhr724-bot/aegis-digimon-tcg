@@ -687,6 +687,7 @@ export function BoardStage({
             spectatorCode={!state.gameOver ? state.spectatorCode : undefined}
             spectatorNamesJson={!spectating ? state.players[viewerSeat]?.spectatorNamesJson : undefined}
             anonymousSpectatorCount={state.players[viewerSeat]?.anonymousSpectatorCount}
+              breedingFocus={guards.breedingActionsOpen}
             onResetScenario={onResetScenario}
             timer={
               (state.series?.bestOf ?? 1) > 1 ? (

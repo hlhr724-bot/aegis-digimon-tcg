@@ -32,6 +32,7 @@ The classic 2D board is the default. The 3D arena is experimental.
 | Meshes       | `meshes/`                                                                            | Card material, glow, shadow, permanent and zone meshes, highlight rims.                                      |
 | Effects      | `effects/`, `useArenaPulses.ts`, `ArenaPulseLayer.tsx`                               | Card motions, floor pulses, camera impulses, post effects.                                                   |
 | Card cues    | `cues/`                                                                              | Reads per-card cue state from the DOM proxies, hides the 2D decorations, and draws GL equivalents.           |
+| Breeding     | `breeding/`                                                                          | Dims the board in GL during the breeding step and keeps the viewer's eggs and raising card lit.              |
 | Quality      | `quality/`                                                                           | Tier metadata, device probe, automatic downgrades, context loss.                                             |
 | Textures     | `design/webglCard/`                                                                  | Card size, face material, foil shader, texture cache. Shared with pack opening.                              |
 
@@ -72,11 +73,12 @@ The canvas uses `pointer-events: none` and `aria-hidden`.
 | Pile card width | 1.12; a raising card is 1.2, the field card width                                                   |
 | Security tiles  | tile width 0.8, step up to 0.3, stack depth up to 1.9                                               |
 | Memory track    | 21 coins, spacing 0.54, radius 0.22, marker scale 1.3, at z = 0                                     |
-| Viewer slots    | security (-7.75, 1.9), deck (7.75, 1.9), trash (7.75, 3.75), eggs (-6.4, 4), raising (-7.75, 4)     |
-| Opponent slots  | deck (-7.75, -1.9), trash (-7.75, -3.75), security (7.75, -1.9), eggs (6.4, -4), raising (7.75, -4) |
+| Viewer slots    | security (-7.75, 1.9), deck (7.75, 1.9), trash (7.75, 3.75), eggs (-7.75, 4), raising (-6.4, 4)     |
+| Opponent slots  | deck (-7.75, -1.9), trash (-7.75, -3.75), security (7.75, -1.9), eggs (7.75, -4), raising (6.4, -4) |
 
-- Each side's eggs and raising slots are point-symmetric: the viewer's sit at the bottom left, under the viewer's security stack, and the opponent's at the top right, above theirs. This follows the classic order, where the viewer's breeding area is at the bottom left near the security stack. In portrait they sit in the pile rows.
-- The raising card sits 0.31 units below the security stack on the wide layout. The security stacks moved from z = ±2 to ±1.9, and the breeding slots from ±3.85 to ±4, so the security count badge clears the raising card's source badge on a 1024 x 768 screen. The world depth grew from 9.3 to 9.7 units to keep the raising card inside the fit rectangle; cards are about 4% smaller on height-bound screens.
+- Each side's eggs and raising slots are point-symmetric: the viewer's sit at the bottom left, under the viewer's security stack, and the opponent's at the top right, above theirs. This follows the classic board, where the viewer's breeding area is at the bottom left near the security stack. In portrait they sit in the pile rows.
+- The egg deck comes before the raising slot in reading order, as in the classic breeding dock (`BreedingDock.tsx`: eggs, then raising). On the wide and tall layouts the viewer's egg deck is on the outer side, left of the raising slot. On the short layout the two are stacked outside the security stack, so the egg deck is on top and the raising slot below it. The opponent's slots mirror the viewer's through the centre. `ArenaLayoutVariant.test.ts` checks the order on every layout. The first version had the raising slot on the outer side, which reversed the classic order.
+- The egg pile sits 0.37 units below the security stack on the wide layout. The security stacks moved from z = ±2 to ±1.9, and the breeding slots from ±3.85 to ±4, so the security count badge clears the raising card's source badge on a 1024 x 768 screen. The world depth grew from 9.3 to 9.7 units to keep the raising card inside the fit rectangle; cards are about 4% smaller on height-bound screens.
 - Digimon, Tamers, and Options use the same card size. Each side has two rows of 5 columns, a Digimon row and a support row, on the same x positions (`getArenaColumnX`).
 - `computeArenaRowSlots` takes the lanes of the current layout and puts up to 5 cards on the columns, centered: the viewer starts at column `floor((5 - n) / 2)` and the opponent at the mirrored column, so the two sides are point-symmetric. Each slot records its `column`.
 - A row falls back to a packed layout when it has more than 5 cards, or when sources, links, or suspended cards would overlap the next column. The packed layout keeps one card size for the whole row, reserves room for sources and links, and shrinks the row to fit the overflow half width. Packed slots have no `column`.
@@ -106,29 +108,66 @@ The canvas uses `pointer-events: none` and `aria-hidden`.
 | Layout | Chosen when                                                         | Typical screens                                 | Shape                                                                                                                                                                                             |
 | ------ | ------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Tall   | `portraitArena` (`(max-width: 1023px) and (orientation: portrait)`) | 390 x 844, 360 x 740, 768 x 1024                | Lanes 1.5 apart, overflow half width 3.6. Both pile rows sit behind the support lanes at z = ±4.95: eggs, raising, security, deck, trash, point-symmetric. Pitch 66°. Memory track at half scale. |
-| Short  | not portrait, and the fit rectangle is 2.75 times wider than tall   | 844 x 390, 740 x 360, 1280 x 720                | Bounds 19.9 x 8.8. Lanes at 1.32 and 3.26. Piles closer to the center line. Each side's eggs and raising area sit outside its security stack (x = ±9.3), point-symmetric. Pitch 62°.              |
+| Short  | not portrait, and the fit rectangle is 2.75 times wider than tall   | 844 x 390, 740 x 360, 1280 x 720                | Bounds 19.9 x 8.8. Lanes at 1.32 and 3.26. Piles closer to the center line. Each side's eggs (z = ±1.55) and raising slot (z = ±3.25) sit outside its security stack (x = ±9.3).                  |
 | Wide   | everything else                                                     | 1024 x 768, 1180 x 820, 1440 x 900, 1920 x 1080 | The desktop layout.                                                                                                                                                                               |
 
 - The fit rectangle is the field minus the opponent overlay inset. The camera always fits the layout's bounds into it, so the binding axis decides the card size: width in tall, height in short.
 - Short exists because a wide field is height-bound: compressing the lanes makes the cards about 9% larger on landscape phones and on 1280 x 720, where the dock leaves a 3.5 : 1 field.
 - Tall replaces the classic portrait pile strips. The CSS hides the strip frames (`.game-field::before` and `::after`) when the field holds the 3D overlay.
 - Every layout places the viewer's eggs and raising slots at their projected points. `Arena3dLayer` passes both raising permanents; `Arena3dScene` mounts a breeding mesh for each layout slot. The viewer's raising card is a GL card like the opponent's: face-up top card, up to 3 evolution sources, the side-colored frame and aura, and the DOM badges on its proxy. An empty raising slot shows the same DOM placeholder as the opponent's.
-- The short layout grew from 8.4 to 8.8 units deep. On a 740 x 360 phone, the viewer's egg pile at the near left corner is the largest pile on screen through perspective, and at 8.4 units it reached into the hand strip.
+- The short layout grew from 8.4 to 8.8 units deep. On a 740 x 360 phone, the card at the viewer's near left corner (now the raising slot) is the largest on screen through perspective, and at 8.4 units it reached into the hand strip.
 - On the desktop breakpoint (`(min-width: 1024px) and (min-height: 760px)`), the hand tray gets an 18 rem left padding in 3D, equal to its right padding. The classic breeding dock used to take that space, so without it the hand slid left under the breeding slots.
-- The breeding step dim (`.game-breeding-mode`) is a DOM layer, so it also darkens the GL cards under it. In 3D, `BoardStage` renders it inside `Arena3dField`. On every layout, a CSS mask cuts it open over the viewer's eggs and raising slots, read from `--arena-3d-you-eggs-*` and `--arena-3d-you-raising-*` (`-w` is the projected card width). Before this, the revealed raising card was dimmed with the rest of the board, and the breeding hint lost its panel because the portrait selectors expected the dock directly under `.game-field`.
-- The breeding hint is a panel placed from the same variables:
+- The breeding step dims the board in the GL scene and leaves the viewer's eggs and raising card lit. See [Breeding focus](#breeding-focus).
+- The breeding hint is a panel placed from the projected slot variables (`--arena-3d-you-raising-*`, where `-w` is the projected card width):
 
-| Layout | Hint placement                                                                                                                                                    |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tall   | Full width, above the raising slot.                                                                                                                               |
-| Wide   | Above the egg pile, left-aligned with it, at most 2.6 egg widths wide. That space lies between the security stack and the first field column.                     |
-| Short  | Right of the egg pile, bottom-aligned with it, at most 26 rem wide, in the small text size. One line fits under the security stack, so the panel never covers it. |
+| Layout | Hint placement                                                                                                                                                 |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tall   | Full width, above the raising slot.                                                                                                                            |
+| Wide   | Above the raising slot, left-aligned with it, at most 2.4 raising widths wide. That space lies between the security stack and the first field column.          |
+| Short  | Right of the raising slot, bottom-aligned with it, at most 26 rem wide, in the small text size. One line fits under the security stack, so it never covers it. |
 
 - The field effects anchor is clamped to the canvas, so the indicator stays on screen when the grid reaches the screen edge.
 - Every card type keeps one size and each side keeps 5 + 5 columns in every layout.
 - Card proxies are at least 41 px on a 360 px wide phone. Piles keep the classic 44 px minimum slot box, so their touch target is larger than the drawn pile.
 - Proxies, badges, and cue overlays follow the GL cards through the same projection at every size and DPR. A rotation re-measures the field (`ResizeObserver` and `resize`), picks the new layout, and republishes the frame.
 - Touch: the canvas has `pointer-events: none`, and field proxies set `touch-action: none`. In Chrome touch emulation, a touch drag from the hand reaches the 3D row drop target and plays the card, and a hit test at the centre of every proxy and pile finds the proxy, never the canvas. Touch attack and digivolve were not verified end to end.
+
+## Breeding focus
+
+During the breeding step the board dims and the viewer's egg deck and raising card stay lit. The GL scene dims the board; CSS filters dim the DOM that sits above the canvas.
+
+### In the GL scene
+
+`breeding/ArenaBreedingFocus.tsx` draws one transparent plane over the whole floor (160 x 160 units at y = 0.05). `BoardStage` passes `guards.breedingActionsOpen` as `breedingFocus` through `Arena3dLayer` to `Arena3dScene`.
+
+- The plane uses `renderOrder` 20 and no depth test, so it draws after the floor, the aura, the cards, the cues, and the pulses, and darkens all of them.
+- `buildArenaBreedingFocusMaterial` computes a rounded-rectangle signed distance to each of the two slots and joins them with a smooth minimum, so the lit area is one soft shape around both cards. The dim rises from 0 at the padded card edge to full over 0.8 units, with a smoothstep, so there is no hard edge.
+- `computeArenaBreedingSpotlight` takes the slot centres from the current layout (`ArenaLayoutVariant`) and pads each card by 0.16 units. The lit area covers the egg pile and the raising card on every layout and stays clear of the security stack (`computeArenaBreedingSpotlight.test.ts`).
+- The dim color is the classic `.game-breeding-mode` color (`#040912`) at 62%. On High, bloom renders the scene into a linear half-float target, so blending happens in linear light and 62% looked like about 35%. The plane then uses `1 - 0.38^2.2` (about 88%) instead. Sampled floor pixels match the classic dim to within a few levels on High and on the tiers without bloom.
+- `stepArenaBreedingFocus` fades the dim in and out over 180 ms, the classic `--t-dialog-in`, and caps a frame gap at 1/30 s so an idle scene still shows the fade. While it fades, the plane keeps `activity.busyUntil` ahead, so the scene renders every frame. Reduced motion switches it at once.
+- The plane is hidden while the dim is 0, so outside the breeding step it costs no draw call. During the step it adds 1 draw call. Its program is compiled at mount with the rest of the scene, so the first breeding step compiles nothing; it brings the board to 25 programs, the budget limit.
+
+### In the DOM
+
+`.game-breeding-mode` still renders inside `Arena3dField`. Under the canvas guard, `arena3dField.css` hides it with `display: none`. It stays in the DOM because the classic desktop rules lift the memory band with `:has(.game-breeding-mode)`, and the dim comes back as a plain DOM layer when the canvas is missing.
+
+While it is present, these elements get `filter: brightness(0.38)`, the same factor as the GL dim:
+
+| Element                                                    | Why                                                                  |
+| ---------------------------------------------------------- | -------------------------------------------------------------------- |
+| `.game-opponent-bar`                                       | Opponent hand and top bar buttons.                                   |
+| `.game-player-dock`                                        | Hand, player plate, hand sort, and the dock panel on phones.         |
+| `.arena-3d-slot`                                           | Field card proxies: DP, level, and badges.                           |
+| `.game-security-pile`                                      | Security count badge. Needs `!important` over the 3D `filter: none`. |
+| `.game-utility-slot`, except the viewer's eggs and raising | Deck, trash, and the opponent's breeding piles.                      |
+| `.game-field-effects`                                      | Field effect chips.                                                  |
+
+- The viewer's eggs and raising proxies, the breeding hint, and the memory band (END BREEDING and the phase rail) keep full brightness and stay clickable. The classic board lifts the same memory band above its dim.
+- A filter dims only the element's own pixels, so there is no seam where the DOM meets the canvas. A DOM layer over the hand would have dimmed the canvas a second time under it.
+- The filters fade with the same 180 ms transition and switch at once under reduced motion.
+- The first version cut the DOM layer open with a CSS mask: two plain rectangles with 12 px padding. It also dimmed the GL board through the DOM, so the cut showed as a hard 2D rectangle over the 3D floor.
+
+The classic board is unchanged: it keeps the DOM `.game-breeding-mode` layer.
 
 ## Memory track
 
@@ -386,6 +425,8 @@ These are the desktop budgets. Phones and tablets use the touch budgets below. "
 - `field/skipUnchangedPixelRatio.test.ts`
 - `field/createArenaDomWatch.test.ts`
 
+- `breeding/computeArenaBreedingSpotlight.test.ts`
+- `breeding/stepArenaBreedingFocus.test.ts`
 No E2E test selects the 3D style. Playwright runs on the classic board by default.
 
 ## Performance
@@ -521,16 +562,16 @@ Findings:
 
 ### Budgets
 
-| Budget                                       | Target on an Apple M4  | Reason                                                                  |
-| -------------------------------------------- | ---------------------- | ----------------------------------------------------------------------- |
-| `ArenaLayoutSync` per rendered frame at idle | 0.2 ms or less         | A mid-range phone is about 4 to 6 times slower.                         |
-| Arena frame script while busy                | 2 ms or less           | Leaves room for React work in a 16.7 ms frame.                          |
-| Idle arena frames                            | tier idle fps          | 10 on Low, 20 on Medium and High; 0 behind a zoom.                      |
-| Draw calls on the crowded board              | 150 or fewer           | Currently 123.                                                          |
-| Programs                                     | 25 or fewer            | Currently 24: 15 board, 6 pulse, 3 cue programs, all compiled at mount. |
-| Card texture memory                          | within the tier budget | 48, 96, and 160 MB; 32, 64, and 112 MB on touch.                        |
-| GL contexts after leaving 3D                 | 0 from the arena       | Checked by the `mount` scenario.                                        |
-| Long tasks from the 3D layer at idle         | none                   | Checked by the `crowded` and `bot` scenarios.                           |
+| Budget                                       | Target on an Apple M4  | Reason                                                                                          |
+| -------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------- |
+| `ArenaLayoutSync` per rendered frame at idle | 0.2 ms or less         | A mid-range phone is about 4 to 6 times slower.                                                 |
+| Arena frame script while busy                | 2 ms or less           | Leaves room for React work in a 16.7 ms frame.                                                  |
+| Idle arena frames                            | tier idle fps          | 10 on Low, 20 on Medium and High; 0 behind a zoom.                                              |
+| Draw calls on the crowded board              | 150 or fewer           | Currently 123; 124 during the breeding step.                                                    |
+| Programs                                     | 25 or fewer            | Currently 25: 15 board, 6 pulse, 3 cue programs, and the breeding focus, all compiled at mount. |
+| Card texture memory                          | within the tier budget | 48, 96, and 160 MB; 32, 64, and 112 MB on touch.                                                |
+| GL contexts after leaving 3D                 | 0 from the arena       | Checked by the `mount` scenario.                                                                |
+| Long tasks from the 3D layer at idle         | none                   | Checked by the `crowded` and `bot` scenarios.                                                   |
 
 ### Evaluation
 

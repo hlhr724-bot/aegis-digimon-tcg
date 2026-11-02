@@ -16,6 +16,7 @@ import { ArenaHologramEnvironment } from "@/game/arena3d/ArenaHologramEnvironmen
 import { ArenaPrismEnvironment } from "@/game/arena3d/ArenaPrismEnvironment";
 import type { ArenaPulse } from "@/game/arena3d/ArenaPulse";
 import { ArenaPulseLayer } from "@/game/arena3d/ArenaPulseLayer";
+import { ArenaBreedingFocus } from "@/game/arena3d/breeding/ArenaBreedingFocus";
 import { ArenaCardCueLayer } from "@/game/arena3d/cues/ArenaCardCueLayer";
 import { ArenaCardDepartures } from "@/game/arena3d/cues/ArenaCardDepartures";
 import type { DeleteBurst } from "@/game/match/types";
@@ -62,6 +63,7 @@ type Props = {
   memory: number;
   memoryPrediction: number | undefined;
   fieldEffects: Readonly<Record<Side, ArenaFieldEffectState>>;
+  breedingFocus: boolean;
   onDowngrade: () => void;
   onContextLost: () => void;
 };
@@ -226,6 +228,13 @@ function ArenaSceneContents(props: Props) {
         reducedMotion={reducedMotion}
       />
       <Arena3dCameraRig base={cameraBase} impulse={impulse} store={props.store} reducedMotion={reducedMotion} />
+      <ArenaBreedingFocus
+        active={props.breedingFocus}
+        layout={layout}
+        linearBlending={quality.bloom}
+        activity={activity}
+        reducedMotion={reducedMotion}
+      />
       <EnergyDecay energy={energy} />
       <ArenaFrameDriver
         activity={activity}
