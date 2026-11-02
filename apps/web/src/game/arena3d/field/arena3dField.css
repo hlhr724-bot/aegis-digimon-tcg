@@ -71,7 +71,7 @@
   top: 65%;
 }
 
-.game-board[data-board-style="arena3d"] .arena-3d-field .game-memory-band {
+.game-board[data-board-style="arena3d"] .arena-3d-field:not([data-arena-layout="tall"]) .game-memory-band {
   position: absolute !important;
   top: var(--arena-3d-band-y) !important;
   left: 0 !important;
@@ -90,15 +90,18 @@
   translate: 0 -50% !important;
 }
 
-.game-board[data-board-style="arena3d"] .arena-3d-field .game-memory-band > .game-memory-gauge {
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field:not([data-arena-layout="tall"])
+  .game-memory-band
+  > .game-memory-gauge {
   display: contents !important;
 }
 
-.game-board[data-board-style="arena3d"] .arena-3d-field .game-memory-gauge__phase {
+.game-board[data-board-style="arena3d"] .arena-3d-field:not([data-arena-layout="tall"]) .game-memory-gauge__phase {
   display: none !important;
 }
 
-.game-board[data-board-style="arena3d"] .arena-3d-field .game-memory-gauge__track {
+.game-board[data-board-style="arena3d"] .arena-3d-field:not([data-arena-layout="tall"]) .game-memory-gauge__track {
   grid-column: 2;
   grid-row: 1;
   display: flex;
@@ -109,11 +112,11 @@
   --memory-track-pad-y: 0px;
 }
 
-.game-board[data-board-style="arena3d"] .arena-3d-field .game-memory-coin {
+.game-board[data-board-style="arena3d"] .arena-3d-field:not([data-arena-layout="tall"]) .game-memory-coin {
   max-width: none !important;
 }
 
-.game-board[data-board-style="arena3d"] .arena-3d-field .game-phase-rail {
+.game-board[data-board-style="arena3d"] .arena-3d-field:not([data-arena-layout="tall"]) .game-phase-rail {
   grid-column: 1;
   grid-row: 1;
   justify-self: end;
@@ -125,7 +128,7 @@
   list-style: none;
 }
 
-.game-board[data-board-style="arena3d"] .arena-3d-field .game-end-turn-orb {
+.game-board[data-board-style="arena3d"] .arena-3d-field:not([data-arena-layout="tall"]) .game-end-turn-orb {
   position: relative !important;
   inset: auto !important;
   grid-column: 3;
@@ -143,18 +146,20 @@
   transform: none !important;
 }
 
-.game-board[data-board-style="arena3d"] .arena-3d-field .game-end-turn-orb__ring {
+.game-board[data-board-style="arena3d"] .arena-3d-field:not([data-arena-layout="tall"]) .game-end-turn-orb__ring {
   display: none;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-memory-gauge__track {
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field:not([data-arena-layout="tall"])
+  .game-memory-gauge__track {
   border: 0 !important;
   background: none !important;
   box-shadow: none !important;
 }
 
 .game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
-  .arena-3d-field
+  .arena-3d-field:not([data-arena-layout="tall"])
   :is(.game-memory-coin, .game-memory-arc, .game-memory-prediction, .game-memory-prediction__marker) {
   opacity: 0 !important;
 }
@@ -644,30 +649,9 @@
 }
 
 .game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="tall"] .game-memory-band {
-  column-gap: 0.375rem;
-}
-
-@media (max-width: 599px) {
-  .game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="tall"] .game-phase-rail__step {
-    padding: 0.2rem 0.4rem;
-    font-size: 0.5625rem;
-    letter-spacing: 0.04em;
-  }
-
-  .game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="tall"] .game-end-turn-orb {
-    display: grid !important;
-    place-items: center;
-    width: 2.75rem !important;
-    min-width: 0;
-    height: 2.75rem !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-    border-radius: 50% !important;
-    font-size: 0.5rem;
-    line-height: 1.05;
-    white-space: normal;
-    text-align: center;
-  }
+  left: 0.5rem !important;
+  width: calc(100% - 1rem) !important;
+  translate: 0 -50% !important;
 }
 
 @media (max-height: 520px) {

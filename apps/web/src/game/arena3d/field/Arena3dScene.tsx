@@ -152,15 +152,17 @@ function ArenaSceneContents(props: Props) {
         fieldEffects={props.fieldEffects}
         reducedMotion={reducedMotion}
       />
-      <ArenaMemoryTrack
-        memory={props.memory}
-        prediction={props.memoryPrediction}
-        scale={layout.memoryScale}
-        colors={colors}
-        ripples={ripples}
-        activity={activity}
-        reducedMotion={reducedMotion}
-      />
+      {layout.value === ArenaLayoutVariant.TALL.value ? null : (
+        <ArenaMemoryTrack
+          memory={props.memory}
+          prediction={props.memoryPrediction}
+          scale={layout.memoryScale}
+          colors={colors}
+          ripples={ripples}
+          activity={activity}
+          reducedMotion={reducedMotion}
+        />
+      )}
       {permanentIds.map((id) => {
         const card = cards.get(id);
         return card ? (
