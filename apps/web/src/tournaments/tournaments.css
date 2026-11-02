@@ -809,16 +809,15 @@
 }
 
 .tournaments-tree__slots {
-  display: flex;
+  display: grid;
   flex: 1;
-  flex-direction: column;
+  grid-auto-rows: 1fr;
 }
 
 .tournaments-tree__pair {
   position: relative;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
+  display: grid;
+  grid-auto-rows: 1fr;
   margin: 0;
   padding: 0;
   list-style: none;
