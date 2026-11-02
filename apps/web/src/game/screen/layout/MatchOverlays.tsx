@@ -22,7 +22,6 @@ import { DecisionPrompts, type SourceHostStep } from "./DecisionPrompts";
 import { CombatWindowPrompts } from "./CombatWindowPrompts";
 import { SecurityScenes } from "./SecurityScenes";
 import { MatchStatusOverlays } from "./MatchStatusOverlays";
-import { MatchBoardStyleNotice } from "@/game/screen/layout/MatchBoardStyleNotice";
 import { PlayChoicePrompts } from "./PlayChoicePrompts";
 import { dnaMaterialPicks } from "../model/dnaMaterialSelection";
 import { FieldCardMenu } from "./FieldCardMenu";
@@ -361,7 +360,6 @@ export function MatchOverlays({
       ) : null}
 
       {!gameOver ? <SecurityScenes {...scenes} compact={collapseNotices} /> : null}
-      {!gameOver ? <MatchBoardStyleNotice /> : null}
 
       <MatchStatusOverlays
         turns={logTurns}

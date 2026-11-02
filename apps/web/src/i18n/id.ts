@@ -6,7 +6,6 @@ import { staffRolesId } from "@/i18n/staffRoles.id";
 import { tournamentDetailId } from "@/i18n/tournamentDetail.id";
 import { tournamentSpectatorsId } from "@/i18n/tournamentSpectators.id";
 import { publicReplaysId } from "@/i18n/publicReplays.id";
-import { boardStyleNoticeId } from "@/i18n/boardStyleNotice.id";
 import { achievementsId } from "@/i18n/achievements.id";
 import { rankedId } from "@/i18n/ranked.id";
 import { friendsEn } from "@/i18n/friends.en";
@@ -2950,7 +2949,6 @@ const interfaceMessages = {
   ...tournamentDetailId,
   ...tournamentSpectatorsId,
   ...publicReplaysId,
-  ...boardStyleNoticeId,
   ...tournamentCircuitsId,
   ...tournamentOfficialRequestId,
   ...matchQueueId,
