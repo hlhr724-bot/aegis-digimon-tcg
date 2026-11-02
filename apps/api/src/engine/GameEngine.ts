@@ -168,6 +168,7 @@ export class GameEngine {
    */
   windowTokenSeq = 0;
   securityRemovalEventSeq = 0;
+  digivolutionTrashEventSeq = 0;
   /** One identity per resolving body, preserving its parent's identity across nested effects. */
   readonly effectBodyTokens: number[] = [];
   /**
@@ -734,6 +735,7 @@ export class GameEngine {
       instanceSeq: this.instanceSeq,
       battleScopeSequence: this.battleScopeSequence,
       securityRemovalEventSeq: this.securityRemovalEventSeq,
+      digivolutionTrashEventSeq: this.digivolutionTrashEventSeq,
       matchSetupStarted: this.matchSetupStarted,
       bothReadyFired: this.bothReadyFired,
       readySeats: [...this.readySeats],
@@ -752,6 +754,7 @@ export class GameEngine {
     this.instanceSeq = snapshot.instanceSeq;
     this.battleScopeSequence = snapshot.battleScopeSequence;
     this.securityRemovalEventSeq = snapshot.securityRemovalEventSeq;
+    this.digivolutionTrashEventSeq = snapshot.digivolutionTrashEventSeq;
     this.matchSetupStarted = snapshot.matchSetupStarted;
     this.bothReadyFired = snapshot.bothReadyFired;
     this.stagedDecks.length = 0;
