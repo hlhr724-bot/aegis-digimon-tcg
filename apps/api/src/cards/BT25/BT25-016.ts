@@ -94,7 +94,7 @@ export const compiled: CompiledCard = {
                 nameOrTrait: [
                   {
                     tokens: ["Marsmon", "Callismon"],
-                    match: "name",
+                    match: "nameExact",
                   },
                 ],
               },

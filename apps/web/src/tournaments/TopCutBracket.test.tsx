@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import type { PhaseView, SeriesScoreView } from "@aegis/shared";
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { isAwaitingTopCut, TopCutBracket } from "./TopCutBracket";
+import type { TournamentSpectateTarget } from "./TournamentSpectateTarget";
 import type { TournamentDetail } from "./types";
 
 const BASE: TournamentDetail = {
@@ -90,13 +91,24 @@ const TOP_CUT: PhaseView = {
   ],
 };
 
-function renderBracket(detail: TournamentDetail) {
+function renderBracket(detail: TournamentDetail, onWatchMatch?: (target: TournamentSpectateTarget) => void) {
   return render(
     <I18nProvider>
-      <TopCutBracket detail={detail} />
+      <TopCutBracket detail={detail} onWatchMatch={onWatchMatch} />
     </I18nProvider>,
   );
 }
+
+const LIVE_FINAL: PhaseView = {
+  ...TOP_CUT,
+  rounds: [
+    TOP_CUT.rounds[0]!,
+    {
+      ...TOP_CUT.rounds[1]!,
+      matches: [match({ matchId: "m-3", status: "playing", participant0Id: "p-1", participant1Id: "p-3" })],
+    },
+  ],
+};
 
 afterEach(cleanup);
 
@@ -177,5 +189,24 @@ describe("TopCutBracket", () => {
     };
     renderBracket({ ...BASE, phases: [timed] });
     expect(screen.queryByText("No time limit")).toBeNull();
+  });
+
+  it("watches a live bracket match when the viewer may spectate", () => {
+    const onWatchMatch = vi.fn<(target: TournamentSpectateTarget) => void>();
+    renderBracket({ ...BASE, canSpectate: true, phases: [LIVE_FINAL] }, onWatchMatch);
+    const watchButtons = screen.getAllByRole("button", { name: /^Watch / });
+    expect(watchButtons).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Watch Ada · Cy" }));
+    expect(onWatchMatch).toHaveBeenCalledWith({ tournamentId: "t-1", matchId: "m-3" });
+  });
+
+  it("offers no watch action when the viewer may not spectate", () => {
+    renderBracket({ ...BASE, canSpectate: false, phases: [LIVE_FINAL] }, vi.fn());
+    expect(screen.queryByRole("button", { name: /^Watch / })).toBeNull();
+  });
+
+  it("offers no watch action for bracket matches that are not being played", () => {
+    renderBracket({ ...BASE, canSpectate: true, phases: [TOP_CUT] }, vi.fn());
+    expect(screen.queryByRole("button", { name: /^Watch / })).toBeNull();
   });
 });

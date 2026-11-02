@@ -181,7 +181,11 @@ export async function runCrossPermanentPlayReducers(
     }
     const key = `crossPlayReducer:${watcher.permanentId}`;
     if (engine.tracker.count(key, "crossReducer") > 0) continue;
-    const candidates = purpleDigimonUnderTamers(engine, player);
+    const committed = new Set([
+      ...(ctx.reservedCostInstanceIds ?? []),
+      ...(engine.pendingPlayReducerPlacements.get(instance.instanceId) ?? []),
+    ]);
+    const candidates = purpleDigimonUnderTamers(player).filter((instanceId) => !committed.has(instanceId));
     if (candidates.length === 0) continue;
     const prompt =
       "BT10-093: place up to 3 purple Digimon from under your Tamers as digivolution cards to reduce the play cost by 2 each?";
@@ -195,8 +199,7 @@ export async function runCrossPermanentPlayReducers(
   }
 }
 
-/** InstanceIds of purple Digimon sitting in the digivolution stacks of the seat's Tamers. */
-export function purpleDigimonUnderTamers(engine: GameEngine, player: PlayerState): string[] {
+function purpleDigimonUnderTamers(player: PlayerState): string[] {
   const out: string[] = [];
   for (const perm of player.battleArea) {
     const topDef = perm.topCard ? lookupDefinition(perm.topCard.cardId) : undefined;

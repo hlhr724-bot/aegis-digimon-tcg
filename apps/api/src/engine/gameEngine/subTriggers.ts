@@ -35,6 +35,7 @@ import { buildEffectContext, cardSourceOf } from "./effectContext.js";
 import { drainPendingAttackTriggers, runPendingTimingWindow } from "#api/engine/gameEngine/timing/fire";
 import { ResolutionPlan } from "../decisions/resolutionPlan.js";
 import { applyEntryGrants } from "#api/engine/gameEngine/applyEntryGrants";
+import { isDigivolutionTrashEvent } from "#api/engine/gameEngine/isDigivolutionTrashEvent";
 
 /**
  * @param sourceScope Restricts the fire to the event subject's own "when this Digimon is
@@ -49,6 +50,9 @@ export async function fireSubTrigger(
 ): Promise<void> {
   if (event === "whenSecurityRemoved" && payload.securityRemovalEventId === undefined) {
     payload = { ...payload, securityRemovalEventId: ++engine.securityRemovalEventSeq };
+  }
+  if (isDigivolutionTrashEvent(event) && payload.digivolutionTrashEventId === undefined) {
+    payload = { ...payload, digivolutionTrashEventId: ++engine.digivolutionTrashEventSeq };
   }
   const scopedOut = (sub: SubTriggerSubscription): boolean => {
     if (sourceScope === undefined) return false;

@@ -811,7 +811,8 @@ export class BoardProjection {
               { type: "playCard", instanceId: instance.instanceId },
               active.playDeps,
             );
-        instance.playableFromHand = playCheck !== undefined && playableFromHand(playCheck, instance.cardId);
+        instance.playableFromHand =
+          playCheck !== undefined && playableFromHand(playCheck, instance.cardId, instance.playCostReductionBlocked);
         // Only the success branch carries a cost. A card that reads as playable through the
         // material-route escape hatch was rejected for memory, so it has no figure to publish.
         instance.projectedPlayCost = playCheck?.ok === true ? playCheck.cost : NO_PROJECTED_COST;

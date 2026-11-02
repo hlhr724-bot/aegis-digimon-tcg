@@ -58,7 +58,7 @@ describe("BT25-024 Lekismon", () => {
       const subTrigger = watcher as { actions?: unknown[] } | undefined;
       expect(subTrigger?.actions?.[0]).toMatchObject({
         kind: "Digivolve",
-        into: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Crescemon"], match: "name" }] },
+        into: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Crescemon"], match: "nameExact" }] },
         from: ["trash"],
         reduceCost: 1,
         payCost: true,

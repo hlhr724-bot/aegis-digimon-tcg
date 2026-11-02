@@ -1,5 +1,61 @@
 [
   {
+    "version": "1.47.0-beta",
+    "releasedAt": "2026-11-02",
+    "summaryKey": "releases.1.47.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.47.0-beta.feature.arena3d"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.feature.tournaments"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.feature.rooms"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.feature.community"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.feature.cards"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.47.0-beta.fix.leaveProtection",
+        "issue": 6414
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.progress",
+        "issue": 6426
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.fragment",
+        "issue": 6425
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.exactNames",
+        "issue": 6424
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.turnOrder"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.yuu",
+        "issue": 6439
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.costLock"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.seventhCruz"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.spectatorHand"
+      }
+    ]
+  },
+  {
     "version": "1.46.0-beta",
     "releasedAt": "2026-11-01",
     "summaryKey": "releases.1.46.0-beta.summary",

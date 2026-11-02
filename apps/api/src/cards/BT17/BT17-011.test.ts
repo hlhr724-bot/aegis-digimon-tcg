@@ -66,7 +66,7 @@ describe("BT17-011 Agunimon", () => {
           costOverride: 3,
           ignoreRequirements: true,
           optional: true,
-          into: { nameOrTrait: [{ tokens: ["AncientGreymon"], match: "name" }] },
+          into: { nameOrTrait: [{ tokens: ["AncientGreymon"], match: "nameExact" }] },
           condition: {
             kind: "anyOf",
             conditions: [

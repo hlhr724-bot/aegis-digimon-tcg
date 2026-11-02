@@ -199,6 +199,11 @@ export function resolutionDeps(
       // can see engine pending pool. Retire it before its body can open another window.
       engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter((pending) => pending !== collected);
     },
+    onLapsed: (_timing, collected) => {
+      const reactionIndex = derivedPending.indexOf(collected);
+      if (reactionIndex >= 0) derivedPending.splice(reactionIndex, 1);
+      engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter((pending) => pending !== collected);
+    },
     onActivating: (timing, collected) => {
       if (collected.effect.announce?.() === false) return;
       const stableOptWatcher = collected.effect.effectKey.startsWith("subtrigger/opt/");
@@ -857,8 +862,8 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
     adjustedPlayCost: (_state, seat, definition, base) =>
       engine.modifiers.playCostFor({ def: definition, controllerSeat: seat }, base),
     canReducePlayCost: (_state, seat) => !engine.continuous.blocksCostReduction(seat, "play"),
-    finalizePlayCost: async (_state, _seat, instance, _definition, baseCost) =>
-      fireBeforePayCost(engine, instance, baseCost, false, "hand"),
+    finalizePlayCost: async (_state, _seat, instance, _definition, baseCost, materialInstanceIds) =>
+      fireBeforePayCost(engine, instance, baseCost, false, "hand", false, 1, materialInstanceIds),
     digiXrosNamesOf: (instanceId) => {
       const located = findInstance(engine, instanceId);
       if (located === undefined) return [];

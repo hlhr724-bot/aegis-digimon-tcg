@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import { Icons } from "@/design/icons";
 import type { TranslationKey } from "@/i18n/translationTypes";
 import { pathForRoute } from "@/routes";
+import { getTournamentBracketSpectating } from "@/tournaments/getTournamentBracketSpectating";
 import { TournamentBracket } from "@/tournaments/TournamentBracket";
 import { TournamentBotPortrait } from "@/tournaments/TournamentBotPortrait";
 import { TournamentTab } from "@/tournaments/TournamentTab";
@@ -162,7 +163,12 @@ export function TournamentDetail({
   const bracketPanel = eliminationPhase ? (
     <Panel className="tournaments-bracket">
       <h3>{t("tournaments.bracket.title")}</h3>
-      <TournamentBracket phase={eliminationPhase} participants={detail.participants} accountId={accountId} />
+      <TournamentBracket
+        phase={eliminationPhase}
+        participants={detail.participants}
+        accountId={accountId}
+        spectating={getTournamentBracketSpectating({ detail, onWatchMatch })}
+      />
     </Panel>
   ) : null;
 
@@ -436,7 +442,9 @@ export function TournamentDetail({
                 {entryProgress}
                 <MyMatchPanel detail={detail} accountId={accountId} onJoinGame={onJoinGame} onChanged={refresh} />
                 {isElimination ? bracketPanel : <TournamentMatchHistory detail={detail} onWatchMatch={onWatchMatch} />}
-                {isElimination ? null : <TopCutBracket detail={detail} accountId={accountId} />}
+                {isElimination ? null : (
+                  <TopCutBracket detail={detail} accountId={accountId} onWatchMatch={onWatchMatch} />
+                )}
               </>
             )}
           </div>
@@ -452,7 +460,7 @@ export function TournamentDetail({
       {activeTab === TournamentTab.BRACKET.value ? (
         <div className="tournaments-detail__stack">
           {isElimination ? bracketPanel : null}
-          {isElimination ? null : <TopCutBracket detail={detail} accountId={accountId} />}
+          {isElimination ? null : <TopCutBracket detail={detail} accountId={accountId} onWatchMatch={onWatchMatch} />}
           <TournamentMatchHistory detail={detail} onWatchMatch={onWatchMatch} />
           {isElimination ? null : standingsPanel}
         </div>

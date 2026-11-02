@@ -61,7 +61,7 @@ describe("BT25-016 GrapLeomon", () => {
       from: ["hand"],
       payCost: false,
       optional: true,
-      into: { nameOrTrait: [{ tokens: ["Marsmon", "Callismon"], match: "name" }] },
+      into: { nameOrTrait: [{ tokens: ["Marsmon", "Callismon"], match: "nameExact" }] },
     });
   });
 

@@ -97,9 +97,9 @@ describe("the home screen", () => {
     const props = renderHome();
     const watch = await screen.findByRole("button", { name: "Watch Taichi vs Sora" });
     const match = watch.closest("li")!;
-    expect(match.querySelectorAll(".home-live__art img")).toHaveLength(2);
-    expect(match.querySelectorAll(".home-live__player img")).toHaveLength(2);
-    expect(match.querySelector('.home-live__player img[src="/account/avatar/sora/image?v=1"]')).toBeTruthy();
+    expect(match.querySelectorAll(".live-match-card__art img")).toHaveLength(2);
+    expect(match.querySelectorAll(".live-match-card__player img")).toHaveLength(2);
+    expect(match.querySelector('.live-match-card__player img[src="/account/avatar/sora/image?v=1"]')).toBeTruthy();
     fireEvent.click(watch);
     expect(props.onWatchLive).toHaveBeenCalledWith("ABCDEF");
   });

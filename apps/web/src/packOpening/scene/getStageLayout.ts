@@ -1,4 +1,4 @@
-import { CARD_DIMENSIONS } from "@/packOpening/scene/cardDimensions";
+import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
 
 type Vector = [number, number, number];
 

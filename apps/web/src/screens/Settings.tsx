@@ -17,7 +17,7 @@ import { InterfaceThemeDialog } from "../design/InterfaceThemePicker";
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Avatar, Button, Eyebrow, Switch, type PlayerIdentity } from "../design/primitives";
 import { Panel, SectionHeading } from "../design/surfaces";
-import { ArenaLookSettings } from "../design/ArenaLookSettings";
+import { BoardStyleSettings } from "@/game/arena3d/boardStyle/BoardStyleSettings";
 import { Icons, type IconComponent } from "../design/icons";
 import { getInterfaceColors, useInterfaceTheme } from "../design/interfaceTheme";
 import {
@@ -42,6 +42,8 @@ import { FieldLayout, setFieldLayout, useFieldLayout } from "../design/fieldLayo
 import { setPileCountsShown, usePileCountsShown } from "../design/pileCounts";
 import { hoverZoomPreference } from "@/design/hoverZoomPreference";
 import { useHoverZoomPreference } from "@/design/useHoverZoomPreference";
+import { cardViewer3dPreference } from "@/game/overlay/viewer/cardViewer3d/cardViewer3dPreference";
+import { useCardViewer3dEnabled } from "@/game/overlay/viewer/cardViewer3d/useCardViewer3dEnabled";
 import { setChatSoundEnabled, useChatSoundEnabled } from "../game/chat/chatSound";
 import { CardSleevePicker, EggSleevePicker } from "../design/sleevePicker";
 import { TEXT_SCALES, setTextScale, useTextScale, type TextScale } from "../design/textScale";
@@ -301,6 +303,7 @@ export function Settings({
   const groupIdenticalTamers = useTamerGrouping();
   const pileCountsShown = usePileCountsShown();
   const hoverZoom = useHoverZoomPreference();
+  const cardViewer3d = useCardViewer3dEnabled();
   const chatSoundEnabled = useChatSoundEnabled();
   const handAutoSort = useHandAutoSort();
   const effectPromptPosition = useEffectPromptPosition();
@@ -710,11 +713,19 @@ export function Settings({
                   onChange={hoverZoomPreference.setEnabled}
                 />
               </div>
+              <div className="settings-row">
+                <Switch
+                  checked={cardViewer3d}
+                  label={t("redesign.foundation.cardViewer3d.title")}
+                  description={t("redesign.foundation.cardViewer3d.description")}
+                  onChange={cardViewer3dPreference.setEnabled}
+                />
+              </div>
             </SettingsCard>
 
             <section id="settings-arena" className="settings-card" aria-labelledby="settings-arena-title" tabIndex={-1}>
               <SectionHeading id="settings-arena-title" title={t("redesign.settings.arena")} />
-              <ArenaLookSettings />
+              <BoardStyleSettings />
             </section>
           </div>
         </div>

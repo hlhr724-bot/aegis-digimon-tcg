@@ -340,6 +340,65 @@ describe("BT10-093 Yuu Amano — KB Q&A rulings", () => {
     ]);
   });
 
+  it("does not offer a card already chosen as a DigiXros material from under a Tamer", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            {
+              card: YUU,
+              as: "yuu",
+              under: [
+                { card: "EX10-031", as: "darkKnightmonMaterial" },
+                { card: "P-115", as: "skullKnightmon" },
+              ],
+            },
+            { card: "EX10-064", as: "expander" },
+          ],
+          hand: [
+            { card: "BT12-111", as: "darknessBagramon" },
+            { card: "EX10-056", as: "bagramonMaterial" },
+          ],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "playCard",
+        instanceId: s.inst("darknessBagramon").instanceId,
+        digiXros: {
+          materialInstanceIds: [s.inst("darkKnightmonMaterial").instanceId, s.inst("bagramonMaterial").instanceId],
+          expanderPermanentIds: [s.perm("expander").permanentId],
+        },
+      }),
+    ).toEqual({ ok: true });
+    await settleEngine(() =>
+      s.state.players[0]!.battleArea.some(
+        ({ topCard }) => topCard?.instanceId === s.inst("darknessBagramon").instanceId,
+      ),
+    );
+    await settleEngine();
+
+    const yuuSelection = s.decisions.find(({ req }) => req.kind === "selectCards")?.req;
+    expect(yuuSelection?.options?.candidateInstanceIds).toEqual([s.inst("skullKnightmon").instanceId]);
+    const played = s.state.players[0]!.battleArea.find(
+      ({ topCard }) => topCard?.instanceId === s.inst("darknessBagramon").instanceId,
+    )!;
+    expect(played.stack.map(({ instanceId }) => instanceId).sort()).toEqual(
+      [
+        s.inst("darkKnightmonMaterial").instanceId,
+        s.inst("bagramonMaterial").instanceId,
+        s.inst("skullKnightmon").instanceId,
+      ].sort(),
+    );
+    expect(s.perm("yuu").stack).toHaveLength(0);
+    expect(s.state.memory).toBe(10 - (16 - 3 * 2 - 2));
+  });
+
   it("does not activate when 2 level 4 [Bagra Army] Digimon with DigiXros requirements are played at the same time (Q2026)", async () => {
     const s = setupEngine(
       {

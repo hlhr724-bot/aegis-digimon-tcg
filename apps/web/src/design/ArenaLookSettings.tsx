@@ -167,37 +167,29 @@ export function ArenaLookSettings({ deckColors }: { deckColors?: ArenaDeckColors
         <div className="aegis-arena-look__controls">
           <fieldset className="aegis-arena-look__group">
             <legend className="aegis-arena-look__legend">{t("redesign.foundation.arena.lanes")}</legend>
-            <div className="aegis-arena-look__palettes">
-              {LANE_CHOICES.map((option) => {
-                const chosen = option.lanes === battleLanes;
-                return (
-                  <label key={option.lanes} className="aegis-arena-look__option aegis-arena-look__palette">
-                    <input
-                      type="radio"
-                      className="aegis-sr-only"
-                      name={`${groupName}-lanes`}
-                      value={option.lanes}
-                      checked={chosen}
-                      onChange={() => {
-                        setFieldLayout(FieldLayout.Organized);
-                        setBattleLanes(option.lanes);
-                        playSound("select");
-                      }}
-                    />
-                    <span className="aegis-arena-look__lanes-icon" aria-hidden="true">
-                      {Array.from({ length: option.count }, (_, lane) => (
-                        <span key={lane} />
-                      ))}
-                    </span>
-                    <span className="aegis-arena-look__option-label">{t(option.label)}</span>
-                    {chosen ? (
-                      <span className="aegis-arena-look__check" aria-hidden="true">
-                        <Icons.Check size={16} />
-                      </span>
-                    ) : null}
-                  </label>
-                );
-              })}
+            <div className="aegis-arena-look__segments">
+              {LANE_CHOICES.map((option) => (
+                <label key={option.lanes} className="aegis-arena-look__segment">
+                  <input
+                    type="radio"
+                    className="aegis-sr-only"
+                    name={`${groupName}-lanes`}
+                    value={option.lanes}
+                    checked={option.lanes === battleLanes}
+                    onChange={() => {
+                      setFieldLayout(FieldLayout.Organized);
+                      setBattleLanes(option.lanes);
+                      playSound("select");
+                    }}
+                  />
+                  <span className="aegis-arena-look__lanes-icon" aria-hidden="true">
+                    {Array.from({ length: option.count }, (_, lane) => (
+                      <span key={lane} />
+                    ))}
+                  </span>
+                  <span>{t(option.label)}</span>
+                </label>
+              ))}
             </div>
             <p className="aegis-arena-look__note">{t("redesign.foundation.arena.lanes.phoneNote")}</p>
           </fieldset>

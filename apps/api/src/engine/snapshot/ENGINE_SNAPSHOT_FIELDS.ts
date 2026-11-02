@@ -72,6 +72,7 @@ export const ENGINE_SNAPSHOT_FIELDS = new Set([
   "securityDp",
   "battleScopeSequence",
   "securityRemovalEventSeq",
+  "digivolutionTrashEventSeq",
   "deletionMaxDp",
   "dpDeleteBudget",
   "instanceSeq",

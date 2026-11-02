@@ -33,6 +33,7 @@ export type CommunityDeckQuery = {
   sort: CommunitySort;
   period: CommunityPeriod;
   colors: string[];
+  withGuide: boolean;
   search: string;
   page: number;
   viewerId?: string;
@@ -224,6 +225,7 @@ export class CommunityDeckStore {
     };
     const filters = ["p.status='public'"];
     for (const color of query.colors) filters.push(`p.colors @> ${param(JSON.stringify([color]))}::jsonb`);
+    if (query.withGuide) filters.push("p.guide IS NOT NULL");
     const search = query.search.trim().toLowerCase();
     if (search) {
       const pattern = param(`%${escapeLike(search)}%`);

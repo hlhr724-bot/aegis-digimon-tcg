@@ -2,6 +2,7 @@ import type { Permanent } from "@aegis/shared";
 import { isTamer, lookupDefinition } from "../cards/cardData.js";
 import type { EffectContext, TriggerInfo } from "../effects/EffectContext.js";
 import type { SubTriggerSubscription } from "../effects/subtriggers.js";
+import { isDigivolutionTrashEvent } from "#api/engine/gameEngine/isDigivolutionTrashEvent";
 
 /**
  * A watcher's identity ACROSS continuous recomputes. Every recompute clears the continuous
@@ -52,6 +53,9 @@ export function subTriggerIdentity(sub: SubTriggerSubscription, trigger?: Trigge
   }
   if (trigger?.securityRemovalEventId !== undefined && sub.event === "whenSecurityRemoved") {
     return `${identity}|securityRemovalEvent:${trigger.securityRemovalEventId}`;
+  }
+  if (trigger?.digivolutionTrashEventId !== undefined && isDigivolutionTrashEvent(sub.event)) {
+    return `${identity}|digivolutionTrashEvent:${trigger.digivolutionTrashEventId}`;
   }
   if (trigger?.securityInstanceId !== undefined && sub.event === "whenSecurityRemoved") {
     return `${identity}|securityRemoved:${trigger.securityInstanceId}`;

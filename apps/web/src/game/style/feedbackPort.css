@@ -973,7 +973,7 @@
 }
 
 /* A revealed card in the opponent's hand fan opens the card, like any card on the board. */
-.game-opponent-hand__reveal {
+.game-hand-reveal {
   display: block;
   padding: 0;
   border: 0;
@@ -983,11 +983,11 @@
   transition: translate 120ms ease-out;
 }
 
-.game-opponent-hand__reveal:is(:hover, :focus-visible) {
+.game-hand-reveal:is(:hover, :focus-visible) {
   translate: 0 3px;
 }
 
-.game-opponent-hand__reveal:focus-visible {
+.game-hand-reveal:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;
 }

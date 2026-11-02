@@ -1,4 +1,3 @@
-import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { SpectatorInvite } from "./SpectatorInvite";
 /* The bar across the top of the board: the opponent's counters, the fan of card
    backs that stands for their hand, and the match-level controls.
@@ -13,13 +12,12 @@ import type { FinalRevealCard, Phase, Seat } from "@aegis/shared";
 import { useTranslation } from "../../../i18n";
 import { Icons } from "../../../design/icons";
 import { CardBack } from "../../../design/cards";
-import { CardArt } from "../../overlay/CardArt";
 
-import { useCardOpener } from "../../cardLinks";
 import { ArenaCounters } from "../../ArenaCounters";
 import { useEnterAnimation } from "../../animations";
 import { Side } from "../../side";
 import { PlayerLine } from "./PlayerLine";
+import { RevealedHandCard } from "./RevealedHandCard";
 import { useFullscreen } from "../hooks/useFullscreen";
 import { useHeldFlag } from "../hooks/useHeldFlag";
 import { TopbarTooltip, useTopbarTooltip, type TopbarTooltipId } from "./TopbarTooltip";
@@ -122,14 +120,12 @@ export function OpponentBar({
   onSkipPresentation: () => void;
   onResetScenario?: () => void;
 }) {
-  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const fullscreen = useFullscreen();
   const fullscreenLabel = fullscreen.active ? t("game.fullscreen.exit") : t("game.fullscreen.enter");
   const FullscreenIcon = fullscreen.active ? Icons.Minimize : Icons.Maximize;
   const chatLabel = chatUnread > 0 ? t("chat.openUnread", { count: chatUnread }) : t("chat.open");
   const logLabel = logUnread > 0 ? t("game.matchLogUnread", { count: logUnread }) : t("game.matchLog");
-  const openCard = useCardOpener();
   const skipShown = useHeldFlag(skippable, SKIP_BUTTON_HOLD_MS);
   const tooltip = useTopbarTooltip();
   const friendsDrawer = useFriendsDrawerLauncher();
@@ -207,14 +203,7 @@ export function OpponentBar({
             }
           >
             {revealedHand?.[i] ? (
-              <button
-                type="button"
-                className="game-opponent-hand__reveal"
-                aria-label={getCardName(revealedHand[i].cardId)}
-                onClick={() => openCard?.(revealedHand[i]!.cardId, revealedHand[i]!.artId)}
-              >
-                <CardArt cardId={revealedHand[i].cardId} artId={revealedHand[i].artId} width={30} />
-              </button>
+              <RevealedHandCard card={revealedHand[i]} width={30} />
             ) : (
               <CardBack width={30} useSelectedSleeve={false} />
             )}

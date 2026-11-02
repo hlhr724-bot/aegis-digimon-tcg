@@ -121,6 +121,7 @@ export interface DigiXrosDeps {
     instance: CardInstance,
     definition: CardDefinition,
     baseCost: number,
+    materialInstanceIds: readonly string[],
   ): Promise<number>;
   /**
    * Returns DigiXros-only granted name aliases for a material card instance (KB Q3068/Q3105/Q3119).
@@ -398,7 +399,14 @@ export async function applyDigiXros(
 
   const { definition, materials, expanderPermanentIds } = check;
   let cost = deps.finalizePlayCost
-    ? await deps.finalizePlayCost(state, seat, check.instance, definition, check.cost)
+    ? await deps.finalizePlayCost(
+        state,
+        seat,
+        check.instance,
+        definition,
+        check.cost,
+        materials.map((material) => material.instanceId),
+      )
     : check.cost;
   if (cost > deps.maxAffordable(state, seat)) return { ok: false, reason: "insufficient-memory" };
   const player = state.players[seat]!;

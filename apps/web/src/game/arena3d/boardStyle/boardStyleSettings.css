@@ -1,0 +1,9 @@
+.aegis-board-style {
+  display: grid;
+  gap: var(--ds-space-5);
+  margin-block: var(--ds-space-6);
+}
+
+.aegis-board-style .aegis-arena-look--environment {
+  margin-block: 0;
+}

@@ -102,6 +102,7 @@ export interface ReplacementInstallDnaMemory extends ReplacementInstallBase {
 export interface ReplacementInstallInstead extends ReplacementInstallBase {
   mode: "instead";
   apply: (ctx: EffectContext) => Promise<void | boolean>;
+  activationDeferred?: boolean;
   /**
    * For ＜Digisorption＞ redirect (BT3-056): when true, the Replacement's suspend cost
    * is paid by the OPPONENT (opponent's Digimon are suspended), not the controller's.

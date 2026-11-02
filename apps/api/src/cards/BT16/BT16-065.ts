@@ -63,7 +63,7 @@ export const compiled: CompiledCard = {
           into: {
             controllerDefault: "mine",
             kind: ["Digimon"],
-            nameOrTrait: [{ tokens: ["Chaosmon"], match: "name" }],
+            nameOrTrait: [{ tokens: ["Chaosmon"], match: "nameExact" }],
           },
           payCost: true,
           optional: true,

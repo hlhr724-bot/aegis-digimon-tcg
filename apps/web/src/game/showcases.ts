@@ -34,6 +34,7 @@ export type BurstVariant = "play" | "evolve" | "hatch" | "draw" | "delete" | "sh
 export interface PermanentBurst {
   key: number;
   permanentId: string;
+  seat: Seat;
   variant: Exclude<BurstVariant, "draw" | "shatter">;
   color: ColorName;
   /** The breeding area rather than the battle area, which is lit differently. */
@@ -80,6 +81,7 @@ export function permanentBurstFromEvent(event: ServerEvent, key: number): Perman
       return {
         key,
         permanentId: event.permanentId,
+        seat: event.seat,
         variant: "play",
         color: burstColorFor(event.cardId),
         inBreeding: false,
@@ -88,6 +90,7 @@ export function permanentBurstFromEvent(event: ServerEvent, key: number): Perman
       return {
         key,
         permanentId: event.permanentId,
+        seat: event.seat,
         variant: "play",
         color: burstColorFor(event.cardId),
         inBreeding: false,
@@ -97,6 +100,7 @@ export function permanentBurstFromEvent(event: ServerEvent, key: number): Perman
       return {
         key,
         permanentId: event.permanentId,
+        seat: event.seat,
         variant: "evolve",
         color: burstColorFor(event.cardId),
         inBreeding: event.inBreeding ?? false,
@@ -105,6 +109,7 @@ export function permanentBurstFromEvent(event: ServerEvent, key: number): Perman
       return {
         key,
         permanentId: event.permanentId,
+        seat: event.seat,
         variant: "hatch",
         color: burstColorFor(event.cardId),
         inBreeding: true,

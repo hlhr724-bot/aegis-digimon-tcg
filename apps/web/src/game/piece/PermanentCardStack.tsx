@@ -16,6 +16,7 @@ export function PermanentCardStack({ stack, width }: { stack: readonly CardInsta
         return (
           <div
             key={i}
+            className="game-permanent__source"
             style={{
               position: "absolute",
               left: `calc(-4px - ${i} * ${step})`,

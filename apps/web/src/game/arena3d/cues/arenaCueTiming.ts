@@ -1,0 +1,16 @@
+export const ARENA_CUE_TIMING = {
+  liftRiseSeconds: 0.28,
+  channelRiseSeconds: 0.3,
+  sourceSwellSeconds: 0.5,
+  flashSeconds: 0.42,
+  flashStrength: 0.3,
+  shakeSeconds: 0.3,
+  shakeAmplitude: 0.05,
+  tintSeconds: 0.7,
+  tintStrength: 0.9,
+  steadyTintStrength: 0.7,
+  focusDim: 0.42,
+  materializeSeconds: 0.42,
+  sweepSeconds: 0.26,
+  arrivalSeconds: 0.6,
+} as const;

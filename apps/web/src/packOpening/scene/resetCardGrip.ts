@@ -1,4 +1,4 @@
-import type { CardGrip } from "@/packOpening/scene/createCardGrip";
+import type { CardGrip } from "@/design/webglCard/createCardGrip";
 
 export function resetCardGrip(grip: CardGrip) {
   Object.assign(grip, {

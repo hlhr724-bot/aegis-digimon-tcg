@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useThree } from "@react-three/fiber";
 import { PerspectiveCamera } from "three";
-import { CARD_DIMENSIONS } from "@/packOpening/scene/cardDimensions";
-import type { CardGrip } from "@/packOpening/scene/createCardGrip";
+import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
+import type { CardGrip } from "@/design/webglCard/createCardGrip";
 import { resetCardGrip } from "@/packOpening/scene/resetCardGrip";
 
 type Props = {

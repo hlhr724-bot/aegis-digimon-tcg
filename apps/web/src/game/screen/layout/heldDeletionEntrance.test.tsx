@@ -56,7 +56,7 @@ it.each(["viewer", "opponent"] as const)(
       cues.decisionPickedInstanceIds = new Set(["target"]);
       if (newArrival)
         cues.permanentBursts = new Map([
-          ["target", { permanentId: "target", key: 1, variant: "evolve", color: "Purple", inBreeding: false }],
+          ["target", { permanentId: "target", key: 1, seat: 0, variant: "evolve", color: "Purple", inBreeding: false }],
         ]);
       const common = {
         permanents,

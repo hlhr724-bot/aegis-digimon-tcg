@@ -329,7 +329,8 @@
     background: color-mix(in srgb, var(--ds-ink) 75%, transparent);
   }
 
-  .aegis-arena .game-field > .game-breeding-dock > .game-breeding-hint {
+  .aegis-arena .game-field > .game-breeding-dock > .game-breeding-hint,
+  .aegis-arena .game-field > .arena-3d-field > .game-breeding-dock > .game-breeding-hint {
     color: var(--ds-on-ink);
     border-color: color-mix(in srgb, var(--arena-player) 60%, transparent);
     background: var(--arena-plate);

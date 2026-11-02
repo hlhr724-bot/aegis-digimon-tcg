@@ -9,7 +9,7 @@ const compiled: CompiledCard = {
         {
           kind: "Digivolve",
           target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
-          into: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Gallantmon"], match: "name" }] },
+          into: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Gallantmon"], match: "nameExact" }] },
           payCost: true,
           from: ["hand"],
           costOverride: 4,

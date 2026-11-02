@@ -47,7 +47,7 @@ const compiled: CompiledCard = {
             nameOrTrait: [
               {
                 tokens: ["AncientGreymon"],
-                match: "name",
+                match: "nameExact",
               },
             ],
           },

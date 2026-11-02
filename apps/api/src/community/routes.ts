@@ -360,6 +360,7 @@ function parseListQuery(query: Request["query"]): {
   sort: CommunitySort;
   period: CommunityPeriod;
   colors: string[];
+  withGuide: boolean;
   search: string;
   page: number;
 } {
@@ -370,5 +371,12 @@ function parseListQuery(query: Request["query"]): {
     .split(",")
     .filter((color) => DECK_COLORS.includes(color));
   const page = Math.min(MAX_PAGE, Math.max(0, Number.parseInt(text("page"), 10) || 0));
-  return { sort, period, colors: [...new Set(colors)], search: text("q").slice(0, MAX_SEARCH), page };
+  return {
+    sort,
+    period,
+    colors: [...new Set(colors)],
+    withGuide: text("guide") === "1",
+    search: text("q").slice(0, MAX_SEARCH),
+    page,
+  };
 }

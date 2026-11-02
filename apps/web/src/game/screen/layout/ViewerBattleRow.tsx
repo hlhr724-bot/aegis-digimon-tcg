@@ -8,6 +8,10 @@ import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
    rather than tapped, so it keeps a keyboard path of its own. */
 
 import type { Permanent } from "@aegis/shared";
+import { useContext } from "react";
+import { Arena3dFieldContext } from "@/game/arena3d/field/Arena3dFieldContext";
+import { Arena3dPositionedRow } from "@/game/arena3d/field/Arena3dPositionedRow";
+import { Side } from "@/game/side";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { FieldLayout, useFieldLayout } from "../../../design/fieldLayout";
 import { useTranslation } from "../../../i18n";
@@ -54,6 +58,7 @@ export function ViewerBattleRow({
 }) {
   const { t } = useTranslation();
   const fieldLayout = useFieldLayout();
+  const arena3d = useContext(Arena3dFieldContext);
   const groupIdenticalTamers = useTamerGrouping();
   const isSuspended = (p: Permanent) => p.isSuspended || chrome.heldSuspendedIds.has(p.permanentId);
   const playOrder = new Map(permanents.map((permanent, index) => [permanent.permanentId, index]));
@@ -143,8 +148,8 @@ export function ViewerBattleRow({
     );
   }
 
-  if (fieldLayout === FieldLayout.Organized) {
-    const arrangement = arrangeField(permanents, {
+  const buildArrangement = () =>
+    arrangeField(permanents, {
       groupIdenticalTamers,
       isSuspended,
       isSingledOut: (p) =>
@@ -153,6 +158,31 @@ export function ViewerBattleRow({
         isDecisionCandidate(p) ||
         selectedAttackerPermanentId === p.permanentId,
     });
+  const organizedRowProps = {
+    "data-arena-region": ArenaInputRegion.VIEWER_FIELD.value,
+    "data-drop": "battle-you",
+    ...dropIntentAttrs("battle-you"),
+    className: "game-battle-row game-battle-row--you",
+    role: "group",
+    "aria-label": t("game.yourBattleArea"),
+    style: rowStyle,
+  };
+
+  if (arena3d) {
+    return (
+      <Arena3dPositionedRow
+        side={Side.Viewer}
+        arrangement={buildArrangement()}
+        isSuspended={isSuspended}
+        renderCard={renderCard}
+        rowProps={organizedRowProps}
+        emptyLabel={emptyLabel}
+      />
+    );
+  }
+
+  if (fieldLayout === FieldLayout.Organized) {
+    const arrangement = buildArrangement();
     return (
       <OrganizedBattleRow
         arrangement={arrangement}
@@ -163,15 +193,7 @@ export function ViewerBattleRow({
         emptyLabel={emptyLabel}
         renderCard={renderCard}
         isSuspended={isSuspended}
-        rowProps={{
-          "data-arena-region": ArenaInputRegion.VIEWER_FIELD.value,
-          "data-drop": "battle-you",
-          ...dropIntentAttrs("battle-you"),
-          className: "game-battle-row game-battle-row--you",
-          role: "group",
-          "aria-label": t("game.yourBattleArea"),
-          style: rowStyle,
-        }}
+        rowProps={organizedRowProps}
       />
     );
   }

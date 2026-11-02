@@ -1,0 +1,433 @@
+.game-finale {
+  --finale-tint: rgb(255 214 102);
+  --finale-glow: rgb(255 246 214);
+  --finale-shade: rgb(36 20 0);
+  --finale-shade-peak: 0.72;
+  --finale-shade-hold: 0.5;
+  --finale-flash-peak: 0.72;
+  --finale-size: max(100vw, 100vh);
+
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  overflow: hidden;
+  pointer-events: none;
+  animation: battle-finale-clock var(--t-finale, 1700ms) linear both;
+}
+
+.game-finale[data-finale-tone="defeat"] {
+  --finale-tint: rgb(214 92 116);
+  --finale-glow: rgb(226 214 238);
+  --finale-shade: rgb(6 4 16);
+  --finale-shade-peak: 0.84;
+  --finale-shade-hold: 0.66;
+  --finale-flash-peak: 0.45;
+}
+
+.game-finale[data-finale-tone="witness"] {
+  --finale-tint: rgb(178 190 214);
+  --finale-glow: rgb(240 244 255);
+  --finale-shade: rgb(6 10 20);
+  --finale-shade-peak: 0.7;
+  --finale-shade-hold: 0.5;
+  --finale-flash-peak: 0.6;
+}
+
+.game-finale > span {
+  position: absolute;
+  pointer-events: none;
+}
+
+.game-finale__vignette {
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(
+    circle at var(--finale-x, 50%) var(--finale-y, 50%),
+    transparent 0,
+    transparent 14%,
+    color-mix(in srgb, var(--finale-shade) 70%, transparent) 52%,
+    var(--finale-shade) 100%
+  );
+  animation: battle-finale-vignette var(--t-finale, 1700ms) linear both;
+}
+
+.game-finale__striker {
+  z-index: 1;
+  filter: drop-shadow(0 0.6rem 1.2rem rgb(0 0 0 / 55%)) drop-shadow(0 0 0.8rem var(--finale-tint));
+  animation: battle-finale-strike var(--t-finale, 1700ms) linear both;
+}
+
+.game-finale__striker[data-suspended] {
+  rotate: 90deg;
+}
+
+.game-finale__flash {
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(
+    circle at var(--finale-x, 50%) var(--finale-y, 50%),
+    var(--finale-glow) 0,
+    color-mix(in srgb, var(--finale-tint) 70%, transparent) 38%,
+    color-mix(in srgb, var(--finale-tint) 25%, transparent) 100%
+  );
+  mix-blend-mode: screen;
+  animation: battle-finale-flash var(--t-finale, 1700ms) linear both;
+}
+
+.game-finale__burst,
+.game-finale__shockwave,
+.game-finale__chroma {
+  left: var(--finale-x, 50%);
+  top: var(--finale-y, 50%);
+  width: var(--finale-size);
+  height: var(--finale-size);
+  margin: calc(var(--finale-size) / -2) 0 0 calc(var(--finale-size) / -2);
+  border-radius: 50%;
+  opacity: 0;
+  scale: 0.02;
+}
+
+.game-finale__burst {
+  width: calc(var(--finale-size) * 0.7);
+  height: calc(var(--finale-size) * 0.7);
+  margin: calc(var(--finale-size) * -0.35) 0 0 calc(var(--finale-size) * -0.35);
+  background: repeating-conic-gradient(
+    from 4deg,
+    color-mix(in srgb, var(--finale-glow) 90%, transparent) 0deg 3deg,
+    transparent 3deg 14deg,
+    color-mix(in srgb, var(--finale-tint) 80%, transparent) 14deg 16deg,
+    transparent 16deg 27deg
+  );
+  mask-image: radial-gradient(circle, #000 0, #000 12%, transparent 62%);
+  mix-blend-mode: screen;
+  animation: battle-finale-burst var(--t-finale, 1700ms) linear both;
+}
+
+.game-finale__shockwave {
+  border: calc(var(--finale-size) * 0.006) solid var(--finale-glow);
+  box-shadow:
+    0 0 calc(var(--finale-size) * 0.02) var(--finale-tint),
+    inset 0 0 calc(var(--finale-size) * 0.03) color-mix(in srgb, var(--finale-tint) 70%, transparent);
+  animation: battle-finale-shockwave var(--t-finale, 1700ms) linear both;
+}
+
+.game-finale__chroma {
+  mix-blend-mode: screen;
+  animation: battle-finale-chroma var(--t-finale, 1700ms) linear both;
+}
+
+.game-finale__chroma--warm {
+  translate: -0.6% 0.2%;
+  background: radial-gradient(
+    circle,
+    transparent 0 58%,
+    rgb(255 60 90 / 70%) 63%,
+    rgb(255 120 60 / 30%) 67%,
+    transparent 71%
+  );
+}
+
+.game-finale__chroma--cool {
+  translate: 0.6% -0.2%;
+  background: radial-gradient(
+    circle,
+    transparent 0 56%,
+    rgb(60 220 255 / 70%) 61%,
+    rgb(90 120 255 / 30%) 65%,
+    transparent 69%
+  );
+  animation-delay: 30ms;
+}
+
+.game-finale[data-finale-board="arena3d"] .game-finale__burst,
+.game-finale[data-finale-board="arena3d"] .game-finale__shockwave {
+  display: none;
+}
+
+.game-board[data-finale] > .game-field,
+.game-board[data-finale] > .arena-3d-scene {
+  transform-origin: var(--finale-origin, 50% 50%);
+  animation: battle-finale-punch var(--t-finale, 1700ms) linear both;
+}
+
+.game-board[data-finale]:not([data-board-style="arena3d"]) > .game-field {
+  animation:
+    battle-finale-punch var(--t-finale, 1700ms) linear both,
+    battle-finale-shake var(--t-finale, 1700ms) linear both;
+}
+
+:root:not(.dark) .game-finale {
+  --finale-shade: rgb(20 16 40);
+  --finale-shade-peak: 0.46;
+  --finale-shade-hold: 0.3;
+  --finale-flash-peak: 0.62;
+}
+
+:root:not(.dark) .game-finale[data-finale-tone="defeat"] {
+  --finale-shade-peak: 0.58;
+  --finale-shade-hold: 0.42;
+  --finale-flash-peak: 0.4;
+}
+
+:root:not(.dark) .game-finale__flash {
+  mix-blend-mode: normal;
+}
+
+:root[data-motion="reduced"] .game-finale > span {
+  animation: none;
+  opacity: 0;
+}
+
+:root[data-motion="reduced"] .game-finale .game-finale__striker {
+  display: none;
+}
+
+:root[data-motion="reduced"] .game-finale .game-finale__vignette {
+  animation: battle-finale-calm-shade var(--t-finale-calm, 600ms) ease-out both;
+}
+
+:root[data-motion="reduced"] .game-finale .game-finale__flash {
+  animation: battle-finale-calm-flash var(--t-finale-calm, 600ms) ease-out both;
+}
+
+:root[data-motion="reduced"] .game-board[data-finale] > .game-field,
+:root[data-motion="reduced"] .game-board[data-finale] > .arena-3d-scene {
+  animation: none;
+}
+
+@keyframes battle-finale-clock {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes battle-finale-strike {
+  0% {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  12% {
+    translate: calc(var(--finale-dx) * -0.08) calc(var(--finale-dy) * -0.08);
+    scale: 1.12;
+    animation-timing-function: linear;
+  }
+  24.6% {
+    translate: calc(var(--finale-dx) * 0.06) calc(var(--finale-dy) * 0.06);
+    scale: 1.15;
+    animation-timing-function: cubic-bezier(0.6, 0, 1, 0.6);
+  }
+  30.6% {
+    translate: calc(var(--finale-dx) * 0.6) calc(var(--finale-dy) * 0.6);
+    scale: 1.2;
+    animation-timing-function: linear;
+  }
+  42% {
+    translate: calc(var(--finale-dx) * 0.54) calc(var(--finale-dy) * 0.54);
+    scale: 1.12;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  72% {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+  99.9% {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+@keyframes battle-finale-vignette {
+  0% {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.2, 0, 0.4, 1);
+  }
+  27% {
+    opacity: var(--finale-shade-peak);
+  }
+  30.6% {
+    opacity: var(--finale-shade-peak);
+  }
+  33% {
+    opacity: 0.1;
+    animation-timing-function: ease-out;
+  }
+  58% {
+    opacity: var(--finale-shade-hold);
+  }
+  100% {
+    opacity: var(--finale-shade-hold);
+  }
+}
+
+@keyframes battle-finale-flash {
+  0%,
+  30% {
+    opacity: 0;
+  }
+  31.8% {
+    opacity: var(--finale-flash-peak);
+    animation-timing-function: cubic-bezier(0.2, 0.6, 0.3, 1);
+  }
+  46% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes battle-finale-burst {
+  0%,
+  30.5% {
+    opacity: 0;
+    scale: 0.2;
+    rotate: 0deg;
+  }
+  31.5% {
+    opacity: 1;
+    scale: 0.45;
+    animation-timing-function: cubic-bezier(0.1, 0.7, 0.3, 1);
+  }
+  62% {
+    opacity: 0;
+    scale: 1.5;
+    rotate: 14deg;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.5;
+    rotate: 14deg;
+  }
+}
+
+@keyframes battle-finale-shockwave {
+  0%,
+  30.6% {
+    opacity: 0;
+    scale: 0.02;
+  }
+  31.5% {
+    opacity: 1;
+    scale: 0.04;
+    animation-timing-function: cubic-bezier(0.15, 0.6, 0.35, 1);
+  }
+  72% {
+    opacity: 0;
+    scale: 1.3;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.3;
+  }
+}
+
+@keyframes battle-finale-chroma {
+  0%,
+  30.6% {
+    opacity: 0;
+    scale: 0.05;
+  }
+  32% {
+    opacity: 1;
+    scale: 0.12;
+    animation-timing-function: cubic-bezier(0.2, 0.6, 0.35, 1);
+  }
+  60% {
+    opacity: 0;
+    scale: 1.15;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.15;
+  }
+}
+
+@keyframes battle-finale-punch {
+  0% {
+    scale: 1;
+    animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1);
+  }
+  29% {
+    scale: 1.035;
+  }
+  30.6% {
+    scale: 1.04;
+    animation-timing-function: cubic-bezier(0.1, 0.8, 0.3, 1);
+  }
+  33.5% {
+    scale: 1.095;
+    animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1);
+  }
+  52% {
+    scale: 1.045;
+  }
+  76% {
+    scale: 1.035;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+@keyframes battle-finale-shake {
+  0%,
+  30.6% {
+    translate: 0 0;
+  }
+  32% {
+    translate: -1.1% 0.6%;
+  }
+  34% {
+    translate: 0.9% -0.7%;
+  }
+  36.5% {
+    translate: -0.7% -0.4%;
+  }
+  39.5% {
+    translate: 0.5% 0.45%;
+  }
+  43% {
+    translate: -0.3% 0.2%;
+  }
+  47% {
+    translate: 0.15% -0.1%;
+  }
+  52%,
+  100% {
+    translate: 0 0;
+  }
+}
+
+@keyframes battle-finale-calm-shade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: calc(var(--finale-shade-hold) * 0.7);
+  }
+}
+
+@keyframes battle-finale-calm-flash {
+  0% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.22;
+  }
+  100% {
+    opacity: 0;
+  }
+}

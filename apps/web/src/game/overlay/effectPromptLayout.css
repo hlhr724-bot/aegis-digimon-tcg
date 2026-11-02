@@ -383,7 +383,10 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   border: 0;
   background: none;
 }
-.aegis-arena :is(.game-field, .game-player-dock) > .game-breeding-dock > .game-breeding-hint {
+.aegis-arena
+  :is(.game-field, .game-field > .arena-3d-field, .game-player-dock)
+  > .game-breeding-dock
+  > .game-breeding-hint {
   font: 600 var(--ds-text-sm) / 1.45 var(--ds-font-body);
   text-transform: none;
   letter-spacing: 0;
@@ -807,19 +810,6 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
      short frame. Field selection keeps the cap: the player taps targets behind it. */
   .board-prompt[data-prompt-surface][data-variant]:not([data-variant="field-selection"]) {
     max-height: calc(100dvh - env(safe-area-inset-top, 0px) - var(--ds-space-3)) !important;
-  }
-  .board-prompt[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
-    .board-prompt__actions
-    > button:first-child:nth-last-child(odd) {
-    grid-column: auto;
-  }
-  .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"]
-    .board-prompt__select-on-board {
-    grid-column: 1 / -1;
   }
   .board-prompt.board-prompt--target-selection[data-prompt-surface][data-variant="field-selection"] {
     display: grid;

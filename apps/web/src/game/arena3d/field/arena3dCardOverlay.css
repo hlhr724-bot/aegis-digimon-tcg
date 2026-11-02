@@ -1,0 +1,124 @@
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-permanent__field-reference {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-slot > .game-permanent {
+  transform: none !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  :is([data-card-info] > [data-cost], [data-card-info] > [data-card-kind], [data-card-name]) {
+  visibility: hidden !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field [data-card-footer] {
+  padding: 0 4% 4% !important;
+  background: none !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field [data-card-dp] {
+  padding: 1px 5px !important;
+  border-color: rgb(255 255 255 / 22%) !important;
+  border-radius: 6px !important;
+  background: rgb(8 12 22 / 84%) !important;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 45%) !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field [data-card-level] {
+  border: 1px solid rgb(255 255 255 / 18%);
+  background: rgb(8 12 22 / 80%) !important;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 40%);
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-slot
+  :is(
+    [data-card-level],
+    [data-card-dp],
+    .card-ace-badge,
+    .game-source-badge,
+    .game-copies-badge,
+    .game-blocker-badge,
+    .game-fate-badge,
+    .game-keyword-badges,
+    .game-restriction-badges,
+    .game-permanent__material-order
+  ) {
+  scale: 1 calc(1 / var(--arena-3d-squash, 1));
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  :is([data-arena-3d-row][data-drag-intent], [data-arena-3d-row] [data-drop][data-drag-intent]) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.arena-3d-row__effects-anchor {
+  position: absolute;
+  height: 1px;
+  pointer-events: none;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-slot
+  > .game-permanent
+  > .game-card-enter
+  > [data-state] {
+  transition: none !important;
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent > .game-card-enter > [data-state="suspended"] {
+  --arena-3d-chip-inset: calc(var(--permanent-width) * 0.04);
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent > .game-card-enter > [data-state="suspended"] [data-card-footer] {
+  inset: 0 !important;
+  padding: 0 !important;
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent > .game-card-enter > [data-state="suspended"] [data-card-dp] {
+  position: absolute;
+  right: var(--arena-3d-chip-inset);
+  bottom: calc(100% - var(--arena-3d-chip-inset));
+  transform-origin: 100% 100%;
+  rotate: -90deg;
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent > .game-card-enter > [data-state="suspended"] [data-card-level] {
+  top: var(--arena-3d-chip-inset) !important;
+  right: calc(100% - var(--arena-3d-chip-inset)) !important;
+  transform-origin: 100% 0;
+  rotate: -90deg;
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent[data-suspended] > .card-ace-badge {
+  top: calc(var(--permanent-width) * 0.38);
+  left: -6px;
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent[data-suspended] .game-source-badge {
+  top: -7px;
+  left: -7px;
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent[data-suspended] .game-copies-badge {
+  top: -7px;
+  right: -7px;
+}
+
+@media (width < 600px) and (orientation: landscape), (height < 520px) and (orientation: landscape) {
+  .arena-3d-field .arena-3d-slot > .game-permanent[data-suspended] .game-source-badge {
+    top: 0;
+    left: -4px;
+  }
+}

@@ -43,6 +43,7 @@ it("animates a hidden suspended copy on its group while leaving the third copy a
   const burst = {
     permanentId: "second",
     key: 2,
+    seat: 0 as const,
     variant: "evolve" as const,
     color: "Green" as const,
     inBreeding: false,
@@ -71,7 +72,7 @@ it("keeps a played copy in its flight destination through landing, then joins it
   expect(groups()).toEqual([["first", "second"], ["arriving"]]);
   cues.pendingPermanentIds = new Set();
   cues.permanentBursts = new Map([
-    ["arriving", { permanentId: "arriving", key: 1, variant: "play", color: "Green", inBreeding: false }],
+    ["arriving", { permanentId: "arriving", key: 1, seat: 0, variant: "play", color: "Green", inBreeding: false }],
   ]);
   expect(groups()).toEqual([["first", "second"], ["arriving"]]);
   expect(groupChrome([cards[2]!], cues).burst?.permanentId).toBe("arriving");
