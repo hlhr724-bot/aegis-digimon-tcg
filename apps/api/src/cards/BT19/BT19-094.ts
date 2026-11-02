@@ -5,18 +5,15 @@ const compiled: CompiledCard = {
   effects: [
     {
       trigger: "YourTurn",
+      optional: true,
       actions: [
         {
           kind: "SubTrigger",
+          optional: true,
           event: "whenOneOfYoursDigivolves",
           sourceFilter: {
             controllerDefault: "mine",
-            nameOrTrait: [
-              {
-                tokens: ["Lucemon (X Antibody)"],
-                match: "nameExact",
-              },
-            ],
+            nameOrTrait: [{ tokens: ["Lucemon (X Antibody)"], match: "nameExact" }],
           },
           actions: [
             {
@@ -28,15 +25,7 @@ const compiled: CompiledCard = {
               bindResultAs: "opponentSecurityTrashedBySeventh",
               cost: {
                 kind: "return",
-                target: {
-                  filter: {
-                    zone: "trash",
-                    controller: "mine",
-                    isSelfRef: true,
-                  },
-                  count: 1,
-                  isSelf: true,
-                },
+                target: { filter: { zone: "trash", controller: "mine", isSelfRef: true }, count: 1, isSelf: true },
                 raw: "by returning this card from the trash to the bottom of the deck",
               },
             },
@@ -46,10 +35,7 @@ const compiled: CompiledCard = {
               controller: "mine",
               source: "deck",
               amount: 1,
-              condition: {
-                kind: "bindingEmpty",
-                ref: "opponentSecurityTrashedBySeventh",
-              },
+              condition: { kind: "bindingEmpty", ref: "opponentSecurityTrashedBySeventh" },
             },
           ],
           raw: "whenOneOfYoursDigivolves",
@@ -61,25 +47,19 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete your opponent's Digimon until they have as many as the number of your security cards.",
           kind: "DeleteUntilCount",
-          target: {
-            filter: {
-              controller: "opponent",
-              kind: ["Digimon"],
-            },
-            count: "all",
-          },
+          target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: "all" },
           untilCountSource: "mineSecurityCount",
         },
         {
+          effectTextPart: "If this effect deleted, ＜Recovery +1 (Deck)＞.",
           kind: "SecurityManipulation",
           op: "addTop",
           controller: "mine",
           source: "deck",
           amount: 1,
-          condition: {
-            kind: "ifThisEffectActed",
-          },
+          condition: { kind: "ifThisEffectActed" },
         },
       ],
     },
@@ -88,18 +68,7 @@ const compiled: CompiledCard = {
       actions: [
         {
           kind: "PlayWithoutCost",
-          target: {
-            filter: {
-              controller: "mine",
-              nameOrTrait: [
-                {
-                  tokens: ["Lucemon"],
-                  match: "nameExact",
-                },
-              ],
-            },
-            count: 1,
-          },
+          target: { filter: { controller: "mine", nameOrTrait: [{ tokens: ["Lucemon"], match: "nameExact" }] }, count: 1 },
           from: ["trash"],
           payCost: false,
           optional: true,
