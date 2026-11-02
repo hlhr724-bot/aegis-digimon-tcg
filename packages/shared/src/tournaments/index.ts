@@ -8,8 +8,9 @@ import type { TournamentCategory } from "#shared/tournaments/TournamentCategory"
 import type { DeckFormat } from "#shared/deckFormat";
 import type { TournamentClockSettings } from "#shared/tournaments/TournamentClockSettings";
 import type { TournamentSpectatorPolicy } from "#shared/tournaments/TournamentSpectatorPolicy";
+import type { TournamentTiebreaker } from "#shared/tournaments/TournamentTiebreaker";
 
-export type TournamentStructure = "swiss" | "single_elimination";
+export type TournamentStructure = "swiss" | "round_robin" | "single_elimination";
 
 export type TournamentStatus = "draft" | "registration" | "check_in" | "running" | "finished" | "cancelled";
 export type PhaseKind = "swiss" | "top_cut" | "single_elimination";
@@ -49,6 +50,9 @@ export type CreateTournamentInput = {
   description?: string;
   structure: TournamentStructure;
   topCut: boolean;
+  topCutSize?: number | null;
+  rounds?: number | null;
+  tiebreakers?: readonly TournamentTiebreaker[] | null;
   bestOf: 1 | 3;
   startsAt: number;
   maxPlayers: number;
@@ -96,6 +100,10 @@ export type TournamentRules = {
     // must read this, never hardcode 0.33.
     winRateFloor?: number;
   };
+  program?: {
+    rounds: number | null;
+    topCutSize: number | null;
+  };
 };
 
 // Official table (Tournament Rules Manual §3.6). Computed once at check-in
@@ -120,7 +128,13 @@ export function topCutSize(participants: number): number {
   return 32;
 }
 
-export type PairingReason = "same_score" | "pair_down" | "rematch_unavoidable" | "bye_no_prior_bye" | "bye_repeat";
+export type PairingReason =
+  | "same_score"
+  | "pair_down"
+  | "rematch_unavoidable"
+  | "bye_no_prior_bye"
+  | "bye_repeat"
+  | "round_robin_schedule";
 
 // Immutable ledger entry that standings project from. Every way a match can
 // resolve is explicit; standings never read mutable counters.
@@ -132,6 +146,8 @@ export type LedgerEntry = {
   opponentKind: ParticipantKind | null;
   roundNumber: number;
   outcome: MatchOutcome;
+  gamesWon?: number | null;
+  gamesLost?: number | null;
 };
 
 export type StandingsRow = {
@@ -144,6 +160,11 @@ export type StandingsRow = {
   losses: number;
   draws: number;
   byes: number;
+  gameWinRate?: number;
+  opponentOpponentMatchWinRate?: number;
+  opponentPoints?: number;
+  defeatedOpponentPoints?: number;
+  gameDifference?: number;
 };
 
 export type ParticipantView = {

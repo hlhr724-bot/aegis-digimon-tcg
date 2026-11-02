@@ -31,6 +31,11 @@ export type StandingsTiebreaker =
   // Average of the opponents' OMW% (OOMW%), used by the World Championship ruleset.
   | "opponent_opponent_match_win_rate"
   | "head_to_head"
+  | "match_wins"
+  | "game_win_rate"
+  | "game_difference"
+  | "opponent_points"
+  | "defeated_opponent_points"
   | "judge_random_draw"
   | "extra_match";
 
@@ -40,6 +45,11 @@ const RESOLVABLE_TIEBREAKERS = new Set<StandingsTiebreaker>([
   "opponent_match_win_rate",
   "opponent_opponent_match_win_rate",
   "head_to_head",
+  "match_wins",
+  "game_win_rate",
+  "game_difference",
+  "opponent_points",
+  "defeated_opponent_points",
   "judge_random_draw",
 ]);
 
@@ -104,6 +114,10 @@ export type StandingsDetailRow = StandingsRow & {
   // raised to the ruleset floor -- what the opponents' averages consume.
   flooredMatchWinRate: number;
   opponentOpponentMatchWinRate: number;
+  gameWinRate: number;
+  gameDifference: number;
+  opponentPoints: number;
+  defeatedOpponentPoints: number;
   // Matches against `kind: "bot"` opponents. Whether they fed the rates above
   // is `botOpponentsIncluded` on the report.
   botOpponentMatches: number;
@@ -135,6 +149,9 @@ type Accumulator = {
   // Opponents of rated (non-bye) matches, one entry per match played: an
   // opponent met twice is listed twice and therefore weighs twice in OMW%.
   ratedOpponents: RatedOpponent[];
+  defeatedOpponentIds: string[];
+  gamesWon: number;
+  gamesLost: number;
   botOpponentMatches: number;
 };
 
@@ -180,6 +197,9 @@ function emptyAccumulator(id: string, seed: number | null): Accumulator {
     ratedRounds: 0,
     ratedPoints: 0,
     ratedOpponents: [],
+    defeatedOpponentIds: [],
+    gamesWon: 0,
+    gamesLost: 0,
     botOpponentMatches: 0,
   };
 }
@@ -214,6 +234,9 @@ function collectAccumulators(input: ComputeStandingsInput): Map<string, Accumula
       accumulator.botOpponentMatches += 1;
     }
 
+    accumulator.gamesWon += entry.gamesWon ?? 0;
+    accumulator.gamesLost += entry.gamesLost ?? 0;
+    if (entry.outcome === "win" && entry.opponentId !== null) accumulator.defeatedOpponentIds.push(entry.opponentId);
     if (entry.outcome === "win") accumulator.wins += 1;
     else if (entry.outcome === "draw") accumulator.draws += 1;
     else if (isLossOutcome(entry.outcome)) accumulator.losses += 1;
@@ -235,6 +258,11 @@ function rawMatchWinRate(accumulator: Accumulator, scoring: TournamentRules["sta
   const maximumPerRound = scoring.winPoints;
   if (accumulator.ratedRounds === 0 || maximumPerRound <= 0) return 0;
   return accumulator.ratedPoints / (accumulator.ratedRounds * maximumPerRound);
+}
+
+function gameWinRate(accumulator: Accumulator): number {
+  const games = accumulator.gamesWon + accumulator.gamesLost;
+  return games === 0 ? 0 : accumulator.gamesWon / games;
 }
 
 type OpponentAverage = { rate: number; unratedMatches: number };
@@ -311,6 +339,7 @@ export function computeStandingsReport(input: ComputeStandingsInput): StandingsR
     );
   }
 
+  const pointsOf = (id: string) => accumulators.get(id)?.points ?? 0;
   const rows = [...accumulators.values()].map((accumulator) => ({
     participantId: accumulator.id,
     rank: 0,
@@ -319,6 +348,10 @@ export function computeStandingsReport(input: ComputeStandingsInput): StandingsR
     flooredMatchWinRate: flooredRates.get(accumulator.id) ?? floor,
     opponentMatchWinRate: opponentMatchWinRates.get(accumulator.id) ?? floor,
     opponentOpponentMatchWinRate: opponentOpponentMatchWinRates.get(accumulator.id) ?? floor,
+    gameWinRate: gameWinRate(accumulator),
+    gameDifference: accumulator.gamesWon - accumulator.gamesLost,
+    opponentPoints: accumulator.ratedOpponents.reduce((total, opponent) => total + pointsOf(opponent.id), 0),
+    defeatedOpponentPoints: accumulator.defeatedOpponentIds.reduce((total, id) => total + pointsOf(id), 0),
     wins: accumulator.wins,
     losses: accumulator.losses,
     draws: accumulator.draws,
@@ -353,5 +386,10 @@ export function computeStandings(input: ComputeStandingsInput): StandingsRow[] {
     losses: row.losses,
     draws: row.draws,
     byes: row.byes,
+    gameWinRate: row.gameWinRate,
+    opponentOpponentMatchWinRate: row.opponentOpponentMatchWinRate,
+    opponentPoints: row.opponentPoints,
+    defeatedOpponentPoints: row.defeatedOpponentPoints,
+    gameDifference: row.gameDifference,
   }));
 }

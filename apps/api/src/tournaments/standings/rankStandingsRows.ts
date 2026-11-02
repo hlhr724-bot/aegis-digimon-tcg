@@ -51,6 +51,16 @@ function splitGroup({ group, tiebreaker, winsByPair, drawSeed }: SplitParams): T
       return splitByValue(group, (row) => row.opponentOpponentMatchWinRate);
     case "head_to_head":
       return splitByHeadToHead(group, winsByPair);
+    case "match_wins":
+      return splitByValue(group, (row) => row.wins);
+    case "game_win_rate":
+      return splitByValue(group, (row) => row.gameWinRate);
+    case "game_difference":
+      return splitByValue(group, (row) => row.gameDifference);
+    case "opponent_points":
+      return splitByValue(group, (row) => row.opponentPoints);
+    case "defeated_opponent_points":
+      return splitByValue(group, (row) => row.defeatedOpponentPoints);
     case "judge_random_draw":
       return drawGroup(group, drawSeed);
     case "extra_match":

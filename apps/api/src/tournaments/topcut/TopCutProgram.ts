@@ -342,8 +342,9 @@ export class TopCutProgram {
       await client.query(
         `INSERT INTO tournament_standings_snapshots
            (id, tournament_id, phase_id, participant_id, rank, points, match_win_rate, opponent_match_win_rate,
-            wins, losses, draws, byes, eligible, cut_seed, frozen_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+            wins, losses, draws, byes, eligible, cut_seed, frozen_at, game_win_rate, opponent_opponent_match_win_rate,
+            opponent_points, defeated_opponent_points, game_difference)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
          ON CONFLICT (phase_id, participant_id) DO NOTHING`,
         [
           randomUUID(),
@@ -361,6 +362,11 @@ export class TopCutProgram {
           eligible.has(row.participantId),
           seedOf.get(row.participantId) ?? null,
           now,
+          row.gameWinRate ?? null,
+          row.opponentOpponentMatchWinRate ?? null,
+          row.opponentPoints ?? null,
+          row.defeatedOpponentPoints ?? null,
+          row.gameDifference ?? null,
         ],
       );
   }
@@ -509,8 +515,10 @@ async function readLedger(client: PoolClient, tournamentId: string): Promise<Led
       opponent_kind: ParticipantKind | null;
       round_number: string | number;
       outcome: MatchOutcome;
+      games_won: number | null;
+      games_lost: number | null;
     }>(
-      `SELECT participant_id, opponent_id, opponent_kind, round_number, outcome
+      `SELECT participant_id, opponent_id, opponent_kind, round_number, outcome, games_won, games_lost
        FROM tournament_result_ledger WHERE tournament_id=$1 ORDER BY round_number, participant_id`,
       [tournamentId],
     )
@@ -520,6 +528,8 @@ async function readLedger(client: PoolClient, tournamentId: string): Promise<Led
     opponentKind: row.opponent_kind,
     roundNumber: Number(row.round_number),
     outcome: row.outcome,
+    gamesWon: row.games_won === null ? null : Number(row.games_won),
+    gamesLost: row.games_lost === null ? null : Number(row.games_lost),
   }));
 }
 
@@ -536,8 +546,14 @@ async function readFrozenStandings(db: Queryable, tournamentId: string): Promise
       losses: string | number;
       draws: string | number;
       byes: string | number;
+      game_win_rate: string | number | null;
+      opponent_opponent_match_win_rate: string | number | null;
+      opponent_points: string | number | null;
+      defeated_opponent_points: string | number | null;
+      game_difference: string | number | null;
     }>(
-      `SELECT participant_id, rank, points, match_win_rate, opponent_match_win_rate, wins, losses, draws, byes
+      `SELECT participant_id, rank, points, match_win_rate, opponent_match_win_rate, wins, losses, draws, byes,
+              game_win_rate, opponent_opponent_match_win_rate, opponent_points, defeated_opponent_points, game_difference
        FROM tournament_standings_snapshots WHERE tournament_id=$1 ORDER BY rank`,
       [tournamentId],
     )
@@ -551,7 +567,16 @@ async function readFrozenStandings(db: Queryable, tournamentId: string): Promise
     losses: Number(row.losses),
     draws: Number(row.draws),
     byes: Number(row.byes),
+    ...optionalValue("gameWinRate", row.game_win_rate),
+    ...optionalValue("opponentOpponentMatchWinRate", row.opponent_opponent_match_win_rate),
+    ...optionalValue("opponentPoints", row.opponent_points),
+    ...optionalValue("defeatedOpponentPoints", row.defeated_opponent_points),
+    ...optionalValue("gameDifference", row.game_difference),
   }));
+}
+
+function optionalValue<Key extends string>(key: Key, value: string | number | null): Partial<Record<Key, number>> {
+  return value === null ? {} : ({ [key]: Number(value) } as Record<Key, number>);
 }
 
 async function readSnapshot(db: Queryable, tournamentId: string): Promise<TopCutSnapshotRow[]> {

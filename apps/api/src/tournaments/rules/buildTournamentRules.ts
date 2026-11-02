@@ -1,6 +1,15 @@
-import type { TournamentRules } from "@aegis/shared/tournaments/index";
+import type { TournamentRules, TournamentStructure } from "@aegis/shared/tournaments/index";
+import { defaultTiebreakers } from "@aegis/shared/tournaments/defaultTiebreakers";
+import type { TournamentTiebreaker } from "@aegis/shared/tournaments/TournamentTiebreaker";
+import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
 
-type Params = { bestOf: 1 | 3 };
+type Params = {
+  bestOf: 1 | 3;
+  structure?: TournamentStructure;
+  tiebreakers?: readonly TournamentTiebreaker[] | null;
+  rounds?: number | null;
+  topCutSize?: number | null;
+};
 const MINUTE_MS = 60_000;
 const MANUAL_TIEBREAKERS = [
   "points",
@@ -41,7 +50,11 @@ const MANUAL_ATTENDANCE: TournamentRules["attendance"] = {
   matchLossAtMs: 10 * MINUTE_MS,
 };
 
-export function buildTournamentRules({ bestOf }: Params): TournamentRules {
+export function buildTournamentRules({ bestOf, structure, tiebreakers, rounds, topCutSize }: Params): TournamentRules {
+  const standings =
+    structure && playsScoredRounds(structure)
+      ? { ...MANUAL_STANDINGS, tiebreakers: [...(tiebreakers ?? defaultTiebreakers(structure)), "judge_random_draw"] }
+      : { ...MANUAL_STANDINGS, tiebreakers: [...MANUAL_TIEBREAKERS] };
   return {
     match: {
       winsRequired: bestOf === 1 ? 1 : 2,
@@ -52,6 +65,7 @@ export function buildTournamentRules({ bestOf }: Params): TournamentRules {
     },
     attendance: { ...MANUAL_ATTENDANCE },
     timeout: { ...MANUAL_TIMEOUT, stateTiebreakers: [...MANUAL_STATE_TIEBREAKERS] },
-    standings: { ...MANUAL_STANDINGS, tiebreakers: [...MANUAL_TIEBREAKERS] },
+    standings,
+    ...(structure ? { program: { rounds: rounds ?? null, topCutSize: topCutSize ?? null } } : {}),
   };
 }

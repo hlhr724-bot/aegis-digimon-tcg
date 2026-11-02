@@ -1,4 +1,6 @@
 import { swissRoundCount, topCutSize, type CreateTournamentInput } from "@aegis/shared";
+import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
+import { roundRobinRoundCount } from "@aegis/shared/tournaments/roundRobinRoundCount";
 
 /**
  * The Swiss round count and Top Cut size computed from the official tables and frozen on the
@@ -10,20 +12,29 @@ export type FrozenStructure = {
   topCutSize: number | null;
 };
 
-export type FreezeStructureInput = Pick<CreateTournamentInput, "structure" | "topCut">;
+export type FreezeStructureInput = Pick<CreateTournamentInput, "structure" | "topCut"> & {
+  rounds?: number | null;
+  topCutSize?: number | null;
+};
 
-/**
- * Pure: the same confirmed field always freezes the same shape. Called once when check-in closes
- * (that trigger is not part of this slice); late entry, drop and disqualification afterwards never
- * resize either number.
- */
 export function freezeStructure(confirmedParticipants: number, input: FreezeStructureInput): FrozenStructure {
   const participants = Math.max(0, Math.trunc(confirmedParticipants));
-  if (input.structure !== "swiss") return { swissRounds: null, topCutSize: null };
+  if (!playsScoredRounds(input.structure)) return { swissRounds: null, topCutSize: null };
+  const rounds =
+    input.structure === "round_robin"
+      ? roundRobinRoundCount(participants)
+      : (input.rounds ?? swissRoundCount(participants));
   return {
-    swissRounds: swissRoundCount(participants),
-    topCutSize: input.topCut ? topCutSize(participants) : null,
+    swissRounds: rounds,
+    topCutSize: input.topCut ? fitTopCut(participants, input.topCutSize ?? null) : null,
   };
+}
+
+function fitTopCut(participants: number, chosen: number | null): number {
+  if (chosen === null) return topCutSize(participants);
+  let size = chosen;
+  while (size > participants) size /= 2;
+  return size >= 2 ? size : 0;
 }
 
 /**

@@ -1,3 +1,4 @@
+import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
 import type { TournamentOwnDeck } from "@aegis/shared/tournaments/TournamentOwnDeck";
 import { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
 import { isTournamentRoundStartMode } from "@aegis/shared/tournaments/isTournamentRoundStartMode";
@@ -806,7 +807,7 @@ export function installAccountRoutes(
       res.status(409).json({ error: "round_not_ready" });
       return;
     }
-    if (tournament.structure === "swiss") {
+    if (playsScoredRounds(tournament.structure)) {
       const phases = await swiss.phaseViews(id);
       const frozen = phases.some((phase) => phase.kind === "swiss" && phase.status === "frozen");
       if (frozen) {

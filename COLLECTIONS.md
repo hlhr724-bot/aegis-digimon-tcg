@@ -3,7 +3,7 @@
 Aegis persists application data in PostgreSQL. This filename names the inventory;
 it does not imply a MongoDB collection layer. The API owns every query and write.
 The authoritative schema is the ordered [migration registry](apps/api/src/db/migrations/index.ts),
-currently migrations 001–052, plus the migrator's `schema_migrations` table.
+currently migrations 001–054, plus the migrator's `schema_migrations` table.
 Append migrations for released schema changes and update this inventory with them.
 
 Tables below list their identity, important fields, and constraints. Foreign keys,
@@ -38,6 +38,15 @@ rounds wait for organizer release, including Swiss, elimination and the Top Cut 
 The participant's selected saved deck can be replaced until check-in closes. The frozen
 `deck_snapshot` remains authoritative afterward and is exposed only to its owner through
 the private tournament detail response.
+
+Migration [054](apps/api/src/db/migrations/054-tournament-tiebreak-values.ts) adds nullable
+`games_won` and `games_lost` to `tournament_result_ledger`, so standings can rank by game
+win rate and game difference. It also adds nullable `game_win_rate`,
+`opponent_opponent_match_win_rate`, `opponent_points`, `defeated_opponent_points` and
+`game_difference` to `tournament_standings_snapshots`. Rows written before 054 keep `NULL`
+and count as zero games. Round robin events reuse the `swiss` phase kind for their rounds;
+`tournaments.structure` tells them apart. Organizer overrides for the round count, the
+Top Cut size and the tiebreaker order live in `tournaments.rules_snapshot`.
 
 Owners: [participants](apps/api/src/tournaments/participants/ParticipantStore.ts),
 [series](apps/api/src/tournaments/series/SeriesStore.ts),
