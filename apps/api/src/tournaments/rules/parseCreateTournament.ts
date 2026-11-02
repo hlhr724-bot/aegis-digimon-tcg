@@ -21,6 +21,13 @@ export function parseCreateTournament(
   if (body.tiebreakers !== undefined && body.tiebreakers !== null && !Array.isArray(body.tiebreakers)) {
     return undefined;
   }
+  if (
+    body.points !== undefined &&
+    body.points !== null &&
+    (typeof body.points !== "object" || Array.isArray(body.points))
+  ) {
+    return undefined;
+  }
   if (bestOf !== undefined && bestOf !== 1 && bestOf !== 3) return undefined;
   if (body.description !== undefined && typeof body.description !== "string") {
     return undefined;
@@ -47,6 +54,7 @@ export function parseCreateTournament(
       topCutSize: (body.topCutSize as number | null | undefined) ?? null,
       rounds: (body.rounds as number | null | undefined) ?? null,
       tiebreakers: (body.tiebreakers as CreateTournamentInput["tiebreakers"]) ?? null,
+      points: (body.points as CreateTournamentInput["points"]) ?? null,
       bestOf: bestOf ?? 1,
       startsAt: Number(startsAt),
       maxPlayers: Number(maxPlayers),

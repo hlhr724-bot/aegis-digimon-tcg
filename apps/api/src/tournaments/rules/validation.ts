@@ -4,6 +4,7 @@ import type { BanlistPolicy, CreateTournamentInput, TournamentBanlistCard, Tourn
 import { banlistDateForSet, normalizeBanlistPolicy, resolveBanlistPolicy } from "./banlistPolicy.js";
 import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import { isTournamentTiebreaker } from "@aegis/shared/tournaments/isTournamentTiebreaker";
+import { isTournamentPoints } from "@aegis/shared/tournaments/isTournamentPoints";
 import { isTournamentTopCutSize } from "@aegis/shared/tournaments/isTournamentTopCutSize";
 import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
 import { tiebreakersForStructure } from "@aegis/shared/tournaments/tiebreakersForStructure";
@@ -22,6 +23,7 @@ export type TournamentValidationCode =
   | "top_cut_size_invalid"
   | "rounds_invalid"
   | "tiebreakers_invalid"
+  | "points_invalid"
   | "banlist_mode_unknown"
   | "banlist_set_unknown"
   | "max_players_out_of_range"
@@ -102,6 +104,7 @@ export function validateCreateTournament(input: CreateTournamentInput, createdAt
     bestOf: input.bestOf,
     structure: input.structure,
     tiebreakers: input.tiebreakers ?? null,
+    points: input.points ?? null,
     rounds: input.rounds ?? null,
     topCutSize: input.topCut ? (input.topCutSize ?? null) : null,
   });
@@ -146,6 +149,10 @@ function programErrors(input: CreateTournamentInput): TournamentValidationError[
     if (!valid) {
       errors.push({ code: "tiebreakers_invalid", field: "tiebreakers" });
     }
+  }
+  const points = input.points ?? null;
+  if (points !== null && (!playsScoredRounds(input.structure) || !isTournamentPoints(points))) {
+    errors.push({ code: "points_invalid", field: "points" });
   }
   return errors;
 }

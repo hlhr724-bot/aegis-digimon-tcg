@@ -23,6 +23,7 @@ export const TournamentTiebreaker = {
     roundRobin: false,
   },
   GAME_DIFFERENCE: { name: "GAME_DIFFERENCE", value: "game_difference", swiss: true, roundRobin: true },
+  LAST_OPPONENT_RANK: { name: "LAST_OPPONENT_RANK", value: "last_opponent_rank", swiss: true, roundRobin: false },
 } as const;
 
 export type TournamentTiebreaker = (typeof TournamentTiebreaker)[keyof typeof TournamentTiebreaker]["value"];

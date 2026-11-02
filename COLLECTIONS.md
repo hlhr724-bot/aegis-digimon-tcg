@@ -43,9 +43,9 @@ Migration [054](apps/api/src/db/migrations/054-tournament-tiebreak-values.ts) ad
 `games_won` and `games_lost` to `tournament_result_ledger`, so standings can rank by game
 win rate and game difference. It also adds nullable `game_win_rate`,
 `opponent_opponent_match_win_rate`, `opponent_points`, `defeated_opponent_points` and
-`game_difference` to `tournament_standings_snapshots`. Rows written before 054 keep `NULL`
+`game_difference` and the integer `last_opponent_rank` to `tournament_standings_snapshots`. Rows written before 054 keep `NULL`
 and count as zero games. Round robin events reuse the `swiss` phase kind for their rounds;
-`tournaments.structure` tells them apart. Organizer overrides for the round count, the
+`tournaments.structure` tells them apart. Organizer overrides for the points, the round count, the
 Top Cut size and the tiebreaker order live in `tournaments.rules_snapshot`.
 
 Owners: [participants](apps/api/src/tournaments/participants/ParticipantStore.ts),

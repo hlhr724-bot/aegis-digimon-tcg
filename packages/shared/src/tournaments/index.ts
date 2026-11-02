@@ -9,6 +9,7 @@ import type { DeckFormat } from "#shared/deckFormat";
 import type { TournamentClockSettings } from "#shared/tournaments/TournamentClockSettings";
 import type { TournamentSpectatorPolicy } from "#shared/tournaments/TournamentSpectatorPolicy";
 import type { TournamentTiebreaker } from "#shared/tournaments/TournamentTiebreaker";
+import type { TournamentPoints } from "#shared/tournaments/TournamentPoints";
 
 export type TournamentStructure = "swiss" | "round_robin" | "single_elimination";
 
@@ -53,6 +54,7 @@ export type CreateTournamentInput = {
   topCutSize?: number | null;
   rounds?: number | null;
   tiebreakers?: readonly TournamentTiebreaker[] | null;
+  points?: TournamentPoints | null;
   bestOf: 1 | 3;
   startsAt: number;
   maxPlayers: number;
@@ -165,6 +167,7 @@ export type StandingsRow = {
   opponentPoints?: number;
   defeatedOpponentPoints?: number;
   gameDifference?: number;
+  lastOpponentRank?: number | null;
 };
 
 export type ParticipantView = {

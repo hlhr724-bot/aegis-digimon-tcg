@@ -61,6 +61,10 @@ function splitGroup({ group, tiebreaker, winsByPair, drawSeed }: SplitParams): T
       return splitByValue(group, (row) => row.opponentPoints);
     case "defeated_opponent_points":
       return splitByValue(group, (row) => row.defeatedOpponentPoints);
+    case "last_opponent_rank":
+      return splitByValue(group, (row) =>
+        row.lastOpponentRank === null ? Number.NEGATIVE_INFINITY : -row.lastOpponentRank,
+      );
     case "judge_random_draw":
       return drawGroup(group, drawSeed);
     case "extra_match":

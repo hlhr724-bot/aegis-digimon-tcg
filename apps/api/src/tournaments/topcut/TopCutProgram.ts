@@ -343,8 +343,8 @@ export class TopCutProgram {
         `INSERT INTO tournament_standings_snapshots
            (id, tournament_id, phase_id, participant_id, rank, points, match_win_rate, opponent_match_win_rate,
             wins, losses, draws, byes, eligible, cut_seed, frozen_at, game_win_rate, opponent_opponent_match_win_rate,
-            opponent_points, defeated_opponent_points, game_difference)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+            opponent_points, defeated_opponent_points, game_difference, last_opponent_rank)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
          ON CONFLICT (phase_id, participant_id) DO NOTHING`,
         [
           randomUUID(),
@@ -367,6 +367,7 @@ export class TopCutProgram {
           row.opponentPoints ?? null,
           row.defeatedOpponentPoints ?? null,
           row.gameDifference ?? null,
+          row.lastOpponentRank ?? null,
         ],
       );
   }
@@ -551,9 +552,11 @@ async function readFrozenStandings(db: Queryable, tournamentId: string): Promise
       opponent_points: string | number | null;
       defeated_opponent_points: string | number | null;
       game_difference: string | number | null;
+      last_opponent_rank: string | number | null;
     }>(
       `SELECT participant_id, rank, points, match_win_rate, opponent_match_win_rate, wins, losses, draws, byes,
-              game_win_rate, opponent_opponent_match_win_rate, opponent_points, defeated_opponent_points, game_difference
+              game_win_rate, opponent_opponent_match_win_rate, opponent_points, defeated_opponent_points, game_difference,
+              last_opponent_rank
        FROM tournament_standings_snapshots WHERE tournament_id=$1 ORDER BY rank`,
       [tournamentId],
     )
@@ -572,6 +575,7 @@ async function readFrozenStandings(db: Queryable, tournamentId: string): Promise
     ...optionalValue("opponentPoints", row.opponent_points),
     ...optionalValue("defeatedOpponentPoints", row.defeated_opponent_points),
     ...optionalValue("gameDifference", row.game_difference),
+    ...optionalValue("lastOpponentRank", row.last_opponent_rank),
   }));
 }
 

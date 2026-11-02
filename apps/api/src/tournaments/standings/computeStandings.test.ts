@@ -585,3 +585,35 @@ describe("computeStandings organizer tiebreakers", () => {
     expect(rowOf(rows, "d").defeatedOpponentPoints).toBe(0);
   });
 });
+
+describe("computeStandings last opponent rank", () => {
+  it("ranks the player whose last opponent placed higher first", () => {
+    const ledger = [
+      ...match("a", "c", 1),
+      ...match("b", "d", 1),
+      ...match("c", "d", 2),
+      ...match("a", "e", 2),
+      ...match("b", "f", 2),
+    ];
+    const rows = computeStandings({
+      ledger,
+      standings: { ...officialScoring, tiebreakers: ["last_opponent_rank"] },
+      participants: ["a", "b", "c", "d", "e", "f"].map((id) => ({ id, seed: null })),
+    });
+    const a = rowOf(rows, "a");
+    const b = rowOf(rows, "b");
+    expect(a.points).toBe(b.points);
+    expect(a.lastOpponentRank).toBeDefined();
+    expect(b.lastOpponentRank).toBeDefined();
+    expect(a.rank < b.rank).toBe(a.lastOpponentRank! < b.lastOpponentRank!);
+  });
+
+  it("scores matches with the event's own point values", () => {
+    const rows = computeStandings({
+      ledger: [...match("a", "b", 1), entry("c", "d", 1, "draw"), entry("d", "c", 1, "draw")],
+      standings: { winPoints: 2, drawPoints: 1, lossPoints: 0, byePoints: 2, tiebreakers: [] },
+    });
+    expect(rowOf(rows, "a").points).toBe(2);
+    expect(rowOf(rows, "c").points).toBe(1);
+  });
+});

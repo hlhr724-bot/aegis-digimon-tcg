@@ -195,3 +195,24 @@ describe("validateCreateTournament organizer program settings", () => {
     expect(codes(competitive({ rounds: 0 }))).toContain("rounds_invalid");
   });
 });
+
+describe("validateCreateTournament points", () => {
+  it("freezes the organizer's points per win, draw and loss, with a bye worth a win", () => {
+    const result = validateCreateTournament(competitive({ points: { win: 2, draw: 1, loss: 0 } }), CREATED_AT);
+    if (!result.ok) throw new Error("expected a valid event");
+    expect(result.value.rules.standings).toMatchObject({ winPoints: 2, drawPoints: 1, lossPoints: 0, byePoints: 2 });
+  });
+
+  it("keeps 3/1/0 when the organizer leaves points on Auto", () => {
+    const result = validateCreateTournament(competitive(), CREATED_AT);
+    if (!result.ok) throw new Error("expected a valid event");
+    expect(result.value.rules.standings).toMatchObject({ winPoints: 3, drawPoints: 1, lossPoints: 0, byePoints: 3 });
+  });
+
+  it("refuses points where a win is not worth more than a draw, or values out of range", () => {
+    expect(codes(competitive({ points: { win: 1, draw: 1, loss: 0 } }))).toContain("points_invalid");
+    expect(codes(competitive({ points: { win: 3, draw: 0, loss: 1 } }))).toContain("points_invalid");
+    expect(codes(competitive({ points: { win: 11, draw: 1, loss: 0 } }))).toContain("points_invalid");
+    expect(codes(community({ points: { win: 3, draw: 1, loss: 0 } }))).toContain("points_invalid");
+  });
+});

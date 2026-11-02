@@ -36,6 +36,7 @@ export type StandingsTiebreaker =
   | "game_difference"
   | "opponent_points"
   | "defeated_opponent_points"
+  | "last_opponent_rank"
   | "judge_random_draw"
   | "extra_match";
 
@@ -50,6 +51,7 @@ const RESOLVABLE_TIEBREAKERS = new Set<StandingsTiebreaker>([
   "game_difference",
   "opponent_points",
   "defeated_opponent_points",
+  "last_opponent_rank",
   "judge_random_draw",
 ]);
 
@@ -118,6 +120,7 @@ export type StandingsDetailRow = StandingsRow & {
   gameDifference: number;
   opponentPoints: number;
   defeatedOpponentPoints: number;
+  lastOpponentRank: number | null;
   // Matches against `kind: "bot"` opponents. Whether they fed the rates above
   // is `botOpponentsIncluded` on the report.
   botOpponentMatches: number;
@@ -260,6 +263,18 @@ function rawMatchWinRate(accumulator: Accumulator, scoring: TournamentRules["sta
   return accumulator.ratedPoints / (accumulator.ratedRounds * maximumPerRound);
 }
 
+function lastOpponentOf(ledger: readonly LedgerEntry[]): Map<string, string> {
+  const latest = new Map<string, { round: number; opponentId: string }>();
+  for (const entry of ledger) {
+    if (entry.opponentId === null) continue;
+    const current = latest.get(entry.participantId);
+    if (!current || entry.roundNumber > current.round) {
+      latest.set(entry.participantId, { round: entry.roundNumber, opponentId: entry.opponentId });
+    }
+  }
+  return new Map([...latest].map(([participantId, { opponentId }]) => [participantId, opponentId]));
+}
+
 function gameWinRate(accumulator: Accumulator): number {
   const games = accumulator.gamesWon + accumulator.gamesLost;
   return games === 0 ? 0 : accumulator.gamesWon / games;
@@ -352,6 +367,7 @@ export function computeStandingsReport(input: ComputeStandingsInput): StandingsR
     gameDifference: accumulator.gamesWon - accumulator.gamesLost,
     opponentPoints: accumulator.ratedOpponents.reduce((total, opponent) => total + pointsOf(opponent.id), 0),
     defeatedOpponentPoints: accumulator.defeatedOpponentIds.reduce((total, id) => total + pointsOf(id), 0),
+    lastOpponentRank: null as number | null,
     wins: accumulator.wins,
     losses: accumulator.losses,
     draws: accumulator.draws,
@@ -363,6 +379,20 @@ export function computeStandingsReport(input: ComputeStandingsInput): StandingsR
     unratedOpponentMatches: unratedOpponentMatches.get(accumulator.id) ?? 0,
   }));
 
+  if (tiebreakers.includes("last_opponent_rank")) {
+    const provisional = rankStandingsRows({
+      rows,
+      ledger: input.ledger,
+      tiebreakers: tiebreakers.filter((tiebreaker) => tiebreaker !== "last_opponent_rank"),
+      drawSeed: input.drawSeed ?? "",
+    });
+    const provisionalRank = new Map(provisional.map((row, index) => [row.participantId, index + 1]));
+    const lastOpponents = lastOpponentOf(input.ledger);
+    for (const row of rows) {
+      const opponentId = lastOpponents.get(row.participantId);
+      row.lastOpponentRank = opponentId === undefined ? null : (provisionalRank.get(opponentId) ?? null);
+    }
+  }
   const ranked = rankStandingsRows({ rows, ledger: input.ledger, tiebreakers, drawSeed: input.drawSeed ?? "" });
   ranked.forEach((row, index) => {
     row.rank = index + 1;
@@ -391,5 +421,6 @@ export function computeStandings(input: ComputeStandingsInput): StandingsRow[] {
     opponentPoints: row.opponentPoints,
     defeatedOpponentPoints: row.defeatedOpponentPoints,
     gameDifference: row.gameDifference,
+    ...(row.lastOpponentRank === null ? {} : { lastOpponentRank: row.lastOpponentRank }),
   }));
 }

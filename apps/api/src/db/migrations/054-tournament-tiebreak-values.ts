@@ -8,6 +8,7 @@ const STATEMENTS = [
   "ALTER TABLE tournament_standings_snapshots ADD COLUMN IF NOT EXISTS opponent_points double precision",
   "ALTER TABLE tournament_standings_snapshots ADD COLUMN IF NOT EXISTS defeated_opponent_points double precision",
   "ALTER TABLE tournament_standings_snapshots ADD COLUMN IF NOT EXISTS game_difference double precision",
+  "ALTER TABLE tournament_standings_snapshots ADD COLUMN IF NOT EXISTS last_opponent_rank integer",
 ];
 
 export const tournamentTiebreakValues: Migration = {
