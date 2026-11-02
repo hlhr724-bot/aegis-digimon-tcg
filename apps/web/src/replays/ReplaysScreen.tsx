@@ -7,6 +7,7 @@ import { readReplay, replayBlob, ReplayFileError } from "./files";
 import { findLocalReplay, localReplayFile } from "./local";
 import { replayApi } from "./library";
 import { ReplayViewer } from "./ReplayViewer";
+import { readReplayMomentIndex } from "@/replays/annotations/readReplayMomentIndex";
 import { CloudAuthError, CloudRequestError, useCloudReplays, withCloudSession } from "./cloud";
 import "./replays.css";
 
@@ -34,6 +35,7 @@ export function ReplaysScreen({
   const [ownReplay, setOwnReplay] = useState<SharedReplay>();
   const { provider } = useCloudReplays();
   const [loading, setLoading] = useState(false);
+  const [initialIndex] = useState(() => readReplayMomentIndex(window.location.search));
   useEffect(() => {
     onViewingChange?.(replay !== undefined);
     return () => onViewingChange?.(false);
@@ -95,7 +97,15 @@ export function ReplaysScreen({
     setReplay(undefined);
     onCloseLink?.();
   };
-  if (replay) return <ReplayViewer replay={replay} onClose={close} />;
+  if (replay)
+    return (
+      <ReplayViewer
+        replay={replay}
+        onClose={close}
+        initialIndex={initialIndex}
+        shareId={replayId === replay.id ? undefined : replayId}
+      />
+    );
   return (
     <section className="replay-import replay-link-state">
       <h1>{t("replay.title")}</h1>

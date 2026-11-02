@@ -27,15 +27,22 @@ export function ReplayPlayer({
   replay,
   onClose,
   devProbe,
+  initialIndex = 0,
+  shareId,
 }: {
   replay: MatchReplay;
   onClose: () => void;
   devProbe?: PresentationProbe;
+  initialIndex?: number;
+  shareId?: string;
 }) {
   const observer = useRef(devProbe);
   observer.current = devProbe;
   const { t, locale } = useTranslation();
-  const [cursor, setCursor] = useState({ index: 0, from: 0, epoch: 0, animate: false });
+  const [cursor, setCursor] = useState(() => {
+    const start = Math.max(0, Math.min(replay.frames.length - 1, initialIndex));
+    return { index: start, from: start, epoch: 0, animate: false };
+  });
   const [playing, setPlaying] = useState(false);
   const [jumping, setJumping] = useState(false);
   const pendingJump = useRef<number | undefined>(undefined);
@@ -50,8 +57,12 @@ export function ReplayPlayer({
   const [annotationsOpen, setAnnotationsOpen] = useState(false);
   const annotations = useReplayAnnotations({ matchId: replay.id });
   const annotationEntries = useMemo(
-    () => buildReplayAnnotationEntries({ markers: annotations.markers, notes: annotations.notes }),
-    [annotations.markers, annotations.notes],
+    () =>
+      buildReplayAnnotationEntries({
+        markers: [...annotations.markers, ...annotations.shared.flatMap((group) => group.markers)],
+        notes: [...annotations.notes, ...annotations.shared.flatMap((group) => group.notes)],
+      }),
+    [annotations.markers, annotations.notes, annotations.shared],
   );
   const [controlsVisible, setControlsVisible] = useState(true);
   const [recordingMode, setRecordingMode] = useState(false);
@@ -347,6 +358,8 @@ export function ReplayPlayer({
             replay={replay}
             annotations={annotations}
             index={cursor.index}
+            skipThinking={skipThinking}
+            shareId={shareId}
             onJump={jump}
             onClose={() => setAnnotationsOpen(false)}
           />

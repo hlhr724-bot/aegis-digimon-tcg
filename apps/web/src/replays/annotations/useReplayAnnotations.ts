@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReplayMarker } from "@aegis/shared/replays/annotations/ReplayMarker";
 import type { ReplayMarkerEmoji } from "@aegis/shared/replays/annotations/ReplayMarkerEmoji";
 import type { ReplayNote } from "@aegis/shared/replays/annotations/ReplayNote";
+import type {
+  OwnReplayAnnotationSharing,
+  SharedReplayAnnotations,
+} from "@aegis/shared/replays/annotations/ReplayAnnotations";
 import { replayAnnotationApi } from "@/replays/annotations/replayAnnotationApi";
 
 type Params = { matchId: string };
@@ -9,23 +13,29 @@ type Moment = { frameIndex: number; turn: number };
 type MarkMomentParams = Moment & { emoji: ReplayMarkerEmoji };
 type AddNoteParams = Moment & { text: string };
 type EditNoteParams = { noteId: string; text: string };
+type SetSharingParams = { replayId: string; shared: boolean };
 
 export type ReplayAnnotationsState = {
   markers: readonly ReplayMarker[];
   notes: readonly ReplayNote[];
   canAnnotate: boolean;
+  shared: readonly SharedReplayAnnotations[];
+  ownReplays: readonly OwnReplayAnnotationSharing[];
   failed: boolean;
   markMoment: (params: MarkMomentParams) => Promise<void>;
   removeMarker: (markerId: string) => Promise<void>;
   addNote: (params: AddNoteParams) => Promise<boolean>;
   editNote: (params: EditNoteParams) => Promise<boolean>;
   removeNote: (noteId: string) => Promise<void>;
+  setSharing: (params: SetSharingParams) => Promise<boolean>;
 };
 
 export function useReplayAnnotations({ matchId }: Params): ReplayAnnotationsState {
   const [markers, setMarkers] = useState<readonly ReplayMarker[]>([]);
   const [notes, setNotes] = useState<readonly ReplayNote[]>([]);
   const [canAnnotate, setCanAnnotate] = useState(false);
+  const [shared, setShared] = useState<readonly SharedReplayAnnotations[]>([]);
+  const [ownReplays, setOwnReplays] = useState<readonly OwnReplayAnnotationSharing[]>([]);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -33,6 +43,8 @@ export function useReplayAnnotations({ matchId }: Params): ReplayAnnotationsStat
     setMarkers([]);
     setNotes([]);
     setCanAnnotate(false);
+    setShared([]);
+    setOwnReplays([]);
     replayAnnotationApi
       .list(matchId)
       .then((annotations) => {
@@ -40,6 +52,8 @@ export function useReplayAnnotations({ matchId }: Params): ReplayAnnotationsStat
           setMarkers(annotations.markers);
           setNotes(annotations.notes);
           setCanAnnotate(annotations.canAnnotate);
+          setShared(annotations.shared);
+          setOwnReplays(annotations.ownReplays);
         }
       })
       .catch(() => undefined);
@@ -107,5 +121,31 @@ export function useReplayAnnotations({ matchId }: Params): ReplayAnnotationsStat
     [attempt, matchId],
   );
 
-  return { markers, notes, canAnnotate, failed, markMoment, removeMarker, addNote, editNote, removeNote };
+  const setSharing = useCallback(
+    ({ replayId, shared: next }: SetSharingParams) =>
+      attempt(async () => {
+        const result = await replayAnnotationApi.setSharing(replayId, next);
+        setOwnReplays((current) =>
+          current.map((entry) =>
+            entry.replayId === replayId ? { ...entry, annotationsShared: result.annotationsShared } : entry,
+          ),
+        );
+      }),
+    [attempt],
+  );
+
+  return {
+    markers,
+    notes,
+    canAnnotate,
+    shared,
+    ownReplays,
+    failed,
+    markMoment,
+    removeMarker,
+    addNote,
+    editNote,
+    removeNote,
+    setSharing,
+  };
 }

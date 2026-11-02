@@ -1,7 +1,12 @@
 import { randomUUID } from "node:crypto";
 import type { AccountStore } from "#api/accounts/AccountStore";
 import { runFriendTransaction } from "#api/friends/runFriendTransaction";
-import type { ReplayAnnotations } from "@aegis/shared/replays/annotations/ReplayAnnotations";
+import { maskBlockedWords } from "#api/moderation/blockedWords";
+import type {
+  OwnReplayAnnotationSharing,
+  ReplayAnnotations,
+  SharedReplayAnnotations,
+} from "@aegis/shared/replays/annotations/ReplayAnnotations";
 import type { ReplayMarker } from "@aegis/shared/replays/annotations/ReplayMarker";
 import type { ReplayMarkerEmoji } from "@aegis/shared/replays/annotations/ReplayMarkerEmoji";
 import type { ReplayNote } from "@aegis/shared/replays/annotations/ReplayNote";
@@ -35,6 +40,9 @@ type AddMarkerParams = MomentParams & { emoji: ReplayMarkerEmoji };
 type AddNoteParams = MomentParams & { text: string };
 type UpdateNoteParams = { authorId: string; matchId: string; noteId: string; text: string; now?: number };
 type RemoveParams = { authorId: string; matchId: string; id: string };
+type SetSharingParams = { accountId: string; replayId: string; shared: boolean };
+type AuthorParams = { authorId: string; matchId: string };
+type SharedRow = { id: string; account_id: string; display_name: string };
 
 export type AddMarkerResult = { kind: "added"; marker: ReplayMarker } | { kind: "limit_reached" };
 export type AddNoteResult = { kind: "added"; note: ReplayNote } | { kind: "limit_reached" };
@@ -94,23 +102,75 @@ export class ReplayAnnotationStore {
   }
 
   async list({ viewerId, matchId }: ListParams): Promise<ReplayAnnotations> {
-    if (!viewerId) {
-      return { markers: [], notes: [], canAnnotate: false };
-    }
     await this.accounts.ensureReady();
-    const markers = await this.accounts.pool.query<MarkerRow>(
-      "SELECT * FROM replay_markers WHERE author_id=$1 AND match_id=$2 ORDER BY frame_index, created_at, id",
-      [viewerId, matchId],
-    );
-    const notes = await this.accounts.pool.query<NoteRow>(
-      "SELECT * FROM replay_notes WHERE author_id=$1 AND match_id=$2 ORDER BY frame_index, created_at, id",
+    const shared = await this.listShared({ viewerId, matchId });
+    if (!viewerId) {
+      return { markers: [], notes: [], canAnnotate: false, shared, ownReplays: [] };
+    }
+    const own = await this.listByAuthor({ authorId: viewerId, matchId });
+    const ownReplays = await this.accounts.pool.query<OwnReplayAnnotationSharing>(
+      `SELECT id AS "replayId", visibility, annotations_shared AS "annotationsShared" FROM account_replays
+       WHERE account_id=$1 AND match_id=$2 AND saved_at IS NOT NULL ORDER BY saved_at, id`,
       [viewerId, matchId],
     );
     return {
-      markers: markers.rows.map(toMarker),
-      notes: notes.rows.map(toNote),
+      ...own,
       canAnnotate: await this.canAnnotate({ accountId: viewerId, matchId }),
+      shared,
+      ownReplays: ownReplays.rows,
     };
+  }
+
+  async setSharing({ accountId, replayId, shared }: SetSharingParams): Promise<boolean> {
+    await this.accounts.ensureReady();
+    const result = await this.accounts.pool.query(
+      "UPDATE account_replays SET annotations_shared=$3 WHERE id=$1 AND account_id=$2 AND saved_at IS NOT NULL",
+      [replayId, accountId, shared],
+    );
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  private async listByAuthor({ authorId, matchId }: AuthorParams) {
+    const markers = await this.accounts.pool.query<MarkerRow>(
+      "SELECT * FROM replay_markers WHERE author_id=$1 AND match_id=$2 ORDER BY frame_index, created_at, id",
+      [authorId, matchId],
+    );
+    const notes = await this.accounts.pool.query<NoteRow>(
+      "SELECT * FROM replay_notes WHERE author_id=$1 AND match_id=$2 ORDER BY frame_index, created_at, id",
+      [authorId, matchId],
+    );
+    return { markers: markers.rows.map(toMarker), notes: notes.rows.map(toNote) };
+  }
+
+  private async listShared({ viewerId, matchId }: ListParams): Promise<SharedReplayAnnotations[]> {
+    const rows = await this.accounts.pool.query<SharedRow>(
+      `SELECT r.id, r.account_id, a.display_name FROM account_replays r JOIN accounts a ON a.id = r.account_id
+       WHERE r.match_id=$1 AND r.saved_at IS NOT NULL AND r.annotations_shared AND r.visibility IN ($2,$3)
+       ORDER BY r.saved_at, r.id`,
+      [matchId, ReplayVisibility.FRIENDS.value, ReplayVisibility.PUBLIC.value],
+    );
+    const authors = new Map<string, string>();
+    for (const row of rows.rows) {
+      if (
+        row.account_id !== viewerId &&
+        !authors.has(row.account_id) &&
+        (await this.replays.accessible(viewerId, row.id))
+      ) {
+        authors.set(row.account_id, row.display_name);
+      }
+    }
+    const shared: SharedReplayAnnotations[] = [];
+    for (const [authorId, authorName] of authors) {
+      const { markers, notes } = await this.listByAuthor({ authorId, matchId });
+      if (markers.length || notes.length) {
+        shared.push({
+          authorName,
+          markers,
+          notes: notes.map((note) => ({ ...note, text: maskBlockedWords(note.text) })),
+        });
+      }
+    }
+    return shared;
   }
 
   async addMarker({ authorId, matchId, frameIndex, turn, emoji, now = Date.now() }: AddMarkerParams) {

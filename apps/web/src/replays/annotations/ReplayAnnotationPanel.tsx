@@ -9,6 +9,7 @@ import {
 } from "@/replays/annotations/buildReplayAnnotationEntries";
 import { ReplayMarkerPicker } from "@/replays/annotations/ReplayMarkerPicker";
 import { ReplayNoteForm } from "@/replays/annotations/ReplayNoteForm";
+import { ReplayAnnotationTools } from "@/replays/annotations/ReplayAnnotationTools";
 import type { ReplayAnnotationsState } from "@/replays/annotations/useReplayAnnotations";
 import "@/replays/annotations/replayAnnotations.css";
 
@@ -16,17 +17,27 @@ type Props = {
   replay: MatchReplay;
   annotations: ReplayAnnotationsState;
   index: number;
+  skipThinking: boolean;
+  shareId?: string;
   onJump: (index: number) => void;
   onClose: () => void;
 };
 
-export function ReplayAnnotationPanel({ replay, annotations, index, onJump, onClose }: Props) {
+export function ReplayAnnotationPanel({ replay, annotations, index, skipThinking, shareId, onJump, onClose }: Props) {
   const { t } = useTranslation();
   const [editingId, setEditingId] = useState<string>();
   const turn = replay.frames[index]?.state.turnCount ?? 0;
   const entries = useMemo(
     () => buildReplayAnnotationEntries({ markers: annotations.markers, notes: annotations.notes }),
     [annotations.markers, annotations.notes],
+  );
+  const sharedGroups = useMemo(
+    () =>
+      annotations.shared.map((group) => ({
+        authorName: group.authorName,
+        entries: buildReplayAnnotationEntries({ markers: group.markers, notes: group.notes }),
+      })),
+    [annotations.shared],
   );
 
   function removeEntry(entry: ReplayAnnotationEntry) {
@@ -101,6 +112,31 @@ export function ReplayAnnotationPanel({ replay, annotations, index, onJump, onCl
     );
   }
 
+  function renderSharedEntry(entry: ReplayAnnotationEntry) {
+    return (
+      <li key={entry.id} data-kind={entry.kind}>
+        <button
+          type="button"
+          className="replay-annotations__moment"
+          aria-current={entry.frameIndex === index ? "step" : undefined}
+          onClick={() => onJump(entry.frameIndex)}
+        >
+          {entry.kind === "marker" ? (
+            <span className="replay-annotations__glyph" aria-hidden="true">
+              {entry.marker.emoji}
+            </span>
+          ) : (
+            <Icons.Pencil size={16} />
+          )}
+          <span className="replay-annotations__text">
+            <small>{t("replayAnnotations.moment", { turn: entry.turn, action: entry.frameIndex + 1 })}</small>
+            {entry.kind === "note" ? <span>{entry.note.text}</span> : null}
+          </span>
+        </button>
+      </li>
+    );
+  }
+
   return (
     <aside id="replay-annotations" className="replay-annotations" aria-label={t("replayAnnotations.title")}>
       <header>
@@ -128,6 +164,20 @@ export function ReplayAnnotationPanel({ replay, annotations, index, onJump, onCl
       ) : (
         <ol className="replay-annotations__list">{entries.map(renderEntry)}</ol>
       )}
+      {sharedGroups.map((group) => (
+        <section key={group.authorName} className="replay-annotations__shared">
+          <h3>{t("replayAnnotations.sharedBy", { name: group.authorName })}</h3>
+          <ol className="replay-annotations__list">{group.entries.map(renderSharedEntry)}</ol>
+        </section>
+      ))}
+      <ReplayAnnotationTools
+        replay={replay}
+        annotations={annotations}
+        entries={entries}
+        index={index}
+        skipThinking={skipThinking}
+        shareId={shareId}
+      />
     </aside>
   );
 }

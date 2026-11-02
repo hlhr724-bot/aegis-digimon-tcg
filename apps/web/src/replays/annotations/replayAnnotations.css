@@ -7,7 +7,8 @@
   display: flex;
   flex-direction: column;
   width: min(340px, calc(100% - 24px));
-  overflow: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: 1px solid var(--ds-line);
   border-radius: 14px;
   background: var(--ds-sheet);
@@ -55,10 +56,9 @@
   color: var(--ds-danger);
 }
 .replay-annotations__list {
+  flex: none;
   margin: 0;
   padding: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
   list-style: none;
 }
 .replay-annotations__list > li {
@@ -219,4 +219,65 @@
 }
 .replay-timeline__annotation[data-kind="note"] {
   color: var(--ds-text-2);
+}
+.replay-annotations__shared h3 {
+  padding: 12px 12px 4px;
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-xs);
+}
+.replay-annotations__tools {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--ds-line);
+}
+.replay-annotations__sharing {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--ds-text-xs);
+  cursor: pointer;
+}
+.replay-annotations__sharing input {
+  margin-top: 2px;
+}
+.replay-annotations__sharing span {
+  display: grid;
+  gap: 2px;
+}
+.replay-annotations__sharing small {
+  color: var(--ds-text-3);
+}
+.replay-annotations__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.replay-annotations__tools .replay-annotations__hint {
+  padding: 0;
+}
+.replay-annotations__chapters {
+  display: grid;
+  gap: 6px;
+  font-size: var(--ds-text-xs);
+}
+.replay-annotations__chapters summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.replay-annotations__chapters textarea {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 6px;
+  padding: var(--ds-space-2);
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-paper);
+  color: var(--ds-text);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-xs);
+  resize: vertical;
+}
+.replay-annotations > * {
+  flex: none;
 }

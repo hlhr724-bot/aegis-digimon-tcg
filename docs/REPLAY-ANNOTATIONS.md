@@ -13,6 +13,9 @@ replay reviews on YouTube.
 | In the replay view | Drop an emoji marker or write a note on the shown action        |
 | In the replay view | See markers and notes on the timeline and jump with a click     |
 | In the replay view | Edit their own notes and delete their own markers and notes     |
+| In the replay view | Share their annotations together with their shared replay       |
+| In the replay view | Copy a link to the shown moment                                 |
+| In the replay view | Copy their annotations as YouTube chapters                      |
 
 ## Model
 
@@ -46,8 +49,43 @@ A signed-in viewer can annotate a match when one of these is true:
 
 ## Visibility
 
-Markers and notes are private. Only their author can list, edit or delete
+Annotations are private by default. Only their author can list, edit or delete
 them.
+
+A replay owner can tick "Include my markers and notes when this replay is
+shared" in the annotations panel. This sets `account_replays.annotations_shared`
+on that saved replay. Then:
+
+- Anyone who can watch that saved replay under the existing rules also sees the
+  owner's markers and notes for the match, read-only. That is everyone for a
+  public replay, and accepted friends who do not block each other for a
+  friends-only replay.
+- A private replay shares nothing, even with the box ticked. The box takes
+  effect when the replay is shared again.
+- Turning the box off hides the annotations at once.
+- Only replay owners can publish annotations. A viewer who annotates someone
+  else's shared replay keeps those annotations private.
+- Shared note text has blocked words masked, as in match chat. The author still
+  sees the original.
+- The panel shows the owner's account display name above their shared
+  annotations, because the owner chose to publish them.
+
+## Content workflow
+
+- **Deep link.** "Copy link to this moment" copies `/replays/<replayId>?at=<action>`.
+  The link opens the replay at that action (one-based, as the timeline shows).
+  The usual replay access rules decide who can open it. The button appears when
+  the replay has a shareable index ID: the viewer opened a shared link, or owns a
+  saved copy.
+- **YouTube chapters.** "Copy YouTube chapters" copies one line per annotation,
+  for example `1:23 ⭐ Key moment · Turn 4`. The list starts at `0:00` with the
+  player names. YouTube needs chapters at least 10 seconds apart, so an
+  annotation closer than 10 seconds to the previous chapter joins that chapter's
+  title. Times follow playback from the first action at 1× speed with the
+  current "Skip thinking time" setting, which is how the built-in replay recorder
+  plays. Animations can add a few seconds, so creators should check the times
+  against their video. The panel also shows the text so it can be copied by hand
+  when the clipboard is blocked.
 
 ## Limits
 

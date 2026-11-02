@@ -90,8 +90,20 @@ describe("replay markers", () => {
     });
     expect(added).toMatchObject({ kind: "added", marker: { matchId, frameIndex: 12, turn: 3, emoji: "❌" } });
     expect((await store.list({ viewerId: owner.id, matchId })).markers).toHaveLength(1);
-    expect(await store.list({ viewerId: viewer.id, matchId })).toEqual({ markers: [], notes: [], canAnnotate: false });
-    expect(await store.list({ viewerId: undefined, matchId })).toEqual({ markers: [], notes: [], canAnnotate: false });
+    expect(await store.list({ viewerId: viewer.id, matchId })).toEqual({
+      markers: [],
+      notes: [],
+      canAnnotate: false,
+      shared: [],
+      ownReplays: [],
+    });
+    expect(await store.list({ viewerId: undefined, matchId })).toEqual({
+      markers: [],
+      notes: [],
+      canAnnotate: false,
+      shared: [],
+      ownReplays: [],
+    });
   });
 
   it("lets a viewer annotate a replay only while it is shared with them", async () => {
@@ -230,15 +242,56 @@ describe("replay marker routes", () => {
     expect(marker).toMatchObject({ matchId, frameIndex: 4, turn: 2, emoji: "⭐" });
 
     const anonymous = await call(`/replay-annotations/${matchId}`);
-    expect(await anonymous.json()).toEqual({ markers: [], notes: [], canAnnotate: false });
+    expect(await anonymous.json()).toEqual({ markers: [], notes: [], canAnnotate: false, shared: [], ownReplays: [] });
     const own = await call(`/replay-annotations/${matchId}`, { session: ownerSession });
     expect(own.headers.get("cache-control")).toContain("no-store");
-    expect(await own.json()).toEqual({ markers: [marker], notes: [], canAnnotate: true });
+    expect(await own.json()).toEqual({ markers: [marker], notes: [], canAnnotate: true, shared: [], ownReplays: [] });
 
     const remove = (session: string) =>
       call(`/replay-annotations/${matchId}/markers/${marker.id}`, { method: "DELETE", session });
     expect((await remove(viewerSession)).status).toBe(404);
     expect((await remove(ownerSession)).status).toBe(200);
     expect((await remove(ownerSession)).status).toBe(404);
+  });
+});
+
+describe("shared replay annotations", () => {
+  it("shows the owner's annotations only while they opt in and the replay is shared with the viewer", async () => {
+    const { accounts, owner, viewer, library, matchId, replayId, store } = await setup();
+    const call = await serve(accounts, library);
+    const ownerSession = (await accounts.issueSession(owner)).id;
+    const viewerSession = (await accounts.issueSession(viewer)).id;
+    await library.attachDrive(owner.id, replayId, FILE_ID);
+    await store.addMarker({ authorId: owner.id, matchId, frameIndex: 2, turn: 1, emoji: "🔥" });
+    await store.addNote({ authorId: owner.id, matchId, frameIndex: 2, turn: 1, text: "What the fuck was that" });
+    const sharedFor = async (viewerId: string | undefined) => (await store.list({ viewerId, matchId })).shared;
+    const share = (session: string, shared: unknown, target = replayId) =>
+      call(`/account/replays/${target}/annotation-sharing`, {
+        method: "PUT",
+        session,
+        body: JSON.stringify({ shared }),
+      });
+
+    expect((await share(ownerSession, "yes")).status).toBe(400);
+    expect((await share(viewerSession, true)).status).toBe(404);
+    expect((await share(ownerSession, true)).status).toBe(200);
+    expect((await store.list({ viewerId: owner.id, matchId })).ownReplays).toEqual([
+      { replayId, visibility: "private", annotationsShared: true },
+    ]);
+    expect(await sharedFor(viewer.id)).toEqual([]);
+
+    await library.setVisibility(owner.id, replayId, "public");
+    const visible = await sharedFor(undefined);
+    expect(visible).toHaveLength(1);
+    expect(visible[0]).toMatchObject({ authorName: "Owner", markers: [{ emoji: "🔥" }] });
+    expect(visible[0]!.notes[0]!.text).toBe("What the **** was that");
+    expect(await sharedFor(viewer.id)).toHaveLength(1);
+    expect(await sharedFor(owner.id)).toEqual([]);
+
+    expect((await share(ownerSession, false)).status).toBe(200);
+    expect(await sharedFor(viewer.id)).toEqual([]);
+    await share(ownerSession, true);
+    await library.setVisibility(owner.id, replayId, "private");
+    expect(await sharedFor(viewer.id)).toEqual([]);
   });
 });

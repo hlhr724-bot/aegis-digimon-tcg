@@ -23,4 +23,9 @@ export const replayAnnotationApi = {
     request<ReplayNote>(itemPath(matchId, "notes", noteId), { method: "PATCH", body: JSON.stringify({ text }) }),
   removeNote: (matchId: string, noteId: string) =>
     request<{ ok: true }>(itemPath(matchId, "notes", noteId), { method: "DELETE" }),
+  setSharing: (replayId: string, shared: boolean) =>
+    request<{ replayId: string; annotationsShared: boolean }>(
+      `/account/replays/${encodeURIComponent(replayId)}/annotation-sharing`,
+      { method: "PUT", body: JSON.stringify({ shared }) },
+    ),
 };
