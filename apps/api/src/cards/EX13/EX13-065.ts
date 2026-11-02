@@ -49,6 +49,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] You may play 1 play cost 4 or lower card with [Sistermon] from your hand or trash without paying the cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {
@@ -64,6 +66,7 @@ export const compiled: CompiledCard = {
           raw: "You may play 1 play cost 4 or lower card with [Sistermon] from your hand or trash without paying the cost",
         },
         {
+          effectTextPart: "Then, to 1 of your opponent's Digimon, give -3000 DP for the turn for each of your Digimon.",
           kind: "ModifyDP",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
           amount: -3000,

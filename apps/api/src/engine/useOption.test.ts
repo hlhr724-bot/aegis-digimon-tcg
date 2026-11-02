@@ -10,7 +10,8 @@ import {
 import type { CardSource } from "./effects/CardSource.js";
 import type { DecisionApi, EffectContext, GameAccess, Primitives } from "./effects/EffectContext.js";
 import { irCardModule, registerIrCard } from "./effects/interpreter.js";
-import { getEffectModule, unregisterCard } from "./effects/registry.js";
+import { getEffectModule } from "./effects/registry.js";
+import { unregisterIrCard } from "#api/engine/effects/interpreter/registration/unregisterIrCard";
 
 /**
  * A3 for the use-option-without-cost ENGINE PATH (EX8-037 / BT15-092 / BT16-094 / BT19-040).
@@ -266,8 +267,7 @@ function useOptionFromTrashThenUnsuspendCompiled(): CompiledCard {
 function resetStores(): void {
   definitions.clear();
   for (const id of seededCardIds) {
-    delete (compiledEffects as Record<string, CompiledCard>)[id];
-    unregisterCard(id);
+    unregisterIrCard(id);
   }
   seededCardIds.length = 0;
 }

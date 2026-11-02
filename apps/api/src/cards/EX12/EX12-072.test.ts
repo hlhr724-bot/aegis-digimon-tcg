@@ -42,8 +42,18 @@ describe("EX12-072 Metal Empire", () => {
       false,
     );
     expect(compiled.effects.find((effect) => effect.trigger === "Main")?.actions).toEqual([
-      { kind: "SecurityManipulation", op: "toHand", controller: "mine", amount: 1, toTop: false },
       {
+        effectTextPart:
+          "[Main] Add your bottom security card to the hand and place this card face up as the bottom security card.",
+        kind: "SecurityManipulation",
+        op: "toHand",
+        controller: "mine",
+        amount: 1,
+        toTop: false,
+      },
+      {
+        effectTextPart:
+          "[Main] Add your bottom security card to the hand and place this card face up as the bottom security card.",
         kind: "SecurityManipulation",
         op: "placeAsSecurity",
         controller: "mine",

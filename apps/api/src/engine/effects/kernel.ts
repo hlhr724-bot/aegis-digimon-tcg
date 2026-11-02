@@ -85,6 +85,14 @@ export class UseTracker {
     }
   }
 
+  hasUsesFor(instanceId: string): boolean {
+    const prefixes = [`${instanceId}\0`, `${instanceId}/`];
+    for (const key of this.counts.keys()) {
+      if (prefixes.some((prefix) => key.startsWith(prefix))) return true;
+    }
+    return false;
+  }
+
   /** Clear all use counts (called when a new turn begins). */
   resetForNewTurn(): void {
     this.counts.clear();

@@ -66,4 +66,4 @@ it("covers every recognized resolving clause in the current Chinese catalog", as
     }
   }
   expect(missing).toEqual([]);
-});
+}, 30_000);

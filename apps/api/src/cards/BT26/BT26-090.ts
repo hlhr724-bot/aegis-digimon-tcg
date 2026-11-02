@@ -32,7 +32,7 @@ export const compiled: CompiledCard = {
           payCost: true,
           reduceCostByOpponentMemory: true,
           optional: true,
-          cost: { kind: "suspend", target: self },
+          cost: { kind: "suspend", target: self, raw: "By suspending this Tamer" },
           raw: "For each point of memory your opponent has, reduce this effect's paid cost by 1.",
         },
       ],

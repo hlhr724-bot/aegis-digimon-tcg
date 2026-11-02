@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] If you have a Digimon with [Hybrid] or [Ten Warriors] in its traits in play, suspend 1 of your opponent's Digimon.",
           kind: "Suspend",
           target: {
             filter: {

@@ -45,6 +45,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] If you have 3 or more security cards, 1 of your opponent's Digimon gets -12000 DP for the turn.",
           kind: "ModifyDP",
           target: {
             filter: {
@@ -61,6 +63,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "If you have 3 or fewer security cards, place 1 of your opponent's Digimon face down on top of their security stack.",
           kind: "SecurityManipulation",
           op: "placeAsSecurity",
           controller: "opponent",

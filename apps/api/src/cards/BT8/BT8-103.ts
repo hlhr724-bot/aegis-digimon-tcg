@@ -37,6 +37,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon with 2 or more colors gets +2000 DP and ＜Piercing＞ for the turn. (When this Digimon attacks and deletes an opponent's Digimon and survives the battle, it performs any security checks it normally would.)",
           kind: "ModifyDP",
           target: {
             filter: {
@@ -50,6 +52,8 @@ const compiled: CompiledCard = {
           duration: "forTheTurn",
         },
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon with 2 or more colors gets +2000 DP and ＜Piercing＞ for the turn. (When this Digimon attacks and deletes an opponent's Digimon and survives the battle, it performs any security checks it normally would.)",
           kind: "GainKeyword",
           target: {
             filter: {

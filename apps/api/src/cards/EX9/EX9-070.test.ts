@@ -333,8 +333,8 @@ describe("EX9-070", () => {
     }));
   it("has the draw-and-enter main effect", () =>
     expect(compiled.effects?.find((entry) => entry.trigger === "Main")?.actions).toEqual([
-      { kind: "Draw", controller: "mine", amount: 1 },
-      { kind: "PlaceInBattleAreaSelf" },
+      { effectTextPart: "[Main] ＜Draw 1＞.", kind: "Draw", controller: "mine", amount: 1 },
+      { effectTextPart: "Then, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
     ]));
   it("can digivolve any own DM Digimon by two after placing a hand card underneath", () =>
     expect(compiled.effects?.filter((entry) => entry.trigger === "Main")[1]).toMatchObject({

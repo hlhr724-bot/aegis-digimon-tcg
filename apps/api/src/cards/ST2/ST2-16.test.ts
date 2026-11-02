@@ -18,7 +18,13 @@ describe("ST2-16 Cocytus Breath", () => {
       {
         trigger: "Main",
         actions: [
-          { kind: "Return", target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 }, to: "hand" },
+          {
+            effectTextPart:
+              "[Main] Return 1 of your opponent's Digimon to its owner's hand. (Trash all of the digivolution cards of that Digimon.)",
+            kind: "Return",
+            target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
+            to: "hand",
+          },
         ],
       },
       { trigger: "Security", actions: [{ kind: "ActivateMain" }], isSecurity: true },

@@ -133,7 +133,19 @@ export async function consultLeavePrevention(
   const seat =
     opts.playerAction === true ? undefined : (resolvingSeat ?? (cause === "byEffect" ? host.turnSeat : undefined));
   const firedAll = new Set<ReplacementId>();
+  const declinedAll = new Set<ReplacementId>();
   const resolvedOneOf = new Set<ReplacementId>();
+  const protectsAnotherLeaving = (repl: ReplacementSubscription, ctx: EffectContext, leavingId: string) =>
+    repl.mode === "prevent" &&
+    repl.affectsAll === true &&
+    repl.protects !== undefined &&
+    permanentIds.some(
+      (candidateId) =>
+        candidateId !== leavingId &&
+        !prevented.has(candidateId) &&
+        host.permanentById(candidateId) !== undefined &&
+        repl.protects!(ctx, candidateId),
+    );
   for (const leavingId of permanentIds) {
     if (prevented.has(leavingId)) continue;
     const leaving = host.permanentById(leavingId);
@@ -152,6 +164,7 @@ export async function consultLeavePrevention(
       if (opts.isDigiXros === true && repl.exceptDigiXros === true) continue;
       if (opts.insteadOnly === true && repl.mode !== "instead") continue;
       if (repl.mode === "prevent" && repl.preventOneOf !== undefined && resolvedOneOf.has(repl.id)) continue;
+      if (declinedAll.has(repl.id)) continue;
       const activationKey = replacementActivationKey(repl);
       if (opts.reentryGuard.activeReplacementKeys.has(activationKey)) continue;
       if (repl.sourcePermanentId === undefined && repl.sourceInstanceId === undefined) continue;
@@ -185,7 +198,8 @@ export async function consultLeavePrevention(
       if (ctx === undefined) continue;
       if (repl.mode === "instead") {
         if (repl.appliesTo && !repl.appliesTo(ctx, leavingId)) continue;
-      } else if (repl.protects && !repl.protects(ctx, leavingId)) continue;
+      } else if (repl.protects && !repl.protects(ctx, leavingId) && !protectsAnotherLeaving(repl, ctx, leavingId))
+        continue;
       const sourceRole =
         repl.sourceInstanceId === undefined || srcPerm === undefined
           ? undefined
@@ -242,7 +256,9 @@ export async function consultLeavePrevention(
     }
 
     for (const { repl, ctx, activationKey, sourceTopInstanceId, sourceCardId, sourceRole, sourceFaceUp } of ordered) {
+      if (host.permanentById(leavingId) === undefined) break;
       if (opts.reentryGuard.activeReplacementKeys.has(activationKey)) continue;
+      if (declinedAll.has(repl.id)) continue;
       // A replacement body may resolve another effect before its sibling is reached. If
       // that effect removes or evolves the replacement source, the earlier eligibility
       // snapshot is stale and the sibling must not resolve against its old context. Delayed
@@ -277,7 +293,8 @@ export async function consultLeavePrevention(
       // effects are evaluated against the live state at activation; a nested body can
       // change the leaving card or the protected set before this sibling is reached.
       if (repl.mode === "instead" && repl.appliesTo !== undefined && !repl.appliesTo(ctx, leavingId)) continue;
-      if (repl.mode === "prevent" && repl.protects !== undefined && !repl.protects(ctx, leavingId)) continue;
+      const protectsLeaving = repl.mode !== "prevent" || repl.protects === undefined || repl.protects(ctx, leavingId);
+      if (repl.mode === "prevent" && !protectsLeaving && !protectsAnotherLeaving(repl, ctx, leavingId)) continue;
       if (repl.mode === "instead") {
         if (repl.oncePerTurnKey !== undefined && host.oncePerTurnFired?.(repl.oncePerTurnKey)) continue;
         opts.reentryGuard.activeReplacementKeys.add(activationKey);
@@ -340,19 +357,20 @@ export async function consultLeavePrevention(
       }
       if (repl.yieldsToEarlierPrevention === true && prevented.has(leavingId)) continue;
       if (repl.affectsAll && firedAll.has(repl.id)) {
-        prevented.add(leavingId);
+        if (protectsLeaving) prevented.add(leavingId);
         continue;
       }
       if (repl.oncePerTurnKey !== undefined && host.oncePerTurnFired?.(repl.oncePerTurnKey)) continue;
       const protectedIds = repl.affectsAll
-        ? permanentIds.filter(
-            (candidateId) =>
-              candidateId === leavingId ||
-              (!prevented.has(candidateId) &&
+        ? permanentIds.filter((candidateId) =>
+            candidateId === leavingId
+              ? protectsLeaving
+              : !prevented.has(candidateId) &&
                 host.permanentById(candidateId) !== undefined &&
-                (repl.protects?.(ctx, candidateId) ?? true)),
+                (repl.protects?.(ctx, candidateId) ?? true),
           )
         : [leavingId];
+      const eventTargetId = protectsLeaving ? leavingId : protectedIds[0]!;
       opts.reentryGuard.activeReplacementKeys.add(activationKey);
       let did: boolean;
       let markedAtActivation = false;
@@ -372,7 +390,7 @@ export async function consultLeavePrevention(
                 }
               },
             },
-            leavingId,
+            eventTargetId,
           );
         did = await ((opts.holdTriggered === true ||
           (opts.holdCardTriggered === true &&
@@ -384,9 +402,14 @@ export async function consultLeavePrevention(
       } finally {
         opts.reentryGuard.activeReplacementKeys.delete(activationKey);
       }
-      if (!did) continue;
-      announce(leavingId);
-      prevented.add(leavingId);
+      if (!did) {
+        if (repl.affectsAll) declinedAll.add(repl.id);
+        continue;
+      }
+      if (protectsLeaving) {
+        announce(leavingId);
+        prevented.add(leavingId);
+      }
       if (repl.affectsAll) {
         firedAll.add(repl.id);
         for (const simultaneousId of protectedIds) {

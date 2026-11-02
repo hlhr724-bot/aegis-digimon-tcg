@@ -3,6 +3,7 @@ import { findPackRarity } from "@/packOpening/findPackRarity";
 import { getPackCardRarity } from "@/packOpening/getPackCardRarity";
 import { getPackPullRates, type PackPullRates } from "@/packOpening/getPackPullRates";
 import { BoxHit } from "@/packOpening/BoxHit";
+import { BOOSTER_PACK_COMMON_SLOTS, BOOSTER_PACK_UNCOMMON_SLOTS } from "@/packOpening/BoosterPackSlots";
 import { listPackAlternateArts } from "@/packOpening/listPackAlternateArts";
 import type { PackCard } from "@/packOpening/PackCard";
 import { PackRarity } from "@/packOpening/PackRarity";
@@ -14,8 +15,6 @@ type Params = {
   hit?: BoxHit;
 };
 
-const COMMON_SLOTS = 7;
-const UNCOMMON_SLOTS = 3;
 type HitParams = {
   roll: number;
   alternateChance: number;
@@ -114,8 +113,8 @@ export function drawBoosterPack({ cards, setId, random, hit }: Params): PackCard
     ? drawPlannedHit({ hit, alternateArts, random })
     : drawRolledHit({ alternateArts, rates, pools, random });
   const slots: PackRarity[] = [
-    ...Array.from({ length: COMMON_SLOTS }, () => PackRarity.COMMON.value),
-    ...Array.from({ length: UNCOMMON_SLOTS }, () => PackRarity.UNCOMMON.value),
+    ...Array.from({ length: BOOSTER_PACK_COMMON_SLOTS }, () => PackRarity.COMMON.value),
+    ...Array.from({ length: BOOSTER_PACK_UNCOMMON_SLOTS }, () => PackRarity.UNCOMMON.value),
     PackRarity.RARE.value,
     hitRarity,
   ];

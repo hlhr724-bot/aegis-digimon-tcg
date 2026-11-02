@@ -30,6 +30,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete 3 of your opponent's unsuspended level 5 or lower Digimon.",
           kind: "Delete",
           target: {
             filter: {

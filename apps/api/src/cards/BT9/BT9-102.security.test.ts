@@ -32,8 +32,8 @@ describe("BT9-102 Attack of the Heavy Mobile Digimon! — Security", () => {
 
     await advance(s.engine).fireForInstance(EffectTiming.SecuritySkill, s.inst("option"));
 
-    expect(s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("cost").instanceId)).toBe(true);
-    expect(s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("cost").instanceId)).toBe(false);
+    expect(s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("cost").instanceId)).toBe(false);
+    expect(s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("cost").instanceId)).toBe(true);
     expect(s.state.players[1]!.battleArea).toHaveLength(1);
     expect(s.perm("tooExpensive").topCard.cardId).toBe("BT1-019");
   });

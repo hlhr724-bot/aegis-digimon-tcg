@@ -6,6 +6,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Place 1 of your Digimon on top of your security stack face down. Trash all of the digivolution cards of that Digimon.",
           kind: "SecurityManipulation",
           op: "placeAsSecurity",
           controller: "mine",

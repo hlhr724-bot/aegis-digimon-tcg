@@ -20,7 +20,7 @@ describe("BT1-041 Zudomon", () => {
       types: ["Sea Beast"],
       effectText: "[On Play] Trigger ＜Draw 2＞. (Draw 2 cards from your deck.)",
       inheritedEffectText:
-        "[When Attacking] If your opponent has a Digimon with no digivolution cards in play， gain 1 memory.",
+        "[When Attacking] If your opponent has a Digimon with no digivolution cards in play, gain 1 memory.",
       rarity: "SR",
       maxCountInDeck: 4,
       imageId: "BT1-041",

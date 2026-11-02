@@ -81,6 +81,13 @@ export function CombatWindowPrompts({
           fieldPermanentOf={(instanceId) => instancePermanentId(state, instanceId)}
           onActivate={(instanceId, effectKey) => onCounter(instanceId, effectKey)}
           onPass={() => onCounter()}
+          attack={{
+            attackerCardId: permCardId(state, counterWindow.attackerPermanentId),
+            attackerDp: findPermanentInState(state, counterWindow.attackerPermanentId)?.currentDP,
+            targetCardId: counterWindow.attackTargetPermanentId
+              ? permCardId(state, counterWindow.attackTargetPermanentId)
+              : undefined,
+          }}
         />
       ) : null}
 

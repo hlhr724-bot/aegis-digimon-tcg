@@ -1,6 +1,8 @@
 import { Room, CloseCode, Protocol } from "@colyseus/sdk";
 import { OPPONENT_DECK_CHANNEL } from "@aegis/shared/decks/OPPONENT_DECK_CHANNEL";
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
+import { GUEST_DECLINED_CLOSE_CODE, HOST_LEFT_CLOSE_CODE } from "@aegis/shared/protocol/closeCodes";
+import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
 // @vitest-environment jsdom
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -349,6 +351,21 @@ describe("useRoom reconnection token persistence", () => {
     }
   });
 
+  it("gives up the seat without reconnecting when the match continues on another device", async () => {
+    const joined = fakeRoom("moved-match");
+    joinOrCreate.mockResolvedValue(joined.room);
+    const { result } = renderHook(() => useRoom(OPTIONS));
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+    expect(loadReconnectSession()).toBeDefined();
+
+    joined.emitLeave(4004);
+
+    expect(result.current.status).toBe("closed");
+    expect(result.current.error).toBe("AEGIS_SEAT_TRANSFERRED");
+    expect(reconnect).not.toHaveBeenCalled();
+    expect(loadReconnectSession()).toBeUndefined();
+  });
+
   it("stops retrying at once when the server says the room is gone", async () => {
     const joined = fakeRoom("gone");
     joinOrCreate.mockResolvedValue(joined.room);
@@ -360,6 +377,23 @@ describe("useRoom reconnection token persistence", () => {
 
     await waitFor(() => expect(result.current.status).toBe("closed"));
     expect(reconnect).toHaveBeenCalledOnce();
+    expect(loadReconnectSession()).toBeUndefined();
+  });
+
+  it.each([
+    ["the host declines the guest", GUEST_DECLINED_CLOSE_CODE, ConnectionErrorCode.GUEST_DECLINED.value],
+    ["the host leaves before the match starts", HOST_LEFT_CLOSE_CODE, ConnectionErrorCode.HOST_LEFT.value],
+  ])("closes without reconnecting when %s", async (_case, code, error) => {
+    const joined = fakeRoom("approval");
+    joinOrCreate.mockResolvedValue(joined.room);
+    const { result } = renderHook(() => useRoom(OPTIONS));
+    await waitFor(() => expect(result.current.status).toBe("connected"));
+
+    joined.emitLeave(code);
+
+    await waitFor(() => expect(result.current.status).toBe("closed"));
+    expect(result.current.error).toBe(error);
+    expect(reconnect).not.toHaveBeenCalled();
     expect(loadReconnectSession()).toBeUndefined();
   });
 

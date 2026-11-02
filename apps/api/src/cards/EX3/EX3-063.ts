@@ -61,7 +61,7 @@ const compiled: CompiledCard = {
           },
           into: {
             controllerDefault: "mine",
-            nameOrTrait: [{ tokens: ["Imperialdramon: Fighter Mode"], match: "name" }],
+            nameOrTrait: [{ tokens: ["Imperialdramon: Fighter Mode"], match: "nameExact" }],
           },
           from: ["hand"],
           payCost: true,

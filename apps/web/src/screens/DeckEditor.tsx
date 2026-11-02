@@ -4,7 +4,7 @@ import { findCardArtForLanguage } from "@aegis/shared/cards/findCardArtForLangua
 /* The builder itself: a filterable pool on the left, the 50-main + 5-egg list on the
    right, and the legality counters that gate a save. */
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, type CSSProperties } from "react";
 import {
   formatPairViolations,
   formatCardViolation,
@@ -139,6 +139,7 @@ export function DeckEditor({
   const mainCount = total(main);
   const eggCount = total(egg);
   const validMain = mainCount === MAIN_TARGET;
+  const shownName = name.trim() || t("deck.untitled");
 
   const deckCardIds = useMemo(
     () => [...Object.entries(main), ...Object.entries(egg)].flatMap(([cardId, count]) => Array(count).fill(cardId)),
@@ -292,217 +293,280 @@ export function DeckEditor({
     <main className="deck-builder-page">
       {importing ? <DeckImportModal onImport={handleImport} onClose={() => setImporting(false)} /> : null}
       {exporting ? <DeckExportModal text={exportText} deck={exportDeck} onClose={() => setExporting(false)} /> : null}
-      <FilterRail
-        filter={filter}
-        showCostFilter
-        showRarityFilter
-        showSort
-        extra={
-          <>
-            <p className="deck-builder-hint">{t("deck.builderHint")}</p>
-          </>
-        }
-      />
+      <div className="deck-builder-top">
+        <button type="button" className="deck-builder-crumb" onClick={onClose}>
+          <Icons.ChevronLeft size={16} />
+          {t("deck.title")}
+        </button>
+      </div>
+      <div className="deck-builder-body">
+        <FilterRail filter={filter} showCostFilter showRarityFilter showSort />
 
-      <div className="deck-workspace" ref={workspace} style={deckShare.style}>
-        <div className="deck-card-pool" onScroll={onPoolScroll}>
-          <DeckFormatSelector value={format} onChange={setFormat} />
-          <SectionHeading
-            title={t("redesign.decks.editor.pool")}
-            action={
-              <span className="deck-card-pool__count">
-                {t("common.cards", { count: sortedPool.length.toLocaleString() })}
-              </span>
-            }
-          />
-          <div className="deck-card-grid">
-            {shownPool.map((card) => {
-              const inDeck = (isEggCard(card) ? egg : main)[card.cardId] ?? 0;
-              const cap = Math.min(card.maxCountInDeck, copyLimit(card.cardId));
-              return (
-                <PoolCard
-                  key={card.cardId}
-                  cardId={card.cardId}
-                  format={format}
-                  inDeck={inDeck}
-                  atMax={sharedCardNumberCount(deckCardIds, card.cardId) >= cap}
-                  pairConflict={pairedCardIds.has(card.cardId)}
-                  onAdd={() => add(card.cardId)}
-                  onRemove={() => remove(card.cardId)}
-                  onOpen={() => {
-                    setSel(card.cardId);
-                  }}
-                  selected={sel === card.cardId || inDeck > 0}
-                />
-              );
-            })}
-            {shownPool.length === 0 ? <div className="deck-card-pool__empty">{t("deck.emptyPool")}</div> : null}
+        <div className="deck-workspace" ref={workspace} style={deckShare.style}>
+          <div className="deck-card-pool" onScroll={onPoolScroll}>
+            <DeckFormatSelector value={format} onChange={setFormat} />
+            <SectionHeading
+              title={t("redesign.decks.editor.pool")}
+              action={
+                <span className="deck-card-pool__count">
+                  {t("common.cards", { count: sortedPool.length.toLocaleString() })}
+                </span>
+              }
+            />
+            <p className="deck-card-pool__hint">{t("deck.builderHint")}</p>
+            <div className="deck-card-grid">
+              {shownPool.map((card) => {
+                const inDeck = (isEggCard(card) ? egg : main)[card.cardId] ?? 0;
+                const cap = Math.min(card.maxCountInDeck, copyLimit(card.cardId));
+                return (
+                  <PoolCard
+                    key={card.cardId}
+                    cardId={card.cardId}
+                    format={format}
+                    inDeck={inDeck}
+                    atMax={sharedCardNumberCount(deckCardIds, card.cardId) >= cap}
+                    pairConflict={pairedCardIds.has(card.cardId)}
+                    onAdd={() => add(card.cardId)}
+                    onRemove={() => remove(card.cardId)}
+                    onOpen={() => {
+                      setSel(card.cardId);
+                    }}
+                    selected={sel === card.cardId || inDeck > 0}
+                  />
+                );
+              })}
+              {shownPool.length === 0 ? <div className="deck-card-pool__empty">{t("deck.emptyPool")}</div> : null}
+            </div>
+            {shownPool.length < sortedPool.length ? (
+              <div className="deck-card-pool__more">{t("deck.scrollForMore")}</div>
+            ) : null}
           </div>
-          {shownPool.length < sortedPool.length ? (
-            <div className="deck-card-pool__more">{t("deck.scrollForMore")}</div>
-          ) : null}
-        </div>
 
-        <DeckSplitHandle workspace={workspace} share={deckShare.share} onShare={deckShare.setShare} />
+          <DeckSplitHandle workspace={workspace} share={deckShare.share} onShare={deckShare.setShare} />
 
-        {deckInfoOpen ? (
-          <button type="button" className="deck-info-backdrop" aria-label={t("common.close")} onClick={closeDeckInfo} />
-        ) : null}
-        <aside
-          ref={sheet}
-          className={`deck-current${deckInfoOpen ? " deck-current--open" : ""}${deckInfoExpanded ? " deck-current--expanded" : ""}`}
-          aria-label={t("deck.detailsTitle")}
-          onKeyDown={(event) => {
-            if (narrow && event.key === "Escape" && !event.defaultPrevented) {
-              event.preventDefault();
-              closeDeckInfo();
-            }
-          }}
-        >
-          <div className="deck-info-sheet-handle">
+          {deckInfoOpen ? (
             <button
               type="button"
-              aria-label={t(
-                deckInfoExpanded ? "redesign.decks.editor.collapseSheet" : "redesign.decks.editor.expandSheet",
-              )}
-              aria-pressed={deckInfoExpanded}
-              onClick={() => setDeckInfoExpanded((previous) => !previous)}
-            >
-              {deckInfoExpanded ? <Icons.Minimize size={18} /> : <Icons.Maximize size={18} />}
-            </button>
-            <strong>{t("deck.detailsTitle")}</strong>
-            <button type="button" aria-label={t("redesign.decks.editor.closeSheet")} onClick={closeDeckInfo}>
-              ×
-            </button>
-          </div>
-          <Panel as="div" className="deck-current__header">
-            <div className="deck-current__identity">
-              <div className="deck-current__cover-thumb">
-                <CoverThumb
-                  key={coverCardId}
-                  coverCardId={coverCardId}
-                  artId={coverCardId ? arts[coverCardId]?.[0] : undefined}
-                  sigilColor={dominantColor(expand(main))}
-                  sigilSize={22}
-                />
-              </div>
-              <div className="deck-current__cover-text">
-                <input
-                  className="deck-current__name"
-                  aria-label={t("redesign.decks.editor.name")}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-                <div className="deck-current__cover-row">
-                  <div className="deck-current__cover-name" data-auto={!coverCardId}>
-                    <span className="aegis-hero-panel__eyebrow">{t("deck.cover")}</span>{" "}
-                    {coverCardId ? getCardName(coverCardId) : t("deck.coverAuto")}
-                  </div>
-                  <button
-                    type="button"
-                    className="deck-current__change-cover"
-                    disabled={deckCardIds.length === 0}
-                    aria-haspopup="dialog"
-                    onClick={() => setChoosingCover(true)}
-                  >
-                    <Icons.Pencil size={14} />
-                    {t("deck.changeCover")}
-                  </button>
-                </div>
-              </div>
-              <div className="deck-current__counts">
-                <CountChip label={t("deck.main")} count={mainCount} target={MAIN_TARGET} done={validMain} />
-                <CountChip label={t("deck.egg")} count={eggCount} target={EGG_TARGET} done={eggCount === EGG_TARGET} />
-              </div>
+              className="deck-info-backdrop"
+              aria-label={t("common.close")}
+              onClick={closeDeckInfo}
+            />
+          ) : null}
+          <aside
+            ref={sheet}
+            className={`deck-current${deckInfoOpen ? " deck-current--open" : ""}${deckInfoExpanded ? " deck-current--expanded" : ""}`}
+            aria-label={t("deck.detailsTitle")}
+            onKeyDown={(event) => {
+              if (narrow && event.key === "Escape" && !event.defaultPrevented) {
+                event.preventDefault();
+                closeDeckInfo();
+              }
+            }}
+          >
+            <div className="deck-info-sheet-handle">
               <button
-                className="deck-current__random-cover"
-                onClick={() => setCoverCardId(randomCoverCard(expand(main)))}
-                disabled={mainCount === 0}
-                title={t("deck.randomCover")}
-                aria-label={t("deck.randomCover")}
+                type="button"
+                aria-label={t(
+                  deckInfoExpanded ? "redesign.decks.editor.collapseSheet" : "redesign.decks.editor.expandSheet",
+                )}
+                aria-pressed={deckInfoExpanded}
+                onClick={() => setDeckInfoExpanded((previous) => !previous)}
               >
-                <Icons.Dices size={15} />
+                {deckInfoExpanded ? <Icons.Minimize size={18} /> : <Icons.Maximize size={18} />}
+              </button>
+              <strong>{t("deck.detailsTitle")}</strong>
+              <button type="button" aria-label={t("redesign.decks.editor.closeSheet")} onClick={closeDeckInfo}>
+                ×
               </button>
             </div>
-          </Panel>
-
-          <div className="deck-current__toolbar">
-            <DeckKindCounts main={main} />
-            <DeckLevelCurve main={main} compact />
-            <div className="deck-current__toolbar-controls">
-              <DeckViewToggle view={view} onView={setView} />
-              <DeckSplitPresets share={deckShare.share} onShare={deckShare.setShare} />
-            </div>
-          </div>
-
-          <div className="deck-current__body">
-            <DeckPreviewSections
-              view={view}
-              format={format}
-              main={main}
-              egg={egg}
-              coverCardId={coverCardId}
-              pairConflictCardIds={pairedCardIds}
-              onOpen={setSel}
-              onAdd={add}
-              onRemove={remove}
-              arts={arts}
-            />
-
-            <div className="deck-current__stats">
-              <DeckTypeBreakdown main={main} egg={egg} />
-              <DeckCostCurve main={main} />
-              <ColorBalance main={main} />
-            </div>
-          </div>
-
-          <div className="deck-current__footer">
-            <DeckSleevePicker
-              sleeveIds={{ main: sleeveId, egg: eggSleeveId }}
-              onChange={(part, next) => (part === "main" ? setSleeveId : setEggSleeveId)(next)}
-            />
-            {outsideFormat.length > 0 ? (
-              <div className="deck-current__violations" role="status">
-                {t("deckFormat.violations", { count: outsideFormat.length })}
-                <div>{outsideFormat.join(", ")}</div>
-              </div>
-            ) : null}
-            {banlistViolations.length > 0 ? (
-              <div className="deck-current__violations">
-                <strong>{t("deck.banlistTitle")}</strong>
-                {banlistViolations.map((v) => {
-                  return (
-                    <div key={v.cardId}>
-                      {t("deck.banlistRow", { name: getCardName(v.cardId), count: v.count, cap: v.cap })}
+            <Panel as="div" className="deck-current__header">
+              <div className="deck-current__identity">
+                <div className="deck-current__cover-thumb">
+                  <CoverThumb
+                    key={coverCardId}
+                    coverCardId={coverCardId}
+                    artId={coverCardId ? arts[coverCardId]?.[0] : undefined}
+                    sigilColor={dominantColor(expand(main))}
+                    sigilSize={22}
+                  />
+                </div>
+                <div className="deck-current__cover-text">
+                  <input
+                    className="deck-current__name"
+                    aria-label={t("redesign.decks.editor.name")}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                  <div className="deck-current__cover-row">
+                    <div className="deck-current__cover-name" data-auto={!coverCardId}>
+                      <span className="aegis-hero-panel__eyebrow">{t("deck.cover")}</span>{" "}
+                      {coverCardId ? getCardName(coverCardId) : t("deck.coverAuto")}
                     </div>
-                  );
-                })}
+                    <button
+                      type="button"
+                      className="deck-current__change-cover"
+                      disabled={deckCardIds.length === 0}
+                      aria-haspopup="dialog"
+                      onClick={() => setChoosingCover(true)}
+                    >
+                      <Icons.Pencil size={14} />
+                      {t("deck.changeCover")}
+                    </button>
+                  </div>
+                </div>
+                <div className="deck-current__counts">
+                  <CountChip label={t("deck.main")} count={mainCount} target={MAIN_TARGET} done={validMain} />
+                  <CountChip
+                    label={t("deck.egg")}
+                    count={eggCount}
+                    target={EGG_TARGET}
+                    done={eggCount === EGG_TARGET}
+                  />
+                </div>
+                <button
+                  className="deck-current__random-cover"
+                  onClick={() => setCoverCardId(randomCoverCard(expand(main)))}
+                  disabled={mainCount === 0}
+                  title={t("deck.randomCover")}
+                  aria-label={t("deck.randomCover")}
+                >
+                  <Icons.Dices size={15} />
+                </button>
               </div>
-            ) : null}
-            <div className="deck-current__row">
-              <Button variant="ghost" size="sm" icon={Icons.Upload} onClick={() => setImporting(true)}>
-                {t("common.import")}
-              </Button>
-              <Button variant="ghost" size="sm" icon={Icons.Download} onClick={() => setExporting(true)}>
-                {t("common.export")}
-              </Button>
-              <span className="deck-current__row-spacer" />
-              <Button variant="secondary" size="sm" icon={Icons.ArrowLeft} onClick={narrow ? closeDeckInfo : onClose}>
-                {t("common.close")}
-              </Button>
-              <Button
-                size="sm"
-                icon={Icons.Swords}
-                disabled={
-                  !validMain || outsideFormat.length > 0 || banlistViolations.length > 0 || pairViolations.length > 0
-                }
-                onClick={play}
-              >
-                {t("common.play")}
-              </Button>
+            </Panel>
+
+            <div className="deck-current__toolbar">
+              <DeckKindCounts main={main} />
+              <DeckLevelCurve main={main} compact />
+              <div className="deck-current__toolbar-controls">
+                <DeckViewToggle view={view} onView={setView} />
+                <DeckSplitPresets share={deckShare.share} onShare={deckShare.setShare} />
+              </div>
             </div>
-          </div>
-        </aside>
+
+            <div className="deck-current__body">
+              <DeckPreviewSections
+                view={view}
+                format={format}
+                main={main}
+                egg={egg}
+                coverCardId={coverCardId}
+                pairConflictCardIds={pairedCardIds}
+                onOpen={setSel}
+                onAdd={add}
+                onRemove={remove}
+                arts={arts}
+              />
+
+              <div className="deck-current__stats">
+                <DeckTypeBreakdown main={main} egg={egg} />
+                <DeckCostCurve main={main} />
+                <ColorBalance main={main} />
+              </div>
+            </div>
+
+            <div className="deck-current__footer">
+              <DeckSleevePicker
+                sleeveIds={{ main: sleeveId, egg: eggSleeveId }}
+                onChange={(part, next) => (part === "main" ? setSleeveId : setEggSleeveId)(next)}
+              />
+              {outsideFormat.length > 0 ? (
+                <div className="deck-current__violations" role="status">
+                  {t("deckFormat.violations", { count: outsideFormat.length })}
+                  <div>{outsideFormat.join(", ")}</div>
+                </div>
+              ) : null}
+              {banlistViolations.length > 0 ? (
+                <div className="deck-current__violations">
+                  <strong>{t("deck.banlistTitle")}</strong>
+                  {banlistViolations.map((v) => {
+                    return (
+                      <div key={v.cardId}>
+                        {t("deck.banlistRow", { name: getCardName(v.cardId), count: v.count, cap: v.cap })}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+              <div className="deck-current__row">
+                <Button variant="ghost" size="sm" icon={Icons.Upload} onClick={() => setImporting(true)}>
+                  {t("common.import")}
+                </Button>
+                <Button variant="ghost" size="sm" icon={Icons.Download} onClick={() => setExporting(true)}>
+                  {t("common.export")}
+                </Button>
+                <span className="deck-current__row-spacer" />
+                <Button variant="secondary" size="sm" icon={Icons.ArrowLeft} onClick={narrow ? closeDeckInfo : onClose}>
+                  {t("common.close")}
+                </Button>
+                <Button
+                  size="sm"
+                  icon={Icons.Swords}
+                  disabled={
+                    !validMain || outsideFormat.length > 0 || banlistViolations.length > 0 || pairViolations.length > 0
+                  }
+                  onClick={play}
+                >
+                  {t("common.play")}
+                </Button>
+              </div>
+            </div>
+          </aside>
+        </div>
+        {sel ? (
+          <CardDetailDrawer
+            key={sel}
+            cardId={sel}
+            format={format}
+            artId={chosenArt[sel] ?? findCardArtForLanguage({ cardId: sel, language })?.artId ?? arts[sel]?.[0]}
+            onArtChange={(artId) => {
+              setChosenArt((previous) => ({ ...previous, [sel]: artId }));
+            }}
+            onArtApply={
+              selectedCount > 0 && getCardArts(sel).length > 1 ? (artId) => applyArt(sel, artId, "all") : undefined
+            }
+            onClose={() => setSel(null)}
+            footer={
+              <div className="deck-drawer-actions">
+                {selectedCount > 0 ? (
+                  <div className="deck-drawer-count">
+                    <span>{t("deck.inDeck")}</span>
+                    <DeckStepper
+                      name={getCardName(sel)}
+                      count={selectedCount}
+                      addDisabled={selectedAtMax}
+                      onAdd={() => add(sel)}
+                      onRemove={() => remove(sel)}
+                    />
+                  </div>
+                ) : (
+                  <Button full icon={Icons.Plus} disabled={selectedAtMax} onClick={() => add(sel)}>
+                    {copyLimit(sel) === 0 ? t("common.banned") : t("deck.addToDeck")}
+                  </Button>
+                )}
+                {selectedCount > 0 && getCardArts(sel).length > 1 ? (
+                  <Button
+                    full
+                    variant="secondary"
+                    icon={Icons.Palette}
+                    aria-label={`${getCardName(sel)} · ${t("deck.editArtwork")}`}
+                    onClick={() => setArtPickerCard(sel)}
+                  >
+                    {t("deck.editArtwork")}
+                  </Button>
+                ) : null}
+                <Button
+                  full
+                  variant={coverCardId === sel ? "secondary" : "ghost"}
+                  icon={coverCardId === sel ? Icons.Check : Icons.Star}
+                  onClick={() => setCoverCardId(sel)}
+                >
+                  {coverCardId === sel ? t("deck.coverCard") : t("deck.setAsCover")}
+                </Button>
+              </div>
+            }
+          />
+        ) : null}
       </div>
 
       <button
@@ -514,19 +578,44 @@ export function DeckEditor({
           setDeckInfoOpen(true);
         }}
         aria-expanded={deckInfoOpen}
+        aria-label={[
+          t("redesign.decks.editor.openSheet"),
+          shownName,
+          `${t("deck.main")} ${mainCount}/${MAIN_TARGET}`,
+          `${t("deck.egg")} ${eggCount}/${EGG_TARGET}`,
+        ].join(" · ")}
+        title={t("redesign.decks.editor.openSheetHint")}
       >
-        <Icons.ChevronUp size={18} className="deck-info-trigger__chevron" />
-        <span className="deck-info-trigger__text">
-          <span className="deck-info-trigger__title">{t("redesign.decks.editor.openSheet")}</span>
-          <span className="deck-info-trigger__hint">{t("redesign.decks.editor.openSheetHint")}</span>
+        <span className="deck-info-trigger__cover" aria-hidden="true">
+          <CoverThumb
+            key={coverCardId}
+            coverCardId={coverCardId}
+            artId={coverCardId ? arts[coverCardId]?.[0] : undefined}
+            sigilColor={dominantColor(expand(main))}
+            sigilSize={16}
+          />
         </span>
-        <span className="deck-info-trigger__counts">
-          <span data-done={validMain}>
-            {t("deck.main")} {mainCount}/{MAIN_TARGET}
+        <span className="deck-info-trigger__text">
+          <span className="deck-info-trigger__title">{shownName}</span>
+          <span className="deck-info-trigger__counts">
+            <span data-done={validMain}>
+              {t("deck.main")} {mainCount}/{MAIN_TARGET}
+            </span>
+            <span aria-hidden="true">·</span>
+            <span data-done={eggCount === EGG_TARGET}>
+              {t("deck.egg")} {eggCount}/{EGG_TARGET}
+            </span>
           </span>
-          <span data-done={eggCount === EGG_TARGET}>
-            {t("deck.egg")} {eggCount}/{EGG_TARGET}
+          <span
+            className="deck-info-trigger__progress"
+            style={{ "--deck-progress": `${Math.min(100, (mainCount / MAIN_TARGET) * 100)}%` } as CSSProperties}
+          >
+            <span />
           </span>
+        </span>
+        <span className="deck-info-trigger__action">
+          <Icons.ChevronUp size={16} />
+          {t("redesign.decks.editor.openSheet")}
         </span>
       </button>
 
@@ -538,60 +627,6 @@ export function DeckEditor({
           count={main[artPickerCard] ?? egg[artPickerCard] ?? 0}
           onClose={() => setArtPickerCard(null)}
           onChoose={(artId, copy) => applyArt(artPickerCard, artId, copy)}
-        />
-      ) : null}
-      {sel ? (
-        <CardDetailDrawer
-          key={sel}
-          cardId={sel}
-          format={format}
-          artId={chosenArt[sel] ?? findCardArtForLanguage({ cardId: sel, language })?.artId ?? arts[sel]?.[0]}
-          onArtChange={(artId) => {
-            setChosenArt((previous) => ({ ...previous, [sel]: artId }));
-          }}
-          onArtApply={
-            selectedCount > 0 && getCardArts(sel).length > 1 ? (artId) => applyArt(sel, artId, "all") : undefined
-          }
-          onClose={() => setSel(null)}
-          footer={
-            <div className="deck-drawer-actions">
-              {selectedCount > 0 ? (
-                <div className="deck-drawer-count">
-                  <span>{t("deck.inDeck")}</span>
-                  <DeckStepper
-                    name={getCardName(sel)}
-                    count={selectedCount}
-                    addDisabled={selectedAtMax}
-                    onAdd={() => add(sel)}
-                    onRemove={() => remove(sel)}
-                  />
-                </div>
-              ) : (
-                <Button full icon={Icons.Plus} disabled={selectedAtMax} onClick={() => add(sel)}>
-                  {copyLimit(sel) === 0 ? t("common.banned") : t("deck.addToDeck")}
-                </Button>
-              )}
-              {selectedCount > 0 && getCardArts(sel).length > 1 ? (
-                <Button
-                  full
-                  variant="secondary"
-                  icon={Icons.Palette}
-                  aria-label={`${getCardName(sel)} · ${t("deck.editArtwork")}`}
-                  onClick={() => setArtPickerCard(sel)}
-                >
-                  {t("deck.editArtwork")}
-                </Button>
-              ) : null}
-              <Button
-                full
-                variant={coverCardId === sel ? "secondary" : "ghost"}
-                icon={coverCardId === sel ? Icons.Check : Icons.Star}
-                onClick={() => setCoverCardId(sel)}
-              >
-                {coverCardId === sel ? t("deck.coverCard") : t("deck.setAsCover")}
-              </Button>
-            </div>
-          }
         />
       ) : null}
       {choosingCover ? (

@@ -197,9 +197,13 @@ export function orderTriggersDecision(): DecisionRequest {
 }
 
 export const TRIGGER_DETAILS: readonly TriggerDetail[] = [
-  { sourceLabel: "Field: 1", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
-  { sourceLabel: "Field: 2", summary: "Draw 1 card, then trash 1 card in your hand." },
-  { sourceLabel: "Field: 3", summary: "Return 1 of your opponent's Digimon with 5000 DP or less to the hand." },
+  { sourceLabel: "Field", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
+  {
+    sourceLabel: "Inherited by Omnimon",
+    hostCardId: "BT1-084",
+    summary: "Draw 1 card, then trash 1 card in your hand.",
+  },
+  { sourceLabel: "Field (copy 2)", summary: "Return 1 of your opponent's Digimon with 5000 DP or less to the hand." },
 ];
 
 /** UlforceVeedramon's [When Digivolving] clauses, the choice Rina Shinomiya activates one of. */

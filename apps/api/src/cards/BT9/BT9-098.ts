@@ -21,6 +21,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] You may digivolve 1 of your Digimon with [Armor Form] in its traits into a Digimon card with [Magnamon] in its name in your hand, ignoring its digivolution requirements and without paying its memory cost.",
           kind: "Digivolve",
           target: { filter: { controller: "mine", kind: ["Digimon"], traits: ["Armor Form"] }, count: 1 },
           into: {
@@ -36,6 +38,8 @@ export const compiled: CompiledCard = {
           bindResultAs: "digivolvedByThisEffect",
         },
         {
+          effectTextPart:
+            "The Digimon that digivolved with this effect can't have its DP reduced by your opponent's effects until the end of your opponent's turn.",
           kind: "Restrict",
           target: { filter: { boundRef: "digivolvedByThisEffect" }, count: 1 },
           restriction: "dpImmune",

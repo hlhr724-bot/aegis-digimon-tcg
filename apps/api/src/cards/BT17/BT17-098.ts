@@ -38,6 +38,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "By placing the top card of 1 of your level 4 or higher Digimon with [Pulsemon] in its text on top of your security stack, gain 2 memory.",
           kind: "GainMemory",
           amount: 2,
           cost: {

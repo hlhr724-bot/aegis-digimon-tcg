@@ -1,4 +1,5 @@
 import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
+import { LIVE_GAME_GRACE_MS } from "#api/tournaments/rules/liveGameGraceMs";
 import { randomUUID } from "node:crypto";
 import type { TournamentRules, TournamentStructure } from "@aegis/shared";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -156,16 +157,30 @@ async function publishRound(publishedAt = PUBLISHED_AT, graceMs = GRACE_MS): Pro
   });
 }
 
-async function arrive(accountId: string, now: number): Promise<void> {
+async function arrive(accountId: string, now: number, winsRequired = SWISS_RULES.match.winsRequired): Promise<void> {
   const marked = await fixture.series.markPresent({
     tournamentId: fixture.tournamentId,
     matchId: fixture.matchId,
     accountId,
-    winsRequired: SWISS_RULES.match.winsRequired,
+    winsRequired,
     seriesDurationMs: SWISS_DURATION_MS,
     now,
   });
   if (!marked.ok) throw new Error(`markPresent failed: ${marked.reason}`);
+}
+
+async function startPlaying(seriesId: string, roomId: string, now: number): Promise<string> {
+  const authorized = await fixture.series.authorizeNextGame({ seriesId, accountId: fixture.alice, now });
+  if (!authorized.ok) throw new Error(`authorizeNextGame failed: ${authorized.reason}`);
+  const claimed = await fixture.series.claimGame({
+    gameId: authorized.value.gameId,
+    authorizationToken: authorized.value.token,
+    roomId,
+    now,
+  });
+  if (!claimed.ok) throw new Error(`claimGame failed: ${claimed.reason}`);
+  await fixture.series.markGamePlaying(authorized.value.gameId, roomId);
+  return authorized.value.gameId;
 }
 
 async function resultOf(kind: DeadlineKind): Promise<string | null | undefined> {
@@ -504,6 +519,108 @@ describe("the shared clock", () => {
   });
 });
 
+describe("a game still being played when the clock runs out", () => {
+  async function eliminationSeries(winsRequired: number) {
+    fixture = await build({ structure: "single_elimination", rules: buildTournamentRules({ bestOf: 3 }) });
+    await arrive(fixture.alice, PUBLISHED_AT, winsRequired);
+    await arrive(fixture.bob, PUBLISHED_AT + 1_000, winsRequired);
+    const series = (await fixture.series.seriesForMatch(fixture.matchId))!;
+    const gameId = await startPlaying(series.id, "room-live", PUBLISHED_AT + 2_000);
+    return { series, gameId, deadline: series.seriesDeadlineAt! };
+  }
+
+  it("lets the game finish and decides the best-of-one confrontation by its result", async () => {
+    const { series, gameId, deadline } = await eliminationSeries(1);
+
+    expect(await fixture.scheduler.processDueDeadlines(deadline)).toBe(0);
+    expect((await fixture.series.series(series.id))?.status).toBe("overtime");
+    expect((await fixture.series.series(series.id))?.games[0]?.status).toBe("playing");
+
+    const recorded = await fixture.series.recordGameResult({
+      gameId,
+      roomId: "room-live",
+      outcome: { kind: "winner", winnerAccountId: fixture.alice },
+      finishedAt: deadline + 164_000,
+    });
+
+    expect(recorded.ok && recorded.value.status).toBe("resolved");
+    expect(recorded.ok && recorded.value.officialResult).toBe("participant0");
+    expect((await fixture.queue.find("series_deadline", series.id))?.result).toBe("cancelled_series_closed");
+  });
+
+  it("postpones the clock row to the end of the grace instead of retrying it every pass", async () => {
+    const { series, deadline } = await eliminationSeries(1);
+
+    await fixture.scheduler.processDueDeadlines(deadline);
+
+    const row = await fixture.queue.find("series_deadline", series.id);
+    expect(row?.executedAt).toBeNull();
+    expect(row?.leaseExpiresAt).toBeNull();
+    expect(row?.dueAt).toBe(deadline + LIVE_GAME_GRACE_MS);
+    expect(await fixture.scheduler.processDueDeadlines(deadline + LIVE_GAME_GRACE_MS - 1)).toBe(0);
+  });
+
+  it("decides on the score as soon as an overtime game ends without deciding the confrontation", async () => {
+    const { series, gameId, deadline } = await eliminationSeries(2);
+    await fixture.scheduler.processDueDeadlines(deadline);
+    const finishedAt = deadline + 60_000;
+
+    await fixture.series.recordGameResult({
+      gameId,
+      roomId: "room-live",
+      outcome: { kind: "winner", winnerAccountId: fixture.alice },
+      finishedAt,
+    });
+    const refused = await fixture.series.authorizeNextGame({
+      seriesId: series.id,
+      accountId: fixture.bob,
+      now: finishedAt,
+    });
+
+    expect(refused).toEqual({ ok: false, reason: "no_games_remaining" });
+    expect((await fixture.queue.find("series_deadline", series.id))?.dueAt).toBe(finishedAt);
+    expect(await fixture.scheduler.processDueDeadlines(finishedAt)).toBe(1);
+    const resolved = await fixture.series.series(series.id);
+    expect(resolved?.status).toBe("resolved");
+    expect(resolved?.resolutionReason).toBe("deadline_ahead_on_games");
+    expect(resolved?.officialResult).toBe("participant0");
+  });
+
+  it("voids the game and parks the tie for an organizer once the grace runs out", async () => {
+    const { series, deadline } = await eliminationSeries(1);
+    await fixture.scheduler.processDueDeadlines(deadline);
+
+    expect(await fixture.scheduler.processDueDeadlines(deadline + LIVE_GAME_GRACE_MS)).toBe(1);
+
+    const parked = await fixture.series.series(series.id);
+    expect(parked?.status).toBe("needs_organizer_decision");
+    expect(parked?.games[0]?.status).toBe("voided");
+    expect((await fixture.queue.find("series_deadline", series.id))?.result).toBe("series_needs_organizer_decision");
+  });
+
+  it("does not wait for a room that was claimed but never started", async () => {
+    fixture = await build({ structure: "single_elimination", rules: buildTournamentRules({ bestOf: 3 }) });
+    await arrive(fixture.alice, PUBLISHED_AT, 1);
+    await arrive(fixture.bob, PUBLISHED_AT + 1_000, 1);
+    const series = (await fixture.series.seriesForMatch(fixture.matchId))!;
+    const authorized = await fixture.series.authorizeNextGame({
+      seriesId: series.id,
+      accountId: fixture.alice,
+      now: PUBLISHED_AT + 2_000,
+    });
+    if (!authorized.ok) throw new Error(authorized.reason);
+    await fixture.series.claimGame({
+      gameId: authorized.value.gameId,
+      authorizationToken: authorized.value.token,
+      roomId: "room-idle",
+      now: PUBLISHED_AT + 2_000,
+    });
+
+    expect(await fixture.scheduler.processDueDeadlines(series.seriesDeadlineAt!)).toBe(1);
+    expect((await fixture.series.series(series.id))?.status).toBe("needs_organizer_decision");
+  });
+});
+
 describe("leases and recovery", () => {
   it("keeps a claimed row away from a second worker until its lease lapses", async () => {
     await publishRound();
@@ -619,4 +736,14 @@ describe("events the scheduler must not act on", () => {
     // A second pass finds the ladder (even a retired one) and arms nothing.
     expect(await fixture.scheduler.armPendingJoinLadders(PUBLISHED_AT + 2)).toBe(0);
   });
+});
+
+it("retires attendance deadlines without penalties after cancellation", async () => {
+  await publishRound();
+  await arrive(fixture.alice, PUBLISHED_AT);
+  await fixture.accounts.pool.query("UPDATE tournaments SET status='cancelled' WHERE id=$1", [fixture.tournamentId]);
+  await fixture.scheduler.processDueDeadlines(MATCH_LOSS_AT);
+  expect(await resultOf("join_game_loss")).toBe("skipped_tournament_closed");
+  expect(await fixture.series.seriesForMatch(fixture.matchId)).toBeUndefined();
+  expect((await fixture.accounts.tournament(fixture.tournamentId))?.status).toBe("cancelled");
 });

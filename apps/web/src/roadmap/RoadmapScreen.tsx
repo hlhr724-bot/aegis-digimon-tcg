@@ -1,3 +1,8 @@
+import { CommunityPage } from "@/community/CommunityPage";
+import { CommunitySection } from "@/community/CommunitySection";
+import { Icons } from "@/design/icons";
+import { Button } from "@/design/primitives";
+import { useTranslation } from "@/i18n/useTranslation";
 import { RoadmapBoard } from "@/roadmap/RoadmapBoard";
 import { RoadmapItemPage } from "@/roadmap/RoadmapItemPage";
 
@@ -5,10 +10,10 @@ type RoadmapScreenParams = {
   itemId?: number;
   signedIn: boolean;
   isAdmin: boolean;
+  metaAvailable: boolean;
   onSignIn: () => void;
   onOpen: (id?: number) => void;
-  onDecks: () => void;
-  onTournaments: () => void;
+  onSectionChange: (section: CommunitySection) => void;
   onSuggest: () => void;
 };
 
@@ -16,31 +21,37 @@ export function RoadmapScreen({
   itemId,
   signedIn,
   isAdmin,
+  metaAvailable,
   onSignIn,
   onOpen,
-  onDecks,
-  onTournaments,
+  onSectionChange,
   onSuggest,
 }: RoadmapScreenParams) {
-  if (itemId !== undefined)
-    return (
-      <RoadmapItemPage
-        key={itemId}
-        id={itemId}
-        signedIn={signedIn}
-        isAdmin={isAdmin}
-        onSignIn={onSignIn}
-        onBack={() => onOpen()}
-      />
-    );
+  const { t } = useTranslation();
+  const suggest = (
+    <Button variant="secondary" size="sm" icon={Icons.Lightbulb} onClick={onSuggest}>
+      {t("roadmap.suggest")}
+    </Button>
+  );
   return (
-    <RoadmapBoard
-      signedIn={signedIn}
-      onSignIn={onSignIn}
-      onOpen={onOpen}
-      onDecks={onDecks}
-      onTournaments={onTournaments}
-      onSuggest={onSuggest}
-    />
+    <CommunityPage
+      section={CommunitySection.ROADMAP.value}
+      metaAvailable={metaAvailable}
+      onSectionChange={onSectionChange}
+      actions={suggest}
+    >
+      {itemId === undefined ? (
+        <RoadmapBoard signedIn={signedIn} onSignIn={onSignIn} onOpen={onOpen} />
+      ) : (
+        <RoadmapItemPage
+          key={itemId}
+          id={itemId}
+          signedIn={signedIn}
+          isAdmin={isAdmin}
+          onSignIn={onSignIn}
+          onBack={() => onOpen()}
+        />
+      )}
+    </CommunityPage>
   );
 }

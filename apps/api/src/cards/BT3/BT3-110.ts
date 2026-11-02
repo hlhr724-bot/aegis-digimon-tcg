@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Play 1 level 5 purple Digimon card from your trash without paying its memory cost. Any [On Play] effects on Digimon played with this effect don't activate.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

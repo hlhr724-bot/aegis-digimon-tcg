@@ -3,22 +3,10 @@ import type { TutorialLesson } from "@aegis/shared/tutorial/TutorialLesson";
 import { findKeywordDrill } from "@aegis/shared/tutorial/findKeywordDrill";
 import { Button } from "@/design/primitives";
 import { Icons } from "@/design/icons";
+import { getKeywordName } from "@/game/getKeywordName";
 import { KEYWORD_GLOSSARY } from "@/game/keywordGlossary";
 import { useTranslation } from "@/i18n/useTranslation";
 import { getOfficialRuleUrl } from "@/learn/rules/getOfficialRuleUrl";
-
-const printedNames: Readonly<Record<string, string>> = {
-  DeDigivolve: "De-Digivolve",
-  DigiBurst: "Digi-Burst",
-  BlastDNADigivolve: "Blast DNA Digivolve",
-  SecurityAttack: "Security A.",
-  UseReq: "Use Req.",
-  Link: "Link +",
-};
-
-function getKeywordName(key: string): string {
-  return printedNames[key] ?? key.replace(/([a-z])([A-Z])/g, "$1 $2");
-}
 
 const keywords = Object.entries(KEYWORD_GLOSSARY)
   .map(([key, entry]) => ({ key, name: getKeywordName(key), ...entry }))

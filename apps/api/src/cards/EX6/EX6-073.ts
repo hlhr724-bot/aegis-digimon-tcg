@@ -20,7 +20,10 @@ export const compiled: CompiledCard = {
             trackDistinctNames: placedCountSource,
           };
         }
-        if (action.kind === "Delete" && action.condition?.kind === "raw") {
+        if (
+          action.kind === "Delete" &&
+          (action.condition?.kind === "raw" || action.condition?.kind === "namedCountAtLeast")
+        ) {
           return {
             ...action,
             condition: { kind: "namedCountAtLeast", countSource: placedCountSource, count: 4 },
@@ -43,7 +46,12 @@ export const compiled: CompiledCard = {
                       ...action.cost.target,
                       isSelfRef: true,
                       distinctNames: true,
-                      filter: { ...action.cost.target.filter, zone: "digivolutionCards", sameHost: true },
+                      filter: {
+                        ...action.cost.target.filter,
+                        kind: undefined,
+                        zone: "digivolutionCards",
+                        sameHost: true,
+                      },
                     },
                   }
                 : action.cost,

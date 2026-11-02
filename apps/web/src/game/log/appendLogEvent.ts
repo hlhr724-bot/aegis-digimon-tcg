@@ -6,6 +6,7 @@ import type { SeatNames } from "@/game/log/SeatNames";
 import { rememberEventIdentities } from "@/game/log/rememberEventIdentities";
 import { flushPendingLogMemory } from "@/game/log/flushPendingLogMemory";
 import { describeEvent } from "@/game/matchLog";
+import { LogEffectRole } from "@/game/log/LogEffectRole";
 import type { Translate } from "@/i18n/translationTypes";
 
 type Params = {
@@ -15,6 +16,16 @@ type Params = {
   seatNames: SeatNames;
   t: Translate;
 };
+
+function resolveEffectRole(kind: ServerEvent["kind"], effectSourceCardId?: string): LogEffectRole | undefined {
+  if (kind === "effectActivated" || kind === "effectTriggered") {
+    return LogEffectRole.SOURCE.value;
+  }
+  if (kind === "effectResolved" || kind === "effectHadNoEffect") {
+    return LogEffectRole.RESULT.value;
+  }
+  return effectSourceCardId === undefined ? undefined : LogEffectRole.RESULT.value;
+}
 
 export function appendLogEvent({ cursor, event, viewerSeat, seatNames, t }: Params): number {
   const before = cursor.entries.length;
@@ -106,6 +117,7 @@ export function appendLogEvent({ cursor, event, viewerSeat, seatNames, t }: Para
         phase: cursor.phase,
         actorSeat,
         memory,
+        effectRole: resolveEffectRole(event.kind, cursor.currentEffectSourceCardId),
       });
     }
   }

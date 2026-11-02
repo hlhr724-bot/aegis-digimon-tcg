@@ -46,6 +46,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "Play 1 [Royal Knight] trait card from the digivolution cards of your Digimon in the breeding area without paying the cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {
@@ -66,6 +68,8 @@ export const compiled: CompiledCard = {
           bindResultAs: "playedDigimon",
         },
         {
+          effectTextPart:
+            "[On Play] effects on Digimon played by this effect don't activate, and they gain ＜Rush＞ for the turn.",
           kind: "GainKeyword",
           target: {
             filter: { boundRef: "playedDigimon" },

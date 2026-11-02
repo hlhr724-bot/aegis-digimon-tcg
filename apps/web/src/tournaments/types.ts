@@ -1,3 +1,4 @@
+import type { TournamentOwnDeck } from "@aegis/shared/tournaments/TournamentOwnDeck";
 /* Wire shapes for the tournament endpoints, expressed on top of `@aegis/shared`.
    Only the parts the server does NOT yet publish are declared here; everything the
    shared contract already owns is imported, never re-typed. */
@@ -46,6 +47,7 @@ export type LegacyTournamentMatch = {
 };
 
 export type TournamentDetail = TournamentListing & {
+  ownDeck?: TournamentOwnDeck | null;
   series?: SeriesScoreView[];
   rules: TournamentRules | null;
   banlistCards: TournamentBanlistCard[];

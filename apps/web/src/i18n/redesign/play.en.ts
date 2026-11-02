@@ -14,4 +14,7 @@ export const playEn = {
   "redesign.play.collection": "Collection",
   "redesign.play.allCollections": "All collections",
   "redesign.play.collectionOption": "{collection} ({count})",
+  "redesign.play.tab.match": "Match",
+  "redesign.play.tab.ranked": "Ranked",
+  "redesign.play.tab.rooms": "Rooms",
 } as const;

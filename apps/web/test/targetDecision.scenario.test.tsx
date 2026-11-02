@@ -39,7 +39,7 @@ scenario("target-decision", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 750: seat 0 (protagonist) goes first and its dealt opening hand
+    // Seed 15566: seat 0 (protagonist) goes first and its dealt opening hand
     // includes BT1-095 alongside two Monodramon (BT1-009, cost 2). The first two
     // opposing security checks are a 1000 DP Digimon and an Option, so both 3000 DP
     // Monodramon survive to become legal suspended targets. Found by exhaustively
@@ -47,7 +47,7 @@ scenario("target-decision", () => {
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: PROTAGONIST_DECK.mainDeck, eggDeck: PROTAGONIST_DECK.eggDeck },
-      seed: 750,
+      seed: 15566,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Red" startMode="casual" onExit={() => {}} />);

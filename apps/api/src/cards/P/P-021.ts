@@ -17,6 +17,8 @@ const compiled: CompiledCard = {
       },
       actions: [
         {
+          effectTextPart:
+            "[Main] If you have [Mimi Tachikawa] in play, you may play a [Palmon] from your hand without paying its memory cost to return 1 of your [Mimi Tachikawa] cards to its owner's hand.",
           kind: "PlayWithoutCost",
           target: {
             filter: {
@@ -32,6 +34,8 @@ const compiled: CompiledCard = {
           bindResultAs: "playedPalmon",
         },
         {
+          effectTextPart:
+            "[Main] If you have [Mimi Tachikawa] in play, you may play a [Palmon] from your hand without paying its memory cost to return 1 of your [Mimi Tachikawa] cards to its owner's hand.",
           kind: "Return",
           target: {
             filter: {

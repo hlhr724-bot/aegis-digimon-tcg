@@ -27,6 +27,7 @@ describe("BT1-106 Symphony No.1 <Polyphony>", () => {
           trigger: "Main",
           actions: [
             {
+              effectTextPart: "[Main] 1 of your opponent's Digimon gets -7000 DP for the turn.",
               kind: "ModifyDP",
               target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
               amount: -7000,

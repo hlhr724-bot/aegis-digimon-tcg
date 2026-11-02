@@ -24,7 +24,7 @@ describe("BT1-049 Labramon", () => {
       attributes: ["Vaccine"],
       types: ["Beast"],
       inheritedEffectText:
-        "[Your Turn] When an opponent's Digimon is deleted by dropping to 0 DP， trigger ＜Draw 1＞ (Draw 1 card from your deck).",
+        "[Your Turn] When an opponent's Digimon is deleted by dropping to 0 DP, trigger ＜Draw 1＞ (Draw 1 card from your deck).",
       rarity: "U",
       maxCountInDeck: 4,
       imageId: "BT1-049",

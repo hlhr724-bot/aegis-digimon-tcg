@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] By trashing 1 card in your hand, delete 1 of your opponent's level 6 or lower Digimon.",
           kind: "Delete",
           target: {
             filter: {
@@ -35,6 +37,8 @@ export const compiled: CompiledCard = {
           abortOnDecline: true,
         },
         {
+          effectTextPart:
+            "If this effect trashed a card with the [Seven Great Demon Lords]\u00a0trait, place this card in the battle area.",
           kind: "PlaceInBattleAreaSelf",
           condition: {
             kind: "bindingContains",

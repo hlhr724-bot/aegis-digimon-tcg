@@ -19,7 +19,7 @@ describe("BT1-004 Wanyamon", () => {
       forms: ["In-Training"],
       types: ["Lesser"],
       inheritedEffectText:
-        "[Your Turn] While your opponent has 2 or more Digimon with no digivolution cards in play， this Digimon gets +2000 DP.",
+        "[Your Turn] While your opponent has 2 or more Digimon with no digivolution cards in play, this Digimon gets +2000 DP.",
     });
     expect(getCardDefinition("BT1-004")?.effectText).toBeUndefined();
     expect(compiled.effects).toEqual([

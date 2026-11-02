@@ -41,7 +41,7 @@ Season finalization grants only ranked cosmetics. It does not create trophies. H
 
 `GET /achievements/trophies` returns the signed-in player's trophies, newest first. It requires a session and responds with `private, no-store`. The profile shows compact trophy cards with their image, tier, source tournament name and award date, and an empty state when there are none. The profile’s Show trophies switch hides or restores the cabinet. Its `profileTrophies` account preference is synchronized across devices and defaults to visible; earned trophies remain stored. Aegis has no public profile yet; when one exists, it can reuse [TrophyCabinet](../apps/web/src/achievements/TrophyCabinet.tsx) with a public read route.
 
-Trophy images are WebP files at 128 and 256 pixels in `apps/web/public/achievements/`. The 1024-pixel source PNGs are not shipped.
+Trophy images are WebP files at 128 and 256 pixels in `apps/web/public/trophies/`. The 1024-pixel source PNGs are not shipped. They stay outside `/achievements/` because the gateway routes that prefix to the API.
 
 ## Known limitations
 

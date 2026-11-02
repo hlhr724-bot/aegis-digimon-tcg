@@ -5,6 +5,7 @@ import { useEffectPromptFocus } from "./useEffectPromptFocus";
 import { useBoardPreview } from "./useBoardPreview";
 import { DecisionViewBoardButton } from "./DecisionViewBoardButton";
 import "../effectPromptFamily.css";
+import { useEffectPromptPosition } from "@/game/effectPromptPosition";
 
 export function ActionConfirmationOverlay({
   cardId,
@@ -32,11 +33,15 @@ export function ActionConfirmationOverlay({
   const { t } = useTranslation();
   const { isViewingBoard, openBoard, boardReturn } = useBoardPreview();
   const focusProps = useEffectPromptFocus(isViewingBoard);
+  const effectPromptPosition = useEffectPromptPosition();
   if (isViewingBoard) return boardReturn;
   const emphasisStart = emphasis ? detail.indexOf(emphasis) : -1;
   return (
     <div className="effect-prompt-layer" onClick={(event) => event.stopPropagation()}>
-      <div className="decision-overlay-backdrop decision-overlay-backdrop--side" aria-hidden="true" />
+      <div
+        className={`decision-overlay-backdrop${effectPromptPosition === "left" ? " decision-overlay-backdrop--side" : ""}`}
+        aria-hidden="true"
+      />
       <div
         {...focusProps}
         role="dialog"
@@ -44,7 +49,7 @@ export function ActionConfirmationOverlay({
         aria-label={title}
         data-summary={showSummary || undefined}
         className="game-modal__panel action-confirmation effect-prompt-family"
-        data-prompt-surface="left"
+        data-prompt-surface={effectPromptPosition}
       >
         {showSummary ? (
           <div className="action-confirmation__header">

@@ -8,14 +8,23 @@ const target: Target = {
 };
 
 const mainActions: Action[] = [
-  { kind: "SelectBind", target },
   {
+    effectTextPart:
+      "[Main] Return 1 of your opponent's level 5 or lower Digimon to its owner's hand. If your opponent has 8 or more cards in their hand, instead return 1 of your opponent's level 5 or lower Digimon to the bottom of its owner's deck. Trash all of the digivolution cards of that Digimon.",
+    kind: "SelectBind",
+    target,
+  },
+  {
+    effectTextPart:
+      "[Main] Return 1 of your opponent's level 5 or lower Digimon to its owner's hand. If your opponent has 8 or more cards in their hand, instead return 1 of your opponent's level 5 or lower Digimon to the bottom of its owner's deck. Trash all of the digivolution cards of that Digimon.",
     kind: "Return",
     target: { filter: {}, count: 1, fromSelectionRef: "fullMoonTarget" },
     to: "deckBottom",
     condition: { kind: "zoneCount", seat: "opponent", zone: "hand", op: "gte", value: 8 },
   },
   {
+    effectTextPart:
+      "[Main] Return 1 of your opponent's level 5 or lower Digimon to its owner's hand. If your opponent has 8 or more cards in their hand, instead return 1 of your opponent's level 5 or lower Digimon to the bottom of its owner's deck. Trash all of the digivolution cards of that Digimon.",
     kind: "Return",
     target: { filter: {}, count: 1, fromSelectionRef: "fullMoonTarget" },
     to: "hand",

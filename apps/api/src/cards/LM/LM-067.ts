@@ -101,12 +101,15 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] ＜De-Digivolve 3＞ 3 of your opponent's Digimon.",
           kind: "DeDigivolve",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 3 },
           amount: 3,
           raw: "＜De-Digivolve 3＞ 3 of your opponent's Digimon",
         },
         {
+          effectTextPart:
+            "Then, you may place 1 [Three Musketeers] trait card from your hand or trash as any of your Digimon's bottom digivolution card.",
           kind: "PlaceUnder",
           target: {
             filter: {

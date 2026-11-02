@@ -422,7 +422,7 @@ function MatchRow({
   const { t, locale } = useTranslation();
   const finished = new Date(match.finishedAt);
   return (
-    <li data-result={match.result}>
+    <li data-result={match.result} data-replay={match.replay || local ? "available" : "missing"}>
       <span className="profile-result" data-result={match.result}>
         {t(`account.result.${match.result}`)}
       </span>

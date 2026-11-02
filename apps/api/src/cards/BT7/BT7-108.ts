@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] For each Digimon with [Hybrid] in its traits and each Tamer you have in play, delete 1 of your opponent's level 5 or lower Digimon.",
           kind: "Delete",
           target: {
             filter: {

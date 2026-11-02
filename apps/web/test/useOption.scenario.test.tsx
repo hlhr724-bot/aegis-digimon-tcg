@@ -40,13 +40,13 @@ scenario("use-option", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 0: seat 0 (protagonist, unmodified RED_DECK) goes first and its dealt
+    // Seed 284: seat 0 (protagonist, unmodified RED_DECK) goes first and its dealt
     // opening hand includes BT1-090 "Gravity Crush" — found by exhaustively
     // searching seeds, mirroring mulligan.scenario.test.tsx's seed-4 search.
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: RED_DECK.mainDeck, eggDeck: RED_DECK.eggDeck },
-      seed: 0,
+      seed: 284,
     };
 
     let joinCallCount = 0;
@@ -88,6 +88,8 @@ scenario("use-option", () => {
     const [rookieImg] = within(screen.getByTestId("hand")).getAllByRole("img", { name: /monodramon|biyomon/i });
     tap(rookieImg!);
     fireEvent.click(yourBreedingSlot());
+    const confirmation = await screen.findByRole("dialog", { name: "Confirm action" });
+    fireEvent.click(within(confirmation).getByRole("button", { name: /^digivolve$/i }));
     await vi.waitFor(
       () => expect(within(yourBreedingSlot()).getByRole("img", { name: /monodramon|biyomon/i })).toBeTruthy(),
       { timeout: 10_000 },

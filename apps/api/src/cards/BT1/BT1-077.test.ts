@@ -22,7 +22,7 @@ describe("BT1-077 Okuwamon", () => {
       attributes: ["Virus"],
       types: ["Insectoid"],
       inheritedEffectText:
-        "[Your Turn] When this Digimon deletes an opponent's Digimon in battle and survives， gain 1 memory.",
+        "[Your Turn] When this Digimon deletes an opponent's Digimon in battle and survives, gain 1 memory.",
       rarity: "C",
       maxCountInDeck: 4,
       imageId: "BT1-077",

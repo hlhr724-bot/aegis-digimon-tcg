@@ -70,10 +70,11 @@ describe("authoritative bot/private Unlimited over websockets", () => {
     const host = await create(type, { deck: bannedRestricted(), unlimited: true });
     expect(host.state.unlimited).toBe(true);
     const [listing] = await matchMaker.query({ roomId: host.roomId });
-    expect(listing?.metadata).toEqual({ unlimited: true, format: "unlimited" });
+    expect(listing?.metadata).toEqual({ unlimited: true, format: "unlimited", gameMode: "automatic" });
     expect(await matchMaker.remoteRoomCall(host.roomId, "privateRoomInfo", [])).toEqual({
       unlimited: true,
       format: "unlimited",
+      waiting: true,
     });
   });
 

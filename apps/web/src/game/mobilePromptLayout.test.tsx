@@ -56,15 +56,18 @@ function expectScrolls(element: Element, axis: "x" | "y", viewport: Viewport) {
 }
 
 /**
- * The panel is a capped flex column: the scroller shrinks into what the header and
- * footer leave. Either `hidden` or `auto` on the panel keeps it inside its cap; the
+ * The panel is a capped flex column, or a capped grid on short landscape screens: the
+ * scroller shrinks into what the header and footer leave. Either `hidden` or `auto` on the panel keeps it inside its cap; the
  * phone sheet picks `auto` so a header and footer that alone outgrow a short
  * landscape screen still scroll instead of clipping.
  */
 function expectCappedPanel(panel: HTMLElement, viewport: Viewport) {
   expectCapped(panel, viewport);
-  expect(explain(panel, "display", viewport)).toMatch(/^display: flex from /);
-  expect(explain(panel, "flex-direction", viewport)).toMatch(/^flex-direction: column from /);
+  const display = explain(panel, "display", viewport);
+  expect(display).toMatch(/^display: (flex|grid) from /);
+  if (display.startsWith("display: flex")) {
+    expect(explain(panel, "flex-direction", viewport)).toMatch(/^flex-direction: column from /);
+  }
   expect(explain(panel, "overflow-y", viewport)).toMatch(/^overflow-y: (hidden|auto) from /);
 }
 

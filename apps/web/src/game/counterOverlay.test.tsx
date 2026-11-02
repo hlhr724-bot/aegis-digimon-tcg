@@ -22,27 +22,44 @@ import type { AegisRoom } from "../net/client";
 import { I18nContext } from "@/i18n/I18nContext";
 import { translator } from "@/i18n/translator";
 
-it.each([
-  { effectKey: "blast-digivolve:host", label: "突风进化" },
-  { effectKey: `blast-dna-digivolve:${JSON.stringify(["host", "ace", "partner"])}`, label: "突风合步" },
-])("localizes the counter route $label and activates its unchanged server key", ({ effectKey, label }) => {
-  const onActivate = vi.fn<(instanceId: string, key: string) => void>();
+it("localizes a plain Blast step that asks for its host on the board", () => {
   render(
     <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
       <CounterOverlay
-        eligibleCounters={[{ instanceId: "ace", effectKey, description: "Blast Digivolve" }]}
+        eligibleCounters={[{ instanceId: "ace", effectKey: "blast-digivolve:host", description: "Blast Digivolve" }]}
         getCardId={(id) => (id === "ace" ? "EX10-023" : "ST1-07")}
         selectedInstanceId="ace"
         onSelectInstance={vi.fn<(instanceId?: string) => void>()}
-        handInstanceIds={["ace", "partner"]}
-        onActivate={onActivate}
+        handInstanceIds={["ace"]}
+        onActivate={vi.fn<(instanceId: string, key: string) => void>()}
         onPass={vi.fn<() => void>()}
       />
     </I18nContext.Provider>,
   );
-  fireEvent.click(screen.getByRole("button", { name: new RegExp(label) }));
-  expect(onActivate).toHaveBeenCalledWith("ace", effectKey);
+  expect(screen.getByText("突风进化")).toBeTruthy();
 });
+
+it.each([{ effectKey: `blast-dna-digivolve:${JSON.stringify(["host", "ace", "partner"])}`, label: "突风合步" }])(
+  "localizes the counter route $label and activates its unchanged server key",
+  ({ effectKey, label }) => {
+    const onActivate = vi.fn<(instanceId: string, key: string) => void>();
+    render(
+      <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+        <CounterOverlay
+          eligibleCounters={[{ instanceId: "ace", effectKey, description: "Blast Digivolve" }]}
+          getCardId={(id) => (id === "ace" ? "EX10-023" : "ST1-07")}
+          selectedInstanceId="ace"
+          onSelectInstance={vi.fn<(instanceId?: string) => void>()}
+          handInstanceIds={["ace", "partner"]}
+          onActivate={onActivate}
+          onPass={vi.fn<() => void>()}
+        />
+      </I18nContext.Provider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(label) }));
+    expect(onActivate).toHaveBeenCalledWith("ace", effectKey);
+  },
+);
 
 function CounterHarness(
   props: Omit<ComponentProps<typeof CounterOverlay>, "selectedInstanceId" | "onSelectInstance" | "handInstanceIds"> & {
@@ -68,16 +85,15 @@ function CounterHarness(
   );
 }
 
-/** While a source is being picked in the hand or on the board, the rail is a region, not a dialog. */
-function counterPickingRail() {
-  const rail = screen.getByRole("region", { name: "Counter timing" });
-  expect(rail.getAttribute("data-prompt-surface")).toBe("left");
-  return within(rail);
-}
-
 function counterDialog() {
   const dialog = screen.getByRole("dialog", { name: "Counter timing" });
   expect(dialog.getAttribute("data-prompt-surface")).toBe("left");
+  return within(dialog);
+}
+
+function counterSourceDialog() {
+  const dialog = screen.getByRole("dialog", { name: "Counter timing" });
+  expect(dialog.getAttribute("data-prompt-surface")).toBe("center");
   return within(dialog);
 }
 
@@ -257,19 +273,20 @@ it("picks a hand Counter in the hand and then its exact Blast target in the cent
       />
     </I18nProvider>,
   );
-  const picking = counterPickingRail();
-  expect(picking.getByText("Tap a card in your hand to use its [Counter].")).toBeTruthy();
-  expect(picking.queryAllByRole("img")).toHaveLength(0);
-  expect(picking.queryByRole("button", { name: /Quartzmon|Greymon/ })).toBeNull();
+  const picker = counterSourceDialog();
+  expect(within(picker.getByRole("region", { name: "Hand" })).getAllByRole("button")).toHaveLength(2);
+  expect(picker.queryByRole("region", { name: "Field" })).toBeNull();
   chooseHandAce();
   expect(activate).not.toHaveBeenCalled();
-  fireEvent.click(counterDialog().getByRole("button", { name: /MetalGreymon Blast Digivolve/ }));
-  expect(activate).toHaveBeenCalledWith("ace", "blast-digivolve:two");
-  fireEvent.click(counterDialog().getByRole("button", { name: "Pass Counter" }));
+  const rail = within(screen.getByRole("region", { name: "Counter timing" }));
+  expect(rail.getByText("Choose a Digimon below to Blast Digivolve.")).toBeTruthy();
+  fireEvent.click(rail.getByRole("button", { name: "Change card" }));
+  expect(counterSourceDialog().getByRole("region", { name: "Hand" })).toBeTruthy();
+  fireEvent.click(counterSourceDialog().getByRole("button", { name: "Pass Counter" }));
   expect(pass).toHaveBeenCalledOnce();
 });
 
-it("offers a lone Blast host as a central button reachable on a phone", () => {
+it("asks for a lone Blast host on the board and cancels back to the hand", () => {
   const activate = vi.fn<(instanceId: string, effectKey: string) => void>();
   render(
     <I18nProvider>
@@ -282,8 +299,11 @@ it("offers a lone Blast host as a central button reachable on a phone", () => {
     </I18nProvider>,
   );
   chooseHandAce();
-  fireEvent.click(counterDialog().getByRole("button", { name: /Greymon Blast Digivolve/ }));
-  expect(activate).toHaveBeenCalledWith("ace", "blast-digivolve:one");
+  const rail = within(screen.getByRole("region", { name: "Counter timing" }));
+  expect(rail.getByText("Choose a Digimon below to Blast Digivolve.")).toBeTruthy();
+  fireEvent.click(rail.getByRole("button", { name: "Cancel" }));
+  expect(screen.getByText("Tap a card in your hand to use its [Counter].")).toBeTruthy();
+  expect(activate).not.toHaveBeenCalled();
 });
 
 it("keeps same-name Blast hosts and DNA routes distinct while deduplicating identical hand partners", () => {
@@ -382,16 +402,74 @@ it("picks between identical field counters on the board and cancels back without
       />
     </I18nProvider>,
   );
-  expect(counterPickingRail().queryAllByRole("img")).toHaveLength(0);
-  pickSource("second-top");
+  const fieldSources = () =>
+    within(counterSourceDialog().getByRole("region", { name: "Field" })).getAllByRole("button");
+  const activateButton = () => counterSourceDialog().getByRole("button", { name: "Activate" }) as HTMLButtonElement;
+  expect(fieldSources()).toHaveLength(2);
+  expect(activateButton().disabled).toBe(true);
+  fireEvent.click(fieldSources()[1]!);
+  expect(fieldSources()[1]!.getAttribute("aria-pressed")).toBe("true");
   expect(activate).not.toHaveBeenCalled();
-  const rail = within(screen.getByRole("dialog", { name: "Counter timing" }));
-  fireEvent.click(rail.getByRole("button", { name: "Cancel" }));
+  fireEvent.keyDown(screen.getByRole("dialog", { name: "Counter timing" }), { key: "Escape" });
+  expect(fieldSources()[1]!.getAttribute("aria-pressed")).toBe("false");
   expect(pass).not.toHaveBeenCalled();
   pickSource("first-top");
-  fireEvent.click(screen.getByRole("button", { name: "Activate" }));
+  fireEvent.click(activateButton());
   expect(activate).toHaveBeenCalledWith("first-top", "EX13-036/counter");
 });
+
+it("opens a centered dialog that lists every Counter source with its effect and confirms the picked one", () => {
+  const activate = vi.fn<(instanceId: string, effectKey: string) => void>();
+  const pass = vi.fn<() => void>();
+  render(
+    <I18nProvider>
+      <CounterOverlayWithSelection
+        handInstanceIds={["ace-one", "ace-two"]}
+        eligibleCounters={[
+          { instanceId: "ace-one", effectKey: "blast-digivolve:andromon", description: "Blast Digivolve" },
+          { instanceId: "ace-two", effectKey: "blast-digivolve:andromon", description: "Blast Digivolve" },
+          { instanceId: "andromon-top", effectKey: "EX12-055/counter", description: "Andromon counter" },
+        ]}
+        getCardId={(id) => (id.startsWith("ace") ? "EX10-023" : id === "andromon-top" ? "EX12-055" : "ST1-07")}
+        fieldPermanentOf={(id) => (id === "andromon-top" ? "andromon" : undefined)}
+        attack={{ attackerCardId: "ST1-07", attackerDp: 12000 }}
+        onActivate={activate}
+        onPass={pass}
+      />
+    </I18nProvider>,
+  );
+  const picker = counterSourceDialog();
+  expect(picker.getByText("Greymon (12,000 DP) is attacking you.")).toBeTruthy();
+  const hand = within(picker.getByRole("region", { name: "Hand" }));
+  expect(hand.getAllByRole("button")).toHaveLength(1);
+  expect(hand.getByText("×2")).toBeTruthy();
+  const field = within(picker.getByRole("region", { name: "Field" }));
+  expect(field.getByText("Counter")).toBeTruthy();
+  expect(hand.getByText("Blast Ace")).toBeTruthy();
+  expect((picker.getByRole("button", { name: "Activate" }) as HTMLButtonElement).disabled).toBe(true);
+  const footer = picker.getByRole("button", { name: "Activate" }).parentElement!;
+  expect([...footer.querySelectorAll("button")].map((button) => button.textContent?.trim())).toEqual([
+    "View board",
+    "Pass Counter",
+    "Activate",
+  ]);
+  fireEvent.click(field.getByRole("button", { name: "Andromon · on field" }));
+  expect(activate).not.toHaveBeenCalled();
+  fireEvent.click(counterSourceDialog().getByRole("button", { name: "Activate" }));
+  expect(activate).toHaveBeenCalledWith("andromon-top", "EX12-055/counter");
+  fireEvent.click(
+    within(counterSourceDialog().getByRole("region", { name: "Hand" })).getByRole("button", { name: /in hand/ }),
+  );
+  expect(screen.getByRole("region", { name: "Counter timing" })).toBeTruthy();
+  expect(pass).not.toHaveBeenCalled();
+});
+
+function CounterOverlayWithSelection(
+  props: Omit<ComponentProps<typeof CounterOverlay>, "selectedInstanceId" | "onSelectInstance">,
+) {
+  const [selectedInstanceId, onSelectInstance] = useState<string>();
+  return <CounterOverlay {...props} selectedInstanceId={selectedInstanceId} onSelectInstance={onSelectInstance} />;
+}
 
 it.each([false, true])("offers explicit server-authorized blockers and preserves Collision (%s)", (mustBlock) => {
   const { send } = renderCombatGame("block", mustBlock);
@@ -402,13 +480,12 @@ it.each([false, true])("offers explicit server-authorized blockers and preserves
   expect(send).toHaveBeenCalledWith("declareBlock", { blockerPermanentId: "ally", rollbackRevision: 0 });
 });
 
-it("routes a field Counter picked on the board to the exact GameScreen intent", () => {
-  const { send, permanent } = renderCombatGame("counter");
-  expect(counterPickingRail().queryByRole("button", { name: /MetalTyrannomon/ })).toBeNull();
-  fireEvent.click(permanent("ineligible"));
+it("routes a field Counter picked in the source dialog to the exact GameScreen intent", () => {
+  const { send } = renderCombatGame("counter");
+  const picker = counterSourceDialog();
+  fireEvent.click(picker.getByRole("button", { name: /MetalTyrannomon · on field/ }));
   expect(send).not.toHaveBeenCalled();
-  expect(screen.getByRole("dialog", { name: "Counter timing" }).getAttribute("data-prompt-surface")).toBe("left");
-  fireEvent.click(screen.getByRole("button", { name: "Activate" }));
+  fireEvent.click(counterSourceDialog().getByRole("button", { name: "Activate" }));
   expect(send).toHaveBeenCalledWith("respondCounter", {
     sourceInstanceId: "ineligible-top",
     effectKey: "second",

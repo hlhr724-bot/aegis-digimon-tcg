@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            '[Main] 1 of your opponent\'s Digimon gains "[All Turns] When this Digimon becomes suspended, lose 2 memory." until the end of their turn.',
           kind: "GrantAuraToOpponents",
           target: {
             filter: {

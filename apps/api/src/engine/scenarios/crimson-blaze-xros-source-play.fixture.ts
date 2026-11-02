@@ -1,6 +1,6 @@
 import type { ScenarioFixture } from "#api/engine/scenario/types";
 
-export const crimsonBlazeXrosSourcePlayFixture: ScenarioFixture = {
+const fixture: ScenarioFixture = {
   name: "crimson-blaze-xros-source-play",
   turnSeat: 1,
   turnCount: 4,
@@ -32,3 +32,5 @@ export const crimsonBlazeXrosSourcePlayFixture: ScenarioFixture = {
     },
   },
 };
+
+export default fixture;

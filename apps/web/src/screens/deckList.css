@@ -1,80 +1,142 @@
-.deck-list-page {
-  position: relative;
-  height: calc(100% - var(--ds-nav-height-wide));
-  overflow-y: auto;
+.deck-list-page .deck-list-panel {
+  min-width: 0;
+  color: var(--ds-text);
+  border: 1px solid var(--ds-line);
+  border-radius: 10px;
+  background: var(--ds-sheet);
+  box-shadow: var(--ds-shadow-card);
 }
 
-.deck-list-page__column {
+.deck-list-summary {
   display: grid;
-  width: min(100%, calc(1080px + 2 * var(--ds-gutter-desktop)));
-  gap: var(--ds-space-8);
-  margin-inline: auto;
-  padding: var(--ds-space-10) var(--ds-gutter-desktop) var(--ds-space-12);
-}
-
-.deck-list-hero {
-  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 460px);
+  align-items: center;
   gap: var(--ds-space-6);
+  padding: 18px 20px;
 }
 
-.deck-list-header {
+.deck-list-summary__active {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--ds-space-5);
+  min-width: 0;
+  align-items: center;
+  gap: var(--ds-space-3);
 }
 
-.deck-list-hero__copy {
+.deck-list-summary__cover {
   display: grid;
-  gap: var(--ds-space-2);
-  max-width: 56ch;
-}
-
-.deck-list-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ds-space-2);
-}
-
-.deck-list-hero__active {
-  display: block;
-  max-width: 100%;
+  width: 40px;
+  height: 56px;
+  flex: none;
+  place-items: center;
   overflow: hidden;
+  color: var(--ds-text-3);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-fill);
+}
+
+.deck-list-summary__active-text {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.deck-list-summary__eyebrow {
+  color: var(--ds-accent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.deck-list-summary__active-text b {
+  overflow: hidden;
+  color: var(--ds-text);
+  font: 600 16px / 1.3 var(--ds-font-body);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.deck-list-hero__stats .aegis-stat-strip__item {
+.deck-list-page .deck-list-summary__stats {
+  grid-template-columns: none;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  overflow: hidden;
+  color: var(--ds-text);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-fill);
+}
+
+.deck-list-page .deck-list-summary__stats::before,
+.deck-list-page .deck-list-summary__stats::after {
+  display: none;
+}
+
+.deck-list-page .deck-list-summary__stats .aegis-stat-strip__item {
   min-width: 0;
+  padding: 12px 10px;
+  border-color: var(--ds-line);
+  border-width: 0;
 }
 
-.deck-list-hero__stats .aegis-stat-strip__value {
+.deck-list-page .deck-list-summary__stats .aegis-stat-strip__item + .aegis-stat-strip__item {
+  border-left-width: 1px;
+}
+
+.deck-list-page .deck-list-summary__stats .aegis-stat-strip__value {
+  font-size: 22px;
+}
+
+.deck-list-page .deck-list-summary__stats .aegis-stat-strip__label {
+  overflow: hidden;
   max-width: 100%;
-}
-
-/* Two columns leave the third stat alone on its row, so the active deck, whose
-   name needs the width most, takes the whole row. */
-@media (width < 640px) {
-  .deck-list-hero__stats .aegis-stat-strip__item:last-child {
-    grid-column: 1 / -1;
-  }
+  color: var(--ds-text-3);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .deck-list-section {
   display: grid;
-  gap: var(--ds-space-4);
+  gap: var(--ds-space-3);
+  padding: 18px 20px 8px;
+}
+
+.deck-list-section__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.deck-list-section__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  margin: 0;
+  color: var(--ds-text);
+  font: 600 16px / 1.3 var(--ds-font-body);
+  letter-spacing: -0.01em;
+}
+
+.deck-list-section__count {
+  color: var(--ds-text-3);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .deck-list-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-2);
 }
 
 .deck-list-toolbar__search {
-  flex: 1 1 220px;
+  width: 260px;
   min-width: 0;
 }
 
@@ -87,17 +149,22 @@
   white-space: nowrap;
 }
 
+.deck-list-toolbar__search .aegis-field__control,
+.deck-list-toolbar__sort select {
+  min-height: 36px;
+  padding-block: 7px;
+}
+
 .deck-list-toolbar__sort {
   position: relative;
   display: block;
-  flex: 0 1 200px;
-  min-width: 160px;
+  min-width: 170px;
 }
 
 .deck-list-toolbar__sort select {
   width: 100%;
-  min-height: var(--ds-touch-target);
-  padding: 10px 36px 10px var(--ds-space-3);
+  padding-right: 36px;
+  padding-left: var(--ds-space-3);
   color: var(--ds-text);
   font: var(--ds-text-sm) / 1.25 var(--ds-font-body);
   border: 1px solid var(--ds-line);
@@ -131,146 +198,84 @@
 }
 
 .deck-list-empty {
-  margin: 0;
-  padding: var(--ds-space-8) var(--ds-space-4);
-  color: var(--ds-text-3);
-  text-align: center;
-  border: 1px dashed var(--ds-line-strong);
-  border-radius: var(--ds-radius-lg);
-}
-
-/* A table on wide screens. Explicit ARIA roles keep it a table for assistive tech
-   when the narrow layout turns each row into a card. */
-.deck-list-table {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) repeat(4, auto);
-  column-gap: var(--ds-space-6);
-  overflow: hidden;
-  border: 1px solid var(--ds-line);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-sheet);
+  justify-items: center;
+  gap: var(--ds-space-3);
+  padding: 28px 0 24px;
+  color: var(--ds-text-3);
+  font-size: 13.5px;
+  text-align: center;
 }
 
-/* Every row shares the table's column tracks, so cells line up with the header. */
-.deck-list-table__head,
-.deck-list-grid,
-.deck-list-table__row {
+.deck-list-empty p {
+  margin: 0;
+}
+
+.deck-list-page .deck-list-table {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px auto;
+  column-gap: 14px;
+}
+
+.deck-list-page .deck-list-table__head,
+.deck-list-page .deck-list-grid,
+.deck-list-page .deck-list-table__row {
   display: grid;
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
 }
 
-.deck-list-table__row {
+.deck-list-page .deck-list-table__row {
   align-items: center;
-  padding: var(--ds-space-3) var(--ds-space-4);
 }
 
-.deck-list-table__head .deck-list-table__row {
-  padding-block: var(--ds-space-2);
-  color: var(--ds-on-ink);
-  background-color: var(--ds-ink-raised);
-  background-image: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--ds-ink-accent) 10%, transparent) 1px,
-    transparent 1px
-  );
-  background-size: 44px 100%;
-  font: 600 11px / 1.4 var(--ds-font-display);
-  letter-spacing: var(--ds-tracking-label);
-  text-transform: uppercase;
+.deck-list-page .deck-list-row__colors {
+  justify-self: start;
 }
 
-.deck-list-row {
+.deck-list-page .deck-list-table__head .deck-list-table__row {
+  padding-bottom: var(--ds-space-2);
+  color: var(--ds-text-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.deck-list-page .deck-list-row {
+  padding: 12px 0;
   border-top: 1px solid var(--ds-line);
-  transition: background-color var(--ds-motion-fast, 120ms) ease-out;
 }
 
-.deck-list-grid > .deck-list-row:first-child {
-  border-top-width: 0;
-}
-
-.deck-list-row:hover {
-  background: color-mix(in srgb, var(--ds-accent) 4%, transparent);
-}
-
-.deck-list-row.is-active {
-  box-shadow: inset 3px 0 0 var(--ds-accent);
-}
-
-.deck-list-row__deck {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: var(--ds-space-3);
-}
-
-.deck-list-row__cover {
-  display: grid;
-  width: 40px;
-  height: 56px;
-  flex: none;
-  place-items: center;
-  overflow: hidden;
-  border: 1px solid var(--ds-line);
-  border-radius: var(--ds-radius-sm);
-  background: var(--ds-ink);
-}
-
-.deck-list-row__identity {
-  display: grid;
-  min-width: 0;
-  gap: 2px;
+.deck-list-page .deck-list-row.is-active .deck-list-row__cover {
+  box-shadow:
+    0 0 0 2px var(--ds-sheet),
+    0 0 0 4px var(--ds-accent);
 }
 
 .deck-list-row__name {
   display: flex;
   min-width: 0;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--ds-space-1) var(--ds-space-2);
-}
-
-.deck-list-row__name h3 {
-  min-width: 0;
-  max-width: 100%;
-  margin: 0;
-  overflow: hidden;
-  color: var(--ds-text);
-  font: 700 var(--ds-text-base) / 1.3 var(--ds-font-display);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.deck-list-row__title {
-  display: inline-flex;
-  min-width: 0;
-  max-width: 100%;
-  align-items: center;
-  gap: var(--ds-space-1);
-}
-
-.deck-list-row__title h3 {
-  flex: 1 1 auto;
+  gap: 2px;
 }
 
 .deck-list-row__favorite {
-  display: inline-grid;
+  display: grid;
   flex: none;
   width: 32px;
   height: 32px;
   margin: -6px 0 -6px -6px;
-  padding: 0;
   place-items: center;
+  padding: 0;
   color: var(--ds-text-3);
-  background: transparent;
   border: 0;
   border-radius: var(--ds-radius-md);
+  background: transparent;
   cursor: pointer;
 }
 
 .deck-list-row__favorite:hover {
   color: var(--ds-warning);
-  background: var(--ds-warning-soft);
+  background: var(--ds-fill);
 }
 
 .deck-list-row__favorite[aria-pressed="true"] {
@@ -282,25 +287,90 @@
   box-shadow: var(--ds-focus-ring);
 }
 
-.deck-list-row__name .aegis-badge {
-  padding: 1px 7px;
-  font-size: 11px;
+.deck-list-page .deck-list-row__deck {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
 }
 
-.deck-list-row__blurb {
+.deck-list-page .deck-list-row__cover {
+  display: grid;
+  width: 46px;
+  height: 64px;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-ink);
+}
+
+.deck-list-row__identity {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.deck-list-page .deck-list-row__title {
+  min-width: 0;
   margin: 0;
   overflow: hidden;
-  color: var(--ds-text-3);
-  font-size: var(--ds-text-xs);
-  line-height: 1.4;
+  color: var(--ds-text);
+  font: 600 14.5px / 1.3 var(--ds-font-body);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.deck-list-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.deck-list-row__meta .aegis-badge {
+  padding: 1px 8px;
+  font-size: 11px;
+}
+
+.deck-list-row__counts {
+  display: inline-flex;
+  gap: 6px;
+  margin-right: 4px;
+  color: var(--ds-text-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.deck-list-row__counts [data-complete="true"] {
+  color: var(--ds-success);
+}
+
+.deck-list-row__blurb,
+.deck-list-row__hint {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ds-text-3);
+  font-size: 12px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+}
+
+.deck-list-row__blurb {
+  white-space: nowrap;
+}
+
+.deck-list-row__hint {
+  font-weight: 500;
+}
+
 .deck-list-row__violation {
-  margin: var(--ds-space-1) 0 0;
+  margin: 0;
   color: var(--ds-danger);
-  font-size: var(--ds-text-xs);
+  font-size: 12px;
+  font-weight: 500;
   line-height: 1.4;
 }
 
@@ -316,263 +386,130 @@
   gap: var(--ds-space-1);
 }
 
-.deck-list-row__count {
-  color: var(--ds-text-2);
-  font: 500 var(--ds-text-sm) / 1 var(--ds-font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-.deck-list-row__count[data-complete="true"] {
-  color: var(--ds-success);
-}
-
-.deck-list-row__count-label {
-  display: none;
-}
-
 .deck-list-row__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--ds-space-2);
-}
-
-.deck-list-row__publish {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ds-space-2);
-}
-
-.deck-list-row__publish:empty {
-  display: none;
-}
-
-.deck-list-row__hint {
-  color: var(--ds-text-3);
-  font-size: var(--ds-text-xs);
-  font-style: italic;
-}
-
-.deck-list-row__delete {
-  margin-left: auto;
-  padding: 8px;
-  aspect-ratio: 1;
-  color: var(--ds-text-2);
-  border: 1px solid var(--ds-line);
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .deck-list-row__delete:hover {
   color: var(--ds-danger);
-  border-color: color-mix(in srgb, var(--ds-danger) 40%, transparent);
   background: var(--ds-danger-soft);
 }
 
-/* Below desktop width the columns cannot hold four actions beside the counts, so
-   each row becomes a card: identity on top, colors and counts, then actions. */
-@media (width < 960px) {
-  .deck-list-page {
-    height: 100%;
-    padding-bottom: calc(var(--ds-nav-height-narrow) + env(safe-area-inset-bottom));
+@container page (max-width: 860px) {
+  .deck-list-summary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ds-space-4);
   }
 
-  .deck-list-page__column {
-    gap: var(--ds-space-6);
-    padding: var(--ds-space-8) var(--ds-gutter-tablet) var(--ds-space-10);
+  .deck-list-page .deck-list-table {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .deck-list-table {
-    display: block;
-    overflow: visible;
-    border: 0;
-    background: transparent;
-  }
-
-  .deck-list-table__head {
+  .deck-list-page .deck-list-table__head [role="columnheader"]:nth-child(2),
+  .deck-list-page .deck-list-row__colors {
     display: none;
-  }
-
-  .deck-list-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-    gap: var(--ds-space-3);
-  }
-
-  .deck-list-table__row.deck-list-row {
-    grid-template-columns: auto auto auto minmax(0, 1fr);
-    grid-template-areas:
-      "deck deck deck deck"
-      "colors main egg ."
-      "actions actions actions actions";
-    gap: var(--ds-space-3) var(--ds-space-4);
-    padding: var(--ds-space-4);
-    border: 1px solid var(--ds-line);
-    border-radius: var(--ds-radius-lg);
-    background: var(--ds-sheet);
-  }
-
-  /* Each row is a framed card here, so the first one keeps the top edge the
-     table layout drops under its header. */
-  .deck-list-grid > .deck-list-row:first-child {
-    border-top-width: 1px;
-  }
-
-  .deck-list-row.is-active {
-    border-color: var(--ds-accent);
-    box-shadow: none;
-  }
-
-  .deck-list-row__deck {
-    grid-area: deck;
-  }
-
-  .deck-list-row__colors {
-    grid-area: colors;
-  }
-
-  .deck-list-row__count:nth-child(3) {
-    grid-area: main;
-  }
-
-  .deck-list-row__count:nth-child(4) {
-    grid-area: egg;
-  }
-
-  .deck-list-row__count-label {
-    display: inline;
-    margin-right: var(--ds-space-1);
-    color: var(--ds-text-3);
-    font: 600 10px / 1 var(--ds-font-display);
-    letter-spacing: var(--ds-tracking-label);
-    text-transform: uppercase;
-  }
-
-  .deck-list-row__actions {
-    grid-area: actions;
-    padding-top: var(--ds-space-3);
-    border-top: 1px solid var(--ds-line);
-  }
-
-  /* Four actions do not fit one row of a phone card, and the one that wrapped was
-     delete, alone on a line. It moves to the card's corner instead, with the deck
-     name keeping clear of it. */
-  .deck-list-table__row.deck-list-row {
-    position: relative;
-  }
-
-  .deck-list-row__delete {
-    position: absolute;
-    top: var(--ds-space-3);
-    right: var(--ds-space-3);
-  }
-
-  .deck-list-row__deck {
-    padding-right: calc(var(--ds-touch-target) + var(--ds-space-2));
-  }
-
-  /* The badges always start their own line under the name, so gaining the
-     Active badge does not push Legal down and make the active card taller. */
-  .deck-list-row__title {
-    flex-basis: 100%;
   }
 }
 
-/* Three labelled buttons overflow a phone card. Edit and Export shrink to their
-   icons (the text stays for screen readers) so the deck's main action keeps one
-   row and the room it needs. */
-@media (width < 480px) {
-  .deck-list-row__actions {
+@container page (max-width: 640px) {
+  .deck-list-page .aegis-page-header__title-row {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  .deck-list-page .aegis-page-header__actions {
     display: grid;
-    grid-template-columns: var(--ds-touch-target) var(--ds-touch-target) minmax(0, 1fr);
-  }
-
-  .deck-list-row__actions > :is(:nth-child(1), :nth-child(2)) {
-    min-height: var(--ds-touch-target);
-    gap: 0;
-    padding: 0;
-    font-size: 0;
-    justify-content: center;
-  }
-
-  .deck-list-row__actions > :nth-child(3) {
-    min-height: var(--ds-touch-target);
-    justify-content: center;
-  }
-
-  /* Publishing is secondary to playing, so it takes its own line under the main action. */
-  .deck-list-row__publish {
-    grid-column: 1 / -1;
-  }
-
-  .deck-list-row__publish > .aegis-button {
-    flex: 1;
-    min-height: var(--ds-touch-target);
-    justify-content: center;
-  }
-}
-
-@media (width < 600px) {
-  .deck-list-hero {
-    --aegis-panel-pad: var(--ds-space-4);
-    gap: var(--ds-space-3);
-  }
-
-  .deck-list-header {
-    gap: var(--ds-space-3);
-  }
-
-  .deck-list-hero .aegis-page-title {
-    font-size: var(--ds-text-xl);
-  }
-
-  .deck-list-hero__stats .aegis-stat-strip__item {
-    flex-direction: row;
-    justify-content: space-between;
-    gap: var(--ds-space-2);
-    padding: var(--ds-space-2) var(--ds-space-3);
-  }
-
-  .deck-list-hero__stats .aegis-stat-strip__value {
-    font-size: var(--ds-text-base);
-  }
-
-  .deck-list-hero__stats .aegis-stat-strip__label {
-    font-size: 10px;
-    letter-spacing: 0;
-  }
-
-  .deck-list-hero__stats .aegis-stat-strip__item:last-child .aegis-stat-strip__value {
-    order: 0;
-    min-width: 0;
-  }
-
-  .deck-list-hero__stats .aegis-stat-strip__item:last-child .aegis-stat-strip__label {
-    flex-shrink: 0;
-  }
-
-  .deck-list-hero__stats::before,
-  .deck-list-hero__stats::after {
-    display: none;
-  }
-
-  .deck-list-page__column {
-    gap: var(--ds-space-5);
-    padding: var(--ds-space-5) var(--ds-gutter-phone) var(--ds-space-8);
-  }
-
-  .deck-list-actions {
     width: 100%;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .deck-list-actions > .aegis-button {
+  .deck-list-page .aegis-page-header__actions > .aegis-button {
+    justify-content: center;
     min-height: var(--ds-touch-target);
-    flex: 1;
-    padding-inline: var(--ds-space-2);
-    font-size: var(--ds-text-xs);
+  }
+
+  .deck-list-summary {
+    padding: 14px;
+  }
+
+  .deck-list-page .deck-list-summary__stats .aegis-stat-strip__item {
+    padding: 10px 6px;
+  }
+
+  .deck-list-page .deck-list-summary__stats .aegis-stat-strip__value {
+    font-size: 18px;
+  }
+
+  .deck-list-page .deck-list-summary__stats .aegis-stat-strip__label {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  .deck-list-section {
+    padding: 14px 14px 4px;
+  }
+
+  .deck-list-toolbar {
+    width: 100%;
+  }
+
+  .deck-list-toolbar__search,
+  .deck-list-toolbar__sort {
+    flex: 1 1 100%;
+    width: auto;
+  }
+
+  .deck-list-page .deck-list-table__head {
+    display: none;
+  }
+
+  .deck-list-page .deck-list-table {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .deck-list-page .deck-list-row.deck-list-table__row {
+    row-gap: 10px;
+  }
+
+  .deck-list-page .deck-list-grid > .deck-list-row:first-child {
+    border-top-width: 0;
+  }
+
+  .deck-list-page .deck-list-row__deck {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .deck-list-page .deck-list-row__cover {
+    width: 40px;
+    height: 56px;
   }
 
   .deck-list-row__blurb {
     white-space: normal;
+  }
+
+  .deck-list-row__actions {
+    justify-content: stretch;
+  }
+
+  .deck-list-row__actions > .aegis-button:not(.deck-list-row__delete, [aria-label]) {
+    flex: 1;
+    justify-content: center;
+    min-height: var(--ds-touch-target);
+  }
+
+  .deck-list-row__actions > .aegis-button[aria-label] {
+    min-width: var(--ds-touch-target);
+    min-height: var(--ds-touch-target);
+    justify-content: center;
+  }
+
+  .deck-list-row__activate {
+    order: 5;
   }
 }

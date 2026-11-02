@@ -292,6 +292,10 @@ test("achievement API calls reach the API", () => {
   assert.equal(isApiPath("/achievementsish", { accept: "*/*" }), false);
 });
 
+test("trophy images reach the web app", () => {
+  assert.equal(isApiPath("/trophies/trophy-gold-128.webp", { accept: "image/webp" }), false);
+});
+
 test("friends API calls reach the API while friends navigation gets the web app", () => {
   for (const path of ["/friends", "/friends/requests", "/friends/account-1/detail", "/friends/account-1/replays"]) {
     assert.equal(isApiPath(path, { accept: "application/json" }), true);
@@ -535,4 +539,37 @@ test("health report logs event loop lag, open game sockets, and CPU throttling",
   await once(socket, "close");
   const closedAt = lines.length;
   await waitForLine(lines, (line, index) => index >= closedAt && line.webSockets === 0, "closed socket counted");
+});
+
+test("tournament game authorization always reaches the API", () => {
+  assert.equal(isApiPath("/series/game-series/authorize-game", {}), true);
+  assert.equal(isApiPath("/series/game-series/authorize-game", { accept: "text/html" }), true);
+});
+
+test("tournament authorization forwards to the API instead of returning the site HTML", async (t) => {
+  const state = mkdtempSync(`${tmpdir()}/aegis-tournament-gateway-`);
+  mkdirSync(`${state}/routing`, { recursive: true });
+  mkdirSync(`${state}/releases/v1/web`, { recursive: true });
+  writeFileSync(`${state}/releases/v1/web/index.html`, "<html>game site</html>");
+  writeFileSync(
+    `${state}/routing/manifest.json`,
+    JSON.stringify({ version: 1, active: { slot: "green", revision: "v1" }, draining: [] }),
+  );
+  const api = createServer((request, response) => {
+    response.setHeader("content-type", "application/json");
+    response.statusCode = request.url === "/ready" ? 200 : 401;
+    response.end(JSON.stringify({ error: "unauthorized", path: request.url }));
+  });
+  const apiOrigin = await listen(api);
+  const gateway = createGateway({ state, upstreamFor: () => apiOrigin });
+  const origin = await listen(gateway);
+  t.after(async () => {
+    await new Promise((done) => gateway.close(done));
+    await new Promise((done) => api.close(done));
+    rmSync(state, { recursive: true });
+  });
+  const response = await fetch(`${origin}/series/test-series/authorize-game`, { method: "POST" });
+  assert.equal(response.status, 401);
+  assert.match(response.headers.get("content-type"), /application\/json/);
+  assert.equal((await response.json()).path, "/series/test-series/authorize-game");
 });

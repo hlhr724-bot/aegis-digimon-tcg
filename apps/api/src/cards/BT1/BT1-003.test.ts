@@ -19,7 +19,7 @@ describe("BT1-003 Upamon", () => {
       forms: ["In-Training"],
       types: ["Amphibian"],
       inheritedEffectText:
-        "[When Attacking][Once Per Turn] If your opponent has a Digimon with no digivolution cards in play， trigger ＜Draw 1＞ (Draw 1 card from your deck).",
+        "[When Attacking][Once Per Turn] If your opponent has a Digimon with no digivolution cards in play, trigger ＜Draw 1＞ (Draw 1 card from your deck).",
     });
     expect(getCardDefinition("BT1-003")?.effectText).toBeUndefined();
     expect(compiled.effects).toEqual([

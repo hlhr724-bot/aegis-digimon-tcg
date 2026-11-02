@@ -107,6 +107,7 @@ export class RuleChecks {
   anyZeroDpDigimon(): boolean {
     return battleAreaPermanents(this.deps.state).some(
       (p) =>
+        p.topCard?.faceUp === true &&
         this.deps.access.isBattleAreaDigimon(p, this.deps.continuous) &&
         this.deps.modifiers.rawDp(this.deps.state, p.permanentId) <= 0 &&
         !this.protectedFromRuleDeletion(p.permanentId),
@@ -117,6 +118,7 @@ export class RuleChecks {
     const ids = battleAreaPermanents(this.deps.state)
       .filter(
         (p) =>
+          p.topCard?.faceUp === true &&
           this.deps.access.isBattleAreaDigimon(p, this.deps.continuous) &&
           this.deps.modifiers.rawDp(this.deps.state, p.permanentId) <= 0,
       )
@@ -152,7 +154,7 @@ export class RuleChecks {
     const ids = fieldPermanents(this.deps.state)
       .filter((p) => p.topCard?.faceUp === false)
       .map((p) => p.permanentId);
-    if (ids.length > 0) await this.deps.primitives().deletePermanent(ids, "byRule");
+    if (ids.length > 0) await this.deps.primitives().trashPermanentByRule(ids);
   }
 
   /**

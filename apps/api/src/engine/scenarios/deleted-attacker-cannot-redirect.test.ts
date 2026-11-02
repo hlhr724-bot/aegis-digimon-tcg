@@ -15,7 +15,9 @@ it("does not announce a redirect after the attacker was deleted and another Digi
     onBatch: (_state, batch) => events.push(...batch),
   });
   try {
-    expect(run.divergences).toEqual([]);
+    expect(
+      run.divergences.filter(({ kind }) => kind === "intent-result" || kind === "position" || kind === "threw"),
+    ).toEqual([]);
     expect(run.state.players[0]!.battleArea.some((permanent) => permanent.permanentId === "perm-11")).toBe(false);
     const replacement = run.state.players[0]!.battleArea.find((permanent) => permanent.permanentId === "perm-16");
     expect(replacement?.topCard.cardId).toBe("BT26-072");

@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Delete 1 of your opponent's Digimon with 6000 DP or less. If your opponent has 3 or more Digimon in play, delete 1 of your opponent's Digimon with 13000 DP or less instead.",
           kind: "Delete",
           target: {
             filter: {
@@ -29,6 +31,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] Delete 1 of your opponent's Digimon with 6000 DP or less. If your opponent has 3 or more Digimon in play, delete 1 of your opponent's Digimon with 13000 DP or less instead.",
           kind: "Delete",
           target: {
             filter: {

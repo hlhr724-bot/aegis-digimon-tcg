@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon gets +2000 DP and \"[When Attacking] Return 1 of your opponent's level 3 Digimon to its owner's hand. Trash all of the digivolution cards of that Digimon\" for the turn.",
           kind: "SelectBind",
           target: {
             filter: { controller: "mine", kind: ["Digimon"] },
@@ -15,6 +17,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon gets +2000 DP and \"[When Attacking] Return 1 of your opponent's level 3 Digimon to its owner's hand. Trash all of the digivolution cards of that Digimon\" for the turn.",
           kind: "ModifyDP",
           target: {
             filter: {},
@@ -25,6 +29,8 @@ const compiled: CompiledCard = {
           duration: "forTheTurn",
         },
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon gets +2000 DP and \"[When Attacking] Return 1 of your opponent's level 3 Digimon to its owner's hand. Trash all of the digivolution cards of that Digimon\" for the turn.",
           kind: "GainTriggeredEffect",
           target: {
             filter: {},

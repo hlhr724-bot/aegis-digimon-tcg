@@ -135,6 +135,7 @@ export function buildPermanentDetail(
         cardId: identity.cardId,
         ...(identity.artId ? { artId: identity.artId } : {}),
         ...(!card.faceUp ? { faceDown: true } : {}),
+        ...(card.oncePerTurnUsed ? { oncePerTurnUsed: true as const } : {}),
         role: "stack" as const,
       };
     }),
@@ -144,6 +145,7 @@ export function buildPermanentDetail(
         cardId: identity.cardId,
         ...(identity.artId ? { artId: identity.artId } : {}),
         ...(!card.faceUp ? { faceDown: true } : {}),
+        ...(card.oncePerTurnUsed ? { oncePerTurnUsed: true as const } : {}),
         role: "linked" as const,
       };
     }),

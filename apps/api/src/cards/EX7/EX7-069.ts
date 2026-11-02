@@ -7,6 +7,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] You may suspend 1 level 6 or lower Digimon.",
           kind: "Suspend",
           target: {
             filter: {
@@ -22,6 +23,7 @@ export const compiled: CompiledCard = {
           optional: true,
         },
         {
+          effectTextPart: "If this effect suspended your Digimon, unsuspend 1 of your Digimon.",
           kind: "Unsuspend",
           target: {
             filter: {

@@ -150,13 +150,11 @@ export interface MatchReplay extends ReplaySummary {
   visibleHandSeats: Seat[];
 }
 
-/** Only the corresponding participant receives this message; observers receive no file. */
 export type ReplayDownloadMessage =
   | {
       kind: "ready";
       summary: ReplaySummary;
       viewerSeat: ReplayViewerSeat;
-      /** The server-side index entry, sent only to a signed-in participant, so the client can attach its Drive copy. */
       indexId?: string;
       /** gzip-compressed UTF-8 JSON, base64 encoded for the Colyseus channel. */
       data: string;

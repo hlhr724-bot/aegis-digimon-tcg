@@ -11,7 +11,7 @@ describe("BT2-097 Lightning Paw", () => {
       colors: ["Yellow"],
       playCost: 3,
       imageId: "BT2-097-Errata",
-      effectText: expect.stringContaining("3 of your opponent’s level 3 Digimon"),
+      effectText: expect.stringContaining("3 of your opponent's level 3 Digimon"),
       securityEffectText: "[Security] Activate this card's [Main] effect.",
     });
     expect(compiled).toMatchObject({

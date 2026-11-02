@@ -6,6 +6,7 @@ import { translator, type Translate } from "../i18n";
 import { KEYWORD_GLOSSARY, OFFICIAL_COMPREHENSIVE_RULES_URL } from "./keywordGlossary";
 
 const english = translator("en");
+const glossaryNames = new Map(Object.keys(KEYWORD_GLOSSARY).map((name) => [name.toLowerCase(), name]));
 
 /** Card data writes keywords in full-width brackets (＜Blocker＞); the UI prints ASCII ones. */
 export function normalizeKeywordBrackets(text: string): string {
@@ -17,13 +18,15 @@ export function normalizeKeywordBrackets(text: string): string {
  * "Security A. +1" all reduce to the bare compact name.
  */
 export function keywordBaseName(keyword: string): string {
-  return normalizeKeywordBrackets(keyword)
+  const name = normalizeKeywordBrackets(keyword)
     .replace(/[<>]/g, "")
+    .replace(/^\s*S(?=\s+Attack\b)/, "Security")
     .replace(/\bA\.(?=\s|$)/, "Attack")
     .replace(/\./g, "")
     .replace(/\(.*\)/, "")
     .replace(/[+-]?\d+/g, "")
     .replace(/[\s-]/g, "");
+  return glossaryNames.get(name.toLowerCase()) ?? name;
 }
 
 /**

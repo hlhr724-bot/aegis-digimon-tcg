@@ -20,6 +20,8 @@ const accountStore = {
   preferences: async (accountId: string) => ({ listLiveMatches: accountId.startsWith("opted-in") }),
   recordRecentMatch: async () => undefined,
   recordMatch: async () => undefined,
+  ensureReady: async () => undefined,
+  pool: { query: async () => ({ rows: [], rowCount: 0 }) },
 };
 
 beforeAll(async () => {

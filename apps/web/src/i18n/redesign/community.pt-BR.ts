@@ -134,4 +134,13 @@ export const communityPtBR: Record<keyof typeof communityEn, string> = {
   "community.review.errorPending": "Você já pediu uma revisão. Aguarde a resposta de um moderador.",
   "community.review.errorNotHidden": "Este deck não está mais oculto.",
   "community.publish.errorGeneric": "Não foi possível publicar. Tente de novo.",
+  "community.meta.tab": "Meta",
+  "community.meta.title": "Meta das ranqueadas",
+  "community.meta.description": "Ranqueadas desta temporada · {count} participações de decks",
+  "community.meta.presence": "Presença",
+  "community.meta.usage": "Uso",
+  "community.meta.versus": "{deck} vs {opponent}",
+  "community.meta.openRanked": "Abrir estatísticas das ranqueadas",
+  "community.trending.title": "Em alta esta semana",
+  "community.roadmap.lanes": "Colunas do roadmap",
 };

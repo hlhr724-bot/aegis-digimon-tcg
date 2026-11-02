@@ -8,7 +8,9 @@
 import type { PhaseView } from "@aegis/shared";
 import { Panel } from "../design/primitives";
 import { useTranslation } from "../i18n";
+import { getTournamentBracketSpectating } from "@/tournaments/getTournamentBracketSpectating";
 import { TournamentBracket } from "@/tournaments/TournamentBracket";
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
 import type { TournamentDetail } from "./types";
 
 /** The cut phase, or undefined while the event has not reached one. */
@@ -28,7 +30,13 @@ export function isAwaitingTopCut(detail: TournamentDetail): boolean {
   return detail.phases?.some((phase) => phase.kind === "swiss" && phase.status === "frozen") === true;
 }
 
-export function TopCutBracket({ detail, accountId }: { detail: TournamentDetail; accountId?: string }) {
+type TopCutBracketParams = {
+  detail: TournamentDetail;
+  accountId?: string;
+  onWatchMatch?: (target: TournamentSpectateTarget) => void;
+};
+
+export function TopCutBracket({ detail, accountId, onWatchMatch }: TopCutBracketParams) {
   const { t } = useTranslation();
   const phase = topCutPhase(detail.phases);
 
@@ -46,7 +54,12 @@ export function TopCutBracket({ detail, accountId }: { detail: TournamentDetail;
     <Panel className="tournaments-bracket">
       <h3>{t("tournaments.topCut.title")}</h3>
       <p className="tournaments-note">{t("tournaments.topCut.size", { size: bracketSize(phase) })}</p>
-      <TournamentBracket phase={phase} participants={detail.participants} accountId={accountId} />
+      <TournamentBracket
+        phase={phase}
+        participants={detail.participants}
+        accountId={accountId}
+        spectating={getTournamentBracketSpectating({ detail, onWatchMatch })}
+      />
     </Panel>
   );
 }

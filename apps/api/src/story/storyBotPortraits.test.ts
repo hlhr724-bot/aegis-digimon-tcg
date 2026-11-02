@@ -7,7 +7,7 @@ import { getStoryBotPersona } from "#api/story/getStoryBotPersona";
 import { getStoryScenario } from "#api/story/getStoryScenario";
 
 const publicDirectory = fileURLToPath(new URL("../../../web/public", import.meta.url));
-const digimonWithoutArtwork = new Set(["Argomon", "GreatGrizzlymon", "MockingBirdmon"]);
+const digimonWithoutArtwork = new Set(["Argomon", "Gokuumon", "GreatGrizzlymon", "MockingBirdmon"]);
 
 it("ships a portrait for every story opponent persona", () => {
   const missing = new Set<string>();

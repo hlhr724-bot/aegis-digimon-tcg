@@ -7,6 +7,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete 1 of your opponent's unsuspended Digimon.",
           kind: "Delete",
           target: {
             filter: {
@@ -18,6 +19,8 @@ export const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "If you do, you may play 1 purple level 3 Digimon card from your trash without paying its memory cost. Any [On Play] effects on Digimon played with this effect don't activate.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

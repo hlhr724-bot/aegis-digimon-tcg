@@ -6,7 +6,7 @@ export const digimonAdventure1999StoryBattles: readonly StoryCatalogBattle[] = [
     campaignId: "digimon-adventure-1999",
     chapter: "File Island · 2",
     title: "Greymon vs. Shellmon",
-    playerDeckRefs: ["WMD06"],
+    playerDeckRefs: ["WMD92"],
     opponentDeckRef: "WMD08",
     sourceUrl: "https://wikimon.net/List_of_Digimon_Adventure_episodes",
   },

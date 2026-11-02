@@ -31,7 +31,8 @@ import type { ActionScope } from "./interpreter/dispatch.js";
 import { runAction } from "./interpreter/dispatch.js";
 import { canPayCost } from "./interpreter/costs.js";
 import { countMatching, scaleFactor } from "./interpreter/scaling.js";
-import { getEffectModule, registerCard, unregisterCard } from "./registry.js";
+import { getEffectModule, registerCard } from "./registry.js";
+import { unregisterIrCard } from "#api/engine/effects/interpreter/registration/unregisterIrCard";
 import "../../cards/BT16/BT16-048.js";
 import bt17065 from "../../cards/BT17/BT17-065.js";
 // The "Digimon this effect played" cards, whose real IR the dispatch tests at the bottom drive.
@@ -312,7 +313,7 @@ describe("registerIrCard", () => {
 
     expect(second).not.toBe(first);
     expect(getEffectModule(cardId)).toBe(second);
-    unregisterCard(cardId);
+    unregisterIrCard(cardId);
   });
 
   it("does not overwrite a handwritten module", () => {
@@ -323,7 +324,7 @@ describe("registerIrCard", () => {
     expect(registerIrCard(cardId, { coverage: "full", residual: [], effects: [] })).toBe(handwritten);
     expect(registerIrCard(cardId, { coverage: "full", residual: [], effects: [] })).toBe(handwritten);
     expect(getEffectModule(cardId)).toBe(handwritten);
-    unregisterCard(cardId);
+    unregisterIrCard(cardId);
   });
 
   it("uses the registered runtime card when another card activates its effect", async () => {
@@ -369,7 +370,7 @@ describe("registerIrCard", () => {
       verb: "gainMemoryForSeat",
       args: [0, 7, { isTamerEffect: false }],
     });
-    unregisterCard(foreignCardId);
+    unregisterIrCard(foreignCardId);
   });
 
   it("uses the registered runtime card when reactivating its own effect", async () => {
@@ -390,7 +391,7 @@ describe("registerIrCard", () => {
     await module.effectsForTiming(EffectTiming.OnUseAttack, source)[0]!.resolve(ctx);
 
     expect(recorder.calls).toContainEqual({ verb: "draw", args: [0, 2] });
-    unregisterCard(cardId);
+    unregisterIrCard(cardId);
   });
 
   it("preserves a copied effect key for nested action identities", async () => {

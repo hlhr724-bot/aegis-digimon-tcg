@@ -26,6 +26,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete 1 of your opponent's Digimon with the highest level.",
           kind: "Delete",
           target: {
             filter: {
@@ -42,6 +43,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "Return 1 purple Digimon card or Tamer card from your trash to your hand.",
           kind: "Return",
           target: {
             filter: {

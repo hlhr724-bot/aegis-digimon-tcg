@@ -90,6 +90,7 @@ function attackActionOptions(action: AttackAction): ForceAttackOptions {
     vortex: action.vortex,
     attackTargetScope: getAttackActionTargetScope(action),
     attackMechanic: action.attackMechanic,
+    deleteAtEndOfAttack: action.deleteAtEndOfAttack,
   };
 }
 

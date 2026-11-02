@@ -1,4 +1,6 @@
 import { providerApi } from "@/deckProviders/providerApi";
+import { releaseDateForCard } from "@aegis/shared/cards/cardPool";
+import { allCards } from "@aegis/shared/cards/registry";
 import { deckLegality } from "@aegis/shared/decks/legality";
 import type { CommunityRandomResult } from "@aegis/shared/decks/CommunityRandomResult";
 // @vitest-environment jsdom
@@ -27,7 +29,13 @@ const lookupPrivateRoom = vi.hoisted(() =>
 const liveMatches = vi.hoisted(() =>
   vi.fn<(limit: number) => Promise<{ matches: never[]; total: number }>>(async () => ({ matches: [], total: 0 })),
 );
-vi.mock("../net/client", () => ({ lookupPrivateRoom, liveMatches }));
+const matchQueueCounts = vi.hoisted(() =>
+  vi.fn<() => Promise<import("@aegis/shared/matchmaking/MatchQueueCounts").MatchQueueCounts>>(async () => ({
+    buckets: [],
+    waiting: [],
+  })),
+);
+vi.mock("../net/client", () => ({ lookupPrivateRoom, liveMatches, matchQueueCounts }));
 
 // Existing configuration scenarios explicitly enter the advanced panel.
 function renderConfiguredLobby(...args: Parameters<typeof render>) {
@@ -39,8 +47,37 @@ function renderConfiguredLobby(...args: Parameters<typeof render>) {
 
 // EX13 is the beta fixture, so the clock stays before its 2026-10-02 release.
 beforeEach(() => {
+  const providerDetail = {
+    id: 12,
+    name: "Tournament winner",
+    colors: ["Blue"],
+    player: "Tamer",
+    date: null,
+    event: null,
+    placement: 1,
+    wins: null,
+    losses: null,
+    ties: null,
+    sourceUrl: "https://digimon.digilab.cards/decklist/12",
+    format: "BT1",
+    mainDeck: DECKS[0]!.mainDeck,
+    eggDeck: DECKS[0]!.eggDeck,
+    legality: deckLegality(DECKS[0]!),
+    externalUrl: null,
+  };
   vi.spyOn(providerApi, "meta").mockResolvedValue({
-    data: [{ id: 1, name: "Tournament winner", slug: "winner", colors: ["Blue"], share: 12, winRate: 54, pilots: 10 }],
+    data: [
+      {
+        id: 1,
+        name: "Tournament winner",
+        slug: "winner",
+        colors: ["Blue"],
+        share: 12,
+        winRate: 54,
+        pilots: 10,
+        playableDeck: providerDetail,
+      },
+    ],
     formats: [
       { id: "BT1", name: "BT1" },
       { id: "EX2", name: "EX2" },
@@ -69,27 +106,11 @@ beforeEach(() => {
     page: 1,
     pages: 1,
   }));
-  vi.spyOn(providerApi, "detail").mockResolvedValue({
-    id: 12,
-    name: "Tournament winner",
-    colors: ["Blue"],
-    player: "Tamer",
-    date: null,
-    event: null,
-    placement: 1,
-    wins: null,
-    losses: null,
-    ties: null,
-    sourceUrl: "https://digimon.digilab.cards/decklist/12",
-    format: "BT1",
-    mainDeck: DECKS[0]!.mainDeck,
-    eggDeck: DECKS[0]!.eggDeck,
-    legality: deckLegality(DECKS[0]!),
-    externalUrl: null,
-  });
+  vi.spyOn(providerApi, "detail").mockResolvedValue(providerDetail);
   randomCommunityDeck.mockResolvedValue({ deck: null, eligibleCount: 0 });
   lookupPrivateRoom.mockResolvedValue({ roomId: "private-room", unlimited: false });
   liveMatches.mockResolvedValue({ matches: [], total: 0 });
+  matchQueueCounts.mockResolvedValue({ buckets: [], waiting: [] });
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-09-15T12:00:00.000Z"));
 });
@@ -424,7 +445,10 @@ describe("famous deck selection", () => {
   });
 
   it("hides the beta queue option when no set is in preview", () => {
-    vi.setSystemTime(new Date("2026-12-12T12:00:00.000Z"));
+    const latestRelease = allCards()
+      .map((card) => releaseDateForCard(card) ?? "")
+      .reduce((latest, date) => (date > latest ? date : latest), "");
+    vi.setSystemTime(new Date(`${latestRelease}T12:00:00.000Z`).getTime() + 86_400_000);
     renderConfiguredLobby(
       <I18nProvider>
         <Lobby
@@ -1260,27 +1284,6 @@ describe("live spectating entry points", () => {
     fireEvent.click(watch);
     expect(onNav).toHaveBeenCalledWith("watch");
   });
-
-  it("keeps the spectator listing switch beside the match setup title, disabled for guests", () => {
-    renderLobby();
-    const setup = screen.getByRole("region", { name: "Match setup" });
-    const header = setup.querySelector(".lobby-setup__header")!;
-    const listing = within(header as HTMLElement).getByRole("switch", { name: "List my matches for spectators" });
-    expect((listing as HTMLButtonElement).disabled).toBe(true);
-  });
-
-  it("explains how to unlock the spectator listing switch from the keyboard and on tap", async () => {
-    renderLobby();
-    const locked = document.querySelector(".live-match-listing-setting__locked") as HTMLElement;
-    fireEvent.focus(locked);
-    expect((await screen.findByRole("tooltip")).textContent).toContain(
-      "Only signed-in players can list their matches.",
-    );
-    fireEvent.click(locked);
-    await waitFor(() => expect(screen.queryByRole("tooltip")).toBeNull());
-    fireEvent.click(locked);
-    expect(await screen.findByRole("tooltip")).toBeTruthy();
-  });
 });
 
 it("remembers difficulty and style and sends them when starting practice", () => {
@@ -1351,5 +1354,63 @@ describe("quick match launch", () => {
     expect(screen.getAllByRole("button", { name: "Enter queue" })).toHaveLength(1);
     fireEvent.click(launch);
     expect(onStart).toHaveBeenCalledWith("casual");
+  });
+  it("shows how many players search with the selected queue settings and updates when they change", async () => {
+    matchQueueCounts.mockResolvedValue({
+      buckets: [
+        { queue: "casual", format: "standard", matchTimer: true, bestOf: 1, allowRollback: false, searching: 2 },
+        { queue: "casual", format: "standard", matchTimer: false, bestOf: 1, allowRollback: false, searching: 1 },
+      ],
+      waiting: [],
+    });
+    renderConfiguredLobby(
+      <I18nProvider>
+        <Lobby
+          player={{ name: "Tamer", color: "Blue", shards: 0 }}
+          decks={[DECKS[0]!]}
+          activeDeckId={DECKS[0]!.id}
+          bestOf={1}
+          onSelectDeck={() => undefined}
+          onCopyDeck={() => undefined}
+          onNav={() => undefined}
+          onStart={() => undefined}
+        />
+      </I18nProvider>,
+    );
+    const setup = screen.getByRole("region", { name: "Match setup" });
+    expect(await within(setup).findByText("Searching now: 2 with these settings, 3 in all queues")).toBeTruthy();
+    fireEvent.click(screen.getByRole("switch", { name: "Match timer" }));
+    expect(within(setup).getByText("Searching now: 1 with these settings, 3 in all queues")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
+    expect(within(setup).queryByText(/Searching now/)).toBeNull();
+  });
+
+  it("enters the queue with the settings of a waiting-room table challenged from the rooms tab", async () => {
+    const onStart = vi.fn<Parameters<typeof Lobby>[0]["onStart"]>();
+    const onBestOfChange = vi.fn<(bestOf: 1 | 3) => void>();
+    const onQueueChallengeHandled = vi.fn<() => void>();
+    render(
+      <I18nProvider>
+        <Lobby
+          player={{ name: "Tamer", color: "Blue", shards: 0 }}
+          decks={[DECKS[0]!]}
+          activeDeckId={DECKS[0]!.id}
+          bestOf={1}
+          onBestOfChange={onBestOfChange}
+          onSelectDeck={() => undefined}
+          onCopyDeck={() => undefined}
+          onNav={() => undefined}
+          onStart={onStart}
+          queueChallenge={{ queue: "casual", format: "standard", matchTimer: false, bestOf: 3, allowRollback: false }}
+          onQueueChallengeHandled={onQueueChallengeHandled}
+        />
+      </I18nProvider>,
+    );
+
+    await waitFor(() => expect(onStart).toHaveBeenCalledTimes(1));
+    expect(onStart.mock.calls[0]![0]).toBe("casual");
+    expect(onBestOfChange).toHaveBeenCalledWith(3);
+    expect(onQueueChallengeHandled).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("region", { name: "Waiting room" })).toBeNull();
   });
 });

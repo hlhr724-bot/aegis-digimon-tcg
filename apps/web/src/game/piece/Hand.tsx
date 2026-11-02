@@ -26,6 +26,8 @@ import { HandHoverFace } from "./HandHoverFace";
 import { useHandArrivalArt } from "./useHandArrivalArt";
 import type { EffectActivation } from "../effectSource";
 import { motionPreference } from "@/design/motion/motionPreference";
+import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
+import { getEffectSourceMarkLabelKey } from "@/game/effectMarks/getEffectSourceMarkLabelKey";
 
 export function Hand({
   cards,
@@ -37,6 +39,7 @@ export function Hand({
   shakeInstanceId,
   effectSourceInstanceId,
   effectSource,
+  effectSourceMarks,
   onHoverChange,
   cardWidth = HAND_CARD_WIDTH,
   minExposure = HAND_MIN_EXPOSURE,
@@ -56,6 +59,7 @@ export function Hand({
   /** An Option activating out of the hand: it rises out of the fan with an orange outline. */
   effectSourceInstanceId?: string;
   effectSource?: EffectActivation;
+  effectSourceMarks?: ReadonlyMap<string, EffectSourceMark>;
   /** Which card the pointer is over, so the memory gauge can predict its play. */
   onHoverChange?: (instanceId: string | undefined) => void;
   cardWidth?: number;
@@ -134,6 +138,8 @@ export function Hand({
           const dragging = draggingInstanceId === entry.instanceId;
           const hov = hoveredInstanceId === entry.instanceId;
           const hoverKey = `${entry.instanceId}/${entry.artId ?? ""}`;
+          const effectMark = effectSourceMarks?.get(entry.instanceId);
+          const effectMarkLabel = effectMark ? t(getEffectSourceMarkLabelKey(effectMark)) : undefined;
           const showHover =
             hov &&
             !touchLayout &&
@@ -268,6 +274,9 @@ export function Hand({
                   <Icons.Search size={14} />
                 </button>
               ) : null}
+              {effectMark ? (
+                <span className="game-hand-card__effect-mark" data-effect-mark={effectMark} aria-hidden="true" />
+              ) : null}
               {picked ? (
                 <span
                   className="game-hand-card__pick-badge"
@@ -285,6 +294,7 @@ export function Hand({
                 aria-keyshortcuts={!selection && onMoveCard ? "Alt+ArrowLeft Alt+ArrowRight" : undefined}
                 data-hand-card-id={entry.cardId}
                 data-hand-hovered={hov ? "true" : undefined}
+                data-effect-mark={effectMark}
                 data-hand-hover-covered={showHover && coveredHoverKey === hoverKey ? "true" : undefined}
                 data-effect-covered={
                   !reducedMotion && sourceEntry === entry && coveredSourceKey === effectSource?.key ? "true" : undefined
@@ -297,6 +307,7 @@ export function Hand({
                     card: getCardName(entry.cardId),
                   }) +
                   (copyLabels.has(entry.instanceId) ? `, ${copyLabels.get(entry.instanceId)}` : "") +
+                  (effectMarkLabel ? `, ${effectMarkLabel}` : "") +
                   (picked ? `${t("overlay.selected")}, ${t("game.pickPosition", { position: pickPosition + 1 })}` : "")
                 }
                 aria-disabled={selection && !pickable ? true : undefined}

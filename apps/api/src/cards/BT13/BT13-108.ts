@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 1 of your Digimon gains \"[Opponent's Turn] When this Digimon becomes suspended, delete all of your opponent's Digimon with a play cost less than or equal to this Digimon's\" and \"[Opponent's Turn] This Digimon isn't affected by your opponent's Option cards.\"",
           kind: "GrantAuraToOpponents",
           target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
           effectText:
@@ -14,6 +16,8 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 1 of your Digimon gains \"[Opponent's Turn] When this Digimon becomes suspended, delete all of your opponent's Digimon with a play cost less than or equal to this Digimon's\" and \"[Opponent's Turn] This Digimon isn't affected by your opponent's Option cards.\"",
           kind: "GrantAuraToOpponents",
           target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1, sameTarget: true },
           effectText: "[Opponent's Turn] This Digimon isn't affected by your opponent's Option cards.",

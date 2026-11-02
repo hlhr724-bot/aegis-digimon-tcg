@@ -945,8 +945,8 @@
         },
         "decisionId": "dec-18"
       },
-      "engineEvents": 123,
-      "stateVersion": 81
+      "engineEvents": 122,
+      "stateVersion": 80
     },
     {
       "ok": true,
@@ -960,8 +960,8 @@
         },
         "decisionId": "dec-19"
       },
-      "engineEvents": 128,
-      "stateVersion": 86
+      "engineEvents": 126,
+      "stateVersion": 84
     },
     {
       "ok": true,
@@ -975,8 +975,8 @@
         },
         "decisionId": "dec-20"
       },
-      "engineEvents": 132,
-      "stateVersion": 88
+      "engineEvents": 130,
+      "stateVersion": 86
     },
     {
       "ok": true,
@@ -990,8 +990,8 @@
         },
         "decisionId": "dec-21"
       },
-      "engineEvents": 133,
-      "stateVersion": 89
+      "engineEvents": 131,
+      "stateVersion": 87
     },
     {
       "ok": true,
@@ -1005,8 +1005,8 @@
         },
         "decisionId": "dec-22"
       },
-      "engineEvents": 140,
-      "stateVersion": 92
+      "engineEvents": 138,
+      "stateVersion": 90
     },
     {
       "ok": true,
@@ -1020,8 +1020,8 @@
         },
         "decisionId": "dec-23"
       },
-      "engineEvents": 140,
-      "stateVersion": 92
+      "engineEvents": 138,
+      "stateVersion": 90
     },
     {
       "ok": true,
@@ -1035,8 +1035,8 @@
         },
         "decisionId": "dec-24"
       },
-      "engineEvents": 141,
-      "stateVersion": 93
+      "engineEvents": 139,
+      "stateVersion": 91
     },
     {
       "ok": true,
@@ -1050,8 +1050,8 @@
         "vortex": false,
         "attackerPermanentId": "perm-4"
       },
-      "engineEvents": 144,
-      "stateVersion": 96
+      "engineEvents": 142,
+      "stateVersion": 94
     },
     {
       "ok": true,
@@ -1067,8 +1067,8 @@
         },
         "decisionId": "dec-25"
       },
-      "engineEvents": 145,
-      "stateVersion": 97
+      "engineEvents": 143,
+      "stateVersion": 95
     },
     {
       "ok": true,
@@ -1082,8 +1082,8 @@
         },
         "decisionId": "dec-26"
       },
-      "engineEvents": 159,
-      "stateVersion": 109
+      "engineEvents": 157,
+      "stateVersion": 107
     },
     {
       "ok": true,
@@ -1097,8 +1097,8 @@
         },
         "decisionId": "dec-27"
       },
-      "engineEvents": 159,
-      "stateVersion": 109
+      "engineEvents": 157,
+      "stateVersion": 107
     },
     {
       "ok": true,
@@ -1109,8 +1109,8 @@
         "instanceId": "s0-4f1fc9964b076805494d5fce03ef276f6467c5c003e6037929089bf81281cc60",
         "permanentId": "perm-4"
       },
-      "engineEvents": 163,
-      "stateVersion": 112
+      "engineEvents": 161,
+      "stateVersion": 110
     },
     {
       "ok": true,
@@ -1124,8 +1124,8 @@
         },
         "decisionId": "dec-28"
       },
-      "engineEvents": 169,
-      "stateVersion": 115
+      "engineEvents": 167,
+      "stateVersion": 113
     },
     {
       "ok": true,
@@ -1139,8 +1139,8 @@
         },
         "decisionId": "dec-29"
       },
-      "engineEvents": 169,
-      "stateVersion": 115
+      "engineEvents": 167,
+      "stateVersion": 113
     },
     {
       "ok": true,
@@ -1154,8 +1154,8 @@
         },
         "decisionId": "dec-30"
       },
-      "engineEvents": 171,
-      "stateVersion": 117
+      "engineEvents": 168,
+      "stateVersion": 114
     },
     {
       "ok": true,
@@ -1164,8 +1164,8 @@
       "intent": {
         "type": "hatchEgg"
       },
-      "engineEvents": 179,
-      "stateVersion": 125
+      "engineEvents": 175,
+      "stateVersion": 121
     },
     {
       "ok": true,
@@ -1176,8 +1176,8 @@
         "instanceId": "s1-9886bfb2720fbef223b35ec1d70d9297005f25f2458e3042931ff3c49c410f1d",
         "permanentId": "perm-9"
       },
-      "engineEvents": 182,
-      "stateVersion": 127
+      "engineEvents": 178,
+      "stateVersion": 123
     },
     {
       "ok": true,
@@ -1194,8 +1194,8 @@
         },
         "instanceId": "s1-36d5e7e62e3eb835a08c81a7b4a204c9b2e099de1b252aa6ae5d4f199fdcf302"
       },
-      "engineEvents": 185,
-      "stateVersion": 129
+      "engineEvents": 181,
+      "stateVersion": 125
     },
     {
       "ok": true,
@@ -1209,8 +1209,8 @@
         },
         "decisionId": "dec-31"
       },
-      "engineEvents": 191,
-      "stateVersion": 132
+      "engineEvents": 187,
+      "stateVersion": 128
     },
     {
       "ok": true,
@@ -1224,8 +1224,8 @@
         },
         "decisionId": "dec-32"
       },
-      "engineEvents": 192,
-      "stateVersion": 133
+      "engineEvents": 188,
+      "stateVersion": 129
     },
     {
       "ok": true,
@@ -1239,8 +1239,8 @@
         },
         "decisionId": "dec-33"
       },
-      "engineEvents": 197,
-      "stateVersion": 136
+      "engineEvents": 193,
+      "stateVersion": 132
     },
     {
       "ok": true,
@@ -1254,8 +1254,8 @@
         },
         "decisionId": "dec-34"
       },
-      "engineEvents": 198,
-      "stateVersion": 137
+      "engineEvents": 194,
+      "stateVersion": 133
     },
     {
       "ok": true,
@@ -1264,8 +1264,8 @@
       "intent": {
         "type": "hatchEgg"
       },
-      "engineEvents": 208,
-      "stateVersion": 146
+      "engineEvents": 204,
+      "stateVersion": 142
     },
     {
       "ok": true,
@@ -1275,8 +1275,8 @@
         "type": "playCard",
         "instanceId": "s0-889fa30cf53dadb0cb8f45494fbd32acf12c9ecf4691b08221295f2fc9aab31c"
       },
-      "engineEvents": 211,
-      "stateVersion": 148
+      "engineEvents": 207,
+      "stateVersion": 144
     },
     {
       "ok": true,
@@ -1286,8 +1286,8 @@
         "type": "playCard",
         "instanceId": "s0-226924630a1b9485f7b34a45bfb39aaed780bf43bae28e9ac7697921cdbf9dc3"
       },
-      "engineEvents": 215,
-      "stateVersion": 149
+      "engineEvents": 211,
+      "stateVersion": 145
     },
     {
       "ok": true,
@@ -1301,8 +1301,8 @@
         },
         "decisionId": "dec-35"
       },
-      "engineEvents": 219,
-      "stateVersion": 150
+      "engineEvents": 215,
+      "stateVersion": 146
     },
     {
       "ok": true,
@@ -1316,8 +1316,8 @@
         },
         "decisionId": "dec-36"
       },
-      "engineEvents": 220,
-      "stateVersion": 151
+      "engineEvents": 216,
+      "stateVersion": 147
     },
     {
       "ok": true,
@@ -1331,8 +1331,8 @@
         },
         "decisionId": "dec-37"
       },
-      "engineEvents": 221,
-      "stateVersion": 152
+      "engineEvents": 217,
+      "stateVersion": 148
     },
     {
       "ok": true,
@@ -1346,8 +1346,8 @@
         },
         "decisionId": "dec-38"
       },
-      "engineEvents": 221,
-      "stateVersion": 152
+      "engineEvents": 217,
+      "stateVersion": 148
     },
     {
       "ok": true,
@@ -1361,8 +1361,8 @@
         },
         "decisionId": "dec-39"
       },
-      "engineEvents": 226,
-      "stateVersion": 156
+      "engineEvents": 221,
+      "stateVersion": 151
     },
     {
       "ok": true,
@@ -1378,8 +1378,8 @@
         },
         "decisionId": "dec-40"
       },
-      "engineEvents": 229,
-      "stateVersion": 159
+      "engineEvents": 223,
+      "stateVersion": 153
     },
     {
       "ok": true,
@@ -1397,8 +1397,8 @@
         },
         "decisionId": "dec-41"
       },
-      "engineEvents": 236,
-      "stateVersion": 166
+      "engineEvents": 230,
+      "stateVersion": 160
     },
     {
       "ok": true,
@@ -1412,8 +1412,8 @@
         },
         "decisionId": "dec-42"
       },
-      "engineEvents": 237,
-      "stateVersion": 167
+      "engineEvents": 231,
+      "stateVersion": 161
     },
     {
       "ok": true,
@@ -1427,8 +1427,8 @@
         },
         "decisionId": "dec-43"
       },
-      "engineEvents": 237,
-      "stateVersion": 167
+      "engineEvents": 231,
+      "stateVersion": 161
     },
     {
       "ok": true,
@@ -1444,8 +1444,8 @@
         },
         "decisionId": "dec-44"
       },
-      "engineEvents": 242,
-      "stateVersion": 170
+      "engineEvents": 236,
+      "stateVersion": 164
     },
     {
       "ok": true,
@@ -1459,8 +1459,8 @@
         },
         "decisionId": "dec-45"
       },
-      "engineEvents": 244,
-      "stateVersion": 172
+      "engineEvents": 238,
+      "stateVersion": 166
     },
     {
       "ok": true,
@@ -1474,8 +1474,8 @@
         },
         "decisionId": "dec-46"
       },
-      "engineEvents": 251,
-      "stateVersion": 175
+      "engineEvents": 245,
+      "stateVersion": 169
     },
     {
       "ok": true,
@@ -1489,8 +1489,8 @@
         },
         "decisionId": "dec-47"
       },
-      "engineEvents": 251,
-      "stateVersion": 175
+      "engineEvents": 245,
+      "stateVersion": 169
     },
     {
       "ok": true,
@@ -1504,8 +1504,8 @@
         },
         "decisionId": "dec-48"
       },
-      "engineEvents": 252,
-      "stateVersion": 176
+      "engineEvents": 246,
+      "stateVersion": 170
     },
     {
       "ok": true,
@@ -1519,8 +1519,8 @@
         },
         "decisionId": "dec-49"
       },
-      "engineEvents": 257,
-      "stateVersion": 181
+      "engineEvents": 251,
+      "stateVersion": 175
     }
   ],
   "matchId": "ef5bf859-69d3-4c17-ace0-d77f43c2dc6a",

@@ -1,14 +1,6 @@
 /* The feedback modal. Layout only — colors, spacing and radii come from the design tokens the rest
    of the client uses. */
 
-.aegis-mobile-bar__actions {
-  display: flex;
-  /* Sit with the player chip on the right rather than floating mid-bar. */
-  margin-left: auto;
-  margin-right: var(--ds-space-2);
-  align-items: center;
-}
-
 .bug-report {
   display: flex;
   flex-direction: column;

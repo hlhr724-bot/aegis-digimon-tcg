@@ -86,6 +86,8 @@ describe("BT1-100 Grace Cross Freezer", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart:
+              "[Main] Until the end of your opponent's next turn, their Digimon with no digivolution cards can't attack.",
             kind: "Restrict",
             target: { filter: { controller: "opponent", kind: ["Digimon"], digivolutionCards: "none" }, count: "all" },
             whileMatchesTargetFilter: true,

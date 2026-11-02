@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Place 1 of your opponent's Digimon face down at the top or bottom of your opponent's security stack.",
           kind: "SelectBind",
           target: {
             filter: { controller: "opponent", kind: ["Digimon"] },
@@ -15,6 +17,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] Place 1 of your opponent's Digimon face down at the top or bottom of your opponent's security stack.",
           kind: "SecurityManipulation",
           op: "addTopOrBottom",
           controller: "opponent",
@@ -26,6 +30,7 @@ const compiled: CompiledCard = {
           faceDown: true,
         },
         {
+          effectTextPart: "If you do, trash the top card of your opponent's security stack.",
           kind: "SecurityManipulation",
           op: "trashTop",
           controller: "opponent",

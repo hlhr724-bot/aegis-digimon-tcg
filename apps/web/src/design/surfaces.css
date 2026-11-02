@@ -228,7 +228,7 @@
   background: var(--ds-paper);
   border: 1px solid var(--ds-line);
   border-radius: var(--ds-radius-lg);
-  box-shadow: var(--ds-shadow-raise);
+  box-shadow: var(--ds-shadow-card);
 }
 
 .aegis-page-sheet--padded {

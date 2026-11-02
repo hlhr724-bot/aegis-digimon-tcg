@@ -40,14 +40,14 @@ scenario("digivolve-normal", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 14: seat 0 (protagonist, RED_DECK) goes first and its dealt opening hand
+    // Seed 56: seat 0 (protagonist, RED_DECK) goes first and its dealt opening hand
     // includes BT1-010 "Agumon" (Lv.3 Red) and BT1-015 "Greymon" (Lv.4 Red), whose
     // printed evoCost (Red Lv.3, memory 2) Agumon satisfies — found by exhaustively
     // searching seeds, mirroring mulligan.scenario.test.tsx's seed-4 search.
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: RED_DECK.mainDeck, eggDeck: RED_DECK.eggDeck },
-      seed: 14,
+      seed: 56,
     };
 
     let joinCallCount = 0;

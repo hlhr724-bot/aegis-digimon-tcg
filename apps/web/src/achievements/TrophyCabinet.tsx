@@ -89,7 +89,7 @@ export function TrophyCabinet({ accountId }: Props) {
 }
 
 function getTrophyImage(tier: TrophyTier, size: 128 | 256): string {
-  return `/achievements/trophy-${tier}-${size}.webp`;
+  return `/trophies/trophy-${tier}-${size}.webp`;
 }
 
 function getSourceKey(trophy: Trophy): string {

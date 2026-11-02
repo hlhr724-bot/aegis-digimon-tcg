@@ -1671,6 +1671,7 @@ export class CombatController {
     // Retaliation belongs to the subsequent On Deletion window, not this battle's
     // simultaneous deletion set. Its target is later deleted by an effect.
     const retaliationTargetsByInstanceId: Record<string, string> = {};
+    const retaliationCountsByInstanceId: Record<string, number> = {};
     for (const [holder, opponent] of [
       [attacker, defender],
       [defender, attacker],
@@ -1682,6 +1683,12 @@ export class CombatController {
         this.hasKeyword(holder.permanentId, "Retaliation")
       ) {
         retaliationTargetsByInstanceId[holder.topCard.instanceId] = opponent.permanentId;
+        retaliationCountsByInstanceId[holder.topCard.instanceId] = Math.max(
+          1,
+          this.hooks.continuous
+            ?.grantedKeywords?.(holder.permanentId)
+            .filter((grant) => grant.keyword === "Retaliation").length ?? 0,
+        );
       }
     }
 
@@ -1934,6 +1941,7 @@ export class CombatController {
         deletedEffectiveColorsByInstanceId,
         battleOpponentPermanentIdByInstanceId,
         retaliationTargetsByInstanceId,
+        retaliationCountsByInstanceId,
         ...(deletingPermanentId === undefined ? {} : { deletingPermanentId }),
         removalCause: "byBattle" as const,
       };

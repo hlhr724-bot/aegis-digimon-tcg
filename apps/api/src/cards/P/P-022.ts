@@ -32,6 +32,9 @@ const compiled: CompiledCard = {
       },
       actions: [
         {
+          effectTextPart:
+            "[Main] If you have [Davis Motomiya] and [Ken Ichijoji] in play, you may place 1 [ExVeemon] and 1 [Stingmon] from your hand at the bottom of your deck in any order to play 1 [Paildramon] from your hand without paying its memory cost.",
+          payCostBeforeOptional: false,
           kind: "PlayWithoutCost",
           target: {
             filter: {

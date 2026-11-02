@@ -13,6 +13,8 @@ import { CardArt } from "../CardArt";
 import { cardEffectClausesForTiming } from "../effectText";
 import { EffectText } from "../../EffectText";
 import { CardZoomOverlay } from "./CardZoomOverlay";
+import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
+import { getEffectSourceMarkLabelKey } from "@/game/effectMarks/getEffectSourceMarkLabelKey";
 
 /**
  * Modal listing every card in a player's trash (public information). Cards are
@@ -25,6 +27,7 @@ export function TrashViewerOverlay({
   artIds,
   instanceIds,
   effects,
+  effectSourceMarks,
   title,
   sheet,
   countLabel,
@@ -38,6 +41,7 @@ export function TrashViewerOverlay({
   instanceIds?: string[];
   /** Server-projected `[Trash] [Main]` activations per card, aligned with `cardIds`. */
   effects?: readonly (readonly ActivatableEntry[])[];
+  effectSourceMarks?: ReadonlyMap<string, EffectSourceMark>;
   preserveOrder?: boolean;
   title: string;
   /** Render as a bottom sheet with one scrollable row (touch layouts). */
@@ -72,6 +76,11 @@ export function TrashViewerOverlay({
   const ordered = entries.map((entry) => entry.cardId);
   const orderedArts = entries.map((entry) => artIds?.[entry.index]);
   const orderedEffects = entries.map((entry) => effects?.[entry.index] ?? []);
+  const orderedMarkLabels = entries.map((entry) => {
+    const instanceId = instanceIds?.[entry.index];
+    const mark = instanceId === undefined ? undefined : effectSourceMarks?.get(instanceId);
+    return mark ? t(getEffectSourceMarkLabelKey(mark)) : undefined;
+  });
   const totals = new Map<string, number>();
   for (const cardId of cardIds) totals.set(cardId, (totals.get(cardId) ?? 0) + 1);
   const copyLabels = entries.map((entry) => {
@@ -235,6 +244,11 @@ export function TrashViewerOverlay({
                       <span className="trash-viewer__label">{copyLabels[i]}</span>
                     ) : null}
                     {isActivatable(i) ? <span className="trash-viewer__label">{t("overlay.trashEffect")}</span> : null}
+                    {orderedMarkLabels[i] ? (
+                      <span className="trash-viewer__label" data-effect-mark>
+                        {orderedMarkLabels[i]}
+                      </span>
+                    ) : null}
                     {preserveOrder && cardId
                       ? securityCardEffects(cardId).map((effect) => (
                           <span className="security-viewer__effect" key={effect.text}>
@@ -356,7 +370,9 @@ export function TrashViewerOverlay({
                         aria-haspopup={activatable ? "dialog" : undefined}
                         onClick={() => openCard(i)}
                         title={cardId ? getCardName(cardId) : t("game.hiddenCard")}
-                        aria-label={cardId ? getCardName(cardId) : t("game.hiddenCard")}
+                        aria-label={[cardId ? getCardName(cardId) : t("game.hiddenCard"), orderedMarkLabels[i]]
+                          .filter(Boolean)
+                          .join(", ")}
                         onFocus={() => setActiveKey(entries[i]?.key)}
                         className="trash-viewer__card"
                         data-selected={sel || undefined}
@@ -383,6 +399,11 @@ export function TrashViewerOverlay({
                           : null}
                         {isActivatable(i) ? (
                           <span className="trash-viewer__label">{t("overlay.trashEffect")}</span>
+                        ) : null}
+                        {orderedMarkLabels[i] ? (
+                          <span className="trash-viewer__label" data-effect-mark>
+                            {orderedMarkLabels[i]}
+                          </span>
                         ) : null}
                       </button>
                     </div>

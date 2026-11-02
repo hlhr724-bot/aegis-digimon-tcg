@@ -22,6 +22,7 @@ import { findPackRarity } from "@/packOpening/findPackRarity";
 import { listBoosterSets } from "@/packOpening/listBoosterSets";
 import { PackOpeningPhase } from "@/packOpening/PackOpeningPhase";
 import { createLazyComponent } from "@/net/createLazyComponent";
+import { useTranslation } from "@/i18n/useTranslation";
 import "@/packOpening/packOpening.css";
 
 const PackOpeningScene = createLazyComponent({
@@ -44,7 +45,12 @@ function isControl(target: EventTarget): boolean {
   return target instanceof Element && target.closest("button, select, label, a") !== null;
 }
 
-export function PackOpening() {
+type PackOpeningParams = {
+  onBack?: () => void;
+};
+
+export function PackOpening({ onBack }: PackOpeningParams = {}) {
+  const { t } = useTranslation();
   const { progress, saveFailed, recordPacks, ensurePlannedBox, startBox, startNextBox } = useBoosterProgress();
   const opening = useRef(false);
   const fullscreen = useFullscreen();
@@ -396,6 +402,11 @@ export function PackOpening() {
           <h1>Pack opening</h1>
           <p>Pick a set. Find your next favorite card.</p>
         </div>
+        {onBack ? (
+          <Button variant="ghost" size="sm" icon={Icons.ArrowLeft} sound={false} onClick={onBack}>
+            {t("redesign.collection.booster.back")}
+          </Button>
+        ) : null}
       </div>
       <main
         ref={stage}

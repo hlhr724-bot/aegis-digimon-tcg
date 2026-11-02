@@ -5,9 +5,11 @@ const compiled: CompiledCard = {
   effects: [
     {
       trigger: "YourTurn",
+      optional: true,
       actions: [
         {
           kind: "SubTrigger",
+          optional: true,
           event: "whenOneOfYoursDigivolves",
           sourceFilter: {
             controllerDefault: "mine",
@@ -61,6 +63,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Delete your opponent's Digimon until they have as many as the number of your security cards.",
           kind: "DeleteUntilCount",
           target: {
             filter: {
@@ -72,6 +76,7 @@ const compiled: CompiledCard = {
           untilCountSource: "mineSecurityCount",
         },
         {
+          effectTextPart: "If this effect deleted, ＜Recovery +1 (Deck)＞.",
           kind: "SecurityManipulation",
           op: "addTop",
           controller: "mine",

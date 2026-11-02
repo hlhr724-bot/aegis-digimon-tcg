@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Choose 1 of your Digimon.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -18,6 +19,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "Until the end of your opponent's turn, 3 of your opponent's Digimon with as many or fewer digivolution cards as that Digimon can't attack or block.",
           kind: "Restrict",
           target: {
             filter: {

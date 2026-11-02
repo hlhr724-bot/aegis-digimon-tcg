@@ -1,3 +1,5 @@
+import type { TournamentStatus } from "@aegis/shared/tournaments/index";
+import { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
 import { getDeckStatsMatchLimit } from "@aegis/shared/decks/getDeckStatsMatchLimit";
 import { grantTournamentTrophies } from "#api/achievements/grantTournamentTrophies";
 import { isTournamentSpectatorPolicy } from "@aegis/shared/tournaments/isTournamentSpectatorPolicy";
@@ -41,6 +43,8 @@ import { Pool, type PoolClient, type PoolConfig } from "pg";
 import type { BotExperimentRecord } from "#api/bot/experiment/BotExperimentRecord";
 import { migrations } from "../db/migrations/index.js";
 import { type Queryable, runMigrations } from "../db/migrator.js";
+
+type LegacyMatchParams = { client: PoolClient; matchId: string };
 
 type MatchDeckParams = { accountId: string; matchId: string };
 
@@ -136,6 +140,7 @@ export type StoredMatchRecord = MatchRecord &
     opponentDeckOwnerAccountId?: string;
   };
 export type Tournament = {
+  roundStartMode: TournamentRoundStartMode;
   category: TournamentCategory;
   format: DeckFormat;
   passwordProtected: boolean;
@@ -145,7 +150,7 @@ export type Tournament = {
   name: string;
   description: string;
   block: string;
-  status: "registration" | "in_progress" | "finished";
+  status: Exclude<TournamentStatus, "running"> | "in_progress";
   startsAt: number;
   maxPlayers: number;
   createdBy: string;
@@ -171,6 +176,7 @@ export type TournamentProgram = {
 // best-of-one, no Top Cut, no bots, no banlist enforcement — which is also what migration 003
 // backfills legacy rows to. A caller that omits them creates exactly what it always created.
 export type CreateTournamentRecord = {
+  roundStartMode?: TournamentRoundStartMode;
   category?: TournamentCategory;
   format?: DeckFormat;
   passwordHash?: string | null;
@@ -435,9 +441,18 @@ export class AccountStore {
     tournamentId: string,
     matchId: string,
   ): Promise<string | undefined> {
+    const tournament = await this.tournament(tournamentId);
+    if (!tournament || tournament.status === "cancelled" || tournament.status === "finished") {
+      return undefined;
+    }
     const match = (await this.tournamentMatches(tournamentId)).find((item) => item.id === matchId);
     if (!match || match.status !== "pending" || ![match.player0AccountId, match.player1AccountId].includes(accountId))
       return undefined;
+    if (
+      (await this.pool.query("SELECT 1 FROM tournament_phases WHERE tournament_id=$1 LIMIT 1", [tournamentId])).rowCount
+    ) {
+      return undefined;
+    }
     return this.createRoomTicket(accountId, matchId);
   }
   async getRoomTicketAccountId(token: unknown): Promise<string | undefined> {
@@ -1272,7 +1287,7 @@ export class AccountStore {
     const input = { ...LEGACY_TOURNAMENT_PROGRAM, ...record };
     const id = record.id ?? randomUUID();
     await this.pool.query(
-      "INSERT INTO tournaments (id,name,block,status,starts_at,max_players,created_by,created_at,structure,best_of,top_cut_enabled,allow_bots,rules_snapshot,banlist_policy,banlist_cards,description,password_hash,format,category,random_bot_styles,circuit_id,auto_start,registration_closes_at,check_in_opens_at,check_in_closes_at) VALUES ($1,$2,$3,'registration',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24) ON CONFLICT DO NOTHING",
+      "INSERT INTO tournaments (id,name,block,status,starts_at,max_players,created_by,created_at,structure,best_of,top_cut_enabled,allow_bots,rules_snapshot,banlist_policy,banlist_cards,description,password_hash,format,category,random_bot_styles,circuit_id,auto_start,registration_closes_at,check_in_opens_at,check_in_closes_at,round_start_mode) VALUES ($1,$2,$3,'registration',$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25) ON CONFLICT DO NOTHING",
       [
         id,
         input.name,
@@ -1298,6 +1313,7 @@ export class AccountStore {
         input.registrationClosesAt ?? null,
         input.checkInOpensAt ?? null,
         input.checkInClosesAt ?? null,
+        input.roundStartMode ?? TournamentRoundStartMode.AUTOMATIC.value,
       ],
     );
     return (await this.tournament(id))!;
@@ -1509,7 +1525,7 @@ export class AccountStore {
     return (
       (
         await this.pool.query(
-          "UPDATE tournament_matches SET room_id=$1 WHERE id=$2 AND status='pending' AND (room_id IS NULL OR room_id=$1)",
+          "UPDATE tournament_matches SET room_id=$1 WHERE id=$2 AND status='pending' AND (room_id IS NULL OR room_id=$1) AND tournament_id NOT IN (SELECT tournament_id FROM tournament_phases) AND tournament_id IN (SELECT id FROM tournaments WHERE status NOT IN ('finished','cancelled'))",
           [roomId, matchId],
         )
       ).rowCount === 1
@@ -1522,6 +1538,16 @@ export class AccountStore {
       [matchId, roomId],
     );
   }
+  private async canRecordLegacyTournamentMatch({ client, matchId }: LegacyMatchParams): Promise<boolean> {
+    const row = (
+      await client.query<{ status: string }>(
+        "SELECT status FROM tournaments WHERE id IN (SELECT tournament_id FROM tournament_matches WHERE id=$1) AND id NOT IN (SELECT tournament_id FROM tournament_phases) FOR UPDATE",
+        [matchId],
+      )
+    ).rows[0];
+    return row !== undefined && row.status !== "cancelled" && row.status !== "finished";
+  }
+
   async recordTournamentRoomDraw(
     matchId: string,
     roomId: string,
@@ -1530,6 +1556,9 @@ export class AccountStore {
     decks?: [DeckSnapshot, DeckSnapshot],
   ): Promise<boolean> {
     return this.transaction(async (client) => {
+      if (!(await this.canRecordLegacyTournamentMatch({ client, matchId }))) {
+        return false;
+      }
       const valid =
         (
           await client.query(
@@ -1556,6 +1585,9 @@ export class AccountStore {
   ): Promise<boolean> {
     if (!winner) return false;
     return this.transaction(async (client) => {
+      if (!(await this.canRecordLegacyTournamentMatch({ client, matchId }))) {
+        return false;
+      }
       const row = (
         await client.query<{ tournament_id: string }>(
           "SELECT tournament_id FROM tournament_matches WHERE id=$1 AND room_id=$2 AND status='pending' AND ((player0_account_id=$3 AND player1_account_id=$4) OR (player0_account_id=$4 AND player1_account_id=$3)) FOR UPDATE",
@@ -1760,6 +1792,7 @@ function toTournament(row: TournamentRow): Tournament {
     registrations: Number(row.registrations),
     circuitId: row.circuit_id == null ? null : String(row.circuit_id),
     autoStart: row.auto_start === true,
+    roundStartMode: (row.round_start_mode ?? TournamentRoundStartMode.AUTOMATIC.value) as TournamentRoundStartMode,
     ...toTournamentProgram(row),
   };
 }

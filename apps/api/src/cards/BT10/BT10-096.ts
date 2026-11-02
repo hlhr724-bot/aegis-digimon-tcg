@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Choose 1 of your level 4 or higher Digimon with [Shoutmon] in its name.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -28,6 +29,7 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart: "Delete 1 of your opponent's Digimon with DP less than or equal to the chosen Digimon.",
           kind: "Delete",
           target: {
             filter: {

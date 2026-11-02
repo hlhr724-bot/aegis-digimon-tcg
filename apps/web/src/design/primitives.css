@@ -150,7 +150,7 @@
 }
 .aegis-panel[data-hover="true"]:hover {
   border-color: var(--ds-line-strong);
-  box-shadow: var(--ds-shadow-raise);
+  box-shadow: var(--ds-shadow-card);
 }
 
 /* ---- Buttons ---- */
@@ -435,7 +435,7 @@
   height: 22px;
   border-radius: 50%;
   background: var(--ds-sheet);
-  box-shadow: var(--ds-shadow-raise);
+  box-shadow: var(--ds-shadow-card);
   transition: transform var(--ds-motion-fast) var(--ds-ease-standard);
 }
 .aegis-switch[aria-checked="true"] .aegis-switch__track {
@@ -545,7 +545,7 @@
 }
 
 .aegis-panel--raised {
-  box-shadow: var(--ds-shadow-raise);
+  box-shadow: var(--ds-shadow-card);
 }
 
 .aegis-page-title {
@@ -566,9 +566,16 @@
   text-transform: uppercase;
 }
 
-/* ---- Top nav: the navy header bar ----
-   Content lines up with the 1180px page column; the bar itself spans the
-   viewport. */
+.aegis-top-nav,
+.aegis-mobile-bar,
+.aegis-bottom-nav {
+  --ds-on-ink: var(--ds-text);
+  --ds-on-ink-2: var(--ds-text-3);
+  --ds-ink-accent: var(--ds-accent);
+
+  background: color-mix(in srgb, var(--ds-sheet) 86%, transparent);
+  backdrop-filter: saturate(1.4) blur(12px);
+}
 
 .aegis-top-nav {
   position: relative;
@@ -577,11 +584,9 @@
   height: var(--ds-nav-height-wide);
   align-items: center;
   justify-content: space-between;
-  gap: var(--ds-space-4);
-  padding-inline: max(var(--ds-gutter-tablet), calc((100% - 1180px) / 2));
-  background: var(--ds-ink);
-  border-bottom: 1px solid color-mix(in srgb, var(--ds-on-ink) 6%, transparent);
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--ds-ink-accent) 10%, transparent);
+  gap: var(--ds-space-6);
+  padding-inline: max(var(--ds-gutter-desktop), calc((100% - 1360px) / 2 + var(--ds-gutter-desktop)));
+  border-bottom: 1px solid var(--ds-line);
 }
 
 .aegis-top-nav__primary,
@@ -597,50 +602,36 @@
   min-width: 0;
 }
 .aegis-top-nav__account {
-  gap: var(--ds-space-2);
-}
-.aegis-top-nav__links {
   gap: var(--ds-space-1);
 }
+.aegis-top-nav__links {
+  gap: 2px;
+}
 .aegis-mobile-bar__actions {
-  gap: var(--ds-space-2);
-  /* Sit with the player chip on the right rather than floating mid-bar. */
+  gap: 2px;
   margin-left: auto;
-  margin-right: var(--ds-space-2);
-}
-@media (width < 480px) {
-  .aegis-mobile-bar__actions {
-    gap: 0;
-    margin-right: 0;
-  }
-}
-@media (width < 400px) {
-  .aegis-mobile-bar .aegis-logo__copy {
-    display: none;
-  }
 }
 
 .aegis-sign-in-button {
   display: flex;
-  min-height: var(--ds-touch-target);
+  min-height: 36px;
   align-items: center;
   gap: var(--ds-space-2);
-  padding: 0 var(--ds-space-4);
-  color: var(--ds-on-ink);
-  font: 700 var(--ds-text-xs) / 1 var(--ds-font-display);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  padding: 0 var(--ds-space-3);
+  color: var(--ds-on-accent);
+  font: 600 var(--ds-text-sm) / 1 var(--ds-font-body);
   white-space: nowrap;
-  border: 1px solid color-mix(in srgb, var(--ds-on-ink) 15%, transparent);
+  border: 1px solid transparent;
   border-radius: var(--ds-radius-md);
-  background: color-mix(in srgb, var(--ds-on-ink) 5%, transparent);
+  background: var(--ds-accent);
+  box-shadow: var(--ds-shadow-card);
   cursor: pointer;
   transition:
     background var(--ds-motion-fast),
     transform var(--ds-motion-instant);
 }
 .aegis-sign-in-button:hover {
-  background: color-mix(in srgb, var(--ds-on-ink) 10%, transparent);
+  background: var(--ds-accent-strong);
 }
 .aegis-sign-in-button:active {
   transform: scale(0.97);
@@ -653,37 +644,43 @@
 .aegis-portrait-button {
   position: relative;
   display: grid;
-  width: var(--ds-touch-target);
-  height: var(--ds-touch-target);
   flex: none;
   place-items: center;
+  margin-left: var(--ds-space-2);
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--ds-on-ink) 14%, transparent);
-  border-radius: var(--ds-radius-md);
-  background: color-mix(in srgb, var(--ds-on-ink) 6%, transparent);
+  border: 0;
+  border-radius: 30%;
+  background: transparent;
   cursor: pointer;
   transition:
-    background var(--ds-motion-fast),
-    border-color var(--ds-motion-fast),
+    box-shadow var(--ds-motion-fast),
     transform var(--ds-motion-instant);
 }
 .aegis-portrait-button:hover {
-  border-color: var(--ds-ink-accent);
-  background: color-mix(in srgb, var(--ds-on-ink) 12%, transparent);
+  box-shadow:
+    0 0 0 2px var(--ds-sheet),
+    0 0 0 3px color-mix(in srgb, var(--ds-accent) 45%, transparent);
+}
+.aegis-portrait-button[aria-expanded="true"] {
+  box-shadow:
+    0 0 0 2px var(--ds-sheet),
+    0 0 0 3px var(--ds-accent);
 }
 .aegis-portrait-button:active {
   transform: scale(0.96);
 }
 .aegis-portrait-button:focus-visible {
   outline: none;
-  box-shadow: var(--ds-focus-ring);
+  box-shadow:
+    0 0 0 2px var(--ds-sheet),
+    0 0 0 4px var(--ds-focus);
 }
 
 .aegis-brand-button,
 .aegis-icon-button {
   display: grid;
-  min-width: var(--ds-touch-target);
-  min-height: var(--ds-touch-target);
+  min-width: 36px;
+  min-height: 36px;
   place-items: center;
   padding: 0;
   color: var(--ds-on-ink-2);
@@ -700,43 +697,45 @@
 
 .aegis-brand-button {
   grid-auto-flow: column;
-  padding-inline: var(--ds-space-1);
+  padding-inline: 0;
 }
 .aegis-brand-button:hover {
   background: transparent;
 }
 .aegis-icon-button:hover {
   color: var(--ds-on-ink);
-  background: color-mix(in srgb, var(--ds-on-ink) 8%, transparent);
+  background: var(--ds-fill);
 }
 .aegis-brand-button:active,
 .aegis-icon-button:active {
   transform: scale(0.96);
 }
 .aegis-icon-button[aria-current="page"] {
-  color: var(--ds-on-ink);
-  border-color: color-mix(in srgb, var(--ds-ink-accent) 45%, transparent);
-  background: color-mix(in srgb, var(--ds-on-ink) 8%, transparent);
+  color: var(--ds-accent);
+  background: var(--ds-fill);
 }
 
-.aegis-top-nav .aegis-logo__wordmark {
-  color: var(--ds-on-ink) !important;
+.aegis-top-nav .aegis-emblem,
+.aegis-mobile-bar .aegis-emblem {
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--ds-ink);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
-.aegis-top-nav .aegis-logo__subtitle {
-  color: var(--ds-on-ink-2) !important;
+.aegis-top-nav .aegis-brand-logo__wordmark,
+.aegis-mobile-bar .aegis-brand-logo__wordmark {
+  font-size: calc(var(--aegis-logo-size) * 0.7);
 }
 
 .aegis-nav-item {
   position: relative;
   display: flex;
-  min-height: 44px;
+  min-height: 34px;
   align-items: center;
   gap: var(--ds-space-2);
-  padding: 8px 12px;
+  padding: 6px 12px;
   color: var(--ds-text-3);
-  font: 700 var(--ds-text-xs) / 1 var(--ds-font-display);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font: 500 var(--ds-text-sm) / 1 var(--ds-font-body);
   white-space: nowrap;
   border: 0;
   border-radius: var(--ds-radius-md);
@@ -746,44 +745,18 @@
     color var(--ds-motion-fast),
     background var(--ds-motion-fast);
 }
-
-/* The active underline sits on the bar's bottom edge, not under the label. */
-.aegis-nav-item::after {
-  position: absolute;
-  right: 12px;
-  bottom: calc((44px - var(--ds-nav-height-wide)) / 2);
-  left: 12px;
-  height: 2px;
-  content: "";
-  border-radius: var(--ds-radius-pill);
-  background: transparent;
-}
-
 .aegis-nav-item:hover {
   color: var(--ds-text);
+  background: var(--ds-fill);
 }
 .aegis-nav-item[aria-current="page"] {
-  color: var(--ds-accent);
+  color: var(--ds-text);
+  background: var(--ds-fill);
 }
-.aegis-nav-item[aria-current="page"]::after {
-  background: var(--ds-accent);
+.aegis-nav-item:focus-visible {
+  outline: none;
+  box-shadow: var(--ds-focus-ring);
 }
-
-.aegis-top-nav .aegis-nav-item {
-  color: var(--ds-on-ink-2);
-}
-.aegis-top-nav .aegis-nav-item:hover {
-  color: var(--ds-on-ink);
-  background: color-mix(in srgb, var(--ds-on-ink) 8%, transparent);
-}
-.aegis-top-nav .aegis-nav-item[aria-current="page"] {
-  color: var(--ds-on-ink);
-}
-.aegis-top-nav .aegis-nav-item[aria-current="page"]::after {
-  background: var(--ds-ink-accent);
-}
-
-/* ---- Phone chrome: a slim navy top bar and a navy bottom tab bar ---- */
 
 .aegis-bottom-nav {
   position: fixed;
@@ -792,58 +765,52 @@
   bottom: 0;
   left: 0;
   display: none;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   min-height: calc(var(--ds-nav-height-narrow) + env(safe-area-inset-bottom));
   align-items: stretch;
-  justify-content: space-around;
-  gap: var(--ds-space-1);
-  padding: 6px max(6px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom))
-    max(6px, env(safe-area-inset-left));
-  background: var(--ds-ink);
-  border-top: 1px solid color-mix(in srgb, var(--ds-ink-accent) 18%, transparent);
-  box-shadow: 0 -12px 28px color-mix(in srgb, var(--ds-ink) 28%, transparent);
+  padding: 6px max(8px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom))
+    max(8px, env(safe-area-inset-left));
+  border-top: 1px solid var(--ds-line);
 }
 
-.aegis-bottom-nav .aegis-nav-item {
-  color: var(--ds-on-ink-2);
-}
-.aegis-bottom-nav .aegis-nav-item:hover {
-  color: var(--ds-on-ink);
-  background: color-mix(in srgb, var(--ds-on-ink) 5%, transparent);
-}
-.aegis-bottom-nav .aegis-nav-item[aria-current="page"] {
-  color: var(--ds-on-ink);
-  background: color-mix(in srgb, var(--ds-on-ink) 8%, transparent);
-}
-.aegis-bottom-nav .aegis-nav-item[aria-current="page"] svg {
-  color: var(--ds-ink-accent);
-}
 .aegis-nav-item--compact {
-  flex: 1;
   flex-direction: column;
   justify-content: center;
-  gap: 5px;
+  gap: 2px;
   min-width: 0;
-  padding: 6px 2px;
-  /* Five tabs share a phone's width: "Community" and "Collection" only fit side by side at
-     this size without the desktop tracking. */
-  font-size: 9px;
-  letter-spacing: 0;
+  padding: 6px 0;
+  font-size: 10.5px;
+  font-weight: 500;
+  border-radius: var(--ds-radius-md);
+}
+.aegis-nav-item--compact:hover,
+.aegis-nav-item--compact[aria-current="page"] {
+  background: transparent;
+}
+.aegis-nav-item--compact[aria-current="page"] {
+  color: var(--ds-accent);
 }
 .aegis-nav-item__label {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* On the tab bar the active marker is a short bar on the top edge. */
-.aegis-nav-item--compact::after {
-  top: 0;
-  right: 30%;
-  bottom: auto;
-  left: 30%;
-  height: 3px;
+.aegis-nav-item__raised {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  margin-top: -20px;
+  place-items: center;
+  color: var(--ds-on-accent);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-accent);
+  box-shadow:
+    0 6px 16px -4px color-mix(in srgb, var(--ds-accent) 45%, transparent),
+    0 0 0 4px var(--ds-sheet);
+  transition: transform var(--ds-motion-fast) var(--ds-ease-physical);
 }
-.aegis-bottom-nav .aegis-nav-item[aria-current="page"]::after {
-  background: var(--ds-ink-accent);
+.aegis-nav-item--raised:active .aegis-nav-item__raised {
+  transform: scale(0.94);
 }
 
 .aegis-mobile-bar {
@@ -857,37 +824,25 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--ds-space-2);
-  padding: env(safe-area-inset-top) max(var(--ds-space-3), env(safe-area-inset-right)) 0
-    max(var(--ds-space-3), env(safe-area-inset-left));
-  background: var(--ds-ink);
-  border-bottom: 1px solid color-mix(in srgb, var(--ds-on-ink) 6%, transparent);
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--ds-ink-accent) 10%, transparent);
+  padding: env(safe-area-inset-top) max(var(--ds-gutter-phone), env(safe-area-inset-right)) 0
+    max(var(--ds-gutter-phone), env(safe-area-inset-left));
+  border-bottom: 1px solid var(--ds-line);
 }
 
 .aegis-mobile-bar .aegis-brand-button {
   min-width: auto;
 }
 
-.aegis-mobile-bar .aegis-logo__wordmark {
-  color: var(--ds-on-ink) !important;
-}
-.aegis-mobile-bar .aegis-logo__subtitle {
-  color: var(--ds-on-ink-2) !important;
-}
-
-@media (width < 1280px) {
+@media (width < 1180px) {
+  .aegis-top-nav {
+    gap: var(--ds-space-3);
+    padding-inline: var(--ds-gutter-tablet);
+  }
   .aegis-top-nav__primary {
     gap: var(--ds-space-3);
   }
-
   .aegis-top-nav .aegis-nav-item {
-    padding-inline: 8px;
-  }
-}
-
-@media (width < 1200px) {
-  .aegis-top-nav__play {
-    display: none;
+    padding-inline: 9px;
   }
 }
 
@@ -896,9 +851,12 @@
     display: none;
   }
 
-  .aegis-bottom-nav,
   .aegis-mobile-bar {
     display: flex;
+  }
+
+  .aegis-bottom-nav {
+    display: grid;
   }
 
   .aegis-screen-region--nav {
@@ -909,6 +867,14 @@
 @media (width < 500px) {
   .aegis-mobile-bar:has(.aegis-sign-in-button, .friends-drawer-button) .aegis-brand-logo__wordmark {
     display: none;
+  }
+
+  .aegis-mobile-bar .aegis-theme-toggle {
+    display: none;
+  }
+
+  .aegis-mobile-bar .aegis-icon-button {
+    min-width: 34px;
   }
 }
 
@@ -921,28 +887,11 @@
 @media (width < 400px) {
   .aegis-mobile-bar {
     gap: var(--ds-space-1);
+    padding-inline: max(var(--ds-space-3), env(safe-area-inset-left)) max(var(--ds-space-3), env(safe-area-inset-right));
   }
 
   .aegis-mobile-bar__actions {
     gap: 0;
-    margin-right: 0;
-  }
-
-  .aegis-mobile-bar .aegis-brand-button {
-    padding-inline: 0;
-  }
-
-  .aegis-mobile-bar .aegis-brand-logo {
-    gap: var(--ds-space-1);
-  }
-
-  .aegis-mobile-bar .aegis-brand-logo__wordmark {
-    font-size: 20px;
-  }
-
-  .aegis-mobile-bar .aegis-emblem {
-    width: 28px;
-    height: 28px;
   }
 
   .aegis-mobile-bar .aegis-sign-in-button {
@@ -956,7 +905,7 @@
 
 @media (width < 360px) {
   .aegis-mobile-bar .aegis-sign-in-button {
-    width: var(--ds-touch-target);
+    width: 36px;
     justify-content: center;
     padding: 0;
     flex-shrink: 0;

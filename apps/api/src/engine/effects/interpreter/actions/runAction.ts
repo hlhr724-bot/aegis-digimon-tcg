@@ -643,7 +643,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   if (
     action.kind === "Delete" &&
     looseCostDefinesDeleteTarget &&
-    action.allowCostWithoutTarget !== true &&
+    !allowsOptionalProcessingCostWithoutTarget(action) &&
     typeof payableActionCost !== "number" &&
     !looseCostCanProduceDeleteTarget(ctx, action, payableActionCost)
   ) {

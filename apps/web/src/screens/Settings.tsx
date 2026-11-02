@@ -57,6 +57,9 @@ import {
 } from "../game/effectPromptPosition";
 import { setHandAutoSortEnabled, useHandAutoSort } from "../game/handAutoSort";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../game/noticeDuration";
+import { MatchLogDisplay } from "@/game/log/MatchLogDisplay";
+import { matchLogDisplayPreference } from "@/game/log/matchLogDisplayPreference";
+import { useMatchLogDisplay } from "@/game/log/useMatchLogDisplay";
 import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { LOCALES, LOCALE_LABELS, useTranslation, type TranslationKey } from "../i18n";
 import type { RemoteAccount } from "../account/client";
@@ -306,6 +309,7 @@ export function Settings({
   const handAutoSort = useHandAutoSort();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
+  const matchLogDisplay = useMatchLogDisplay();
   const profileStatsShown = useProfileStatsShown();
   const hasCloudReplays = useCloudReplays().provider !== undefined;
   const signedIn = Boolean(account);
@@ -650,6 +654,24 @@ export function Settings({
                   labelledBy="settings-notice-duration-label"
                   label={(duration) => t(NOTICE_DURATION_LABELS[duration])}
                   onSelect={setNoticeDuration}
+                />
+              </SettingRow>
+              <SettingRow
+                label={t("settings.matchLogDisplay")}
+                labelId="settings-match-log-display-label"
+                description={t("settings.matchLogDisplayDesc")}
+              >
+                <OptionList
+                  options={Object.values(MatchLogDisplay).map((entry) => entry.value)}
+                  selected={matchLogDisplay.value}
+                  labelledBy="settings-match-log-display-label"
+                  label={(display) =>
+                    t(
+                      Object.values(MatchLogDisplay).find((entry) => entry.value === display)?.labelKey ??
+                        MatchLogDisplay.POPUPS.labelKey,
+                    )
+                  }
+                  onSelect={matchLogDisplayPreference.set}
                 />
               </SettingRow>
               <div className="settings-row">

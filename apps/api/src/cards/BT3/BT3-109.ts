@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon gains “[On Deletion] Play this card without paying its memory cost. Any [On Play] effects on Digimon played with this effect don't activate” for the turn.",
           kind: "GrantStatic",
           target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
           grant: "effects",

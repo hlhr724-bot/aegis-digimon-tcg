@@ -77,6 +77,8 @@ describe.each(["zh-CN", "zh-TW"] as const)("%s game terminology", (locale) => {
 const literalFrenchMistranslations =
   /\b(?:[Pp]onts?|[Tt]errasses?|[Pp]latines?|[Tt]rappe|[Pp]oubelle|[Rr]eproduction|[Cc]orrespondance|[Dd]ompteurs?|[Rr]ediffusions?|[Pp]ieux?|[Rr]ebondir|[Tt]irages)\b|Digi-(?:Egg|[Oo]euf)/;
 const informalFrenchAddress = /(?<!\p{L})(?:[Tt]u|[Tt]on|[Tt]a|[Tt]es|[Tt]oi)(?!\p{L})/u;
+const informalFrenchImperative =
+  /(?<!\p{L})(?:réessaie|réessaye)(?!\p{L})|(?:^|[.!?]\s+)(?:patiente|choisis|sélectionne|clique|appuie|vérifie|essaie|essaye|consulte|saisis|reconnecte|actualise|rafraîchis|contacte|attends|rejoins|apprends|reviens|maintiens|fais|mets|prends|viens)(?!\p{L})/iu;
 const platinumTierKeys = new Set(["ranked.tier.platinum"]);
 const googleDriveTrashKeys = new Set([
   "replay.trashOffer",
@@ -104,7 +106,7 @@ describe("fr game terminology", () => {
 
   it("addresses the player with vous", () => {
     const informal = Object.entries(dictionaries.fr)
-      .filter(([, value]) => informalFrenchAddress.test(value))
+      .filter(([, value]) => informalFrenchAddress.test(value) || informalFrenchImperative.test(value))
       .map(([key, value]) => ({ key, value }));
     expect(informal).toEqual([]);
   });
@@ -113,6 +115,8 @@ describe("fr game terminology", () => {
 const literalGermanMistranslations =
   /Streichh|Übereinstimmung|Luke|Müll|Brut(?:gebiet|bereich|phase)|\bZucht|Bändiger|Zähmer|Ärmel|Wiederholung|[Dd]igitalisier|Eierdeck|Sicherheit|\bSpeicher\b|Wirbelangriff|\[(?:Zähler|Gegen|Haupt)\]/;
 const informalGermanAddress = /(?<!\p{L})(?:[Dd]u|[Dd]ein(?:e|en|em|er|es)?|[Dd]ich|[Dd]ir)(?!\p{L})/u;
+const informalGermanImperative =
+  /(?<!\p{L})(?:versuche es|öffne|wähle|klicke|tippe|prüfe|überprüfe|warte|verbinde|gib|schau|nutze|verwende|füge|lade|starte|schließe|lege|bestätige|aktualisiere|entferne|melde)(?!\p{L})/iu;
 const tamerCommandKey = /^chat\.emote\./;
 
 describe("de game terminology", () => {
@@ -132,7 +136,10 @@ describe("de game terminology", () => {
 
   it("addresses the player with Sie outside Tamer commands", () => {
     const informal = Object.entries(dictionaries.de)
-      .filter(([key, value]) => !tamerCommandKey.test(key) && informalGermanAddress.test(value))
+      .filter(
+        ([key, value]) =>
+          !tamerCommandKey.test(key) && (informalGermanAddress.test(value) || informalGermanImperative.test(value)),
+      )
       .map(([key, value]) => ({ key, value }));
     expect(informal).toEqual([]);
   });
@@ -200,7 +207,7 @@ describe("ko game terminology", () => {
 const literalIndonesianMistranslations =
   /(?<!\p{L})(?:[Dd]ek|[Tt]elur|[Kk]eamanan|[Pp]emblokir|[Pp]enjinak|[Pp]erselisihan|[Ss]elongsong|[Kk]ecocokan|[Dd]igivolusi|[Pp]embiakan|[Pp]erkembangbiakan|[Dd]itangguhkan|[Pp]enangguhan|[Tt]ayangan ulang|[Pp]emutaran ulang)(?!\p{L})|\[Penghitung\]/u;
 const informalIndonesianAddress =
-  /(?<!\p{L})(?:[Kk]amu|[Aa]ku)(?!\p{L})|(?:[Gg]iliran|[Ll]awan|[Tt]angan|Digimon|[Pp]rofil|[Aa]kun|[Ww]aktu|[Ll]aporan|[Mm]ilik|[Ss]ampah)-?mu(?!\p{L})/u;
+  /(?<!\p{L})(?:[Kk]amu|[Aa]ku|[Kk]au|[Ee]ngkau)(?!\p{L})|(?<!\p{L})(?!(?:[Tt]amu|[Ii]lmu|[Jj]amu|(?:[Bb]er)?[Tt]emu)(?!\p{L}))\p{L}+-?mu(?!\p{L})|(?<!\p{L})(?!(?:\p{L}*laku|[Bb]uku|[Kk]uku|[Ss]aku|[Ss]uku|[Pp]aku|[Bb]aku|[Ss]iku)(?!\p{L}))\p{L}+-?ku(?!\p{L})/u;
 const eggPlaceNameKey = "redesign.foundation.battlefield.egg-village";
 
 describe("id game terminology", () => {

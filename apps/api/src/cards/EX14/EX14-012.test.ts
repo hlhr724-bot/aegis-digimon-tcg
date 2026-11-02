@@ -174,6 +174,36 @@ describe("VictoryGreymon printed boundaries", () => {
     expect(s.perm("tamer").stack).toHaveLength(1);
     expect(s.state.players[1]!.battleArea).toHaveLength(1);
   });
+  it.each([
+    { accept: true, remaining: 0 },
+    { accept: false, remaining: 1 },
+  ])(
+    "offers the face-down cost without an opposing target and honors accept=$accept",
+    async ({ accept, remaining }) => {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [
+              { card: "EX14-012", as: "source" },
+              { card: "BT1-085", as: "tamer", under: [{ card: "BT1-009", as: "faceDown", faceUp: false }] },
+            ],
+          },
+          1: { battleArea: [] },
+        },
+        accept ? { autoAcceptOptional: true, autoSelectCards: true } : { autoDeclineOptional: true },
+      );
+      await s.ready();
+      await advance(s.engine).fireForPermanent(EffectTiming.OnUseAttack, s.perm("source"), {
+        attackerPermanentId: s.perm("source").permanentId,
+      });
+      expect(s.perm("tamer").stack).toHaveLength(remaining);
+      expect(s.state.players[0]!.trash.some(({ instanceId }) => instanceId === s.inst("faceDown").instanceId)).toBe(
+        accept,
+      );
+      expect(s.state.players[1]!.battleArea).toHaveLength(0);
+      expect(s.state.pendingDecision).toBeUndefined();
+    },
+  );
   it("uses the revealed security copy for free", async () => {
     const s = setupEngine(
       {
@@ -418,12 +448,13 @@ describe("VictoryGreymon decision stage emphasis", () => {
       const boost = "1 of your Digimon gets +3000 DP until the end of your opponent's turn.";
       const deletion =
         "Then, by trashing the bottom face-down card from under any of your Tamers, delete 1 of your opponent's Digimon with as much DP as this Digimon or less.";
+      const deletionCost = "by trashing the bottom face-down card from under any of your Tamers";
       const decisions = s.decisions.filter(({ req }) => req.sourceCardId === "EX14-012");
       expect(
         decisions.some(({ req }) => req.kind === "chooseTargets" && req.options?.effectTextEmphasis === boost),
       ).toBe(true);
       expect(
-        decisions.some(({ req }) => req.kind === "selectCards" && req.options?.effectTextEmphasis === deletion),
+        decisions.some(({ req }) => req.kind === "selectCards" && req.options?.effectTextEmphasis === deletionCost),
       ).toBe(true);
       expect(
         decisions.some(({ req }) => req.kind === "chooseTargets" && req.options?.effectTextEmphasis === deletion),

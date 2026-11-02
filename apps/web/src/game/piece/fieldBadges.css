@@ -269,13 +269,14 @@
   bottom: 0;
   z-index: 8;
   max-width: 100%;
-  padding: 1px 4px;
+  padding: 0 3px;
   border-radius: 3px;
   background: var(--ds-sheet);
-  color: var(--ds-text);
+  color: var(--ds-text-2);
   border: 1px solid var(--ds-line-strong);
-  font-size: clamp(9px, calc(var(--permanent-width) * 0.13), 12px);
-  font-weight: 700;
+  font-family: var(--ds-font-mono);
+  font-size: clamp(8px, calc(var(--permanent-width) * 0.09), 10px);
+  font-weight: 600;
   line-height: 1.25;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -1,6 +1,7 @@
 import express from "express";
 import { MAX_REPLAY_BYTES } from "@aegis/shared/replays";
 import { ReplayVisibility } from "@aegis/shared/replays/ReplayVisibility";
+import { isDeckFormat } from "@aegis/shared/deckFormat";
 import type { Express, Request, Response, NextFunction } from "express";
 import type { AuthSession } from "../accounts/AccountStore.js";
 import { tokenBucketLimiter } from "../http/rateLimit.js";
@@ -12,6 +13,10 @@ const FAILURE_STATUS: Record<ReplayLibraryError["code"], number> = {
   drive_unavailable: 502,
   too_large: 502,
 };
+
+function getQueryText(value: unknown): string | undefined {
+  return typeof value === "string" && value ? value : undefined;
+}
 
 function fail(error: unknown, res: Response, next: NextFunction): void {
   if (error instanceof ReplayLibraryError) res.status(FAILURE_STATUS[error.code]).json({ error: error.code });
@@ -131,7 +136,7 @@ export function installReplayRoutes({
   );
   const publicLimit = tokenBucketLimiter({ capacity: 30, refillMs: 2000 });
   const publicRoute =
-    (work: (req: Request, res: Response, id: string) => Promise<void>) =>
+    (work: (req: Request, res: Response, id: string) => Promise<void>, withId = true) =>
     async (req: Request, res: Response, next: NextFunction) => {
       res.setHeader("Cache-Control", "private, no-store");
       res.setHeader("X-Robots-Tag", "noindex, nofollow");
@@ -142,7 +147,7 @@ export function installReplayRoutes({
           return;
         }
         const id = String(req.params.id ?? "");
-        if (!UUID.test(id)) {
+        if (withId && !UUID.test(id)) {
           res.sendStatus(404);
           return;
         }
@@ -151,6 +156,25 @@ export function installReplayRoutes({
         fail(error, res, next);
       }
     };
+  app.get(
+    "/replays/public",
+    publicRoute(async (req, res) => {
+      const format = getQueryText(req.query.format);
+      if (format !== undefined && !isDeckFormat(format)) {
+        res.status(400).json({ error: "invalid_format" });
+        return;
+      }
+      const requested = Number(getQueryText(req.query.limit));
+      res.json(
+        await library.listPublic({
+          viewerId: (await session(req))?.account.id,
+          cursor: getQueryText(req.query.cursor),
+          limit: Number.isFinite(requested) ? requested : undefined,
+          format,
+        }),
+      );
+    }, false),
+  );
   app.get(
     "/replays/:id",
     publicRoute(async (req, res, id) => {

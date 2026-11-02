@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect } from "vitest";
+import { unregisterIrCard } from "#api/engine/effects/interpreter/registration/unregisterIrCard";
 import {
   EffectDuration,
   EffectTiming,
@@ -7091,6 +7092,10 @@ describe("CAP-C-13: target.filter.digivolutionCards = 'none'", () => {
 // ---------------------------------------------------------------------------
 
 describe("CAP-C-14: AllowDigiXrosMaterialsFromTrash", () => {
+  afterEach(() => {
+    for (const cardId of ["CAP_C14_TEST_CARD_A", "CAP_C14_TEST_CARD_B", "CAP_C14_PLAYED"]) unregisterIrCard(cardId);
+  });
+
   /**
    * BT21-030: "cards in your trash can also be placed for DigiXros". The card's IR carries
    * an `AllowDigiXrosMaterialsFromTrash` action inside the `wouldBePlayed` Replacement's

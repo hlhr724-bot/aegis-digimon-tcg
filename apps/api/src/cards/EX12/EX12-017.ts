@@ -173,7 +173,7 @@ const compiled: CompiledCard = {
             nameOrTrait: [
               {
                 tokens: ["Omnimon"],
-                match: "name",
+                match: "nameExact",
               },
               {
                 tokens: ["ME", "VB"],

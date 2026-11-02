@@ -102,6 +102,7 @@ describe("bot identities", () => {
       "spectatorNamesJson",
       "anonymousSpectatorCount",
       "manualInspectionJson",
+      "equippedRankedTier",
     ]);
   });
 });

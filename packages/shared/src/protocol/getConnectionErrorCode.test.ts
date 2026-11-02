@@ -9,6 +9,7 @@ describe("connection error codes", () => {
     [4408, "AEGIS_SESSION_EXPIRED"],
     [524, "AEGIS_SESSION_EXPIRED"],
     [4429, "AEGIS_TOO_MANY_MESSAGES"],
+    [4004, "AEGIS_SEAT_TRANSFERRED"],
     [503, "AEGIS_SERVER_UNAVAILABLE"],
     ["AEGIS_MESSAGE_TOO_LARGE", "AEGIS_MESSAGE_TOO_LARGE"],
   ])("classifies %s as %s", (code, expected) => {

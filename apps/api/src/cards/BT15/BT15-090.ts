@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Return 1 of your opponent's level 4 or lower Digimon to the hand. If you have a Digimon with [Gabumon]/[Garurumon] in its name, return 1 of your opponent's Digimon with the lowest level to the hand instead.",
           kind: "ConditionalBranch",
           condition: {
             kind: "youHave",

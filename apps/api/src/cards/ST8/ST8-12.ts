@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Return 1 of your opponent's level 6 or lower Digimon to its owner's hand. Trash all of the digivolution cards of that Digimon.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -22,6 +24,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] Return 1 of your opponent's level 6 or lower Digimon to its owner's hand. Trash all of the digivolution cards of that Digimon.",
           kind: "TrashDigivolution",
           target: {
             fromSelectionRef: "returnTarget",
@@ -31,6 +35,8 @@ const compiled: CompiledCard = {
           amount: 99,
         },
         {
+          effectTextPart:
+            "[Main] Return 1 of your opponent's level 6 or lower Digimon to its owner's hand. Trash all of the digivolution cards of that Digimon.",
           kind: "Return",
           target: {
             fromSelectionRef: "returnTarget",

@@ -20,7 +20,7 @@ describe("BT1-072 Woodmon", () => {
       attributes: ["Virus"],
       types: ["Vegetation"],
       effectText:
-        "＜Blocker＞ (When an opponent's Digimon attacks， you may suspend this Digimon to force the opponent to attack it instead.)[When Attacking] Lose 2 memory.",
+        "＜Blocker＞ (When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to attack it instead.)[When Attacking] Lose 2 memory.",
       rarity: "U",
       maxCountInDeck: 4,
       imageId: "BT1-072",

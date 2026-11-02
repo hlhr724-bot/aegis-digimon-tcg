@@ -1105,8 +1105,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 121,
-      "engineEvents": 167
+      "stateVersion": 120,
+      "engineEvents": 166
     },
     {
       "kind": "intent",
@@ -1116,8 +1116,8 @@
         "instanceId": "s0-db81f1bf4b05d594716035dc2e5a55283a136684ae7888a838cdc4d1e1f238ed"
       },
       "ok": true,
-      "stateVersion": 123,
-      "engineEvents": 170
+      "stateVersion": 121,
+      "engineEvents": 168
     },
     {
       "kind": "intent",
@@ -1131,8 +1131,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 125,
-      "engineEvents": 176
+      "stateVersion": 123,
+      "engineEvents": 174
     },
     {
       "kind": "intent",
@@ -1141,8 +1141,8 @@
         "type": "hatchEgg"
       },
       "ok": true,
-      "stateVersion": 133,
-      "engineEvents": 185
+      "stateVersion": 131,
+      "engineEvents": 183
     },
     {
       "kind": "intent",
@@ -1155,8 +1155,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 135,
-      "engineEvents": 188
+      "stateVersion": 133,
+      "engineEvents": 186
     },
     {
       "kind": "intent",
@@ -1171,8 +1171,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 136,
-      "engineEvents": 189
+      "stateVersion": 134,
+      "engineEvents": 187
     },
     {
       "kind": "intent",
@@ -1186,8 +1186,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 137,
-      "engineEvents": 190
+      "stateVersion": 135,
+      "engineEvents": 188
     },
     {
       "kind": "intent",
@@ -1203,8 +1203,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 139,
-      "engineEvents": 192
+      "stateVersion": 137,
+      "engineEvents": 190
     },
     {
       "kind": "intent",
@@ -1218,8 +1218,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 140,
-      "engineEvents": 193
+      "stateVersion": 137,
+      "engineEvents": 190
     },
     {
       "kind": "intent",
@@ -1233,8 +1233,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 143,
-      "engineEvents": 196
+      "stateVersion": 140,
+      "engineEvents": 194
     },
     {
       "kind": "intent",
@@ -1250,8 +1250,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 146,
-      "engineEvents": 199
+      "stateVersion": 143,
+      "engineEvents": 197
     },
     {
       "kind": "intent",
@@ -1261,8 +1261,8 @@
         "blockerPermanentId": "perm-1"
       },
       "ok": true,
-      "stateVersion": 158,
-      "engineEvents": 213
+      "stateVersion": 155,
+      "engineEvents": 211
     },
     {
       "kind": "intent",
@@ -1277,8 +1277,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 160,
-      "engineEvents": 215
+      "stateVersion": 157,
+      "engineEvents": 213
     },
     {
       "kind": "intent",
@@ -1289,8 +1289,8 @@
         "accept": true
       },
       "ok": true,
-      "stateVersion": 161,
-      "engineEvents": 216
+      "stateVersion": 158,
+      "engineEvents": 214
     },
     {
       "kind": "intent",
@@ -1304,8 +1304,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 164,
-      "engineEvents": 219
+      "stateVersion": 160,
+      "engineEvents": 216
     },
     {
       "kind": "intent",

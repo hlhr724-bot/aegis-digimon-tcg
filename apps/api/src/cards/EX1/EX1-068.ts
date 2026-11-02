@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            '[Main] All of your opponent\'s Digimon gain "[When Attacking] Lose 2 memory" until their turn ends.',
           kind: "GrantAuraToOpponents",
           target: {
             filter: {

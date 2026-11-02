@@ -177,6 +177,7 @@ export function DecisionCandidateGrid({
                   cand.pendingEffect && cand.cardId && (cand.zone === "trash" || cand.zone === "opponentTrash")
                     ? t("overlay.pendingEffect")
                     : undefined;
+                const usedLabel = cand.oncePerTurnUsed && cand.cardId ? t("overlay.inheritedUsed") : undefined;
                 const copyLabel = cardCopyLabels.get(cand.instanceId);
                 const sourceLabel =
                   cand.sourceCount === undefined
@@ -186,6 +187,7 @@ export function DecisionCandidateGrid({
                       });
                 const liveLabels = [
                   pendingLabel,
+                  usedLabel,
                   cand.trashOriginCardId
                     ? t("overlay.trashedFromSources", { name: getCardName(cand.trashOriginCardId) })
                     : undefined,
@@ -231,12 +233,13 @@ export function DecisionCandidateGrid({
                           {getCardName(cand.hostCardId)}
                         </span>
                       ) : null}
-                      {copyLabel || pendingLabel || cand.trashOriginCardId ? (
+                      {copyLabel || pendingLabel || usedLabel || cand.trashOriginCardId ? (
                         <span className="decision-overlay__candidate-details" aria-hidden="true">
                           {copyLabel ? <span>{copyLabel}</span> : null}
                           {pendingLabel ? (
                             <span className="decision-overlay__pending-effect">{pendingLabel}</span>
                           ) : null}
+                          {usedLabel ? <span className="decision-overlay__used-effect">{usedLabel}</span> : null}
                           {cand.trashOriginCardId ? (
                             <span>
                               {t("overlay.trashedFromSources", { name: getCardName(cand.trashOriginCardId) })}

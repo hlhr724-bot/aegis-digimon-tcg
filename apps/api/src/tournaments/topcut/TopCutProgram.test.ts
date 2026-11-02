@@ -797,3 +797,23 @@ async function tournamentsWonOf(accountId: string | null): Promise<number> {
     ).rows[0]?.tournaments_won ?? 0,
   );
 }
+
+it("does not auto-start the Top Cut when rounds require manual release", async () => {
+  fixture = await frozenField({ playerCount: 9, topCutSize: 4, wins: [3, 3, 2, 2, 1, 1, 1, 0, 0] });
+  await fixture.accounts.pool.query("UPDATE tournaments SET round_start_mode='manual' WHERE id=$1", [
+    fixture.tournamentId,
+  ]);
+  expect(await fixture.topCut.sweepFrozenSwissPhases(T0 + 5000)).toBe(0);
+  expect(await fixture.topCut.startTopCut(fixture.tournamentId, T0 + 5000, true)).toEqual({
+    ok: true,
+    value: { kind: "awaiting_manual_start" },
+  });
+  expect(await fixture.elimination.bracket(fixture.tournamentId)).toBeUndefined();
+  expect((await fixture.topCut.startTopCut(fixture.tournamentId, T0 + 10000)).ok).toBe(true);
+  const bracket = (await fixture.elimination.bracket(fixture.tournamentId))!;
+  expect(bracket.matches.filter((match) => match.status === "pending")).toHaveLength(0);
+  expect(await fixture.elimination.startNextRound(fixture.tournamentId)).toBe(true);
+  expect(
+    (await fixture.elimination.bracket(fixture.tournamentId))!.matches.filter((match) => match.status === "pending"),
+  ).toHaveLength(2);
+});

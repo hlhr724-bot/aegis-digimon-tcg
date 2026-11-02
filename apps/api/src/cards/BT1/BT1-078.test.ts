@@ -20,7 +20,7 @@ describe("BT1-078 Jagamon", () => {
       attributes: ["Vaccine"],
       types: ["Vegetation"],
       effectText:
-        "[When Attacking] Reveal 3 cards from the top of your deck. You can digivoLv.e this card into 1 level 6 green Digimon card among them without paying its memory cost. Place the remaining cards at the bottom of your deck in any order.",
+        "[When Attacking] Reveal 3 cards from the top of your deck. You can digivolve this card into 1 level 6 green Digimon card among them without paying its memory cost. Place the remaining cards at the bottom of your deck in any order.",
       rarity: "U",
       maxCountInDeck: 4,
       imageId: "BT1-078",

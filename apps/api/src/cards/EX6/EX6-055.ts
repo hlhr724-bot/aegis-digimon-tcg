@@ -22,6 +22,7 @@ export const compiled: CompiledCard = {
         },
         {
           kind: "Trash",
+          blind: true,
           target: {
             count: 1,
             filter: {
@@ -55,6 +56,7 @@ export const compiled: CompiledCard = {
         },
         {
           kind: "Trash",
+          blind: true,
           target: {
             count: 1,
             filter: {

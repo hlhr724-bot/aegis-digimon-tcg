@@ -937,3 +937,55 @@ body:has([aria-modal="true"]) .game-hand-hover {
 .battle-clash__card[data-role="attacker"] .battle-clash__shatter {
   --t-clash-shatter-at: calc(var(--t-clash-outcome-at, 853ms) + var(--t-clash-outcome, 350ms));
 }
+
+.game-hand-card__effect-mark,
+.game-pile--effect-marked .game-pile::after {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  z-index: 3;
+  box-sizing: border-box;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--battle-arrow-effect);
+  border-radius: 999px;
+  background: var(--ds-sheet);
+  box-shadow: 0 0 0 2px var(--ds-sheet);
+  pointer-events: none;
+}
+
+.game-pile--effect-marked .game-pile::after {
+  content: "";
+  top: -4px;
+  bottom: auto;
+  left: -4px;
+  z-index: 4;
+  background: var(--battle-arrow-effect);
+}
+
+.game-hand-card__effect-mark[data-effect-mark="resolving"] {
+  background: var(--battle-arrow-effect);
+  animation: game-effect-mark-pulse 1.6s ease-in-out infinite;
+}
+
+.trash-viewer__label[data-effect-mark] {
+  color: var(--battle-arrow-effect);
+}
+
+@keyframes game-effect-mark-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px var(--ds-sheet);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px var(--ds-sheet),
+      0 0 0 5px color-mix(in srgb, var(--battle-arrow-effect) 45%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-hand-card__effect-mark[data-effect-mark="resolving"] {
+    animation: none;
+  }
+}

@@ -104,8 +104,8 @@ it.each([
         />
       </I18nProvider>,
     );
-    const picking = screen.getByRole("region", { name: "Counter timing" });
-    expect(within(picking).queryAllByRole("img")).toHaveLength(0);
+    const picker = screen.getByRole("dialog", { name: "Counter timing" });
+    expect(within(within(picker).getByRole("region", { name: "Hand" })).getAllByRole("button")).toHaveLength(1);
     const handCards = container.querySelectorAll(".game-hand-card");
     fireEvent.click(handCards[aceId === "ace-1" ? 0 : 1]!, { detail: 1 });
     expect(send).not.toHaveBeenCalled();

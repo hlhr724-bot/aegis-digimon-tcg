@@ -65,8 +65,14 @@ export const compiled: CompiledCard = {
     {
       trigger: "Main",
       actions: [
-        { kind: "Suspend", target: opponentDigimonTamer },
         {
+          effectTextPart: "[Main] Suspend 2 of your opponent's Digimon or Tamers.",
+          kind: "Suspend",
+          target: opponentDigimonTamer,
+        },
+        {
+          effectTextPart:
+            "Then, until their turn ends, none of their suspended Digimon or Tamers can digivolve or unsuspend.",
           kind: "Restrict",
           target: opponentSuspendedDigimonTamers,
           restriction: "digivolve",
@@ -74,6 +80,8 @@ export const compiled: CompiledCard = {
           whileMatchesTargetFilter: true,
         },
         {
+          effectTextPart:
+            "Then, until their turn ends, none of their suspended Digimon or Tamers can digivolve or unsuspend.",
           kind: "Restrict",
           target: opponentSuspendedDigimonTamers,
           restriction: "unsuspend",

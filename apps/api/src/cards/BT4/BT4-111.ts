@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Gain 1 memory for every 10 cards in your trash.",
           kind: "GainMemory",
           amount: 1,
           scaling: {

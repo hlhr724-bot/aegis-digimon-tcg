@@ -46,6 +46,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] By trashing 1 card in your hand, delete 1 of your opponent's level 4 and 1 of their level 6 Digimon.",
           kind: "CostGatedBlock",
           optional: true,
           cost: {

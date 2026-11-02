@@ -22,7 +22,7 @@ describe("BT1-018 Flarerizamon", () => {
       attributes: ["Data"],
       types: ["Fire Dragon"],
       effectText:
-        "[Your Turn] While you have 3 or more memory， this Digimon gains ＜Security Attack +1＞. (This Digimon checks 1 additional security card.)",
+        "[Your Turn] While you have 3 or more memory, this Digimon gains ＜Security Attack +1＞. (This Digimon checks 1 additional security card.)",
       rarity: "C",
       maxCountInDeck: 4,
       imageId: "BT1-018",

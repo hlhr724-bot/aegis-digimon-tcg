@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Panel, SectionHeading } from "../design/surfaces";
 import { useTranslation } from "../i18n";
-import { allReleases, displayVersion, issueUrl, type Release, type ReleaseItem } from "./catalog";
+import { allReleases, displayVersion, type Release, type ReleaseItem } from "./catalog";
 import { translateReleaseMessage } from "@/releases/translateReleaseMessage";
 import "./releases.css";
 
@@ -56,7 +56,7 @@ function ReleaseEntry({ release, current = false }: { release: Release; current?
 }
 
 function ReleaseSection({ title, items }: { title: ReactNode; items: ReleaseItem[] }) {
-  const { locale, t } = useTranslation();
+  const { locale } = useTranslation();
   return (
     <section className="release__section">
       <SectionHeading title={title} level={3} />
@@ -64,11 +64,6 @@ function ReleaseSection({ title, items }: { title: ReactNode; items: ReleaseItem
         {items.map((item) => (
           <li key={`${item.textKey}:${item.issue ?? "none"}`}>
             <p>{translateReleaseMessage({ key: item.textKey, locale })}</p>
-            {item.issue ? (
-              <a className="release__reported" href={issueUrl(item.issue)} target="_blank" rel="noreferrer">
-                {t("releases.reported", { issue: item.issue })}
-              </a>
-            ) : null}
           </li>
         ))}
       </ul>

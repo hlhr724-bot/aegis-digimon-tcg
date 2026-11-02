@@ -46,20 +46,17 @@ describe("EX13 Gallantmon standoff dev scenario", () => {
         event.seat === 0 &&
         event.targetPermanentIds.includes(fixturePermanentId("opponent-ex13-standoff-gallantmon")),
     );
-    const protectionIndex = s.events.findIndex(
-      (event) => event.kind === "effectTriggered" && event.timing === "AllTurns" && event.seat === 1,
-    );
-    expect(targetIndex).toBeGreaterThan(onPlayIndex);
-    expect(protectionIndex).toBeGreaterThan(targetIndex);
-
-    expect(
+    const findProtectionIndex = () =>
+      s.events.findIndex(
+        (event) => event.kind === "effectTriggered" && event.timing === "AllTurns" && event.seat === 1,
+      );
+    const listAnnouncements = () =>
       s.events
         .filter((event) => event.kind === "effectTriggered" && event.sourceCardId === "EX13-015")
-        .map((event) => (event.kind === "effectTriggered" ? [event.seat, event.timing] : [])),
-    ).toEqual([
-      [0, "OnPlay"],
-      [1, "AllTurns"],
-    ]);
+        .map((event) => (event.kind === "effectTriggered" ? [event.seat, event.timing] : []));
+    expect(targetIndex).toBeGreaterThan(onPlayIndex);
+    expect(findProtectionIndex()).toBe(-1);
+    expect(listAnnouncements()).toEqual([[0, "OnPlay"]]);
     expect(
       s.engine.applyIntent(1, {
         type: "respondDecision",
@@ -68,6 +65,11 @@ describe("EX13 Gallantmon standoff dev scenario", () => {
       }),
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "optional" && s.state.pendingDecision.seat === 0);
+    expect(findProtectionIndex()).toBeGreaterThan(targetIndex);
+    expect(listAnnouncements()).toEqual([
+      [0, "OnPlay"],
+      [1, "AllTurns"],
+    ]);
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",

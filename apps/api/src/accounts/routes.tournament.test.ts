@@ -104,13 +104,13 @@ describe("POST /tournaments", () => {
     });
     const anonymous = await fetch(`${harness.url}/tournaments`);
     expect(anonymous.headers.get("cache-control")).toBe("private, no-store");
-    expect((await anonymous.json())[0]).not.toHaveProperty("myEntry");
+    expect(((await anonymous.json()) as unknown[])[0]).not.toHaveProperty("myEntry");
     const outsider = await harness.store.accountForIdentity("discord", "outsider", "Outsider");
     const session = await harness.store.issueSession(outsider);
     const other = await fetch(`${harness.url}/tournaments?accountId=${me.body.id}`, {
       headers: { Cookie: `aegis_session=${session.id}` },
     });
-    expect((await other.json())[0]).not.toHaveProperty("myEntry");
+    expect(((await other.json()) as unknown[])[0]).not.toHaveProperty("myEntry");
     await post(`/tournaments/${created.body.id}/check-in`, {});
     const checked = await get("/tournaments");
     expect(checked.body[0].myEntry.status).toBe("checked_in");
@@ -130,7 +130,9 @@ describe("POST /tournaments", () => {
     const second = await create("Second community cup");
     expect(second.status).toBe(409);
     expect(await second.json()).toEqual({ error: "tournament_limit_reached" });
-    await harness.store.pool.query("UPDATE tournaments SET status='finished' WHERE id=$1", [(await first.json()).id]);
+    await harness.store.pool.query("UPDATE tournaments SET status='finished' WHERE id=$1", [
+      ((await first.json()) as { id: string }).id,
+    ]);
     expect((await create("Next community cup")).status).toBe(201);
     expect((await post("/tournaments", { name: "Admin cup one", startsAt: futureStart(), maxPlayers: 8 })).status).toBe(
       201,
@@ -641,4 +643,61 @@ describe("tournament endorsement", () => {
     });
     expect(response.status).toBe(401);
   });
+});
+
+it("keeps registered lists private, permits replacement before freeze, and authorizes round controls", async () => {
+  const me = await get("/auth/me");
+  const created = await post("/tournaments", {
+    name: "Managed rounds",
+    startsAt: futureStart(),
+    maxPlayers: 8,
+    structure: "swiss",
+    roundStartMode: "manual",
+  });
+  expect(created.status).toBe(201);
+  const id = created.body.id;
+  expect(created.body.roundStartMode).toBe("manual");
+  const first = await harness.store.saveDeck(me.body.id, {
+    name: "Registered Red",
+    mainDeck: [...RED_DECK.mainDeck],
+    eggDeck: [...RED_DECK.eggDeck],
+  });
+  const second = await harness.store.saveDeck(me.body.id, {
+    name: "Replacement Red",
+    mainDeck: [...RED_DECK.mainDeck],
+    eggDeck: [...RED_DECK.eggDeck],
+  });
+  expect((await post(`/tournaments/${id}/participants`, { savedDeckId: first.id })).status).toBe(201);
+  expect((await get(`/tournaments/${id}`)).body.ownDeck).toMatchObject({
+    name: "Registered Red",
+    savedDeckId: first.id,
+    locked: false,
+  });
+  const publicView = await fetch(`${harness.url}/tournaments/${id}`);
+  expect(((await publicView.json()) as { ownDeck: unknown }).ownDeck).toBeNull();
+  expect((await post(`/tournaments/${id}/own-deck`, { savedDeckId: second.id })).status).toBe(200);
+  expect((await get(`/tournaments/${id}`)).body.ownDeck.name).toBe("Replacement Red");
+  expect((await post(`/tournaments/${id}/round-start-mode`, { mode: "automatic" })).status).toBe(200);
+  expect((await post(`/tournaments/${id}/round-start-mode`, { mode: "constructor" })).status).toBe(400);
+  const outsider = await harness.store.accountForIdentity("discord", "outsider-control", "Outside control");
+  const session = await harness.store.issueSession(outsider);
+  for (const endpoint of ["round-start-mode", "next-round"]) {
+    const response = await fetch(`${harness.url}/tournaments/${id}/${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: `aegis_session=${session.id}` },
+      body: JSON.stringify({ mode: "manual" }),
+    });
+    expect(response.status).toBe(403);
+  }
+  const outsiderView = await fetch(`${harness.url}/tournaments/${id}`, {
+    headers: { Cookie: `aegis_session=${session.id}` },
+  });
+  expect(((await outsiderView.json()) as { ownDeck: unknown }).ownDeck).toBeNull();
+  expect(
+    (await post(`/tournaments/${id}/arbitration/cancel`, { reason: "Test event cancelled", commandId: "cancel-event" }))
+      .status,
+  ).toBe(200);
+  expect((await post(`/tournaments/${id}/round-start-mode`, { mode: "manual" })).status).toBe(409);
+  expect((await post(`/tournaments/${id}/next-round`, {})).status).toBe(409);
+  expect((await get(`/tournaments/${id}`)).body.status).toBe("cancelled");
 });

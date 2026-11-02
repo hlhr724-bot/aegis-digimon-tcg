@@ -1,3 +1,6 @@
+import type { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
+import { appendTournamentEvent } from "#api/tournaments/audit/TournamentEventLog";
+import type { TournamentOwnDeck } from "@aegis/shared/tournaments/TournamentOwnDeck";
 import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import { isAccountRole } from "@aegis/shared/account/isAccountRole";
 import type { BotStyle } from "@aegis/shared/bot/BotStyle";
@@ -10,6 +13,10 @@ import type { PoolClient } from "pg";
 import type { AccountStore, Deck } from "../../accounts/AccountStore.js";
 import type { Queryable } from "../../db/migrator.js";
 import { type DeckViolation, validateCompetitiveDeck } from "./deckLegality.js";
+
+type OwnDeckParams = { tournamentId: string; accountId: string };
+type ChangeDeckParams = OwnDeckParams & { savedDeckId: string; now?: number };
+type SetRoundStartModeParams = OwnDeckParams & { mode: TournamentRoundStartMode };
 
 export type ParticipantDeckSnapshot = {
   deckId: string | null;
@@ -146,6 +153,147 @@ export class ParticipantStore {
       [tournamentId],
     );
     return result.rows.map(toParticipant);
+  }
+
+  async setRoundStartMode(input: SetRoundStartModeParams): Promise<boolean> {
+    return this.mutate(input.tournamentId, async (client) => {
+      const row = (
+        await client.query<{ status: string; round_start_mode: TournamentRoundStartMode }>(
+          "SELECT status, round_start_mode FROM tournaments WHERE id=$1 FOR UPDATE",
+          [input.tournamentId],
+        )
+      ).rows[0];
+      if (!row || row.status === "finished" || row.status === "cancelled") {
+        return false;
+      }
+      if (row.round_start_mode === input.mode) {
+        return true;
+      }
+      await client.query("UPDATE tournaments SET round_start_mode=$1 WHERE id=$2", [input.mode, input.tournamentId]);
+      await appendTournamentEvent(client, {
+        tournamentId: input.tournamentId,
+        actorKind: "organizer",
+        actorId: input.accountId,
+        command: "round_start_mode_changed",
+        commandId: randomUUID(),
+        reason: "Organizer changed the round start mode",
+        reasonCode: "round_start_mode_changed",
+        subjectKind: "tournament",
+        subjectId: input.tournamentId,
+        before: { mode: row.round_start_mode },
+        after: { mode: input.mode },
+        now: Date.now(),
+      });
+      return true;
+    });
+  }
+
+  async getOwnDeck({ tournamentId, accountId }: OwnDeckParams): Promise<TournamentOwnDeck | null> {
+    await this.accounts.ensureReady();
+    const row = (
+      await this.accounts.pool.query<{
+        saved_deck_id: string | null;
+        deck_snapshot: ParticipantDeckSnapshot | string | null;
+        status: string;
+        participant_status: string;
+        check_in_closes_at: string | null;
+        name: string | null;
+        main_deck: string[] | null;
+        egg_deck: string[] | null;
+        revision: number | null;
+      }>(
+        `SELECT p.saved_deck_id,p.deck_snapshot,p.status participant_status,t.status,t.check_in_closes_at,d.name,d.main_deck,d.egg_deck,d.revision
+        FROM tournament_participants p JOIN tournaments t ON t.id=p.tournament_id
+        LEFT JOIN saved_decks d ON d.account_id=p.account_id AND d.id=p.saved_deck_id
+        WHERE p.tournament_id=$1 AND p.account_id=$2`,
+        [tournamentId, accountId],
+      )
+    ).rows[0];
+    if (!row) {
+      return null;
+    }
+    const snapshot =
+      typeof row.deck_snapshot === "string"
+        ? (JSON.parse(row.deck_snapshot) as ParticipantDeckSnapshot)
+        : row.deck_snapshot;
+    if (snapshot) {
+      return {
+        savedDeckId: row.saved_deck_id,
+        locked: true,
+        name: snapshot.name,
+        mainDeck: snapshot.mainDeck,
+        eggDeck: snapshot.eggDeck,
+        revision: snapshot.revision,
+      };
+    }
+    const locked =
+      !CHECK_IN_STATUSES.has(row.status) ||
+      (row.participant_status !== "registered" && row.participant_status !== "checked_in") ||
+      (row.check_in_closes_at !== null && Date.now() > Number(row.check_in_closes_at));
+    if (!row.name || !row.main_deck || !row.egg_deck || row.revision === null) {
+      return {
+        savedDeckId: row.saved_deck_id,
+        available: false,
+        locked,
+        name: "",
+        mainDeck: [],
+        eggDeck: [],
+        revision: 0,
+      };
+    }
+    return {
+      savedDeckId: row.saved_deck_id,
+      locked,
+      name: row.name,
+      mainDeck: row.main_deck,
+      eggDeck: row.egg_deck,
+      revision: row.revision,
+    };
+  }
+
+  async changeDeck(input: ChangeDeckParams): Promise<ParticipantResult<ParticipantRecord>> {
+    const now = input.now ?? Date.now();
+    return this.mutate(input.tournamentId, async (client) => {
+      const tournament = (
+        await client.query<TournamentRow & { check_in_closes_at: string | null }>(
+          "SELECT id, status, format, check_in_closes_at FROM tournaments WHERE id=$1 FOR UPDATE",
+          [input.tournamentId],
+        )
+      ).rows[0];
+      if (!tournament) {
+        return { ok: false, reason: "tournament_not_found" } as const;
+      }
+      if (
+        !CHECK_IN_STATUSES.has(tournament.status) ||
+        (tournament.check_in_closes_at !== null && now > Number(tournament.check_in_closes_at))
+      ) {
+        return { ok: false, reason: "check_in_closed" } as const;
+      }
+      const participant = await this.lockParticipant(client, input.tournamentId, input.accountId);
+      if (participant?.deckSnapshot) {
+        return { ok: false, reason: "check_in_closed" } as const;
+      }
+      if (!participant || (participant.status !== "registered" && participant.status !== "checked_in")) {
+        return { ok: false, reason: "not_registered" } as const;
+      }
+      const deck = await this.savedDeck(client, input.accountId, input.savedDeckId);
+      if (!deck) {
+        return { ok: false, reason: "deck_not_found" } as const;
+      }
+      const legality = validateCompetitiveDeck(
+        deck,
+        await this.readBanlist(client, input.tournamentId),
+        tournament.format,
+      );
+      if (!legality.legal) {
+        return { ok: false, reason: "deck_illegal", violations: legality.violations } as const;
+      }
+      await client.query("UPDATE tournament_participants SET saved_deck_id=$1 WHERE id=$2", [
+        input.savedDeckId,
+        participant.id,
+      ]);
+      return { ok: true, value: (await this.readParticipant(client, participant.id))! } as const;
+    });
   }
 
   async participantViews(tournamentId: string): Promise<ParticipantView[]> {

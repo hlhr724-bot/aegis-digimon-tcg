@@ -23,7 +23,7 @@ describe("BT1-040 WereGarurumon", () => {
       forms: ["Ultimate"],
       attributes: ["Vaccine"],
       types: ["Beastkin"],
-      effectText: "[When Attacking] Gain 3 memory. At end of turn， lose 3 memory.",
+      effectText: "[When Attacking] Gain 3 memory. At end of turn, lose 3 memory.",
       rarity: "U",
       maxCountInDeck: 4,
       imageId: "BT1-040",

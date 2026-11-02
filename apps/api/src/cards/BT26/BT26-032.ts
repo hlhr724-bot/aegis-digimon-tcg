@@ -108,11 +108,13 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] You may suspend 2 of your opponent's Digimon or Tamers.",
           kind: "Suspend",
           target: { filter: opponentDigimonOrTamer, count: 2, upTo: true },
           optional: true,
         },
         {
+          effectTextPart: "Then, 3 of their Digimon or Tamers can't unsuspend until their turn ends.",
           kind: "Restrict",
           target: { filter: opponentDigimonOrTamer, count: 3 },
           restriction: "unsuspend",

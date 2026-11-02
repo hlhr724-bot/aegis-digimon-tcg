@@ -5,9 +5,12 @@ const messages: Record<ConnectionErrorCode, TranslationKey> = {
   [ConnectionErrorCode.MESSAGE_TOO_LARGE.value]: "game.messageTooLarge",
   [ConnectionErrorCode.CONNECTION_LOST.value]: "game.connectionLostDetail",
   [ConnectionErrorCode.RECONNECT_FAILED.value]: "game.reconnectFailed",
+  [ConnectionErrorCode.SEAT_TRANSFERRED.value]: "game.seatTransferred",
   [ConnectionErrorCode.SESSION_EXPIRED.value]: "game.sessionExpired",
   [ConnectionErrorCode.TOO_MANY_MESSAGES.value]: "game.tooManyMessages",
   [ConnectionErrorCode.SERVER_UNAVAILABLE.value]: "game.serverUnavailable",
+  [ConnectionErrorCode.GUEST_DECLINED.value]: "game.guestApproval.declined",
+  [ConnectionErrorCode.HOST_LEFT.value]: "game.guestApproval.hostLeft",
 };
 
 type Params = {

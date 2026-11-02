@@ -14,7 +14,7 @@ import { useMediaQuery, WIDE_DIALOG_QUERY } from "../../../design/useMediaQuery"
 import { useTranslation } from "../../../i18n";
 import { useCardOpener } from "../../cardLinks";
 import { useDraggableWindow } from "../../chat/useDraggableWindow";
-import { useEffectPromptPosition } from "../../effectPromptPosition";
+import { useEffectPromptPosition, type EffectPromptPosition } from "@/game/effectPromptPosition";
 import { effectDecisionSurface, isEffectActivationDecision, decisionSelectionMin } from "../../decisionPresentation";
 import { pendingFateBadge } from "../../pendingFate";
 import { playerFacingEffectClause, playerFacingPromptText } from "../effectText";
@@ -59,6 +59,30 @@ function dialogWidth({ docksOnRail, isResolutionPlan, wideDialog, itemCount }: D
   if (isResolutionPlan) return 760;
   if (wideDialog && itemCount > 3) return 1000;
   return 560;
+}
+
+type DecisionSurfaceParams = {
+  request: DecisionRequest;
+  position: EffectPromptPosition;
+  isCardChoice: boolean;
+  isOrdering: boolean;
+  isSecurityChoice: boolean;
+};
+
+function getDecisionSurface({
+  request,
+  position,
+  isCardChoice,
+  isOrdering,
+  isSecurityChoice,
+}: DecisionSurfaceParams): EffectPromptPosition {
+  if (isCardChoice || isOrdering) {
+    return "center";
+  }
+  if (isSecurityChoice) {
+    return position;
+  }
+  return effectDecisionSurface(request, position);
 }
 
 /** Sibling of the scrolling sheet, so its entrance transform cannot crop the arena shade. */
@@ -151,12 +175,13 @@ export function DecisionOverlay({
   const isOrderTriggers = request.kind === "orderTriggers";
   const isResolutionPlan = isOrderTriggers && request.options?.acceptsResolutionPlan === true;
   const isOrdering = isOrderCards || isOrderTriggers;
-  const surface =
-    isSecurityChoice || (isOptional && request.options?.effectTextEmphasis)
-      ? "left"
-      : isCardChoice || isOrdering
-        ? "center"
-        : effectDecisionSurface(request, effectPromptPosition);
+  const surface = getDecisionSurface({
+    request,
+    position: effectPromptPosition,
+    isCardChoice,
+    isOrdering,
+    isSecurityChoice,
+  });
   const docksOnRail = surface === "left";
   const draggableActivation = isEffectActivationDecision(request) && !isCardChoice;
   const triggerKeys = request.options?.triggerKeys ?? [];
@@ -316,15 +341,15 @@ export function DecisionOverlay({
       <>
         {boardReturn}
         <div hidden={isViewingBoard}>
-          <DecisionBackdrop side />
+          <DecisionBackdrop side={effectPromptPosition === "left"} />
           <div
             ref={panelRef}
             tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label={t("game.digivolve")}
-            data-prompt-surface="left"
-            className="game-modal__panel game-modal__panel--bare decision-overlay effect-prompt-family decision-overlay--side"
+            data-prompt-surface={effectPromptPosition}
+            className={`game-modal__panel game-modal__panel--bare decision-overlay effect-prompt-family${effectPromptPosition === "left" ? " decision-overlay--side" : ""}`}
             onKeyDown={(event) => trapDialogFocus({ event, panelRef })}
           >
             <DecisionDigivolveCostChoice

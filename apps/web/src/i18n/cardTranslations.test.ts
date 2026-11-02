@@ -28,6 +28,16 @@ it("translates individual modal bullets from the source card without including s
   expect(second).not.toContain("加布兽");
 });
 
+it("translates the Raid Aegiochusmon printing with its own keywords and digivolve requirement", () => {
+  const card = allCards().find((candidate) => candidate.cardId === "P-213")!;
+  const result = getTranslatedCardText({ text: card.effectText!, translations, cardId: card.cardId });
+  expect(result).toContain("进化");
+  expect(result).toContain("“埃癸奥兽”：费用3");
+  expect(result).toContain("突进");
+  expect(result).not.toContain("安防攻击");
+  expect(result).toContain("直到对方的回合结束为止");
+});
+
 it("rejects modal bullet translations when the translated option count differs", () => {
   const cardId = "BT22-013";
   const card = allCards().find((candidate) => candidate.cardId === cardId)!;

@@ -36,20 +36,15 @@ export const compiled: CompiledCard = {
     {
       trigger: "Main",
       actions: [
-        {
-          kind: "Draw",
-          controller: "mine",
-          amount: 1,
-        },
-        {
-          kind: "PlaceInBattleAreaSelf",
-        },
+        { effectTextPart: "[Main] ＜Draw 1＞", kind: "Draw", controller: "mine", amount: 1 },
+        { effectTextPart: "Then, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
       ],
     },
     {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "You may play 1 Tamer card with the [CS] trait from your hand without paying the cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

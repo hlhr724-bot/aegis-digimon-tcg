@@ -169,26 +169,34 @@ describe("BT26-104 compiled fidelity", () => {
     expect(s.state.players[0]!.hand.some(({ cardId }) => cardId === "EX12-070")).toBe(true);
   });
 
-  it("does not suspend when no eligible Shambala Option can be used", async () => {
-    const s = setupEngine(
-      {
-        0: {
-          battleArea: [
-            { card: "BT26-104", as: "kunlun" },
-            { card: "EX12-019", as: "tentei" },
-          ],
-          hand: [{ card: "BT1-009", as: "unrelated" }],
+  it.each([
+    { accept: true, suspended: true },
+    { accept: false, suspended: false },
+  ])(
+    "offers its suspension without an eligible Shambala Option and honors accept=$accept",
+    async ({ accept, suspended }) => {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [
+              { card: "BT26-104", as: "kunlun" },
+              { card: "EX12-019", as: "tentei" },
+            ],
+            hand: [{ card: "BT1-009", as: "unrelated" }],
+          },
         },
-      },
-      { autoAcceptOptional: true, autoSelectCards: true },
-    );
-    await s.ready();
+        accept ? { autoAcceptOptional: true } : { autoDeclineOptional: true },
+      );
+      await s.ready();
 
-    await advance(s.engine).fireForPermanent(EffectTiming.OnEndTurn, s.perm("kunlun"));
+      await advance(s.engine).fireForPermanent(EffectTiming.OnEndTurn, s.perm("kunlun"));
 
-    expect(s.perm("kunlun").isSuspended).toBe(false);
-    expect(s.state.players[0]!.hand.map(({ cardId }) => cardId)).toContain("BT1-009");
-  });
+      expect(s.decisions.some(({ req }) => req.kind === "optional" && req.sourceCardId === "BT26-104")).toBe(true);
+      expect(s.perm("kunlun").isSuspended).toBe(suspended);
+      expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).toEqual([s.inst("unrelated").instanceId]);
+      expect(s.state.pendingDecision).toBeUndefined();
+    },
+  );
 
   it("does not offer the free Option use without a Tentei Hachibushu Digimon", async () => {
     const s = setupEngine(

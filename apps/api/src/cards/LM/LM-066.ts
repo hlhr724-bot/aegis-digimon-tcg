@@ -89,6 +89,7 @@ export const compiled: CompiledCard = {
         "[Main] 1 of your opponent's Digimon or Tamers can't unsuspend until their turn ends. Then, for every 2 suspended Digimon, return 1 of their Digimon to the bottom of the deck.",
       actions: [
         {
+          effectTextPart: "[Main] 1 of your opponent's Digimon or Tamers can't unsuspend until their turn ends.",
           kind: "SelectBind",
           target: {
             filter: { controller: "opponent", kind: ["Digimon", "Tamer"] },
@@ -97,12 +98,14 @@ export const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart: "[Main] 1 of your opponent's Digimon or Tamers can't unsuspend until their turn ends.",
           kind: "Restrict",
           target: { fromSelectionRef: "unsuspendLocked", filter: {}, count: 1 },
           restriction: "unsuspend",
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart: "Then, for every 2 suspended Digimon, return 1 of their Digimon to the bottom of the deck.",
           kind: "Return",
           to: "deckBottom",
           target: {

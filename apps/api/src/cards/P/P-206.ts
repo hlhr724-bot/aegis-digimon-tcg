@@ -55,6 +55,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "You may play 1 Tamer card with the same color as any of your Digimon on the field from your hand with the play cost reduced by 4.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

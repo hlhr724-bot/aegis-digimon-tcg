@@ -4,10 +4,8 @@ import {
   decisionPresentation,
   effectDecisionSurface,
   isFieldTargetDecision,
-  fieldSlots,
   sourcePermanentIdOf,
   triggerClauseSummary,
-  triggerSource,
 } from "./decisionPresentation";
 
 function decision(overrides: Partial<DecisionRequest> = {}): DecisionRequest {
@@ -241,29 +239,6 @@ describe("triggerClauseSummary", () => {
   });
 });
 
-describe("triggerSource", () => {
-  const slots = fieldSlots([permanent("p1", "ST1-07"), permanent("p2", "ST1-09", ["ST1-03"])]);
-
-  it("names the 1-based battle-area slot of a face-up source", () => {
-    expect(triggerSource("p2-top", { fieldSlots: slots, handInstanceIds: [] })).toEqual({ zone: "field", position: 2 });
-  });
-
-  it("resolves an inherited source to the slot that carries it", () => {
-    expect(triggerSource("p2-under-0", { fieldSlots: slots, handInstanceIds: [] })).toEqual({
-      zone: "field",
-      position: 2,
-    });
-  });
-
-  it("recognizes a hand source", () => {
-    expect(triggerSource("h1", { fieldSlots: slots, handInstanceIds: ["h1"] })).toEqual({ zone: "hand" });
-  });
-
-  it("reports an unplaced source rather than guessing", () => {
-    expect(triggerSource("gone", { fieldSlots: slots, handInstanceIds: [] })).toEqual({ zone: "unknown" });
-  });
-});
-
 it("uses the optional decision's physical source for duplicate field cards", () => {
   const permanents = [
     { permanentId: "first", topCard: { cardId: "BT26-009", instanceId: "copy-1" } },
@@ -292,8 +267,30 @@ describe("effect decision surface", () => {
     expect(effectDecisionSurface(decision({ kind: "selectCards" }), "left")).toBe("center");
   });
 
-  it("keeps unrelated cost questions on their existing surface", () => {
-    expect(effectDecisionSurface(decision({ kind: "chooseOption", options: { purpose: "cost" } }))).toBe("left");
+  it.each(["left", "center"] as const)("places cost confirmations at the chosen %s position", (position) => {
+    expect(effectDecisionSurface(decision({ kind: "optional", options: { purpose: "cost" } }), position)).toBe(
+      position,
+    );
+    expect(effectDecisionSurface(decision({ kind: "chooseOption", options: { purpose: "cost" } }), position)).toBe(
+      position,
+    );
+    expect(
+      effectDecisionSurface(
+        decision({
+          kind: "chooseOption",
+          options: {
+            digivolveCostChoice: { fromCardId: "EX12-032", intoCardId: "EX12-035", costs: [4, 3], costDelta: 0 },
+          },
+        }),
+        position,
+      ),
+    ).toBe(position);
+  });
+
+  it("keeps cost card selections in the central gallery when the left position is chosen", () => {
+    expect(effectDecisionSurface(decision({ kind: "selectCards", options: { purpose: "cost" } }), "left")).toBe(
+      "center",
+    );
   });
 
   it.each(["chooseTargets", "selectCards", "orderCards", "orderTriggers", "mulligan"] as const)(

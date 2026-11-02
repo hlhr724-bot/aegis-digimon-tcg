@@ -242,12 +242,12 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   margin: 0;
 }
 
-.board-prompt[data-prompt-surface="left"] {
+.board-prompt[data-prompt-surface] {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-3);
 }
-.board-prompt[data-prompt-surface="left"] .board-prompt__actions {
+.board-prompt[data-prompt-surface] .board-prompt__actions {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
@@ -255,12 +255,12 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   width: 100%;
   margin-top: var(--ds-space-2);
 }
-.board-prompt[data-prompt-surface="left"] .board-prompt__actions > button {
+.board-prompt[data-prompt-surface] .board-prompt__actions > button {
   flex: none;
   width: 100%;
   max-width: none;
 }
-.board-prompt[data-prompt-surface="left"] .board-prompt__grip {
+.board-prompt[data-prompt-surface] .board-prompt__grip {
   display: none;
 }
 .game-modal__panel.effect-prompt-family[data-prompt-surface] button:focus-visible,
@@ -1194,4 +1194,25 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   outline: 2px solid var(--ds-accent);
   outline-offset: 2px;
   border-radius: var(--ds-radius-sm);
+}
+
+.board-prompt[data-prompt-surface="center"] {
+  top: 50% !important;
+  bottom: auto !important;
+  left: 50% !important;
+  right: auto !important;
+  width: min(32rem, calc(100vw - var(--ds-space-8))) !important;
+  max-width: calc(100vw - var(--ds-space-8)) !important;
+  max-height: calc(100dvh - var(--ds-space-8)) !important;
+  translate: -50% -50% !important;
+}
+
+@media (width >= 768px) and (height >= 520px) {
+  .game-modal__panel.effect-prompt-family:is(
+      .decision-overlay--security-choice,
+      .block-overlay--empty,
+      .action-confirmation
+    )[data-prompt-surface="center"] {
+    width: min(32rem, calc(100vw - var(--ds-space-8))) !important;
+  }
 }

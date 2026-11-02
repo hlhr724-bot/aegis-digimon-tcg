@@ -30,6 +30,9 @@ jobs:
       - name: Fast pull request checks
         if: github.event_name == 'pull_request'
         run: pnpm verify:simulator
+      - name: API tests
+        if: github.event_name == 'pull_request'
+        run: pnpm --filter @aegis/api test
       - name: Scheduled and manual deep checks
         if: github.event_name != 'pull_request'
         run: pnpm verify:simulator:deep

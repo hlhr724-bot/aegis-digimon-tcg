@@ -6,6 +6,7 @@ import { Phase } from "./enums.js";
 import type { Seat } from "./enums.js";
 import { RematchStatus } from "#shared/protocol/RematchStatus";
 import type { RematchMode } from "#shared/protocol/RematchMode";
+import { GuestApproval } from "#shared/protocol/GuestApproval";
 import { MATCH_TIMER_START_SECONDS } from "#shared/matchTimer";
 
 /** View tag for decision details that are private to the responding seat. */
@@ -190,4 +191,5 @@ export class GameState extends Schema {
   @type("int32") rankedOvertimeTurn = -1;
   @type("string") gameMode: GameMode = GameMode.AUTOMATIC.value;
   @type(ManualTable) manual = new ManualTable();
+  @type("string") guestApproval: GuestApproval = GuestApproval.NOT_REQUIRED.value;
 }

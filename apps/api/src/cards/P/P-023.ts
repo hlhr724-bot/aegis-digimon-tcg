@@ -17,6 +17,8 @@ const compiled: CompiledCard = {
       },
       actions: [
         {
+          effectTextPart:
+            "[Main] If you have [T.K. Takaishi] in play, place 1 of your [Patamon] at the bottom of your security stack face down. Trash that Digimon's digivolution cards.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -29,6 +31,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] If you have [T.K. Takaishi] in play, place 1 of your [Patamon] at the bottom of your security stack face down. Trash that Digimon's digivolution cards.",
           kind: "TrashDigivolution",
           target: {
             fromSelectionRef: "selectedPatamon",
@@ -38,6 +42,8 @@ const compiled: CompiledCard = {
           amount: 99,
         },
         {
+          effectTextPart:
+            "[Main] If you have [T.K. Takaishi] in play, place 1 of your [Patamon] at the bottom of your security stack face down. Trash that Digimon's digivolution cards.",
           kind: "SecurityManipulation",
           op: "addBottom",
           controller: "mine",

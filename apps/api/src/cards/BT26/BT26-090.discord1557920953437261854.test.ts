@@ -182,7 +182,7 @@ describe("Discord 1557920953437261854: Kanan uses the DUAL Option under Pomumon"
     await turn;
     expect(s.state.players[seat]!.hand.map((c) => c.instanceId)).toContain(s.inst("nonTS").instanceId);
     expect(s.state.players[seat]!.hand.map((c) => c.instanceId)).toContain(s.inst("yellowTS").instanceId);
-    expect(s.perm("kanan").isSuspended).toBe(false);
+    expect(s.perm("kanan").isSuspended).toBe(true);
     expect(s.state.memory).toBe(-5);
   });
   it.each([0, 1] as Seat[])("seat %i: already suspended Kanan cannot use Jupiter", async (seat) => {
@@ -247,7 +247,7 @@ describe("Discord 1557920953437261854: prohibition and shared-path controls", ()
     await turn;
     expect(s.state.players[seat]!.hand.map((card) => card.instanceId)).toContain(s.inst("jupiter").instanceId);
     expect(s.state.players[seat]!.security).toHaveLength(3);
-    expect(s.perm("kanan").isSuspended).toBe(false);
+    expect(s.perm("kanan").isSuspended).toBe(true);
     expect(s.state.memory).toBe(-5);
   });
 

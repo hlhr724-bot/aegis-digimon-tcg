@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] By trashing 1 Digimon card with the [Machine]/[Cyborg]/[SoC] trait in your hand, delete 1 of your opponent's Digimon or Tamers with the lowest play cost.",
           kind: "Delete",
           target: {
             filter: {

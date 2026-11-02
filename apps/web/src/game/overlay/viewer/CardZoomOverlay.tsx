@@ -30,7 +30,9 @@ export function CardZoomOverlay({
   const { t } = useTranslation();
   const card = getCardDefinition(cardId);
   const [printedTextShown, setPrintedTextShown] = useCardZoomPrintedText();
-  const hasPrintedText = Boolean(card?.effectText || card?.inheritedEffectText || card?.securityEffectText);
+  const hasPrintedText = Boolean(
+    card?.effectText || card?.inheritedEffectText || card?.securityEffectText || card?.linkEffect,
+  );
   const showPrintedText = hasPrintedText && printedTextShown;
   const width = useCardZoomWidth(showPrintedText);
   useEffect(() => (inline ? undefined : cardZoomPresence.register()), [inline]);
@@ -73,6 +75,12 @@ export function CardZoomOverlay({
               field={CardTextField.INHERITED.value}
               surface="card-detail"
             />
+          </section>
+        ) : null}
+        {showPrintedText && card?.linkEffect ? (
+          <section className="card-zoom__printed">
+            <strong>{t("library.linkEffect")}</strong>
+            <EffectText text={card.linkEffect} cardId={cardId} field={CardTextField.LINK.value} surface="card-detail" />
           </section>
         ) : null}
         {showPrintedText && card?.securityEffectText ? (

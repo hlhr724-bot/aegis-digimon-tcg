@@ -1,3 +1,4 @@
+import type { LiveMatchPlayerPreview } from "#shared/protocol/LiveMatchPlayerPreview";
 import type { GameMode } from "#shared/manual/GameMode";
 import type { DeckFormat } from "../deckFormat.js";
 
@@ -9,6 +10,7 @@ export type LiveMatch = {
   gameMode?: GameMode;
   spectatorCode: string;
   players: string[];
+  playerPreviews?: LiveMatchPlayerPreview[];
   format: DeckFormat;
   startedAt: number;
   spectators: number;

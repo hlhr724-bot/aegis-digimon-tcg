@@ -20,7 +20,7 @@ describe("BT1-063 Seraphimon", () => {
       attributes: ["Vaccine"],
       types: ["Seraph", "Three Great Angels"],
       effectText:
-        "[When Digivolving] Trigger ＜Recovery +1 (Deck)＞. (Place the top card of your deck on top of your security stack.)[Your Turn] While you have 3 or more security cards， this Digimon gains ＜Security Attack +1＞. (This Digimon checks 1 additional security card.)",
+        "[When Digivolving] Trigger ＜Recovery +1 (Deck)＞. (Place the top card of your deck on top of your security stack.)[Your Turn] While you have 3 or more security cards, this Digimon gains ＜Security Attack +1＞. (This Digimon checks 1 additional security card.)",
       rarity: "SR",
       maxCountInDeck: 4,
       imageId: "BT1-063",

@@ -18,7 +18,9 @@ import { resolveKeywords } from "../combat/keywords.js";
 import { lookupDefinition } from "../cards/cardData.js";
 import { linkEligible } from "../effects/mindLink.js";
 import { canActivate } from "../effects/kernel.js";
-import { gatherTriggeredEffects } from "../effects/context.js";
+import { createCardStateLookup, gatherTriggeredEffects } from "../effects/context.js";
+import { FieldCardRole } from "#api/engine/gameEngine/oncePerTurnUsage/FieldCardRole";
+import { hasUsedOncePerTurnEffect } from "#api/engine/gameEngine/oncePerTurnUsage/hasUsedOncePerTurnEffect";
 import { getEffectModule } from "../effects/registry.js";
 import { grantForcesAttackAtStartOfMainPhase } from "../effects/interpreter.js";
 import { ACTIVATE_TIMING } from "../actions/activateEffect.js";
@@ -125,6 +127,7 @@ export class BoardProjection {
   private projectedLinkInstances: Set<CardInstance> | undefined;
   private projectedActivatableInstances: Set<CardInstance> | undefined;
   private projectedActivatablePermanents: Set<Permanent> | undefined;
+  private oncePerTurnUsedInstances = new Set<CardInstance>();
 
   constructor(private readonly deps: ProjectionDeps) {
     digivolveValidatorByState.set(deps.state, (seat, intent) =>
@@ -481,6 +484,33 @@ export class BoardProjection {
     );
   }
 
+  syncOncePerTurnUsage(): void {
+    const used = new Set<CardInstance>();
+    const lookup = createCardStateLookup(this.deps.state);
+    for (const player of this.deps.state.players) {
+      const permanents = player.breeding ? [...player.battleArea, player.breeding] : player.battleArea;
+      for (const permanent of permanents) {
+        const placements = [
+          ...(permanent.topCard ? [{ instance: permanent.topCard, role: FieldCardRole.TOP }] : []),
+          ...permanent.stack.map((instance) => ({ instance, role: FieldCardRole.DIGIVOLUTION })),
+          ...permanent.linked.map((instance) => ({ instance, role: FieldCardRole.LINKED })),
+        ];
+        for (const { instance, role } of placements) {
+          if (instance.faceUp && hasUsedOncePerTurnEffect({ instance, role, tracker: this.deps.tracker, lookup })) {
+            used.add(instance);
+          }
+        }
+      }
+    }
+    for (const instance of this.oncePerTurnUsedInstances) {
+      if (!used.has(instance)) instance.oncePerTurnUsed = false;
+    }
+    for (const instance of used) {
+      if (!instance.oncePerTurnUsed) instance.oncePerTurnUsed = true;
+    }
+    this.oncePerTurnUsedInstances = used;
+  }
+
   async syncNegamonPlayEffects(): Promise<void> {
     for (const instance of this.deps.listCandidateInstances()) {
       instance.negamonPlayEffectKey = "";
@@ -781,7 +811,8 @@ export class BoardProjection {
               { type: "playCard", instanceId: instance.instanceId },
               active.playDeps,
             );
-        instance.playableFromHand = playCheck !== undefined && playableFromHand(playCheck, instance.cardId);
+        instance.playableFromHand =
+          playCheck !== undefined && playableFromHand(playCheck, instance.cardId, instance.playCostReductionBlocked);
         // Only the success branch carries a cost. A card that reads as playable through the
         // material-route escape hatch was rejected for memory, so it has no figure to publish.
         instance.projectedPlayCost = playCheck?.ok === true ? playCheck.cost : NO_PROJECTED_COST;

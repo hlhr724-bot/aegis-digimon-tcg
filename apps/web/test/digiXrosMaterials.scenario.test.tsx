@@ -39,8 +39,8 @@ scenario("digi-xros-materials", () => {
   it.each(["hand", "battle area"] as const)(
     "orders two selected materials from %s by the printed recipe",
     async (zone) => {
-      // Seed 22 opens two Shoutmon, Ballistamon, Shoutmon X5 and Biyomon.
-      const { owner, opponent } = await connectScenario(server, DECK, 22);
+      // Seed 314 opens two Shoutmon, Ballistamon, Shoutmon X5 and Biyomon.
+      const { owner, opponent } = await connectScenario(server, DECK, 314);
       await enterMain(opponent);
       const player = owner.state.players[0]!;
       const shoutmonIds = player.hand.filter((card) => card.cardId === "BT5-009").map((card) => card.instanceId);

@@ -41,14 +41,14 @@ scenario("trigger-order", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 8: seat 0 (protagonist) goes first and its dealt opening hand includes
+    // Seed 50: seat 0 (protagonist) goes first and its dealt opening hand includes
     // both Tai Kamiya and T.K. Takaishi — found by exhaustively searching seeds
     // for the swapped RED_DECK, mirroring mulligan.scenario.test.tsx's seed-4
     // search.
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: PROTAGONIST_DECK.mainDeck, eggDeck: PROTAGONIST_DECK.eggDeck },
-      seed: 8,
+      seed: 50,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Red" startMode="casual" onExit={() => {}} />);

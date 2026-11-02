@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] You may delete 1 of your Digimon to unsuspend 1 of your purple Digimon.",
+          payCostBeforeOptional: false,
           kind: "Unsuspend",
           target: {
             filter: {

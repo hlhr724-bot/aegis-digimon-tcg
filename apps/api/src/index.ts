@@ -3,6 +3,9 @@ import { createTournamentResultSweep } from "#api/tournaments/results/createTour
 import { createTournamentCircuitSweep } from "#api/tournaments/circuits/createTournamentCircuitSweep";
 import { startRankedMaintenance } from "#api/ranked/startRankedMaintenance";
 import { installQuickMatchPreference } from "#api/rooms/installQuickMatchPreference";
+import { installMatchQueueRoutes } from "#api/matchmaking/installMatchQueueRoutes";
+import { countRankedSearchers } from "#api/ranked/countRankedSearchers";
+import { getRankedConfig } from "#api/ranked/getRankedConfig";
 import { DirectMessageStore } from "#api/messages/DirectMessageStore";
 import { socialRuntime } from "#api/social/socialRuntime";
 import { SocialService } from "#api/social/SocialService";
@@ -52,6 +55,8 @@ import { mailerFromEnv } from "./email/mailer.js";
 import { turnstileVerifier } from "#api/accounts/turnstileVerifier";
 import { createClusterRuntime } from "./cluster/runtime.js";
 import { setRoomCodeDirectory } from "./rooms/AegisRoom.js";
+import { activeMatchRuntime } from "#api/rooms/activeMatch/activeMatchRuntime";
+import { createActiveMatchDirectory } from "#api/rooms/activeMatch/createActiveMatchDirectory";
 import { createSeriesDirectory, setSeriesDirectory } from "./rooms/series/SeriesDirectory.js";
 import {
   BACKFILL_TIMEOUT_MS,
@@ -157,6 +162,7 @@ socialRuntime.service = new SocialService({
   resolveRoom: resolveSocialInviteRoom,
 });
 setRoomCodeDirectory(cluster.roomCodes);
+activeMatchRuntime.directory = createActiveMatchDirectory({ presence: cluster.presence, keyPrefix: cluster.keyPrefix });
 setSeriesDirectory(createSeriesDirectory(cluster.presence, cluster.keyPrefix));
 
 const configuredSlot = process.env.AEGIS_DEPLOYMENT_SLOT ?? "legacy";
@@ -198,6 +204,12 @@ installBotRoutes(app);
 installPrivateRoomRoutes(app);
 
 installSpectatorRoutes(app);
+
+installMatchQueueRoutes({
+  app,
+  countRankedSearchers: async () =>
+    getRankedConfig().enabled ? countRankedSearchers({ accounts: accountStore, slot: configuredSlot }) : [],
+});
 app.use(handleGameRequestError);
 
 const httpServer = createServer(app);
@@ -276,6 +288,7 @@ async function runSweeps(now: number): Promise<number> {
     ["auto_start", () => circuitSweep.start(now)],
     ["swiss", () => swissProgram.sweepOpenTournaments(now)],
     ["top_cut", () => topCutProgram.sweepFrozenSwissPhases(now)],
+    ["bracket_rounds", () => eliminationStore.sweepAutomaticRounds(now)],
     ["bots", () => driveBotMatches(now)],
     ["discord", () => syncTournamentDiscord(now)],
     ["results", () => recordTournamentResults(now)],

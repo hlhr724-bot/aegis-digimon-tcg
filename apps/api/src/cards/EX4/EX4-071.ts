@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] By deleting 1 of your Digimon, delete 1 of your opponent's Digimon whose level is less than or equal.",
           kind: "Delete",
           target: {
             filter: {
@@ -35,6 +37,8 @@ export const compiled: CompiledCard = {
           abortOnDecline: true,
         },
         {
+          effectTextPart:
+            "If one of your Digimon with [Ravemon] in its name was deleted by this effect, at the end of your opponent's turn, play 1 [Ravemon] from your trash without paying the cost.",
           kind: "SubTrigger",
           event: "endOfOpponentTurn" as SubTriggerEvent,
           once: true,

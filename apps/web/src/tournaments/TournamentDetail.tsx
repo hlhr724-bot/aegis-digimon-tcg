@@ -1,3 +1,4 @@
+import { TournamentRuntimeControls } from "@/tournaments/TournamentRuntimeControls";
 import type { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import { TournamentCategoryBadge } from "@/tournaments/TournamentCategoryBadge";
 import { TournamentCategorySwitch } from "@/tournaments/TournamentCategorySwitch";
@@ -5,9 +6,6 @@ import { isCheckInOpen } from "@/tournaments/isCheckInOpen";
 import { serverNow } from "@/tournaments/serverClock";
 import { TournamentMatchHistory } from "@/tournaments/TournamentMatchHistory";
 import { deckFormatLabel } from "@/screens/deckFormatLabel";
-/* One tournament: schedule, participants, the frozen banlist, matches, standings, the player's
-   own actions and — for the creator — the schedule controls. Polls every 5 s while visible. */
-
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
 import { TournamentPairingControls } from "@/tournaments/TournamentPairingControls";
 import { TournamentSpectatingPanel } from "@/tournaments/TournamentSpectatingPanel";
@@ -18,29 +16,33 @@ import { useCallback, useEffect, useState, type MouseEvent } from "react";
 import { Icons } from "@/design/icons";
 import type { TranslationKey } from "@/i18n/translationTypes";
 import { pathForRoute } from "@/routes";
+import { getTournamentBracketSpectating } from "@/tournaments/getTournamentBracketSpectating";
 import { TournamentBracket } from "@/tournaments/TournamentBracket";
 import { TournamentBotPortrait } from "@/tournaments/TournamentBotPortrait";
 import { TournamentTab } from "@/tournaments/TournamentTab";
 import { TournamentReportButton } from "@/tournaments/TournamentReportButton";
-import { AccountPanel } from "../account/AccountPanel";
-import { Alert, Badge, Button, Field, Panel } from "../design/primitives";
+import { TournamentCopyLinkButton } from "@/tournaments/TournamentCopyLinkButton";
+import { TournamentCrumb } from "@/tournaments/TournamentCrumb";
+import { TournamentScheduleTimeline } from "@/tournaments/TournamentScheduleTimeline";
+import { isTournamentClosed } from "@/tournaments/isTournamentClosed";
+import { Alert, Badge, Button, Panel } from "../design/primitives";
 import type { DeckListing } from "../game/decks";
 import { useTranslation } from "../i18n";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { tournamentApi, type ApiError } from "./client";
 import { entryActions } from "./entry";
+import { describeTournamentError } from "@/tournaments/describeTournamentError";
+import { getTournamentEntryView } from "@/tournaments/getTournamentEntryView";
+import { TournamentActionError } from "@/tournaments/TournamentActionError";
+import { TournamentEntryCard } from "@/tournaments/TournamentEntryCard";
+import { TournamentEntryProgress } from "@/tournaments/TournamentEntryProgress";
+import { TournamentEntrySummary } from "@/tournaments/TournamentEntrySummary";
+import { TournamentEntryView } from "@/tournaments/TournamentEntryView";
+import { TournamentSignupFlow } from "@/tournaments/TournamentSignupFlow";
 import { ownParticipant } from "@/tournaments/ownParticipant";
+import { TournamentCloseCheckIn } from "@/tournaments/TournamentCloseCheckIn";
 import { usePolledRequest } from "./hooks";
-import {
-  banlistModeKey,
-  participantStatusKey,
-  reasonKey,
-  restrictionKey,
-  statusKey,
-  structureKey,
-  violationMessage,
-  windowKey,
-} from "./labels";
+import { banlistModeKey, participantStatusKey, restrictionKey, statusKey, structureKey, windowKey } from "./labels";
 import { MyMatchPanel } from "./MyMatchPanel";
 import { TopCutBracket } from "./TopCutBracket";
 import type { TournamentDetail as TournamentDetailPayload, TournamentWindows } from "./types";
@@ -48,6 +50,7 @@ import type { TournamentDetail as TournamentDetailPayload, TournamentWindows } f
 const DETAIL_POLL_MS = 5_000;
 
 export function TournamentDetail({
+  onDecks = () => undefined,
   id,
   accountId,
   accountIsAdmin = false,
@@ -55,6 +58,7 @@ export function TournamentDetail({
   onBack,
   onJoinGame,
   onWatchMatch,
+  onMyTournaments,
   tab: requestedTabProp,
   onTabChange,
 }: {
@@ -66,17 +70,18 @@ export function TournamentDetail({
   accountIsAdmin?: boolean;
   decks: readonly DeckListing[];
   onBack: () => void;
+  onDecks?: () => void;
   onJoinGame?: (ticket: TournamentGameTicket) => void;
   onWatchMatch?: (target: TournamentSpectateTarget) => void;
+  onMyTournaments?: () => void;
 }) {
   const { t } = useTranslation();
   const getCardName = useTranslatedCardName();
   const [detail, setDetail] = useState<TournamentDetailPayload>();
   const [loadError, setLoadError] = useState<ApiError>();
   const [actionError, setActionError] = useState<ApiError>();
-  const [savedDeckId, setSavedDeckId] = useState(() => decks[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
-  const [password, setPassword] = useState("");
+  const [signingUp, setSigningUp] = useState(false);
   const [localTab, setLocalTab] = useState<TournamentTab>(TournamentTab.OVERVIEW.value);
   const requestedTab = requestedTabProp ?? (onTabChange ? TournamentTab.OVERVIEW.value : localTab);
 
@@ -90,12 +95,13 @@ export function TournamentDetail({
   const { refresh } = usePolledRequest(load, apply, DETAIL_POLL_MS);
 
   useEffect(() => {
-    if (!savedDeckId && decks[0]) setSavedDeckId(decks[0].id);
-  }, [decks, savedDeckId]);
-
-  useEffect(() => {
-    setPassword("");
+    setSigningUp(false);
   }, [id]);
+
+  const finishSignUp = useCallback(async () => {
+    await refresh();
+    setSigningUp(false);
+  }, [refresh]);
 
   const run = async (action: () => Promise<{ ok: boolean; error?: ApiError }>) => {
     setBusy(true);
@@ -103,9 +109,6 @@ export function TournamentDetail({
     const result = await action();
     setBusy(false);
     if (!result.ok && result.error) setActionError(result.error);
-    if (result.ok) {
-      setPassword("");
-    }
     void refresh();
   };
 
@@ -113,7 +116,7 @@ export function TournamentDetail({
     return (
       <Panel className="tournaments-detail">
         <Alert tone="danger" title={t("tournaments.error.load")}>
-          {describe(loadError, t)}
+          {describeTournamentError({ error: loadError, t })}
         </Alert>
         <Button variant="secondary" onClick={onBack}>
           {t("tournaments.back")}
@@ -132,7 +135,7 @@ export function TournamentDetail({
   const canOrganize = isOrganizer || accountIsAdmin;
   const own = ownParticipant({ participants: detail.participants, accountId });
   const isActiveParticipant = own !== undefined && own.status !== "dropped" && own.status !== "disqualified";
-  const actions = entryActions(detail, own);
+  const actions = entryActions({ detail, own, signedIn: accountId !== undefined });
   const banlistLabel =
     detail.banlistPolicy.mode === "as_of_set"
       ? t("tournaments.banlist.asOfSet", { set: detail.banlistPolicy.setId })
@@ -160,7 +163,12 @@ export function TournamentDetail({
   const bracketPanel = eliminationPhase ? (
     <Panel className="tournaments-bracket">
       <h3>{t("tournaments.bracket.title")}</h3>
-      <TournamentBracket phase={eliminationPhase} participants={detail.participants} accountId={accountId} />
+      <TournamentBracket
+        phase={eliminationPhase}
+        participants={detail.participants}
+        accountId={accountId}
+        spectating={getTournamentBracketSpectating({ detail, onWatchMatch })}
+      />
     </Panel>
   ) : null;
 
@@ -187,9 +195,8 @@ export function TournamentDetail({
   const schedulePanel = (
     <Panel>
       <h3>{t("tournaments.detail.schedule")}</h3>
-      <dl>
-        <dt>{t("tournaments.startsAt")}</dt>
-        <dd>{formatStart(detail.startsAt)}</dd>
+      <TournamentScheduleTimeline startsAt={detail.startsAt} windows={detail.windows} />
+      <dl className="tournaments-detail__kv">
         <dt>{t("tournaments.slotsLabel")}</dt>
         <dd>{t("tournaments.slots", { registered: detail.registeredCount, max: detail.maxPlayers })}</dd>
         {botCount > 0 ? (
@@ -204,114 +211,63 @@ export function TournamentDetail({
           </>
         ) : null}
       </dl>
-      {detail.status === "draft" || detail.status === "registration" || detail.status === "check_in" ? (
+      {(detail.status === "draft" || detail.status === "registration" || detail.status === "check_in") &&
+      (detail.windows?.checkInOpensAt ?? null) === null ? (
         <p className="tournaments-note">{t("tournaments.detail.windowsPending")}</p>
       ) : null}
     </Panel>
   );
 
-  const entryPanel = (
-    <Panel className="tournaments-entry">
-      <h3>{t("tournaments.detail.actions")}</h3>
-      {accountId === undefined ? (
-        <div className="tournaments-detail__signin">
-          <p>{t("tournaments.detail.signInRequired")}</p>
-          <AccountPanel account={null} />
-        </div>
-      ) : (
-        <>
-          {own ? (
-            <p className="tournaments-note">
-              {t("tournaments.detail.yourStatus", { status: t(participantStatusKey(own.status)) })}
-            </p>
-          ) : null}
-          {actions.register ? (
-            <div className="aegis-field">
-              <label className="aegis-field__label" htmlFor="tournament-deck">
-                {t("tournaments.detail.deck")}
-              </label>
-              <select
-                id="tournament-deck"
-                className="aegis-field__control"
-                value={savedDeckId}
-                onChange={(event) => setSavedDeckId(event.target.value)}
-                disabled={decks.length === 0}
-              >
-                {decks.map((deck) => (
-                  <option key={deck.id} value={deck.id}>
-                    {deck.name}
-                  </option>
-                ))}
-              </select>
-              {decks.length === 0 ? (
-                <span className="aegis-field__message" data-error>
-                  {t("tournaments.detail.needDeck")}
-                </span>
-              ) : null}
-            </div>
-          ) : null}
-          {actions.register && detail.passwordProtected ? (
-            <Field
-              label={t("tournaments.detail.password")}
-              type="password"
-              autoComplete="off"
-              maxLength={128}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          ) : null}
-          {actions.register || actions.checkIn ? (
-            <div className="tournaments-detail__actions">
-              {actions.register ? (
-                <Button
-                  disabled={busy || !savedDeckId}
-                  onClick={() => void run(() => tournamentApi.register(detail.id, savedDeckId, password))}
-                >
-                  {t("tournaments.detail.register")}
-                </Button>
-              ) : null}
-              {actions.checkIn ? (
-                <Button
-                  variant="secondary"
-                  disabled={busy}
-                  onClick={() => void run(() => tournamentApi.checkIn(detail.id))}
-                >
-                  {t("tournaments.detail.checkIn")}
-                </Button>
-              ) : null}
-            </div>
-          ) : null}
-          {actions.drop ? (
-            <Button
-              className="tournaments-entry__drop"
-              variant="ghost"
-              size="sm"
-              disabled={busy}
-              onClick={() => void run(() => tournamentApi.drop(detail.id))}
-            >
-              {t("tournaments.detail.drop")}
-            </Button>
-          ) : null}
-          {!actions.register && !actions.checkIn && !actions.drop ? (
-            <p className="tournaments-note">{t("tournaments.detail.noActions")}</p>
-          ) : null}
-        </>
-      )}
-      {actionError ? (
-        <Alert tone="danger" title={t("tournaments.error.action")}>
-          {describe(actionError, t)}
-          {actionError.violations?.length ? (
-            <ul>
-              {actionError.violations.map((violation, index) => {
-                const message = violationMessage(violation, getCardName);
-                return <li key={index}>{t(message.key, message.params)}</li>;
-              })}
-            </ul>
-          ) : null}
-        </Alert>
-      ) : null}
-    </Panel>
-  );
+  const entryView = getTournamentEntryView({
+    signedIn: accountId !== undefined,
+    signingUp,
+    actions,
+    checkInOpen: isCheckInOpen({ status: detail.status, windows: detail.windows, now: serverNow() }),
+    tournamentStatus: detail.status,
+    entryStatus: own?.status ?? detail.myEntry?.status,
+  });
+  const actionAlert = actionError ? <TournamentActionError error={actionError} /> : null;
+  const checkIn = () => void run(() => tournamentApi.checkIn(detail.id));
+  const drop = () => void run(() => tournamentApi.drop(detail.id));
+
+  const entryPanel =
+    entryView.showsProgress || entryView.value === TournamentEntryView.SIGNUP.value ? (
+      <TournamentEntrySummary detail={detail} own={own} />
+    ) : (
+      <TournamentEntryCard
+        detail={detail}
+        own={own}
+        view={entryView}
+        actions={actions}
+        decks={decks}
+        busy={busy}
+        error={actionAlert}
+        onSignUp={() => {
+          setActionError(undefined);
+          setSigningUp(true);
+        }}
+        onDrop={drop}
+        onDeckChanged={refresh}
+        onDecks={onDecks}
+      />
+    );
+
+  const entryProgress = entryView.showsProgress ? (
+    <TournamentEntryProgress
+      detail={detail}
+      view={entryView}
+      decks={decks}
+      busy={busy}
+      canDrop={actions.drop}
+      canChangeDeck={own?.status === "registered" || own?.status === "checked_in"}
+      error={actionAlert}
+      onCheckIn={checkIn}
+      onDrop={drop}
+      onDeckChanged={refresh}
+      onDecks={onDecks}
+      onMyTournaments={onMyTournaments}
+    />
+  ) : null;
 
   const playersPanel = (
     <Panel>
@@ -396,38 +352,54 @@ export function TournamentDetail({
   return (
     <div className="tournaments-detail">
       <header className="tournaments-detail__head">
-        <Button className="tournaments-detail__back" variant="ghost" size="sm" icon={Icons.ArrowLeft} onClick={onBack}>
-          {t("tournaments.back")}
-        </Button>
-        <div className="tournaments-detail__title">
-          <h2>{detail.name}</h2>
-          <Badge tone="primary">{t(statusKey(detail.status))}</Badge>
-          <TournamentReportButton
-            tournamentId={detail.id}
-            tournamentName={detail.name}
-            organizerId={detail.createdBy}
-            accountId={accountId}
-          />
+        <TournamentCrumb onBack={onBack} />
+        <div className="tournaments-detail__title-row">
+          <div className="tournaments-detail__title">
+            <h1>{detail.name}</h1>
+            <Badge tone={isTournamentClosed(detail) ? "neutral" : "success"}>{t(statusKey(detail.status))}</Badge>
+          </div>
+          <div className="tournaments-detail__head-actions">
+            <TournamentCopyLinkButton tournamentId={detail.id} />
+            {detail.discordUrl ? (
+              <a
+                className="aegis-button aegis-button--secondary aegis-button--sm"
+                href={detail.discordUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Icons.Discord size={16} aria-hidden="true" />
+                {t("tournaments.detail.openDiscord")}
+              </a>
+            ) : null}
+            <TournamentReportButton
+              tournamentId={detail.id}
+              tournamentName={detail.name}
+              organizerId={detail.createdBy}
+              accountId={accountId}
+            />
+          </div>
         </div>
         <div className="tournaments-detail__facts">
           <TournamentCategoryBadge category={detail.category} />
-          <span>{t(structureKey(detail.structure))}</span>
-          <span>{formatStart(detail.startsAt)}</span>
-          <span>{t("tournaments.slots", { registered: detail.registeredCount, max: detail.maxPlayers })}</span>
+          <span>
+            <Icons.Calendar size={14} aria-hidden="true" />
+            {formatStart(detail.startsAt)}
+          </span>
+          <span>
+            <Icons.LayoutGrid size={14} aria-hidden="true" />
+            {t(structureKey(detail.structure))}
+            {detail.topCutEnabled ? ` + ${t("tournaments.badge.topCut")}` : ""}
+          </span>
+          <span>
+            <Icons.Swords size={14} aria-hidden="true" />
+            {t("tournaments.bestOf", { count: detail.bestOf })}
+          </span>
+          <span>
+            <Icons.Users size={14} aria-hidden="true" />
+            {t("tournaments.slots", { registered: detail.registeredCount, max: detail.maxPlayers })}
+          </span>
         </div>
         {detail.description ? <p className="tournaments-description">{detail.description}</p> : null}
-        {detail.discordUrl ? (
-          <div>
-            <a
-              className="aegis-button aegis-button--secondary aegis-button--sm"
-              href={detail.discordUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t("tournaments.detail.openDiscord")}
-            </a>
-          </div>
-        ) : null}
       </header>
 
       <nav className="tournaments-detail__tabs" aria-label={t("tournaments.tabs.label")}>
@@ -447,17 +419,40 @@ export function TournamentDetail({
       </nav>
 
       {activeTab === TournamentTab.OVERVIEW.value ? (
-        <div className="tournaments-detail__layout">
+        <div
+          className="tournaments-detail__layout"
+          data-entry-first={
+            entryView.value === TournamentEntryView.OPEN.value ||
+            entryView.value === TournamentEntryView.SIGNED_OUT.value ||
+            undefined
+          }
+        >
           <div className="tournaments-detail__main">
-            <MyMatchPanel detail={detail} accountId={accountId} onJoinGame={onJoinGame} onChanged={refresh} />
-            {isElimination ? bracketPanel : <TournamentMatchHistory detail={detail} onWatchMatch={onWatchMatch} />}
-            {isElimination ? null : <TopCutBracket detail={detail} accountId={accountId} />}
+            {entryView.value === TournamentEntryView.SIGNUP.value ? (
+              <TournamentSignupFlow
+                key={detail.id}
+                detail={detail}
+                decks={decks}
+                onDecks={onDecks}
+                onCancel={() => setSigningUp(false)}
+                onRegistered={finishSignUp}
+              />
+            ) : (
+              <>
+                {entryProgress}
+                <MyMatchPanel detail={detail} accountId={accountId} onJoinGame={onJoinGame} onChanged={refresh} />
+                {isElimination ? bracketPanel : <TournamentMatchHistory detail={detail} onWatchMatch={onWatchMatch} />}
+                {isElimination ? null : (
+                  <TopCutBracket detail={detail} accountId={accountId} onWatchMatch={onWatchMatch} />
+                )}
+              </>
+            )}
           </div>
           <aside className="tournaments-detail__rail">
+            {entryPanel}
             {schedulePanel}
             <TournamentSpectatingPanel detail={detail} isActiveParticipant={isActiveParticipant} />
             {formatPanel}
-            {entryPanel}
           </aside>
         </div>
       ) : null}
@@ -465,7 +460,7 @@ export function TournamentDetail({
       {activeTab === TournamentTab.BRACKET.value ? (
         <div className="tournaments-detail__stack">
           {isElimination ? bracketPanel : null}
-          {isElimination ? null : <TopCutBracket detail={detail} accountId={accountId} />}
+          {isElimination ? null : <TopCutBracket detail={detail} accountId={accountId} onWatchMatch={onWatchMatch} />}
           <TournamentMatchHistory detail={detail} onWatchMatch={onWatchMatch} />
           {isElimination ? null : standingsPanel}
         </div>
@@ -484,6 +479,7 @@ export function TournamentDetail({
 
       {activeTab === TournamentTab.ORGANIZE.value ? (
         <div className="tournaments-detail__stack">
+          <TournamentRuntimeControls detail={detail} onChanged={refresh} />
           <OrganizerControls
             id={detail.id}
             status={detail.status}
@@ -492,6 +488,10 @@ export function TournamentDetail({
             discordAnnounce={detail.discordAnnounce === true}
             category={detail.category}
             checkInOpen={isCheckInOpen({ status: detail.status, windows: detail.windows, now: serverNow() })}
+            structure={detail.structure}
+            allowBots={detail.allowBots}
+            checkedIn={detail.participants.filter((participant) => participant.status === "checked_in").length}
+            waiting={detail.participants.filter((participant) => participant.status === "registered").length}
             onChanged={refresh}
             onDeleted={onBack}
           />
@@ -526,6 +526,10 @@ function OrganizerControls({
   discordAnnounce,
   category,
   checkInOpen,
+  structure,
+  allowBots,
+  checkedIn,
+  waiting,
   onChanged,
   onDeleted,
 }: {
@@ -536,6 +540,10 @@ function OrganizerControls({
   discordAnnounce: boolean;
   category?: TournamentCategory;
   checkInOpen: boolean;
+  structure: TournamentDetailPayload["structure"];
+  allowBots: boolean;
+  checkedIn: number;
+  waiting: number;
   onChanged: () => void;
   onDeleted: () => void;
 }) {
@@ -594,23 +602,22 @@ function OrganizerControls({
             >
               {t("tournaments.detail.saveWindows")}
             </Button>
-            {checkInOpen ? (
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  void tournamentApi.closeCheckIn(id).then((result) => {
-                    if (result.ok) {
-                      setError(undefined);
-                      onChanged();
-                    } else setError(result.error);
-                  })
-                }
-              >
-                {t("tournaments.detail.closeCheckIn")}
-              </Button>
-            ) : null}
           </div>
           {saved ? <p role="status">{t("tournaments.detail.windowsSaved")}</p> : null}
+          {checkInOpen ? (
+            <TournamentCloseCheckIn
+              id={id}
+              structure={structure}
+              allowBots={allowBots}
+              checkedIn={checkedIn}
+              waiting={waiting}
+              onClosed={() => {
+                setError(undefined);
+                onChanged();
+              }}
+              onError={setError}
+            />
+          ) : null}
         </section>
       ) : null}
       {isAdmin ? (
@@ -621,7 +628,7 @@ function OrganizerControls({
       ) : null}
       {error ? (
         <Alert tone="danger" title={t("tournaments.error.action")}>
-          {describe(error, t)}
+          {describeTournamentError({ error, t })}
         </Alert>
       ) : null}
       {deletable ? (
@@ -659,9 +666,4 @@ function OrganizerControls({
       ) : null}
     </Panel>
   );
-}
-
-function describe(error: ApiError, t: ReturnType<typeof useTranslation>["t"]): string {
-  const key = reasonKey(error.code);
-  return key ? t(key) : t("tournaments.reason.unknown", { code: error.code });
 }

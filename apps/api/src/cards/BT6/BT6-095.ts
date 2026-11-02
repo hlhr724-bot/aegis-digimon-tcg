@@ -38,6 +38,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete all of your opponent's Digimon with the lowest DP.",
           kind: "Delete",
           target: {
             filter: {

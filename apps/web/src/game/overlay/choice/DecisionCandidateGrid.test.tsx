@@ -61,6 +61,18 @@ it("does not show a pending badge for concealed identities or cards outside tras
   expect(screen.queryByText("Pending effect")).toBeNull();
 });
 
+it("marks the digivolution card whose inherited effect was used this turn", () => {
+  grid([
+    { instanceId: "spent", cardId: "EX12-064", zone: "digivolutionCards", oncePerTurnUsed: true },
+    { instanceId: "fresh", cardId: "EX12-064", zone: "digivolutionCards" },
+  ]);
+  const spent = screen.getByRole("button", { name: /copy 1/ });
+  const fresh = screen.getByRole("button", { name: /copy 2/ });
+  expect(spent.getAttribute("aria-label")).toContain("Inherited used");
+  expect(within(spent).getByText("Inherited used")).toBeTruthy();
+  expect(within(fresh).queryByText("Inherited used")).toBeNull();
+});
+
 function BlindHandSelection() {
   const [picks, setPicks] = useState<string[]>([]);
   return (

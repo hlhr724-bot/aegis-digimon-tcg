@@ -32,6 +32,7 @@ describe("EX2-067 Fire Ball", () => {
           trigger: "Main",
           actions: [
             {
+              effectTextPart: "[Main] Delete 1 of your opponent's Digimon with 3000 DP or less.",
               kind: "Delete",
               target: {
                 filter: { controller: "opponent", kind: ["Digimon"], dp: { op: "lte", value: 3000 } },
@@ -39,6 +40,8 @@ describe("EX2-067 Fire Ball", () => {
               },
             },
             {
+              effectTextPart:
+                "If an opponent's Digimon wasn't deleted by this effect, ＜Draw 2＞. (Draw 2 cards from your deck.)",
               kind: "Draw",
               controller: "mine",
               amount: 2,

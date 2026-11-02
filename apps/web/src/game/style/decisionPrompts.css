@@ -316,6 +316,16 @@ body:has(.decision-overlay--selection) .narration-slot {
   font-weight: 800;
   letter-spacing: 0.06em;
 }
+.trigger-chooser__host {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+.trigger-chooser__host-art {
+  display: inline-flex;
+  flex-shrink: 0;
+}
 .trigger-chooser__name {
   font-size: var(--ds-text-sm);
   font-weight: 600;
@@ -1100,6 +1110,10 @@ body:has(.decision-overlay--selection) .narration-slot {
   font-size: var(--ds-text-sm);
   line-height: 1.55;
 }
+.waiting-dialog p.waiting-dialog__queue-activity {
+  margin-top: var(--ds-space-3);
+  color: var(--ds-text-2);
+}
 .waiting-dialog__handle {
   display: none;
 }
@@ -1218,6 +1232,34 @@ body:has(.decision-overlay--selection) .narration-slot {
 }
 .room-invite__tiles:active .room-invite__tile {
   transform: scale(0.97);
+}
+.guest-approval__guest {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-width: 0;
+}
+.guest-approval__identity {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+}
+.guest-approval__name {
+  overflow: hidden;
+  color: var(--ds-text);
+  font: 700 var(--ds-text-lg) / 1.2 var(--ds-font-display);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.guest-approval__status {
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-sm);
+}
+.guest-approval__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-2);
 }
 @media (max-width: 600px) {
   .aegis-dialog-layer:has(.waiting-dialog--with-aside) {
@@ -1686,5 +1728,12 @@ body:has(.decision-overlay--selection) .narration-slot {
   border: 1px solid var(--ds-accent);
   border-radius: var(--ds-radius-sm);
   color: var(--ds-text);
+  background: var(--ds-sheet);
+}
+.decision-overlay__used-effect {
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border: 1px dashed var(--ds-line);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text-2);
   background: var(--ds-sheet);
 }

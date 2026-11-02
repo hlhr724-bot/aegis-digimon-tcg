@@ -11,6 +11,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            '[Main] Give 1 of your opponent\'s Digimon "[Start of Your Main Phase] This Digimon attacks." until their turn ends.',
           kind: "GainTriggeredEffect",
           target: { ...opponents, count: 1 },
           gainedTrigger: "StartOfYourMainPhase",
@@ -18,7 +20,7 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
           raw: "[Start of Your Main Phase] This Digimon attacks.",
         },
-        { kind: "PlaceInBattleAreaSelf" },
+        { effectTextPart: "Then, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
       ],
     },
     {

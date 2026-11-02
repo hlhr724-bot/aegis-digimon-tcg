@@ -59,7 +59,7 @@ scenario("evade", () => {
   it("accepting the Evade prompt suspends the Digimon instead of deleting it", async () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
 
-    // Seed 64: seat 0 (protagonist, swapped BLUE_DECK) goes first and its dealt
+    // Seed 118: seat 0 (protagonist, swapped BLUE_DECK) goes first and its dealt
     // opening hand includes BT14-025 "Shellmon". The headless opponent's (swapped
     // RED_DECK) opening hand includes BT14-014 "MetalGreymon" — found by
     // exhaustively searching seeds, mirroring barrier.scenario.test.tsx's seed-206
@@ -67,7 +67,7 @@ scenario("evade", () => {
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: PROTAGONIST_DECK.mainDeck, eggDeck: PROTAGONIST_DECK.eggDeck },
-      seed: 64,
+      seed: 118,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Blue" startMode="casual" onExit={() => {}} />);

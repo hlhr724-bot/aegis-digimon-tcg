@@ -1,4 +1,322 @@
 {
+  "releases.1.46.0-beta.summary": {
+    "en": "Chat after a match, see which inherited effects were used this turn, learn DNA, App Fusion, DigiXros and Assembly from card text, and play fairer tournament tiebreakers. Adds BT27 cards and rules fixes.",
+    "pt-BR": "Converse depois da partida, veja quais efeitos herdados já foram usados no turno, entenda DNA, App Fusion, DigiXros e Assembly direto no texto da carta e jogue torneios com desempates mais justos. Inclui cartas de BT27 e correções de regras.",
+    "es": "Chatea después de la partida, mira qué efectos heredados ya se usaron en el turno, entiende DNA, App Fusion, DigiXros y Assembly desde el texto de la carta y juega torneos con desempates más justos. Incluye cartas de BT27 y correcciones de reglas.",
+    "it": "Chatta dopo la partita, vedi quali effetti ereditati sono già stati usati nel turno, scopri DNA, App Fusion, DigiXros e Assembly dal testo della carta e gioca tornei con spareggi più equi. Include carte BT27 e correzioni alle regole."
+  },
+  "releases.1.46.0-beta.feature.chat": {
+    "en": "The result screen has a Chat button with the unread count. If anyone chatted during the match, the chat opens by itself when the match ends.",
+    "pt-BR": "A tela de resultado tem um botão de Chat com o número de mensagens não lidas. Se alguém conversou durante a partida, o chat abre sozinho quando a partida termina.",
+    "es": "La pantalla de resultado tiene un botón de Chat con el número de mensajes no leídos. Si alguien chateó durante la partida, el chat se abre solo cuando termina la partida.",
+    "it": "La schermata dei risultati ha un pulsante Chat con il numero di messaggi non letti. Se qualcuno ha chattato durante la partita, la chat si apre da sola alla fine della partita."
+  },
+  "releases.1.46.0-beta.feature.effects": {
+    "en": "Digivolution cards whose inherited Once Per Turn effect was used show “Inherited used” in prompts and in the inspector. The effect order window now names the Digimon that carries each inherited effect, with its picture.",
+    "pt-BR": "Cartas de digievolução cujo efeito herdado de Uma vez por turno já foi usado mostram “Herdado usado” nos prompts e no inspetor. A janela de ordem dos efeitos agora mostra o nome e a imagem do Digimon que carrega cada efeito herdado.",
+    "es": "Las cartas de digievolución cuyo efecto heredado de Una vez por turno ya se usó muestran “Heredado usado” en los avisos y en el inspector. La ventana de orden de efectos ahora muestra el nombre y la imagen del Digimon que lleva cada efecto heredado.",
+    "it": "Le carte digievoluzione il cui effetto ereditato Una volta per turno è già stato usato mostrano “Ereditato usato” nei prompt e nell’ispettore. La finestra dell’ordine degli effetti ora mostra il nome e l’immagine del Digimon che porta ogni effetto ereditato."
+  },
+  "releases.1.46.0-beta.feature.cards": {
+    "en": "DNA Digivolution, App Fusion, DigiXros and Assembly in card text open a short explanation with a link to the rules. New BT27 cards: Spencer Damon, Nanami, Kouki, & Ivan, Bio Hybrid Digivolution, and a BanchoLeomon alternate art.",
+    "pt-BR": "DNA Digivolution, App Fusion, DigiXros e Assembly no texto das cartas abrem uma explicação curta com link para as regras. Novas cartas de BT27: Spencer Damon, Nanami, Kouki, & Ivan, Bio Hybrid Digivolution e uma arte alternativa de BanchoLeomon.",
+    "es": "DNA Digivolution, App Fusion, DigiXros y Assembly en el texto de las cartas abren una explicación breve con enlace a las reglas. Nuevas cartas de BT27: Spencer Damon, Nanami, Kouki, & Ivan, Bio Hybrid Digivolution y un arte alternativo de BanchoLeomon.",
+    "it": "DNA Digivolution, App Fusion, DigiXros e Assembly nel testo delle carte aprono una breve spiegazione con un link alle regole. Nuove carte BT27: Spencer Damon, Nanami, Kouki, & Ivan, Bio Hybrid Digivolution e un’arte alternativa di BanchoLeomon."
+  },
+  "releases.1.46.0-beta.feature.tournaments": {
+    "en": "Tournament ties after OMW% are now settled by head-to-head, then by a random draw. A game still running at the round deadline can finish within a 10-minute grace period instead of being voided.",
+    "pt-BR": "Empates de torneio depois do OMW% agora são decididos por confronto direto e depois por sorteio. Uma partida ainda em andamento no prazo da rodada pode terminar em até 10 minutos de tolerância, em vez de ser anulada.",
+    "es": "Los empates de torneo después del OMW% ahora se deciden por enfrentamiento directo y luego por sorteo. Una partida que sigue en curso al cumplirse el plazo de la ronda puede terminar dentro de 10 minutos de tolerancia en lugar de anularse.",
+    "it": "Gli spareggi nei tornei dopo l’OMW% ora si decidono per scontro diretto e poi per sorteggio. Una partita ancora in corso alla scadenza del turno può terminare entro 10 minuti di tolleranza invece di essere annullata."
+  },
+  "releases.1.46.0-beta.fix.sayoKoh": {
+    "en": "Sayo & Koh can pay its cost at the start of your opponent’s turn even when the DNA digivolution can’t happen.",
+    "pt-BR": "Sayo & Koh pode pagar seu custo no início do turno do oponente mesmo quando a digievolução DNA não pode acontecer.",
+    "es": "Sayo & Koh puede pagar su coste al inicio del turno del oponente aunque la digievolución DNA no pueda ocurrir.",
+    "it": "Sayo & Koh può pagare il suo costo all’inizio del turno dell’avversario anche quando la digievoluzione DNA non può avvenire."
+  },
+  "releases.1.46.0-beta.fix.byCosts": {
+    "en": "Effects that read “By [cost], [effect]”, such as Kanan Yuki’s, now ask whether to pay the cost even when the effect has no target.",
+    "pt-BR": "Efeitos do tipo “Ao [custo], [efeito]”, como o de Kanan Yuki, agora perguntam se você quer pagar o custo mesmo quando o efeito não tem alvo.",
+    "es": "Los efectos del tipo “Al [coste], [efecto]”, como el de Kanan Yuki, ahora preguntan si quieres pagar el coste aunque el efecto no tenga objetivo.",
+    "it": "Gli effetti del tipo “Pagando [costo], [effetto]”, come quello di Kanan Yuki, ora chiedono se pagare il costo anche quando l’effetto non ha bersagli."
+  },
+  "releases.1.46.0-beta.fix.cardText": {
+    "en": "P-213 Aegiochusmon shows its correct Chinese text.",
+    "pt-BR": "P-213 Aegiochusmon mostra o texto correto em chinês.",
+    "es": "P-213 Aegiochusmon muestra su texto correcto en chino.",
+    "it": "P-213 Aegiochusmon mostra il testo cinese corretto."
+  },
+  "releases.1.46.0-beta.fix.loading": {
+    "en": "When part of a screen fails to download, Reload now clears the browser’s cached game files before loading again.",
+    "pt-BR": "Quando uma parte da tela não consegue ser baixada, o botão Recarregar agora limpa os arquivos do jogo guardados no navegador antes de carregar de novo.",
+    "es": "Cuando una parte de la pantalla no se puede descargar, Recargar ahora borra los archivos del juego guardados en el navegador antes de volver a cargar.",
+    "it": "Quando una parte della schermata non si scarica, Ricarica ora svuota i file di gioco salvati nel browser prima di ricaricare."
+  },
+  "releases.1.46.0-beta.fix.profile": {
+    "en": "Match history rows on phones keep the deck and opponent names readable.",
+    "pt-BR": "As linhas do histórico de partidas no celular mantêm legíveis os nomes do deck e do oponente.",
+    "es": "Las filas del historial de partidas en el móvil mantienen legibles los nombres del mazo y del oponente.",
+    "it": "Le righe della cronologia partite sul telefono mantengono leggibili i nomi del mazzo e dell’avversario."
+  },
+  "releases.1.45.0-beta.summary": {
+    "en": "Resume matches on another device, see who is searching, browse public replays, and follow matches with a fixed log. Includes card and effect-order fixes.",
+    "pt-BR": "Continue partidas em outro dispositivo, veja quem está procurando partida, explore replays públicos e acompanhe partidas com um histórico fixo. Inclui correções de cartas e da ordem de efeitos.",
+    "es": "Continúa partidas en otro dispositivo, mira quién está buscando partida, explora repeticiones públicas y sigue las partidas con un registro fijo. Incluye correcciones de cartas y del orden de efectos.",
+    "it": "Riprendi le partite su un altro dispositivo, vedi chi sta cercando una partita, sfoglia i replay pubblici e segui le partite con un registro fisso. Include correzioni a carte e all’ordine degli effetti."
+  },
+  "releases.1.45.0-beta.feature.home": {
+    "en": "Home now shows card art and avatars for live matches, a Public replays list, and a Resume match card. Continue a live match on another device by signing in or scanning the QR code in match settings.",
+    "pt-BR": "A página inicial agora mostra arte das cartas e avatares nas partidas ao vivo, uma lista de Replays públicos e um card para Retomar partida. Continue uma partida ao vivo em outro dispositivo entrando na conta ou lendo o QR code nas configurações da partida.",
+    "es": "El inicio ahora muestra arte de cartas y avatares en las partidas en directo, una lista de Repeticiones públicas y una tarjeta para Reanudar partida. Continúa una partida en directo en otro dispositivo iniciando sesión o escaneando el código QR en los ajustes de la partida.",
+    "it": "La home ora mostra artwork e avatar nelle partite in diretta, un elenco di Replay pubblici e una scheda Riprendi partita. Continua una partita in diretta su un altro dispositivo accedendo o scansionando il codice QR nelle impostazioni della partita."
+  },
+  "releases.1.45.0-beta.feature.play": {
+    "en": "The lobby shows how many players are searching with your settings and in all queues. Private room hosts can require approval before a guest joins. Spectators, including guests, can save replays of finished matches.",
+    "pt-BR": "O lobby mostra quantos jogadores estão procurando partida com suas configurações e em todas as filas. Anfitriões de salas privadas podem exigir aprovação antes de um convidado entrar. Espectadores, inclusive convidados, podem salvar replays de partidas encerradas.",
+    "es": "El lobby muestra cuántos jugadores están buscando partida con tus ajustes y en todas las colas. Los anfitriones de salas privadas pueden exigir aprobación antes de que entre un invitado. Los espectadores, incluidos los invitados, pueden guardar repeticiones de partidas terminadas.",
+    "it": "La lobby mostra quanti giocatori stanno cercando una partita con le tue impostazioni e in tutte le code. Gli host delle stanze private possono richiedere l’approvazione prima che un ospite entri. Gli spettatori, inclusi gli ospiti, possono salvare i replay delle partite concluse."
+  },
+  "releases.1.45.0-beta.feature.match": {
+    "en": "New Match log display setting: popups, a fixed log of recent actions, or both, with an unread badge. More confirmations follow the prompt position setting, and a dot marks the card behind a pending or resolving effect.",
+    "pt-BR": "Nova configuração de exibição do histórico: pop-ups, um histórico fixo com as ações recentes ou ambos, com indicador de não lidas. Mais confirmações seguem a posição dos prompts, e um ponto marca a carta de origem de um efeito pendente ou em resolução.",
+    "es": "Nuevo ajuste de visualización del registro: ventanas emergentes, un registro fijo de acciones recientes o ambos, con indicador de no leídas. Más confirmaciones siguen la posición de los avisos, y un punto marca la carta de origen de un efecto pendiente o en resolución.",
+    "it": "Nuova impostazione di visualizzazione del registro: popup, un registro fisso delle azioni recenti o entrambi, con indicatore dei non letti. Più conferme seguono la posizione dei prompt e un punto indica la carta all’origine di un effetto in attesa o in risoluzione."
+  },
+  "releases.1.45.0-beta.feature.inspect": {
+    "en": "Card views you had open, such as the stack inspector or trash, reopen after you answer your own decision. Sort your hand from low to high or high to low.",
+    "pt-BR": "As visualizações de cartas que estavam abertas, como o inspetor de pilha ou o descarte, reabrem depois que você responde à sua decisão. Ordene a mão do menor para o maior ou do maior para o menor.",
+    "es": "Las vistas de cartas que tenías abiertas, como el inspector de pila o la papelera, se vuelven a abrir después de responder tu decisión. Ordena tu mano de menor a mayor o de mayor a menor.",
+    "it": "Le viste delle carte che avevi aperto, come l’ispettore della pila o il cestino, si riaprono dopo aver risposto alla tua decisione. Ordina la mano dal più basso al più alto o viceversa."
+  },
+  "releases.1.45.0-beta.feature.cards": {
+    "en": "Filter the deck builder and collection by keyword. BT27-053 BanchoLeomon is now available. Appmon details now show their Link effect.",
+    "pt-BR": "Filtre o construtor de decks e a coleção por palavra-chave. BT27-053 BanchoLeomon já está disponível. Os detalhes de Appmon agora mostram o efeito Link.",
+    "es": "Filtra el constructor de mazos y la colección por palabra clave. BT27-053 BanchoLeomon ya está disponible. Los detalles de los Appmon ahora muestran su efecto Link.",
+    "it": "Filtra il costruttore di mazzi e la collezione per parola chiave. BT27-053 BanchoLeomon è ora disponibile. I dettagli degli Appmon ora mostrano l’effetto Link."
+  },
+  "releases.1.45.0-beta.fix.solarmon": {
+    "en": "Solarmon (BT27-007) can now digivolve from black Lv.2 Digi-Eggs.",
+    "pt-BR": "Solarmon (BT27-007) agora pode digievoluir a partir de Digi-Ovos Lv.2 pretos.",
+    "es": "Solarmon (BT27-007) ahora puede digievolucionar desde Digi-Huevos Lv.2 negros.",
+    "it": "Solarmon (BT27-007) ora può digievolvere dai Digi-Uova Lv.2 neri."
+  },
+  "releases.1.45.0-beta.fix.jimmyKen": {
+    "en": "Jimmy KEN (BT22-092) no longer bypasses Digimon-effect immunity when it activates another Digimon’s effect.",
+    "pt-BR": "Jimmy KEN (BT22-092) não ignora mais a imunidade a efeitos de Digimon ao ativar o efeito de outro Digimon.",
+    "es": "Jimmy KEN (BT22-092) ya no ignora la inmunidad a efectos de Digimon al activar el efecto de otro Digimon.",
+    "it": "Jimmy KEN (BT22-092) non ignora più l’immunità agli effetti dei Digimon quando attiva l’effetto di un altro Digimon."
+  },
+  "releases.1.45.0-beta.fix.cardText": {
+    "en": "Fixed card text for Davis Motomiya (BT3-093), Plesiomon (EX8-027) and Monzaemon (RB1-018). Davis no longer shows his On Play effect at the start of every turn.",
+    "pt-BR": "Corrigido o texto de Davis Motomiya (BT3-093), Plesiomon (EX8-027) e Monzaemon (RB1-018). Davis não mostra mais o efeito Ao Jogar no início de cada turno.",
+    "es": "Corregido el texto de Davis Motomiya (BT3-093), Plesiomon (EX8-027) y Monzaemon (RB1-018). Davis ya no muestra su efecto Al Jugar al inicio de cada turno.",
+    "it": "Corretto il testo di Davis Motomiya (BT3-093), Plesiomon (EX8-027) e Monzaemon (RB1-018). Davis non mostra più l’effetto Quando Giocato all’inizio di ogni turno."
+  },
+  "releases.1.45.0-beta.fix.effectOrder": {
+    "en": "Marcus Damon & Agumon (AD1-021) now shows the draw before the battle when its end-of-turn attack triggers it.",
+    "pt-BR": "Marcus Damon & Agumon (AD1-021) agora mostra a compra antes da batalha quando o ataque de fim de turno a ativa.",
+    "es": "Marcus Damon & Agumon (AD1-021) ahora muestra el robo antes del combate cuando su ataque de fin de turno lo activa.",
+    "it": "Marcus Damon & Agumon (AD1-021) ora mostra la pescata prima della battaglia quando il suo attacco di fine turno la attiva."
+  },
+  "releases.1.45.0-beta.fix.guard": {
+    "en": "When several Digimon with Guard leave at the same time, the prompt now offers every one of them. The Counter source choice is clearer.",
+    "pt-BR": "Quando vários Digimon com Guard saem ao mesmo tempo, o prompt agora oferece todos eles. A escolha da origem do Counter ficou mais clara.",
+    "es": "Cuando varios Digimon con Guard salen a la vez, el aviso ahora ofrece todos ellos. La elección del origen del Counter es más clara.",
+    "it": "Quando più Digimon con Guard lasciano il campo contemporaneamente, il prompt ora li offre tutti. La scelta della fonte del Counter è più chiara."
+  },
+  "releases.1.44.0-beta.summary": {
+    "en": "A new Aegis layout with a home dashboard and redesigned play, decks, collection, community and tournament screens.",
+    "pt-BR": "Novo layout do Aegis com painel inicial e telas renovadas de jogo, decks, coleção, comunidade e torneios.",
+    "es": "Un nuevo diseño de Aegis con un panel de inicio y pantallas renovadas de juego, mazos, colección, comunidad y torneos.",
+    "it": "Un nuovo layout di Aegis con una dashboard iniziale e schermate rinnovate per gioco, mazzi, collezione, community e tornei."
+  },
+  "releases.1.44.0-beta.feature.dashboard": {
+    "en": "Find live matches, tournaments, your next match, free boosters, your schedule and saved decks on the new home dashboard. Shared page headers and mobile navigation make sections easier to reach.",
+    "pt-BR": "Encontre partidas ao vivo, torneios, sua próxima partida, boosters grátis, agenda e decks salvos no novo painel inicial. Cabeçalhos padronizados e navegação para celular facilitam o acesso às seções.",
+    "es": "Encuentra partidas en directo, torneos, tu próxima partida, sobres gratis, agenda y mazos guardados en el nuevo panel de inicio. Los encabezados compartidos y la navegación móvil facilitan el acceso a las secciones.",
+    "it": "Trova partite in diretta, tornei, la prossima partita, buste gratuite, il calendario e i mazzi salvati nella nuova dashboard. Intestazioni comuni e navigazione mobile rendono le sezioni più accessibili."
+  },
+  "releases.1.44.0-beta.feature.play": {
+    "en": "Play now groups Match, Ranked and Rooms into tabs, with private rooms, live matches and spectating by code together in Rooms.",
+    "pt-BR": "Jogar agora reúne Partida, Ranqueada e Salas em abas, com salas privadas, partidas ao vivo e acesso de espectador por código na aba Salas.",
+    "es": "Jugar ahora agrupa Partida, Clasificatoria y Salas en pestañas, con salas privadas, partidas en directo y acceso como espectador por código en Salas.",
+    "it": "Gioca ora riunisce Partita, Classificata e Stanze in schede, con stanze private, partite in diretta e accesso come spettatore tramite codice in Stanze."
+  },
+  "releases.1.44.0-beta.feature.decks": {
+    "en": "Browse saved decks in the new list layout and build them in a three-column editor, with deck progress in a mobile dock. Play with any legal deck directly from the list.",
+    "pt-BR": "Navegue pelos decks salvos na nova lista e monte seus decks no editor de três colunas, com progresso em uma barra no celular. Jogue com qualquer deck válido diretamente da lista.",
+    "es": "Explora los mazos guardados en la nueva lista y constrúyelos en un editor de tres columnas, con el progreso en una barra móvil. Juega con cualquier mazo válido directamente desde la lista.",
+    "it": "Sfoglia i mazzi salvati nel nuovo elenco e costruiscili in un editor a tre colonne, con i progressi in una barra mobile. Gioca con qualsiasi mazzo valido direttamente dall’elenco."
+  },
+  "releases.1.44.0-beta.feature.collection": {
+    "en": "Collection now has Cards and Free booster tabs. Browse cards and open free boosters with the existing 3D pack opening in one place.",
+    "pt-BR": "A Coleção agora tem abas de Cartas e Booster grátis. Consulte cartas e abra boosters gratuitos com a abertura 3D no mesmo lugar.",
+    "es": "La Colección ahora tiene pestañas de Cartas y Sobre gratis. Consulta cartas y abre sobres gratuitos con la apertura 3D en un solo lugar.",
+    "it": "La Collezione ora include le schede Carte e Busta gratuita. Sfoglia le carte e apri buste gratuite con l’apertura 3D nello stesso posto."
+  },
+  "releases.1.44.0-beta.feature.community": {
+    "en": "Community brings Decks, Meta and Roadmap together in tabs, with trending decks, matchup data and ranked metagame information when ranked is available.",
+    "pt-BR": "A Comunidade reúne Decks, Meta e Roadmap em abas, com decks em destaque, dados de confrontos e informações do metagame quando a ranqueada está disponível.",
+    "es": "La Comunidad reúne Mazos, Meta y Hoja de ruta en pestañas, con mazos destacados, datos de enfrentamientos e información del metajuego cuando la clasificatoria está disponible.",
+    "it": "La Community riunisce Mazzi, Meta e Roadmap in schede, con mazzi di tendenza, dati sugli abbinamenti e informazioni sul metagame quando la classificata è disponibile."
+  },
+  "releases.1.44.0-beta.feature.tournaments": {
+    "en": "Explore tournaments, your events and circuits in the redesigned catalog. Sign up through password, deck and review steps, change your registered deck from a visual list, and follow check-in progress. Organizers get a creation preview and clearer check-in closing controls.",
+    "pt-BR": "Explore torneios, seus eventos e circuitos no catálogo renovado. Inscreva-se pelas etapas de senha, deck e revisão, altere o deck registrado em uma lista visual e acompanhe o check-in. Organizadores contam com prévia na criação e controles mais claros para encerrar o check-in.",
+    "es": "Explora torneos, tus eventos y circuitos en el catálogo renovado. Inscríbete mediante pasos de contraseña, mazo y revisión, cambia el mazo registrado desde una lista visual y sigue el check-in. Los organizadores disponen de una vista previa al crear y controles más claros para cerrar el check-in.",
+    "it": "Esplora tornei, i tuoi eventi e circuiti nel catalogo rinnovato. Iscriviti attraverso i passaggi password, mazzo e riepilogo, cambia il mazzo registrato da un elenco visivo e segui il check-in. Gli organizzatori hanno un’anteprima durante la creazione e controlli più chiari per chiudere il check-in."
+  },
+  "releases.1.43.7-beta.summary": {
+    "en": "Fixes face-down card cleanup and Examon X’s two Decode choices.",
+    "pt-BR": "Corrige o descarte de cartas viradas para baixo e as duas escolhas de Decode de Examon X.",
+    "es": "Corrige el descarte de cartas boca abajo y las dos opciones de Decode de Examon X.",
+    "it": "Corregge lo scarto delle carte coperte e le due scelte Decode di Examon X."
+  },
+  "releases.1.43.7-beta.fix.faceDown": {
+    "en": "Reapermon exposed face down by De-Digivolve is now trashed without activating On Deletion. Hidden tops also clean up correctly at zero DP and in the breeding area.",
+    "pt-BR": "Reapermon exposto virado para baixo por De-Digivolve agora é descartado sem ativar On Deletion. Cartas ocultas no topo também são removidas corretamente com zero DP e na área de criação.",
+    "es": "Reapermon expuesto boca abajo por De-Digivolve ahora se descarta sin activar On Deletion. Las cartas ocultas en la parte superior también se retiran correctamente con cero DP y en el área de crianza.",
+    "it": "Reapermon esposto coperto da De-Digivolve viene ora scartato senza attivare On Deletion. Le carte coperte in cima vengono rimosse correttamente anche a zero DP e nell’area di allevamento."
+  },
+  "releases.1.43.7-beta.fix.decode": {
+    "en": "Examon X now shows its green and blue Decode effects as separate choices. Both dragons can be played before Unleash the Dragon Gene resolves, allowing the intended DNA digivolution.",
+    "pt-BR": "Examon X agora exibe os efeitos Decode verde e azul como escolhas separadas. Os dois dragões podem entrar em campo antes de Unleash the Dragon Gene resolver, permitindo a digivolução DNA esperada.",
+    "es": "Examon X ahora muestra sus efectos Decode verde y azul como opciones separadas. Ambos dragones pueden entrar en juego antes de resolver Unleash the Dragon Gene, permitiendo la digievolución ADN prevista.",
+    "it": "Examon X mostra ora gli effetti Decode verde e blu come scelte separate. Entrambi i draghi possono entrare in gioco prima che si risolva Unleash the Dragon Gene, consentendo la digievoluzione DNA prevista."
+  },
+  "releases.1.43.7-beta.fix.releaseNotes": {
+    "en": "Release notes now focus on player-facing changes without reported-issue badges or links.",
+    "pt-BR": "As notas de versão agora focam nas mudanças para jogadores, sem indicadores ou links de problemas relatados.",
+    "es": "Las notas de versión ahora se centran en los cambios para jugadores, sin etiquetas ni enlaces a incidencias reportadas.",
+    "it": "Le note di rilascio si concentrano ora sulle novità per i giocatori, senza etichette o collegamenti ai problemi segnalati."
+  },
+  "releases.1.43.6-beta.summary": {
+    "en": "Completes Chinese translations for the new BT27 cards so the pending release can deploy.",
+    "pt-BR": "Completa as traduções em chinês das novas cartas BT27 para permitir o deploy da versão pendente.",
+    "es": "Completa las traducciones al chino de las nuevas cartas BT27 para permitir el despliegue de la versión pendiente.",
+    "it": "Completa le traduzioni cinesi delle nuove carte BT27 per consentire il rilascio della versione in attesa."
+  },
+  "releases.1.43.6-beta.fix.translations": {
+    "en": "Adds the missing card name and effect translations for MirageGaogamon, Solarmon, Meramon, SkullMeramon and PrinceMamemon (X Antibody). Includes the features and fixes announced in v1.43.5.",
+    "pt-BR": "Adiciona as traduções ausentes de nome e efeitos de MirageGaogamon, Solarmon, Meramon, SkullMeramon e PrinceMamemon (X Antibody). Inclui os recursos e as correções anunciados na v1.43.5.",
+    "es": "Añade las traducciones faltantes de nombre y efectos de MirageGaogamon, Solarmon, Meramon, SkullMeramon y PrinceMamemon (X Antibody). Incluye las funciones y correcciones anunciadas en v1.43.5.",
+    "it": "Aggiunge le traduzioni mancanti di nome ed effetti di MirageGaogamon, Solarmon, Meramon, SkullMeramon e PrinceMamemon (X Antibody). Include le funzionalità e le correzioni annunciate nella v1.43.5."
+  },
+  "releases.1.43.5-beta.summary": {
+    "en": "Five new BT27 cards, tournament controls, and fixes for blind discards, Ogudomon payments and required card reveals.",
+    "pt-BR": "Cinco novas cartas BT27, controles de torneio e correções para descartes às cegas, pagamentos de Ogudomon e revelação de cartas exigidas.",
+    "es": "Cinco nuevas cartas BT27, controles de torneos y correcciones para descartes a ciegas, pagos de Ogudomon y revelación de cartas requeridas.",
+    "it": "Cinque nuove carte BT27, controlli dei tornei e correzioni per scarti alla cieca, pagamenti di Ogudomon e rivelazione delle carte richieste."
+  },
+  "releases.1.43.5-beta.feature.bt27": {
+    "en": "Solarmon, Meramon, SkullMeramon, PrinceMamemon (X Antibody) and MirageGaogamon / Full Moon Blaster from BT27 are now available.",
+    "pt-BR": "Solarmon, Meramon, SkullMeramon, PrinceMamemon (X Antibody) e MirageGaogamon / Full Moon Blaster de BT27 agora estão disponíveis.",
+    "es": "Solarmon, Meramon, SkullMeramon, PrinceMamemon (X Antibody) y MirageGaogamon / Full Moon Blaster de BT27 ya están disponibles.",
+    "it": "Solarmon, Meramon, SkullMeramon, PrinceMamemon (X Antibody) e MirageGaogamon / Full Moon Blaster di BT27 sono ora disponibili."
+  },
+  "releases.1.43.5-beta.feature.tournaments": {
+    "en": "Inspect your registered tournament deck and change it before check-in closes. Organizers can choose automatic or manual round starts and cancel an event with a reason.",
+    "pt-BR": "Consulte seu deck registrado no torneio e altere-o antes do encerramento do check-in. Organizadores podem escolher o início automático ou manual das rodadas e cancelar um evento informando o motivo.",
+    "es": "Consulta tu mazo registrado en el torneo y cámbialo antes del cierre del check-in. Los organizadores pueden elegir el inicio automático o manual de las rondas y cancelar un evento indicando el motivo.",
+    "it": "Consulta il mazzo registrato al torneo e cambialo prima della chiusura del check-in. Gli organizzatori possono scegliere l’avvio automatico o manuale dei turni e annullare un evento indicando il motivo."
+  },
+  "releases.1.43.5-beta.fix.blindDiscard": {
+    "en": "DanDevimon and Barbamon now keep every opposing hand card hidden during a blind discard, including cards revealed earlier.",
+    "pt-BR": "DanDevimon e Barbamon agora mantêm todas as cartas da mão adversária ocultas durante um descarte às cegas, incluindo cartas reveladas anteriormente.",
+    "es": "DanDevimon y Barbamon ahora mantienen ocultas todas las cartas de la mano rival durante un descarte a ciegas, incluidas las reveladas antes.",
+    "it": "DanDevimon e Barbamon ora nascondono tutte le carte della mano avversaria durante uno scarto alla cieca, comprese quelle rivelate in precedenza."
+  },
+  "releases.1.43.5-beta.fix.ogudomon": {
+    "en": "Ogudomon can now return Seven Great Demon Lords Option cards as part of its seven differently named cards payment.",
+    "pt-BR": "Ogudomon agora pode devolver cartas Option de Seven Great Demon Lords como parte do pagamento de sete cartas com nomes diferentes.",
+    "es": "Ogudomon ahora puede devolver cartas Option de Seven Great Demon Lords como parte del pago de siete cartas con nombres distintos.",
+    "it": "Ogudomon ora può restituire carte Option Seven Great Demon Lords come parte del pagamento di sette carte con nomi diversi."
+  },
+  "releases.1.43.5-beta.fix.reveal": {
+    "en": "Cards paid face down under Tamers now reveal their identity first when a printed requirement must be verified, while the placed stack remains face down.",
+    "pt-BR": "Cartas pagas viradas para baixo sob Tamers agora revelam sua identidade antes quando um requisito impresso precisa ser verificado, mantendo a pilha virada para baixo após a colocação.",
+    "es": "Las cartas pagadas boca abajo bajo Tamers ahora revelan primero su identidad cuando debe verificarse un requisito impreso, y permanecen boca abajo después de colocarse.",
+    "it": "Le carte pagate a faccia in giù sotto i Tamer ora rivelano prima la propria identità quando occorre verificare un requisito stampato, restando a faccia in giù dopo il posizionamento."
+  },
+  "releases.1.43.5-beta.fix.tournamentEntry": {
+    "en": "Tournament games now require a valid tournament authorization and use the registered frozen deck instead of falling back to casual matchmaking.",
+    "pt-BR": "Partidas de torneio agora exigem uma autorização válida e usam o deck registrado e congelado, sem cair no pareamento casual.",
+    "es": "Las partidas de torneo ahora exigen una autorización válida y usan el mazo registrado y congelado, sin pasar al emparejamiento casual.",
+    "it": "Le partite di torneo ora richiedono un’autorizzazione valida e usano il mazzo registrato e bloccato, senza passare all’abbinamento casuale."
+  },
+  "releases.1.43.4-beta.summary": {
+    "en": "Clearer Option decisions, two new BT27 cards, and fixes for granted deletion choices and the Adventure opening deck.",
+    "pt-BR": "Decisões de Option mais claras, duas novas cartas BT27 e correções na escolha de exclusão concedida e no deck inicial de Adventure.",
+    "es": "Decisiones de Option más claras, dos nuevas cartas BT27 y correcciones en la elección de eliminación otorgada y el mazo inicial de Adventure.",
+    "it": "Decisioni Option più chiare, due nuove carte BT27 e correzioni alla scelta di eliminazione concessa e al mazzo iniziale di Adventure."
+  },
+  "releases.1.43.4-beta.feature.bt27": {
+    "en": "Thundermon (X Antibody) and Mamemon (X Antibody) from BT27 are now available.",
+    "pt-BR": "Thundermon (X Antibody) e Mamemon (X Antibody) de BT27 agora estão disponíveis.",
+    "es": "Thundermon (X Antibody) y Mamemon (X Antibody) de BT27 ya están disponibles.",
+    "it": "Thundermon (X Antibody) e Mamemon (X Antibody) di BT27 sono ora disponibili."
+  },
+  "releases.1.43.4-beta.feature.optionClauses": {
+    "en": "Option prompts highlight the printed clause currently being resolved.",
+    "pt-BR": "Os prompts de Option destacam o trecho do efeito que está sendo resolvido.",
+    "es": "Los mensajes de Option resaltan la cláusula del efecto que se está resolviendo.",
+    "it": "Le richieste Option evidenziano la clausola dell’effetto attualmente in risoluzione."
+  },
+  "releases.1.43.4-beta.fix.fascination": {
+    "en": "The player controlling a Digimon affected by Seventh Fascination now chooses which of their own Digimon to delete.",
+    "pt-BR": "O jogador que controla um Digimon afetado por Seventh Fascination agora escolhe qual dos próprios Digimon excluir.",
+    "es": "El jugador que controla un Digimon afectado por Seventh Fascination ahora elige cuál de sus propios Digimon eliminar.",
+    "it": "Il giocatore che controlla un Digimon influenzato da Seventh Fascination ora sceglie quale dei propri Digimon eliminare."
+  },
+  "releases.1.43.4-beta.fix.adventure": {
+    "en": "Greymon vs. Shellmon in Adventure now gives the player the WarGreymon deck with the Agumon evolution line.",
+    "pt-BR": "Greymon contra Shellmon em Adventure agora oferece ao jogador o deck de WarGreymon com a linha evolutiva de Agumon.",
+    "es": "Greymon contra Shellmon en Adventure ahora ofrece al jugador el mazo de WarGreymon con la línea evolutiva de Agumon.",
+    "it": "Greymon contro Shellmon in Adventure ora assegna al giocatore il mazzo WarGreymon con la linea evolutiva di Agumon."
+  },
+  "releases.1.43.4-beta.fix.effects": {
+    "en": "Skipping an optional first action no longer cancels an independent Then clause that can still resolve.",
+    "pt-BR": "Recusar uma primeira ação opcional não cancela mais um trecho independente de Then que ainda pode ser resolvido.",
+    "es": "Omitir una primera acción opcional ya no cancela una cláusula Then independiente que aún puede resolverse.",
+    "it": "Saltare una prima azione facoltativa non annulla più una clausola Then indipendente che può ancora risolversi."
+  },
+  "releases.1.43.4-beta.fix.cardText": {
+    "en": "Card wording, clause boundaries and translations are more accurate, including the new BT27 card text.",
+    "pt-BR": "Os textos de cartas, a separação dos efeitos e as traduções estão mais precisos, incluindo os textos das novas cartas BT27.",
+    "es": "Los textos de las cartas, la separación de cláusulas y las traducciones son más precisos, incluidos los textos de las nuevas cartas BT27.",
+    "it": "I testi delle carte, i confini delle clausole e le traduzioni sono più accurati, compresi i testi delle nuove carte BT27."
+  },
+  "releases.1.43.3-beta.summary": {
+    "en": "Clearer match decisions, cleaner card scans, and fixes for repeated Retaliation effects.",
+    "pt-BR": "Decisões de partida mais claras, imagens de cartas mais limpas e correções para múltiplos efeitos de Retaliation.",
+    "es": "Decisiones de partida más claras, imágenes de cartas más limpias y correcciones para múltiples efectos de Retaliation.",
+    "it": "Decisioni di partita più chiare, immagini delle carte più pulite e correzioni per effetti multipli di Retaliation."
+  },
+  "releases.1.43.3-beta.feature.scans": {
+    "en": "501 clean card scans improve card readability.",
+    "pt-BR": "501 imagens limpas de cartas melhoram a leitura.",
+    "es": "501 imágenes limpias de cartas mejoran la lectura.",
+    "it": "501 immagini pulite delle carte migliorano la leggibilità."
+  },
+  "releases.1.43.3-beta.feature.decisions": {
+    "en": "Selected targets are easier to distinguish, card names show field references, and the match log is clearer.",
+    "pt-BR": "Os alvos selecionados ficam mais fáceis de distinguir, os nomes das cartas mostram referências de campo e o histórico da partida fica mais claro.",
+    "es": "Los objetivos seleccionados se distinguen mejor, los nombres de las cartas muestran referencias de campo y el registro de la partida es más claro.",
+    "it": "I bersagli selezionati sono più facili da distinguere, i nomi delle carte mostrano i riferimenti sul campo e il registro della partita è più chiaro."
+  },
+  "releases.1.43.3-beta.fix.retaliation": {
+    "en": "Each copy of Retaliation now activates separately, including when the first deletion is prevented.",
+    "pt-BR": "Cada cópia de Retaliation agora ativa separadamente, inclusive quando a primeira exclusão é impedida.",
+    "es": "Cada copia de Retaliation ahora se activa por separado, incluso si se evita la primera eliminación.",
+    "it": "Ogni copia di Retaliation ora si attiva separatamente, anche quando viene impedita la prima eliminazione."
+  },
+  "releases.1.43.3-beta.fix.prompts": {
+    "en": "The return-to-decision bar stays clear of the hand, spectators see the correct joining notice, and keyword hints recognize lowercase names.",
+    "pt-BR": "A barra de retorno à decisão não cobre a mão, espectadores veem o aviso correto ao entrar e as dicas de palavras-chave reconhecem nomes em minúsculas.",
+    "es": "La barra para volver a la decisión no tapa la mano, los espectadores ven el aviso correcto al entrar y las pistas de palabras clave reconocen nombres en minúsculas.",
+    "it": "La barra per tornare alla decisione non copre la mano, gli spettatori vedono l’avviso corretto durante l’ingresso e i suggerimenti delle parole chiave riconoscono i nomi in minuscolo."
+  },
   "releases.1.43.2-beta.summary": {
     "en": "BT27 Chessmon royals, tournament sign-ups that stay open during check-in, and clearer tournament error messages.",
     "pt-BR": "Os reais Chessmon do BT27, inscrições de torneio abertas durante o check-in e mensagens de erro de torneio mais claras.",

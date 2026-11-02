@@ -41,6 +41,8 @@ describe("BT4-101 through BT4-110 direct IR audit evidence", () => {
   it("preserves BT4-101's all-own aura and Security hand return", () => {
     expect(effect("BT4-101", "Main").actions).toEqual([
       {
+        effectTextPart:
+          '[Main] All of your Digimon gain "[Your Turn] When attacking an opponent\'s Digimon with no digivolution cards, delete that Digimon" for the turn.',
         kind: "GrantAuraToOpponents",
         includeLaterEntrants: true,
         target: { filter: { controller: "mine", kind: ["Digimon"] }, count: "all" },
@@ -57,12 +59,16 @@ describe("BT4-101 through BT4-110 direct IR audit evidence", () => {
   it("preserves BT4-102's own return before Q1399 rule-teardown opponent returns", () => {
     expect(effect("BT4-102", "Main").actions).toEqual([
       {
+        effectTextPart:
+          "[Main] Return 1 of your Digimon to its owner's hand to return up to 2 of your opponent's level 4 or lower Digimon to their owners' hands. Trash all of the digivolution cards of those Digimon.",
         kind: "Return",
         target: { filter: { controller: "mine", kind: ["Digimon"], allowTokens: true }, count: 1 },
         to: "hand",
         raw: "by returning 1 of your Digimon to its owner's hand",
       },
       {
+        effectTextPart:
+          "[Main] Return 1 of your Digimon to its owner's hand to return up to 2 of your opponent's level 4 or lower Digimon to their owners' hands. Trash all of the digivolution cards of those Digimon.",
         kind: "Return",
         target: {
           filter: {
@@ -122,6 +128,8 @@ describe("BT4-101 through BT4-110 direct IR audit evidence", () => {
   it("preserves BT4-105's face-down placement with canonical stack teardown", () => {
     expect(effect("BT4-105", "Main").actions).toEqual([
       {
+        effectTextPart:
+          "[Main] Place 1 of your Digimon on top of your security stack face down. Trash all of the digivolution cards of that Digimon.",
         kind: "SecurityManipulation",
         op: "placeAsSecurity",
         controller: "mine",
@@ -139,6 +147,7 @@ describe("BT4-101 through BT4-110 direct IR audit evidence", () => {
   it("preserves BT4-106's all-opponent timed DP reduction and Security activation", () => {
     expect(effect("BT4-106", "Main").actions).toEqual([
       {
+        effectTextPart: "[Main] All of your opponent's Digimon get -3000 DP for the turn.",
         kind: "ModifyDP",
         playerWide: true,
         target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: "all" },
@@ -178,8 +187,16 @@ describe("BT4-101 through BT4-110 direct IR audit evidence", () => {
 
   it("preserves BT4-108's printed unsuspend-then-suspend order", () => {
     expect(effect("BT4-108", "Main").actions).toEqual([
-      { kind: "Unsuspend", target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 } },
-      { kind: "Suspend", target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 } },
+      {
+        effectTextPart: "[Main] Unsuspend 1 of your Digimon and suspend 1 of your opponent's Digimon.",
+        kind: "Unsuspend",
+        target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
+      },
+      {
+        effectTextPart: "[Main] Unsuspend 1 of your Digimon and suspend 1 of your opponent's Digimon.",
+        kind: "Suspend",
+        target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
+      },
     ]);
     expect(effect("BT4-108", "Security")).toMatchObject({ isSecurity: true, actions: [{ kind: "ActivateMain" }] });
   });
@@ -232,6 +249,8 @@ describe("BT4-101 through BT4-110 direct IR audit evidence", () => {
   it("preserves BT4-110's dynamic D-Brigade deletion ceiling", () => {
     expect(effect("BT4-110", "Main").actions).toEqual([
       {
+        effectTextPart:
+          "[Main] Delete 1 of your opponent's Digimon with a play cost of 3 or less. For each of your Digimon with [D-Brigade] in its type, add +1 to the maximum play cost of the Digimon you can choose with this effect.",
         kind: "Delete",
         target: {
           filter: {

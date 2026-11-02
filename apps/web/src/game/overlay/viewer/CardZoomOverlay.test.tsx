@@ -45,6 +45,19 @@ describe("CardZoomOverlay printed text", () => {
     expect(cardWidth(dialog)).toBeLessThan(largeWidth);
   });
 
+  it.each([
+    ["BT22-035", "give -4000 DP for the turn"],
+    ["BT22-058", "De-Digivolve 1"],
+  ])("shows the printed Link effect when card text is enabled for %s", (cardId, effect) => {
+    localStorage.setItem("aegis:locale", "en");
+    const dialog = renderZoom(cardId);
+    hideTextIfShown(dialog);
+    expect(dialog.textContent).not.toContain(effect);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Show card text" }));
+    const heading = within(dialog).getByText("Link effect", { selector: ".card-zoom__printed > strong" });
+    expect(heading.parentElement?.textContent).toContain(effect);
+  });
+
   it("remembers the choice for the next card", () => {
     const first = renderZoom();
     hideTextIfShown(first);

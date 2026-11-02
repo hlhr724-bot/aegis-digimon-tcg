@@ -37,7 +37,7 @@ describe("BT19-008 Shoutmon", () => {
           optional: true,
           payCost: false,
           from: ["underTamers"],
-          into: { nameOrTrait: [{ tokens: ["OmniShoutmon"], match: "name" }] },
+          into: { nameOrTrait: [{ tokens: ["OmniShoutmon"], match: "nameExact" }] },
           onto: { filter: { controller: "mine", kind: ["Tamer"] }, count: 1 },
         },
       ],

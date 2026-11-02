@@ -2,6 +2,7 @@ import { expect, it, vi } from "vitest";
 import { evolutionDeck } from "./decks.js";
 import { runResidualMatch } from "./residualMatch.js";
 import { SEED_RESIDUAL } from "./residualPolicy.js";
+import { recordApplicationRandomCalls } from "#api/engine/testkit/recordApplicationRandomCalls";
 
 it("keeps client projections valid when Ulforce returns a just-evolved top card before the next patch", async () => {
   const decks = [
@@ -41,9 +42,7 @@ it("replays effect-driven security shuffles from the match seed without ambient 
     evolutionDeck("bt5-lordknightmon").deck,
     evolutionDeck("bt24-dgo-2026-02-14-13-jupitermon").deck,
   ] as const;
-  const ambient = vi.spyOn(Math, "random").mockImplementation(() => {
-    throw new Error("Match escaped its seeded random stream");
-  });
+  const ambient = recordApplicationRandomCalls();
   try {
     const results = [];
     for (const learnerSeat of [0, 1, 0] as const) {
@@ -58,9 +57,9 @@ it("replays effect-driven security shuffles from the match seed without ambient 
       expect(result.turnCount).toBe(results[0]!.turnCount);
       expect(result.events).toEqual(results[0]!.events);
     }
-    expect(ambient).not.toHaveBeenCalled();
+    expect(ambient.stacks).toEqual([]);
   } finally {
-    ambient.mockRestore();
+    ambient.restore();
   }
 }, 30000);
 

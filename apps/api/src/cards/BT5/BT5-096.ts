@@ -11,6 +11,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Return all of your opponent's Digimon with 3000 DP or less to their owners' hands. If you have a Digimon in play with [Garurumon] or [Omnimon] in its name, return all of your opponent's Digimon with 5000 DP or less to their owners' hands instead. Trash all of the digivolution cards of those Digimon.",
           kind: "Return",
           target,
           to: "hand",
@@ -24,6 +26,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] Return all of your opponent's Digimon with 3000 DP or less to their owners' hands. If you have a Digimon in play with [Garurumon] or [Omnimon] in its name, return all of your opponent's Digimon with 5000 DP or less to their owners' hands instead. Trash all of the digivolution cards of those Digimon.",
           kind: "Return",
           target: {
             filter: { controller: "opponent", kind: ["Digimon"], dp: { op: "lte", value: 5000 } },

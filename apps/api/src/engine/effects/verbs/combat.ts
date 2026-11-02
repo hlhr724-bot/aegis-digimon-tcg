@@ -108,6 +108,15 @@ export function createCombatVerbs(pc: PrimitivesContext) {
             { sourceCardId: opts.decisionProvenance?.sourceCardId ?? attacker.topCard.cardId },
           );
         }
+        if (opts?.deleteAtEndOfAttack === true) {
+          continuous.addCustomEffectGrant(
+            attacker.topCard.instanceId,
+            controllerSeat,
+            "[End of Attack] Delete this Digimon.",
+            EffectDuration.UntilEndAttack,
+            { sourceCardId: opts.decisionProvenance?.sourceCardId ?? attacker.topCard.cardId },
+          );
+        }
         await opts?.afterAttackDeclaration?.();
       },
       afterAttackTriggers: async () => {

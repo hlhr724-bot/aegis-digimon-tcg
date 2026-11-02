@@ -19,7 +19,7 @@ describe("BT1-058 Chirinmon", () => {
       forms: ["Ultimate"],
       attributes: ["Vaccine"],
       types: ["Holy Beast"],
-      effectText: "[When Attacking] Gain 3 memory. At end of turn， lose 3 memory.",
+      effectText: "[When Attacking] Gain 3 memory. At end of turn, lose 3 memory.",
       rarity: "U",
       maxCountInDeck: 4,
       imageId: "BT1-058",

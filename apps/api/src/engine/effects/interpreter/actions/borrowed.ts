@@ -132,7 +132,13 @@ function borrowableFromCompiled(args: {
   // Borrowed effects need the same printed provenance as ordinary registered effects.
   // A timing-only summary cannot distinguish two clauses with the same timing in the client.
   for (const effect of withPrintedClauses(args.sourceCardId, args.compiled).effects) {
-    if (!args.action.fromTriggers.includes(effect.trigger) || effect.isSecurity === true) continue;
+    if (
+      !args.action.fromTriggers.includes(effect.trigger) ||
+      effect.isSecurity === true ||
+      effect.isInherited === true
+    ) {
+      continue;
+    }
     if (args.trigger !== undefined && effect.trigger !== args.trigger) continue;
     const triggerOrdinal = ordinals.get(effect.trigger) ?? 0;
     ordinals.set(effect.trigger, triggerOrdinal + 1);

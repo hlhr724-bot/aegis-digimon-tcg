@@ -20,7 +20,7 @@ describe("BT1-053 Darcmon", () => {
       attributes: ["Vaccine"],
       types: ["Angel"],
       effectText:
-        "[Your Turn] When you play a level 3 yellow Digimon， if this Digimon is suspended， trigger ＜Draw 1＞ (Draw 1 card from your deck).",
+        "[Your Turn] When you play a level 3 yellow Digimon, if this Digimon is suspended, trigger ＜Draw 1＞ (Draw 1 card from your deck).",
       rarity: "U",
       maxCountInDeck: 4,
       imageId: "BT1-053",

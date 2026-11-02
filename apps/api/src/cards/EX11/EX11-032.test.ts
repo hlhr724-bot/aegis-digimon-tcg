@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { runtimeCompiledCard } from "../../engine/effects/interpreter.js";
 import { effectsOf } from "../../engine/effects/collect.js";
 import { advance } from "../../engine/testkit/advance.js";
+import { observe } from "#api/engine/testkit/observe";
 import { assertNoLoudGap, setupEngine, settle } from "../../engine/testkit/harness.js";
 import "../index.js";
 import "../EX7/EX7-031.js";
@@ -168,25 +169,74 @@ describe("EX11-032 GrandGalemon", () => {
     assertNoLoudGap(s);
   });
 
-  it("takes the ordinary green level-4 evolution route", async () => {
-    const s = setupEngine({
-      0: {
-        battleArea: [{ card: "EX11-028", as: "base" }],
-        hand: [{ card: cardId, as: "grand" }],
-      },
-    });
-    s.state.memory = 3;
-    expect(
-      s.engine.applyIntent(0, {
-        type: "digivolve",
-        permanentId: s.perm("base").permanentId,
-        instanceId: s.inst("grand").instanceId,
-      }),
-    ).toEqual({ ok: true });
-    await settle(() => s.perm("base").topCard.cardId === cardId);
-    expect(s.state.memory).toBe(0);
-    assertNoLoudGap(s);
-  });
+  it.each(["missing", "opponent", "hand"])(
+    "refuses the hand Main warp when Shoto Kazama is %s instead of in your battle area",
+    async (location) => {
+      const s = setupEngine({
+        0: {
+          battleArea: [{ card: "EX11-026", as: "pteromon" }],
+          hand: [{ card: cardId, as: "grand" }, ...(location === "hand" ? ["EX11-062"] : [])],
+          trash: [{ card: "EX11-028", as: "galemon" }],
+          deck: ["BT1-009"],
+        },
+        1: { battleArea: location === "opponent" ? ["EX11-062"] : [] },
+      });
+      s.state.memory = 3;
+      await s.ready();
+      const source = observe(s.engine).cardSource(s.inst("grand"));
+      const effect = effectsOf(EffectTiming.OnDeclaration, source).find((entry) =>
+        entry.effectKey.startsWith(`${cardId}/`),
+      )!;
+      expect(effect).toBeDefined();
+      expect(s.inst("grand").activatableEffectsJson).toBe("");
+      expect(
+        s.engine.applyIntent(0, {
+          type: "activateEffect",
+          sourceInstanceId: s.inst("grand").instanceId,
+          effectKey: effect.effectKey,
+        }).ok,
+      ).toBe(false);
+      expect(s.perm("pteromon").topCard.cardId).toBe("EX11-026");
+      expect(s.perm("pteromon").stack).toHaveLength(0);
+      expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual([s.inst("galemon").instanceId]);
+      expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(s.inst("grand").instanceId);
+      expect(s.state.memory).toBe(3);
+      expect(s.state.pendingDecision).toBeUndefined();
+      assertNoLoudGap(s);
+    },
+  );
+
+  it.each(["EX11-028", "P-132"])(
+    "takes the ordinary green level-4 evolution route from %s without Shoto Kazama",
+    async (base) => {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [{ card: base, as: "base" }],
+            hand: [{ card: cardId, as: "grand" }],
+            deck: ["BT1-009"],
+          },
+        },
+        { autoDeclineOptional: true },
+      );
+      s.state.memory = 3;
+      await s.ready();
+      expect(
+        s.engine.applyIntent(0, {
+          type: "digivolve",
+          permanentId: s.perm("base").permanentId,
+          instanceId: s.inst("grand").instanceId,
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.perm("base").topCard.cardId === cardId && !s.state.pendingDecision);
+      expect(s.perm("base").stack.map((card) => card.cardId)).toEqual([base]);
+      expect(s.state.players[0]!.hand.map((card) => card.cardId)).toEqual(["BT1-009"]);
+      expect(s.state.players[0]!.deck).toHaveLength(0);
+      expect(s.state.turnSeat).toBe(0);
+      expect(s.state.memory).toBe(0);
+      assertNoLoudGap(s);
+    },
+  );
 
   it("applies the EX7-031 inherited cost reduction to the hand Main route", async () => {
     const preferred: string[] = [];

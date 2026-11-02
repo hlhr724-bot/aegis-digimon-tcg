@@ -58,14 +58,14 @@ scenario("digi-xros", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 22: seat 0 (protagonist, the swapped deck) goes first and its dealt
+    // Seed 94: seat 0 (protagonist, the swapped deck) goes first and its dealt
     // opening hand includes two copies of BT11-009 "Shoutmon + StarSword" and one
     // BT5-009 "Shoutmon" — found by exhaustively searching seeds, mirroring
     // mulligan.scenario.test.tsx's seed-4 search.
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: PROTAGONIST_DECK.mainDeck, eggDeck: PROTAGONIST_DECK.eggDeck },
-      seed: 22,
+      seed: 94,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Red" startMode="casual" onExit={() => {}} />);

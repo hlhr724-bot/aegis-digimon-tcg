@@ -112,6 +112,10 @@ export function ViewerBattleRow({
           for (const member of members) chrome.permanentRefs.current[member.permanentId] = el;
         }}
         candidate={isBasePermanent(p)}
+        picked={
+          chrome.decisionPickedInstanceIds.has(p.permanentId) ||
+          chrome.decisionPickedInstanceIds.has(p.topCard.instanceId)
+        }
         selectionOrder={chrome.materialSelectionOrder?.get(p.permanentId)}
         {...groupChrome(members, chrome)}
         // A board-mode optional prompt points at the permanent whose

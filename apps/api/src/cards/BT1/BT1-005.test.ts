@@ -17,7 +17,7 @@ describe("BT1-005 Kyaromon", () => {
       evoCosts: [],
       forms: ["In-Training"],
       types: ["Lesser"],
-      inheritedEffectText: "[Your Turn] While you have 6 or more security cards， this Digimon gets +2000 DP.",
+      inheritedEffectText: "[Your Turn] While you have 6 or more security cards, this Digimon gets +2000 DP.",
     });
     expect(getCardDefinition("BT1-005")?.effectText).toBeUndefined();
     expect(compiled.effects).toEqual([

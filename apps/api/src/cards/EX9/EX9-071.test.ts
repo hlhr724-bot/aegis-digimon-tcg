@@ -152,8 +152,8 @@ describe("EX9-071", () => {
       ],
     });
     expect(compiled.effects?.find((entry) => entry.trigger === "Main")?.actions).toEqual([
-      { kind: "Draw", controller: "mine", amount: 1 },
-      { kind: "PlaceInBattleAreaSelf" },
+      { effectTextPart: "[Main] ＜Draw 1＞.", kind: "Draw", controller: "mine", amount: 1 },
+      { effectTextPart: "Then, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
     ]);
   });
   it("has Delay to unsuspend a selected DM Digimon by trashing its bottom two face-down cards", () =>

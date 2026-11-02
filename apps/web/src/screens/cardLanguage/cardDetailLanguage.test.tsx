@@ -131,3 +131,31 @@ it("updates an open default face when the interface language changes", async () 
   );
   expect(screen.getByRole("dialog").textContent).toContain("When any of your Digimon would leave the battle area");
 });
+
+it.each([
+  ["BT22-035", "en", "Link effect", "give -4000 DP for the turn"],
+  ["BT22-058", "en", "Link effect", "De-Digivolve 1"],
+  ["BT22-035", "pt-BR", "Efeito de Link", "give -4000 DP for the turn"],
+  ["BT22-058", "pt-BR", "Efeito de Link", "De-Digivolve 1"],
+])("shows the printed Link effect of %s in the %s card drawer", async (cardId, locale, title, effect) => {
+  localStorage.setItem("aegis:locale", locale);
+  render(
+    <I18nProvider>
+      <CardDetailDrawer cardId={cardId} onClose={() => undefined} />
+    </I18nProvider>,
+  );
+  const heading = await screen.findByText(title, { selector: ".card-detail-effect__title" });
+  await waitFor(() => expect(heading.parentElement?.textContent).toContain(effect));
+  expect(screen.getByRole("dialog").querySelectorAll(".card-detail-effect")).toHaveLength(2);
+});
+
+it("omits the Link section for a card without a printed Link effect", async () => {
+  localStorage.setItem("aegis:locale", "en");
+  render(
+    <I18nProvider>
+      <CardDetailDrawer cardId="BT1-010" onClose={() => undefined} />
+    </I18nProvider>,
+  );
+  await screen.findByText("Main effect", { selector: ".card-detail-effect__title" });
+  expect(screen.queryByText("Link effect", { selector: ".card-detail-effect__title" })).toBeNull();
+});

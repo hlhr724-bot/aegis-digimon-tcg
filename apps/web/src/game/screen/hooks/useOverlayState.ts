@@ -8,9 +8,10 @@
    closes it or the permanent leaves the board. The opponent's card menu, the trash
    and the security viewer stay until the viewer closes them, the card leaves the
    board, the viewer gets a decision of their own (which they must not cover), or
-   the match ends. */
+   the match ends. What a decision or combat window of the viewer's own closed reopens
+   once the viewer has answered it, so they return to the card they were reading. */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DecisionRequest, GameState } from "@aegis/shared";
 import { combatWindowKey } from "@aegis/shared/schema/GameState";
 import type { Seat } from "@aegis/shared/schema/enums";
@@ -27,19 +28,60 @@ import type {
   PendingActionConfirmation,
 } from "../types";
 
-export function useOverlayState({
-  decision,
-  state,
-  clearSel,
-  clearDeclarations,
-  viewerSeat,
-}: {
+type Inspection = {
+  cardMenu: CardMenuAnchor | null;
+  stackView: string | null;
+  trashView: Side | null;
+  securityView: Side | null;
+  handPreview: string | null;
+};
+
+type InspectionStillPresentParams = {
+  inspection: Inspection;
+  state: GameState | undefined;
+  viewerSeat: Seat;
+};
+
+type OverlayStateParams = {
   decision: DecisionRequest | undefined;
   state: GameState | undefined;
+  handPreview: string | null;
+  setHandPreview: (instanceId: string | null) => void;
   clearSel: () => void;
   clearDeclarations: () => void;
   viewerSeat: Seat;
-}) {
+};
+
+function hasInspection(inspection: Inspection): boolean {
+  return Object.values(inspection).some((value) => value !== null);
+}
+
+function getInspectionStillPresent({ inspection, state, viewerSeat }: InspectionStillPresentParams): Inspection {
+  const permanentIds = new Set(
+    Array.from(state?.players ?? []).flatMap((player) => [
+      ...Array.from(player.battleArea, (permanent) => permanent.permanentId),
+      ...(player.breeding ? [player.breeding.permanentId] : []),
+    ]),
+  );
+  const handInstanceIds = new Set(Array.from(state?.players[viewerSeat]?.hand ?? [], (card) => card.instanceId));
+  return {
+    cardMenu: inspection.cardMenu && permanentIds.has(inspection.cardMenu.permanentId) ? inspection.cardMenu : null,
+    stackView: inspection.stackView && permanentIds.has(inspection.stackView) ? inspection.stackView : null,
+    trashView: inspection.trashView,
+    securityView: inspection.securityView,
+    handPreview: inspection.handPreview && handInstanceIds.has(inspection.handPreview) ? inspection.handPreview : null,
+  };
+}
+
+export function useOverlayState({
+  decision,
+  state,
+  handPreview,
+  setHandPreview,
+  clearSel,
+  clearDeclarations,
+  viewerSeat,
+}: OverlayStateParams) {
   /** The permanent whose action menu is open, and where to anchor it. */
   const [cardMenu, setCardMenu] = useState<CardMenuAnchor | null>(null);
   /** The permanent whose stack viewer is open, by permanent id. */
@@ -96,16 +138,44 @@ export function useOverlayState({
   const ownDecisionId = decision?.decisionId;
   const gameOver = state?.gameOver;
   const ownCombatWindowKey = state?.combatWindow?.seat === viewerSeat ? combatWindowKey(state.combatWindow) : undefined;
+  const latest = useRef({
+    state,
+    setHandPreview,
+    inspection: { cardMenu, stackView, trashView, securityView, handPreview },
+  });
+  latest.current = { state, setHandPreview, inspection: { cardMenu, stackView, trashView, securityView, handPreview } };
+  const parkedInspection = useRef<Inspection | null>(null);
   useEffect(() => {
+    const { inspection, state: currentState, setHandPreview: restoreHandPreview } = latest.current;
     if (!ownDecisionId && !gameOver && !ownCombatWindowKey) {
+      const parked = parkedInspection.current;
+      parkedInspection.current = null;
+      if (!parked || hasInspection(inspection)) {
+        return;
+      }
+      const restored = getInspectionStillPresent({ inspection: parked, state: currentState, viewerSeat });
+      setCardMenu(restored.cardMenu);
+      setStackView(restored.stackView);
+      setTrashView(restored.trashView);
+      setSecurityView(restored.securityView);
+      restoreHandPreview(restored.handPreview);
       return;
+    }
+    const interrupted = {
+      ...inspection,
+      cardMenu: inspection.cardMenu?.side === Side.Opponent ? inspection.cardMenu : null,
+    };
+    if (gameOver) {
+      parkedInspection.current = null;
+    } else if (hasInspection(interrupted)) {
+      parkedInspection.current = interrupted;
     }
     clearSel();
     setCardMenu(null);
     setStackView(null);
     setTrashView(null);
     setSecurityView(null);
-  }, [ownDecisionId, gameOver, ownCombatWindowKey, clearSel]);
+  }, [ownDecisionId, gameOver, ownCombatWindowKey, clearSel, viewerSeat]);
 
   return {
     cardMenu,

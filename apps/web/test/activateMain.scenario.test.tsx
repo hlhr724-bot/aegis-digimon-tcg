@@ -40,13 +40,13 @@ scenario("activate-main", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 18: seat 0 (protagonist) goes first (even seed) and its dealt opening
+    // Seed 2: seat 0 (protagonist) goes first (even seed) and its dealt opening
     // hand includes BT15-009 (found by exhaustively searching seeds for the
     // swapped RED_DECK, mirroring mulligan.scenario.test.tsx's seed-4 search).
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: PROTAGONIST_DECK.mainDeck, eggDeck: PROTAGONIST_DECK.eggDeck },
-      seed: 18,
+      seed: 2,
     };
 
     let joinCallCount = 0;

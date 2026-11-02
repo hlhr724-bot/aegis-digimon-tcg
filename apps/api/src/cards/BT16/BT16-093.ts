@@ -31,6 +31,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon with [Gargomon] or [Rapidmon] in its name may digivolve into a card with [Rapidmon] in its name in your hand, ignoring its digivolution requirements and without paying the cost.",
           kind: "Digivolve",
           target: {
             filter: {
@@ -61,6 +63,8 @@ const compiled: CompiledCard = {
           bindResultAs: "bt16093Rapidmon",
         },
         {
+          effectTextPart:
+            "Until the end of your opponent's turn, their effects can't reduce the DP of the Digimon this effect digivolved.",
           kind: "Restrict",
           target: {
             filter: {

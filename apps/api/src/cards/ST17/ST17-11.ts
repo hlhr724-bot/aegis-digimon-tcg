@@ -42,6 +42,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "You may play 1 [Terriermon] or [Lopmon] from your hand without paying the cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

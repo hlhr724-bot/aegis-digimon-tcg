@@ -1,7 +1,7 @@
 export const TournamentCatalogTab = {
-  UPCOMING: { name: "UPCOMING", value: "upcoming", labelKey: "tournaments.catalog.upcoming" },
+  EXPLORE: { name: "EXPLORE", value: "explore", labelKey: "tournaments.catalog.explore" },
   MINE: { name: "MINE", value: "mine", labelKey: "tournaments.catalog.mine" },
-  FINISHED: { name: "FINISHED", value: "finished", labelKey: "tournaments.catalog.finished" },
+  CIRCUITS: { name: "CIRCUITS", value: "circuits", labelKey: "tournaments.circuits.title" },
 } as const;
 
 export type TournamentCatalogTab = (typeof TournamentCatalogTab)[keyof typeof TournamentCatalogTab]["value"];

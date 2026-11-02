@@ -16,6 +16,7 @@ export type TournamentCommandName =
   | "concede_match"
   | "disqualify"
   | "cancel_tournament"
+  | "round_start_mode_changed"
   | "correct_result"
   // Automatic decisions. Recorded because the plan's acceptance criterion is that EVERY action,
   // automatic or not, is reconstructible from the ledger — not only the ones a human typed.

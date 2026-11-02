@@ -19,7 +19,7 @@ describe("BT1-026 Breakdramon", () => {
       attributes: ["Virus"],
       types: ["Machine Dragon"],
       effectText:
-        "＜Piercing＞ (When this Digimon attacks and deletes an opponent's Digimon and survives the battle， it performs any security checks it normally would.)",
+        "＜Piercing＞ (When this Digimon attacks and deletes an opponent's Digimon and survives the battle, it performs any security checks it normally would.)",
     });
     expect(getCardDefinition("BT1-026")?.inheritedEffectText).toBeUndefined();
     expect(getCardDefinition("BT1-026")?.securityEffectText).toBeUndefined();

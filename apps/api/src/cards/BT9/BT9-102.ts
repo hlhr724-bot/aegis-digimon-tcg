@@ -32,6 +32,9 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] You may trash 1 card with [Cyborg] or [Machine] in its traits in your hand to have all of your level 6 Digimon with [Machine] in their traits gain ＜Rush＞ (This Digimon can attack the turn it comes into play) and “[On Play] If this Digimon has a digivolution card, ＜Blitz＞. (This Digimon can attack when your opponent has 1 or more memory.)” for the turn.",
+          payCostBeforeOptional: false,
           kind: "GainKeyword",
           target: { filter: { controller: "mine", kind: ["Digimon"], levels: [6], traits: ["Machine"] }, count: "all" },
           keyword: { keyword: "Rush" },
@@ -43,6 +46,8 @@ export const compiled: CompiledCard = {
           playerWide: true,
         },
         {
+          effectTextPart:
+            "[Main] You may trash 1 card with [Cyborg] or [Machine] in its traits in your hand to have all of your level 6 Digimon with [Machine] in their traits gain ＜Rush＞ (This Digimon can attack the turn it comes into play) and “[On Play] If this Digimon has a digivolution card, ＜Blitz＞. (This Digimon can attack when your opponent has 1 or more memory.)” for the turn.",
           kind: "GrantStatic",
           target: { filter: { controller: "mine", kind: ["Digimon"], levels: [6], traits: ["Machine"] }, count: "all" },
           grant: "effects",

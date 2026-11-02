@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] 1 of your opponent's Digimon gets -2000 DP for the turn.",
           kind: "ModifyDP",
           target: { filter: { controllerDefault: "opponent", kind: ["Digimon"] }, count: 1 },
           amount: -2000,

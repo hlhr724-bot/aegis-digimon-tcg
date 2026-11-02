@@ -44,6 +44,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Return 1 of your opponent's Digimon to their owner's deck.",
           kind: "Return",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
           to: "deckBottom",

@@ -37,7 +37,7 @@ export const compiled: CompiledCard = {
           from: ["hand"],
           payCost: false,
           optional: true,
-          cost: { kind: "suspend", target: self },
+          cost: { kind: "suspend", target: self, raw: "by suspending this Tamer" },
         },
       ],
     },

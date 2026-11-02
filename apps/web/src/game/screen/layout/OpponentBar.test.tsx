@@ -181,6 +181,49 @@ describe("the desktop toolbar's trailing group", () => {
   });
 });
 
+describe("the match log button's unread count", () => {
+  it("shows new log entries on the desktop log button and in its name", () => {
+    render(
+      <I18nProvider>
+        <OpponentBar {...props({ logUnread: 3 })} />
+      </I18nProvider>,
+    );
+    const button = screen.getByRole("button", { name: "Match log, 3 new" });
+    expect(button.querySelector("[data-testid='log-unread']")?.textContent).toBe("3");
+  });
+
+  it("shows new log entries on the narrow layout's log button, capped at nine", () => {
+    render(
+      <I18nProvider>
+        <OpponentBar {...props({ narrowGameLayout: true, logUnread: 12 })} />
+      </I18nProvider>,
+    );
+    const button = screen.getByTestId("log-strip");
+    expect(button.getAttribute("aria-label")).toBe("Match log, 12 new");
+    expect(button.querySelector("[data-testid='log-unread']")?.textContent).toBe("9+");
+  });
+
+  it("adds new log entries to the portrait match menu's count", () => {
+    render(
+      <I18nProvider>
+        <OpponentBar {...props({ portraitArena: true, logUnread: 2, chatUnread: 1 })} />
+      </I18nProvider>,
+    );
+    expect(screen.getByTestId("menu-unread").textContent).toBe("3");
+    expect(screen.getByRole("button", { name: /Match log, 2 new/, hidden: true })).toBeTruthy();
+  });
+
+  it("hides the count when there is nothing new", () => {
+    render(
+      <I18nProvider>
+        <OpponentBar {...props({ logUnread: 0 })} />
+      </I18nProvider>,
+    );
+    expect(screen.getByRole("button", { name: "Match log" })).toBeTruthy();
+    expect(screen.queryByTestId("log-unread")).toBeNull();
+  });
+});
+
 it.each([false, true])(
   "offers leaving instead of surrendering after game over in portrait mode %s",
   (portraitArena) => {

@@ -78,13 +78,11 @@ export function CommunityDeckPage({
 
   if (load.status !== "ready")
     return (
-      <div className="community-page">
-        <div className="community-column aegis-page-sheet">
-          {back}
-          <p className="community-empty" role="status">
-            {load.status === "loading" ? t("common.loading") : t("community.notFound")}
-          </p>
-        </div>
+      <div className="community-deck-page">
+        {back}
+        <p className="community-empty" role="status">
+          {load.status === "loading" ? t("common.loading") : t("community.notFound")}
+        </p>
       </div>
     );
 
@@ -109,8 +107,8 @@ export function CommunityDeckPage({
   const updated = new Date(deck.updatedAt).toLocaleDateString(locale);
 
   return (
-    <div className="community-page">
-      <div className="community-column aegis-page-sheet">
+    <div className="community-deck-page">
+      <div className="community-deck-page__column">
         {back}
         <Panel as="div" className="community-deck-hero">
           <span className="community-deck-hero__cover">
@@ -122,7 +120,7 @@ export function CommunityDeckPage({
             />
           </span>
           <div className="community-deck-hero__identity">
-            <h1 className="aegis-page-title">{deck.name}</h1>
+            <h2 className="aegis-page-title">{deck.name}</h2>
             <p className="community-deck-hero__meta">
               {t("community.byAuthor", { name: deck.author.displayName })} · {t("community.updated", { date: updated })}
             </p>

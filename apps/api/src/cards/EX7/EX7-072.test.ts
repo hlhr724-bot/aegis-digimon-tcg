@@ -39,7 +39,7 @@ describe("EX7-072 Seventh Fascination", () => {
       kind: "GainTriggeredEffect",
       target: { count: "all" },
       gainedTrigger: "EndOfYourTurn",
-      gainedActions: [{ kind: "Delete", target: { chooser: "opponent" } }],
+      gainedActions: [{ kind: "Delete", target: { filter: { controller: "mine" }, count: 1 } }],
       duration: "untilOpponentTurnEnd",
     });
     expect(compiled.effects?.find((entry) => entry.isSecurity)?.actions[0]).toMatchObject({

@@ -7,6 +7,9 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] You may delete 1 of your Digimon to delete 1 of your opponent's level 4 or lower Digimon.",
+          payCostBeforeOptional: false,
           kind: "Delete",
           target: {
             filter: { controller: "opponent", kind: ["Digimon"], levelComparison: { op: "lte", value: 4 } },

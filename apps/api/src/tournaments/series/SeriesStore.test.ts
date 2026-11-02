@@ -815,3 +815,53 @@ it("publishes roster identities and the winning seat for a bot confrontation", a
     winnerParticipantId: null,
   });
 });
+
+it("refuses to start a waiting round even when both players request presence", async () => {
+  await fixture.accounts.pool.query("UPDATE tournament_matches SET status='waiting' WHERE id=$1", [fixture.matchId]);
+  for (const accountId of [fixture.alice, fixture.bob]) {
+    expect(
+      await fixture.store.markPresent({
+        tournamentId: fixture.tournamentId,
+        matchId: fixture.matchId,
+        accountId,
+        winsRequired: 2,
+        seriesDurationMs: SERIES_DURATION_MS,
+        now: START,
+      }),
+    ).toEqual({ ok: false, reason: "match_not_ready" });
+  }
+  expect(await fixture.store.seriesForMatch(fixture.matchId)).toBeUndefined();
+});
+
+it("rejects issued authorizations and late results after the tournament is cancelled", async () => {
+  const series = await startSeries();
+  const credentials = await fixture.store.authorizeNextGame({
+    seriesId: series.id,
+    accountId: fixture.alice,
+    now: START + 6000,
+  });
+  expect(credentials.ok).toBe(true);
+  if (!credentials.ok) {
+    return;
+  }
+  await fixture.accounts.pool.query("UPDATE tournaments SET status='cancelled' WHERE id=$1", [fixture.tournamentId]);
+  expect(
+    await fixture.store.authorizeNextGame({ seriesId: series.id, accountId: fixture.bob, now: START + 7000 }),
+  ).toEqual({ ok: false, reason: "tournament_cancelled" });
+  expect(
+    await fixture.store.claimGame({
+      gameId: credentials.value.gameId,
+      authorizationToken: credentials.value.token,
+      roomId: "late-room",
+      now: START + 7000,
+    }),
+  ).toEqual({ ok: false, reason: "tournament_cancelled" });
+  expect(
+    await fixture.store.recordGameResult({
+      gameId: credentials.value.gameId,
+      roomId: "late-room",
+      outcome: { kind: "winner", winnerAccountId: fixture.alice },
+      finishedAt: START + 8000,
+    }),
+  ).toEqual({ ok: false, reason: "tournament_cancelled" });
+});

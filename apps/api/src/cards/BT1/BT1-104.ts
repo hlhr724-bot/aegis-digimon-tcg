@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] All of your Digimon gain the following effect for the turn: “[When Attacking] 1 of your opponent's Digimon gets -2000 DP for the turn.”",
           kind: "SubTrigger",
           event: "whenAttacking",
           playerScoped: true,

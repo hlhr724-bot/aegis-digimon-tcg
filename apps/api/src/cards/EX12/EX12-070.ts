@@ -25,6 +25,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] By trashing 1 [TB] trait card from your hand, ＜Draw 2＞",
           kind: "Draw",
           controller: "mine",
           amount: 2,
@@ -43,7 +44,7 @@ export const compiled: CompiledCard = {
           optional: true,
           abortOnDecline: true,
         },
-        { kind: "PlaceInBattleAreaSelf" },
+        { effectTextPart: "After, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
       ],
     },
     {

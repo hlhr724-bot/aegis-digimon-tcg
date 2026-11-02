@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { setupScenario } from "#api/engine/testkit/scenario";
 import { settle, type EngineSetup } from "#api/engine/testkit/harness";
 import { observe } from "#api/engine/testkit/observe";
-import { crimsonBlazeXrosSourcePlayFixture } from "#api/engine/scenarios/crimson-blaze-xros-source-play.fixture";
+import fixture from "#api/engine/scenarios/crimson-blaze-xros-source-play.fixture";
 import "#api/cards/index";
 
 type PlayOptionParams = { setup: EngineSetup; alias: "crimsonBlaze" | "gaiaForce" };
@@ -20,7 +20,7 @@ async function playOption({ setup, alias }: PlayOptionParams) {
 
 describe("Crimson Blaze blocks Xros source plays", () => {
   it.each([false, true])("keeps the X7 source-play prohibition separate from storing sources: %s", async (blocked) => {
-    const s = setupScenario(crimsonBlazeXrosSourcePlayFixture, { autoAcceptOptional: true, autoSelectCards: true });
+    const s = setupScenario(fixture, { autoAcceptOptional: true, autoSelectCards: true });
     s.state.phase = Phase.Main;
     await s.ready();
     const x7Id = s.perm("x7").permanentId;
@@ -40,7 +40,7 @@ describe("Crimson Blaze blocks Xros source plays", () => {
     );
   });
   it.each([false, true])("applies the effect-play prohibition to Kotone after suspending it: %s", async (blocked) => {
-    const s = setupScenario(crimsonBlazeXrosSourcePlayFixture, {
+    const s = setupScenario(fixture, {
       autoAcceptOptional: true,
       autoSelectCards: true,
       declineDigiXros: true,

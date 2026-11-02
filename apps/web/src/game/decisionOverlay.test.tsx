@@ -996,8 +996,8 @@ describe("order-trigger chooser identity", () => {
           candidates={[]}
           picks={[]}
           triggerDetails={[
-            { sourceLabel: "Field: 1", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
-            { sourceLabel: "Field: 1", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
+            { sourceLabel: "Field", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
+            { sourceLabel: "Field", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
           ]}
           onTogglePick={vi.fn()}
           onRespond={vi.fn()}
@@ -1006,7 +1006,41 @@ describe("order-trigger chooser identity", () => {
     );
 
     expect(screen.getAllByText(/Delete 1 of your opponent/)).toHaveLength(2);
-    expect(screen.getAllByText("Field: 1")).toHaveLength(2);
+    expect(screen.getAllByText("Field")).toHaveLength(2);
+  });
+
+  it("shows the Digimon carrying an inherited effect beside the effect's own card", () => {
+    const { container } = render(
+      <I18nProvider>
+        <DecisionOverlay
+          request={{
+            decisionId: "inherited-host",
+            seat: 0,
+            kind: "orderTriggers",
+            promptText: "Choose the next pending effect to resolve.",
+            options: {
+              triggerKeys: [
+                buildTriggerKey("agumon-source", "BT1-010/inherited"),
+                buildTriggerKey("megadramon-permanent", "EX12-064/on-play"),
+              ],
+              triggerCardIds: ["BT1-010", "EX12-064"],
+              triggerIsInherited: [true, false],
+            },
+          }}
+          candidates={[]}
+          picks={[]}
+          triggerDetails={[{ sourceLabel: "Inherited by Omnimon", hostCardId: "BT1-084" }, { sourceLabel: "Field" }]}
+          onTogglePick={vi.fn()}
+          onRespond={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    const hosts = container.querySelectorAll(".trigger-chooser__host");
+    expect(hosts).toHaveLength(1);
+    expect(hosts[0]!.textContent).toContain("Inherited by Omnimon");
+    expect(hosts[0]!.querySelector(".trigger-chooser__host-art")).toBeTruthy();
+    expect(screen.getByText("Field")).toBeTruthy();
   });
 
   it("uses full catalog text instead of shortened summaries", () => {

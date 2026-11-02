@@ -429,3 +429,21 @@ describe("AccountStore tournament results", () => {
     await store.close();
   });
 });
+
+it("keeps cancelled legacy tournaments closed to tickets, room claims and late results", async () => {
+  const store = createStore();
+  try {
+    const { id, players } = await startTournament(store, 2);
+    const match = (await store.tournamentMatches(id)).find((entry) => entry.status === "pending")!;
+    expect(await store.claimTournamentRoom(match.id, "already-playing")).toBe(true);
+    await store.pool.query("UPDATE tournaments SET status='cancelled' WHERE id=$1", [id]);
+    expect(await store.createTournamentMatchTicket(players[0]!.id, id, match.id)).toBeUndefined();
+    expect(await store.claimTournamentRoom(match.id, "already-playing")).toBe(false);
+    const ids: [string, string] = [match.player0AccountId!, match.player1AccountId!];
+    expect(await store.recordTournamentRoomResult(match.id, "already-playing", ids, ids[0], "surrender")).toBe(false);
+    expect(await store.recordTournamentRoomDraw(match.id, "already-playing", ids, "timeout")).toBe(false);
+    expect((await store.tournament(id))?.status).toBe("cancelled");
+  } finally {
+    await store.close();
+  }
+});

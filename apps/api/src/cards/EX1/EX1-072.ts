@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Your opponent can't use Option cards until the end of their next turn.",
           kind: "RestrictPlay",
           seat: "opponent",
           filter: { kind: ["Option"] },

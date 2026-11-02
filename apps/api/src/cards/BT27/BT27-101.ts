@@ -33,6 +33,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] By placing 1 [Peckmon] and 1 [Crowmon] from your trash as 1 of your [Falcomon]'s bottom digivolution cards, that Digimon may digivolve into [Ravemon] in the trash, ignoring digivolution requirements and without paying the cost.",
           kind: "CostGatedBlock",
           cost: {
             kind: "compound",

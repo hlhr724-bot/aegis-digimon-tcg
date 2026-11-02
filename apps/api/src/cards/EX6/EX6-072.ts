@@ -34,6 +34,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your level 6 Digimon and 1 card in the hand may DNA digivolve into a level 7 Digimon card in your hand.",
           kind: "DnaDigivolve",
           materials: [
             {

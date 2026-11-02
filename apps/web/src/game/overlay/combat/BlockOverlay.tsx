@@ -5,6 +5,7 @@ import { useTranslation } from "../../../i18n";
 import { CardArt } from "../CardArt";
 
 import { CardPromptFrame } from "./CardPromptFrame";
+import { useEffectPromptPosition } from "@/game/effectPromptPosition";
 
 export function BlockOverlay({
   attackerCardId,
@@ -22,13 +23,14 @@ export function BlockOverlay({
 }) {
   const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
+  const effectPromptPosition = useEffectPromptPosition();
   const forced = mustBlock && blockers.length > 0;
   return (
     <CardPromptFrame
       cardId={attackerCardId}
       fallback={<Icons.Swords size={32} />}
       className={`block-overlay${blockers.length ? "" : " block-overlay--empty"}`}
-      surface={blockers.length ? "center" : "left"}
+      surface={blockers.length ? "center" : effectPromptPosition}
       label={t("overlay.blockWindow")}
       eyebrow={
         <>

@@ -1,6 +1,6 @@
 {
   "name": "@aegis/web",
-  "version": "1.43.2-beta",
+  "version": "1.46.0-beta",
   "private": true,
   "description": "Aegis client: React + TypeScript + Vite. A pure function of synchronized state; sends intents, contains no rules.",
   "type": "module",
@@ -36,7 +36,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^3.7.0",
-    "three": "^0.186.1"
+    "three": "^0.186.1",
+    "uqr": "0.1.3"
   },
   "devDependencies": {
     "@colyseus/schema": "^5.0.34",

@@ -37,6 +37,7 @@ describe("BT2-101 through BT2-110 IR coverage", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart: "[Main] Suspend all of your opponent's Digimon with 6000 DP or less.",
             kind: "Suspend",
             target: {
               filter: { controller: "opponent", kind: ["Digimon"], dp: { op: "lte", value: 6000 } },
@@ -53,6 +54,8 @@ describe("BT2-101 through BT2-110 IR coverage", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart:
+              "[Main] Return 1 of your opponent's suspended Digimon to the bottom of their deck. (Trash all of the digivolution cards of that Digimon.)",
             kind: "Return",
             target: { filter: { controller: "opponent", suspended: true, kind: ["Digimon"] }, count: 1 },
             to: "deckBottom",
@@ -67,6 +70,7 @@ describe("BT2-101 through BT2-110 IR coverage", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart: "[Main] 1 of your Digimon gets +3000 DP for the turn.",
             kind: "ModifyDP",
             target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
             amount: 3000,
@@ -91,6 +95,7 @@ describe("BT2-101 through BT2-110 IR coverage", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart: "[Main] Unsuspend 1 of your Digimon with ＜Blocker＞.",
             kind: "Unsuspend",
             target: { filter: { controller: "mine", kind: ["Digimon"], keywords: ["Blocker"] }, count: 1 },
           },
@@ -119,6 +124,8 @@ describe("BT2-101 through BT2-110 IR coverage", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart:
+              "[Main] Trigger ＜De-Digivolve 1＞ on 1 of your opponent's Digimon. (Trash 1 card from the top of one of your opponent's Digimon. If it has no digivolution cards, or becomes a level 3 Digimon, you can't trash any more cards.)",
             kind: "DeDigivolve",
             target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
             amount: 1,
@@ -133,6 +140,8 @@ describe("BT2-101 through BT2-110 IR coverage", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart:
+              "[Main] Trigger ＜De-Digivolve 4＞ on 1 of your opponent's Digimon. (Trash up to 4 cards from the top of one of your opponent's Digimon. If it has no digivolution cards, or becomes a level 3 Digimon, you can't trash any more cards.)",
             kind: "DeDigivolve",
             target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
             amount: 4,
@@ -147,6 +156,7 @@ describe("BT2-101 through BT2-110 IR coverage", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart: "[Main] 1 of your Digimon gets +3000 DP for the turn.",
             kind: "ModifyDP",
             target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
             amount: 3000,
@@ -197,6 +207,7 @@ describe("BT2-101 through BT2-110 IR coverage", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart: "[Main] Delete 1 of your opponent's unsuspended Digimon.",
             kind: "Delete",
             target: { filter: { controller: "opponent", unsuspended: true, kind: ["Digimon"] }, count: 1 },
           },

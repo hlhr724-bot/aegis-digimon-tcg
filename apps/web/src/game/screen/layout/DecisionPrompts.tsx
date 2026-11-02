@@ -188,6 +188,10 @@ export function DecisionPrompts({
                       isSuspended: details?.isSuspended,
                       zone: card.zone,
                       pendingEffect: card.pendingEffect,
+                      oncePerTurnUsed:
+                        host?.stack.some(
+                          (source) => source.instanceId === card.instanceId && source.oncePerTurnUsed,
+                        ) === true,
                       trashOriginCardId: card.trashOriginCardId,
                     };
                   })}

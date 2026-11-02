@@ -54,6 +54,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] By placing 1 [Sunflowmon] and 1 [Lilamon] from your trash as 1 of your [Lalamon]'s bottom digivolution cards, that Digimon may digivolve into [Rosemon] in the hand, ignoring digivolution requirements and without paying the cost.",
           kind: "CostGatedBlock",
           cost: {
             kind: "compound",

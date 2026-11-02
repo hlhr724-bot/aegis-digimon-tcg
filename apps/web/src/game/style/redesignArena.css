@@ -1014,6 +1014,23 @@ button.game-player-line__name {
 .game-hand-sort__menu button[aria-checked="true"] {
   background: color-mix(in srgb, var(--ds-accent) 12%, transparent);
 }
+.game-hand-sort__menu [role="group"] {
+  display: grid;
+}
+.game-hand-sort__separator {
+  height: 1px;
+  margin: var(--ds-space-1) 0;
+  background: var(--ds-line-strong);
+}
+.game-hand-sort__direction {
+  display: flex;
+  flex: none;
+  opacity: 0.8;
+}
+.game-hand-sort__apply .game-hand-sort__direction svg {
+  width: 12px;
+  height: 12px;
+}
 .game-hand-sort__check {
   display: flex;
   flex: none;
@@ -1085,7 +1102,8 @@ button.game-player-line__name {
   .game-hand-sort__mode:active {
     background: color-mix(in srgb, currentColor 10%, transparent);
   }
-  .game-hand-sort__label {
+  .game-hand-sort__label,
+  .game-hand-sort__direction {
     display: none;
   }
 }

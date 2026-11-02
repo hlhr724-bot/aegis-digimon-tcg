@@ -1,3 +1,6 @@
+import type { TournamentOwnDeck } from "@aegis/shared/tournaments/TournamentOwnDeck";
+import { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
+import { isTournamentRoundStartMode } from "@aegis/shared/tournaments/isTournamentRoundStartMode";
 import { isDeckStatsWindow } from "@aegis/shared/decks/isDeckStatsWindow";
 import { getMatchHistoryExport } from "#api/accounts/getMatchHistoryExport";
 import type { MatchHistoryExport } from "@aegis/shared/replays/MatchHistoryExport";
@@ -15,6 +18,7 @@ import { installFriendDetailRoutes } from "#api/friends/installFriendDetailRoute
 import { publishSocialChange } from "#api/social/publishSocialChange";
 import { isSpectatorAccess } from "@aegis/shared/account/isSpectatorAccess";
 import { installFriendSpectatorRoutes } from "#api/social/installFriendSpectatorRoutes";
+import { installActiveMatchRoutes } from "#api/rooms/activeMatch/installActiveMatchRoutes";
 import { installSocialRoutes } from "#api/social/installSocialRoutes";
 import { FriendStore } from "#api/friends/FriendStore";
 import { installFriendRoutes } from "#api/friends/installFriendRoutes";
@@ -168,6 +172,7 @@ export function installAccountRoutes(
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
   installPlaytestRoutes({ app, store: new PlaytestStore(store), session: sessionFromRequest });
   installFriendSpectatorRoutes({ app, accounts: store, session: sessionFromRequest });
+  installActiveMatchRoutes({ app, session: sessionFromRequest });
   installSocialRoutes({ app, accounts: store, session: sessionFromRequest });
   installDirectMessageRoutes({ app, accounts: store, session: sessionFromRequest });
   installFriendRoutes({ app, store: new FriendStore(store), session: sessionFromRequest });
@@ -651,6 +656,7 @@ export function installAccountRoutes(
       res.sendStatus(404);
       return;
     }
+    res.setHeader("Cache-Control", "private, no-store");
     const viewer = await sessionFromRequest(req);
     const canSpectate = viewer
       ? await canSpectateTournament({ tournament, account: viewer.account, spectators: tournamentSpectators })
@@ -677,6 +683,7 @@ export function installAccountRoutes(
       // minutes ahead of the server would otherwise show a round as expired while it is still live.
       serverNow: Date.now(),
       canSpectate,
+      ownDeck: viewer ? await participants.getOwnDeck({ tournamentId: id, accountId: viewer.account.id }) : null,
       // The legacy bracket's flat views. Kept alongside `phases` until the web client reads phases.
       matches: await store.tournamentMatches(id),
       series: await series.scoreViews(id),
@@ -723,6 +730,7 @@ export function installAccountRoutes(
       topCutEnabled: input.topCut,
       allowBots: input.allowBots,
       randomBotStyles: input.randomBotStyles === true,
+      roundStartMode: input.roundStartMode,
       rules,
       banlistPolicy: input.banlist,
       banlistCards,
@@ -732,6 +740,102 @@ export function installAccountRoutes(
       .status(201)
       .json({ ...toTournamentSummary(tournament), rules: tournament.rules, banlistCards: tournament.banlistCards });
   });
+  post("/tournaments/:id/own-deck", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    const savedDeckId: unknown = req.body?.savedDeckId;
+    if (typeof savedDeckId !== "string" || !savedDeckId) {
+      res.status(400).json({ error: "savedDeckId is required" });
+      return;
+    }
+    const result = await participants.changeDeck({
+      tournamentId: req.params.id!,
+      accountId: session.account.id,
+      savedDeckId,
+    });
+    if (!result.ok) {
+      sendParticipantFailure(res, result.reason, result.violations);
+      return;
+    }
+    res.json(await participants.getOwnDeck({ tournamentId: req.params.id!, accountId: session.account.id }));
+  });
+  post("/tournaments/:id/round-start-mode", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    if (!(await participants.canArbitrate(req.params.id!, session.account.id))) {
+      res.sendStatus(403);
+      return;
+    }
+    const mode: unknown = req.body?.mode;
+    if (!isTournamentRoundStartMode(mode)) {
+      res.status(400).json({ error: "invalid_round_start_mode" });
+      return;
+    }
+    if (
+      !(await participants.setRoundStartMode({ tournamentId: req.params.id!, accountId: session.account.id, mode }))
+    ) {
+      res.status(409).json({ error: "tournament_finished" });
+      return;
+    }
+    if (mode === TournamentRoundStartMode.AUTOMATIC.value) {
+      await swiss.sweepTournament(req.params.id!, Date.now());
+      const phases = await swiss.phaseViews(req.params.id!);
+      if (phases.some((phase) => phase.kind === "swiss" && phase.status === "frozen")) {
+        await topCut.startTopCut(req.params.id!);
+      }
+      await elimination.startNextRound(req.params.id!, Date.now(), true);
+    }
+    res.json({ mode });
+  });
+  post("/tournaments/:id/next-round", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    const id = req.params.id!;
+    if (!(await participants.canArbitrate(id, session.account.id))) {
+      res.sendStatus(403);
+      return;
+    }
+    const tournament = await store.tournament(id);
+    if (!tournament || tournament.status !== "in_progress") {
+      res.status(409).json({ error: "round_not_ready" });
+      return;
+    }
+    if (tournament.structure === "swiss") {
+      const phases = await swiss.phaseViews(id);
+      const frozen = phases.some((phase) => phase.kind === "swiss" && phase.status === "frozen");
+      if (frozen) {
+        const result = await topCut.startTopCut(id);
+        if (!result.ok) {
+          res.status(409).json({ error: result.reason });
+          return;
+        }
+        await elimination.startNextRound(id);
+        res.json({ started: true });
+        return;
+      }
+      if (!phases.some((phase) => phase.kind === "top_cut")) {
+        const result = await swiss.startNextRound(id);
+        if (!result.ok) {
+          res.status(409).json({ error: result.reason });
+          return;
+        }
+        res.json({ roundNumber: result.value });
+        return;
+      }
+    }
+    if (!(await elimination.startNextRound(id))) {
+      res.status(409).json({ error: "round_not_ready" });
+      return;
+    }
+    res.json({ started: true });
+  });
+
   const registerTournamentParticipant: AsyncHandler = async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
@@ -992,6 +1096,7 @@ type TournamentDetailExtras = {
   winnerAccountId: string | null;
   registrations: number;
   windows: TournamentWindows | undefined;
+  ownDeck: TournamentOwnDeck | null;
   matches: unknown[];
   series: SeriesScoreView[];
 };
@@ -1020,6 +1125,7 @@ function toTournamentSummary(
     bestOf: tournament.bestOf,
     allowBots: tournament.allowBots,
     randomBotStyles: tournament.randomBotStyles,
+    roundStartMode: tournament.roundStartMode,
     startsAt: tournament.startsAt,
     maxPlayers: tournament.maxPlayers,
     registeredCount: tournament.registrations,

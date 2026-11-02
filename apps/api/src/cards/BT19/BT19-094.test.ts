@@ -44,10 +44,12 @@ describe("BT19-094 Seventh Divine Cruz — catalog and IR", () => {
     expect(card?.effects).toMatchObject([
       {
         trigger: "YourTurn",
+        optional: true,
         isFromTrash: true,
         actions: [
           {
             kind: "SubTrigger",
+            optional: true,
             event: "whenOneOfYoursDigivolves",
             sourceFilter: {
               controllerDefault: "mine",
@@ -312,23 +314,21 @@ describe("BT19-094 Seventh Divine Cruz — {Trash} [Your Turn] on digivolution i
     assertNoLoudGap(s);
   });
 
-  it("Q3167: when the opponent declines, I am the player who performs ＜Recovery +1 (Deck)＞", async () => {
+  it("does nothing when I decline to activate the optional trash effect", async () => {
     const s = digivolveFixture("trash", { decline: true });
     await s.ready();
     const cruzId = s.inst("cruz").instanceId;
-    const deckTopId = s.inst("deckTop").instanceId;
 
     expect(digivolve(s)).toEqual({ ok: true });
-    await settle(() => s.state.players[0]!.security.length === 3);
+    await settle(() => s.state.players[0]!.battleArea.some((p) => p.topCard?.cardId === "BT19-043"));
 
     expect(s.state.players[1]!.security.map((card) => card.instanceId)).toEqual([
       s.inst("oppSecTop").instanceId,
       s.inst("oppSecSecond").instanceId,
       s.inst("oppSecThird").instanceId,
     ]);
-    expect(s.state.players[0]!.security.map((card) => card.instanceId)[0]).toBe(deckTopId);
-    expect(s.state.players[0]!.security).toHaveLength(3);
-    expect(s.state.players[0]!.deck.at(-1)!.instanceId).toBe(cruzId);
+    expect(s.state.players[0]!.security).toHaveLength(2);
+    expect(s.state.players[0]!.deck.at(-1)!.instanceId).not.toBe(cruzId);
     assertNoLoudGap(s);
   });
 

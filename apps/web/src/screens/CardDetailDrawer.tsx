@@ -1,4 +1,5 @@
 import { CardAceBadge } from "@/design/CardAceBadge";
+import { CardTextField } from "@/i18n/CardTextField";
 import { I18nContext } from "@/i18n/I18nContext";
 import { useCardFaceTranslation } from "@/screens/cardLanguage/useCardFaceTranslation";
 import { EffectText } from "@/game/EffectText";
@@ -158,6 +159,12 @@ export function CardDetailDrawer({
           />
           <DetailEffect
             cardId={cardId}
+            title={cardTranslation.t("library.linkEffect")}
+            text={def.linkEffect}
+            field={CardTextField.LINK.value}
+          />
+          <DetailEffect
+            cardId={cardId}
             title={cardTranslation.t("library.securityEffect")}
             text={def.securityEffectText}
             tone="security"
@@ -183,11 +190,13 @@ function DetailEffect({
   cardId,
   title,
   text,
+  field,
   tone = "main",
 }: {
   cardId: string;
   title: string;
   text?: string;
+  field?: CardTextField;
   tone?: "main" | "inherited" | "security";
 }) {
   if (!text) return null;
@@ -195,7 +204,7 @@ function DetailEffect({
     <div className="card-detail-effect" data-tone={tone}>
       <div className="card-detail-effect__title">{title}</div>
       <p>
-        <EffectText cardId={cardId} text={readableEffectText(text)} />
+        <EffectText cardId={cardId} text={readableEffectText(text)} field={field} />
       </p>
     </div>
   );

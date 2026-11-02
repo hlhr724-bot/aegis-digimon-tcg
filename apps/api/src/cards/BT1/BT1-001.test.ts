@@ -19,7 +19,7 @@ describe("BT1-001 Yokomon", () => {
       forms: ["In-Training"],
       types: ["Bulb"],
       inheritedEffectText:
-        "[When Attacking] When you attack an opponent's Digimon， this Digimon gets +1000 DP for the turn.",
+        "[When Attacking] When you attack an opponent's Digimon, this Digimon gets +1000 DP for the turn.",
     });
     expect(getCardDefinition("BT1-001")?.effectText).toBeUndefined();
     expect(compiled.effects).toEqual([

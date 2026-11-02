@@ -118,6 +118,17 @@ export default defineConfig({
       },
       {
         extends: true,
+        test: {
+          name: "effect-source-marks-ui",
+          include: [
+            "src/game/piece/handEffectSourceMarks.test.tsx",
+            "src/game/overlay/viewer/trashEffectSourceMarks.test.tsx",
+          ],
+          environment: "jsdom",
+        },
+      },
+      {
+        extends: true,
         test: { name: "social-ui", include: ["src/social/**/*.test.tsx"], environment: "jsdom" },
       },
       {
@@ -164,10 +175,13 @@ export default defineConfig({
             "src/screens/community/**/*.test.tsx",
             "src/game/arenaInspectorSources.test.tsx",
             "src/game/piece/PermanentDpDeltaHint.test.tsx",
+            "src/game/piece/handEffectSourceMarks.test.tsx",
+            "src/game/overlay/viewer/trashEffectSourceMarks.test.tsx",
             "src/game/log/**/*.test.tsx",
             "src/deckProviders/**/*.test.tsx",
             "src/learn/**/*.test.tsx",
             "src/game/tutorial/**/*.test.tsx",
+            "src/game/screen/layout/GuestApprovalPanel.test.tsx",
           ],
         },
       },
@@ -186,6 +200,14 @@ export default defineConfig({
       {
         extends: true,
         test: { name: "match-log-ui", include: ["src/game/log/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: {
+          name: "guest-approval-ui",
+          include: ["src/game/screen/layout/GuestApprovalPanel.test.tsx"],
+          environment: "jsdom",
+        },
       },
     ],
     exclude: [...configDefaults.exclude, "e2e/**"],

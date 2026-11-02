@@ -1,15 +1,13 @@
-import { CommunityHubNav } from "@/community/CommunityHubNav";
-import { CommunityHubSection } from "@/community/CommunityHubSection";
 import { useEffect, useState } from "react";
-import { CardColor, type CommunityDeckSummary, type CommunityPeriod, type CommunitySort } from "@aegis/shared";
-import { communityApi } from "../../community/client";
-import { communityTileListing } from "../../community/communityDeckListing";
-import { Button, ColorDot, Eyebrow, IconButton } from "../../design/primitives";
-import { Panel } from "../../design/surfaces";
-import { Icons } from "../../design/icons";
-import { useTranslation, type TranslationKey } from "../../i18n";
-import { DeckListCard } from "../DeckListCard";
-import { LikeButton } from "./LikeButton";
+import type { CommunityDeckSummary, CommunityPeriod, CommunitySort } from "@aegis/shared/decks/community";
+import { CardColor } from "@aegis/shared/schema/enums";
+import { communityApi } from "@/community/client";
+import { Icons } from "@/design/icons";
+import { Button, ColorDot } from "@/design/primitives";
+import type { TranslationKey } from "@/i18n/translationTypes";
+import { useTranslation } from "@/i18n/useTranslation";
+import { CommunityDeckTile } from "@/screens/community/CommunityDeckTile";
+import { CommunityTrending } from "@/screens/community/CommunityTrending";
 
 const SEARCH_DELAY_MS = 300;
 const COLORS = Object.values(CardColor).filter((color) => color !== CardColor.None);
@@ -28,23 +26,15 @@ type Results =
   | { status: "failed" }
   | { status: "ready"; decks: CommunityDeckSummary[]; hasMore: boolean; page: number; loadingMore: boolean };
 
-export function CommunityBrowse({
-  signedIn,
-  accountId,
-  onOpenDeck,
-  onRoadmap,
-  onTournaments,
-  onPlay,
-  onCopy,
-}: {
+type CommunityBrowseParams = {
   signedIn: boolean;
   accountId: string | undefined;
   onOpenDeck: (id: string) => void;
-  onRoadmap: () => void;
-  onTournaments: () => void;
   onPlay: (id: string) => void;
   onCopy: (id: string) => void;
-}) {
+};
+
+export function CommunityBrowse({ signedIn, accountId, onOpenDeck, onPlay, onCopy }: CommunityBrowseParams) {
   const { t } = useTranslation();
   const [sort, setSort] = useState<CommunitySort>("top");
   const [period, setPeriod] = useState<CommunityPeriod>("week");
@@ -65,10 +55,14 @@ export function CommunityBrowse({
     communityApi
       .browse({ sort, period, colors, search, page: 0 })
       .then((page) => {
-        if (current) setResults({ status: "ready", ...page, page: 0, loadingMore: false });
+        if (current) {
+          setResults({ status: "ready", ...page, page: 0, loadingMore: false });
+        }
       })
       .catch(() => {
-        if (current) setResults({ status: "failed" });
+        if (current) {
+          setResults({ status: "failed" });
+        }
       });
     return () => {
       current = false;
@@ -76,7 +70,9 @@ export function CommunityBrowse({
   }, [sort, period, colors, search, attempt]);
 
   const loadMore = async () => {
-    if (results.status !== "ready" || results.loadingMore) return;
+    if (results.status !== "ready" || results.loadingMore) {
+      return;
+    }
     const page = results.page + 1;
     setResults({ ...results, loadingMore: true });
     try {
@@ -94,164 +90,151 @@ export function CommunityBrowse({
   };
 
   const toggleColor = (color: string) =>
-    setColors((current) => (current.includes(color) ? current.filter((c) => c !== color) : [...current, color]));
+    setColors((current) =>
+      current.includes(color) ? current.filter((entry) => entry !== color) : [...current, color],
+    );
 
   return (
-    <div className="community-page">
-      <div className="community-column aegis-page-sheet">
-        <Panel as="div" className="community-hero">
-          <div className="community-hero__header">
-            <div className="community-hero__copy">
-              <Eyebrow>{t("community.eyebrow")}</Eyebrow>
-              <h1 className="aegis-page-title">{t("community.title")}</h1>
-              <p>{t("community.subtitle")}</p>
-            </div>
-            <label className="community-search">
-              <Icons.Search size={16} />
-              <span className="aegis-sr-only">{t("community.search")}</span>
-              <input
-                type="search"
-                value={searchInput}
-                placeholder={t("community.search")}
-                maxLength={60}
-                onChange={(event) => setSearchInput(event.target.value)}
-              />
-            </label>
+    <div className="community-split">
+      <div className="community-stack">
+        <div className="community-filters">
+          <label className="community-field">
+            <Icons.Search size={16} />
+            <span className="aegis-sr-only">{t("community.search")}</span>
+            <input
+              type="search"
+              value={searchInput}
+              placeholder={t("community.search")}
+              maxLength={60}
+              onChange={(event) => setSearchInput(event.target.value)}
+            />
+          </label>
+          <div className="community-switch" role="group" aria-label={t("community.sortLabel")}>
+            {SORTS.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                aria-pressed={sort === option.key}
+                onClick={() => setSort(option.key)}
+              >
+                {t(option.label)}
+              </button>
+            ))}
           </div>
-          <CommunityHubNav
-            section={CommunityHubSection.DECKS.value}
-            onDecks={() => undefined}
-            onRoadmap={onRoadmap}
-            onTournaments={onTournaments}
-          />
-          <div className="community-toolbar">
-            <div className="community-segmented" role="group" aria-label={t("community.sortLabel")}>
-              {SORTS.map((option) => (
+          {sort === "top" ? (
+            <div className="community-switch" role="group" aria-label={t("community.periodLabel")}>
+              {PERIODS.map((option) => (
                 <button
                   key={option.key}
                   type="button"
-                  className={sort === option.key ? "is-selected" : undefined}
-                  aria-pressed={sort === option.key}
-                  onClick={() => setSort(option.key)}
+                  aria-pressed={period === option.key}
+                  onClick={() => setPeriod(option.key)}
                 >
                   {t(option.label)}
                 </button>
               ))}
             </div>
-            {sort === "top" ? (
-              <div className="community-segmented" role="group" aria-label={t("community.periodLabel")}>
-                {PERIODS.map((option) => (
-                  <button
-                    key={option.key}
-                    type="button"
-                    className={period === option.key ? "is-selected" : undefined}
-                    aria-pressed={period === option.key}
-                    onClick={() => setPeriod(option.key)}
-                  >
-                    {t(option.label)}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-            <div className="community-colors" role="group" aria-label={t("community.colorsLabel")}>
-              {COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className={colors.includes(color) ? "is-selected" : undefined}
-                  aria-pressed={colors.includes(color)}
-                  onClick={() => toggleColor(color)}
-                >
-                  <ColorDot color={color} size={10} />
-                  {color}
-                </button>
-              ))}
-            </div>
+          ) : null}
+          <div className="community-chips" role="group" aria-label={t("community.colorsLabel")}>
+            {COLORS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                className="community-chip"
+                aria-pressed={colors.includes(color)}
+                onClick={() => toggleColor(color)}
+              >
+                <ColorDot color={color} size={8} />
+                {color}
+              </button>
+            ))}
           </div>
-        </Panel>
+        </div>
 
         <section className="community-results" aria-busy={results.status === "loading"}>
-          {results.status === "loading" ? (
-            <p className="community-empty" role="status">
-              {t("common.loading")}
-            </p>
-          ) : results.status === "failed" ? (
-            <div className="community-empty" role="alert">
-              <p>{t("community.loadError")}</p>
-              <Button size="sm" variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
-                {t("community.retry")}
-              </Button>
-            </div>
-          ) : results.decks.length === 0 ? (
-            <div className="community-empty" role="status">
-              <p>{t("community.empty")}</p>
-              <p>{t("community.emptyHint")}</p>
-            </div>
-          ) : (
-            <>
-              <div className="community-grid">
-                {results.decks.map((deck) => (
-                  <DeckListCard
-                    key={deck.id}
-                    deck={communityTileListing(deck)}
-                    active={false}
-                    onSelect={() => onOpenDeck(deck.id)}
-                    subtitle={t("community.byAuthor", { name: deck.author.displayName })}
-                    actions={
-                      <>
-                        <span className="community-tile__colors" aria-hidden="true">
-                          {deck.colors.map((color) => (
-                            <ColorDot key={color} color={color} size={10} />
-                          ))}
-                        </span>
-                        {deck.legal ? null : <span className="community-tile__illegal">{t("community.notLegal")}</span>}
-                        {deck.hasGuide ? (
-                          <span className="community-tile__guide" title={t("community.guide.badge")}>
-                            <Icons.BookOpen size={14} />
-                            <span className="aegis-sr-only">{t("community.guide.badge")}</span>
-                          </span>
-                        ) : null}
-                        <LikeButton
-                          key={`${deck.id}:${deck.likeCount}:${deck.likedByMe}`}
-                          deck={deck}
-                          signedIn={signedIn}
-                          ownDeck={deck.author.id === accountId}
-                        />
-                        <span className="community-tile__spacer" />
-                        <IconButton
-                          size="sm"
-                          variant="secondary"
-                          label={t("community.copy")}
-                          title={t("community.copy")}
-                          onClick={() => onCopy(deck.id)}
-                        >
-                          <Icons.Copy size={16} />
-                        </IconButton>
-                        <IconButton
-                          size="sm"
-                          label={t("common.play")}
-                          title={t("common.play")}
-                          disabled={!deck.legal}
-                          onClick={() => onPlay(deck.id)}
-                        >
-                          <Icons.Swords size={16} />
-                        </IconButton>
-                      </>
-                    }
-                  />
-                ))}
-              </div>
-              {results.hasMore ? (
-                <div className="community-more">
-                  <Button variant="secondary" disabled={results.loadingMore} onClick={loadMore}>
-                    {results.loadingMore ? t("common.loading") : t("community.loadMore")}
-                  </Button>
-                </div>
-              ) : null}
-            </>
-          )}
+          <CommunityResults
+            results={results}
+            signedIn={signedIn}
+            accountId={accountId}
+            onOpenDeck={onOpenDeck}
+            onPlay={onPlay}
+            onCopy={onCopy}
+            onRetry={() => setAttempt((value) => value + 1)}
+            onLoadMore={loadMore}
+          />
         </section>
       </div>
+      <aside className="community-stack community-aside">
+        <CommunityTrending onOpenDeck={onOpenDeck} />
+      </aside>
     </div>
+  );
+}
+
+type CommunityResultsParams = CommunityBrowseParams & {
+  results: Results;
+  onRetry: () => void;
+  onLoadMore: () => void;
+};
+
+function CommunityResults({
+  results,
+  signedIn,
+  accountId,
+  onOpenDeck,
+  onPlay,
+  onCopy,
+  onRetry,
+  onLoadMore,
+}: CommunityResultsParams) {
+  const { t } = useTranslation();
+  if (results.status === "loading") {
+    return (
+      <p className="community-empty" role="status">
+        {t("common.loading")}
+      </p>
+    );
+  }
+  if (results.status === "failed") {
+    return (
+      <div className="community-empty" role="alert">
+        <p>{t("community.loadError")}</p>
+        <Button size="sm" variant="secondary" onClick={onRetry}>
+          {t("community.retry")}
+        </Button>
+      </div>
+    );
+  }
+  if (results.decks.length === 0) {
+    return (
+      <div className="community-empty" role="status">
+        <p>{t("community.empty")}</p>
+        <p>{t("community.emptyHint")}</p>
+      </div>
+    );
+  }
+  return (
+    <>
+      <div className="community-deck-grid">
+        {results.decks.map((deck) => (
+          <CommunityDeckTile
+            key={deck.id}
+            deck={deck}
+            signedIn={signedIn}
+            accountId={accountId}
+            onOpen={() => onOpenDeck(deck.id)}
+            onCopy={() => onCopy(deck.id)}
+            onPlay={() => onPlay(deck.id)}
+          />
+        ))}
+      </div>
+      {results.hasMore ? (
+        <div className="community-more">
+          <Button variant="secondary" disabled={results.loadingMore} onClick={onLoadMore}>
+            {results.loadingMore ? t("common.loading") : t("community.loadMore")}
+          </Button>
+        </div>
+      ) : null}
+    </>
   );
 }

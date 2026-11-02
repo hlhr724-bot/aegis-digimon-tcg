@@ -45,7 +45,7 @@ describe("BT18-015 Kimeramon", () => {
         {
           kind: "DnaDigivolve",
           optional: true,
-          looseMaterials: { filter: { zone: "trash", nameOrTrait: [{ tokens: ["Kimeramon"], match: "name" }] } },
+          looseMaterials: { filter: { zone: "trash", nameOrTrait: [{ tokens: ["Kimeramon"], match: "nameExact" }] } },
           into: { zone: "hand", kind: ["Digimon"], hasDnaDigivolutionRequirement: true },
         },
       ],

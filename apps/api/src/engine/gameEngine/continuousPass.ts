@@ -108,6 +108,7 @@ export async function recomputeContinuousEffects(engine: GameEngine, publish = t
 async function publishContinuousState(engine: GameEngine): Promise<void> {
   engine.memory.commitTurnEndMinMemoryRecompute();
   engine.projection.syncActivatableEffects();
+  engine.projection.syncOncePerTurnUsage();
   engine.projection.syncKeywords();
   engine.projection.syncSummoningSickness();
   engine.projection.syncRestrictions();

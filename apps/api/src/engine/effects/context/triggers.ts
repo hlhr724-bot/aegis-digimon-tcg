@@ -142,6 +142,7 @@ export interface TriggerInfo {
   battleOpponentPermanentIdByInstanceId?: Record<string, string>;
   /** Snapshot of effective battle-deletion Retaliation holders and their opponents. */
   retaliationTargetsByInstanceId?: Record<string, string>;
+  retaliationCountsByInstanceId?: Record<string, number>;
   /** Event-time Fortitude holders that had digivolution cards when deleted. */
   fortitudeInstanceIds?: string[];
   /** Deleted host top-card identity for every card moved with it; pending effects require that host in trash. */
@@ -157,6 +158,7 @@ export interface TriggerInfo {
   /** Security card currently being checked. */
   securityInstanceId?: string;
   securityRemovalEventId?: number;
+  digivolutionTrashEventId?: number;
   /** Option permanent card instance that was trashed from the battle area. */
   trashedOptionInstanceId?: string;
   /** The checked security card was face-up before the check revealed it. */

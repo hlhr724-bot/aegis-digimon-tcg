@@ -10,6 +10,7 @@ import "./ST4-14.js";
 
 describe("ST4 HerculesKabuterimon suspend deck gauntlet", () => {
   it("chains Digi-Burst, Izzy, battle rewards, and Piercing without checking trashed security", async () => {
+    const chosenSources: string[] = [];
     const s = setupEngine(
       {
         0: {
@@ -27,10 +28,15 @@ describe("ST4 HerculesKabuterimon suspend deck gauntlet", () => {
           security: [{ card: "BT1-001", as: "trashedSecurity" }, { card: "BT1-002", as: "checkedSecurity" }, "BT1-003"],
         },
       },
-      { autoAcceptOptional: true, autoSelectCards: true },
+      { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: chosenSources },
     );
     await s.ready();
     const hercules = s.perm("hercules");
+    chosenSources.push(
+      ...hercules.stack
+        .filter((card) => card.cardId === "ST4-03" || card.cardId === "ST4-08")
+        .map((card) => card.instanceId),
+    );
     const activation = (
       observe(s.engine).activatableEffects(hercules) as Array<{
         effectKey: string;

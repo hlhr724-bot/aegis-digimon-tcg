@@ -38,6 +38,12 @@ function seriesReason(t: ReturnType<typeof useTranslation>["t"], { view, opponen
   }
 }
 
+export interface PostGameChat {
+  open: boolean;
+  unread: number;
+  onToggle: () => void;
+}
+
 const HEADER_GAP_PX = 12;
 
 /** How much the bar spells out, from everything down to icons only. */
@@ -111,6 +117,7 @@ export function GameOverOverlay({
   series,
   rematch,
   friendMatchId,
+  chat,
 }: ReplaySaveProps & {
   spectatorResult?: string;
   opponentDeckDialog?: (onClose: () => void) => ReactNode;
@@ -130,6 +137,7 @@ export function GameOverOverlay({
   series?: SeriesResultProps;
   rematch?: RematchProps;
   friendMatchId?: string;
+  chat?: PostGameChat;
 }) {
   const { t } = useTranslation();
   const splash = gameOverSplash(result, reason);
@@ -288,6 +296,19 @@ export function GameOverOverlay({
               onClick={() => setView("usedDeck")}
             >
               {t("overlay.viewUsedDeck")}
+            </Button>
+          ) : null}
+          {chat ? (
+            <Button
+              className="game-result__link"
+              variant="ghost"
+              size="sm"
+              icon={Icons.MessageSquare}
+              aria-pressed={chat.open}
+              data-testid="game-result-chat"
+              onClick={chat.onToggle}
+            >
+              {chat.unread > 0 ? t("chat.openUnread", { count: chat.unread }) : t("chat.open")}
             </Button>
           ) : null}
           <Button

@@ -16,6 +16,7 @@ export interface DecisionCandidate {
   zone?: CandidateZone;
   /** Exact live pending source supplied by the server, never inferred from card identity. */
   pendingEffect?: boolean;
+  oncePerTurnUsed?: boolean;
   /** Last public movement into trash came from this Digimon's sources. */
   trashOriginCardId?: string;
 }

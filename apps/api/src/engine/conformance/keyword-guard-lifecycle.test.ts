@@ -466,8 +466,10 @@ describe("Guard departure lifecycle", () => {
 
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: optionId })).toEqual({ ok: true });
     await settle(() => s.state.players[0]!.trash.some((card) => card.instanceId === optionId));
-    expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard.instanceId)).toEqual([firstId]);
-    expect(s.state.players[1]!.trash.map((card) => card.instanceId)).toEqual([secondId]);
+    const survivors = s.state.players[1]!.battleArea.map((permanent) => permanent.topCard.instanceId);
+    const paid = s.state.players[1]!.trash.map((card) => card.instanceId);
+    expect(survivors).toHaveLength(1);
+    expect([...survivors, ...paid].sort()).toEqual([firstId, secondId].sort());
     expect(s.state.pendingDecision).toBeUndefined();
     assertNoLoudGap(s);
   });

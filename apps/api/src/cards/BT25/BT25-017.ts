@@ -130,7 +130,7 @@ export const compiled: CompiledCard = {
                 nameOrTrait: [
                   {
                     tokens: ["Apollomon"],
-                    match: "name",
+                    match: "nameExact",
                   },
                 ],
               },
@@ -170,7 +170,7 @@ export const compiled: CompiledCard = {
                 nameOrTrait: [
                   {
                     tokens: ["Apollomon"],
-                    match: "name",
+                    match: "nameExact",
                   },
                 ],
               },

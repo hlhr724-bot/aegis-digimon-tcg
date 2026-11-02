@@ -58,6 +58,64 @@ describe("ParticipantStore registration", () => {
     fixture = await createMigratedFixture();
   });
 
+  it("shows the entrant's selected list and freezes it against later deck edits and replacement", async () => {
+    const { store, participants } = fixture;
+    const player = await createPlayer(store, "Alice");
+    const first = await saveLegalDeck(store, player.id);
+    const second = await saveLegalDeck(store, player.id, BLUE_DECK);
+    const tournamentId = await createTournament(store, player.id);
+    await participants.register({ tournamentId, accountId: player.id, savedDeckId: first, now: T0 });
+    expect(await participants.getOwnDeck({ tournamentId, accountId: player.id })).toMatchObject({
+      savedDeckId: first,
+      locked: false,
+    });
+    expect(
+      (await participants.changeDeck({ tournamentId, accountId: player.id, savedDeckId: second, now: T0 })).ok,
+    ).toBe(true);
+    await participants.checkIn({ tournamentId, accountId: player.id, now: T0 });
+    await participants.closeCheckIn({ tournamentId, now: T0 });
+    await store.saveDeck(player.id, {
+      id: second,
+      name: "Changed later",
+      mainDeck: [...RED_DECK.mainDeck],
+      eggDeck: [...RED_DECK.eggDeck],
+    });
+    expect(await participants.getOwnDeck({ tournamentId, accountId: player.id })).toMatchObject({
+      savedDeckId: second,
+      locked: true,
+      mainDeck: [...BLUE_DECK.mainDeck],
+    });
+    expect(await participants.changeDeck({ tournamentId, accountId: player.id, savedDeckId: first, now: T0 })).toEqual({
+      ok: false,
+      reason: "check_in_closed",
+    });
+    expect(
+      await participants.getOwnDeck({ tournamentId, accountId: "00000000-0000-0000-0000-000000000000" }),
+    ).toBeNull();
+  });
+
+  it("permits replacement when the selected saved deck was deleted", async () => {
+    const { store, participants } = fixture;
+    const player = await createPlayer(store, "Alice");
+    const first = await saveLegalDeck(store, player.id);
+    const second = await saveLegalDeck(store, player.id, BLUE_DECK);
+    const tournamentId = await createTournament(store, player.id);
+    await participants.register({ tournamentId, accountId: player.id, savedDeckId: first, now: T0 });
+    await store.deleteDeck(player.id, first);
+    expect(await participants.getOwnDeck({ tournamentId, accountId: player.id })).toMatchObject({
+      savedDeckId: first,
+      available: false,
+      locked: false,
+    });
+    expect(
+      (await participants.changeDeck({ tournamentId, accountId: player.id, savedDeckId: second, now: T0 })).ok,
+    ).toBe(true);
+    expect(await participants.getOwnDeck({ tournamentId, accountId: player.id })).toMatchObject({
+      savedDeckId: second,
+      mainDeck: [...BLUE_DECK.mainDeck],
+    });
+  });
+
   it("counts competitive entries and releases the displayed place after a drop", async () => {
     const { store, participants } = fixture;
     const player = await createPlayer(store, "Alice");

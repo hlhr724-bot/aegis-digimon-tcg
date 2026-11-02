@@ -148,14 +148,6 @@ with evidence.
 
 ## 6. Close the audit
 
-Record the evidence only in the set ledger `docs/audits/<SET>.md`, in the
-card's `### <CARD-ID> — <Name>` section (catalog line, printed and inherited
-contracts, trace with action vocabulary and proof test names, KB line, score
-line `**N/10** (c + ir + b + p + g)`, ambiguities). Never add per-card files,
-reports, logs or JSON under `docs/audits/`; `apps/api/src/cards/audit-docs.test.ts`
-rejects them. When working as a lane under a coordinator, write the section
-to the scratchpad and let the coordinator fold it into the ledger.
-
 Report:
 
 - the card ID and clauses verified;

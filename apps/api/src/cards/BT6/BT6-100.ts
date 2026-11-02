@@ -52,10 +52,7 @@ const compiled: CompiledCard = {
             isSelf: true,
           },
         },
-        {
-          kind: "GainMemory",
-          amount: 3,
-        },
+        { effectTextPart: "Gain 3 memory.", kind: "GainMemory", amount: 3 },
       ],
       keywords: [
         {

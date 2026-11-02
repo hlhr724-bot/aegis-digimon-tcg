@@ -38,7 +38,7 @@ export const compiled: CompiledCard = {
             nameOrTrait: [
               {
                 tokens: ["PlatinumNumemon"],
-                match: "name",
+                match: "nameExact",
               },
             ],
           },
@@ -90,7 +90,7 @@ export const compiled: CompiledCard = {
             nameOrTrait: [
               {
                 tokens: ["PlatinumNumemon"],
-                match: "name",
+                match: "nameExact",
               },
             ],
           },

@@ -22,6 +22,8 @@ export function ArenaInspectorSourceEffect({ card, onZoom, showThumbnail }: Para
   const effect = card.role === "linked" ? definition?.linkEffect : definition?.inheritedEffectText;
   const colors =
     card.cardId && !card.faceDown ? definition?.colors.map((color) => COLORS[colorKey(color)].base) : undefined;
+  const revealed = Boolean(card.cardId) && !card.faceDown;
+  const used = revealed && card.oncePerTurnUsed === true;
   const borderColors = colors?.length ? colors : [COLORS.Neutral.base];
   const border = `linear-gradient(to bottom, ${borderColors.flatMap((color, index) => [`${color} ${(index * 100) / borderColors.length}%`, `${color} ${((index + 1) * 100) / borderColors.length}%`]).join(", ")})`;
   return (
@@ -31,6 +33,7 @@ export function ArenaInspectorSourceEffect({ card, onZoom, showThumbnail }: Para
       data-role={card.role}
       data-card-id={card.cardId || undefined}
       data-thumbnail={showThumbnail}
+      data-once-per-turn-used={used || undefined}
       data-empty={(card.cardId && !card.faceDown && !effect) || undefined}
     >
       {showThumbnail &&
@@ -49,9 +52,13 @@ export function ArenaInspectorSourceEffect({ card, onZoom, showThumbnail }: Para
       <div>
         <span className="arena-permanent-inspector__effect-label">
           {stackCardCaption(card, t, translations)}
-          {card.cardId && !card.faceDown
-            ? ` · ${t(card.role === "linked" ? "overlay.role.linked" : "overlay.role.inherited")}`
-            : null}
+          {used ? (
+            <span className="arena-permanent-inspector__used-effect">
+              {t(card.role === "linked" ? "overlay.role.linkedUsed" : "overlay.role.inheritedUsed")}
+            </span>
+          ) : revealed ? (
+            ` · ${t(card.role === "linked" ? "overlay.role.linked" : "overlay.role.inherited")}`
+          ) : null}
         </span>
         {card.cardId && !card.faceDown ? (
           <p>

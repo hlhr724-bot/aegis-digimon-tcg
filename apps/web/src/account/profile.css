@@ -1043,11 +1043,19 @@
   }
   .profile-filter {
     flex: 1 1 100%;
+    order: 3;
   }
-  .profile-filters__mode,
+  .profile-filters__mode {
+    flex: 1 1 calc(50% - var(--ds-space-2));
+    min-width: 0;
+  }
   .profile-filters__search {
     flex: 1 1 100%;
+    order: 4;
     min-width: 0;
+  }
+  .profile-filters__clear {
+    order: 5;
   }
   .profile-filters__clear {
     margin-left: auto;
@@ -1068,24 +1076,67 @@
     margin: 0;
   }
   .profile-matches > li {
-    grid-template-columns: 72px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-      "result mode"
-      "opponent opponent"
-      "deck deck"
-      "date date"
-      "replay replay";
-    row-gap: var(--ds-space-2);
-    padding-inline: var(--ds-space-4);
+      "opponent result"
+      "mode date"
+      "deck replay";
+    align-items: center;
+    gap: 6px var(--ds-space-3);
+    padding: var(--ds-space-3) var(--ds-space-4);
   }
-  .profile-matches__replay,
-  .profile-matches__missing {
+  .profile-matches > li[data-replay="available"] {
+    grid-template-areas:
+      "opponent result"
+      "mode date"
+      "deck deck"
+      "replay replay";
+  }
+  .profile-matches > li[data-replay="available"] .profile-matches__replay {
+    justify-self: stretch;
+    width: 100%;
+  }
+  .profile-matches > li[data-replay="available"] .profile-watch {
+    margin-left: auto;
+  }
+  .profile-matches__opponent {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--ds-space-3);
+  }
+  .profile-matches__opponent > :first-child {
+    grid-row: 1 / span 2;
+    align-self: start;
+  }
+  .profile-matches__opponent .friends-add-action {
+    grid-column: 2;
     justify-self: start;
-    max-width: 100%;
+  }
+  .profile-matches__opponent .friends-add-action > .aegis-button {
+    padding-inline: 0;
+  }
+  .profile-result {
+    align-self: start;
+    justify-self: end;
+  }
+  .profile-matches__mode {
+    font-size: var(--ds-text-xs);
   }
   .profile-matches__date {
     grid-area: date;
-    justify-self: start;
+    justify-self: end;
+    color: var(--ds-text-3);
+    font-size: var(--ds-text-xs);
+    white-space: nowrap;
+  }
+  .profile-matches__deck {
+    min-width: 0;
+  }
+  .profile-matches__replay,
+  .profile-matches__missing {
+    justify-self: end;
+    max-width: 100%;
+    font-size: var(--ds-text-xs);
   }
   .profile-pagination {
     justify-content: center;

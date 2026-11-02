@@ -72,7 +72,13 @@ export async function runMetaAction(ctx: EffectContext, action: Action): Promise
     }
     case "ReactivateEffect": {
       if (action.target !== undefined) {
-        const timing = action.fromTrigger === "WhenDigivolving" ? EffectTiming.WhenDigivolving : undefined;
+        let timing: EffectTiming | undefined;
+        if (action.fromTrigger === "WhenDigivolving") {
+          timing = EffectTiming.WhenDigivolving;
+        }
+        if (action.fromTrigger === "OnDeletion") {
+          timing = EffectTiming.OnDestroyedAnyone;
+        }
         if (timing === undefined) {
           unsupported(ctx, action, `targeted reactivation does not support ${action.fromTrigger}`);
           return false;
@@ -81,8 +87,11 @@ export async function runMetaAction(ctx: EffectContext, action: Action): Promise
         ctx.lastEffectActed = false;
         for (const permanentId of targetIds) {
           ctx.lastEffectActed =
-            (await ctx.fx.reactivateOnPlay?.(permanentId, { timings: [timing], chooseOne: false })) === true ||
-            ctx.lastEffectActed;
+            (await ctx.fx.reactivateOnPlay?.(permanentId, {
+              timings: [timing],
+              chooseOne: action.fromTrigger === "OnDeletion",
+              outsideTriggerWindow: action.fromTrigger === "OnDeletion",
+            })) === true || ctx.lastEffectActed;
         }
         return false;
       }

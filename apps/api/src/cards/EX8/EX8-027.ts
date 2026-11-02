@@ -39,7 +39,7 @@ export const compiled: CompiledCard = {
           actions: [
             {
               effectTextPart:
-                "[Your Turn] [Once Per Turn] When any of your Digimon are played or digivolve, if any of them have the [DS] trait, 2 of your Digimon may DNA digivolve] into a Digimon card with the [DS] trait in the hand.",
+                "[Your Turn] [Once Per Turn] When any of your Digimon are played or digivolve, if any of them have the [DS] trait, 2 of your Digimon may DNA digivolve into a Digimon card with the [DS] trait in the hand.",
               kind: "DnaDigivolve",
               materials: {
                 filter: {
@@ -103,7 +103,7 @@ export const compiled: CompiledCard = {
           actions: [
             {
               effectTextPart:
-                "[Your Turn] [Once Per Turn] When any of your Digimon are played or digivolve, if any of them have the [DS] trait, 2 of your Digimon may DNA digivolve] into a Digimon card with the [DS] trait in the hand.",
+                "[Your Turn] [Once Per Turn] When any of your Digimon are played or digivolve, if any of them have the [DS] trait, 2 of your Digimon may DNA digivolve into a Digimon card with the [DS] trait in the hand.",
               kind: "DnaDigivolve",
               materials: {
                 filter: {

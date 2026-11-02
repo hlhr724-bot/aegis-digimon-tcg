@@ -1,5 +1,12 @@
 import { FriendReplayStore } from "#api/replays/FriendReplayStore";
 import { ReplayVisibility } from "@aegis/shared/replays/ReplayVisibility";
+import { isDeckFormat, type DeckFormat } from "@aegis/shared/deckFormat";
+import {
+  MAX_PUBLIC_REPLAY_PAGE_SIZE,
+  PUBLIC_REPLAY_PAGE_SIZE,
+  type PublicReplay,
+  type PublicReplayPage,
+} from "@aegis/shared/replays/PublicReplay";
 import { randomUUID } from "node:crypto";
 import {
   MAX_REPLAY_BYTES,
@@ -23,6 +30,7 @@ type IndexRow = {
   drive_file_id: string | null;
   saved_at: string | null;
   visibility: SavedReplay["visibility"];
+  format: string | null;
 };
 type SavedRow = IndexRow & { drive_file_id: string; saved_at: string };
 
@@ -63,6 +71,41 @@ function decodeCursor(cursor: string): { savedAt: number; id: string } | undefin
   return { savedAt: parsed, id };
 }
 
+export type ReplayIndexContext = {
+  format?: DeckFormat;
+  playerAccountIds: readonly [string | null, string | null];
+};
+
+type PublicReplayQuery = {
+  viewerId?: string;
+  cursor?: string;
+  limit?: number;
+  format?: DeckFormat;
+};
+
+const PUBLIC_REPLAYS = `SELECT r.* FROM account_replays r
+  LEFT JOIN accounts a0 ON a0.id = r.player0_account_id
+  LEFT JOIN accounts a1 ON a1.id = r.player1_account_id
+  LEFT JOIN account_blocks b
+    ON (b.blocker_id = r.account_id AND b.blocked_id = $1) OR (b.blocker_id = $1 AND b.blocked_id = r.account_id)
+  WHERE r.published_at IS NOT NULL AND r.visibility = 'public' AND r.saved_at IS NOT NULL AND r.identities_recorded
+    AND (r.player0_account_id IS NULL OR r.player0_account_id = r.account_id
+      OR (a0.id IS NOT NULL AND COALESCE(a0.preferences->>'hideIdentityFromSpectators', 'false') <> 'true'))
+    AND (r.player1_account_id IS NULL OR r.player1_account_id = r.account_id
+      OR (a1.id IS NOT NULL AND COALESCE(a1.preferences->>'hideIdentityFromSpectators', 'false') <> 'true'))
+    AND b.blocker_id IS NULL
+    AND ($2::text IS NULL OR r.format = $2)
+    AND ($3::bigint IS NULL OR r.saved_at < $3 OR (r.saved_at = $3 AND r.id < $4))
+  ORDER BY r.saved_at DESC, r.id DESC LIMIT $5`;
+
+const viewPublic = (row: SavedRow): PublicReplay => ({
+  id: row.id,
+  summary: row.summary,
+  viewerSeat: row.viewer_seat,
+  ...(isDeckFormat(row.format) ? { format: row.format } : {}),
+  savedAt: Number(row.saved_at),
+});
+
 export interface DriveAccess {
   /** Google API key that reads files shared as "anyone with the link". Unset disables public sharing. */
   apiKey?: string;
@@ -88,12 +131,18 @@ export class ReplayLibrary {
   }
 
   /** Idempotent per account, match and seat; the room is the only caller, so the summary is trusted. */
-  async record(accountId: string, message: Extract<ReplayDownloadMessage, { kind: "ready" }>): Promise<string> {
+  async record(
+    accountId: string,
+    message: Extract<ReplayDownloadMessage, { kind: "ready" }>,
+    context?: ReplayIndexContext,
+  ): Promise<string> {
     await this.accounts.ensureReady();
     const bytes = Buffer.byteLength(message.data, "base64");
     const result = await this.accounts.pool.query<{ id: string }>(
-      `INSERT INTO account_replays (id,account_id,match_id,viewer_seat,summary,byte_size,created_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
+      `INSERT INTO account_replays
+         (id,account_id,match_id,viewer_seat,summary,byte_size,created_at,
+          format,player0_account_id,player1_account_id,identities_recorded)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        ON CONFLICT (account_id,match_id,viewer_seat) DO UPDATE SET account_id=EXCLUDED.account_id
        RETURNING id`,
       [
@@ -104,6 +153,10 @@ export class ReplayLibrary {
         JSON.stringify(message.summary),
         bytes,
         Date.now(),
+        isDeckFormat(context?.format) ? context.format : null,
+        context?.playerAccountIds[0] ?? null,
+        context?.playerAccountIds[1] ?? null,
+        context !== undefined,
       ],
     );
     return result.rows[0]!.id;
@@ -120,6 +173,7 @@ export class ReplayLibrary {
       await this.accounts.pool.query<IndexRow>(
         `UPDATE account_replays SET
            visibility = CASE WHEN drive_file_id = $3 THEN visibility ELSE 'private' END,
+           published_at = CASE WHEN drive_file_id = $3 THEN published_at ELSE NULL END,
            drive_file_id = $3,
            saved_at = COALESCE(saved_at, $4)
          WHERE id=$1 AND account_id=$2 RETURNING *`,
@@ -149,6 +203,32 @@ export class ReplayLibrary {
       ...(rows.length > limit ? { nextCursor: encodeCursor(page.at(-1)!) } : {}),
       sharing: this.sharing,
       friendsSharing: true,
+    };
+  }
+
+  async listPublic({ viewerId, cursor, limit, format }: PublicReplayQuery = {}): Promise<PublicReplayPage> {
+    const size = Math.min(Math.max(Math.trunc(limit ?? PUBLIC_REPLAY_PAGE_SIZE), 1), MAX_PUBLIC_REPLAY_PAGE_SIZE);
+    const after = cursor ? decodeCursor(cursor) : undefined;
+    if (cursor && !after) {
+      throw new ReplayLibraryError("invalid_cursor");
+    }
+    if (!this.sharing) {
+      return { replays: [] };
+    }
+    await this.accounts.ensureReady();
+    const rows = (
+      await this.accounts.pool.query<SavedRow>(PUBLIC_REPLAYS, [
+        viewerId ?? null,
+        format ?? null,
+        after?.savedAt ?? null,
+        after?.id ?? null,
+        size + 1,
+      ])
+    ).rows;
+    const page = rows.slice(0, size);
+    return {
+      replays: page.map(viewPublic),
+      ...(rows.length > size ? { nextCursor: encodeCursor(page.at(-1)!) } : {}),
     };
   }
 
@@ -182,8 +262,10 @@ export class ReplayLibrary {
     }
     const row = (
       await this.accounts.pool.query<IndexRow>(
-        "UPDATE account_replays SET visibility=$3 WHERE id=$1 AND account_id=$2 AND saved_at IS NOT NULL RETURNING *",
-        [id, accountId, visibility],
+        `UPDATE account_replays SET visibility=$3,
+           published_at = CASE WHEN $3 = 'public' THEN COALESCE(published_at, $4) ELSE NULL END
+         WHERE id=$1 AND account_id=$2 AND saved_at IS NOT NULL RETURNING *`,
+        [id, accountId, visibility, Date.now()],
       )
     ).rows[0];
     if (row && visibility !== ReplayVisibility.FRIENDS.value) {

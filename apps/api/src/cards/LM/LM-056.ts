@@ -38,7 +38,7 @@ const compiled: CompiledCard = {
         {
           kind: "RevealAdd",
           effectTextPart:
-            "[Main] Reveal the top 2 cards of your deck. Add 1 blue or purple card among them to the hand. Return the rest to the bottom of deck.",
+            "[Main] Reveal the top 2 cards of your deck. Add 1 purple or blue card among them to the hand. Return the rest to the bottom of the deck.",
           revealCount: 2,
           add: [
             {
@@ -62,6 +62,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "1 of your Digimon may digivolve into a purple or blue Digimon card in the hand with the digivolution cost reduced by 2.",
           kind: "Digivolve",
           target: {
             filter: {
@@ -94,7 +96,7 @@ const compiled: CompiledCard = {
         {
           kind: "RevealAdd",
           effectTextPart:
-            "[Security] Reveal the top 2 cards of your deck. Add 1 blue or purple card among them to the hand. Return the rest to the bottom of deck.",
+            "[Security] Reveal the top 2 cards of your deck. Add 1 purple or blue card among them to the hand. Return the rest to the bottom of the deck.",
           revealCount: 2,
           add: [
             {

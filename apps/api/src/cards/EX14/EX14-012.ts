@@ -18,7 +18,12 @@ const boostAndDelete: Action[] = [
       filter: { controller: "opponent", kind: ["Digimon"], dp: { op: "lte", relativeToSource: true } },
       count: 1,
     },
-    cost: { kind: "trashBottomFaceDownUnderTamer", controller: "mine", count: 1 },
+    cost: {
+      kind: "trashBottomFaceDownUnderTamer",
+      controller: "mine",
+      count: 1,
+      raw: "by trashing the bottom face-down card from under any of your Tamers",
+    },
     optional: true,
   },
 ];

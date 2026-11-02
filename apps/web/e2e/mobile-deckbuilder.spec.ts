@@ -86,7 +86,7 @@ for (const viewport of [
       const actions = page.getByRole("button", { name: "Novo deck", exact: true });
       const importing = page.getByRole("button", { name: "Importar", exact: true });
       expect((await actions.boundingBox())!.y).toEqual((await importing.boundingBox())!.y);
-      expect((await page.locator(".deck-list-hero").boundingBox())!.height).toBeLessThan(250);
+      expect((await page.locator(".deck-list-summary").boundingBox())!.height).toBeLessThan(250);
       await expect(page.getByRole("heading", { name: "Novo deck", exact: true })).toBeInViewport();
     }
     await page.screenshot({ path: test.info().outputPath(`decks-header-${viewport.width}.png`) });

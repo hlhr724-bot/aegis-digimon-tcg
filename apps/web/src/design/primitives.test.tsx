@@ -106,7 +106,7 @@ describe("design primitives", () => {
     expect(screen.getByText("TK")).toBeTruthy();
   });
 
-  it("routes the gear to settings and the portrait to the player menu", () => {
+  it("routes the tournaments tab and the portrait to their destinations", () => {
     const onNav = vi.fn<(screen: Screen) => void>();
     const onOpenPlayerMenu = vi.fn<() => void>();
     render(
@@ -120,8 +120,8 @@ describe("design primitives", () => {
       </I18nProvider>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
-    expect(onNav).toHaveBeenCalledWith("settings");
+    fireEvent.click(screen.getAllByRole("button", { name: "Tournaments" })[0]!);
+    expect(onNav).toHaveBeenCalledWith("tournaments");
 
     fireEvent.click(screen.getAllByRole("button", { name: "Open the player menu" })[0]!);
     expect(onOpenPlayerMenu).toHaveBeenCalled();
@@ -160,8 +160,8 @@ describe("design primitives", () => {
     expect((await screen.findByRole("tooltip")).textContent).toContain("Creates official tournaments and circuits.");
   });
 
-  it("keeps tournaments out of the primary nav and marks Community active on the tournaments screen", () => {
-    render(
+  it("gives tournaments their own tab and keeps Community active on the roadmap", () => {
+    const { rerender } = render(
       <I18nProvider>
         <TopNav
           screen="tournaments"
@@ -171,7 +171,20 @@ describe("design primitives", () => {
       </I18nProvider>,
     );
 
-    expect(screen.queryByRole("button", { name: "Tournaments" })).toBeNull();
+    const tournaments = screen.getAllByRole("button", { name: "Tournaments" });
+    expect(tournaments).toHaveLength(2);
+    tournaments.forEach((button) => expect(button.getAttribute("aria-current")).toBe("page"));
+
+    rerender(
+      <I18nProvider>
+        <TopNav
+          screen="roadmap"
+          onNav={vi.fn<(screen: Screen) => void>()}
+          player={{ name: "Tai Kamiya", color: "Blue", shards: 0, avatarId: "tyrannomon" }}
+        />
+      </I18nProvider>,
+    );
+
     const community = screen.getAllByRole("button", { name: "Community" });
     expect(community).toHaveLength(2);
     community.forEach((button) => expect(button.getAttribute("aria-current")).toBe("page"));

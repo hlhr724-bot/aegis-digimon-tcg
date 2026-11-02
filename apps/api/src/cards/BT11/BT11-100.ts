@@ -31,6 +31,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] 1 of your opponent's Digimon gets -8000 DP until the end of their turn.",
           kind: "ModifyDP",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
           amount: -8000,

@@ -1,3 +1,4 @@
+import { isTournamentRoundStartMode } from "@aegis/shared/tournaments/isTournamentRoundStartMode";
 import { latestReleasedProductLabel } from "@aegis/shared/cards/cardPool";
 import type { BanlistPolicy, CreateTournamentInput } from "@aegis/shared/tournaments/index";
 import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
@@ -16,11 +17,15 @@ export function parseCreateTournament(
   if (body.category !== undefined && !isTournamentCategory(body.category)) {
     return undefined;
   }
+  if (body.roundStartMode !== undefined && !isTournamentRoundStartMode(body.roundStartMode)) {
+    return undefined;
+  }
   const policy = banlist === undefined ? ({ mode: "none" } as const) : parseBanlistPolicy(banlist);
   if (!policy) return undefined;
   return {
     input: {
       name,
+      roundStartMode: body.roundStartMode,
       description: body.description as string | undefined,
       category: body.category ?? TournamentCategory.COMMUNITY.value,
       clocks: body.clocks as CreateTournamentInput["clocks"],

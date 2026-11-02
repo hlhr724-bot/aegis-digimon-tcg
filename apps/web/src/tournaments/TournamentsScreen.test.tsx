@@ -160,9 +160,10 @@ describe("tournament catalog", () => {
     renderScreen();
     await screen.findByRole("heading", { name: "Friday lightning" });
     expect(screen.queryByRole("heading", { name: "Past cup" })).toBeNull();
-    fireEvent.click(await screen.findByRole("button", { name: "My tournaments" }));
+    fireEvent.click(await screen.findByRole("tab", { name: "My tournaments 1" }));
     expect(screen.getByRole("heading", { name: "Friday lightning" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Regional qualifier" })).toBeNull();
+    fireEvent.click(screen.getByRole("tab", { name: "Explore" }));
     fireEvent.click(screen.getByRole("button", { name: "Past events" }));
     expect(screen.getByRole("heading", { name: "Past cup" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Friday lightning" })).toBeNull();
@@ -320,10 +321,10 @@ describe("tournament creation form", () => {
     await openForm();
     expect(screen.queryByRole("switch", { name: /Top Cut/ })).toBeNull();
 
-    fireEvent.change(screen.getByLabelText("Structure"), { target: { value: "swiss" } });
+    fireEvent.click(screen.getByRole("radio", { name: /Swiss/ }));
     expect(screen.getByRole("switch", { name: /Top Cut/ })).toBeTruthy();
 
-    fireEvent.change(screen.getByLabelText("Structure"), { target: { value: "single_elimination" } });
+    fireEvent.click(screen.getByRole("radio", { name: /Single elimination/ }));
     expect(screen.queryByRole("switch", { name: /Top Cut/ })).toBeNull();
   });
 
@@ -385,7 +386,7 @@ describe("tournament creation form", () => {
 
   it("shows Swiss round and cut estimates, labelled as pending check-in close", async () => {
     await openForm();
-    fireEvent.change(screen.getByLabelText("Structure"), { target: { value: "swiss" } });
+    fireEvent.click(screen.getByRole("radio", { name: /Swiss/ }));
     fireEvent.change(screen.getByLabelText("Maximum players"), { target: { value: "16" } });
 
     const estimates = screen.getByRole("region", { name: "Estimates" });

@@ -872,3 +872,47 @@ describe("standingsConfig bridges frozen snapshots to the projection", () => {
     expect(standingsConfig(broken, "tournament-with-a-bad-tiebreaker").tiebreakers).toEqual(["points"]);
   });
 });
+
+describe("manual round release", () => {
+  it("keeps completed rounds paused through worker sweeps until the organizer releases the next round", async () => {
+    await start(false, 4);
+    await fixture.accounts.pool.query("UPDATE tournaments SET round_start_mode='manual' WHERE id=$1", [
+      fixture.tournamentId,
+    ]);
+    await playRound(1, T0);
+    const closed = await fixture.swiss.closeRoundIfComplete(await roundIdOf(1), T0 + 1000);
+    expect(closed).toEqual({ ok: true, value: { kind: "awaiting_manual_start" } });
+    await fixture.swiss.sweepOpenTournaments(T0 + 60_000);
+    expect((await currentPhase()).rounds).toHaveLength(1);
+    expect(await fixture.swiss.startNextRound(fixture.tournamentId, T0 + 120_000)).toEqual({ ok: true, value: 2 });
+    const phase = await currentPhase();
+    expect(phase.rounds).toHaveLength(2);
+    expect((await playableMatches(2)).length).toBeGreaterThan(0);
+    expect(await fixture.swiss.startNextRound(fixture.tournamentId, T0 + 120_000)).toMatchObject({
+      ok: false,
+      reason: "round_not_ready",
+    });
+  });
+
+  it("waits for manual release before publishing the first Swiss round", async () => {
+    fixture = await build(4);
+    await fixture.accounts.pool.query("UPDATE tournaments SET round_start_mode='manual' WHERE id=$1", [
+      fixture.tournamentId,
+    ]);
+    expect((await fixture.swiss.startTournamentProgram(fixture.tournamentId, T0)).ok).toBe(true);
+    await fixture.swiss.sweepOpenTournaments(T0 + 60_000);
+    expect((await currentPhase()).rounds).toHaveLength(0);
+    expect(await fixture.swiss.startNextRound(fixture.tournamentId, T0 + 120_000)).toEqual({ ok: true, value: 1 });
+  });
+});
+
+it("refuses legacy room tickets that would bypass the program's frozen deck and series", async () => {
+  await start(false, 4);
+  const match = (await fixture.accounts.tournamentMatches(fixture.tournamentId)).find(
+    (entry) => entry.status === "pending",
+  )!;
+  expect(
+    await fixture.accounts.createTournamentMatchTicket(match.player0AccountId!, fixture.tournamentId, match.id),
+  ).toBeUndefined();
+  expect(await fixture.accounts.claimTournamentRoom(match.id, "legacy-bypass")).toBe(false);
+});

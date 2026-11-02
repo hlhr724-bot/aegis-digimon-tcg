@@ -1,3 +1,5 @@
+import { SPECTATOR_REPLAY_SEAT } from "@aegis/shared/replays/spectatorReplaySeat";
+import { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
 import { buildDeckCompositionKey } from "#api/accounts/buildDeckCompositionKey";
 import { gunzipSync } from "node:zlib";
 import { CloseCode, type Client } from "colyseus";
@@ -22,6 +24,8 @@ async function start(bestOf = 1) {
   room.broadcast = vi.fn<typeof room.broadcast>(() => true);
   Reflect.set(room, "accounts", () => ({
     recordRecentMatch: vi.fn<AccountStore["recordRecentMatch"]>(async () => {}),
+    ensureReady: vi.fn<AccountStore["ensureReady"]>(async () => {}),
+    pool: { query: async () => ({ rows: [] }) },
   }));
   Reflect.set(room, "replays", () => ({ record: vi.fn<ReplayLibrary["record"]>(async () => "index-id") }));
   await room.onCreate({ seed: 1, bestOf });
@@ -92,7 +96,7 @@ describe("room replay delivery", () => {
     release();
   });
 
-  it("indexes the finished export only for signed-in seated participants and sends the index id", async () => {
+  it("indexes participant exports using their authenticated identity and leaves anonymous spectator exports unindexed", async () => {
     const { room, players, send } = await start();
     const [signedIn, guest] = players as [Client, Client];
     signIn(room, signedIn, "trusted-owner");
@@ -108,17 +112,39 @@ describe("room replay delivery", () => {
     await vi.waitFor(() => expect(readyMessage(guest)).toBeDefined());
     expect(readyMessage(signedIn)!.indexId).toBe("index-id");
     expect(readyMessage(guest)!.indexId).toBeUndefined();
-    expect(spectator.send).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(readyMessage(spectator)).toBeDefined());
+    expect(readyMessage(spectator)!.indexId).toBeUndefined();
+    expect(readyMessage(spectator)!.viewerSeat).toBe(SPECTATOR_REPLAY_SEAT);
     expect(record).toHaveBeenCalledOnce();
-    const [owner, exported] = record.mock.calls[0]!;
+    const [owner, exported, context] = record.mock.calls[0]!;
     expect(owner).toBe("trusted-owner");
     expect(exported).toMatchObject({ kind: "ready", viewerSeat: 0 });
+    expect(context).toEqual({ format: room.state.format, playerAccountIds: [null, null] });
     expect(JSON.parse(gunzipSync(Buffer.from(exported.data, "base64")).toString())).toEqual(replayOf(signedIn));
     Reflect.get(room, "sendReplayDownload").call(room, signedIn);
     await vi.waitFor(() =>
       expect(vi.mocked(signedIn.send).mock.calls.filter(([channel]) => channel === REPLAY_CHANNEL)).toHaveLength(2),
     );
     expect(record).toHaveBeenCalledOnce();
+  });
+  it("indexes the room format and both seated accounts so public listings can recheck identity privacy", async () => {
+    const { room, players, send } = await start();
+    const [signedIn, opponent] = players as [Client, Client];
+    signIn(room, signedIn, "trusted-owner");
+    const owners = Reflect.get(room, "deckOwnerBySeat") as Map<number, string>;
+    owners.set(0, "trusted-owner");
+    owners.set(1, "opponent-account");
+    Reflect.set(room, "accounts", () => ({
+      preferences: vi.fn<AccountStore["preferences"]>(async () => ({})),
+      recordRecentMatch: vi.fn<AccountStore["recordRecentMatch"]>(async () => {}),
+    }));
+    const record = indexWith(room, async () => "index-id");
+    send(opponent, "surrender");
+    await vi.waitFor(() => expect(readyMessage(signedIn)?.indexId).toBe("index-id"));
+    expect(record).toHaveBeenCalledExactlyOnceWith("trusted-owner", expect.objectContaining({ viewerSeat: 0 }), {
+      format: room.state.format,
+      playerAccountIds: ["trusted-owner", "opponent-account"],
+    });
   });
   it("still delivers the file without an index id when the index write fails, and retries later", async () => {
     const { room, players, send } = await start();
@@ -162,9 +188,13 @@ describe("room replay delivery", () => {
     const index = indexWith(room, async () => "index-id");
     send(players[1]!, "surrender");
     await vi.waitFor(() => expect(readyMessage(client)?.indexId).toBe("index-id"));
-    expect(index).toHaveBeenCalledWith("original-account", expect.objectContaining({ kind: "ready" }));
+    expect(index).toHaveBeenCalledWith(
+      "original-account",
+      expect.objectContaining({ kind: "ready" }),
+      expect.objectContaining({ format: room.state.format }),
+    );
   });
-  it("starts at the ready-gated match, captures surrender, and sends each player a different file, never the observer", async () => {
+  it("starts at the ready-gated match and sends participant hands only to participants", async () => {
     const { room, players, send } = await start();
     expect(replayOf(players[0]!)).toBeUndefined();
     const spectator = { sessionId: "observer", send: vi.fn<Client["send"]>() } as unknown as Client;
@@ -187,7 +217,15 @@ describe("room replay delivery", () => {
         ),
       ).toBe(true);
     }
-    expect(spectator.send).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(replayOf(spectator)).toBeDefined());
+    const spectatorReplay = replayOf(spectator)!;
+    expect(spectatorReplay.viewerSeat).toBe(SPECTATOR_REPLAY_SEAT);
+    expect(spectatorReplay.visibleHandSeats).toEqual([]);
+    expect(spectatorReplay.frames).toHaveLength(replayOf(players[0]!)!.frames.length);
+    for (const frame of spectatorReplay.frames) {
+      expect(frame.state.players.map((player) => player.hand)).toEqual([[], []]);
+      expect(frame.events.some((event) => event.kind === "finalReveal")).toBe(false);
+    }
   });
   it("captures a consenting departure without requiring account persistence", async () => {
     const { room, players } = await start();
@@ -226,4 +264,111 @@ it("exports the own deck but omits an opponent that disabled post-match sharing"
   expect(replay.deckIcons?.[1]).toBeNull();
   expect(readyMessage(players[0]!)?.summary).not.toHaveProperty("decks");
   expect(replayOf(players[1]!)?.decks?.[1]?.mainDeck).toEqual(BLUE_DECK.mainDeck);
+});
+
+type AddSpectatorParams = { room: AegisRoom; accountId?: string };
+
+function addSpectator({ room, accountId }: AddSpectatorParams): Client {
+  const client = { sessionId: "spectator", send: vi.fn<Client["send"]>() } as unknown as Client;
+  room.clients.push(client);
+  (Reflect.get(room, "spectatorClients") as Set<string>).add(client.sessionId);
+  if (accountId) {
+    (Reflect.get(room, "spectatorIdentities") as Map<string, { id: string; displayName: string }>).set(
+      client.sessionId,
+      {
+        id: accountId,
+        displayName: "Spectator",
+      },
+    );
+  }
+  return client;
+}
+
+describe("spectator replay saving", () => {
+  it("indexes a signed-in spectator's public recording and reuses the export on retry", async () => {
+    const { room, players, send } = await start();
+    const spectator = addSpectator({ room, accountId: "spectator-owner" });
+    const record = indexWith(room, async () => "spectator-index");
+    Reflect.get(room, "sendReplayDownload").call(room, spectator);
+    expect(spectator.send).not.toHaveBeenCalled();
+    send(players[0]!, "surrender");
+    await vi.waitFor(() => expect(readyMessage(spectator)?.indexId).toBe("spectator-index"));
+    expect(record).toHaveBeenCalledExactlyOnceWith(
+      "spectator-owner",
+      expect.objectContaining({ viewerSeat: SPECTATOR_REPLAY_SEAT }),
+      { format: room.state.format, playerAccountIds: [null, null] },
+    );
+    const original = readyMessage(spectator)!;
+    vi.mocked(spectator.send).mockClear();
+    Reflect.get(room, "sendReplayDownload").call(room, spectator);
+    await vi.waitFor(() => expect(readyMessage(spectator)).toEqual(original));
+    expect(record).toHaveBeenCalledOnce();
+  });
+
+  it("lets an anonymous spectator save the full match while preserving identity and deck privacy", async () => {
+    const { room, players, send } = await start();
+    const spectator = addSpectator({ room });
+    const record = indexWith(room, async () => "unused-index");
+    (Reflect.get(room, "deckOwnerBySeat") as Map<number, string>).set(0, "hidden-player");
+    (Reflect.get(room, "deckOwnerBySeat") as Map<number, string>).set(1, "private-deck");
+    Reflect.set(room, "accounts", () => ({
+      preferences: vi.fn<AccountStore["preferences"]>(async (owner) => ({
+        hideIdentityFromSpectators: owner === "hidden-player",
+        shareDeckAfterMatch: owner !== "private-deck",
+      })),
+      recordRecentMatch: vi.fn<AccountStore["recordRecentMatch"]>(async () => {}),
+    }));
+    room.state.players[0]!.avatarId = "private-avatar";
+    send(players[0]!, "surrender");
+    await vi.waitFor(() => expect(readyMessage(spectator)).toBeDefined());
+    const replay = replayOf(spectator)!;
+    expect(readyMessage(spectator)!.indexId).toBeUndefined();
+    expect(record).not.toHaveBeenCalled();
+    expect(replay.viewerSeat).toBe(SPECTATOR_REPLAY_SEAT);
+    expect(replay.visibleHandSeats).toEqual([]);
+    expect(replay.players).toEqual(["Player 1", "Player 1"]);
+    expect(replay.decks).toEqual([null, null]);
+    expect(replay.deckIcons).toEqual([null, null]);
+    expect(replay.frames[0]!.events.some((event) => event.kind === "matchStarted")).toBe(true);
+    expect(replay.frames.at(-1)!.state.gameOver).toBe(true);
+    for (const frame of replay.frames) {
+      expect(frame.state.players[0]!.displayName).toBe("Player 1");
+      expect(frame.state.players[0]!.avatarId).toBe("");
+      for (const player of frame.state.players) {
+        expect(player.hand).toEqual([]);
+        expect(player.deck).toEqual([]);
+        expect(player.eggDeck).toEqual([]);
+        expect(player.security).toEqual([]);
+        expect(player.spectatorNamesJson).toBe("[]");
+        expect(player.manualInspectionJson).toBe("[]");
+      }
+    }
+  });
+
+  it.each([SpectatorAccess.FRIENDS.value, SpectatorAccess.NOBODY.value])(
+    "does not export an anonymous spectator replay after access changes to %s",
+    async (spectatorAccess) => {
+      const { room, players, send } = await start();
+      const spectator = addSpectator({ room });
+      (Reflect.get(room, "deckOwnerBySeat") as Map<number, string>).set(0, "restricted-player");
+      Reflect.set(room, "accounts", () => ({
+        preferences: vi.fn<AccountStore["preferences"]>(async () => ({ spectatorAccess })),
+        recordRecentMatch: vi.fn<AccountStore["recordRecentMatch"]>(async () => {}),
+      }));
+      send(players[0]!, "surrender");
+      await vi.waitFor(() => expect(readyMessage(players[0]!)).toBeDefined());
+      await Reflect.get(room, "sendSpectatorReplay").call(room, spectator);
+      expect(spectator.send).not.toHaveBeenCalled();
+    },
+  );
+
+  it("tells anonymous spectators when the recording exceeded its limit", async () => {
+    const { room, players, send } = await start();
+    const spectator = addSpectator({ room });
+    Reflect.set(Reflect.get(room, "replayRecording"), "overflow", true);
+    send(players[0]!, "surrender");
+    await vi.waitFor(() =>
+      expect(spectator.send).toHaveBeenCalledWith(REPLAY_CHANNEL, { kind: "unavailable", reason: "recording_limit" }),
+    );
+  });
 });

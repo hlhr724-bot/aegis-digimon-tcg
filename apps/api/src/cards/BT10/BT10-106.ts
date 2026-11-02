@@ -38,6 +38,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] You may play 1 Digimon card with [Justimon] in its name from your hand without paying its memory cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {
@@ -58,6 +60,8 @@ const compiled: CompiledCard = {
           bindResultAs: "playedDigimon",
         },
         {
+          effectTextPart:
+            "If you do, delete 1 of your opponent's Digimon with a play cost less than or equal to the Digimon you played.",
           kind: "Delete",
           target: {
             filter: {

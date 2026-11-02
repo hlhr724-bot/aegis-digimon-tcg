@@ -30,8 +30,8 @@ describe("headless level panel protocol", () => {
         { searchTiming: simulationBoundTiming },
       );
       expect(result.problem).toBeUndefined();
-      expect(result.searchFallbacks[0]).toEqual({ deadline: 0, capacity: 0, error: 0 });
       expect(result.searchErrors[0]).toEqual({});
+      expect(result.searchFallbacks[0]).toEqual({ deadline: 0, capacity: 0, error: 0 });
     },
     60000,
   );

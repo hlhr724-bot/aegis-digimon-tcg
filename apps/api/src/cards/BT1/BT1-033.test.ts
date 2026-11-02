@@ -20,7 +20,7 @@ describe("BT1-033 Dolphmon", () => {
       attributes: ["Vaccine"],
       types: ["Sea Animal"],
       inheritedEffectText:
-        "[Your Turn] While your opponent has a Digimon with no digivolution cards in play， this Digimon gets +1000 DP.",
+        "[Your Turn] While your opponent has a Digimon with no digivolution cards in play, this Digimon gets +1000 DP.",
       rarity: "C",
       maxCountInDeck: 4,
       imageId: "BT1-033",

@@ -1,4 +1,5 @@
 import { effectEnvironmentSnapshots } from "#api/engine/effects/resolution/effectEnvironmentSnapshots";
+import { observeEffectActivation } from "#api/engine/effects/activationPresentation";
 import { resolveDerivedDuringAttackStep } from "#api/engine/gameEngine/resolveDerivedDuringAttackStep";
 import type { ArmedSubTrigger } from "#api/engine/gameEngine/subTriggerIdentity";
 import type { CollectedEffect } from "#api/engine/effects/collect";
@@ -326,15 +327,23 @@ export async function engineConsultLeavePrevention(
           timing: replacement.event,
           ...(host !== undefined && host.topCard?.instanceId !== ctx.source.instanceId ? { isInherited: true } : {}),
         };
-        engine.hooks.emit({
-          kind: "effectTriggered",
-          ...announced,
-          ...(engine.securityCheckDepth > 0 ? { duringSecurityCheck: true } : {}),
-        });
+        const presentation = observeEffectActivation(
+          ctx,
+          replacement.mode === "instead" && replacement.activationDeferred === true,
+          () =>
+            engine.hooks.emit({
+              kind: "effectTriggered",
+              ...announced,
+              ...(engine.securityCheckDepth > 0 ? { duringSecurityCheck: true } : {}),
+            }),
+        );
         try {
           return await resolveLeaveReplacementBody(engine, body);
         } finally {
-          engine.hooks.emit({ kind: "effectResolved", ...announced });
+          presentation.restore();
+          if (presentation.accepted()) {
+            engine.hooks.emit({ kind: "effectResolved", ...announced });
+          }
         }
       },
       resolvePreventBody: (body) => resolveLeaveReplacementBody(engine, body, { asEffectBody: true }),

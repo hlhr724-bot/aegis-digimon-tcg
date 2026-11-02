@@ -130,6 +130,7 @@ describe("circuit screens", () => {
     });
     const onViewChange = vi.fn<(view: TournamentRoute) => void>();
     renderScreen({ kind: "catalog" }, onViewChange);
+    fireEvent.click(await screen.findByRole("tab", { name: "Circuits" }));
     const card = await screen.findByRole("button", { name: /Weekend Circuit/ });
     expect(screen.getAllByRole("button", { name: /Weekend Circuit/ })).toHaveLength(1);
     expect(screen.queryByRole("button", { name: "New circuit" })).toBeNull();
@@ -152,6 +153,7 @@ describe("circuit screens", () => {
       });
       const onViewChange = vi.fn<(view: TournamentRoute) => void>();
       renderScreen({ kind: "catalog" }, onViewChange);
+      fireEvent.click(await screen.findByRole("tab", { name: "Circuits" }));
       fireEvent.click(await screen.findByRole("button", { name: "New circuit" }));
       expect(onViewChange).toHaveBeenCalledWith({ kind: "createCircuit" });
     },

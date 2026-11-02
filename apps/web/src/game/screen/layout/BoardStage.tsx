@@ -31,7 +31,6 @@ import { RollbackControls } from "@/game/RollbackControls";
 
 import {
   useMemo,
-  useState,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
@@ -40,14 +39,18 @@ import {
 import { ChatBubble } from "../../chat/ChatBubble";
 import { MatchChatWindow } from "../../chat/MatchChatWindow";
 import type { MatchChat } from "../../chat/useMatchChat";
-import { useUnreadChatCount } from "../../chat/useUnreadChatCount";
+import type { MatchChatWindow as MatchChatWindowState } from "../../chat/useMatchChatWindow";
 import type { ArenaBoardLook } from "../../arenaLook";
+import type { HandSortDirection } from "@/game/HandSortDirection";
 import type { HandSortMode } from "../../handSortMode";
 import { createPortal } from "react-dom";
 import type { GameState, Permanent, PlayerState, Seat } from "@aegis/shared";
 import type { RevealedZones } from "../model/gameOutcome";
 import { canAttackPlayerWith, canAttackWith, otherSeat } from "../../boardModel";
-import type { LogLine } from "@/game/log/LogEntry";
+import type { LogEntry, LogLine } from "@/game/log/LogEntry";
+import { useUnreadLogCount } from "@/game/log/useUnreadLogCount";
+import type { SeatNames } from "@/game/log/SeatNames";
+import type { SeatAvatars } from "@/game/log/SeatAvatars";
 import { intents } from "../../../net/intents";
 import { EndTurnDialog } from "./EndTurnDialog";
 import { useEndTurnConfirmation } from "../hooks/useEndTurnConfirmation";
@@ -88,6 +91,8 @@ import { DragGhost } from "./DragGhost";
 import { FieldClashGhosts } from "./FieldClashGhosts";
 import { LeftPileColumn } from "./LeftPileColumn";
 import { LogTicker } from "./LogTicker";
+import { FixedMatchLog } from "@/game/log/FixedMatchLog";
+import { useMatchLogDisplay } from "@/game/log/useMatchLogDisplay";
 import { DecisionMatchTimer, MatchTimer, SeriesBadge, viewerDecisionTimed } from "../../MatchTimer";
 import { MemoryBand } from "./MemoryBand";
 import { OpponentBar } from "./OpponentBar";
@@ -101,6 +106,10 @@ import { ViewerPiles } from "./ViewerPiles";
 import { EffectConfirmButton } from "../../EffectConfirmButton";
 import { useBreedingTransferOrigins } from "../../breedingTransfer";
 import { useFieldShatterOrigins } from "../../fieldShatter";
+import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
+import type { NarrationItem } from "../../narration";
+
+const HIDDEN_NARRATION: ReadonlyMap<string, NarrationItem> = new Map();
 
 export interface BoardAnchors {
   board: RefObject<HTMLDivElement | null>;
@@ -136,6 +145,9 @@ export interface BoardReadouts {
   displayedTurnSeat: Seat;
   displayedTurnCount: number;
   log: LogLine[];
+  logEntries: readonly LogEntry[];
+  seatNames: SeatNames;
+  seatAvatars: SeatAvatars;
 }
 
 /** What the board lights, outlines or points at while a choice is open. */
@@ -168,9 +180,11 @@ export interface HandDockInputs {
   reorderDropBeforeInstanceId?: string | null;
   onMoveHandCard: (instanceId: string, direction: -1 | 1) => void;
   handSortMode: HandSortMode;
-  onSortHand: (mode: HandSortMode) => void;
+  handSortDirection: HandSortDirection;
+  onSortHand: (mode: HandSortMode, direction: HandSortDirection) => void;
   effectSourceInstanceId: string | undefined;
   effectSource?: EffectActivation;
+  effectSourceMarks?: ReadonlyMap<string, EffectSourceMark>;
   shakeInstanceId: string | undefined;
   selection:
     | {
@@ -196,6 +210,7 @@ export function BoardStage({
   viewerSeat,
   room,
   chat,
+  chatWindow,
   look,
   boardStyle,
   layout,
@@ -236,6 +251,7 @@ export function BoardStage({
   room: Parameters<typeof intents.surrender>[0] | undefined;
   /** Absent when there is no live room to talk through, as in a demo. */
   chat?: MatchChat;
+  chatWindow: MatchChatWindowState;
   look: ArenaBoardLook;
   boardStyle: BoardStyle;
   layout: ReturnType<typeof useArenaLayout>;
@@ -295,8 +311,10 @@ export function BoardStage({
   useBreedingTransferOrigins(anchors.board);
   useFieldShatterOrigins(anchors.board);
   const other = otherSeat(viewerSeat);
-  const [chatOpen, setChatOpen] = useState(false);
-  const chatUnread = useUnreadChatCount(chat?.entries, chatOpen);
+  const logUnread = useUnreadLogCount({ entries: readouts.logEntries, open: overlays.historyOpen });
+  const matchLogDisplay = useMatchLogDisplay();
+  const showsFixedLog = matchLogDisplay.showsPanel && !layout.narrowGameLayout;
+  const shownNarration = matchLogDisplay.showsPopups || layout.narrowGameLayout ? cues.narration : HIDDEN_NARRATION;
   const endTurnConfirmation = useEndTurnConfirmation({
     phase: displayPhase,
     turnCount: state.turnCount,
@@ -742,9 +760,10 @@ export function BoardStage({
             onOpenLog={() => overlays.setHistoryOpen(true)}
             onReportBug={() => overlays.setBugReportOpen(true)}
             onOpenArenaLook={() => overlays.setArenaLookOpen(true)}
-            onToggleChat={chat ? () => setChatOpen((open) => !open) : undefined}
-            chatOpen={chatOpen}
-            chatUnread={chatUnread}
+            onToggleChat={chat ? chatWindow.toggle : undefined}
+            chatOpen={chatWindow.open}
+            chatUnread={chatWindow.unread}
+            logUnread={logUnread}
             gameOver={state.gameOver}
             onSurrender={
               spectating || state.gameOver ? () => onLeaveSpectator?.() : () => overlays.setSurrenderConfirmOpen(true)
@@ -762,7 +781,7 @@ export function BoardStage({
             ) : null}
             {!resultShown ? (
               <NarrationStack
-                narration={cues.narration}
+                narration={shownNarration}
                 rejection={cues.rejection}
                 compact={layout.collapseNotices}
                 promptSourceCardId={promptSourceCardId}
@@ -791,6 +810,17 @@ export function BoardStage({
               displayedTurnSeat={readouts.displayedTurnSeat}
               displayedTurnCount={readouts.displayedTurnCount}
               memory={readouts.memory}
+            />
+          ) : null}
+
+          {showsFixedLog ? (
+            <FixedMatchLog
+              entries={readouts.logEntries}
+              viewerSeat={spectating ? undefined : viewerSeat}
+              playerNames={readouts.seatNames}
+              playerAvatars={readouts.seatAvatars}
+              onExpand={() => overlays.setHistoryOpen(true)}
+              onOpenCard={overlays.setZoomCardId}
             />
           ) : null}
 
@@ -859,6 +889,7 @@ export function BoardStage({
           <PlayerDock
             spectating={spectating}
             handSortMode={handDock.handSortMode}
+            handSortDirection={handDock.handSortDirection}
             showRecordedHand={replayMode && seats.shownHandEntries.length > 0}
             onSortHand={handDock.onSortHand}
             onMoveHandCard={handDock.onMoveHandCard}
@@ -878,6 +909,7 @@ export function BoardStage({
             selectedInstanceId={selection.handSel ?? undefined}
             effectSourceInstanceId={handDock.effectSourceInstanceId}
             effectSource={handDock.effectSource}
+            effectSourceMarks={handDock.effectSourceMarks}
             selection={handDock.selection}
             draggingInstanceId={drag.isPlay && drag.state?.kind === DragKind.Play ? drag.state.instanceId : undefined}
             shakeInstanceId={handDock.shakeInstanceId}
@@ -966,7 +998,7 @@ export function BoardStage({
               senderName={viewerName}
               boardRef={anchors.board}
             />
-            {chatOpen ? (
+            {chatWindow.open ? (
               <MatchChatWindow
                 chat={chat}
                 spectating={spectating}
@@ -976,7 +1008,7 @@ export function BoardStage({
                     [other]: opponentName,
                   } as Record<Seat, string>
                 }
-                onClose={() => setChatOpen(false)}
+                onClose={chatWindow.close}
               />
             ) : null}
           </>

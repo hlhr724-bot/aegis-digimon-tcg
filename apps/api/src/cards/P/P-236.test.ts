@@ -36,7 +36,7 @@ describe("P-236 Glowing Dawn", () => {
       expect.objectContaining({
         trigger: "Main",
         keywords: [{ keyword: "Delay", raw: "＜Delay＞" }],
-        actions: [{ kind: "GainMemory", amount: 2 }],
+        actions: [{ effectTextPart: "Gain 2 memory.", kind: "GainMemory", amount: 2 }],
       }),
     );
   });

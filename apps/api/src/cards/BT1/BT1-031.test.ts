@@ -19,7 +19,7 @@ describe("BT1-031 Monmon", () => {
       attributes: ["Virus"],
       types: ["Beast"],
       effectText:
-        "＜Blocker＞ (When an opponent's Digimon attacks， you may suspend this Digimon to force the opponent to " +
+        "＜Blocker＞ (When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to " +
         "attack it instead.)",
     });
     expect(getCardDefinition("BT1-031")?.inheritedEffectText).toBeUndefined();

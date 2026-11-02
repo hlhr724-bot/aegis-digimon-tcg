@@ -7,6 +7,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Activate 1 of the effects below.",
           kind: "Modal",
           choose: 1,
           labels: [
@@ -16,6 +17,8 @@ export const compiled: CompiledCard = {
           options: [
             [
               {
+                effectTextPart:
+                  "If you have [CresGarurumon] in play, 1 of your [Agumon] or [Greymon] may digivolve into [BlitzGreymon] in your hand, ignoring digivolution requirements and without paying the cost.",
                 kind: "Digivolve",
                 target: {
                   filter: {
@@ -60,6 +63,8 @@ export const compiled: CompiledCard = {
             ],
             [
               {
+                effectTextPart:
+                  "If you have [BlitzGreymon] in play, 1 of your [Gabumon] or [Garurumon] may digivolve into [CresGarurumon] in your hand, ignoring digivolution requirements and without paying the cost.",
                 kind: "Digivolve",
                 target: {
                   filter: {

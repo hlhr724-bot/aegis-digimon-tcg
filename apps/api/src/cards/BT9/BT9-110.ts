@@ -37,6 +37,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Delete 1 Digimon without [X Antibody] in its traits. If there are 3 or more Digimon in play, delete all Digimon without [X Antibody] in their traits instead.",
           kind: "ConditionalBranch",
           condition: {
             kind: "totalDigimonCount",

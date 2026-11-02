@@ -1,3 +1,6 @@
+import { isTournamentGameTicket } from "@aegis/shared/tournaments/isTournamentGameTicket";
+import type { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
+import type { TournamentOwnDeck } from "@aegis/shared/tournaments/TournamentOwnDeck";
 /* The tournament HTTP surface, following the `accountApi` pattern in ../account/client.
    Three differences: every response feeds the server clock with the round trip it was measured
    over, failures are returned as typed values instead of thrown strings (the reason code IS the
@@ -82,6 +85,23 @@ async function readJson(response: Response): Promise<unknown> {
 }
 
 export const tournamentApi = {
+  changeDeck: (id: string, savedDeckId: string) =>
+    send<TournamentOwnDeck>(`/tournaments/${encodeURIComponent(id)}/own-deck`, {
+      method: "POST",
+      body: JSON.stringify({ savedDeckId }),
+    }),
+  setRoundStartMode: (id: string, mode: TournamentRoundStartMode) =>
+    send<unknown>(`/tournaments/${encodeURIComponent(id)}/round-start-mode`, {
+      method: "POST",
+      body: JSON.stringify({ mode }),
+    }),
+  startNextRound: (id: string) =>
+    send<unknown>(`/tournaments/${encodeURIComponent(id)}/next-round`, { method: "POST", body: "{}" }),
+  cancel: (id: string, reason: string, commandId: string) =>
+    send<unknown>(`/tournaments/${encodeURIComponent(id)}/arbitration/cancel`, {
+      method: "POST",
+      body: JSON.stringify({ reason, commandId }),
+    }),
   swapPairings: (
     id: string,
     input: {
@@ -102,11 +122,19 @@ export const tournamentApi = {
       method: "POST",
       body: "{}",
     }),
-  authorizeGame: (seriesId: string) =>
-    send<TournamentGameTicket>(`/series/${encodeURIComponent(seriesId)}/authorize-game`, {
+  authorizeGame: async (seriesId: string): Promise<ApiResult<TournamentGameTicket>> => {
+    const result = await send<unknown>(`/series/${encodeURIComponent(seriesId)}/authorize-game`, {
       method: "POST",
       body: "{}",
-    }),
+    });
+    if (!result.ok) {
+      return result;
+    }
+    if (!isTournamentGameTicket(result.value)) {
+      return { ok: false, error: { status: 200, code: "invalid_response" } };
+    }
+    return { ok: true, value: result.value };
+  },
   list: (signal?: AbortSignal) => send<TournamentListing[]>("/tournaments", { signal }),
   detail: (id: string, signal?: AbortSignal) =>
     send<TournamentDetail>(`/tournaments/${encodeURIComponent(id)}`, { signal }),

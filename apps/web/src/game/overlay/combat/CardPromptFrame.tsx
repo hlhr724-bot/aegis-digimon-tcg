@@ -23,6 +23,8 @@ export function CardPromptFrame({
   label,
   surface = "left",
   onBack,
+  reserveHand = true,
+  boardAction = true,
   children,
 }: {
   cardId?: string;
@@ -34,6 +36,8 @@ export function CardPromptFrame({
   label?: string;
   surface?: "left" | "center";
   onBack?: () => void;
+  reserveHand?: boolean;
+  boardAction?: boolean;
   children: ReactNode;
 }) {
   const getCardName = useTranslatedCardName();
@@ -42,7 +46,7 @@ export function CardPromptFrame({
   const openCard = useCardOpener();
   const { isViewingBoard, openBoard, boardReturn } = useBoardPreview();
   const panel = useRef<HTMLDivElement>(null);
-  usePromptHandSpace(panel, !isViewingBoard);
+  usePromptHandSpace(panel, reserveHand && !isViewingBoard);
   useArenaInputCancel({ ref: panel, onCancel: onBack });
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -106,9 +110,11 @@ export function CardPromptFrame({
           </div>
         </header>
         {children}
-        <div className="counter-overlay__board-action">
-          <DecisionViewBoardButton onOpenBoard={openBoard} />
-        </div>
+        {boardAction ? (
+          <div className="counter-overlay__board-action">
+            <DecisionViewBoardButton onOpenBoard={openBoard} />
+          </div>
+        ) : null}
       </div>
     </>
   );

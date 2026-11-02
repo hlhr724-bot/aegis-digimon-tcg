@@ -83,7 +83,6 @@ export function decisionPresentation({
     : "dialog";
 }
 
-/** Activation prompts follow the preference; costs and card galleries keep their own surfaces. */
 export function isEffectActivationDecision(decision: DecisionRequest): boolean {
   if (decision.options?.purpose === "cost" || decision.options?.digivolveCostChoice !== undefined) return false;
   return (
@@ -94,14 +93,25 @@ export function isEffectActivationDecision(decision: DecisionRequest): boolean {
   );
 }
 
+const CARD_GALLERY_DECISION_KINDS: readonly DecisionRequest["kind"][] = [
+  "chooseTargets",
+  "selectCards",
+  "orderCards",
+  "orderTriggers",
+  "mulligan",
+];
+
 export function effectDecisionSurface(
   decision: DecisionRequest,
   position: "left" | "center" = "left",
 ): "left" | "center" {
-  if (isEffectActivationDecision(decision)) return position;
-  return ["chooseTargets", "selectCards", "orderCards", "orderTriggers", "mulligan"].includes(decision.kind)
-    ? "center"
-    : "left";
+  if (isEffectActivationDecision(decision)) {
+    return position;
+  }
+  if (CARD_GALLERY_DECISION_KINDS.includes(decision.kind)) {
+    return "center";
+  }
+  return position;
 }
 
 /**
@@ -150,35 +160,6 @@ export function triggerClauseSummary(
   const lastSpace = head.lastIndexOf(" ");
   const cut = lastSpace > maxChars / 2 ? head.slice(0, lastSpace) : head;
   return `${cut.replace(/[,.;:]$/, "")}…`;
-}
-
-export type TriggerSource = { zone: "field"; position: number } | { zone: "hand" } | { zone: "unknown" };
-
-/**
- * Where a pending trigger fires from, as the chooser labels it. `position` is
- * the 1-based slot in the battle area, matching the "Field:1" wording the
- * reference client uses.
- */
-export function triggerSource(
-  instanceId: string,
-  zones: { fieldSlots: readonly (readonly string[])[]; handInstanceIds: readonly string[] },
-): TriggerSource {
-  const slot = zones.fieldSlots.findIndex((instanceIds) => instanceIds.includes(instanceId));
-  if (slot !== -1) return { zone: "field", position: slot + 1 };
-  return zones.handInstanceIds.includes(instanceId) ? { zone: "hand" } : { zone: "unknown" };
-}
-
-/**
- * One entry per battle-area slot, listing every instance id that slot holds (top
- * card first), so a trigger raised by an inherited effect still resolves to the
- * permanent's slot rather than to no zone at all.
- */
-export function fieldSlots(permanents: readonly Permanent[]): string[][] {
-  return permanents.map((permanent) => {
-    const top = permanent.topCard?.instanceId;
-    const under = permanent.stack.map((card) => card.instanceId);
-    return top === undefined ? under : [top, ...under];
-  });
 }
 
 /** Mirror the server's shortage rule using the offered candidates, including hidden ones. */

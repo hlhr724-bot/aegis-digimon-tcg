@@ -12,7 +12,7 @@ import { scenario } from "./scenarioHarness/scenario";
 import { startTestServer, type TestServer } from "./scenarioHarness/server";
 import { tap } from "./scenarioHarness/tap";
 
-// Seed 2 deals the BT1-011 and BT1-014 slots into the opening hand.
+// Seed 14 deals the BT1-011 and BT1-014 slots into the opening hand.
 // P-122's security search has no multicolor candidate in this legal deck.
 const PROMO_DECK = swapMainDeckCard(swapMainDeckCard(RED_DECK, "BT1-014", "BT1-051"), "BT1-011", "P-122");
 
@@ -34,7 +34,7 @@ scenario("promo-p122-evolution-stack", () => {
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Promo auditor",
       deck: PROMO_DECK,
-      seed: 2,
+      seed: 14,
     };
     render(<GameScreen joinOptions={joinOptions} identityColor="Yellow" startMode="casual" onExit={() => {}} />);
     await screen.findByText(/finding an opponent/i);

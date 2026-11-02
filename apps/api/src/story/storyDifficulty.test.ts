@@ -11,11 +11,11 @@ import { getStoryScenario } from "#api/story/getStoryScenario";
 import { getStoryScenarioDeck } from "#api/story/getStoryScenarioDeck";
 import { getStorySeatDeck } from "#api/story/getStorySeatDeck";
 import { shuffleStoryDecks } from "#api/story/shuffleStoryDecks";
+import { seitenGokuumonStoryDeck } from "#api/story/decks/seitenGokuumonStoryDeck";
 
 const playableBattles = catalogStoryBattles.filter((battle) => battle.playable);
 
-function getSourceCards(ref: Parameters<typeof getStoryScenarioDeck>[0]["ref"]): string[] {
-  const deck = getStoryScenarioDeck({ ref });
+function getSourceCards(deck: Pick<ReturnType<typeof getStoryScenarioDeck>, "main" | "eggs">): string[] {
   return [...deck.main, ...deck.eggs].flatMap(([card, count]) => Array.from({ length: count }, () => card)).sort();
 }
 
@@ -65,13 +65,14 @@ describe("story difficulty", () => {
       [1, battle.opponentDeckRef!],
     ] as const) {
       const deck = getStorySeatDeck({ fixture, seat });
-      expect([...deck.mainDeck, ...deck.eggDeck].sort()).toEqual(getSourceCards(ref));
+      const source = battleId === "bb13" && seat === 1 ? seitenGokuumonStoryDeck : getStoryScenarioDeck({ ref });
+      expect([...deck.mainDeck, ...deck.eggDeck].sort()).toEqual(getSourceCards(source));
     }
     expect(player.battleArea).toEqual([]);
     const permanents = opponent.battleArea as PermanentSpec[];
     const canBuildPermanent =
       difficulty.opponentLevel !== null &&
-      getSourceCards(battle.opponentDeckRef!).some((card) => {
+      getSourceCards(getStoryScenarioDeck({ ref: battle.opponentDeckRef! })).some((card) => {
         const level = getCardDefinition(card)?.level ?? 0;
         return level >= 3 && level <= difficulty.opponentLevel!;
       });

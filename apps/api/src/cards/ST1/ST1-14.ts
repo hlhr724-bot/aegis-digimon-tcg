@@ -5,7 +5,16 @@ export const compiled: CompiledCard = {
   effects: [
     {
       trigger: "Main",
-      actions: [{ kind: "ModifySecurityDP", controller: "mine", amount: 7000, duration: "untilOpponentTurnEnd" }],
+      actions: [
+        {
+          effectTextPart:
+            "[Main] All of your Security Digimon get +7000 DP until the end of your opponent's next turn.",
+          kind: "ModifySecurityDP",
+          controller: "mine",
+          amount: 7000,
+          duration: "untilOpponentTurnEnd",
+        },
+      ],
     },
     {
       trigger: "Security",

@@ -28,13 +28,17 @@ import { useFriendsDrawerLauncher } from "@/messages/useFriendsDrawerLauncher";
 const OPPONENT_NAME_MAX_LENGTH = 12;
 /** Animation batches arrive with short gaps; the skip button outlasts them instead of blinking. */
 export const SKIP_BUTTON_HOLD_MS = 700;
-const CHAT_UNREAD_SHOWN_MAX = 9;
+const UNREAD_SHOWN_MAX = 9;
 
-function ChatUnreadBadge({ count }: { count: number }) {
-  if (count <= 0) return null;
+type UnreadBadgeParams = { count: number; testId: string };
+
+function UnreadBadge({ count, testId }: UnreadBadgeParams) {
+  if (count <= 0) {
+    return null;
+  }
   return (
-    <span className="game-chat-unread" aria-hidden="true" data-testid="chat-unread">
-      {count > CHAT_UNREAD_SHOWN_MAX ? `${CHAT_UNREAD_SHOWN_MAX}+` : count}
+    <span className="game-unread-badge" aria-hidden="true" data-testid={testId}>
+      {count > UNREAD_SHOWN_MAX ? `${UNREAD_SHOWN_MAX}+` : count}
     </span>
   );
 }
@@ -71,6 +75,7 @@ export function OpponentBar({
   onToggleChat,
   chatOpen = false,
   chatUnread = 0,
+  logUnread = 0,
   onSurrender,
   gameOver = false,
   onSkipPresentation,
@@ -111,6 +116,7 @@ export function OpponentBar({
   chatOpen?: boolean;
   /** Messages from others since the chat window was last open. */
   chatUnread?: number;
+  logUnread?: number;
   onSurrender: () => void;
   gameOver?: boolean;
   onSkipPresentation: () => void;
@@ -122,6 +128,7 @@ export function OpponentBar({
   const fullscreenLabel = fullscreen.active ? t("game.fullscreen.exit") : t("game.fullscreen.enter");
   const FullscreenIcon = fullscreen.active ? Icons.Minimize : Icons.Maximize;
   const chatLabel = chatUnread > 0 ? t("chat.openUnread", { count: chatUnread }) : t("chat.open");
+  const logLabel = logUnread > 0 ? t("game.matchLogUnread", { count: logUnread }) : t("game.matchLog");
   const openCard = useCardOpener();
   const skipShown = useHeldFlag(skippable, SKIP_BUTTON_HOLD_MS);
   const tooltip = useTopbarTooltip();
@@ -134,7 +141,7 @@ export function OpponentBar({
     leaveLabel = t("spectator.leave");
   }
   const tooltipText: Record<TopbarTooltipId, string | undefined> = {
-    log: t("game.matchLog"),
+    log: logLabel,
     feedback: t("bugReport.button"),
     chat: chatLabel,
     friends: friendsDrawer?.label,
@@ -253,7 +260,7 @@ export function OpponentBar({
         >
           <summary aria-label={t("mobile.board.matchMenu")}>
             <Icons.MoreVertical size={20} />
-            <ChatUnreadBadge count={chatUnread} />
+            <UnreadBadge count={chatUnread + logUnread} testId="menu-unread" />
           </summary>
           <div className="game-mobile-menu__actions">
             {rollbackControls}
@@ -271,7 +278,7 @@ export function OpponentBar({
               </button>
             ) : null}
             <button type="button" onClick={onOpenLog}>
-              <Icons.ScrollText size={18} /> {t("game.matchLog")}
+              <Icons.ScrollText size={18} /> {logLabel}
             </button>
             {onToggleChat ? (
               <button type="button" onClick={onToggleChat}>
@@ -314,10 +321,11 @@ export function OpponentBar({
             type="button"
             className="game-mobile-log"
             onClick={onOpenLog}
-            aria-label={t("game.matchLog")}
+            aria-label={logLabel}
             data-testid="log-strip"
           >
             <Icons.ScrollText size={16} />
+            <UnreadBadge count={logUnread} testId="log-unread" />
           </button>
           {onToggleChat ? (
             <button
@@ -328,7 +336,7 @@ export function OpponentBar({
               aria-pressed={chatOpen}
             >
               <Icons.MessageSquare size={16} />
-              <ChatUnreadBadge count={chatUnread} />
+              <UnreadBadge count={chatUnread} testId="chat-unread" />
             </button>
           ) : null}
           {friendsDrawer ? (
@@ -340,7 +348,7 @@ export function OpponentBar({
               aria-expanded={friendsDrawer.expanded}
             >
               <Icons.Users size={16} />
-              <ChatUnreadBadge count={friendsDrawer.unread} />
+              <UnreadBadge count={friendsDrawer.unread} testId="friends-unread" />
             </button>
           ) : null}
           {fullscreen.supported ? (
@@ -381,8 +389,9 @@ export function OpponentBar({
               ↻
             </button>
           ) : null}
-          <button className="game-topbar-button" {...tooltip.describe("log", t("game.matchLog"), onOpenLog)}>
+          <button className="game-topbar-button" {...tooltip.describe("log", logLabel, onOpenLog)}>
             <Icons.ScrollText size={17} />
+            <UnreadBadge count={logUnread} testId="log-unread" />
           </button>
           {onToggleChat ? (
             <button
@@ -391,7 +400,7 @@ export function OpponentBar({
               {...tooltip.describe("chat", chatLabel, onToggleChat)}
             >
               <Icons.MessageSquare size={17} />
-              <ChatUnreadBadge count={chatUnread} />
+              <UnreadBadge count={chatUnread} testId="chat-unread" />
             </button>
           ) : null}
           {friendsDrawer ? (
@@ -401,7 +410,7 @@ export function OpponentBar({
               {...tooltip.describe("friends", friendsDrawer.label, friendsDrawer.toggle)}
             >
               <Icons.Users size={17} />
-              <ChatUnreadBadge count={friendsDrawer.unread} />
+              <UnreadBadge count={friendsDrawer.unread} testId="friends-unread" />
             </button>
           ) : null}
           {fullscreen.supported ? (

@@ -49,6 +49,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] If you have no face-up security cards, by trashing your top security card, place this card face up as your top security card.",
           kind: "SecurityManipulation",
           op: "addTop",
           controller: "mine",

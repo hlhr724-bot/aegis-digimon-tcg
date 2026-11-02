@@ -48,3 +48,22 @@ it("offers Atratusmon alternate artwork in both languages while keeping original
   expect(cardImageUrls("BT27-052", "BT27-052_P1")[0]).toContain("/BT27-052_P1.webp");
   expect(cardImageUrls("BT27-052", "BT27-052_P1-J")[0]).toContain("/BT27-052_P1-J.webp");
 });
+
+it("offers BanchoLeomon alternate artwork in both languages while keeping original printings", () => {
+  expect(getCardArts("BT27-053").map((art) => art.artId)).toEqual([
+    "BT27-053",
+    "BT27-053-J",
+    "BT27-053_P1",
+    "BT27-053_P1-J",
+  ]);
+  expect(cardImageUrls("BT27-053")[0]).toContain("/BT27-053.webp");
+  expect(cardImageUrls("BT27-053", "BT27-053_P1")[0]).toContain("/BT27-053_P1.webp");
+  expect(cardImageUrls("BT27-053", "BT27-053_P1-J")[0]).toContain("/BT27-053_P1-J.webp");
+});
+
+it("offers Japanese printings for Spencer Damon, Nanami, Kouki, & Ivan, and Bio Hybrid Digivolution", () => {
+  for (const cardId of ["BT27-090", "BT27-092", "BT27-102"]) {
+    expect(getCardArts(cardId).map((art) => art.artId)).toEqual([cardId, `${cardId}-J`]);
+    expect(cardImageUrls(cardId, `${cardId}-J`)[0]).toContain(`/${cardId}-J.webp`);
+  }
+});

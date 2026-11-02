@@ -15,6 +15,7 @@ export interface AegisJoinOptions {
   storyBattleId?: string;
   storyGuestToken?: string;
   allowRollback?: boolean;
+  requireApproval?: boolean;
   spectator?: boolean;
   displayName: string;
   avatarId?: string;

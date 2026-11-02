@@ -24,7 +24,7 @@ scenario("alternate-arts", () => {
   it("synchronizes mixed printings of the same card from join options and keeps the played copy's art", async () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
-    // Seed 4 deals two copies of the Biyomon slots. Swap those slots with Monodramon,
+    // Seed 30 deals two copies of the Biyomon slots. Swap those slots with Monodramon,
     // keeping the deck legal while mixing original and alternate Monodramon printings.
     const mainDeck = RED_DECK.mainDeck.map((cardId) =>
       cardId === "BT1-012" ? "BT1-009" : cardId === "BT1-009" ? "BT1-012" : cardId,
@@ -35,7 +35,7 @@ scenario("alternate-arts", () => {
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Arts Protagonist",
       deck: { mainDeck, eggDeck: [...RED_DECK.eggDeck], mainDeckArts },
-      seed: 4,
+      seed: 30,
     };
     render(<GameScreen joinOptions={joinOptions} identityColor="Red" startMode="casual" onExit={() => {}} />);
     await screen.findByText(/finding an opponent/i);

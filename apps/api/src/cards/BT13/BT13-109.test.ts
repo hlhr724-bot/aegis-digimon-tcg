@@ -75,7 +75,7 @@ describe("BT13-109 BT13-109", () => {
     expect(s.state.players[1]!.battleArea).toHaveLength(0);
   });
 
-  it("does not trash the payment when no opponent Digimon is within its level bound", async () => {
+  it("pays its trash condition but deletes nothing when no opponent Digimon is within its level bound", async () => {
     const s = setupEngine(
       {
         0: {
@@ -101,7 +101,7 @@ describe("BT13-109 BT13-109", () => {
     await settle(() => s.state.players[0]!.trash.some((card) => card.instanceId === giftId));
     expect(s.state.players[0]!.security).toHaveLength(0);
 
-    expect(s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("payment").instanceId)).toBe(true);
+    expect(s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("payment").instanceId)).toBe(true);
     expect(s.state.players[1]!.battleArea).toHaveLength(1);
   });
 

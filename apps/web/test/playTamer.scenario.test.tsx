@@ -34,13 +34,13 @@ scenario("play-tamer", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 4: seat 0 (protagonist, RED_DECK) goes first and its dealt hand
+    // Seed 6: seat 0 (protagonist, RED_DECK) goes first and its dealt hand
     // contains "Tai Kamiya" (BT1-085, Tamer, cost 4) alongside the Digimon used
     // by playDigimon.scenario.test.tsx.
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: RED_DECK.mainDeck, eggDeck: RED_DECK.eggDeck },
-      seed: 4,
+      seed: 6,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Red" startMode="casual" onExit={() => {}} />);

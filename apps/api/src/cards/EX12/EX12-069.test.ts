@@ -45,8 +45,24 @@ describe("EX12-069 Virus Busters", () => {
       ],
     });
     expect(main.actions).toEqual([
-      { kind: "SecurityManipulation", op: "toHand", controller: "mine", amount: 1, toTop: false },
-      { kind: "SecurityManipulation", op: "placeAsSecurity", controller: "mine", toTop: false, faceUp: true },
+      {
+        effectTextPart:
+          "[Main] Add your bottom security card to the hand and place this card face up as the bottom security card.",
+        kind: "SecurityManipulation",
+        op: "toHand",
+        controller: "mine",
+        amount: 1,
+        toTop: false,
+      },
+      {
+        effectTextPart:
+          "[Main] Add your bottom security card to the hand and place this card face up as the bottom security card.",
+        kind: "SecurityManipulation",
+        op: "placeAsSecurity",
+        controller: "mine",
+        toTop: false,
+        faceUp: true,
+      },
     ]);
     expect(main.actions[1]).not.toHaveProperty("source");
     expect(securitySkill).toMatchObject({

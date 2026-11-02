@@ -1814,8 +1814,8 @@
         },
         "decisionId": "dec-62"
       },
-      "engineEvents": 305,
-      "stateVersion": 222
+      "engineEvents": 304,
+      "stateVersion": 221
     },
     {
       "ok": true,
@@ -1889,8 +1889,8 @@
         },
         "decisionId": "dec-67"
       },
-      "engineEvents": 316,
-      "stateVersion": 232
+      "engineEvents": 315,
+      "stateVersion": 231
     },
     {
       "ok": true,
@@ -2433,8 +2433,8 @@
         },
         "decisionId": "dec-98"
       },
-      "engineEvents": 403,
-      "stateVersion": 302
+      "engineEvents": 402,
+      "stateVersion": 301
     },
     {
       "ok": true,

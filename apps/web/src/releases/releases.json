@@ -1,5 +1,221 @@
 [
   {
+    "version": "1.46.0-beta",
+    "releasedAt": "2026-11-01",
+    "summaryKey": "releases.1.46.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.46.0-beta.feature.chat"
+      },
+      {
+        "textKey": "releases.1.46.0-beta.feature.effects"
+      },
+      {
+        "textKey": "releases.1.46.0-beta.feature.cards"
+      },
+      {
+        "textKey": "releases.1.46.0-beta.feature.tournaments"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.46.0-beta.fix.sayoKoh",
+        "issue": 6386
+      },
+      {
+        "textKey": "releases.1.46.0-beta.fix.byCosts"
+      },
+      {
+        "textKey": "releases.1.46.0-beta.fix.cardText",
+        "issue": 6387
+      },
+      {
+        "textKey": "releases.1.46.0-beta.fix.loading"
+      },
+      {
+        "textKey": "releases.1.46.0-beta.fix.profile"
+      }
+    ]
+  },
+  {
+    "version": "1.45.0-beta",
+    "releasedAt": "2026-11-01",
+    "summaryKey": "releases.1.45.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.45.0-beta.feature.home"
+      },
+      {
+        "textKey": "releases.1.45.0-beta.feature.play"
+      },
+      {
+        "textKey": "releases.1.45.0-beta.feature.match"
+      },
+      {
+        "textKey": "releases.1.45.0-beta.feature.inspect"
+      },
+      {
+        "textKey": "releases.1.45.0-beta.feature.cards"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.45.0-beta.fix.solarmon",
+        "issue": 6349
+      },
+      {
+        "textKey": "releases.1.45.0-beta.fix.jimmyKen",
+        "issue": 6355
+      },
+      {
+        "textKey": "releases.1.45.0-beta.fix.cardText",
+        "issue": 6356
+      },
+      {
+        "textKey": "releases.1.45.0-beta.fix.effectOrder",
+        "issue": 6371
+      },
+      {
+        "textKey": "releases.1.45.0-beta.fix.guard"
+      }
+    ]
+  },
+  {
+    "version": "1.44.0-beta",
+    "releasedAt": "2026-10-31",
+    "summaryKey": "releases.1.44.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.44.0-beta.feature.dashboard"
+      },
+      {
+        "textKey": "releases.1.44.0-beta.feature.play"
+      },
+      {
+        "textKey": "releases.1.44.0-beta.feature.decks"
+      },
+      {
+        "textKey": "releases.1.44.0-beta.feature.collection"
+      },
+      {
+        "textKey": "releases.1.44.0-beta.feature.community"
+      },
+      {
+        "textKey": "releases.1.44.0-beta.feature.tournaments"
+      }
+    ],
+    "fixes": []
+  },
+  {
+    "version": "1.43.7-beta",
+    "releasedAt": "2026-10-31",
+    "summaryKey": "releases.1.43.7-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.43.7-beta.fix.faceDown",
+        "issue": 6339
+      },
+      {
+        "textKey": "releases.1.43.7-beta.fix.decode",
+        "issue": 6326
+      },
+      {
+        "textKey": "releases.1.43.7-beta.fix.releaseNotes"
+      }
+    ]
+  },
+  {
+    "version": "1.43.6-beta",
+    "releasedAt": "2026-10-31",
+    "summaryKey": "releases.1.43.6-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.43.6-beta.fix.translations"
+      }
+    ]
+  },
+  {
+    "version": "1.43.5-beta",
+    "releasedAt": "2026-10-31",
+    "summaryKey": "releases.1.43.5-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.43.5-beta.feature.bt27"
+      },
+      {
+        "textKey": "releases.1.43.5-beta.feature.tournaments"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.43.5-beta.fix.blindDiscard",
+        "issue": 6320
+      },
+      {
+        "textKey": "releases.1.43.5-beta.fix.ogudomon",
+        "issue": 6321
+      },
+      {
+        "textKey": "releases.1.43.5-beta.fix.reveal"
+      },
+      {
+        "textKey": "releases.1.43.5-beta.fix.tournamentEntry"
+      }
+    ]
+  },
+  {
+    "version": "1.43.4-beta",
+    "releasedAt": "2026-10-31",
+    "summaryKey": "releases.1.43.4-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.43.4-beta.feature.bt27"
+      },
+      {
+        "textKey": "releases.1.43.4-beta.feature.optionClauses"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.43.4-beta.fix.fascination",
+        "issue": 6312
+      },
+      {
+        "textKey": "releases.1.43.4-beta.fix.adventure",
+        "issue": 6309
+      },
+      {
+        "textKey": "releases.1.43.4-beta.fix.effects"
+      },
+      {
+        "textKey": "releases.1.43.4-beta.fix.cardText"
+      }
+    ]
+  },
+  {
+    "version": "1.43.3-beta",
+    "releasedAt": "2026-10-30",
+    "summaryKey": "releases.1.43.3-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.43.3-beta.feature.scans"
+      },
+      {
+        "textKey": "releases.1.43.3-beta.feature.decisions"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.43.3-beta.fix.retaliation"
+      },
+      {
+        "textKey": "releases.1.43.3-beta.fix.prompts"
+      }
+    ]
+  },
+  {
     "version": "1.43.2-beta",
     "releasedAt": "2026-10-30",
     "summaryKey": "releases.1.43.2-beta.summary",

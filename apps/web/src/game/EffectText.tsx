@@ -6,7 +6,8 @@ import { resolveTranslatedKeyword } from "@/i18n/resolveTranslatedKeyword";
 import { getTranslatedKeywordReminder } from "@/i18n/getTranslatedKeywordReminder";
 import "./EffectText.css";
 import { inlineInspectorKeywordLines } from "./arenaInspectorModel";
-import { KEYWORD_GLOSSARY } from "./keywordGlossary";
+import { KEYWORD_GLOSSARY, OFFICIAL_COMPREHENSIVE_RULES_URL } from "./keywordGlossary";
+import { findCardMechanic } from "@/game/findCardMechanic";
 import { keywordRuleHintLink, normalizeKeywordBrackets } from "./keywordReminders";
 import { BadgeHint } from "./piece/BadgeHint";
 
@@ -41,6 +42,43 @@ function KeywordMark({ keyword, inspector }: KeywordParams) {
       }}
     >
       <mark data-kind="keyword">{label}</mark>
+    </BadgeHint>
+  );
+}
+
+type MarkerParams = { marker: string; inspector: boolean };
+
+function TimingMark({ marker, inspector }: MarkerParams) {
+  const mark = (
+    <mark
+      data-kind="timing"
+      data-marker={inspector ? (getInspectorMarker({ text: marker }) ?? "reference") : undefined}
+    >
+      {marker}
+    </mark>
+  );
+  const mechanic = findCardMechanic({ marker });
+  if (!mechanic) {
+    return mark;
+  }
+  return (
+    <BadgeHint
+      className="card-effect-text__mechanic"
+      role={inspector ? "button" : undefined}
+      tabIndex={inspector ? 0 : undefined}
+      onKeyDown={(event) => {
+        if (inspector && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          event.currentTarget.click();
+        }
+      }}
+      hint={{
+        title: marker,
+        description: mechanic.reminder,
+        link: { label: `Comprehensive Rules ${mechanic.rule}`, href: OFFICIAL_COMPREHENSIVE_RULES_URL },
+      }}
+    >
+      {mark}
     </BadgeHint>
   );
 }
@@ -80,25 +118,21 @@ export function EffectText({
       data-translation-status={result.status}
       data-translation-source={result.source}
     >
-      {lines.split(/(\[[^\]]+\]|＜[^＞]+＞|<[^<>\r\n]+>|（每回合\d+次）)/g).map((part, index) =>
-        /^\[/.test(part) || (inspector && /^（每回合\d+次）$/.test(part)) ? (
-          <mark
-            key={index}
-            data-kind="timing"
-            data-marker={inspector ? (getInspectorMarker({ text: part }) ?? "reference") : undefined}
-          >
-            {part}
-          </mark>
-        ) : /^[＜<].+[＞>]$/.test(part) ? (
-          <KeywordMark
-            key={index}
-            inspector={inspector}
-            keyword={asciiBrackets ? normalizeKeywordBrackets(part) : part}
-          />
-        ) : (
-          <span key={index}>{asciiBrackets ? normalizeKeywordBrackets(part) : part}</span>
-        ),
-      )}
+      {lines
+        .split(/(\[[^\]]+\]|＜[^＞]+＞|<[^<>\r\n]+>|（每回合\d+次）)/g)
+        .map((part, index) =>
+          /^\[/.test(part) || (inspector && /^（每回合\d+次）$/.test(part)) ? (
+            <TimingMark key={index} marker={part} inspector={inspector} />
+          ) : /^[＜<].+[＞>]$/.test(part) ? (
+            <KeywordMark
+              key={index}
+              inspector={inspector}
+              keyword={asciiBrackets ? normalizeKeywordBrackets(part) : part}
+            />
+          ) : (
+            <span key={index}>{asciiBrackets ? normalizeKeywordBrackets(part) : part}</span>
+          ),
+        )}
     </span>
   );
 }

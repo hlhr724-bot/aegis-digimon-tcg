@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] You may play 1 Digimon card with [Legend-Arms] in its traits and a play cost of 7 or less in your hand without paying its memory cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {
@@ -26,9 +28,7 @@ const compiled: CompiledCard = {
           payCost: false,
           optional: true,
         },
-        {
-          kind: "PlaceInBattleAreaSelf",
-        },
+        { effectTextPart: "Then, place this card in your Battle Area.", kind: "PlaceInBattleAreaSelf" },
       ],
     },
     {
@@ -45,6 +45,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "Reveal the top 4 cards of your deck. Place those cards on the top or bottom of your deck in any order.",
           kind: "RevealAdd",
           revealCount: 4,
           add: [],

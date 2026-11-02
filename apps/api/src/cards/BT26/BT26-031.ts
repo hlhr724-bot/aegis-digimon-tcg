@@ -63,16 +63,19 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] 1 of your opponent's Digimon gets -8000 DP until their turn ends.",
           kind: "SelectBind",
           target: { filter: opponentDigimon, count: 1, bindAs: "murashigureTarget" },
         },
         {
+          effectTextPart: "[Main] 1 of your opponent's Digimon gets -8000 DP until their turn ends.",
           kind: "ModifyDP",
           target: { filter: {}, count: 1, fromSelectionRef: "murashigureTarget" },
           amount: -8000,
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart: "By trashing your top security card, it further gets -5000 DP.",
           kind: "CostGatedBlock",
           cost: { kind: "trashSecurityTop", controller: "mine" },
           optional: true,

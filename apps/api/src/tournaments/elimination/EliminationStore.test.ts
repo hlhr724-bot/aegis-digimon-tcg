@@ -1,3 +1,4 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import { TrophyStore } from "#api/achievements/TrophyStore";
 import { randomUUID } from "node:crypto";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -452,4 +453,71 @@ describe("stats segregation", () => {
     expect(ledger.filter((entry) => entry.outcome === "bye")).toHaveLength(1);
     expect(ledger.find((entry) => entry.outcome === "bye")).toMatchObject({ opponentId: null, opponentKind: null });
   });
+});
+
+it("holds each elimination round until manual release and refuses early presence", async () => {
+  await accounts.pool.query("UPDATE tournaments SET round_start_mode='manual' WHERE id=$1", [tournamentId]);
+  await addHuman("Alice");
+  await addHuman("Bob");
+  await addHuman("Carol");
+  await addHuman("Dave");
+  const created = await elimination.createBracket({ tournamentId });
+  expect(created.ok).toBe(true);
+  expect(openMatches((await elimination.bracket(tournamentId))!)).toHaveLength(0);
+  expect(await elimination.startNextRound(tournamentId)).toBe(true);
+  const first = openMatches((await elimination.bracket(tournamentId))!);
+  expect(first).toHaveLength(2);
+  expect(await elimination.startNextRound(tournamentId)).toBe(false);
+  for (const match of first) {
+    await elimination.resolveMatch({ matchId: match.id, winnerSeat: 0, reason: "series_won" });
+  }
+  expect(openMatches((await elimination.bracket(tournamentId))!)).toHaveLength(0);
+  expect(await elimination.startNextRound(tournamentId)).toBe(true);
+  expect(openMatches((await elimination.bracket(tournamentId))!)).toHaveLength(1);
+});
+
+it("recovers automatic bracket release after a mode change and rechecks manual mode", async () => {
+  await accounts.pool.query("UPDATE tournaments SET round_start_mode='manual' WHERE id=$1", [tournamentId]);
+  await addHuman("Alice");
+  await addHuman("Bob");
+  await elimination.createBracket({ tournamentId });
+  expect(await elimination.startNextRound(tournamentId, 1000, true)).toBe(false);
+  await accounts.pool.query("UPDATE tournaments SET round_start_mode='automatic' WHERE id=$1", [tournamentId]);
+  expect(await elimination.sweepAutomaticRounds(2000)).toBe(1);
+  expect(await elimination.sweepAutomaticRounds(2000)).toBe(0);
+});
+
+it("starts attendance deadlines at actual publication for automatic and manually released bracket rounds", async () => {
+  const rules = buildTournamentRules({ bestOf: 3 });
+  await accounts.pool.query("UPDATE tournaments SET rules_snapshot=$1 WHERE id=$2", [
+    JSON.stringify(rules),
+    tournamentId,
+  ]);
+  await addHuman("Alice");
+  await addHuman("Bob");
+  await addHuman("Carol");
+  await addHuman("Dave");
+  await elimination.createBracket({ tournamentId, now: 1000 });
+  const first = openMatches((await elimination.bracket(tournamentId))!);
+  for (const match of first) {
+    const row = (await accounts.pool.query("SELECT join_deadline_at FROM tournament_matches WHERE id=$1", [match.id]))
+      .rows[0];
+    expect(Number(row.join_deadline_at)).toBe(1000 + rules.attendance.joinGraceMs);
+  }
+  await accounts.pool.query("UPDATE tournaments SET round_start_mode='manual' WHERE id=$1", [tournamentId]);
+  for (const match of first) {
+    await elimination.resolveMatch({ matchId: match.id, winnerSeat: 0, reason: "series_won", now: 2000 });
+  }
+  const final = (await elimination.bracket(tournamentId))!.matches.find((match) => match.round === 2)!;
+  expect(
+    (await accounts.pool.query("SELECT join_deadline_at FROM tournament_matches WHERE id=$1", [final.id])).rows[0]
+      .join_deadline_at,
+  ).toBeNull();
+  expect(await elimination.startNextRound(tournamentId, 120000)).toBe(true);
+  expect(
+    Number(
+      (await accounts.pool.query("SELECT join_deadline_at FROM tournament_matches WHERE id=$1", [final.id])).rows[0]
+        .join_deadline_at,
+    ),
+  ).toBe(120000 + rules.attendance.joinGraceMs);
 });

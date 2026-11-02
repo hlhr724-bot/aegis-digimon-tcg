@@ -34,7 +34,7 @@ describe("EX12-075 Kunlun's Imperial Decree", () => {
   it("keeps Delay, gain 2 memory, and Security placement as separate printed clauses", () => {
     expect(compiled.effects).toContainEqual({
       trigger: "Main",
-      actions: [{ kind: "GainMemory", amount: 2 }],
+      actions: [{ effectTextPart: "Gain 2 memory.", kind: "GainMemory", amount: 2 }],
       keywords: [{ keyword: "Delay", raw: "＜Delay＞" }],
     });
     expect(compiled.effects).toContainEqual({

@@ -26,6 +26,10 @@ import { useHoverZoomPreference } from "@/design/useHoverZoomPreference";
 import { cardViewer3dPreference } from "@/game/overlay/viewer/cardViewer3d/cardViewer3dPreference";
 import { useCardViewer3dEnabled } from "@/game/overlay/viewer/cardViewer3d/useCardViewer3dEnabled";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../../noticeDuration";
+import { MatchLogDisplay } from "@/game/log/MatchLogDisplay";
+import { isMatchLogDisplay } from "@/game/log/isMatchLogDisplay";
+import { matchLogDisplayPreference } from "@/game/log/matchLogDisplayPreference";
+import { useMatchLogDisplay } from "@/game/log/useMatchLogDisplay";
 import { EFFECT_SPEEDS, getEffectSpeed, setEffectSpeed, type EffectSpeed } from "../../pacing";
 
 const EFFECT_SPEED_LABELS: Record<EffectSpeed, TranslationKey> = {
@@ -48,6 +52,7 @@ export function ArenaBoardSettings() {
   const effectConfirmationHold = useEffectConfirmationHold();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
+  const matchLogDisplay = useMatchLogDisplay();
   const cardConfirmationMode = cardConfirmationPreference.useMode();
   const [effectSpeed, setEffectSpeedChoice] = useState<EffectSpeed>(getEffectSpeed);
   return (
@@ -140,6 +145,24 @@ export function ArenaBoardSettings() {
             ))}
           </select>
           <small id={`${titleId}-notice-duration-desc`}>{t("settings.noticeDurationDesc")}</small>
+        </div>
+        <div className="game-arena-settings__row game-arena-board-settings__size">
+          <label htmlFor={`${titleId}-match-log-display`}>{t("settings.matchLogDisplay")}</label>
+          <select
+            id={`${titleId}-match-log-display`}
+            value={matchLogDisplay.value}
+            aria-describedby={`${titleId}-match-log-display-desc`}
+            onChange={(event) => {
+              if (isMatchLogDisplay(event.target.value)) matchLogDisplayPreference.set(event.target.value);
+            }}
+          >
+            {Object.values(MatchLogDisplay).map((entry) => (
+              <option key={entry.value} value={entry.value}>
+                {t(entry.labelKey)}
+              </option>
+            ))}
+          </select>
+          <small id={`${titleId}-match-log-display-desc`}>{t("settings.matchLogDisplayDesc")}</small>
         </div>
         <div className="game-arena-settings__row game-arena-board-settings__size">
           <label htmlFor={`${titleId}-card-confirmation`}>{t("settings.cardConfirmation")}</label>

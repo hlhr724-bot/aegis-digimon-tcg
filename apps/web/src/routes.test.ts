@@ -7,11 +7,16 @@ describe("application routes", () => {
     ["/login", { screen: "login" }],
     ["/play", { screen: "lobby" }],
     ["/play/story", { screen: "story" }],
+    ["/play/rooms", { screen: "watch" }],
     ["/play/watch", { screen: "watch" }],
     ["/decks", { screen: "deck" }],
     ["/collection", { screen: "collection" }],
+    ["/collection/boosters", { screen: "collection", collectionTab: "boosters" }],
+    ["/booster", { screen: "booster" }],
+    ["/dev/pack-opening", { screen: "booster" }],
     ["/community", { screen: "community" }],
     ["/community/decks/abc-123", { screen: "community", communityDeckId: "abc-123" }],
+    ["/community/meta", { screen: "community", communityMeta: true }],
     ["/roadmap", { screen: "roadmap" }],
     ["/roadmap/7", { screen: "roadmap", roadmapItemId: 7 }],
     ["/admin/feedback", { screen: "feedback" }],
@@ -25,6 +30,7 @@ describe("application routes", () => {
     ["/profile/customize", { screen: "settings", profile: true }],
     ["/replays", { screen: "settings", profile: true }],
     ["/replays/saved-id", { screen: "replays", replayId: "saved-id" }],
+    ["/replays/public", { screen: "replays", publicReplays: true }],
     ["/whats-new", { screen: "releases" }],
   ])("parses %s", (pathname, expected) => {
     expect(routeFromPathname(pathname)).toEqual(expected);
@@ -36,9 +42,21 @@ describe("application routes", () => {
     expect(pathForRoute({ screen: "replays" })).toBe("/profile");
   });
 
+  it("round-trips the public replay list", () => {
+    expect(pathForRoute({ screen: "replays", publicReplays: true })).toBe("/replays/public");
+  });
+
   it("round-trips a community deck path", () => {
     expect(pathForRoute({ screen: "community", communityDeckId: "abc-123" })).toBe("/community/decks/abc-123");
     expect(pathForRoute({ screen: "community" })).toBe("/community");
+    expect(pathForRoute({ screen: "community", communityMeta: true })).toBe("/community/meta");
+  });
+
+  it("round-trips the collection tabs", () => {
+    expect(pathForRoute({ screen: "collection" })).toBe("/collection");
+    expect(pathForRoute({ screen: "collection", collectionTab: "cards" })).toBe("/collection");
+    expect(pathForRoute({ screen: "collection", collectionTab: "boosters" })).toBe("/collection/boosters");
+    expect(pathForRoute({ screen: "booster" })).toBe("/booster");
   });
 
   it("round-trips roadmap links", () => {

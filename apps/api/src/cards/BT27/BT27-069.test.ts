@@ -96,6 +96,37 @@ describe("QueenChessmon", () => {
     expect([...s.perm("queen").keywords]).toEqual(expect.arrayContaining(["Rush", "Blocker", "Overclock"]));
   });
 
+  it("attacks an opponent's suspended Digimon the turn it is played", async () => {
+    const s = setupEngine(
+      {
+        0: { hand: [{ card: QUEEN, as: "queen" }], deck: [FILLER, FILLER, FILLER] },
+        1: {
+          battleArea: [{ card: OLD_QUEEN, under: [PAWN, KNIGHT, BISHOP], as: "target", suspended: true }],
+          security: [TAMER, TAMER],
+          deck: [FILLER, FILLER, FILLER],
+        },
+      },
+      { autoSelectCards: true, autoChooseOption: true, autoDeclineOptional: true },
+    );
+    void s.engine.startTurnLoop();
+    await advance(s.engine).waitForMainPhase(0);
+    s.state.memory = 15;
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("queen").instanceId })).toEqual({ ok: true });
+    await settle(() => queenIn(s) !== undefined && s.state.pendingDecision === undefined);
+    const targetId = s.perm("target").permanentId;
+
+    expect(s.perm("target").isSuspended).toBe(true);
+    expect([...queenIn(s)!.attackablePermanentIds]).toEqual([targetId]);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: queenIn(s)!.permanentId,
+        target: { kind: "permanent", permanentId: targetId },
+      }),
+    ).toEqual({ ok: true });
+  });
+
   it("Overclock deletes another Chessmon to attack a player without suspending", async () => {
     const s = setupEngine(
       {

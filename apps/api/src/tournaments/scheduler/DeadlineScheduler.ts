@@ -1,3 +1,4 @@
+import { LIVE_GAME_GRACE_MS } from "#api/tournaments/rules/liveGameGraceMs";
 import { randomUUID } from "node:crypto";
 import type { TournamentRules } from "@aegis/shared";
 import type { AccountStore, Tournament } from "../../accounts/AccountStore.js";
@@ -35,11 +36,13 @@ export type DeadlineResultCode =
   | "cancelled_both_present"
   | "cancelled_series_closed"
   | "skipped_no_rules_snapshot"
+  | "skipped_tournament_closed"
   | "skipped_no_join_deadline"
   | "skipped_subject_missing"
   | "skipped_no_opponent"
   | "retry_deadline_not_reached"
-  | "retry_presence_changed";
+  | "retry_presence_changed"
+  | "postponed_game_in_progress";
 
 /**
  * An outcome, and whether it is the row's last word.
@@ -49,7 +52,7 @@ export type DeadlineResultCode =
  * would silently drop a penalty, so the lease is released instead and the next pass, seconds
  * later, asks again. Only terminal outcomes retire a row and count as work done.
  */
-type Outcome = { code: DeadlineResultCode; retry?: true };
+type Outcome = { code: DeadlineResultCode; retry?: true; postponeTo?: number };
 
 /**
  * Which outcomes go into the audit ledger. Exactly the ones that changed the tournament: a rung
@@ -67,6 +70,7 @@ const AUDITED_DEADLINE_RESULTS = new Set<DeadlineResultCode>([
 
 const TERMINAL = (code: DeadlineResultCode): Outcome => ({ code });
 const RETRY = (code: DeadlineResultCode): Outcome => ({ code, retry: true });
+const POSTPONE = (code: DeadlineResultCode, postponeTo: number): Outcome => ({ code, postponeTo });
 
 /**
  * Runs the tournament's persisted deadlines.
@@ -227,6 +231,13 @@ export class DeadlineScheduler {
         logError(`[TOURNAMENT_DEADLINE] ${JSON.stringify({ ...context(deadline), outcome: "failed" })}`, error);
         continue;
       }
+      if (outcome.postponeTo !== undefined) {
+        await this.queue.postpone(deadline.id, outcome.postponeTo);
+        log(
+          `[TOURNAMENT_DEADLINE] ${JSON.stringify({ ...context(deadline), result: outcome.code, postponedTo: outcome.postponeTo })}`,
+        );
+        continue;
+      }
       if (outcome.retry) {
         await this.queue.releaseLease(deadline.id);
         log(`[TOURNAMENT_DEADLINE] ${JSON.stringify({ ...context(deadline), result: outcome.code, retry: true })}`);
@@ -292,6 +303,9 @@ export class DeadlineScheduler {
 
   private async execute(deadline: DeadlineRecord, now: number): Promise<Outcome> {
     const tournament = await this.accounts.tournament(deadline.tournamentId);
+    if (tournament && (tournament.status === "finished" || tournament.status === "cancelled")) {
+      return TERMINAL("skipped_tournament_closed");
+    }
     // Terminal, not retryable: a rules snapshot is frozen at creation and cannot appear later, so
     // an event without one will never grow one and retrying would spin for ever.
     if (!tournament?.rules) return TERMINAL("skipped_no_rules_snapshot");
@@ -310,6 +324,7 @@ export class DeadlineScheduler {
       policy: timeoutPolicyOf(tournament),
       commandId: deadline.id,
       now,
+      liveGameGraceMs: LIVE_GAME_GRACE_MS,
     });
     if (!resolved.ok)
       // Retryable on purpose: overtime moves the deadline forward, so "not reached" means this row
@@ -317,6 +332,8 @@ export class DeadlineScheduler {
       return resolved.reason === "deadline_not_reached"
         ? RETRY("retry_deadline_not_reached")
         : TERMINAL("skipped_subject_missing");
+    if (resolved.value.status === "overtime" && resolved.value.seriesDeadlineAt !== null)
+      return POSTPONE("postponed_game_in_progress", resolved.value.seriesDeadlineAt + LIVE_GAME_GRACE_MS);
     return TERMINAL(this.reportSeries(deadline, resolved.value, "series_resolved", "series_needs_organizer_decision"));
   }
 

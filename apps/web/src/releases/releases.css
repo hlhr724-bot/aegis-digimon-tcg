@@ -111,36 +111,6 @@
   line-height: var(--ds-leading-body);
 }
 
-.release__reported {
-  display: inline-flex;
-  margin-top: var(--ds-space-2);
-  padding: var(--ds-space-1) var(--ds-space-2);
-  color: var(--ds-accent);
-  border-radius: var(--ds-radius-sm);
-  background: var(--ds-accent-soft);
-  font-size: var(--ds-text-xs);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.release__reported:hover {
-  color: var(--ds-accent-strong);
-}
-
-.release__reported:active {
-  color: var(--ds-accent-strong);
-}
-
-.release__reported:focus-visible {
-  outline: none;
-  box-shadow: var(--ds-focus-ring);
-}
-
-.dark .release--latest .release__reported {
-  color: var(--aegis-panel-eyebrow);
-  background: color-mix(in srgb, var(--aegis-panel-eyebrow) 14%, transparent);
-}
-
 @media (max-width: 959px) {
   .releases-page {
     height: 100%;

@@ -335,6 +335,11 @@ describe("Reina Sakuya attack storage and Option use", () => {
       "After, if it's your opponent's turn, by trashing 4 bottom face-down cards from under any of your Tamers, you may use 1 black [BEATBREAK] trait Option card from your hand without paying the cost.",
     );
     const optionPrompts = s.decisions.filter((d) => d.req.sourceCardId !== "BT27-094");
-    expect(optionPrompts.every((d) => d.req.options?.effectTextPart === undefined)).toBe(true);
+    const optionParts = [
+      "[Main] ＜De-Digivolve 1＞ 1 of your opponent's Digimon.",
+      'Then, give 1 of your opponent\'s Digimon "[Start of Your Main Phase] This Digimon attacks." until their turn ends.',
+    ];
+    expect(optionPrompts.length).toBeGreaterThan(0);
+    expect(optionPrompts.every((d) => optionParts.includes(d.req.options?.effectTextPart ?? ""))).toBe(true);
   });
 });

@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Return 1 of your opponent's suspended Digimon and 1 of their suspended Tamers to the bottom of their owners’ decks.",
           kind: "Return",
           target: {
             count: 1,
@@ -19,6 +21,8 @@ export const compiled: CompiledCard = {
           to: "deckBottom",
         },
         {
+          effectTextPart:
+            "[Main] Return 1 of your opponent's suspended Digimon and 1 of their suspended Tamers to the bottom of their owners’ decks.",
           kind: "Return",
           target: {
             count: 1,

@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "If a Digimon with 13000 DP or more is deleted by this effect, trash the top card of your opponent's security stack.",
           kind: "SubTrigger",
           event: "onDeletionOf",
           sourceFilter: {
@@ -27,6 +29,7 @@ export const compiled: CompiledCard = {
           ],
         },
         {
+          effectTextPart: "[Main] Delete 1 of your opponent's Digimon with the highest DP.",
           kind: "Delete",
           target: {
             filter: {

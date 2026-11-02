@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] The next time one of your Digimon digivolves from level 6 to level 7 this turn, reduce the memory cost of the digivolution by 6. At the end of the turn, return the Digimon that digivolved with this effect to the bottom of its owner's deck. Trash all of the digivolution cards of that Digimon.",
           kind: "CostModifier",
           mode: "reduce",
           costType: "digivolve",

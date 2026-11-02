@@ -1,3 +1,5 @@
+import type { TournamentRules } from "@aegis/shared/tournaments/index";
+import { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
 import { grantTournamentTrophies } from "#api/achievements/grantTournamentTrophies";
 import { randomUUID } from "node:crypto";
 import type { LedgerEntry, MatchOutcome, ParticipantKind, PhaseKind } from "@aegis/shared";
@@ -32,6 +34,8 @@ export const ELIMINATION_PHASE_KIND = "single_elimination";
  * has `single_elimination` alone.
  */
 export const BRACKET_PHASE_KINDS: readonly PhaseKind[] = [ELIMINATION_PHASE_KIND, "top_cut"];
+
+type RoundStartParams = { client: PoolClient; tournamentId: string; now: number };
 
 export type EliminationFailure =
   | "tournament_not_found"
@@ -173,7 +177,7 @@ export class EliminationStore {
         bracketSeed,
       );
       await this.insertSlots(client, input.tournamentId, phase, size);
-      await this.seatFirstRound(client, input.tournamentId, phase, entrants, size);
+      await this.seatFirstRound(client, input.tournamentId, phase, entrants, size, now);
       await client.query("UPDATE tournaments SET status='in_progress' WHERE id=$1", [input.tournamentId]);
       await this.countEntries(client, participants);
       await this.resolveByes(client, input.tournamentId, phase, size, now);
@@ -218,7 +222,7 @@ export class EliminationStore {
     const size = bracketSize(entrants.length);
     const phase = await this.createPhase(client, tournamentId, roundCount(size), now, input.kind);
     await this.insertSlots(client, tournamentId, phase, size);
-    await this.seatFirstRound(client, tournamentId, phase, entrants, size);
+    await this.seatFirstRound(client, tournamentId, phase, entrants, size, now);
     await this.resolveByes(client, tournamentId, phase, size, now);
     return this.view(client, tournamentId, phase);
   }
@@ -284,6 +288,12 @@ export class EliminationStore {
     const tournamentId = await this.tournamentOf(input.matchId);
     if (!tournamentId) return;
     await this.mutate(tournamentId, async (client) => {
+      const tournament = (
+        await client.query<{ status: string }>("SELECT status FROM tournaments WHERE id=$1 FOR UPDATE", [tournamentId])
+      ).rows[0];
+      if (!tournament || tournament.status === "cancelled" || tournament.status === "finished") {
+        return;
+      }
       const match = (
         await client.query<MatchRow & { tournament_id: string; phase_id: string | null }>(
           `SELECT ${MATCH_COLUMNS}, tournament_id, phase_id FROM tournament_matches WHERE id=$1 FOR UPDATE`,
@@ -312,7 +322,91 @@ export class EliminationStore {
         now,
       });
       const size = await this.sizeOf(client, phase.id);
-      await this.advance(client, match.tournament_id, phase, Number(match.round), Number(match.position), size, winner);
+      await this.advance(
+        client,
+        match.tournament_id,
+        phase,
+        Number(match.round),
+        Number(match.position),
+        size,
+        winner,
+        now,
+      );
+    });
+  }
+
+  async sweepAutomaticRounds(now = Date.now()): Promise<number> {
+    await this.accounts.ensureReady();
+    const candidates = (
+      await this.accounts.pool.query<{ tournament_id: string }>(
+        "SELECT DISTINCT m.tournament_id FROM tournament_matches m JOIN tournaments t ON t.id=m.tournament_id WHERE t.status='in_progress' AND t.round_start_mode=$1 AND m.status='waiting' AND m.player0_participant_id IS NOT NULL AND m.player1_participant_id IS NOT NULL",
+        [TournamentRoundStartMode.AUTOMATIC.value],
+      )
+    ).rows;
+    let started = 0;
+    for (const candidate of candidates) {
+      if (await this.startNextRound(candidate.tournament_id, now, true)) {
+        started += 1;
+      }
+    }
+    return started;
+  }
+
+  async startNextRound(tournamentId: string, now = Date.now(), automatic = false): Promise<boolean> {
+    return this.mutate(tournamentId, async (client) => {
+      const tournament = (
+        await client.query<{
+          status: string;
+          round_start_mode: TournamentRoundStartMode;
+          rules_snapshot: TournamentRules | string | null;
+        }>("SELECT status, round_start_mode, rules_snapshot FROM tournaments WHERE id=$1 FOR UPDATE", [tournamentId])
+      ).rows[0];
+      if (
+        tournament?.status !== "in_progress" ||
+        (automatic && tournament.round_start_mode === TournamentRoundStartMode.MANUAL.value)
+      ) {
+        return false;
+      }
+      const matches = (
+        await client.query<{
+          id: string;
+          round: number;
+          status: string;
+          player0_participant_id: string | null;
+          player1_participant_id: string | null;
+        }>(
+          "SELECT id, round, status, player0_participant_id, player1_participant_id FROM tournament_matches WHERE tournament_id=$1 ORDER BY round,position",
+          [tournamentId],
+        )
+      ).rows;
+      if (matches.some((match) => match.status === "pending")) {
+        return false;
+      }
+      const ready = matches.find(
+        (match) => match.status === "waiting" && match.player0_participant_id && match.player1_participant_id,
+      );
+      if (!ready || matches.some((match) => Number(match.round) < Number(ready.round) && match.status === "waiting")) {
+        return false;
+      }
+      const { joinDeadlineAt } = await this.getRoundStart({ client, tournamentId, now });
+      await client.query(
+        "UPDATE tournament_matches SET status='pending', join_deadline_at=$3 WHERE tournament_id=$1 AND round=$2 AND status='waiting' AND player0_participant_id IS NOT NULL AND player1_participant_id IS NOT NULL",
+        [tournamentId, ready.round, joinDeadlineAt],
+      );
+      await appendTournamentEvent(client, {
+        tournamentId,
+        actorKind: "system",
+        actorId: "system",
+        command: "round_published",
+        commandId: `bracket_round:${tournamentId}:${ready.round}`,
+        reason: `round ${ready.round} was released`,
+        reasonCode: "round_published",
+        subjectKind: "tournament",
+        subjectId: tournamentId,
+        after: { roundNumber: ready.round },
+        now,
+      });
+      return true;
     });
   }
 
@@ -430,6 +524,27 @@ export class EliminationStore {
     return { id, roundOffset };
   }
 
+  private async getRoundStart({
+    client,
+    tournamentId,
+    now,
+  }: RoundStartParams): Promise<{ mode: TournamentRoundStartMode; joinDeadlineAt: number | null }> {
+    const row = (
+      await client.query<{
+        round_start_mode: TournamentRoundStartMode;
+        rules_snapshot: TournamentRules | string | null;
+      }>("SELECT round_start_mode, rules_snapshot FROM tournaments WHERE id=$1", [tournamentId])
+    ).rows[0];
+    const rules =
+      typeof row?.rules_snapshot === "string"
+        ? (JSON.parse(row.rules_snapshot) as TournamentRules)
+        : row?.rules_snapshot;
+    return {
+      mode: row?.round_start_mode ?? TournamentRoundStartMode.AUTOMATIC.value,
+      joinDeadlineAt: rules ? now + rules.attendance.joinGraceMs : null,
+    };
+  }
+
   private async insertSlots(client: PoolClient, tournamentId: string, phase: PhaseRef, size: number): Promise<void> {
     for (const slot of bracketSlots(size))
       await client.query(
@@ -444,23 +559,27 @@ export class EliminationStore {
     phase: PhaseRef,
     entrants: readonly BracketEntrant[],
     size: number,
+    now: number,
   ): Promise<void> {
+    const start = await this.getRoundStart({ client, tournamentId, now });
+    const readyStatus = start.mode === TournamentRoundStartMode.MANUAL.value ? "waiting" : "pending";
     for (const pairing of firstRoundPairings(entrants, size)) {
       const both = pairing.entrant0 && pairing.entrant1;
       await client.query(
         `UPDATE tournament_matches
-           SET player0_participant_id=$1, player0_account_id=$2, player1_participant_id=$3, player1_account_id=$4, status=$5
+           SET player0_participant_id=$1, player0_account_id=$2, player1_participant_id=$3, player1_account_id=$4, status=$5, join_deadline_at=$10
          WHERE tournament_id=$6 AND phase_id=$7 AND round=$9 AND position=$8`,
         [
           pairing.entrant0?.participantId ?? null,
           pairing.entrant0?.accountId ?? null,
           pairing.entrant1?.participantId ?? null,
           pairing.entrant1?.accountId ?? null,
-          both ? "pending" : "bye",
+          both ? readyStatus : "bye",
           tournamentId,
           phase.id,
           pairing.position,
           phase.roundOffset + 1,
+          both && readyStatus === "pending" ? start.joinDeadlineAt : null,
         ],
       );
     }
@@ -490,7 +609,7 @@ export class EliminationStore {
         roundNumber: match.round,
         outcome: "bye",
       });
-      await this.advance(client, tournamentId, phase, match.round, match.position, size, winner);
+      await this.advance(client, tournamentId, phase, match.round, match.position, size, winner, now);
     }
   }
 
@@ -508,6 +627,7 @@ export class EliminationStore {
     position: number,
     size: number,
     winner: EliminationSeat,
+    now: number,
   ): Promise<void> {
     // The bracket's arithmetic is phase-local (round 1 is the first round of THIS bracket); the
     // stored round is tournament-wide. The offset is applied at this boundary and nowhere else.
@@ -557,12 +677,15 @@ export class EliminationStore {
        WHERE tournament_id=$3 AND phase_id=$4 AND round=$5 AND position=$6 AND player${next.seat}_participant_id IS NULL`,
       [winner.participantId, winner.accountId, tournamentId, phase.id, next.round + phase.roundOffset, next.position],
     );
-    await client.query(
-      `UPDATE tournament_matches SET status='pending'
-       WHERE tournament_id=$1 AND phase_id=$2 AND round=$3 AND position=$4 AND status='waiting'
-         AND player0_participant_id IS NOT NULL AND player1_participant_id IS NOT NULL`,
-      [tournamentId, phase.id, next.round + phase.roundOffset, next.position],
-    );
+    const start = await this.getRoundStart({ client, tournamentId, now });
+    if (start.mode === TournamentRoundStartMode.AUTOMATIC.value) {
+      await client.query(
+        `UPDATE tournament_matches SET status='pending', join_deadline_at=$5
+         WHERE tournament_id=$1 AND phase_id=$2 AND round=$3 AND position=$4 AND status='waiting'
+           AND player0_participant_id IS NOT NULL AND player1_participant_id IS NOT NULL`,
+        [tournamentId, phase.id, next.round + phase.roundOffset, next.position, start.joinDeadlineAt],
+      );
+    }
     // Which seat a winner was carried into. Without it a replay can see who won each confrontation
     // but not how the bracket was assembled from those wins, which is most of what a bracket IS.
     await appendTournamentEvent(client, {

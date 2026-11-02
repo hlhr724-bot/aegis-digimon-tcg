@@ -32,8 +32,9 @@ export function createInsteadReplacementInstall({
     sourceInstanceId: ctx.source.instanceId,
     activationIdentity,
     mode: "instead",
+    activationDeferred: true,
     exceptDigiXros: action.exceptDigiXros,
-    description: action.raw ?? ctx.activeEffectText ?? event,
+    description: action.raw ?? decodeText ?? ctx.activeEffectText ?? event,
     digisorptionRedirect: action.digisorptionRedirect,
     causeAllows: (cause, resolvingSeat) => {
       switch (action.leaveCause ?? "any") {
@@ -147,6 +148,7 @@ export function createInsteadReplacementInstall({
           if (!(await subCtx.ask.optional(subCtx, action.raw ?? "Trash this card to activate its ＜Delay＞ effect?"))) {
             return false;
           }
+          subCtx.onActivationChosen?.();
           const trashed = await trashDelaySource(subCtx, delaySource);
           if (trashed <= 0 && subCtx.source.permanent() !== undefined) return false;
         } else if (
@@ -155,6 +157,14 @@ export function createInsteadReplacementInstall({
         ) {
           return false;
         }
+        const nestedChoicesAnnounce =
+          action.optional !== true &&
+          !hasOptionalDigiXrosCost &&
+          !isIntrinsicDelay &&
+          replacementCost === undefined &&
+          nestedActions.length > 0 &&
+          nestedActions.every((nested) => (nested as { optional?: boolean }).optional === true);
+        if (!nestedChoicesAnnounce) subCtx.onActivationChosen?.();
         if (
           replacementCost !== undefined &&
           typeof replacementCost !== "number" &&

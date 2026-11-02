@@ -495,6 +495,49 @@ it("merges each slot's first page of live matches and skips an unreachable slot"
   expect(fetcher).toHaveBeenCalledWith("https://example.test/api/green/spectate/live?limit=2");
 });
 
+it("sums each slot's queue counts, merges waiting players by longest wait, and skips an unreachable slot", async () => {
+  const bucket = (searching: number, matchTimer = true) => ({
+    queue: "casual",
+    format: "standard",
+    matchTimer,
+    bestOf: 1,
+    allowRollback: false,
+    searching,
+  });
+  const waiting = (waitingSeconds: number) => ({
+    queue: "casual",
+    format: "standard",
+    matchTimer: true,
+    bestOf: 1,
+    allowRollback: false,
+    waitingSeconds,
+  });
+  const fetcher = vi.fn<typeof fetch>(async (input) => {
+    const url = String(input);
+    if (url.includes("/green/"))
+      return Response.json({ buckets: [bucket(2), bucket(1, false)], waiting: [waiting(30), waiting(90)] });
+    if (url.includes("/blue/")) return Response.json({ buckets: [bucket(1)] });
+    return new Response("{}", { status: 503 });
+  });
+  const client = new AegisConnectionRouter({
+    loadManifest: async () => ({
+      version: 1,
+      active: { slot: "green", revision: "new" },
+      draining: [
+        { slot: "blue", revision: "old" },
+        { slot: "red", revision: "older" },
+      ],
+    }),
+    endpointForSlot: (slot) => ({ http: `https://example.test/api/${slot}`, websocket: "" }),
+    createClient: () => clientPort(),
+    fetcher,
+  });
+  const counts = await client.matchQueueCounts();
+  expect(counts.buckets).toEqual([bucket(3), bucket(1, false)]);
+  expect(counts.waiting).toEqual([waiting(90), waiting(30)]);
+  expect(fetcher).toHaveBeenCalledWith("https://example.test/api/green/matchmaking/queues");
+});
+
 it("attaches an account ticket when a signed-in viewer reserves spectator access", async () => {
   setRoomTicketAccount(true);
   onTestFinished(() => setRoomTicketAccount(false));

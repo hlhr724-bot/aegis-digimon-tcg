@@ -35,8 +35,13 @@ export function ArenaInspectorSourcesStrip({ cards, onZoom }: Params) {
             key={`${card.cardId}-${index}`}
             type="button"
             className="arena-permanent-inspector__source"
-            aria-label={stackCardCaption(card, t, translations)}
+            aria-label={
+              card.oncePerTurnUsed
+                ? `${stackCardCaption(card, t, translations)}, ${t(card.role === "linked" ? "overlay.role.linkedUsed" : "overlay.role.inheritedUsed")}`
+                : stackCardCaption(card, t, translations)
+            }
             aria-pressed={activeIndex === index}
+            data-once-per-turn-used={card.oncePerTurnUsed}
             onClick={() => setSelectedIndex(index)}
           >
             {card.cardId ? (

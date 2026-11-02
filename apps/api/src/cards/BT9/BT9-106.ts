@@ -36,6 +36,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Digivolve 1 of your Digimon into a Digimon card with [Dex] or [DeathX] in its name from your trash for its memory cost.",
           kind: "Digivolve",
           target: {
             filter: {

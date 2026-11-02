@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent’s turn, your opponent’s Digimon with play costs of 7 or less can’t attack players, and cards can’t be added to security stacks by your opponent’s effects.",
           kind: "Restrict",
           target: {
             filter: {
@@ -21,6 +23,8 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent’s turn, your opponent’s Digimon with play costs of 7 or less can’t attack players, and cards can’t be added to security stacks by your opponent’s effects.",
           kind: "GlobalRestrict",
           restriction: "opponentCannotAddToSecurity",
           duration: "untilOpponentTurnEnd",

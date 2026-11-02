@@ -8,8 +8,12 @@ export function MemoryBadge({ memory }: Props) {
   const { t } = useTranslation();
   return (
     <span className="play-log__memory">
-      <span>{t("feed.memoryDelta", { delta: formatSignedMemory(memory.delta) })}</span>
-      <span>{t("feed.memoryTransition", { before: memory.after - memory.delta, after: memory.after })}</span>
+      <span className="play-log__memory-delta" data-direction={memory.delta < 0 ? "spent" : "gained"}>
+        {t("feed.memoryDelta", { delta: formatSignedMemory(memory.delta) })}
+      </span>
+      <span className="play-log__memory-transition">
+        {t("feed.memoryTransition", { before: memory.after - memory.delta, after: memory.after })}
+      </span>
     </span>
   );
 }

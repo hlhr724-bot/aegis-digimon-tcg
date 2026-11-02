@@ -3,18 +3,21 @@ import type { CSSProperties } from "react";
 import { Badge } from "@/design/primitives";
 import { Icons } from "@/design/icons";
 import { useTranslation } from "@/i18n/useTranslation";
+import { isTournamentSeriesLive } from "@/tournaments/isTournamentSeriesLive";
 import { TournamentBotPortrait } from "@/tournaments/TournamentBotPortrait";
+import type { TournamentBracketSpectating } from "@/tournaments/TournamentBracketSpectating";
 import { pairingReasonKey, topCutRoundKey } from "@/tournaments/labels";
 
 type Params = {
   phase: PhaseView;
   participants: readonly ParticipantView[];
   accountId?: string;
+  spectating?: TournamentBracketSpectating;
 };
 
 type Seat = 0 | 1;
 
-export function TournamentBracket({ phase, participants, accountId }: Params) {
+export function TournamentBracket({ phase, participants, accountId, spectating }: Params) {
   const { t } = useTranslation();
   const ownParticipantId = participants.find(
     (participant) => accountId !== undefined && participant.accountId === accountId,
@@ -36,12 +39,47 @@ export function TournamentBracket({ phase, participants, accountId }: Params) {
     return ([0, 1] as const).some((seat) => findSeatParticipant(match, seat)?.id === ownParticipantId);
   }
 
+  function getSeatName(match: SeriesScoreView, seat: Seat): string {
+    return (
+      findSeatParticipant(match, seat)?.displayName ??
+      getSeatReference(match, seat) ??
+      t("tournaments.topCut.emptySeat")
+    );
+  }
+
+  function isWatchable(match: SeriesScoreView): boolean {
+    return spectating !== undefined && isTournamentSeriesLive(match);
+  }
+
+  function renderWatchAction(match: SeriesScoreView) {
+    if (!spectating || !isTournamentSeriesLive(match)) {
+      return null;
+    }
+    const target = { tournamentId: spectating.tournamentId, matchId: match.matchId };
+    return (
+      <>
+        <Badge tone="primary" className="tournaments-tree__watch-cue">
+          <Icons.Eye size={12} aria-hidden="true" />
+          {t("tournaments.spectators.watch")}
+        </Badge>
+        <button
+          type="button"
+          className="tournaments-tree__watch"
+          aria-label={t("tournaments.spectators.watchMatch", {
+            players: `${getSeatName(match, 0)} · ${getSeatName(match, 1)}`,
+          })}
+          onClick={() => spectating.onWatch(target)}
+        />
+      </>
+    );
+  }
+
   function renderSeat(match: SeriesScoreView, seat: Seat) {
     const participant = findSeatParticipant(match, seat);
     const reference = getSeatReference(match, seat);
     const isBot = participant?.kind === "bot";
     const isOwn = participant !== undefined && participant.id === ownParticipantId;
-    const name = participant?.displayName ?? reference ?? t("tournaments.topCut.emptySeat");
+    const name = getSeatName(match, seat);
     return (
       <div className="tournaments-tree__seat" data-empty={!reference || undefined} data-bot={isBot || undefined}>
         {isBot ? (
@@ -90,7 +128,7 @@ export function TournamentBracket({ phase, participants, accountId }: Params) {
                       className="tournaments-bracket__match"
                       data-mine={isOwnMatch(match) || undefined}
                     >
-                      <div className="tournaments-tree__card">
+                      <div className="tournaments-tree__card" data-watchable={isWatchable(match) || undefined}>
                         {renderSeat(match, 0)}
                         {renderSeat(match, 1)}
                         {isFinalRound({ round, phase }) && match.seriesDeadlineAt === null ? (
@@ -99,6 +137,7 @@ export function TournamentBracket({ phase, participants, accountId }: Params) {
                         {pairingReasonKey(match.pairingReason) ? (
                           <Badge tone="neutral">{t(pairingReasonKey(match.pairingReason)!)}</Badge>
                         ) : null}
+                        {renderWatchAction(match)}
                       </div>
                     </li>
                   ))}

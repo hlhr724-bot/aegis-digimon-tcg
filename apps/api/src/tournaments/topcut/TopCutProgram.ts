@@ -1,3 +1,4 @@
+import { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
 import { grantTournamentTrophies } from "#api/achievements/grantTournamentTrophies";
 import { randomUUID } from "node:crypto";
 import type { LedgerEntry, MatchOutcome, ParticipantKind, StandingsRow, TournamentRules } from "@aegis/shared";
@@ -16,6 +17,7 @@ export type TopCutResult<T> = { ok: true; value: T } | { ok: false; reason: TopC
 
 /** What one attempt at the transition did, so a caller can log it without re-reading the database. */
 export type TopCutOutcome =
+  | { kind: "awaiting_manual_start" }
   | { kind: "already_started"; phaseId: string; bracket: BracketView }
   | { kind: "started"; phaseId: string; bracket: BracketView; seeds: TopCutSeed[] }
   | { kind: "finished_without_cut"; winnerParticipantId: string | null };
@@ -108,14 +110,18 @@ export class TopCutProgram {
    * Safe to call on anything: an event with no frozen phase, no cut configured, or a Top Cut that
    * already exists all report what they are and write nothing.
    */
-  async startTopCut(tournamentId: string, now: number = Date.now()): Promise<TopCutResult<TopCutOutcome>> {
+  async startTopCut(
+    tournamentId: string,
+    now: number = Date.now(),
+    automatic = false,
+  ): Promise<TopCutResult<TopCutOutcome>> {
     const release = await this.acquireLock(tournamentId);
     try {
       await this.accounts.ensureReady();
       const client = await this.accounts.pool.connect();
       try {
         await client.query("BEGIN");
-        const result = await this.transition(client, tournamentId, now);
+        const result = await this.transition(client, tournamentId, now, automatic);
         await client.query(result.ok ? "COMMIT" : "ROLLBACK");
         return result;
       } catch (error) {
@@ -141,12 +147,13 @@ export class TopCutProgram {
     await this.accounts.ensureReady();
     const candidates = (
       await this.accounts.pool.query<{ tournament_id: string }>(
-        "SELECT DISTINCT tournament_id FROM tournament_phases WHERE kind='swiss' AND status='frozen'",
+        "SELECT DISTINCT p.tournament_id FROM tournament_phases p JOIN tournaments t ON t.id=p.tournament_id WHERE p.kind='swiss' AND p.status='frozen' AND t.status='in_progress' AND t.round_start_mode=$1",
+        [TournamentRoundStartMode.AUTOMATIC.value],
       )
     ).rows.map((row) => row.tournament_id);
     let advanced = 0;
     for (const tournamentId of candidates) {
-      const result = await this.startTopCut(tournamentId, now);
+      const result = await this.startTopCut(tournamentId, now, true);
       if (!result.ok) {
         console.error(`[TopCutProgram] sweep could not cut ${tournamentId}: ${result.reason} ${result.detail ?? ""}`);
         continue;
@@ -184,9 +191,15 @@ export class TopCutProgram {
     client: PoolClient,
     tournamentId: string,
     now: number,
+    automatic: boolean,
   ): Promise<TopCutResult<TopCutOutcome>> {
     const tournament = await lockTournament(client, tournamentId);
-    if (!tournament) return { ok: false, reason: "tournament_not_found" };
+    if (!tournament || tournament.status === "cancelled") {
+      return { ok: false, reason: "tournament_not_found" };
+    }
+    if (automatic && tournament.roundStartMode === TournamentRoundStartMode.MANUAL.value) {
+      return { ok: true, value: { kind: "awaiting_manual_start" } };
+    }
 
     const swissPhase = await readSwissPhase(client, tournamentId);
     if (!swissPhase) return { ok: false, reason: "swiss_phase_not_frozen", detail: "no swiss phase" };
@@ -358,6 +371,7 @@ export class TopCutProgram {
       ledger,
       standings: standingsConfig(tournament.rules, tournament.id),
       participants: roster,
+      drawSeed: tournament.id,
     });
   }
 }
@@ -370,18 +384,31 @@ export type TopCutSnapshotRow = {
   cutSeed: number | null;
 };
 
-type TournamentContext = { id: string; topCutSize: number | null; rules: TournamentRules | null };
+type TournamentContext = {
+  status: string;
+  roundStartMode: TournamentRoundStartMode;
+  id: string;
+  topCutSize: number | null;
+  rules: TournamentRules | null;
+};
 
 async function lockTournament(client: PoolClient, id: string): Promise<TournamentContext | undefined> {
   const row = (
-    await client.query<{ id: string; top_cut_size: string | number | null; rules_snapshot: unknown }>(
-      "SELECT id, top_cut_size, rules_snapshot FROM tournaments WHERE id=$1 FOR UPDATE",
-      [id],
-    )
+    await client.query<{
+      status: string;
+      round_start_mode: TournamentRoundStartMode;
+      id: string;
+      top_cut_size: string | number | null;
+      rules_snapshot: unknown;
+    }>("SELECT id, status, round_start_mode, top_cut_size, rules_snapshot FROM tournaments WHERE id=$1 FOR UPDATE", [
+      id,
+    ])
   ).rows[0];
   if (!row) return undefined;
   return {
     id: row.id,
+    status: row.status,
+    roundStartMode: row.round_start_mode,
     topCutSize: row.top_cut_size === null ? null : Number(row.top_cut_size),
     rules: (typeof row.rules_snapshot === "string"
       ? JSON.parse(row.rules_snapshot)

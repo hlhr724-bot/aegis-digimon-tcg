@@ -24,6 +24,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "Play 1 Digimon card with [Four Great Dragons] in its traits from your hand without paying the cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {
@@ -43,6 +45,8 @@ const compiled: CompiledCard = {
           bindResultAs: "playedByThisEffect",
         },
         {
+          effectTextPart:
+            "The Digimon played by this effect can't digivolve to level 7, and at the next end of your opponent's turn, delete that Digimon.",
           kind: "Restrict",
           target: {
             filter: {
@@ -55,6 +59,8 @@ const compiled: CompiledCard = {
           duration: "permanent",
         },
         {
+          effectTextPart:
+            "The Digimon played by this effect can't digivolve to level 7, and at the next end of your opponent's turn, delete that Digimon.",
           kind: "SubTrigger",
           event: endOfOpponentTurn,
           printedClause: "[Pending] At the next end of your opponent's turn, delete that Digimon.",

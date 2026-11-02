@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { Suspense, type ComponentType } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ClientErrorBoundary } from "@/clientErrors/ClientErrorBoundary";
@@ -28,6 +28,20 @@ function renderLazyScreen(load: () => Promise<ScreenModule>) {
   );
 }
 
+function recordNavigation() {
+  const navigation = { assigned: [] as string[], reloads: 0 };
+  Object.defineProperty(window, "location", {
+    configurable: true,
+    value: {
+      assign: (url: string) => navigation.assigned.push(url),
+      reload: () => {
+        navigation.reloads += 1;
+      },
+    },
+  });
+  return navigation;
+}
+
 async function settle() {
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
@@ -35,9 +49,12 @@ async function settle() {
 }
 
 describe("chunk load recovery", () => {
+  const originalLocation = Object.getOwnPropertyDescriptor(window, "location");
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    if (originalLocation) Object.defineProperty(window, "location", originalLocation);
   });
 
   it("renders the named export once its chunk loads", async () => {
@@ -64,6 +81,30 @@ describe("chunk load recovery", () => {
     await settle();
 
     expect(screen.getByRole("alert").textContent).toMatch(/Couldn’t load this screen/);
+  });
+
+  it("clears the browser cache when the player retries a screen that keeps failing to load", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const navigation = recordNavigation();
+    renderLazyScreen(async () => {
+      throw new TypeError("Failed to fetch dynamically imported module: /assets/GameScreen-Cp7NtVyb.js");
+    });
+    await settle();
+
+    fireEvent.click(screen.getByRole("button", { name: "Reload" }));
+
+    expect(navigation).toEqual({ assigned: ["/reset-web-cache"], reloads: 0 });
+  });
+
+  it("reloads in place after a crash that is not a load failure", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const navigation = recordNavigation();
+    renderLazyScreen(async () => ({ Screen: BrokenScreen }));
+    await settle();
+
+    fireEvent.click(screen.getByRole("button", { name: "Reload" }));
+
+    expect(navigation).toEqual({ assigned: [], reloads: 1 });
   });
 
   it("keeps the crash screen for errors that are not load failures", async () => {

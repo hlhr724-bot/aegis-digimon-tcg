@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your opponent's Digimon gets -3000 DP and ＜Security Attack -1＞ (This Digimon checks 1 fewer security card) until the end of your opponent's next turn.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -18,6 +20,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] 1 of your opponent's Digimon gets -3000 DP and ＜Security Attack -1＞ (This Digimon checks 1 fewer security card) until the end of your opponent's next turn.",
           kind: "ModifyDP",
           target: {
             filter: {},
@@ -28,6 +32,8 @@ const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] 1 of your opponent's Digimon gets -3000 DP and ＜Security Attack -1＞ (This Digimon checks 1 fewer security card) until the end of your opponent's next turn.",
           kind: "GainKeyword",
           target: {
             filter: {},

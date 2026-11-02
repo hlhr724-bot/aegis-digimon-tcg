@@ -21,6 +21,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your opponent's Digimon gets -3000 DP for the turn. If you have a Digimon in play with 2 or more colors, or with 2 or more colors in one of its digivolution cards, 1 of your opponent's Digimon gets -6000 DP instead.",
           kind: "SelectBind",
           target: {
             filter: { controller: "opponent", kind: ["Digimon"] },
@@ -29,6 +31,8 @@ export const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] 1 of your opponent's Digimon gets -3000 DP for the turn. If you have a Digimon in play with 2 or more colors, or with 2 or more colors in one of its digivolution cards, 1 of your opponent's Digimon gets -6000 DP instead.",
           kind: "ModifyDP",
           target: { filter: {}, count: 1, fromSelectionRef: "target" },
           amount: -3000,
@@ -36,6 +40,8 @@ export const compiled: CompiledCard = {
           condition: { kind: "not", condition: multicolorCondition },
         },
         {
+          effectTextPart:
+            "[Main] 1 of your opponent's Digimon gets -3000 DP for the turn. If you have a Digimon in play with 2 or more colors, or with 2 or more colors in one of its digivolution cards, 1 of your opponent's Digimon gets -6000 DP instead.",
           kind: "ModifyDP",
           target: { filter: {}, count: 1, fromSelectionRef: "target" },
           amount: -6000,

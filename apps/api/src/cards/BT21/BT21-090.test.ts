@@ -32,7 +32,10 @@ describe("BT21-090 The Strongest of Brothers", () => {
     expect(compiled.effects).toContainEqual(
       expect.objectContaining({
         trigger: "Main",
-        actions: [expect.objectContaining({ kind: "RevealAdd" }), { kind: "PlaceInBattleAreaSelf" }],
+        actions: [
+          expect.objectContaining({ kind: "RevealAdd" }),
+          { effectTextPart: "Then, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
+        ],
       }),
     );
     expect(compiled.effects).toContainEqual(

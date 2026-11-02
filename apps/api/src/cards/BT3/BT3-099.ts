@@ -8,6 +8,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Neither player's Digimon can be deleted in battle for the turn.",
           kind: "Restrict",
           target: { filter: { controller: "any", kind: ["Digimon"] }, count: "all" },
           restriction: "beDeletedInBattle",

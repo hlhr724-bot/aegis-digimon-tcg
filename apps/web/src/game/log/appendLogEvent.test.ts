@@ -4,6 +4,7 @@ import { createLogCursor } from "@/game/log/createLogCursor";
 import { appendLogEvent } from "@/game/log/appendLogEvent";
 import { flushPendingLogMemory } from "@/game/log/flushPendingLogMemory";
 import { translator } from "@/i18n/translator";
+import { LogEffectRole } from "@/game/log/LogEffectRole";
 
 const t = translator("en");
 const seatNames = { 0: "Alice", 1: "Bob" };
@@ -84,5 +85,20 @@ describe("incremental memory narration", () => {
     ]);
     expect(cursor.entries[0]?.turnCount).toBe(2);
     expect(cursor.entries[0]?.turnSeat).toBe(1);
+  });
+});
+
+describe("effect narration roles", () => {
+  it("marks the triggered effect as the source and its outcomes as results within the batch", () => {
+    const cursor = appendEvents([
+      { kind: "cardPlayed", seat: 0, cardId: "BT1-029" },
+      { kind: "effectTriggered", seat: 0, sourceCardId: "BT1-029", effectKey: "onPlay", description: "Draw 1" },
+      { kind: "cardPlayed", seat: 0, cardId: "ST1-03" },
+    ]);
+    expect(cursor.entries.map((entry) => entry.effectRole)).toEqual([
+      undefined,
+      LogEffectRole.SOURCE.value,
+      LogEffectRole.RESULT.value,
+    ]);
   });
 });

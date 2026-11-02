@@ -34,9 +34,9 @@
   "BT3-093": {
     "cardId": "BT3-093",
     "field": "effectText",
-    "source": "[Start of Your Turn] If you have 2 memory or less, set your memory to 3.On Play] Reveal the top 3 cards of your deck. Add 1 blue and 1 green Digimon card among them to your hand. Place the remaining cards at the bottom of your deck in any order.",
+    "source": "[Start of Your Turn] If you have 2 memory or less, set your memory to 3.\n[On Play] Reveal the top 3 cards of your deck. Add 1 blue and 1 green Digimon card among them to your hand. Place the remaining cards at the bottom of your deck in any order.",
     "fragment": "Add 1 blue",
-    "context": "On Play] Reveal the top 3 cards of your deck. Add 1 blue and 1 green Digimon card among them to your hand. Place the remaining cards at the bottom of your deck in any order.",
+    "context": "[On Play] Reveal the top 3 cards of your deck. Add 1 blue and 1 green Digimon card among them to your hand. Place the remaining cards at the bottom of your deck in any order.",
     "timings": ["OnPlay"]
   }
 }

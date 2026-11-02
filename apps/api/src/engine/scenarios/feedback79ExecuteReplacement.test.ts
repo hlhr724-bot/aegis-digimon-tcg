@@ -175,13 +175,13 @@ it.each([false, true])(
       const execute = s.events.findIndex((e) => lifecycle(e, "effectTriggered", "BT26-060", "OnEndAttack"));
       const holy = s.events.findIndex((e) => lifecycle(e, "effectResolved", "BT26-016", "AllTurns"));
       const ended = s.events.findIndex((e) => e.kind === "attackEnded");
-      for (const index of [battlePrevention, execute, holy, ended]) expect(index).toBeGreaterThanOrEqual(0);
+      for (const index of [battlePrevention, execute, ended]) expect(index).toBeGreaterThanOrEqual(0);
       const evolutionEffect = s.events.findIndex((e) => lifecycle(e, "effectResolved", "BT26-060", "WhenDigivolving"));
       expect(evolutionEffect).toBeGreaterThan(battlePrevention);
       expect(evolutionEffect).toBeLessThan(execute);
       expect(battlePrevention).toBeLessThan(execute);
-      expect(execute).toBeLessThan(holy);
-      expect(holy).toBeLessThan(ended);
+      const holyOrder = holy === -1 ? [] : [execute < holy, holy < ended];
+      expect(holyOrder).toEqual(holyProtection ? [true, true] : []);
       const executeResolved = s.events.findIndex((e) => lifecycle(e, "effectResolved", "BT26-060", "OnEndAttack"));
       const outerResolved = s.events.findIndex((e) => lifecycle(e, "effectResolved", "BT26-085", "OnEndTurn"));
       const turnEnded = s.events.findIndex((e) => e.kind === "turnEnded");

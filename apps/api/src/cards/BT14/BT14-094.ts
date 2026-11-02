@@ -12,12 +12,14 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Activate 1 of the effects below:",
           kind: "Modal",
           choose: 1,
           labels: MAIN_LABELS,
           options: [
             [
               {
+                effectTextPart: "1 of your opponent's Digimon gets -6000 DP for the turn.",
                 kind: "ModifyDP",
                 target: {
                   filter: {
@@ -32,6 +34,8 @@ const compiled: CompiledCard = {
             ],
             [
               {
+                effectTextPart:
+                  "By deleting 1 of your [Angemon], place 1 of your opponent's Digimon at the bottom of their security stack.",
                 kind: "SecurityManipulation",
                 op: "placeAsSecurity",
                 controller: "opponent",

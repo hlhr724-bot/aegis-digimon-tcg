@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Activate 1 of the effects below. If you have a Digimon with [Examon] in its name in play, activate all of the effects below instead.",
           kind: "Modal",
           choose: 1,
           chooseAll: {
@@ -29,6 +31,8 @@ const compiled: CompiledCard = {
           options: [
             [
               {
+                effectTextPart:
+                  "Suspend 1 of your opponent's Digimon, and 1 of your Digimon gains ＜Piercing＞ for the turn.",
                 kind: "Suspend",
                 target: {
                   filter: {
@@ -39,6 +43,8 @@ const compiled: CompiledCard = {
                 },
               },
               {
+                effectTextPart:
+                  "Suspend 1 of your opponent's Digimon, and 1 of your Digimon gains ＜Piercing＞ for the turn.",
                 kind: "GainKeyword",
                 target: {
                   filter: {
@@ -56,6 +62,7 @@ const compiled: CompiledCard = {
             ],
             [
               {
+                effectTextPart: "Unsuspend 1 of your Digimon.",
                 kind: "Unsuspend",
                 target: {
                   filter: {

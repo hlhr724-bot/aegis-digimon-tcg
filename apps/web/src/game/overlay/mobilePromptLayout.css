@@ -353,7 +353,7 @@
 }
 
 /* An unavailable block needs only the status and the two actions. */
-.game-modal__panel.effect-prompt-family.block-overlay--empty[data-prompt-surface="left"] {
+.game-modal__panel.effect-prompt-family.block-overlay--empty[data-prompt-surface] {
   height: auto !important;
   min-height: 0;
 }

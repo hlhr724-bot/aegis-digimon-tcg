@@ -1,4 +1,5 @@
 import type { EffectContext } from "../../EffectContext.js";
+import { revealPrivateRequirementPicks } from "#api/engine/effects/interpreter/targeting/privateReveal";
 import { seatsForController } from "../matching/permanent.js";
 import {
   knownCards,
@@ -353,6 +354,9 @@ export async function payRoutedPlaceCost(
   const host = ctx.game.permanentById(hostPermId);
   const hostIsTamer = host !== undefined && ctx.game.definitionOf(host.topCard).kinds.includes(CardKind.Tamer);
   const faceUp = cost.faceDown !== true && !(cost.faceDownUnderTamer === true && hostIsTamer);
+  if (!faceUp) {
+    revealPrivateRequirementPicks(ctx, cost.target, srcCandidates, picked);
+  }
   const placedCards =
     cost.position === "choice"
       ? await placeAtChosenStackEnd(ctx, hostPermId, picked, visibleCards, faceUp)

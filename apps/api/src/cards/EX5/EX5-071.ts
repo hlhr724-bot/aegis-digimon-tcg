@@ -36,6 +36,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Reveal the top 3 cards of your deck. Place 1 card with [Deva]/[Four Sovereigns]\u00a0trait among them as the bottom digivolution card of 1 of your Digimon or add it to your hand. Return the rest to the top or bottom of the deck.",
           kind: "RevealAdd",
           revealCount: 3,
           add: [

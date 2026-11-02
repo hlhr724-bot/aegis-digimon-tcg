@@ -21,7 +21,7 @@ describe("BT1-054 Liamon", () => {
       attributes: ["Vaccine"],
       types: ["Holy Beast"],
       effectText:
-        "[When Attacking] If you have 3 or more memory， 1 of your opponent's Digimon gets -2000 DP for the turn.",
+        "[When Attacking] If you have 3 or more memory, 1 of your opponent's Digimon gets -2000 DP for the turn.",
       rarity: "C",
       maxCountInDeck: 4,
       imageId: "BT1-054",

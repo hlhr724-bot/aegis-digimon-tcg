@@ -29,7 +29,7 @@
   "<Raid>:Youmayswitchtheattacktargettotheopponent'shighest-DPunsuspendedDigimon.": "＜突进＞：可以将攻击对象变更为对方DP最高且处于活跃状态的数码宝贝。",
   "<Ascension>:youmayplacethiscardatthetopofyoursecuritystack.": "＜升天＞：可以将此卡牌置于我方安防区最上方。",
   "<Ascension>:Whenthiscardisdeleted,youmayplaceitatthetopofyoursecuritystack.": "＜升天＞：此卡牌被消灭时，可以将其置于我方安防区最上方。",
-  "OnPlay]Revealthetop3cardsofyourdeck.Add1blueand1greenDigimoncardamongthemtoyourhand.Placetheremainingcardsatthebottomofyourdeckinanyorder.": "【登场时】翻开我方卡组最上方的3张卡牌。将其中的1张蓝色数码宝贝卡牌和1张绿色数码宝贝卡牌加入手牌。剩余的卡牌可自选顺序放回到卡组最下方。",
+  "[OnPlay]Revealthetop3cardsofyourdeck.Add1blueand1greenDigimoncardamongthemtoyourhand.Placetheremainingcardsatthebottomofyourdeckinanyorder.": "【登场时】翻开我方卡组最上方的3张卡牌。将其中的1张蓝色数码宝贝卡牌和1张绿色数码宝贝卡牌加入手牌。剩余的卡牌可自选顺序放回到卡组最下方。",
   "WhenyourDigimonorTamersareplayed": "当我方的数码宝贝或驯兽师登场时",
   "WhenyourDigimonorTamersdigivolve": "当我方的数码宝贝或驯兽师进化时",
   "Whenaneffecttrashesthisdigivolutioncard": "当此进化源卡牌被效果丢弃时",

@@ -25,6 +25,7 @@ import { AccountRoleBadge } from "@/account/roles/AccountRoleBadge";
 import { AccountRoleTooltip } from "@/account/roles/AccountRoleTooltip";
 import type { AccountRoleDefinition } from "@/account/roles/highestAccountRole";
 import { BrowserSupportNotice } from "./BrowserSupportNotice";
+import type { TranslationKey } from "@/i18n/translationTypes";
 
 /** The lightweight identity carried across screens (name + accent color). */
 export interface PlayerIdentity {
@@ -544,30 +545,49 @@ function NavItem({
   active,
   onSelect,
   compact = false,
+  raised = false,
 }: {
   item: { label: string; icon: IconComponent };
   active: boolean;
   onSelect: () => void;
   compact?: boolean;
+  raised?: boolean;
 }) {
+  const icon = raised ? (
+    <span className="aegis-nav-item__raised">
+      <item.icon size={22} />
+    </span>
+  ) : (
+    <item.icon size={22} />
+  );
   return (
     <button
-      className={`aegis-nav-item${compact ? " aegis-nav-item--compact" : ""}`}
+      className={`aegis-nav-item${compact ? " aegis-nav-item--compact" : ""}${raised ? " aegis-nav-item--raised" : ""}`}
       onClick={onSelect}
       aria-current={active ? "page" : undefined}
     >
-      {compact ? <item.icon size={20} /> : null}
+      {compact ? icon : null}
       {compact ? <span className="aegis-nav-item__label">{item.label}</span> : item.label}
     </button>
   );
 }
 
-/* ---- Top nav (persistent app chrome) ----
-   The navy bar carries the brand, the section links, and — on the right — the
-   theme toggle, the account controls (a sign-in call to action for guests and
-   the portrait button that opens the player menu) and "Play now". Settings
-   lives in the player menu on narrow screens, which keeps the bottom nav to
-   the four sections a thumb reaches for. */
+type NavEntry = { key: Screen; label: string; icon: IconComponent };
+
+const SCREEN_SECTIONS: Partial<Record<Screen, Screen>> = {
+  ranked: "lobby",
+  watch: "lobby",
+  story: "lobby",
+  learn: "lobby",
+  rules: "lobby",
+  roadmap: "community",
+  booster: "collection",
+};
+
+function getNavSection(screen: Screen): Screen {
+  return SCREEN_SECTIONS[screen] ?? screen;
+}
+
 export function TopNav({
   screen,
   onNav,
@@ -589,14 +609,12 @@ export function TopNav({
   onNav: (s: Screen) => void;
   player: PlayerIdentity;
   actions?: ReactNode;
-  /** The signed-in player's notification bell; rendered in both the wide and the mobile bar. */
   notifications?: ReactNode;
   friends?: ReactNode;
   signedIn?: boolean;
   role?: AccountRoleDefinition;
   onOpenPlayerMenu?: (anchor: HTMLButtonElement) => void;
   playerMenuOpen?: boolean;
-  /** Opens the palette chooser when available, otherwise toggles light/dark. */
   dark?: boolean;
   onToggleDark?: (dark: boolean) => void;
   onOpenTheme?: () => void;
@@ -604,48 +622,43 @@ export function TopNav({
   music?: ReactNode;
 }) {
   const { t } = useTranslation();
-  const navActive = (key: Screen) =>
-    screen === key ||
-    (screen === "ranked" && key === "lobby") ||
-    ((screen === "roadmap" || screen === "tournaments") && key === "community") ||
-    ((screen === "watch" || screen === "story" || screen === "learn" || screen === "rules") && key === "lobby");
+  const section = getNavSection(screen);
   const navTo = (s: Screen) => {
     playSound("nav");
     onNav(s);
   };
-  const items: { key: Screen; label: string; icon: IconComponent }[] = [
-    { key: "home", label: t("nav.home"), icon: Icons.LayoutDashboard },
-    { key: "lobby", label: t("nav.play"), icon: Icons.Swords },
-    { key: "deck", label: t("nav.decks"), icon: Icons.LayoutDashboard },
-    { key: "community", label: t("nav.community"), icon: Icons.Users },
-    { key: "collection", label: t("nav.collection"), icon: Icons.BookOpen },
+  const entries: Record<"home" | "lobby" | "tournaments" | "deck" | "collection" | "community", NavEntry> = {
+    home: { key: "home", label: t("nav.home"), icon: Icons.House },
+    lobby: { key: "lobby", label: t("nav.play"), icon: Icons.Swords },
+    tournaments: { key: "tournaments", label: t("nav.tournaments"), icon: Icons.Trophy },
+    deck: { key: "deck", label: t("nav.decks"), icon: Icons.Cards },
+    collection: { key: "collection", label: t("nav.collection"), icon: Icons.BookOpen },
+    community: { key: "community", label: t("nav.community"), icon: Icons.Globe },
+  };
+  const wideItems = [
+    entries.home,
+    entries.lobby,
+    entries.tournaments,
+    entries.deck,
+    entries.collection,
+    entries.community,
   ];
+  const tabItems = [entries.home, entries.deck, entries.lobby, entries.collection, entries.tournaments];
   const signIn = signedIn ? null : (
     <button className="aegis-sign-in-button" onClick={() => navTo("login")} aria-label={t("nav.signIn")}>
       <Icons.LogIn size={16} />
       <span>{t("nav.signIn")}</span>
     </button>
   );
+  const themeLabel = getThemeToggleLabel({ palette: Boolean(onOpenTheme), dark: Boolean(dark) });
   const themeToggle =
     onOpenTheme || onToggleDark ? (
       <button
         className="aegis-icon-button aegis-theme-toggle"
         onClick={() => (onOpenTheme ? onOpenTheme() : onToggleDark?.(!dark))}
         aria-haspopup={onOpenTheme ? "dialog" : undefined}
-        aria-label={t(
-          onOpenTheme
-            ? "redesign.shell.theme.title"
-            : dark
-              ? "redesign.shell.theme.useLight"
-              : "redesign.shell.theme.useDark",
-        )}
-        title={t(
-          onOpenTheme
-            ? "redesign.shell.theme.title"
-            : dark
-              ? "redesign.shell.theme.useLight"
-              : "redesign.shell.theme.useDark",
-        )}
+        aria-label={t(themeLabel)}
+        title={t(themeLabel)}
       >
         {dark ? <Icons.Sun size={18} /> : <Icons.Moon size={18} />}
       </button>
@@ -694,11 +707,11 @@ export function TopNav({
       <header className="aegis-top-nav">
         <div className="aegis-top-nav__primary">
           <button className="aegis-brand-button" onClick={() => navTo("home")} aria-label={t("nav.home")}>
-            <AegisLogo size={36} />
+            <AegisLogo size={32} tone="on-surface" />
           </button>
           <nav className="aegis-top-nav__links" aria-label={t("nav.primaryAria")}>
-            {items.map((it) => (
-              <NavItem key={it.key} item={it} active={navActive(it.key)} onSelect={() => navTo(it.key)} />
+            {wideItems.map((it) => (
+              <NavItem key={it.key} item={it} active={section === it.key} onSelect={() => navTo(it.key)} />
             ))}
           </nav>
         </div>
@@ -709,41 +722,56 @@ export function TopNav({
           {feedback}
           {music}
           {themeToggle}
-          <button
-            className="aegis-icon-button"
-            onClick={() => navTo("settings")}
-            aria-label={t("menu.settings")}
-            aria-current={screen === "settings" ? "page" : undefined}
-          >
-            <Icons.Settings size={18} />
-          </button>
           {signIn}
-          <Button className="aegis-top-nav__play" size="sm" onClick={() => onNav("lobby")}>
-            {t("redesign.shell.playNow")}
-            <Icons.ArrowRight size={16} />
-          </Button>
-          {portrait(34)}
+          {portrait(32)}
         </div>
       </header>
       <header className="aegis-mobile-bar">
         <button className="aegis-brand-button" onClick={() => navTo("home")} aria-label={t("nav.home")}>
-          <AegisLogo size={30} />
+          <AegisLogo size={28} tone="on-surface" />
         </button>
         <div className="aegis-mobile-bar__actions">
+          <button
+            className="aegis-icon-button"
+            onClick={() => navTo("community")}
+            aria-label={entries.community.label}
+            aria-current={section === "community" ? "page" : undefined}
+          >
+            <Icons.Globe size={18} />
+          </button>
           {friends}
           {notifications}
           {feedback}
           {music}
           {themeToggle}
           {signIn}
-          {portrait(32)}
+          {portrait(30)}
         </div>
       </header>
       <nav className="aegis-bottom-nav" aria-label={t("nav.primaryAria")}>
-        {items.map((it) => (
-          <NavItem key={it.key} item={it} active={navActive(it.key)} onSelect={() => navTo(it.key)} compact />
+        {tabItems.map((it) => (
+          <NavItem
+            key={it.key}
+            item={it}
+            active={section === it.key}
+            onSelect={() => navTo(it.key)}
+            compact
+            raised={it.key === "lobby"}
+          />
         ))}
       </nav>
     </>
   );
+}
+
+type ThemeToggleLabelParams = { palette: boolean; dark: boolean };
+
+function getThemeToggleLabel({ palette, dark }: ThemeToggleLabelParams): TranslationKey {
+  if (palette) {
+    return "redesign.shell.theme.title";
+  }
+  if (dark) {
+    return "redesign.shell.theme.useLight";
+  }
+  return "redesign.shell.theme.useDark";
 }

@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] You may play 1 purple level 3 Digimon card and 1 purple level 4 Digimon card from your trash without paying their memory costs. Any [On Play] effects on Digimon played with this effect don't activate.",
           kind: "PlayWithoutCost",
           target: { filter: { controller: "mine", kind: ["Digimon"], colors: ["Purple"], levels: [3] }, count: 1 },
           from: ["trash"],
@@ -15,6 +17,8 @@ const compiled: CompiledCard = {
           suppressOnPlayEffects: true,
         },
         {
+          effectTextPart:
+            "[Main] You may play 1 purple level 3 Digimon card and 1 purple level 4 Digimon card from your trash without paying their memory costs. Any [On Play] effects on Digimon played with this effect don't activate.",
           kind: "PlayWithoutCost",
           target: { filter: { controller: "mine", kind: ["Digimon"], colors: ["Purple"], levels: [4] }, count: 1 },
           from: ["trash"],

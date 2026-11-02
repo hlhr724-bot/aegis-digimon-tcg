@@ -34,7 +34,9 @@ export function RankedSeasonHero({ player, season, format, mine, onPlay, formats
         <p className="ranked-eyebrow">
           {t("ranked.season.title")} · {format === "standard" ? "Standard" : format}
         </p>
-        <h1>{season ? t("ranked.season.number", { number: season.id }) : t("ranked.season.title")}</h1>
+        <h2 className="ranked-hero__title">
+          {season ? t("ranked.season.number", { number: season.id }) : t("ranked.season.title")}
+        </h2>
         {season ? (
           <p className="ranked-hero__dates">
             {day.format(season.startsAt)} – {day.format(season.endsAt)} · {t("ranked.season.duration")}

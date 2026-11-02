@@ -5,6 +5,7 @@ import { extractReplay } from "./extract.js";
 import { runReplay } from "./run.js";
 import type { ReplayInput } from "./types.js";
 import { comparableState, recordRoomMatch, type RoomMatchOptions } from "./roomMatch.fixture.js";
+import { recordApplicationRandomCalls } from "#api/engine/testkit/recordApplicationRandomCalls";
 
 /**
  * The round trip of `roundTrip.test.ts`, with the room on Node's real timers instead of faked
@@ -109,11 +110,11 @@ const MATCHES: Match[] = [
 describe("match replay round trip through a real room on real timers", () => {
   for (const { name, expects, ...match } of MATCHES) {
     it(`seed ${match.seed}: ${name}`, async () => {
-      const random = vi.spyOn(Math, "random");
+      const random = recordApplicationRandomCalls();
       let unseededDraws = 0;
       const recorded = await recordRoomMatch({ ...match, clock: "real" }).finally(() => {
-        unseededDraws = random.mock.calls.length;
-        random.mockRestore();
+        unseededDraws = random.stacks.length;
+        random.restore();
       });
       expect(recorded.gameOver).toBe(true);
       expect(unseededDraws, "the room drew unseeded randomness, which no replay can reproduce").toBe(0);

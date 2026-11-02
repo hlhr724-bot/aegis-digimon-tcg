@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's next turn, their Digimon with no digivolution cards can't attack.",
           kind: "Restrict",
           target: { filter: sourceLess, count: "all" },
           whileMatchesTargetFilter: true,

@@ -62,7 +62,7 @@ it("keeps two identical Ophanimon candidates distinguishable by permanent id", (
     />,
   );
 
-  expect(screen.getAllByRole("button", { name: /ophanimon falldown mode/i })).toHaveLength(2);
+  expect(screen.getAllByRole("button", { name: /^ophanimon falldown mode, copy/i })).toHaveLength(2);
   fireEvent.click(screen.getByRole("button", { name: /confirm target/i }));
   expect(onRespond).toHaveBeenCalledWith({
     kind: "chooseTargets",

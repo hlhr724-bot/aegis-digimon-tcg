@@ -171,6 +171,11 @@
   outline: 2px solid var(--ds-ink-accent);
 }
 
+.arena-permanent-inspector__strip [data-once-per-turn-used="true"] {
+  opacity: 0.55;
+  filter: grayscale(0.6);
+}
+
 .arena-permanent-inspector__strip-detail {
   display: flex;
   gap: 0.375rem;
@@ -414,6 +419,19 @@
   font: 700 0.625rem / 1.2 var(--ds-font-display);
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+.arena-permanent-inspector__used-effect {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.125rem 0.3125rem;
+  border: 1px dashed currentcolor;
+  border-radius: var(--ds-radius-sm);
+  letter-spacing: 0.02em;
+}
+.arena-permanent-inspector__effect--source[data-once-per-turn-used="true"] > div > p {
+  opacity: 0.55;
 }
 .arena-permanent-inspector__effect p {
   margin: 0;

@@ -19,7 +19,7 @@ describe("BT1-012 Biyomon", () => {
       forms: ["Rookie"],
       attributes: ["Vaccine"],
       types: ["Bird"],
-      inheritedEffectText: "[Your Turn] When this Digimon is blocked， it gets +2000 DP.",
+      inheritedEffectText: "[Your Turn] When this Digimon is blocked, it gets +2000 DP.",
     });
     expect(getCardDefinition("BT1-012")?.effectText).toBeUndefined();
     expect(compiled.effects).toEqual([

@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] By placing 1 Digimon card with [Aqua]/[Sea Animal]\u00a0in one of its traits from your hand as the bottom digivolution card of 1 of your blue Digimon, return all of your opponent's Digimon with the same level as the placed card to the hand.",
           kind: "Return",
           target: {
             filter: {

@@ -132,4 +132,13 @@ export const communityEn = {
   "community.review.errorPending": "You already asked for a review. Wait for a moderator to answer.",
   "community.review.errorNotHidden": "This deck is not hidden anymore.",
   "community.publish.errorGeneric": "Could not publish. Try again.",
+  "community.meta.tab": "Meta",
+  "community.meta.title": "Ranked meta",
+  "community.meta.description": "Ranked games this season · {count} deck appearances",
+  "community.meta.presence": "Presence",
+  "community.meta.usage": "Usage",
+  "community.meta.versus": "{deck} vs {opponent}",
+  "community.meta.openRanked": "Open ranked statistics",
+  "community.trending.title": "Trending this week",
+  "community.roadmap.lanes": "Roadmap columns",
 } as const;

@@ -4,6 +4,8 @@ import { registerIrCard } from "../../engine/effects/interpreter.js";
 type CardAction = CompiledCard["effects"][number]["actions"][number];
 
 const playFromStack: CardAction = {
+  effectTextPart:
+    "[Main] Choose up to 2 Digimon cards in the digivolution cards of one of your Digimon and play them as other Digimon without paying their memory costs.",
   kind: "PlayWithoutCost",
   target: {
     filter: {
@@ -22,6 +24,8 @@ const playFromStack: CardAction = {
 };
 
 const selectStackHost: CardAction = {
+  effectTextPart:
+    "[Main] Choose up to 2 Digimon cards in the digivolution cards of one of your Digimon and play them as other Digimon without paying their memory costs.",
   kind: "SelectBind",
   target: {
     filter: {

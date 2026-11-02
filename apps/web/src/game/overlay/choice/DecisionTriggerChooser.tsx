@@ -292,7 +292,16 @@ export function DecisionTriggerChooser({
                   <span className="trigger-chooser__meta">
                     <span className="trigger-chooser__name">{triggerKeyLabels[i]}</span>
                     <span className="trigger-chooser__id">{cardId}</span>
-                    {detail?.sourceLabel ? <span className="trigger-chooser__source">{detail.sourceLabel}</span> : null}
+                    {detail?.hostCardId ? (
+                      <span className="trigger-chooser__host">
+                        <span className="trigger-chooser__host-art">
+                          <CardFull cardId={detail.hostCardId} width={28} zoomOnHover={false} />
+                        </span>
+                        <span className="trigger-chooser__source">{detail.sourceLabel}</span>
+                      </span>
+                    ) : detail?.sourceLabel ? (
+                      <span className="trigger-chooser__source">{detail.sourceLabel}</span>
+                    ) : null}
                     {reason ? (
                       <span className="trigger-chooser__reason">{t("overlay.triggerReason", { reason })}</span>
                     ) : null}

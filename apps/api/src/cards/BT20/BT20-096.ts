@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Trash] [Main] If you have 4 or fewer cards in your hand, by paying 6 cost, return this card to the bottom of the deck and delete 1 of your opponent's unsuspended Digimon.",
           kind: "Return",
           target: {
             filter: {
@@ -33,6 +35,8 @@ export const compiled: CompiledCard = {
           abortOnDecline: true,
         },
         {
+          effectTextPart:
+            "[Trash] [Main] If you have 4 or fewer cards in your hand, by paying 6 cost, return this card to the bottom of the deck and delete 1 of your opponent's unsuspended Digimon.",
           kind: "Delete",
           target: {
             filter: {

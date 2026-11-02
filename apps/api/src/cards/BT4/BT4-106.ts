@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] All of your opponent's Digimon get -3000 DP for the turn.",
           kind: "ModifyDP",
           playerWide: true,
           target: {

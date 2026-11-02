@@ -16,6 +16,7 @@ import {
   type CardInstance,
   type PlayerState,
 } from "@aegis/shared";
+import { HAND_SORT_DIRECTION_ENTRIES, HandSortDirection } from "@/game/HandSortDirection";
 import { HandSortMode } from "../../handSortMode";
 import type { HandEntry } from "../../piece";
 
@@ -105,15 +106,23 @@ function colorRankOf(definition: CardDefinition | undefined): number {
   return color === undefined ? COLOR_ORDER.length : COLOR_ORDER.indexOf(color);
 }
 
-const SORT_KEYS: Record<HandSortMode, (definition: CardDefinition | undefined) => SortKey> = {
-  [HandSortMode.Type]: (definition) => [typeGroupOf(definition), levelOf(definition), definition?.playCost ?? -1],
-  [HandSortMode.Cost]: (definition) => [definition?.playCost ?? -1, typeGroupOf(definition), levelOf(definition)],
-  [HandSortMode.Color]: (definition) => [
+const SORT_KEYS: Record<HandSortMode, (definition: CardDefinition | undefined, sign: number) => SortKey> = {
+  [HandSortMode.Type]: (definition, sign) => [
+    typeGroupOf(definition),
+    sign * levelOf(definition),
+    sign * (definition?.playCost ?? -1),
+  ],
+  [HandSortMode.Cost]: (definition, sign) => [
+    sign * (definition?.playCost ?? -1),
+    typeGroupOf(definition),
+    sign * levelOf(definition),
+  ],
+  [HandSortMode.Color]: (definition, sign) => [
     colorRankOf(definition),
     definition?.colors.length ?? 0,
     typeGroupOf(definition),
-    levelOf(definition),
-    definition?.playCost ?? -1,
+    sign * levelOf(definition),
+    sign * (definition?.playCost ?? -1),
   ],
 };
 
@@ -125,9 +134,11 @@ const SORT_KEYS: Record<HandSortMode, (definition: CardDefinition | undefined) =
 export function sortedHandInstanceIds(
   entries: readonly Pick<HandEntry, "instanceId" | "cardId">[],
   mode: HandSortMode = HandSortMode.Type,
+  direction: HandSortDirection = HandSortDirection.ASCENDING.value,
 ): string[] {
   const keyOf = SORT_KEYS[mode];
-  const keys = new Map(entries.map((entry) => [entry.instanceId, keyOf(getCardDefinition(entry.cardId))]));
+  const sign = HAND_SORT_DIRECTION_ENTRIES.find((entry) => entry.value === direction)?.sign ?? 1;
+  const keys = new Map(entries.map((entry) => [entry.instanceId, keyOf(getCardDefinition(entry.cardId), sign)]));
   const compareKeys = (a: SortKey, b: SortKey) => {
     for (let index = 0; index < a.length; index++) {
       const difference = a[index]! - b[index]!;

@@ -53,7 +53,7 @@ describe("trophy cabinet", () => {
     expect(fetcher).toHaveBeenCalledWith(expect.stringContaining("/achievements/trophies"), expect.anything());
     expect(items).toHaveLength(2);
     expect(within(items[0]!).getByRole("img", { name: "Silver trophy" }).getAttribute("src")).toBe(
-      "/achievements/trophy-silver-128.webp",
+      "/trophies/trophy-silver-128.webp",
     );
     expect(within(items[0]!).getByText("Top 4 · Community Cup")).toBeTruthy();
     expect(within(items[0]!).getByText(/^Awarded Dec 8, 2026$/)).toBeTruthy();

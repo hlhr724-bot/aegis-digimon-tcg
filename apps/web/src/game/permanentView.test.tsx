@@ -5,6 +5,7 @@ import { CardInstance, Permanent } from "@aegis/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { PermanentView } from "./piece";
+import { setFieldReferenceVisible } from "@/design/fieldReference/setFieldReferenceVisible";
 
 afterEach(() => cleanup());
 
@@ -634,15 +635,30 @@ it("shows the projected Security Attack bonus for five Tamers sharing four disti
   expect(screen.queryByLabelText(/Active keywords:.*Security Attack \+2/)).toBeNull();
 });
 
-it("labels grouped copies with every authoritative field reference, visually and accessibly", () => {
+it("hides field references from the card name by default and keeps them accessible", () => {
   const perm = opponentWithDpDown();
   perm.permanentId = "perm-18";
   render(
     <I18nProvider>
-      <PermanentView perm={perm} copies={2} fieldReferenceIds={["perm-18", "perm-25"]} onClick={vi.fn()} />
+      <PermanentView perm={perm} onClick={vi.fn<() => void>()} />
     </I18nProvider>,
   );
-  expect(screen.getByText("#18, #25")).toBeTruthy();
+  expect(screen.queryByText("#18")).toBeNull();
+  expect(screen.getByRole("button", { name: /Field reference #18/ })).toBeTruthy();
+});
+
+it("prefixes the card name with the first field reference and keeps every reference accessible", () => {
+  setFieldReferenceVisible(true);
+  const perm = opponentWithDpDown();
+  perm.permanentId = "perm-18";
+  render(
+    <I18nProvider>
+      <PermanentView perm={perm} copies={2} fieldReferenceIds={["perm-18", "perm-25"]} onClick={vi.fn<() => void>()} />
+    </I18nProvider>,
+  );
+  expect(screen.getByText("#18 +1")).toBeTruthy();
+  expect(screen.queryByText("#18, #25")).toBeNull();
   expect(screen.getByRole("button", { name: /Field reference #18, #25/ })).toBeTruthy();
   expect(screen.getByRole("button").getAttribute("data-permanent-id")).toBe("perm-18");
+  setFieldReferenceVisible(false);
 });

@@ -2,6 +2,7 @@
 // Frozen before wave-1 fan-out; extend additively — parallel worktrees depend
 // on these shapes not changing underneath them.
 
+import type { TournamentRoundStartMode } from "#shared/tournaments/TournamentRoundStartMode";
 import type { BotStyle } from "#shared/bot/BotStyle";
 import type { TournamentCategory } from "#shared/tournaments/TournamentCategory";
 import type { DeckFormat } from "#shared/deckFormat";
@@ -39,6 +40,7 @@ export type TournamentBanlistCard = {
 };
 
 export type CreateTournamentInput = {
+  roundStartMode?: TournamentRoundStartMode;
   category?: TournamentCategory;
   format?: DeckFormat;
   password?: string;
@@ -157,6 +159,7 @@ export type ParticipantView = {
 };
 
 export type TournamentSummary = {
+  roundStartMode?: TournamentRoundStartMode;
   category?: TournamentCategory;
   myEntry?: {
     status: RegistrationStatus;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CardInstance, type PlayerState } from "@aegis/shared";
+import { HandSortDirection } from "@/game/HandSortDirection";
 import { HandSortMode } from "../../handSortMode";
 import { handEntriesOf, sortedHandInstanceIds, retainHandOrder } from "./handEntries";
 
@@ -109,6 +110,46 @@ it("sorts by cost first, then the type order", () => {
     "rookie-3-other",
     "option-3",
     "tamer-4",
+  ]);
+});
+
+it("sorts by type with the highest level first while keeping Tamers and Options after Digimon", () => {
+  const hand = [
+    ["option-3", "BT1-091"],
+    ["tamer-4", "BT1-085"],
+    ["rookie-3", "BT1-010"],
+    ["option-0", "BT1-090"],
+    ["tamer-2", "BT1-088"],
+    ["rookie-2", "BT1-009"],
+    ["rookie-3-copy", "BT1-010"],
+  ].map(([instanceId, cardId]) => ({ instanceId: instanceId!, cardId: cardId! }));
+
+  expect(sortedHandInstanceIds(hand, HandSortMode.Type, HandSortDirection.DESCENDING.value)).toEqual([
+    "rookie-3",
+    "rookie-3-copy",
+    "rookie-2",
+    "tamer-4",
+    "tamer-2",
+    "option-3",
+    "option-0",
+  ]);
+});
+
+it("sorts by the highest cost first, then the type order", () => {
+  const hand = [
+    ["option-3", "BT1-091"],
+    ["tamer-4", "BT1-085"],
+    ["rookie-3", "BT1-010"],
+    ["option-0", "BT1-090"],
+    ["rookie-2", "BT1-009"],
+  ].map(([instanceId, cardId]) => ({ instanceId: instanceId!, cardId: cardId! }));
+
+  expect(sortedHandInstanceIds(hand, HandSortMode.Cost, HandSortDirection.DESCENDING.value)).toEqual([
+    "tamer-4",
+    "rookie-3",
+    "option-3",
+    "rookie-2",
+    "option-0",
   ]);
 });
 

@@ -86,3 +86,28 @@ describe("Armalizamon Tamer recruitment and inherited Piercing", () => {
     expect([...s.perm("plain").keywords]).not.toContain("Piercing");
   });
 });
+
+it("does not recruit a different Glowing Dawn Tamer when no Tomoro Tenma is in hand", async () => {
+  const s = setupEngine(
+    {
+      0: {
+        battleArea: [{ card: "ST23-06", as: "base", under: ["ST23-01"] }, "ST23-13"],
+        hand: [{ card: "BT27-046", as: "evolution" }, "ST23-14"],
+        deck: ["BT1-009"],
+      },
+    },
+    { autoAcceptOptional: true, autoSelectCards: true },
+  );
+  await s.ready();
+  s.state.memory = 10;
+  expect(
+    s.engine.applyIntent(0, {
+      type: "digivolve",
+      permanentId: s.perm("base").permanentId,
+      instanceId: s.inst("evolution").instanceId,
+    }),
+  ).toEqual({ ok: true });
+  await settle(() => s.perm("base").topCard.cardId === "BT27-046" && !s.state.pendingDecision);
+  expect(s.state.players[0]!.battleArea.filter((permanent) => permanent.topCard.cardId === "ST23-14")).toHaveLength(0);
+  expect(s.state.players[0]!.hand.some((card) => card.cardId === "ST23-14")).toBe(true);
+});

@@ -106,12 +106,14 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] 1 of your opponent's Digimon gets -15000 DP for the turn.",
           kind: "ModifyDP",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
           amount: -15000,
           duration: "forTheTurn",
         },
         {
+          effectTextPart: "Then, you may play 1 Tamer card from your hand without paying the cost.",
           kind: "PlayWithoutCost",
           target: { filter: { controller: "mine", kind: ["Tamer"] }, count: 1, upTo: true },
           optional: true,

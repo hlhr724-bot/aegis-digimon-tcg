@@ -1,3 +1,5 @@
+import { TournamentRegisteredDeck } from "@/tournaments/TournamentRegisteredDeck";
+import { TournamentRuntimeControls } from "@/tournaments/TournamentRuntimeControls";
 // @vitest-environment jsdom
 import { TournamentMatchHistory } from "@/tournaments/TournamentMatchHistory";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -63,6 +65,8 @@ function mockDetail(
   );
 }
 
+const COMPLETE_DECK = Array.from({ length: 50 }, () => "ST1-01");
+
 function renderDetail(accountId?: string, accountDisplayName?: string, accountIsAdmin = false, tab?: TournamentTab) {
   return render(
     <I18nProvider>
@@ -73,7 +77,7 @@ function renderDetail(accountId?: string, accountDisplayName?: string, accountIs
         accountId={accountId}
         accountDisplayName={accountDisplayName}
         accountIsAdmin={accountIsAdmin}
-        decks={[{ id: "deck-1", name: "Red aggro", mainDeck: [], eggDeck: [], color: "Red", blurb: "" }]}
+        decks={[{ id: "deck-1", name: "Red aggro", mainDeck: COMPLETE_DECK, eggDeck: [], color: "Red", blurb: "" }]}
         onBack={() => undefined}
       />
     </I18nProvider>,
@@ -248,9 +252,13 @@ describe("tournament detail", () => {
       { "POST /tournaments/t-1/participants": { status: 409, body: { error: "incorrect_password" } } },
     );
     renderDetail("acc-player");
+    fireEvent.click(await screen.findByRole("button", { name: "Sign up" }));
     fireEvent.change(await screen.findByLabelText("Event password"), { target: { value: "community-secret" } });
-    fireEvent.click(screen.getByRole("button", { name: "Sign up" }));
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm sign-up" }));
     expect(await screen.findByText("The event password is incorrect.")).toBeTruthy();
+    expect(screen.getByLabelText("Event password")).toBeTruthy();
     const request = vi.mocked(fetch).mock.calls.find(([, init]) => init?.method === "POST");
     expect(JSON.parse(String(request?.[1]?.body))).toMatchObject({ password: "community-secret" });
   });
@@ -262,6 +270,8 @@ describe("tournament detail", () => {
     );
     renderDetail("acc-player");
     fireEvent.click(await screen.findByRole("button", { name: "Sign up" }));
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm sign-up" }));
     await waitFor(() => expect(screen.getByText("This event is full.")).toBeTruthy());
   });
 
@@ -291,18 +301,146 @@ describe("tournament detail", () => {
     expect(screen.getByText(/Nothing to do here right now/)).toBeTruthy();
   });
 
-  it("still offers the action when the display name cannot identify the player", async () => {
-    // Two humans share a name, so the payload cannot prove membership: the server decides.
+  it("never offers check-in to a signed-in player who is not signed up", async () => {
     mockDetail({
-      status: "registration",
+      status: "check_in",
       participants: [
         { id: "p-1", kind: "human", displayName: "Twin", status: "registered", seed: null },
         { id: "p-2", kind: "human", displayName: "Twin", status: "registered", seed: null },
       ],
     });
+    const checkIn = renderDetail("acc-player", "Twin");
+    await screen.findByRole("heading", { name: "Your entry" });
+    expect(screen.queryByRole("button", { name: "Check in" })).toBeNull();
+    expect(screen.queryByText("Signed up · Check-in is open")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Drop out" })).toBeNull();
+    checkIn.unmount();
+
+    mockDetail({ status: "registration", participants: [] });
     renderDetail("acc-player", "Twin");
     expect(await screen.findByRole("button", { name: "Sign up" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Check in" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Check in" })).toBeNull();
+  });
+
+  it("walks a protected sign-up through password, deck and review before registering", async () => {
+    mockDetail(
+      { status: "registration", participants: [], passwordProtected: true },
+      { "POST /tournaments/t-1/participants": { status: 201, body: {} } },
+    );
+    render(
+      <I18nProvider>
+        <TournamentDetail
+          id="t-1"
+          onTabChange={() => undefined}
+          accountId="acc-player"
+          decks={[
+            {
+              id: "deck-half",
+              name: "Half list",
+              mainDeck: COMPLETE_DECK.slice(40),
+              eggDeck: [],
+              color: "Blue",
+              blurb: "",
+            },
+            { id: "deck-1", name: "Red aggro", mainDeck: COMPLETE_DECK, eggDeck: [], color: "Red", blurb: "" },
+          ]}
+          onBack={() => undefined}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: "Sign up" }));
+    expect(screen.getByRole("heading", { name: "Enter the event password" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Continue" }).hasAttribute("disabled")).toBe(true);
+    fireEvent.change(screen.getByLabelText("Event password"), { target: { value: "community-secret" } });
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(screen.getByRole("heading", { name: "Choose your deck" })).toBeTruthy();
+    expect(screen.getByRole("radio", { name: /Half list/ }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText("Your main deck has 10 cards. It needs exactly 50.")).toBeTruthy();
+    expect((screen.getByRole("radio", { name: /Red aggro/ }) as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(screen.getByRole("heading", { name: "Review and confirm" })).toBeTruthy();
+    expect(screen.getByText("Red aggro")).toBeTruthy();
+    expect(screen.getAllByText("Regional qualifier").length).toBeGreaterThan(1);
+    fireEvent.click(screen.getByRole("button", { name: "Confirm sign-up" }));
+
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Confirm sign-up" })).toBeNull());
+    const request = vi.mocked(fetch).mock.calls.find(([, init]) => init?.method === "POST");
+    expect(JSON.parse(String(request?.[1]?.body))).toEqual({ savedDeckId: "deck-1", password: "community-secret" });
+  });
+
+  it("asks a player without saved decks to build one before signing up", async () => {
+    mockDetail({ status: "registration", participants: [] });
+    const onDecks = vi.fn<() => void>();
+    render(
+      <I18nProvider>
+        <TournamentDetail
+          id="t-1"
+          onTabChange={() => undefined}
+          accountId="acc-player"
+          decks={[]}
+          onDecks={onDecks}
+          onBack={() => undefined}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: "Sign up" }));
+    expect(screen.getByText("No saved decks")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Continue" }).hasAttribute("disabled")).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Build a deck" }));
+    expect(onDecks).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByRole("button", { name: "Sign up" })).toBeTruthy();
+  });
+
+  it("lets a signed-up player check in and drop out after confirming", async () => {
+    mockDetail(
+      {
+        status: "check_in",
+        participants: [
+          {
+            id: "p-1",
+            accountId: "acc-player",
+            kind: "human",
+            displayName: "Tamer One",
+            status: "registered",
+            seed: 1,
+          },
+        ],
+      },
+      {
+        "POST /tournaments/t-1/check-in": { body: {} },
+        "POST /tournaments/t-1/drop": { body: {} },
+      },
+    );
+    renderDetail("acc-player", "Tamer One");
+
+    fireEvent.click(await screen.findByRole("button", { name: "Check in" }));
+    await waitFor(() =>
+      expect(
+        vi
+          .mocked(fetch)
+          .mock.calls.some(
+            ([input, init]) => init?.method === "POST" && String(input).endsWith("/tournaments/t-1/check-in"),
+          ),
+      ).toBe(true),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Drop out" }));
+    expect(screen.getByText("Drop out of Regional qualifier?")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Yes, drop out" }));
+    await waitFor(() =>
+      expect(
+        vi
+          .mocked(fetch)
+          .mock.calls.some(
+            ([input, init]) => init?.method === "POST" && String(input).endsWith("/tournaments/t-1/drop"),
+          ),
+      ).toBe(true),
+    );
   });
 
   it("translates deck-legality violations instead of printing raw kinds", async () => {
@@ -323,7 +461,10 @@ describe("tournament detail", () => {
     );
     renderDetail("acc-player", "Tamer One");
     fireEvent.click(await screen.findByRole("button", { name: "Sign up" }));
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm sign-up" }));
     await waitFor(() => expect(screen.getByText("Your main deck has 48 cards. It needs exactly 50.")).toBeTruthy());
+    expect(screen.getByRole("heading", { name: "Choose your deck" })).toBeTruthy();
     expect(screen.getByText("Argomon: you have 3 copies, but only 1 are allowed.")).toBeTruthy();
   });
 
@@ -356,6 +497,8 @@ describe("tournament detail", () => {
       renderDetail("acc-player", "Tamer One");
       await screen.findByRole("button", { name: t("tournaments.detail.register") });
       fireEvent.click(screen.getByRole("button", { name: t("tournaments.detail.register") }));
+      fireEvent.click(screen.getByRole("button", { name: t("overlay.continue") }));
+      fireEvent.click(screen.getByRole("button", { name: t("tournaments.signup.confirm") }));
       expect(
         await screen.findByText(t("tournaments.violation.overCopyLimit", { card: "五彩兽", copies: 5, allowed: 4 })),
       ).toBeTruthy();
@@ -476,8 +619,8 @@ describe("tournament match entry", () => {
         "POST /series/s-1/authorize-game": { body: ticket },
       },
     );
-    const onJoinGame = vi.fn();
-    const onChanged = vi.fn();
+    const onJoinGame = vi.fn<() => void>();
+    const onChanged = vi.fn<() => void>();
     const view = render(
       <I18nProvider>
         <TournamentMatchActions
@@ -612,4 +755,175 @@ it("shows the players, final score and authoritative winner, including bot seats
   expect(screen.getByText("1 - 2")).toBeTruthy();
   expect(screen.getByText("Winner: Community Bot")).toBeTruthy();
   expect(screen.getByText("Round 2, table 1")).toBeTruthy();
+});
+
+it("refuses an HTML authorization response instead of joining a casual game", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      async () =>
+        new Response("<html>site</html>", {
+          status: 200,
+          headers: { "Content-Type": "text/html" },
+        }),
+    ),
+  );
+  const onJoinGame = vi.fn<() => void>();
+  render(
+    <I18nProvider>
+      <TournamentMatchActions tournamentId="t-1" matchId="m-1" seriesId="s-1" onJoinGame={onJoinGame} />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button"));
+  await screen.findByRole("alert");
+  expect(onJoinGame).not.toHaveBeenCalled();
+});
+
+it("shows the frozen registered deck without replacement controls", async () => {
+  render(
+    <I18nProvider>
+      <TournamentRegisteredDeck
+        tournamentId="t-1"
+        deck={{ savedDeckId: "registered", locked: true, name: "Frozen list", mainDeck: [], eggDeck: [], revision: 1 }}
+        decks={[]}
+        canChange={false}
+        onChanged={vi.fn<() => void>()}
+        onDecks={vi.fn<() => void>()}
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByText("Frozen list")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Change deck" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "View registered list" }));
+  expect(await screen.findByRole("dialog")).toBeTruthy();
+});
+
+it("lets the organizer release manual rounds and cancel with a reason", async () => {
+  mockDetail(
+    {},
+    {
+      "POST /tournaments/t-1/next-round": { body: { started: true } },
+      "POST /tournaments/t-1/arbitration/cancel": { body: { result: { status: "cancelled" } } },
+    },
+  );
+  const onChanged = vi.fn<() => void>();
+  render(
+    <I18nProvider>
+      <TournamentRuntimeControls
+        detail={{ ...DETAIL, status: "running", roundStartMode: "manual" }}
+        onChanged={onChanged}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Start next round" }));
+  await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
+  fireEvent.click(screen.getByRole("button", { name: "Cancel tournament" }));
+  const confirm = screen.getByRole("button", { name: "Confirm cancellation" });
+  expect(confirm.hasAttribute("disabled")).toBe(true);
+  fireEvent.change(screen.getByLabelText("Reason for cancellation"), { target: { value: "Judge intervention" } });
+  fireEvent.click(confirm);
+  await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(2));
+  expect(
+    vi
+      .mocked(fetch)
+      .mock.calls.some(
+        ([input, init]) =>
+          String(input).endsWith("/arbitration/cancel") &&
+          JSON.parse(String(init?.body)).reason === "Judge intervention",
+      ),
+  ).toBe(true);
+});
+
+it("accepts HTTP 204 after deleting an unstarted event", async () => {
+  const onBack = vi.fn<() => void>();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === "DELETE") {
+        return new Response(null, { status: 204 });
+      }
+      return new Response(JSON.stringify(DETAIL), { status: 200, headers: { "Content-Type": "application/json" } });
+    }),
+  );
+  render(
+    <I18nProvider>
+      <TournamentDetail
+        id="t-1"
+        accountId="acc-organizer"
+        tab={TournamentTab.ORGANIZE.value}
+        decks={[]}
+        onBack={onBack}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(await screen.findByRole("button", { name: "Delete tournament" }));
+  fireEvent.click(screen.getByRole("button", { name: "Yes, delete it" }));
+  await waitFor(() => expect(onBack).toHaveBeenCalledOnce());
+});
+
+it("lets an entrant replace a registered deck that was deleted from the library", async () => {
+  mockDetail({}, { "POST /tournaments/t-1/own-deck": { body: {} } });
+  const onChanged = vi.fn<() => void>();
+  render(
+    <I18nProvider>
+      <TournamentRegisteredDeck
+        tournamentId="t-1"
+        deck={{
+          savedDeckId: "deleted",
+          available: false,
+          locked: false,
+          name: "",
+          mainDeck: [],
+          eggDeck: [],
+          revision: 0,
+        }}
+        decks={[
+          {
+            id: "replacement",
+            name: "New list",
+            mainDeck: Array.from({ length: 50 }, () => "BT1-010"),
+            eggDeck: [],
+            color: "Red",
+            blurb: "",
+          },
+        ]}
+        canChange
+        onChanged={onChanged}
+        onDecks={vi.fn<() => void>()}
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByRole("button", { name: "View registered list" }).hasAttribute("disabled")).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "Change deck" }));
+  fireEvent.click(screen.getByRole("radio", { name: /New list/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Save registered deck" }));
+  await waitFor(() => expect(onChanged).toHaveBeenCalledOnce());
+});
+
+it("lists legal decks before incomplete ones when changing the registered deck", () => {
+  render(
+    <I18nProvider>
+      <TournamentRegisteredDeck
+        tournamentId="t-1"
+        deck={{ savedDeckId: "current", locked: false, name: "Current", mainDeck: [], eggDeck: [], revision: 1 }}
+        decks={[
+          { id: "draft", name: "Draft list", mainDeck: [], eggDeck: [], color: "Red", blurb: "" },
+          {
+            id: "ready",
+            name: "Ready list",
+            mainDeck: Array.from({ length: 50 }, () => "BT1-010"),
+            eggDeck: [],
+            color: "Blue",
+            blurb: "",
+          },
+        ]}
+        canChange
+        onChanged={vi.fn<() => void>()}
+        onDecks={vi.fn<() => void>()}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Change deck" }));
+  const names = screen.getAllByRole("radio").map((radio) => radio.closest("label")?.querySelector("b")?.textContent);
+  expect(names).toEqual(["Ready list", "Draft list"]);
 });

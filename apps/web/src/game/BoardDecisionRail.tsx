@@ -2,7 +2,7 @@ import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useMediaQuery } from "@/design/useMediaQuery";
 import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
-/* Simple actions use the left dialog. Hand and field choices use their physical cards;
+/* Simple actions use the dialog at the chosen prompt position. Hand and field choices use their physical cards;
    other card choices use the central gallery. The pill tells
    the viewer when the opponent is choosing. */
 
@@ -22,6 +22,8 @@ import { useDecisionSourceMask } from "./overlay/choice/useDecisionSourceMask";
 import { useNoticeBandPassThrough } from "./overlay/choice/useNoticeBandPassThrough";
 import { PromptMoveHandle } from "./overlay/choice/PromptMoveHandle";
 import { useDraggableWindow } from "./chat/useDraggableWindow";
+import { useEffectPromptPosition } from "@/game/effectPromptPosition";
+import { getBoardPromptSurface } from "@/game/getBoardPromptSurface";
 
 function useEscapeToDialog(onOpenDialog: (() => void) | undefined) {
   useEffect(() => {
@@ -116,6 +118,8 @@ export function BoardPromptRail({
   const [isTextExpanded, setIsTextExpanded] = useState(true);
   const mobile = useMediaQuery("(width < 768px), (height < 520px) and (orientation: landscape)");
   const modal = variant === "prompt";
+  const effectPromptPosition = useEffectPromptPosition();
+  const surface = getBoardPromptSurface({ variant, position: effectPromptPosition });
   const isTextVisible = modal || !mobile || isTextExpanded;
   const sourceMask = useDecisionSourceMask(modal ? sourcePermanentId : undefined);
   const noticeBand = useNoticeBandPassThrough();
@@ -144,7 +148,7 @@ export function BoardPromptRail({
         ref={focusProps.ref}
         data-testid="board-prompt"
         data-variant={variant}
-        data-prompt-surface="left"
+        data-prompt-surface={surface}
         data-text-hidden={!isTextVisible || undefined}
         data-prompt-dragged={drag.position === undefined ? undefined : true}
         style={

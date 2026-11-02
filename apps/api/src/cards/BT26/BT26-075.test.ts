@@ -57,6 +57,7 @@ describe("BT26-075 compiled behavior", () => {
           trigger: "Main",
           actions: [
             {
+              effectTextPart: "[Main] Delete 1 of your opponent’s Digimon with the lowest level.",
               kind: "Delete",
               target: expect.objectContaining({
                 count: 1,

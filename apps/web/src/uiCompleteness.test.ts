@@ -100,6 +100,7 @@ const DELIBERATELY_SILENT: Partial<Record<ServerEventKind, string>> = {
   batchClosed: "the boundary the presentation groups by; it narrates nothing",
   // Arrives after gameOver and only feeds the board review's card viewers.
   finalReveal: "post-match data read by the board review, not a game event",
+  manualAction: "listed in the manual table's Operation history panel",
 };
 
 describe("server event coverage", () => {

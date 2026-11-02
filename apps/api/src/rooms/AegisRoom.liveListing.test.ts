@@ -1,3 +1,4 @@
+import { getDeckFeaturedCardId } from "#api/accounts/getDeckFeaturedCardId";
 import { Decoder, Encoder } from "@colyseus/schema";
 import { GameState } from "@aegis/shared/schema/GameState";
 import { describe, expect, it, vi } from "vitest";
@@ -14,6 +15,7 @@ function startedRoom(options: {
   preferences: Record<string, AccountPreferences>;
   accounts: Record<string, string>;
   private?: boolean;
+  coverCardId?: string;
 }) {
   const room = new AegisRoom();
   room.lock = vi.fn<() => Promise<void>>(async () => undefined);
@@ -27,7 +29,10 @@ function startedRoom(options: {
   room.onCreate({ seed: 1, ...(options.private ? { private: true } : {}) });
   const encoder = new Encoder(room.state);
   Object.assign(room, {
-    accounts: () => ({ preferences: async (accountId: string) => options.preferences[accountId] ?? {} }),
+    accounts: () => ({
+      preferences: async (accountId: string) => options.preferences[accountId] ?? {},
+      decks: async () => [{ id: "preview-deck", coverCardId: options.coverCardId }],
+    }),
     accountByClient: new Map(Object.entries(options.accounts)),
   });
   for (const [sessionId, displayName] of [
@@ -36,7 +41,11 @@ function startedRoom(options: {
   ] as const) {
     const player = client(sessionId);
     room.clients.push(player);
-    room.onJoin(player, { displayName, deck: structuredClone(RED_DECK) });
+    room.onJoin(player, {
+      displayName,
+      deck: structuredClone(RED_DECK),
+      ...(options.coverCardId ? { deckId: "preview-deck" } : {}),
+    });
   }
   (Reflect.get(room, "startMatchNow") as () => void).call(room);
   const latestLive = () =>
@@ -91,6 +100,16 @@ describe("live match listing", () => {
     }
   });
 
+  it("publishes the player's saved deck cover before that card enters the field", async () => {
+    const { room, latestLive } = startedRoom({ accounts: bothAccounts, preferences: {}, coverCardId: "BT1-010" });
+    try {
+      await vi.waitFor(() => expect(latestLive()).toBeDefined());
+      expect(latestLive()?.playerPreviews).toEqual([{ cardId: "BT1-010" }, { cardId: "BT1-010" }]);
+    } finally {
+      room.onDispose();
+    }
+  });
+
   it("never lists a private room", async () => {
     const { room, latestLive } = startedRoom({
       private: true,
@@ -112,6 +131,11 @@ describe("live match listing", () => {
     });
     try {
       await vi.waitFor(() => expect(latestLive()).toBeDefined());
+      const player = room.state.players[0]!;
+      player.avatarId = "greymon";
+      const revealedCard = player.hand.shift()!;
+      revealedCard.faceUp = true;
+      player.trash.push(revealedCard);
       const watcher = client("watcher");
       room.clients.push(watcher);
       room.onJoin(watcher, {
@@ -121,6 +145,10 @@ describe("live match listing", () => {
         deck: { mainDeck: [], eggDeck: [] },
       });
       await vi.waitFor(() => expect(latestLive()?.spectators).toBe(1));
+      expect(latestLive()?.playerPreviews).toEqual([
+        expect.objectContaining({ avatarId: "greymon", cardId: getDeckFeaturedCardId(RED_DECK) }),
+        expect.objectContaining({ cardId: getDeckFeaturedCardId(RED_DECK) }),
+      ]);
       room.state.gameOver = true;
       await room.onLeave(watcher);
       await vi.waitFor(() => expect(latestLive()).toBeUndefined());
@@ -143,6 +171,7 @@ it("withholds opted-out identity in listings and encoded spectator state while r
     expect(latestLive()?.players).toEqual(["", "Sora"]);
     expect(room.spectatorInfo(room.state.spectatorCode)?.players).toEqual(["", "Sora"]);
     room.state.players[0]!.avatarId = "secret-avatar";
+    expect(latestLive()?.playerPreviews).toEqual([{}, { cardId: getDeckFeaturedCardId(RED_DECK) }]);
     const watcher = client("watcher");
     room.clients.push(watcher);
     room.onJoin(watcher, {

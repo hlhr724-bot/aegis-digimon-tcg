@@ -579,16 +579,19 @@ export function gatherTriggeredEffects(
     for (const source of sources) {
       const target = env.triggerInfo.retaliationTargetsByInstanceId?.[source.instanceId];
       if (target === undefined || !env.triggerInfo.deletedInstanceIds?.includes(source.instanceId)) continue;
-      const effect = onDeletion({
-        source,
-        effectKey: "keyword/retaliation",
-        description: "＜Retaliation＞: delete the Digimon this Digimon battled.",
-        when: (ctx) => ctx.source.definition.isToken === true || ctx.source.isInTrash?.() === true,
-        resolve: async (ctx) => {
-          await ctx.fx.deletePermanent([target], "byEffect");
-        },
-      });
-      if (canTrigger(effect, makeContext(source, effect), env.tracker)) retaliations.push({ source, effect, timing });
+      const count = env.triggerInfo.retaliationCountsByInstanceId?.[source.instanceId] ?? 1;
+      for (let index = 0; index < count; index++) {
+        const effect = onDeletion({
+          source,
+          effectKey: index === 0 ? "keyword/retaliation" : `keyword/retaliation/${index}`,
+          description: "＜Retaliation＞: delete the Digimon this Digimon battled.",
+          when: (ctx) => ctx.source.definition.isToken === true || ctx.source.isInTrash?.() === true,
+          resolve: async (ctx) => {
+            await ctx.fx.deletePermanent([target], "byEffect");
+          },
+        });
+        if (canTrigger(effect, makeContext(source, effect), env.tracker)) retaliations.push({ source, effect, timing });
+      }
     }
     base = [...retaliations, ...base];
   }

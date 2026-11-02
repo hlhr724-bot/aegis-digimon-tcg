@@ -26,9 +26,20 @@ import {
 } from "./deployment";
 import type { AegisJoinOptions } from "./types";
 import type { LiveMatchPage } from "@aegis/shared/protocol/LiveMatch";
+import {
+  MATCH_QUEUE_COUNTS_PATH,
+  type MatchQueueCount,
+  type MatchQueueCounts,
+} from "@aegis/shared/matchmaking/MatchQueueCounts";
+import { getMatchQueueKey } from "@aegis/shared/matchmaking/getMatchQueueKey";
+import { MATCH_QUEUE_WAITING_LIMIT } from "@aegis/shared/matchmaking/MatchQueueWaitingPlayer";
 import { sortLiveMatches } from "@aegis/shared/protocol/sortLiveMatches";
 import type { ReconnectSession } from "./reconnectSession";
 import { hasRoomTicketAccount } from "./roomAccount";
+import type { ActiveMatchClaim } from "@aegis/shared/protocol/ActiveMatchClaim";
+import type { ResumableMatch } from "@/net/activeMatch/ResumableMatch";
+import { requestActiveMatch } from "@/net/activeMatch/requestActiveMatch";
+import { requestActiveMatchClaim } from "@/net/activeMatch/requestActiveMatchClaim";
 
 export type AegisRoom = Room<GameState>;
 export type RoomSlot = DeploymentSlot | "legacy";
@@ -241,9 +252,37 @@ export class AegisConnectionRouter {
     };
   }
 
+  async matchQueueCounts(): Promise<MatchQueueCounts> {
+    const manifest = await this.dependencies.loadManifest();
+    const deployments = [manifest.active, ...manifest.draining];
+    const results = await Promise.allSettled(
+      deployments.map(({ slot }) =>
+        fetchMatchQueueCounts(this.dependencies.endpointForSlot(slot).http, this.dependencies.fetcher),
+      ),
+    );
+    const loaded = results.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
+    if (loaded.length === 0) throw new Error("Queue counts are unavailable");
+    return sumMatchQueueCounts(loaded);
+  }
+
   async reconnect(reconnectionToken: string, slot: DeploymentSlot): Promise<AegisRoom> {
     const reconnected = await this.client(slot).reconnect(reconnectionToken);
     return this.remember(reconnected, slot);
+  }
+
+  async findActiveMatch(): Promise<ResumableMatch | undefined> {
+    const manifest = await this.dependencies.loadManifest();
+    for (const { slot } of [manifest.active, ...manifest.draining]) {
+      const { http } = this.dependencies.endpointForSlot(slot);
+      const match = await requestActiveMatch({ http, fetcher: this.dependencies.fetcher });
+      if (match) return { ...match, slot };
+    }
+    return undefined;
+  }
+
+  async claimActiveMatch(roomId: string, slot: DeploymentSlot): Promise<ActiveMatchClaim | undefined> {
+    const { http } = this.dependencies.endpointForSlot(slot);
+    return requestActiveMatchClaim({ http, fetcher: this.dependencies.fetcher, roomId });
   }
 
   async joinWithBot(roomId: string, botDeckId?: string, botSettings?: BotSettings): Promise<void> {
@@ -429,6 +468,25 @@ export async function resumeReconnectSession(session: ReconnectSession): Promise
   return getProductionRouter().reconnect(session.reconnectionToken, session.slot);
 }
 
+export async function findActiveMatch(): Promise<ResumableMatch | undefined> {
+  if (useProductionRouter()) return getProductionRouter().findActiveMatch();
+  const match = await requestActiveMatch({ http: legacyEndpoint().replace(/^ws/, "http"), fetcher: fetch });
+  return match && { ...match, slot: "legacy" };
+}
+
+export async function claimActiveMatch(match: ResumableMatch): Promise<ReconnectSession | undefined> {
+  const claim =
+    match.slot === "legacy"
+      ? await requestActiveMatchClaim({
+          http: legacyEndpoint().replace(/^ws/, "http"),
+          fetcher: fetch,
+          roomId: match.roomId,
+        })
+      : await getProductionRouter().claimActiveMatch(match.roomId, match.slot);
+  if (!claim) return undefined;
+  return { reconnectionToken: claim.reconnectionToken, roomId: claim.roomId, slot: match.slot, savedAt: Date.now() };
+}
+
 /** Ask the owning server to seat a bot as the second player. */
 export async function joinWithBot(roomId: string, botDeckId?: string, botSettings?: BotSettings): Promise<void> {
   if (useProductionRouter()) return getProductionRouter().joinWithBot(roomId, botDeckId, botSettings);
@@ -589,6 +647,32 @@ async function fetchLiveMatches(http: string, limit: number, fetcher: typeof fet
   const response = await fetcher(`${http}/spectate/live?limit=${limit}`);
   if (!response.ok) throw new Error("Live matches are unavailable");
   return (await response.json()) as LiveMatchPage;
+}
+
+async function fetchMatchQueueCounts(http: string, fetcher: typeof fetch): Promise<MatchQueueCounts> {
+  const response = await fetcher(`${http}${MATCH_QUEUE_COUNTS_PATH}`);
+  if (!response.ok) throw new Error("Queue counts are unavailable");
+  const counts = (await response.json()) as Partial<MatchQueueCounts>;
+  return { buckets: counts.buckets ?? [], waiting: counts.waiting ?? [] };
+}
+
+function sumMatchQueueCounts(slots: MatchQueueCounts[]): MatchQueueCounts {
+  const buckets = new Map<string, MatchQueueCount>();
+  for (const bucket of slots.flatMap((slot) => slot.buckets)) {
+    const key = getMatchQueueKey(bucket);
+    const existing = buckets.get(key);
+    buckets.set(key, existing ? { ...existing, searching: existing.searching + bucket.searching } : bucket);
+  }
+  const waiting = slots
+    .flatMap((slot) => slot.waiting)
+    .sort((first, second) => second.waitingSeconds - first.waitingSeconds)
+    .slice(0, MATCH_QUEUE_WAITING_LIMIT);
+  return { buckets: [...buckets.values()], waiting };
+}
+
+export async function matchQueueCounts(): Promise<MatchQueueCounts> {
+  if (useProductionRouter()) return getProductionRouter().matchQueueCounts();
+  return fetchMatchQueueCounts(legacyEndpoint().replace(/^ws/, "http"), fetch);
 }
 
 export async function liveMatches(limit: number): Promise<LiveMatchPage> {

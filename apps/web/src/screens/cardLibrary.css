@@ -63,7 +63,42 @@
   background: color-mix(in srgb, var(--chip-color) 14%, var(--ds-sheet));
 }
 
+.card-filter-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  cursor: pointer;
+  list-style: none;
+}
+
+.card-filter-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.card-filter-disclosure > summary::after {
+  margin-left: auto;
+  content: "+";
+}
+
+.card-filter-disclosure[open] > summary::after {
+  content: "\2212";
+}
+
+.card-filter-disclosure:not([open]) > summary {
+  margin-bottom: 0;
+}
+
+.card-filter-disclosure__count {
+  min-width: 18px;
+  padding: 1px 6px;
+  color: var(--ds-accent);
+  text-align: center;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-accent-soft);
+}
+
 .card-filter-chip:focus-visible,
+.card-filter-disclosure > summary:focus-visible,
 .card-filter-clear:focus-visible {
   outline: 2px solid var(--ds-focus);
   outline-offset: 2px;

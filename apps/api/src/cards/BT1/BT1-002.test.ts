@@ -22,7 +22,7 @@ describe("BT1-002 Bebydomon", () => {
       evoCosts: [],
       forms: ["In-Training"],
       types: ["Baby Dragon"],
-      inheritedEffectText: "[Your Turn] While this Digimon has ＜Piercing＞， it gets +2000 DP.",
+      inheritedEffectText: "[Your Turn] While this Digimon has ＜Piercing＞, it gets +2000 DP.",
     });
     expect(getCardDefinition("BT1-002")?.effectText).toBeUndefined();
     expect(compiled.effects).toEqual([

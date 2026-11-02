@@ -159,7 +159,7 @@ describe("BT14-033", () => {
         },
         1: { hand: ["BT1-009"], deck: Array(5).fill("BT1-009") },
       },
-      { autoOrderTriggers: false },
+      { autoOrderTriggers: false, declinePrompts: ["reduce this effect's paid cost"] },
     );
     const turn = s.engine.runOneTurn();
     await advance(s.engine).waitForMainPhase(0);

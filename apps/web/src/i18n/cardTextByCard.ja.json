@@ -93,28 +93,28 @@
     "[DNADigivolve]Lv.6w/[Greymon]inname+Lv.6w/[Garurumon]inname:Cost0[Assembly-6][WarGreymon]×[MetalGarurumon]<Raid><Blocker><Partition([WarGreymon]&[MetalGarurumon])>[OnPlay][WhenDigivolving]Returnallofyouropponent'sDigimonwithasmanyorfewerdigivolutioncardsasthisDigimontothebottomofthedeck.Then,delete1ofyouropponent'sDigimon.[AllTurns][OncePerTurn]Whenanyofyouropponent'sDigimonleavethebattlearea,trash1oftheirOptioncardsinthebattleareaandtrashtheirtopsecuritycard.": "〔ジョグレス〕名称に「グレイモン」を含むLv.6+名称に「ガルルモン」を含むLv.6:コスト0\n\nアセンブリ-6:「ウォーグレイモン」×「メタルガルルモン」\n\n≪突進≫≪ブロッカー≫≪パーティション《「ウォーグレイモン」＆「メタルガルルモン」》≫\n【登場時】【進化時】進化元枚数がこのデジモン以下の相手のデジモン全てをデッキの下に戻す。その後、相手のデジモン1体を消滅させる。\n【お互いのターン】[ターンに1回]相手のデジモンがバトルエリアを離れたとき、バトルエリアの相手のオプションカード1枚を破棄し、相手のセキュリティを上から1枚破棄する。"
   },
   "BT1-001": {
-    "[WhenAttacking]Whenyouattackanopponent'sDigimon，thisDigimongets+1000DPfortheturn.": "【アタック時】相手のデジモンにアタックしたとき、このターンの間、このデジモンのDPを+1000する。"
+    "[WhenAttacking]Whenyouattackanopponent'sDigimon,thisDigimongets+1000DPfortheturn.": "【アタック時】相手のデジモンにアタックしたとき、このターンの間、このデジモンのDPを+1000する。"
   },
   "BT1-002": {
-    "[YourTurn]WhilethisDigimonhas<Piercing>，itgets+2000DP.": "【自分のターン】このデジモンが≪貫通≫を持つ間、このデジモンのDPを+2000する。"
+    "[YourTurn]WhilethisDigimonhas<Piercing>,itgets+2000DP.": "【自分のターン】このデジモンが≪貫通≫を持つ間、このデジモンのDPを+2000する。"
   },
   "BT1-003": {
-    "[WhenAttacking][OncePerTurn]IfyouropponenthasaDigimonwithnodigivolutioncardsinplay，trigger<Draw1>(Draw1cardfromyourdeck).": "【アタック時】［ターンに1回］進化元を持たない相手のデジモンがいるとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
+    "[WhenAttacking][OncePerTurn]IfyouropponenthasaDigimonwithnodigivolutioncardsinplay,trigger<Draw1>(Draw1cardfromyourdeck).": "【アタック時】［ターンに1回］進化元を持たない相手のデジモンがいるとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
   },
   "BT1-004": {
-    "[YourTurn]Whileyouropponenthas2ormoreDigimonwithnodigivolutioncardsinplay，thisDigimongets+2000DP.": "【自分のターン】進化元を持たない相手のデジモンが2体以上いる間、このデジモンのDPを+2000する。"
+    "[YourTurn]Whileyouropponenthas2ormoreDigimonwithnodigivolutioncardsinplay,thisDigimongets+2000DP.": "【自分のターン】進化元を持たない相手のデジモンが2体以上いる間、このデジモンのDPを+2000する。"
   },
   "BT1-005": {
-    "[YourTurn]Whileyouhave6ormoresecuritycards，thisDigimongets+2000DP.": "【自分のターン】自分のセキュリティが6枚以上ある間、このデジモンのDPを+2000する。"
+    "[YourTurn]Whileyouhave6ormoresecuritycards,thisDigimongets+2000DP.": "【自分のターン】自分のセキュリティが6枚以上ある間、このデジモンのDPを+2000する。"
   },
   "BT1-006": {
-    "[WhenAttacking]Ifyouhave5ormoresecuritycards，trigger<Draw1>(Draw1cardfromyourdeck).": "【アタック時】自分のセキュリティが5枚以上あるとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
+    "[WhenAttacking]Ifyouhave5ormoresecuritycards,trigger<Draw1>(Draw1cardfromyourdeck).": "【アタック時】自分のセキュリティが5枚以上あるとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
   },
   "BT1-007": {
-    "[WhenAttacking]Ifyou'vedigivolvedthisturn，thisDigimongets+1000DPfortheturn.": "【アタック時】このターンに自分がデジモンを1回以上進化させている場合、このターンの間、このデジモンのDPを+1000する。"
+    "[WhenAttacking]Ifyou'vedigivolvedthisturn,thisDigimongets+1000DPfortheturn.": "【アタック時】このターンに自分がデジモンを1回以上進化させている場合、このターンの間、このデジモンのDPを+1000する。"
   },
   "BT1-008": {
-    "[YourTurn]Whileyouropponenthas2ormoresuspendedDigimoninplay，thisDigimongets+2000DP.": "【自分のターン】レスト状態の相手のデジモンが2体以上いる間、このデジモンのDPを+2000する。"
+    "[YourTurn]Whileyouropponenthas2ormoresuspendedDigimoninplay,thisDigimongets+2000DP.": "【自分のターン】レスト状態の相手のデジモンが2体以上いる間、このデジモンのDPを+2000する。"
   },
   "BT1-010": {
     "[OnPlay]Reveal5cardsfromthetopofyourdeck.Add1Tamercardamongthemtoyourhand.Placetheremainingcardsatthebottomofyourdeckinanyorder.": "【登場時】自分のデッキの上から5枚オープンする。その中のテイマーカード1枚を手札に加える。残ったカードは好きな順番でデッキの下に戻す。"
@@ -123,7 +123,7 @@
     "[OnPlay]Return1Digimoncardwith[Agumon]initsnamefromyourrecyclebintoyourhand.": "【登場時】自分のトラッシュから、名称に「アグモン」を含むデジモンカード1枚を手札に戻す。"
   },
   "BT1-012": {
-    "[YourTurn]WhenthisDigimonisblocked，itgets+2000DP.": "【自分のターン】このデジモンがブロックされたとき、このデジモンのDPを＋2000する。"
+    "[YourTurn]WhenthisDigimonisblocked,itgets+2000DP.": "【自分のターン】このデジモンがブロックされたとき、このデジモンのDPを＋2000する。"
   },
   "BT1-015": {
     "[YourTurn]ThisDigimongets+2000DP.": "【自分のターン】このデジモンのDPを+2000する。"
@@ -135,14 +135,14 @@
     "[OnPlay]1ofyourDigimongains<SecurityAttack+1>(ThisDigimonchecks1additionalsecuritycard)fortheturn.": "【登場時】このターンの間、自分のデジモン1体は≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
   },
   "BT1-018": {
-    "[YourTurn]Whileyouhave3ormorememory，thisDigimongains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】メモリーが3以上の間、このデジモンは≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
+    "[YourTurn]Whileyouhave3ormorememory,thisDigimongains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】メモリーが3以上の間、このデジモンは≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
   },
   "BT1-021": {
-    "[WhenAttacking]Gain3memory.Atendofturn，lose3memory.": "【アタック時】メモリーを+3する。このターン終了時、メモリーを-3する。"
+    "[WhenAttacking]Gain3memory.Atendofturn,lose3memory.": "【アタック時】メモリーを+3する。このターン終了時、メモリーを-3する。"
   },
   "BT1-022": {
-    "<Piercing>(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle，itperformsanysecuritychecksitnormallywould.)": "≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）",
-    "[YourTurn]WhenthisDigimonisblocked，trigger<Draw1>.(Draw1cardfromyourdeck.)": "【自分のターン】このデジモンがブロックされたとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
+    "<Piercing>(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle,itperformsanysecuritychecksitnormallywould.)": "≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）",
+    "[YourTurn]WhenthisDigimonisblocked,trigger<Draw1>.(Draw1cardfromyourdeck.)": "【自分のターン】このデジモンがブロックされたとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
   },
   "BT1-023": {
     "[OnPlay]Delete1ofyouropponent'sDigimonwith<Blocker>.": "【登場時】≪ブロッカー≫を持つ相手のデジモン1体を消滅させる。"
@@ -151,7 +151,7 @@
     "[WhenDigivolving]ThisDigimongains<SecurityAttack+1>(ThisDigimonchecks1additionalsecuritycard)fortheturn.[YourTurn]ThisDigimondoesn'tactivate[Security]skillsonOptioncardsitchecks.": "【進化時】このターンの間、このデジモンは≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。\n【自分のターン】このデジモンがチェックしたオプションカードの【セキュリティ】効果は発揮しない。"
   },
   "BT1-026": {
-    "<Piercing>(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle，itperformsanysecuritychecksitnormallywould.)": "≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）"
+    "<Piercing>(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle,itperformsanysecuritychecksitnormallywould.)": "≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）"
   },
   "BT1-029": {
     "[OnPlay]Trigger<Draw1>.(Draw1cardfromyourdeck.)": "【登場時】≪1ドロー≫（自分のデッキからカードを1枚引く）"
@@ -160,13 +160,13 @@
     "[OnDeletion]Gain1memory.": "【消滅時】メモリーを+1する。"
   },
   "BT1-031": {
-    "<Blocker>(Whenanopponent'sDigimonattacks，youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）"
+    "<Blocker>(Whenanopponent'sDigimonattacks,youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）"
   },
   "BT1-032": {
     "<Jamming>(ThisDigimoncan'tbedeletedinbattlesagainstSecurityDigimon.)": "≪ジャミング≫（このデジモンはセキュリティデジモンとのバトルでは消滅しない）"
   },
   "BT1-033": {
-    "[YourTurn]WhileyouropponenthasaDigimonwithnodigivolutioncardsinplay，thisDigimongets+1000DP.": "【自分のターン】進化元を持たない相手のデジモンがいる間、このデジモンのDPを+1000する。"
+    "[YourTurn]WhileyouropponenthasaDigimonwithnodigivolutioncardsinplay,thisDigimongets+1000DP.": "【自分のターン】進化元を持たない相手のデジモンがいる間、このデジモンのDPを+1000する。"
   },
   "BT1-034": {
     "[YourTurn]ThisDigimoncan'tbeblockedbyyouropponent'sDigimonwithnodigivolutioncards.": "【自分のターン】このデジモンは、進化元を持たない相手のデジモンにはブロックされない。"
@@ -181,11 +181,11 @@
     "[WhenAttacking][TwicePerTurn]YoucanunsuspendthisDigimonbytrashing3cardsinyourhand.": "【アタック時】[ターンに2回]自分の手札を3枚破棄することで、このデジモンをアクティブにする。"
   },
   "BT1-040": {
-    "[WhenAttacking]Gain3memory.Atendofturn，lose3memory.": "【アタック時】メモリーを+3する。このターン終了時、メモリーを-3する。"
+    "[WhenAttacking]Gain3memory.Atendofturn,lose3memory.": "【アタック時】メモリーを+3する。このターン終了時、メモリーを-3する。"
   },
   "BT1-041": {
     "[OnPlay]Trigger<Draw2>.(Draw2cardsfromyourdeck.)": "【登場時】≪2ドロー≫（自分のデッキからカードを2枚引く）",
-    "[WhenAttacking]IfyouropponenthasaDigimonwithnodigivolutioncardsinplay，gain1memory.": "【アタック時】進化元を持たない相手のデジモンがいるとき、メモリーを+1する。"
+    "[WhenAttacking]IfyouropponenthasaDigimonwithnodigivolutioncardsinplay,gain1memory.": "【アタック時】進化元を持たない相手のデジモンがいるとき、メモリーを+1する。"
   },
   "BT1-043": {
     "[WhenDigivolving]Trash4digivolutioncardsunder1ofyouropponent'sDigimon.": "【進化時】相手のデジモン1体の進化元を、下から4枚破棄する。"
@@ -194,22 +194,22 @@
     "[WhenAttacking]Play1level4orlowerdigivolutioncardunderthiscardasanotherDigimonwithoutpayingitsmemorycost.": "【アタック時】このデジモンの進化元のLv.4以下のデジモンカード1枚を、コストを支払わずに別のデジモンとして登場させる。"
   },
   "BT1-046": {
-    "[WhenAttacking]Ifyouhave4orlesscardsinyourhand，trigger<Draw1>(Draw1cardfromyourdeck).": "【アタック時】自分の手札が4枚以下のとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
+    "[WhenAttacking]Ifyouhave4orlesscardsinyourhand,trigger<Draw1>(Draw1cardfromyourdeck).": "【アタック時】自分の手札が4枚以下のとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
   },
   "BT1-048": {
     "[OnPlay]Reveal4cardsfromthetopofyourdeck.AddallyellowTamercardsamongthemtoyourhand.Placetheremainingcardsatthebottomofyourdeckinanyorder.": "【登場時】自分のデッキの上から4枚オープンする。その中の黄のテイマーカード全てを手札に加える。残ったカードは好きな順番でデッキの下に戻す。"
   },
   "BT1-049": {
-    "[YourTurn]Whenanopponent'sDigimonisdeletedbydroppingto0DP，trigger<Draw1>(Draw1cardfromyourdeck).": "【自分のターン】相手のデジモンがDP0になって消滅したとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
+    "[YourTurn]Whenanopponent'sDigimonisdeletedbydroppingto0DP,trigger<Draw1>(Draw1cardfromyourdeck).": "【自分のターン】相手のデジモンがDP0になって消滅したとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
   },
   "BT1-052": {
     "<Jamming>(ThisDigimoncan'tbedeletedinbattlesagainstSecurityDigimon.)": "≪ジャミング≫（このデジモンはセキュリティデジモンとのバトルでは消滅しない）"
   },
   "BT1-053": {
-    "[YourTurn]Whenyouplayalevel3yellowDigimon，ifthisDigimonissuspended，trigger<Draw1>(Draw1cardfromyourdeck).": "【自分のターン】黄のLv.3の自分のデジモンが登場したとき、このデジモンがレスト状態なら、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
+    "[YourTurn]Whenyouplayalevel3yellowDigimon,ifthisDigimonissuspended,trigger<Draw1>(Draw1cardfromyourdeck).": "【自分のターン】黄のLv.3の自分のデジモンが登場したとき、このデジモンがレスト状態なら、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
   },
   "BT1-054": {
-    "[WhenAttacking]Ifyouhave3ormorememory，1ofyouropponent'sDigimongets-2000DPfortheturn.": "【アタック時】メモリーが3以上のとき、このターンの間、相手のデジモン1体のDPを-2000する。"
+    "[WhenAttacking]Ifyouhave3ormorememory,1ofyouropponent'sDigimongets-2000DPfortheturn.": "【アタック時】メモリーが3以上のとき、このターンの間、相手のデジモン1体のDPを-2000する。"
   },
   "BT1-055": {
     "[OnPlay]1ofyouropponent'sDigimongets-3000DPfortheturn.": "【登場時】このターンの間、相手のデジモン1体のDPを-3000する。"
@@ -218,7 +218,7 @@
     "[OnPlay]Youmayplay1[Tinkermon]fromyourhandorrecyclebinwithoutpayingitsmemorycost.": "【登場時】自分の手札かトラッシュから、「ティンカーモン」1枚をコストを支払わずに登場できる。"
   },
   "BT1-058": {
-    "[WhenAttacking]Gain3memory.Atendofturn，lose3memory.": "【アタック時】メモリーを+3する。このターン終了時、メモリーを-3する。"
+    "[WhenAttacking]Gain3memory.Atendofturn,lose3memory.": "【アタック時】メモリーを+3する。このターン終了時、メモリーを-3する。"
   },
   "BT1-060": {
     "[OnPlay]Trigger<Recovery+1(Deck)>.(Placethetopcardofyourdeckontopofyoursecuritystack.)": "【登場時】≪リカバリー+1《デッキ》≫（自分のデッキの上からカードを1枚セキュリティの上に置く）",
@@ -231,7 +231,7 @@
     "[WhenDigivolving]1ofyouropponent'sDigimongets-8000DPfortheturn.": "【進化時】このターンの間、相手のデジモン1体のDPを-8000する。"
   },
   "BT1-063": {
-    "[WhenDigivolving]Trigger<Recovery+1(Deck)>.(Placethetopcardofyourdeckontopofyoursecuritystack.)[YourTurn]Whileyouhave3ormoresecuritycards，thisDigimongains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【進化時】≪リカバリー+1《デッキ》≫（自分のデッキの上からカードを1枚セキュリティの上に置く）\n【自分のターン】自分のセキュリティが3枚以上の間、このデジモンは≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
+    "[WhenDigivolving]Trigger<Recovery+1(Deck)>.(Placethetopcardofyourdeckontopofyoursecuritystack.)[YourTurn]Whileyouhave3ormoresecuritycards,thisDigimongains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【進化時】≪リカバリー+1《デッキ》≫（自分のデッキの上からカードを1枚セキュリティの上に置く）\n【自分のターン】自分のセキュリティが3枚以上の間、このデジモンは≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
   },
   "BT1-066": {
     "[WhenAttacking]Suspend1ofyouropponent'sDigimonwith3000DPorless.": "【アタック時】DP3000以下の相手のデジモン1体をレストさせる。"
@@ -240,7 +240,7 @@
     "[OnPlay]Reveal3cardsfromthetopofyourdeck.Add1level4Digimoncardamongthemtoyourhand.Placetheremainingcardsatthebottomofyourdeckinanyorder.": "【登場時】自分のデッキの上から3枚オープンする。その中のLv.4のデジモンカード1枚を手札に加える。残ったカードは好きな順番でデッキの下に戻す。"
   },
   "BT1-068": {
-    "[YourTurn]WhilethisDigimonislevel6orhigher，itgains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】このデジモンがLv.6以上の間、≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
+    "[YourTurn]WhilethisDigimonislevel6orhigher,itgains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】このデジモンがLv.6以上の間、≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
   },
   "BT1-069": {
     "<Jamming>(ThisDigimoncan'tbedeletedinbattlesagainstSecurityDigimon.)": "≪ジャミング≫（このデジモンはセキュリティデジモンとのバトルでは消滅しない）"
@@ -249,7 +249,7 @@
     "[OnPlay]Suspend1ofyouropponent'sDigimon.": "【登場時】相手のデジモン1体をレストさせる。"
   },
   "BT1-072": {
-    "<Blocker>(Whenanopponent'sDigimonattacks，youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)[WhenAttacking]Lose2memory.": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n【アタック時】メモリーを-2する。"
+    "<Blocker>(Whenanopponent'sDigimonattacks,youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)[WhenAttacking]Lose2memory.": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n【アタック時】メモリーを-2する。"
   },
   "BT1-073": {
     "[YourTurn]ThisDigimongets+1000DPforeverysuspendedDigimonyouropponenthas.": "【自分のターン】レスト状態の相手のデジモン1体ごとに、このデジモンのDPを+1000する。"
@@ -258,25 +258,25 @@
     "[WhenDigivolving]Reveal3cardsfromthetopofyourdeck.Add1level5orhigherDigimoncardamongthemtoyourhand.Placetheremainingcardsatthebottomofyourdeckinanyorder.": "【進化時】自分のデッキの上から3枚オープンする。その中のLv.5以上のデジモンカード1枚を手札に加える。残ったカードは好きな順番でデッキの下に戻す。"
   },
   "BT1-075": {
-    "[WhenAttacking]Gain3memory.Atendofturn，lose3memory.": "【アタック時】メモリーを+3する。このターン終了時、メモリーを-3する。"
+    "[WhenAttacking]Gain3memory.Atendofturn,lose3memory.": "【アタック時】メモリーを+3する。このターン終了時、メモリーを-3する。"
   },
   "BT1-076": {
-    "[WhenAttacking]Ifyouropponenthas2ormoresuspendedDigimon，gain1memory.": "【アタック時】レスト状態の相手のデジモンが2体以上いるとき、メモリーを+1する。"
+    "[WhenAttacking]Ifyouropponenthas2ormoresuspendedDigimon,gain1memory.": "【アタック時】レスト状態の相手のデジモンが2体以上いるとき、メモリーを+1する。"
   },
   "BT1-077": {
-    "[YourTurn]WhenthisDigimondeletesanopponent'sDigimoninbattleandsurvives，gain1memory.": "【自分のターン】このデジモンがバトルで相手のデジモンだけを消滅させたとき、メモリーを+1する。"
+    "[YourTurn]WhenthisDigimondeletesanopponent'sDigimoninbattleandsurvives,gain1memory.": "【自分のターン】このデジモンがバトルで相手のデジモンだけを消滅させたとき、メモリーを+1する。"
   },
   "BT1-078": {
-    "[WhenAttacking]Reveal3cardsfromthetopofyourdeck.YoucandigivoLv.ethiscardinto1level6greenDigimoncardamongthemwithoutpayingitsmemorycost.Placetheremainingcardsatthebottomofyourdeckinanyorder.": "【アタック時】自分のデッキの上から3枚オープンする。その中の緑のLv.6のデジモンカード1枚に、このデジモンからコストを支払わずに進化できる。残ったカードは好きな順番でデッキの下に戻す。"
+    "[WhenAttacking]Reveal3cardsfromthetopofyourdeck.Youcandigivolvethiscardinto1level6greenDigimoncardamongthemwithoutpayingitsmemorycost.Placetheremainingcardsatthebottomofyourdeckinanyorder.": "【アタック時】自分のデッキの上から3枚オープンする。その中の緑のLv.6のデジモンカード1枚に、このデジモンからコストを支払わずに進化できる。残ったカードは好きな順番でデッキの下に戻す。"
   },
   "BT1-079": {
     "[WhenAttacking]Suspend1ofyouropponent'sDigimonwithout<Blocker>.": "【アタック時】≪ブロッカー≫を持たない相手のデジモン1体をレストさせる。"
   },
   "BT1-081": {
-    "<Piercing>(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle，itperformsanysecuritychecksitnormallywould.)[EndofAttack][TwicePerTurn]YoucanunsuspendthisDigimonbydecreasingyourmemoryby3.": "≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）\n【アタック終了時】[ターンに2回]メモリーを-3することで、このデジモンをアクティブにする。"
+    "<Piercing>(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle,itperformsanysecuritychecksitnormallywould.)[EndofAttack][TwicePerTurn]YoucanunsuspendthisDigimonbydecreasingyourmemoryby3.": "≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）\n【アタック終了時】[ターンに2回]メモリーを-3することで、このデジモンをアクティブにする。"
   },
   "BT1-082": {
-    "[Opponent'sTurn]Whenanopponent'sDigimonattacksaplayer，ifthisDigimonissuspended，suspend1ofyouropponent'sDigimon.": "【相手のターン】相手のデジモンがプレイヤーにアタックしたとき、このデジモンがレスト状態なら、相手のデジモン1体をレストさせる。"
+    "[Opponent'sTurn]Whenanopponent'sDigimonattacksaplayer,ifthisDigimonissuspended,suspend1ofyouropponent'sDigimon.": "【相手のターン】相手のデジモンがプレイヤーにアタックしたとき、このデジモンがレスト状態なら、相手のデジモン1体をレストさせる。"
   },
   "BT1-083": {
     "<Piercing>(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle,itperformsanysecuritychecksitnormallywould.)[YourTurn]ThisDigimongets+4000DP.": "≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）\n【自分のターン】このデジモンのDPを+4000する。"
@@ -285,27 +285,27 @@
     "[WhenDigivolving]Choose1ofyouropponent'sDigimon.Deleteallofyouropponent'sDigimonthatshareanamewithit.[WhenAttacking]YoucanunsuspendthisDigimonbyreturning1ofthisDigimon'slevel6digivolutioncardstoyourhand.": "【進化時】相手のデジモン1体を選ぶ。そのデジモンと同じ名称の相手のデジモン全てを消滅させる。\n【アタック時】このデジモンの進化元のLv.6のデジモンカード1枚を手札に戻すことで、このデジモンをアクティブにする。"
   },
   "BT1-085": {
-    "[StartofYourTurn]Ifyouhave2orlessmemory，setyourmemoryto3.[YourTurn]AllofyourredDigimonwith4ormoredigivolutioncardsgain<SecurityAttack+1>(ThisDigimonchecks1additionalsecuritycard).": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【自分のターン】進化元を4枚以上持つ赤の自分のデジモン全ては≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。",
-    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
+    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。",
+    "[StartofYourTurn]Ifyouhave2orlessmemory,setyourmemoryto3.[YourTurn]AllofyourredDigimonwith4ormoredigivolutioncardsgain<SecurityAttack+1>(ThisDigimonchecks1additionalsecuritycard).": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【自分のターン】進化元を4枚以上持つ赤の自分のデジモン全ては≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
   },
   "BT1-086": {
-    "[StartofYourTurn]Ifyouhave2orlessmemory，setyourmemoryto3.[YourTurn]WhenyouplayablueDigimon，youcansuspendthisTamertotrashthebottomdigivolutioncardof1ofyouropponent'sDigimon.": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【自分のターン】青の自分のデジモンが登場したとき、このテイマーをレストさせることで、相手のデジモン1体の進化元を、下から1枚破棄する。",
-    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
+    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。",
+    "[StartofYourTurn]Ifyouhave2orlessmemory,setyourmemoryto3.[YourTurn]WhenyouplayablueDigimon,youcansuspendthisTamertotrashthebottomdigivolutioncardof1ofyouropponent'sDigimon.": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【自分のターン】青の自分のデジモンが登場したとき、このテイマーをレストさせることで、相手のデジモン1体の進化元を、下から1枚破棄する。"
   },
   "BT1-087": {
-    "[StartofYourTurn]Ifyouhave2orlessmemory，setyourmemoryto3.[OnPlay]Lookatyoursecuritystack，thenreveal1cardinitandaddittoyourhand.Ifthatcardisyellow，trigger<Recovery+1(Deck)>.(Placethetopcardofyourdeckontopofyoursecuritystack.)Thenshuffleyoursecuritystack.": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【登場時】自分のセキュリティの内容を全て確認して、その中の1枚をオープンして手札に加える。そのカードが黄のカードのとき、≪リカバリー+1《デッキ》≫（自分はデッキの上からカードを1枚セキュリティの上に置く）。その後、自分のセキュリティをシャッフルする。",
-    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
+    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。",
+    "[StartofYourTurn]Ifyouhave2orlessmemory,setyourmemoryto3.[OnPlay]Lookatyoursecuritystack,thenreveal1cardinitandaddittoyourhand.Ifthatcardisyellow,trigger<Recovery+1(Deck)>.(Placethetopcardofyourdeckontopofyoursecuritystack.)Thenshuffleyoursecuritystack.": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【登場時】自分のセキュリティの内容を全て確認して、その中の1枚をオープンして手札に加える。そのカードが黄のカードのとき、≪リカバリー+1《デッキ》≫（自分はデッキの上からカードを1枚セキュリティの上に置く）。その後、自分のセキュリティをシャッフルする。"
   },
   "BT1-088": {
-    "[Main]Ifyouhavealevel5orhighergreenDigimoninplay，youcansuspendthisTamertorevealthetopcardofyourdeck.IfthatcardisaDigimoncard，addittoyourhand.Otherwiseplaceitatthebottomofyourdeck.": "【メイン】緑のLv.5以上の自分のデジモンがいるとき、このテイマーをレストさせることで、自分のデッキの上から1枚オープンする。そのカードがデジモンカードなら手札に加える。残ったカードはデッキの下に戻す。",
-    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
+    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。",
+    "[Main]Ifyouhavealevel5orhighergreenDigimoninplay,youcansuspendthisTamertorevealthetopcardofyourdeck.IfthatcardisaDigimoncard,addittoyourhand.Otherwiseplaceitatthebottomofyourdeck.": "【メイン】緑のLv.5以上の自分のデジモンがいるとき、このテイマーをレストさせることで、自分のデッキの上から1枚オープンする。そのカードがデジモンカードなら手札に加える。残ったカードはデッキの下に戻す。"
   },
   "BT1-089": {
-    "[StartofYourTurn]Ifyouhave2orlessmemory，setyourmemoryto3.[Main]Ifyouhavealevel5orhighergreenDigimoninplay，youcansuspendthisTamertohatch1Digi-Eggcardtoanemptyspaceinyourbreedingarea，ormove1level3orhigherDigimonfromyourbreedingareatoyourbattlearea.": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【メイン】緑のLv.5以上の自分のデジモンがいるとき、このテイマーをレストさせることで、空いている自分の育成エリアにデジタマカード1枚を孵化させるか、育成エリアのLv.3以上の自分のデジモン1体をバトルエリアに移動する。",
-    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
+    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。",
+    "[StartofYourTurn]Ifyouhave2orlessmemory,setyourmemoryto3.[Main]Ifyouhavealevel5orhighergreenDigimoninplay,youcansuspendthisTamertohatch1Digi-Eggcardtoanemptyspaceinyourbreedingarea,ormove1level3orhigherDigimonfromyourbreedingareatoyourbattlearea.": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【メイン】緑のLv.5以上の自分のデジモンがいるとき、このテイマーをレストさせることで、空いている自分の育成エリアにデジタマカード1枚を孵化させるか、育成エリアのLv.3以上の自分のデジモン1体をバトルエリアに移動する。"
   },
   "BT1-090": {
-    "[Main]Gain2memory.Atendofturn，lose2memory.": "【メイン】メモリーを+2する。このターン終了時、メモリーを-2する。"
+    "[Main]Gain2memory.Atendofturn,lose2memory.": "【メイン】メモリーを+2する。このターン終了時、メモリーを-2する。"
   },
   "BT1-091": {
     "[Main]1ofyourDigimongains<Piercing>(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle,itperformsanysecuritychecksitnormallywould)fortheturn.": "【メイン】このターンの間、自分のデジモン1体は、≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）を得る。"
@@ -357,7 +357,7 @@
     "[Security]Trigger<Draw1>.(Draw1cardfromyourdeck.)Then,addthiscardtoyourhand.": "【セキュリティ】≪1ドロー≫（自分のデッキからカードを1枚引く）。その後、このカードを手札に加える。"
   },
   "BT1-104": {
-    "[Main]AllofyourDigimongainthefollowingeffectfortheturn:“[WhenAttacking]1ofyouropponent'sDigimongets-2000DPfortheturn.“": "【メイン】このターンの間、自分のデジモン全ては、「【アタック時】このターンの間、相手のデジモン1体のDPを-2000する。」の効果を得る。"
+    "[Main]AllofyourDigimongainthefollowingeffectfortheturn:“[WhenAttacking]1ofyouropponent'sDigimongets-2000DPfortheturn.”": "【メイン】このターンの間、自分のデジモン全ては、「【アタック時】このターンの間、相手のデジモン1体のDPを-2000する。」の効果を得る。"
   },
   "BT1-105": {
     "[Main]ChangetheoriginalDPof1ofyouropponent'sDigimonto3000untiltheendofyouropponent'snextturn.": "【メイン】次の相手のターン終了時まで、相手のデジモン1体の元々のDPを3000に変更する。"
@@ -374,31 +374,31 @@
     "[Security]Suspend1ofyouropponent'sDigimon.Thenaddthiscarditsowner'shand.": "【セキュリティ】相手のデジモン1体をレストさせる。その後、このカードを手札に加える。"
   },
   "BT1-109": {
-    "[Main]Fortheturn，thenexttimeyouwoulddigivoLv.eoneofyourgreenDigimonfromlevel5tolevel6，decreasethedigivolutioncostby4.": "【メイン】このターンの間、次に緑の自分のデジモンがLv.5からLv.6に進化するときに支払う進化コストを-4する。"
+    "[Main]Fortheturn,thenexttimeyouwoulddigivolveoneofyourgreenDigimonfromlevel5tolevel6,decreasethedigivolutioncostby4.": "【メイン】このターンの間、次に緑の自分のデジモンがLv.5からLv.6に進化するときに支払う進化コストを-4する。"
   },
   "BT1-110": {
     "[Main]Suspend1ofyouropponent'sDigimon.": "【メイン】相手のデジモン1体をレストさせる。",
     "[Security]Suspendallofyouropponent'sDigimonwithout<Blocker>.": "【セキュリティ】≪ブロッカー≫を持たない相手のデジモン全てをレストさせる。"
   },
   "BT1-111": {
-    "[Main]Suspend1ofyouropponent'sDigimon，or2ofyouropponent'sDigimonwith5000DPorless.": "【メイン】相手のデジモン1体か、DP5000以下の相手のデジモン2体をレストさせる。",
-    "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。"
+    "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。",
+    "[Main]Suspend1ofyouropponent'sDigimon,or2ofyouropponent'sDigimonwith5000DPorless.": "【メイン】相手のデジモン1体か、DP5000以下の相手のデジモン2体をレストさせる。"
   },
   "BT1-112": {
-    "[Main]1ofyourDigimongainsthefollowingeffectfortheturn:“WhenthisDigimondeletesanopponent'sDigimoninbattleandsurvives，unsuspendit.“": "【メイン】このターンの間、自分のデジモン1体は、「このデジモンがバトルで相手のデジモンだけを消滅させたとき、このデジモンをアクティブにする。」の効果を得る。",
-    "[Security]Addthiscardtoitsowner'shand.": "【セキュリティ】このカードを手札に加える。"
+    "[Security]Addthiscardtoitsowner'shand.": "【セキュリティ】このカードを手札に加える。",
+    "[Main]1ofyourDigimongainsthefollowingeffectfortheturn:“WhenthisDigimondeletesanopponent'sDigimoninbattleandsurvives,unsuspendit.”": "【メイン】このターンの間、自分のデジモン1体は、「このデジモンがバトルで相手のデジモンだけを消滅させたとき、このデジモンをアクティブにする。」の効果を得る。"
   },
   "BT1-113": {
-    "[Main]Untiltheendofyouropponent'snextturn，1ofyouropponent'sDigimoncan'tattackorblock.": "【メイン】次の相手のターン終了時まで、相手のデジモン1体はアタックとブロックができない。",
-    "[Security]Youropponent'sDigimondon'tunsuspendduringtheirnextunsuspendphase.": "【セキュリティ】次の相手のアクティブフェイズでは、相手のデジモン全てはアクティブにならない。"
+    "[Security]Youropponent'sDigimondon'tunsuspendduringtheirnextunsuspendphase.": "【セキュリティ】次の相手のアクティブフェイズでは、相手のデジモン全てはアクティブにならない。",
+    "[Main]Untiltheendofyouropponent'snextturn,1ofyouropponent'sDigimoncan'tattackorblock.": "【メイン】次の相手のターン終了時まで、相手のデジモン1体はアタックとブロックができない。"
   },
   "BT1-114": {
     "<SecurityAttack+2>(ThisDigimonchecks2additionalsecuritycards.)[WhenAttacking]Lose5memory.": "≪セキュリティアタック+2≫（このデジモンがチェックするセキュリティの枚数+2）\n【アタック時】メモリーを-5する。",
     "[YourTurn]ThisDigimongets+3000DP.": "【自分のターン】このデジモンのDPを+3000する。"
   },
   "BT1-115": {
-    "[WhenAttacking][OncePerTurn]IfyouhaveaTamerinplay，unsuspendthisDigimon.": "【アタック時】［ターンに1回］自分のテイマーがいるとき、このデジモンをアクティブにする。",
-    "[AllTurns]WhileyouhaveablueTamerinplay，thisDigimongets+1000DP.": "【お互いのターン】青の自分のテイマーがいる間、このデジモンのDPを+1000する。"
+    "[WhenAttacking][OncePerTurn]IfyouhaveaTamerinplay,unsuspendthisDigimon.": "【アタック時】［ターンに1回］自分のテイマーがいるとき、このデジモンをアクティブにする。",
+    "[AllTurns]WhileyouhaveablueTamerinplay,thisDigimongets+1000DP.": "【お互いのターン】青の自分のテイマーがいる間、このデジモンのDPを+1000する。"
   },
   "BT10-001": {
     "[YourTurn]Whileanon-redcardisinthisDigimon'sdigivolutioncards,thisDigimongets+1000DP.": "【自分のターン】このデジモンの進化元に赤以外のカードがある間、このデジモンをDP+1000。"
@@ -1497,8 +1497,8 @@
     "[Security]Bytrashing1cardwitha[Cyborg]or[Machine]traitfromyourhand,delete1ofyouropponent'sDigimonwithaplaycostlessthanorequaltothetrashedcard.": "【セキュリティ】自分の手札から、特徴に「サイボーグ型」か「マシーン型」を持つカード1枚を破棄することで、破棄したカードの登場コスト以下の相手のデジモン1体を消滅させる。"
   },
   "BT12-109": {
-    "[Main]WhileyouhaveaTamerwitha[Hunter]traitinplay,youmayusethiscardwithoutmeetingitscolorrequirements.Digivolve1ofyourDigimonintoaDigimoncardwith<Save>initstextunderoneofyourTamersforitsdigivolutioncost.": "特徴に「ハンター」を持つ自分のテイマーがいる間、このカードは色条件を無視して使用できる。\n【メイン】自分のデジモン1体を自分のテイマーの下にある≪セーブ≫の記述があるデジモンカード1枚に進化コストを支払って進化させる。",
-    "[Security]Addthiscardtoitsowner'shand.": "【セキュリティ】このカードを手札に加える。"
+    "[Security]Addthiscardtoitsowner'shand.": "【セキュリティ】このカードを手札に加える。",
+    "WhileyouhaveaTamerwiththe[Hunter]traitinplay,youmayusethiscardwithoutmeetingitscolorrequirements.[Main]Digivolve1ofyourDigimonintoaDigimoncardwith<Save>initstextunderoneofyourTamersforitsdigivolutioncost.": "特徴に「ハンター」を持つ自分のテイマーがいる間、このカードは色条件を無視して使用できる。\n【メイン】自分のデジモン1体を自分のテイマーの下にある≪セーブ≫の記述があるデジモンカード1枚に進化コストを支払って進化させる。"
   },
   "BT12-110": {
     "[Trash][YourTurn]IfoneofyourDigimondigivolvesinto[Beelzemon(XAntibody)],byreturningthiscardtothebottomofyourdeck,delete1ofyouropponent’sDigimonwiththelowestlevel.[Main]Delete1ofyouropponent’sDigimonwiththelowestlevel.": "[トラッシュ]【自分のターン】自分のデジモンが「ベルゼブモンX抗体」に進化したとき、このカードをデッキの下に戻すことで、最もLv.の低い相手のデジモン1体を消滅させる。\n【メイン】最もLv.の低い相手のデジモン1体を消滅させる。",
@@ -3737,8 +3737,8 @@
     "[Security]Youmayplay1level5orlowerDigimoncardwith[Knightmon]initstextfromyourtrashwithoutpayingthecost.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のトラッシュから、「ナイトモン」の記述があるLv.5以下のデジモンカード1枚をコストを支払わずに登場できる。その後、このカードをバトルエリアに置く。"
   },
   "BT18-100": {
-    "[Main]YourDigimoninthebreedingareamaydigivolveinto[Lucemon]fromyourtrashwithoutpayingthecost.Then,placethiscardinthebattlearea.[Main]<Delay>・Bydigivolving1ofyourDigimonwith[Lucemon]initsnameintoaDigimoncardwith[Lucemon]initsnamefromyourtrashwiththedigivolutioncostreducedby3,trash1Optioncardinyouropponent'sbattlearea.": "【メイン】育成エリアの自分のデジモンをトラッシュの「ルーチェモン」にコストを支払わずに進化できる。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・名称に「ルーチェモン」を含む自分のデジモン1体をトラッシュの名称に「ルーチェモン」を含むデジモンカードに支払う進化コスト-3で進化させることで、バトルエリアの相手のオプションカード1枚を破棄する。",
-    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。"
+    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。",
+    "[Main]YourDigimoninthebreedingareamaydigivolveinto[Lucemon]inyourtrashwithoutpayingthecost.Then,placethiscardinthebattlearea.[Main]<Delay>・Bydigivolving1ofyourDigimonwith[Lucemon]initsnameintoaDigimoncardwith[Lucemon]initsnameinthetrashwiththedigivolutioncostreducedby3,trash1ofyouropponent'sOptioncardsinthebattlearea.": "【メイン】育成エリアの自分のデジモンをトラッシュの「ルーチェモン」にコストを支払わずに進化できる。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・名称に「ルーチェモン」を含む自分のデジモン1体をトラッシュの名称に「ルーチェモン」を含むデジモンカードに支払う進化コスト-3で進化させることで、バトルエリアの相手のオプションカード1枚を破棄する。"
   },
   "BT18-101": {
     "[Digivolve][Lucemon:ChaosMode]:Cost6[WhenDigivolving]Byplaying1[Lucemon:Larva]fromyourtrashtoyouremptybreedingareawithoutpayingthecost,delete1ofyouropponent'sDigimonorTamers.[EndofAllTurns][OncePerTurn]Trashyouropponent'stopsecuritycard.Ifthiseffectdidn'ttrash,delete1ofyouropponent'sDigimonand1oftheirTamers.": "〔進化〕「ルーチェモン：フォールダウンモード」:コスト6\n\n【進化時】自分のトラッシュから、「ルーチェモン：ラルバ」1枚を空いている自分の育成エリアにコストを支払わずに登場させることで、相手のデジモン/テイマー1体を消滅させる。\n【お互いのターン終了時】[ターンに1回]相手のセキュリティを上から1枚破棄する。この効果で破棄しなかったなら、相手のデジモンとテイマー1体ずつを消滅させる。"
@@ -4136,19 +4136,19 @@
     "[YourTurn]WhenthisDigimonbecomesunsuspendedduringyourunsuspendphase,gain1memory.": "【自分のターン】このデジモンがアクティブフェイズでアクティブになったとき、メモリーを+1する。"
   },
   "BT2-005": {
-    "[YourTurn]WhilethisDigimonhas<Reboot>，itgets+1000DP.": "【自分のターン】このデジモンが≪再起動≫を持つ間、このデジモンのDPを+1000する。"
+    "[YourTurn]WhilethisDigimonhas<Reboot>,itgets+1000DP.": "【自分のターン】このデジモンが≪再起動≫を持つ間、このデジモンのDPを+1000する。"
   },
   "BT2-006": {
-    "[YourTurn]WhileyouhaveanotherDigimoninplaywiththesamenameasthisDigimon，thisDigimongets+2000DP.": "【自分のターン】このデジモンと同じ名称の他の自分のデジモンがいる間、このデジモンのDPを+2000する。"
+    "[YourTurn]WhileyouhaveanotherDigimoninplaywiththesamenameasthisDigimon,thisDigimongets+2000DP.": "【自分のターン】このデジモンと同じ名称の他の自分のデジモンがいる間、このデジモンのDPを+2000する。"
   },
   "BT2-007": {
     "[WhenAttacking]Trashthetopcardofyourdeck.": "【アタック時】自分のデッキの上から1枚破棄する。"
   },
   "BT2-008": {
-    "[YourTurn]Whileyouhave5ormorecardsinyourtrash，thisDigimongets+1000DP.": "【自分のターン】自分のトラッシュが5枚以上の間、このデジモンのDPを+1000する。"
+    "[YourTurn]Whileyouhave5ormorecardsinyourtrash,thisDigimongets+1000DP.": "【自分のターン】自分のトラッシュが5枚以上の間、このデジモンのDPを+1000する。"
   },
   "BT2-009": {
-    "[YourTurn]Whilethereare5ormorecardsinyouropponent'strash，thisDigimongets+1000DP.": "【自分のターン】相手のトラッシュが5枚以上の間、このデジモンのDPを+1000する。"
+    "[YourTurn]Whilethereare5ormorecardsinyouropponent'strash,thisDigimongets+1000DP.": "【自分のターン】相手のトラッシュが5枚以上の間、このデジモンのDPを+1000する。"
   },
   "BT2-010": {
     "[OnDeletion]Ifit'syourturn,gain1memory.": "【消滅時】自分のターンのとき、メモリーを+1する。"
@@ -4163,8 +4163,8 @@
     "[WhenAttacking]WhenthisDigimonattacksaplayer,trigger<Draw1>.(Draw1cardfromyourdeck.)": "【アタック時】プレイヤーにアタックしたとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
   },
   "BT2-017": {
-    "[WhenDigivolving]IfyouhavearedTamerinplay，delete1ofyouropponent'sDigimonwith3000DPorless.": "【進化時】赤の自分のテイマーがいるとき、DP3000以下の相手のデジモン1体を消滅させる。",
-    "[YourTurn]Whilethereare5ormorecardsinyouropponent'strash，thisDigimongets+1000DP.": "【自分のターン】相手のトラッシュが5枚以上の間、このデジモンのDPを+1000する。"
+    "[WhenDigivolving]IfyouhavearedTamerinplay,delete1ofyouropponent'sDigimonwith3000DPorless.": "【進化時】赤の自分のテイマーがいるとき、DP3000以下の相手のデジモン1体を消滅させる。",
+    "[YourTurn]Whilethereare5ormorecardsinyouropponent'strash,thisDigimongets+1000DP.": "【自分のターン】相手のトラッシュが5枚以上の間、このデジモンのDPを+1000する。"
   },
   "BT2-018": {
     "<SecurityAttack+1>(ThisDigimonchecks1additionalsecuritycard.)[OnPlay]Deleteallofyouropponent'sDigimonwith4000DPorless.": "≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）\n【登場時】DP4000以下の相手のデジモン全てを消滅させる。"
@@ -4173,7 +4173,7 @@
     "[WhenAttacking]WhenthisDigimonattacksaplayer,gain1memory.": "【アタック時】プレイヤーにアタックしたとき、メモリーを+1する。"
   },
   "BT2-020": {
-    "[WhenDigivolving]IfyouhavearedTamerinplay，delete1ofyouropponent'sDigimonwith6000DPorless.[WhenAttacking]Trash1ofyouropponent'ssecuritycardsforevery10cardsintheirtrash.": "【進化時】赤の自分のテイマーがいるとき、DP6000以下の相手のデジモン1体を消滅させる。\n【アタック時】相手のトラッシュ10枚ごとに、相手のセキュリティを1枚破棄する。"
+    "[WhenDigivolving]IfyouhavearedTamerinplay,delete1ofyouropponent'sDigimonwith6000DPorless.[WhenAttacking]Trash1ofyouropponent'ssecuritycardsforevery10cardsintheirtrash.": "【進化時】赤の自分のテイマーがいるとき、DP6000以下の相手のデジモン1体を消滅させる。\n【アタック時】相手のトラッシュ10枚ごとに、相手のセキュリティを1枚破棄する。"
   },
   "BT2-021": {
     "[YourTurn][OncePerTurn]WhenthisDigimonbecomesunsuspendedduringyourmainphase,trigger<Draw1>.(Draw1cardfromyourdeck.)": "【自分のターン】［ターンに1回］このデジモンがメインフェイズでアクティブになったとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
@@ -4220,7 +4220,7 @@
     "[YourTurn]Whileyouhave3ormoreyellowTamersinplay,thisDigimongains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】黄の自分のテイマーが3体以上いる間、このデジモンは≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
   },
   "BT2-039": {
-    "[OnPlay]Ifyouhave3orfewersecuritycards，trigger<Recovery+2(Deck)>.(Placethetop2cardsofyourdeckontopofyoursecuritystack.)[WhenAttacking]Youmayplay1yellowlevel3Digimoncardfromyourhandwithoutpayingitsmemorycost.": "【登場時】自分のセキュリティが3枚以下のとき、≪リカバリー+2《デッキ》≫（自分のデッキの上からカードを2枚セキュリティの上に置く）。\n【アタック時】自分の手札から、黄のLv.3のデジモンカード1枚をコストを支払わずに登場できる。"
+    "[OnPlay]Ifyouhave3orfewersecuritycards,trigger<Recovery+2(Deck)>.(Placethetop2cardsofyourdeckontopofyoursecuritystack.)[WhenAttacking]Youmayplay1yellowlevel3Digimoncardfromyourhandwithoutpayingitsmemorycost.": "【登場時】自分のセキュリティが3枚以下のとき、≪リカバリー+2《デッキ》≫（自分のデッキの上からカードを2枚セキュリティの上に置く）。\n【アタック時】自分の手札から、黄のLv.3のデジモンカード1枚をコストを支払わずに登場できる。"
   },
   "BT2-040": {
     "[OnDeletion]Placethiscardontopofyoursecuritystackfacedown.": "【消滅時】このカードを自分のセキュリティの上に裏向きで置く。"
@@ -4238,57 +4238,57 @@
     "<Digisorption-2>(WhenoneofyourDigimondigivolvesintothiscardfromyourhand,youmaysuspend1ofyourDigimontoreducethememorycostofthedigivolutionby2.)": "≪吸収進化-2≫（自分のデジモンが手札のこのカードに進化するとき、自分のデジモン1体をレストさせることで、支払う進化コストを-2する）"
   },
   "BT2-046": {
-    "[YourTurn]WhenthisDigimondeletesoneofyouropponent'slevel6orhigherDigimoninbattle，unsuspendthisDigimon.": "【自分のターン】このデジモンがバトルでLv.6以上の相手のデジモンだけを消滅させたとき、このデジモンをアクティブにする。"
+    "[YourTurn]WhenthisDigimondeletesoneofyouropponent'slevel6orhigherDigimoninbattle,unsuspendthisDigimon.": "【自分のターン】このデジモンがバトルでLv.6以上の相手のデジモンだけを消滅させたとき、このデジモンをアクティブにする。"
   },
   "BT2-047": {
     "<Digisorption-3>(WhenoneofyourDigimondigivolvesintothiscardfromyourhand,youmaysuspend1ofyourDigimontoreducethememorycostofthedigivolutionby3.)": "≪吸収進化-3≫（自分のデジモンが手札のこのカードに進化するとき、自分のデジモン1体をレストさせることで、支払う進化コストを-3する）",
     "[WhenAttacking]Youmayplay1level3greenDigimoncardfromyourhandsuspendedwithoutpayingitsmemorycost.": "【アタック時】自分の手札から、緑のLv.3のデジモンカード1枚をコストを支払わずにレスト状態で登場できる。"
   },
   "BT2-048": {
-    "<Blocker>(Whenanopponent'sDigimonattacks，youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）"
+    "<Blocker>(Whenanopponent'sDigimonattacks,youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）"
   },
   "BT2-049": {
-    "[OnPlay]Suspend1ofyouropponent'sDigimon.Duringyouropponent'snextunsuspendphase，noneofyouropponent'sDigimoncanunsuspend.[WhenAttacking]Gain1memory.": "【登場時】相手のデジモン1体をレストさせる。次の相手のアクティブフェイズでは、相手のデジモン全てはアクティブにならない。\n【アタック時】メモリーを+1する。"
+    "[OnPlay]Suspend1ofyouropponent'sDigimon.Duringyouropponent'snextunsuspendphase,noneofyouropponent'sDigimoncanunsuspend.[WhenAttacking]Gain1memory.": "【登場時】相手のデジモン1体をレストさせる。次の相手のアクティブフェイズでは、相手のデジモン全てはアクティブにならない。\n【アタック時】メモリーを+1する。"
   },
   "BT2-050": {
     "<Digisorption-3>(WhenoneofyourDigimondigivolvesintothiscardfromyourhand,youmaysuspend1ofyourDigimontoreducethememorycostofthedigivolutionby3.)[YourTurn]ForeachofyourothersuspendedDigimon,thisDigimongains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "≪吸収進化-3≫（自分のデジモンが手札のこのカードに進化するとき、自分のデジモン1体をレストさせることで、支払う進化コストを-3する）\n【自分のターン】他の自分のレスト状態のデジモン1体ごとに、このデジモンは≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
   },
   "BT2-051": {
-    "[YourTurn]WhenyouhaveagreenTamerinplay，thisDigimoncanattackyouropponent'sunsuspendedDigimon.[YourTurn]WhenthisDigimondeletesoneofyouropponent'sDigimoninbattleandsurvives，suspend1ofyouropponent'sDigimon.": "【自分のターン】緑の自分のテイマーがいる間、このデジモンは、アクティブ状態の相手のデジモンにもアタックできる。\n【自分のターン】このデジモンがバトルで相手のデジモンだけを消滅させたとき、相手のデジモン1体をレストさせる。"
+    "[YourTurn]WhenyouhaveagreenTamerinplay,thisDigimoncanattackyouropponent'sunsuspendedDigimon.[YourTurn]WhenthisDigimondeletesoneofyouropponent'sDigimoninbattleandsurvives,suspend1ofyouropponent'sDigimon.": "【自分のターン】緑の自分のテイマーがいる間、このデジモンは、アクティブ状態の相手のデジモンにもアタックできる。\n【自分のターン】このデジモンがバトルで相手のデジモンだけを消滅させたとき、相手のデジモン1体をレストさせる。"
   },
   "BT2-053": {
-    "[YourTurn]WhenyouplayanotherDigimonwiththesamenameasthisDigimon，trigger<Draw1>.(Draw1cardfromyourdeck.)": "【自分のターン】このデジモンと同じ名称の他の自分のデジモンが登場したとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
+    "[YourTurn]WhenyouplayanotherDigimonwiththesamenameasthisDigimon,trigger<Draw1>.(Draw1cardfromyourdeck.)": "【自分のターン】このデジモンと同じ名称の他の自分のデジモンが登場したとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
   },
   "BT2-054": {
-    "<Blocker>(Whenanopponent'sDigimonattacks，youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)[WhenAttacking]Lose2memory.": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n【アタック時】メモリーを-2する。"
+    "<Blocker>(Whenanopponent'sDigimonattacks,youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)[WhenAttacking]Lose2memory.": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n【アタック時】メモリーを-2する。"
   },
   "BT2-055": {
     "<Reboot>(UnsuspendthisDigimonduringyouropponent'sunsuspendphase.)": "≪再起動≫（相手のアクティブフェイズに、このデジモンをアクティブにする）"
   },
   "BT2-057": {
-    "[YourTurn]WhilethisDigimonhas<Reboot>，itgains<Jamming>.(ThisDigimoncan'tbedeletedinbattlesagainstSecurityDigimon.)": "【自分のターン】このデジモンが≪再起動≫を持つ間、このデジモンは≪ジャミング≫（このデジモンはセキュリティデジモンとのバトルでは消滅しない）を得る。"
+    "[YourTurn]WhilethisDigimonhas<Reboot>,itgains<Jamming>.(ThisDigimoncan'tbedeletedinbattlesagainstSecurityDigimon.)": "【自分のターン】このデジモンが≪再起動≫を持つ間、このデジモンは≪ジャミング≫（このデジモンはセキュリティデジモンとのバトルでは消滅しない）を得る。"
   },
   "BT2-058": {
-    "<Blocker>(Whenanopponent'sDigimonattacks，youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)[YourTurn]ThisDigimoncan'tattack.": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n【自分のターン】このデジモンはアタックできない。"
+    "<Blocker>(Whenanopponent'sDigimonattacks,youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)[YourTurn]ThisDigimoncan'tattack.": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n【自分のターン】このデジモンはアタックできない。"
   },
   "BT2-059": {
-    "[YourTurn]WhenyouplayanotherDigimonwiththesamenameasthisDigimon，gain1memory.": "【自分のターン】このデジモンと同じ名称の他の自分のデジモンが登場したとき、メモリーを+1する。"
+    "[YourTurn]WhenyouplayanotherDigimonwiththesamenameasthisDigimon,gain1memory.": "【自分のターン】このデジモンと同じ名称の他の自分のデジモンが登場したとき、メモリーを+1する。"
   },
   "BT2-061": {
-    "<Blocker>(Whenanopponent'sDigimonattacks，youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）"
+    "<Blocker>(Whenanopponent'sDigimonattacks,youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）"
   },
   "BT2-062": {
-    "[YourTurn]WhenthisDigimondigivoLv.esintoa[Diaboromon]inyourhand，reducethememorycostofthedigivolutionby1.": "【自分のターン】このデジモンが手札の「ディアボロモン」に進化するときに支払う進化コストを-1する。"
+    "[YourTurn]WhenthisDigimondigivolvesintoa[Diaboromon]inyourhand,reducethememorycostofthedigivolutionby1.": "【自分のターン】このデジモンが手札の「ディアボロモン」に進化するときに支払う進化コストを-1する。"
   },
   "BT2-063": {
     "<Reboot>(UnsuspendthisDigimonduringyouropponent'sunsuspendphase.)": "≪再起動≫（相手のアクティブフェイズに、このデジモンをアクティブにする）",
-    "[YourTurn]WhilethisDigimonhas<Reboot>，itgains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】このデジモンが≪再起動≫を持つ間、このデジモンは≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
+    "[YourTurn]WhilethisDigimonhas<Reboot>,itgains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】このデジモンが≪再起動≫を持つ間、このデジモンは≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
   },
   "BT2-065": {
-    "<Blocker>(Whenanopponent'sDigimonattacks，youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)<Reboot>(UnsuspendthisDigimonduringyouropponent'sunsuspendphase.)": "≪ブロッカー≫ （相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n≪再起動≫（相手のアクティブフェイズに、このデジモンをアクティブにする）"
+    "<Blocker>(Whenanopponent'sDigimonattacks,youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)<Reboot>(UnsuspendthisDigimonduringyouropponent'sunsuspendphase.)": "≪ブロッカー≫ （相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n≪再起動≫（相手のアクティブフェイズに、このデジモンをアクティブにする）"
   },
   "BT2-066": {
-    "<Blocker>(Whenanopponent'sDigimonattacks，youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)[OnPlay]Trigger<De-Digivolve2>on2ofyouropponent'sDigimon.(Trashupto2cardsfromthetopofoneofyouropponent'sDigimon.Ifithasnodigivolutioncards，orbecomesalevel3Digimon，youcan'ttrashanymorecards.)": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n【登場時】相手のデジモン2体を≪退化2≫（相手のデジモンに重ねられたカードを、上から2枚まで破棄する。進化元がなくなるか、Lv.3のデジモンになったらそれ以上破棄できない）する。"
+    "<Blocker>(Whenanopponent'sDigimonattacks,youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)[OnPlay]Trigger<De-Digivolve2>on2ofyouropponent'sDigimon.(Trashupto2cardsfromthetopofoneofyouropponent'sDigimon.Ifithasnodigivolutioncards,orbecomesalevel3Digimon,youcan'ttrashanymorecards.)": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n【登場時】相手のデジモン2体を≪退化2≫（相手のデジモンに重ねられたカードを、上から2枚まで破棄する。進化元がなくなるか、Lv.3のデジモンになったらそれ以上破棄できない）する。"
   },
   "BT2-068": {
     "[OnDeletion]Trashthetop3cardsofyourdeck.": "【消滅時】自分のデッキの上から3枚破棄する。"
@@ -4300,16 +4300,16 @@
     "[OnDeletion]Trigger<Draw1>.(Draw1cardfromyourdeck.)": "【消滅時】≪1ドロー≫（自分のデッキからカードを1枚引く）"
   },
   "BT2-071": {
-    "[AllTurns]IfyouhaveayellowDigimoninplay，thisDigimongains<Retaliation>.(WhenthisDigimonisdeletedafterlosingabattle，deletetheDigimonitwasbattling.)[OnDeletion]Trigger<Draw1>.(Draw1cardfromyourdeck.)": "【お互いのターン】黄の自分のデジモンがいる間、このデジモンは≪道連れ≫（バトルでこのデジモンだけが消滅したとき、バトルした相手のデジモンを消滅させる）を得る。\n【消滅時】≪1ドロー≫（自分のデッキからカードを1枚引く）"
+    "[AllTurns]IfyouhaveayellowDigimoninplay,thisDigimongains<Retaliation>.(WhenthisDigimonisdeletedafterlosingabattle,deletetheDigimonitwasbattling.)[OnDeletion]Trigger<Draw1>.(Draw1cardfromyourdeck.)": "【お互いのターン】黄の自分のデジモンがいる間、このデジモンは≪道連れ≫（バトルでこのデジモンだけが消滅したとき、バトルした相手のデジモンを消滅させる）を得る。\n【消滅時】≪1ドロー≫（自分のデッキからカードを1枚引く）"
   },
   "BT2-072": {
-    "<Blocker>(Whenanopponent'sDigimonattacks，youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)[WhenAttacking]Lose2memory.": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n【アタック時】メモリーを-2する。"
+    "<Blocker>(Whenanopponent'sDigimonattacks,youmaysuspendthisDigimontoforcetheopponenttoattackitinstead.)[WhenAttacking]Lose2memory.": "≪ブロッカー≫（相手のデジモンがアタックしたとき、このデジモンがアクティブ状態ならレストさせることでアタックの対象をこのデジモンにする）\n【アタック時】メモリーを-2する。"
   },
   "BT2-073": {
-    "[YourTurn][OncePerTurn]WhenoneofyourotherDigimonisdeleted，gain1memory.": "【自分のターン】［ターンに1回］他の自分のデジモンが消滅したとき、メモリーを+1する。"
+    "[YourTurn][OncePerTurn]WhenoneofyourotherDigimonisdeleted,gain1memory.": "【自分のターン】［ターンに1回］他の自分のデジモンが消滅したとき、メモリーを+1する。"
   },
   "BT2-074": {
-    "<Retaliation>(WhenthisDigimonisdeletedafterlosingabattle，deletetheDigimonitwasbattling.)": "≪道連れ≫（バトルでこのデジモンだけが消滅したとき、バトルした相手のデジモンを消滅させる）"
+    "<Retaliation>(WhenthisDigimonisdeletedafterlosingabattle,deletetheDigimonitwasbattling.)": "≪道連れ≫（バトルでこのデジモンだけが消滅したとき、バトルした相手のデジモンを消滅させる）"
   },
   "BT2-076": {
     "[OnDeletion]Trigger<Draw2>.(Draw2cardsfromyourdeck.)Thentrash1cardfromyourhand.": "【消滅時】≪2ドロー≫（自分のデッキからカードを2枚引く）。その後、自分の手札を1枚破棄する。"
@@ -4321,47 +4321,47 @@
     "[WhenAttacking][OncePerTurn]Youmaydelete1ofyourotherDigimontounsuspendthisDigimon.": "【アタック時】［ターンに1回］他の自分のデジモン1体を消滅させることで、このデジモンをアクティブにする。"
   },
   "BT2-079": {
-    "<SecurityAttack+1>(ThisDigimonchecks1additionalsecuritycard.)[Opponent'sTurn]Whenoneofyouropponent'sDigimonbecomessuspended，gain1memory.": "≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）\n【相手のターン】相手のデジモンがレストしたとき、メモリーを+1する。"
+    "<SecurityAttack+1>(ThisDigimonchecks1additionalsecuritycard.)[Opponent'sTurn]Whenoneofyouropponent'sDigimonbecomessuspended,gain1memory.": "≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）\n【相手のターン】相手のデジモンがレストしたとき、メモリーを+1する。"
   },
   "BT2-080": {
-    "<Retaliation>(WhenthisDigimonisdeletedafterlosingabattle，deletetheDigimonitwasbattling.)[OnPlay]Youmayplayupto2level4orlowerpurpleDigimoncardsfromyourtrashwithoutpayingtheirmemorycosts.Any[OnPlay]effectsonDigimonplayedwiththiseffectdon'tactivate.": "≪道連れ≫（バトルでこのデジモンだけが消滅したとき、バトルした相手のデジモンを消滅させる）\n【登場時】自分のトラッシュから、紫のLv.4以下のデジモンカード2枚までをコストを支払わずに登場できる。この効果で登場したデジモンの【登場時】効果は発揮しない。"
+    "<Retaliation>(WhenthisDigimonisdeletedafterlosingabattle,deletetheDigimonitwasbattling.)[OnPlay]Youmayplayupto2level4orlowerpurpleDigimoncardsfromyourtrashwithoutpayingtheirmemorycosts.Any[OnPlay]effectsonDigimonplayedwiththiseffectdon'tactivate.": "≪道連れ≫（バトルでこのデジモンだけが消滅したとき、バトルした相手のデジモンを消滅させる）\n【登場時】自分のトラッシュから、紫のLv.4以下のデジモンカード2枚までをコストを支払わずに登場できる。この効果で登場したデジモンの【登場時】効果は発揮しない。"
   },
   "BT2-081": {
     "[WhenAttacking]Youmayplay1purplelevel3Digimoncardfromyourtrashwithoutpayingitsmemorycost.Any[OnPlay]effectsonDigimonplayedwiththiseffectdon'tactivate.": "【アタック時】自分のトラッシュから、紫のLv.3のデジモンカード1枚をコストを支払わずに登場できる。この効果で登場したデジモンの【登場時】効果は発揮しない。"
   },
   "BT2-082": {
-    "[WhenAttacking]Youmayplay1[Diaboromon]Tokenwithoutpayingitsmemorycost.(DiaboromonTokensarelevel6whiteDigimonwithamemorycostof14，3000DP，andareMegaform，Unidentifiedtype，andUnknownattribute.)[AllTurns]WhenthisDigimonwouldbedeletedinbattle，youmaydeleteoneofyourother[Diaboromon]topreventthisDigimonfrombeingdeleted.": "【アタック時】「ディアボロモン」（デジモン・14コスト・Lv.6・白・究極体・不明・種族不明・DP3000）のトークン1体をコストを支払わずに登場できる。\n【お互いのターン】このデジモンがバトルで消滅するとき、他の自分の「ディアボロモン」1体を消滅させることで、このデジモンは消滅しない。"
+    "[WhenAttacking]Youmayplay1[Diaboromon]Tokenwithoutpayingitsmemorycost.(DiaboromonTokensarelevel6whiteDigimonwithamemorycostof14,3000DP,andareMegaform,Unidentifiedtype,andUnknownattribute.)[AllTurns]WhenthisDigimonwouldbedeletedinbattle,youmaydeleteoneofyourother[Diaboromon]topreventthisDigimonfrombeingdeleted.": "【アタック時】「ディアボロモン」（デジモン・14コスト・Lv.6・白・究極体・不明・種族不明・DP3000）のトークン1体をコストを支払わずに登場できる。\n【お互いのターン】このデジモンがバトルで消滅するとき、他の自分の「ディアボロモン」1体を消滅させることで、このデジモンは消滅しない。"
   },
   "BT2-083": {
-    "[WhenDigivolving]Return1ofyouropponent'sDigimontothebottomoftheirdeck.(TrashallofthedigivolutioncardsofthatDigimon.)[OnDeletion]Ifthiscardhaddigivolutioncards，youmayplaythiscardfromyourtrashwithoutpayingitsmemorycost.": "【進化時】相手のデジモン1体をデッキの下に戻す。そのデジモンの持つ進化元は破棄する。\n【消滅時】このデジモンが進化元を持っていたとき、自分のトラッシュから、このカードをコストを支払わずに登場できる。"
+    "[WhenDigivolving]Return1ofyouropponent'sDigimontothebottomoftheirdeck.(TrashallofthedigivolutioncardsofthatDigimon.)[OnDeletion]Ifthiscardhaddigivolutioncards,youmayplaythiscardfromyourtrashwithoutpayingitsmemorycost.": "【進化時】相手のデジモン1体をデッキの下に戻す。そのデジモンの持つ進化元は破棄する。\n【消滅時】このデジモンが進化元を持っていたとき、自分のトラッシュから、このカードをコストを支払わずに登場できる。"
   },
   "BT2-084": {
-    "[YourTurn]WhenoneofyourredDigimonattacksaplayer，youmaysuspendthisTamertogivethatDigimon+2000DPfortheturn.": "【自分のターン】赤の自分のデジモンがプレイヤーにアタックしたとき、このテイマーをレストさせることで、このターンの間、そのデジモンのDPを+2000する。",
-    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
+    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。",
+    "[YourTurn]WhenoneofyourredDigimonattacksaplayer,youmaysuspendthisTamertogivethatDigimon+2000DPfortheturn.": "【自分のターン】赤の自分のデジモンがプレイヤーにアタックしたとき、このテイマーをレストさせることで、このターンの間、そのデジモンのDPを+2000する。"
   },
   "BT2-085": {
-    "[YourTurn]Whenoneofyouropponent'sdigivolutioncardsistrashed，youmaysuspendthisTamertogain1memory.": "【自分のターン】相手のデジモンの進化元を破棄したとき、このテイマーをレストさせることで、メモリーを+1する。",
-    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
+    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。",
+    "[YourTurn]Whenoneofyouropponent'sdigivolutioncardsistrashed,youmaysuspendthisTamertogain1memory.": "【自分のターン】相手のデジモンの進化元を破棄したとき、このテイマーをレストさせることで、メモリーを+1する。"
   },
   "BT2-086": {
     "[YourTurn]WhenoneofyourblueDigimonattacks,youmaysuspendthisTamertogivethatDigimon+1000DPfortheturn.[OnPlay]Reveal3cardsfromthetopofyourdeck.Add1Digimoncardwith[Vee]initsnameamongthemtoyourhand.Placetheremainingcardsonthebottomofyourdeckinanyorder.": "【自分のターン】青の自分のデジモンがアタックしたとき、このテイマーをレストさせることで、このターンの間、そのデジモンのDPを+1000する。\n【登場時】自分のデッキを上から3枚オープンする。その中の名称に「ブイ」を含むデジモンカード1枚を手札に加える。残ったカードは好きな順番でデッキの下に戻す。",
     "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
   },
   "BT2-087": {
-    "[StartofYourTurn]Ifyouhave3orfewersecuritycards，gain1memory.": "【自分のターン開始時】自分のセキュリティが3枚以下のとき、メモリーを+1する。",
-    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
+    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。",
+    "[StartofYourTurn]Ifyouhave3orfewersecuritycards,gain1memory.": "【自分のターン開始時】自分のセキュリティが3枚以下のとき、メモリーを+1する。"
   },
   "BT2-088": {
-    "[YourTurn]AllofyourDigimonwith[Tyrannomon]intheirnamesgain<Piercing>.(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle，itperformsanysecuritychecksitnormallywould.)[YourTurn]WhendigivolvingoneofyourDigimonintoaDigimoncardinyourhandwith[Tyrannomon]initsname，youmaysuspendthisTamertoreducethememorycostofthedigivolutionby1.": "【自分のターン】名称に「ティラノモン」を含む自分のデジモン全ては、≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）を得る。\n【自分のターン】自分のデジモンが手札の名称に「ティラノモン」を含むデジモンカードに進化するとき、このテイマーをレストさせることで、支払う進化コストを-1する。",
-    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
+    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。",
+    "[YourTurn]AllofyourDigimonwith[Tyrannomon]intheirnamesgain<Piercing>.(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle,itperformsanysecuritychecksitnormallywould.)[YourTurn]WhendigivolvingoneofyourDigimonintoaDigimoncardinyourhandwith[Tyrannomon]initsname,youmaysuspendthisTamertoreducethememorycostofthedigivolutionby1.": "【自分のターン】名称に「ティラノモン」を含む自分のデジモン全ては、≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）を得る。\n【自分のターン】自分のデジモンが手札の名称に「ティラノモン」を含むデジモンカードに進化するとき、このテイマーをレストさせることで、支払う進化コストを-1する。"
   },
   "BT2-089": {
-    "[StartofYourTurn]Ifyouhave2memoryorless，setyourmemoryto3.[Opponent'sTurn]AllofyourblackDigimonget+1000DP.": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【相手のターン】黒の自分のデジモン全てのDPを+1000する。",
-    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
+    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。",
+    "[StartofYourTurn]Ifyouhave2memoryorless,setyourmemoryto3.[Opponent'sTurn]AllofyourblackDigimonget+1000DP.": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【相手のターン】黒の自分のデジモン全てのDPを+1000する。"
   },
   "BT2-090": {
-    "[StartofYourTurn]Ifyouhave2memoryorless，setyourmemoryto3.[OnPlay]Return1purpleDigimoncardorpurpleOptioncardfromyourtrashtoyourhand.": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【登場時】自分のトラッシュから、紫のデジモンカードか紫のオプションカード1枚を手札に戻す。",
-    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
+    "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。",
+    "[StartofYourTurn]Ifyouhave2memoryorless,setyourmemoryto3.[OnPlay]Return1purpleDigimoncardorpurpleOptioncardfromyourtrashtoyourhand.": "【自分のターン開始時】メモリーが2以下のとき、3にする。\n【登場時】自分のトラッシュから、紫のデジモンカードか紫のオプションカード1枚を手札に戻す。"
   },
   "BT2-091": {
     "[Main]Delete1ofyouropponent'sDigimonwith4000DPorless.": "【メイン】DP4000以下の相手のデジモン1体を消滅させる。",
@@ -4371,8 +4371,8 @@
     "[Main]Upto2ofyourDigimongain<SecurityAttack+1>(ThisDigimonchecks1additionalsecuritycard)fortheturn.": "【メイン】このターンの間、自分のデジモン2体までは≪セキュリティアタック+1≫（このデジモンがチェックするセキュリティの枚数+1）を得る。"
   },
   "BT2-093": {
-    "[Main]Delete1ofyouropponent'sDigimonwith5000DPorless.IfyouhavearedTamerinplay，delete1ofyouropponent'sDigimonwith8000DPorlessinstead.": "【メイン】DP5000以下の相手のデジモン1体を消滅させる。赤の自分のテイマーがいるとき、代わりに、DP8000以下の相手のデジモン1体を消滅させる。",
-    "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。"
+    "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。",
+    "[Main]Delete1ofyouropponent'sDigimonwith5000DPorless.IfyouhavearedTamerinplay,delete1ofyouropponent'sDigimonwith8000DPorlessinstead.": "【メイン】DP5000以下の相手のデジモン1体を消滅させる。赤の自分のテイマーがいるとき、代わりに、DP8000以下の相手のデジモン1体を消滅させる。"
   },
   "BT2-094": {
     "[Main]Choose1digivolutioncardof1ofyouropponent'sDigimonandtrashit.Then,1ofyourDigimongets+2000DPfortheturn.": "【メイン】相手のデジモン1体の進化元を、選んで1枚破棄する。その後、このターンの間、自分のデジモン1体のDPを+2000する。",
@@ -4386,8 +4386,8 @@
     "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。"
   },
   "BT2-097": {
-    "[Main]3ofyouropponent’slevel3Digimonget-4000DPfortheturn.": "【メイン】このターンの間、Lv.3の相手のデジモン3体のDPを-4000する。",
-    "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。"
+    "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。",
+    "[Main]3ofyouropponent'slevel3Digimonget-4000DPfortheturn.": "【メイン】このターンの間、Lv.3の相手のデジモン3体のDPを-4000する。"
   },
   "BT2-098": {
     "[Main]Trigger<Draw1>.(Draw1cardfromyourdeck.)Then,1ofyouropponent'sDigimongets-1000DPforeachcardinyourhandfortheturn.": "【メイン】≪1ドロー≫（自分のデッキからカードを1枚引く）。その後、このターンの間、自分の手札1枚ごとに、相手のデジモン1体のDPを-1000する。",
@@ -4416,12 +4416,12 @@
     "[Security]UnsuspendallofyourDigimonwith<Blocker>andtheyget+5000DPfortheturn.": "【セキュリティ】≪ブロッカー≫を持つ自分のデジモン全てをアクティブにし、このターンの間、DPを+5000する。"
   },
   "BT2-105": {
-    "[Main]Trigger<De-Digivolve1>on1ofyouropponent'sDigimon.(Trash1cardfromthetopofoneofyouropponent'sDigimon.Ifithasnodigivolutioncards，orbecomesalevel3Digimon，youcan'ttrashanymorecards.)": "【メイン】相手のデジモン1体を≪退化1≫（相手のデジモンに重ねられたカードを、上から1枚破棄する。進化元がなくなるか、Lv.3のデジモンになったらそれ以上破棄できない）する。",
-    "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。"
+    "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。",
+    "[Main]Trigger<De-Digivolve1>on1ofyouropponent'sDigimon.(Trash1cardfromthetopofoneofyouropponent'sDigimon.Ifithasnodigivolutioncards,orbecomesalevel3Digimon,youcan'ttrashanymorecards.)": "【メイン】相手のデジモン1体を≪退化1≫（相手のデジモンに重ねられたカードを、上から1枚破棄する。進化元がなくなるか、Lv.3のデジモンになったらそれ以上破棄できない）する。"
   },
   "BT2-106": {
-    "[Main]Trigger<De-Digivolve4>on1ofyouropponent'sDigimon.(Trashupto4cardsfromthetopofoneofyouropponent'sDigimon.Ifithasnodigivolutioncards，orbecomesalevel3Digimon，youcan'ttrashanymorecards.)": "【メイン】相手のデジモン1体を≪退化4≫（相手のデジモンに重ねられたカードを、上から4枚まで破棄する。進化元がなくなるか、Lv.3のデジモンになったらそれ以上破棄できない）する。",
-    "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。"
+    "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。",
+    "[Main]Trigger<De-Digivolve4>on1ofyouropponent'sDigimon.(Trashupto4cardsfromthetopofoneofyouropponent'sDigimon.Ifithasnodigivolutioncards,orbecomesalevel3Digimon,youcan'ttrashanymorecards.)": "【メイン】相手のデジモン1体を≪退化4≫（相手のデジモンに重ねられたカードを、上から4枚まで破棄する。進化元がなくなるか、Lv.3のデジモンになったらそれ以上破棄できない）する。"
   },
   "BT2-107": {
     "[Main]1ofyourDigimongets+3000DPfortheturn.": "【メイン】このターンの間、自分のデジモン1体のDPを+3000する。",
@@ -4440,7 +4440,7 @@
     "[Security]Activatethiscard's[Main]effect.": "【セキュリティ】このカードの【メイン】効果を発揮する。"
   },
   "BT2-111": {
-    "Whileyouhave10ormorecardsinyourtrash，your[Impmon]candigivoLv.eintothiscardinyourhandforamemorycostof4，ignoringthiscard'sdigivolutionrequirements.[WhenDigivolving]Delete1ofyouropponent'slevel4orlowerDigimon.": "自分のトラッシュが10枚以上の間、自分の「インプモン」は手札のこのカードに進化条件を無視して進化コスト4で進化できる。\n【進化時】Lv.4以下の相手のデジモン1体を消滅させる。"
+    "Whileyouhave10ormorecardsinyourtrash,your[Impmon]candigivolveintothiscardinyourhandforamemorycostof4,ignoringthiscard'sdigivolutionrequirements.[WhenDigivolving]Delete1ofyouropponent'slevel4orlowerDigimon.": "自分のトラッシュが10枚以上の間、自分の「インプモン」は手札のこのカードに進化条件を無視して進化コスト4で進化できる。\n【進化時】Lv.4以下の相手のデジモン1体を消滅させる。"
   },
   "BT2-112": {
     "WhileyouropponenthasaDigimonwith10000DPormoreinplay,reducethememorycosttoplaythiscardfromyourhandby6.[WhenAttacking]Whenyouattackyouropponent'sDigimonwiththehighestDP,unsuspendthisDigimon.": "DP10000以上の相手のデジモンがいる間、手札のこのカードを登場させるとき、支払う登場コストを-6する。\n【アタック時】最もDPの高い相手のデジモンにアタックしたとき、このデジモンをアクティブにする。"
@@ -7362,13 +7362,13 @@
     "[WhenDigivolving]Trash1cardfromthetopofbothplayers'securitystacks.Then,youmayplay1purpleoryellowDigimoncardwithalevelof4orlessfromyourtrashwithoutpayingitsmemorycost.": "【進化時】お互いのセキュリティを上から1枚破棄する。その後、自分のトラッシュから、紫か黄のLv.4以下のデジモンカード1枚をコストを支払わずに登場できる。"
   },
   "BT3-091": {
-    "[WhenDigivolving]Ifyouhave10ormorecardsinyourtrash，youmayreturnupto2purpleOptioncardsfromyourtrashtoyourhand.[YourTurn][OncePerTurn]WhenyouuseanOptioncard，gain2memory.": "【進化時】自分のトラッシュが10枚以上のとき、自分のトラッシュから、紫のオプションカード2枚までを手札に戻せる。\n【自分のターン】[ターンに1回]自分がオプションカードを使用したとき、メモリーを+2する。"
+    "[WhenDigivolving]Ifyouhave10ormorecardsinyourtrash,youmayreturnupto2purpleOptioncardsfromyourtrashtoyourhand.[YourTurn][OncePerTurn]WhenyouuseanOptioncard,gain2memory.": "【進化時】自分のトラッシュが10枚以上のとき、自分のトラッシュから、紫のオプションカード2枚までを手札に戻せる。\n【自分のターン】[ターンに1回]自分がオプションカードを使用したとき、メモリーを+2する。"
   },
   "BT3-092": {
     "<Piercing>(WhenthisDigimonattacksanddeletesanopponent'sDigimonandsurvivesthebattle,itperformsanysecuritychecksitnormallywould.)[AllTurns]WhenanotherDigimonisdeleted,gain1memoryforeachDigimondeleted.": "≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンだけを消滅させたとき、このデジモンはセキュリティをチェックする）\n【お互いのターン】他の自分のデジモンか、相手のデジモンが消滅したとき、消滅したデジモン1体ごとに、メモリーを+1する。"
   },
   "BT3-093": {
-    "[StartofYourTurn]Ifyouhave2memoryorless,setyourmemoryto3.OnPlay]Revealthetop3cardsofyourdeck.Add1blueand1greenDigimoncardamongthemtoyourhand.Placetheremainingcardsatthebottomofyourdeckinanyorder.": "【自分のターン開始時】自分のメモリーが2以下のとき、3にする。\n【登場時】自分のデッキの上から3枚オープンする。その中の青と緑のデジモンカード1枚ずつを手札に加える。残ったカードは好きな順番でデッキの下に戻す。",
+    "[StartofYourTurn]Ifyouhave2memoryorless,setyourmemoryto3.[OnPlay]Revealthetop3cardsofyourdeck.Add1blueand1greenDigimoncardamongthemtoyourhand.Placetheremainingcardsatthebottomofyourdeckinanyorder.": "【自分のターン開始時】自分のメモリーが2以下のとき、3にする。\n【登場時】自分のデッキの上から3枚オープンする。その中の青と緑のデジモンカード1枚ずつを手札に加える。残ったカードは好きな順番でデッキの下に戻す。",
     "[Security]Playthiscardwithoutpayingitsmemorycost.": "【セキュリティ】このカードをコストを支払わずに登場させる。"
   },
   "BT3-094": {
@@ -7423,15 +7423,15 @@
     "[Security]Addthiscardtoyourhand.": "【セキュリティ】このカードを手札に加える。"
   },
   "BT3-107": {
-    "[Main]Trigger<De-Digivolve1>on1ofyouropponent'sDigimon.(Trashacardfromthetopofoneofyouropponent'sDigimon.Ifithasnodigivolutioncards，orbecomesalevel3Digimon，youcan'ttrashanymorecards.)Then，ifthatDigimon'splaycostis4orless，deleteit.": "【メイン】相手のデジモン1体を≪退化1≫（相手のデジモンに重ねられたカードを、上から1枚破棄する。進化元がなくなるか、Lv.3のデジモンになったらそれ以上破棄できない）する。その後、そのデジモンが登場コスト4以下のとき、消滅させる。",
-    "[Security]Addthiscardtoyourhand.": "【セキュリティ】このカードを手札に加える。"
+    "[Security]Addthiscardtoyourhand.": "【セキュリティ】このカードを手札に加える。",
+    "[Main]Trigger<De-Digivolve1>on1ofyouropponent'sDigimon.(Trashacardfromthetopofoneofyouropponent'sDigimon.Ifithasnodigivolutioncards,orbecomesalevel3Digimon,youcan'ttrashanymorecards.)Then,ifthatDigimon'splaycostis4orless,deleteit.": "【メイン】相手のデジモン1体を≪退化1≫（相手のデジモンに重ねられたカードを、上から1枚破棄する。進化元がなくなるか、Lv.3のデジモンになったらそれ以上破棄できない）する。その後、そのデジモンが登場コスト4以下のとき、消滅させる。"
   },
   "BT3-108": {
     "[Main]1ofyourDigimongains<Retaliation>(WhenthisDigimonisdeletedafterlosingabattle,deletetheDigimonitwasbattling)untiltheendofyouropponent'snextturn.": "【メイン】次の相手のターン終了時まで、自分のデジモン1体は、≪道連れ≫（バトルでこのデジモンだけが消滅したとき、バトルした相手のデジモンを消滅させる）を得る。",
     "[Security]Addthiscardtoyourhand.": "【セキュリティ】このカードを手札に加える。"
   },
   "BT3-109": {
-    "[Main]1ofyourDigimongains“[OnDeletion]Playthiscardwithoutpayingitsmemorycost.Any[OnPlay]effectsonDigimonplayedwiththiseffectdon'tactivate“fortheturn.": "【メイン】このターンの間、自分のデジモン1体は「【消滅時】このカードをコストを支払わずに登場させる。この効果で登場したデジモンの【登場時】効果は発揮しない。」の効果を得る。"
+    "[Main]1ofyourDigimongains“[OnDeletion]Playthiscardwithoutpayingitsmemorycost.Any[OnPlay]effectsonDigimonplayedwiththiseffectdon'tactivate”fortheturn.": "【メイン】このターンの間、自分のデジモン1体は「【消滅時】このカードをコストを支払わずに登場させる。この効果で登場したデジモンの【登場時】効果は発揮しない。」の効果を得る。"
   },
   "BT3-110": {
     "[Main]Play1level5purpleDigimoncardfromyourtrashwithoutpayingitsmemorycost.Any[OnPlay]effectsonDigimonplayedwiththiseffectdon'tactivate.": "【メイン】自分のトラッシュから、紫のLv.5のデジモンカード1枚をコストを支払わずに登場させる。この効果で登場したデジモンの【登場時】効果は発揮しない。",
@@ -12548,7 +12548,7 @@
     "[Digivolve]Lv.5w/[DS]trait:Cost3[Hand][Counter]<BlastDigivolve>[OnPlay][WhenDigivolving]<De-Digivolve1>1ofyouropponent'sDigimon.Then,return1ofyouropponent'sDigimonwithaplaycostof7orlesstothebottomofthedeck.[AllTurns]Whileyouhave1ormorememory,noneofyouropponent'sDigimoncansuspend.[Rule]Trait:Hasthe[Aquatic]type.": "〔進化〕特徴に「DS」を持つLv.5:コスト3\n\n[手札]【カウンター】≪ブラスト進化≫（自分のデジモンをこのカードにコストを支払わずに進化できる）\n【登場時】【進化時】相手のデジモン1体を≪退化1≫。その後、登場コスト7以下の相手のデジモン1体をデッキの下に戻す。\n【お互いのターン】メモリーが1以上の間、相手のデジモン全てはレストできない。\n〈ルール〉特徴:タイプ「水棲型」を持つ。\n\n≪オーバーフロー《-4》≫（エリアかカードの下から、それ以外の場所に送られる場合、メモリー-4）"
   },
   "EX8-027": {
-    "[Digivolve]Lv.5w/[DS]trait:Cost3[WhenDigivolving]Youmayplay1level4orlowerDigimoncardfromthisDigimon'sdigivolutioncardswithoutpayingthecost.[YourTurn][OncePerTurn]WhenanyofyourDigimonareplayedordigivolve,ifanyofthemhavethe[DS]trait,2ofyourDigimonmayDNAdigivolve]intoaDigimoncardwiththe[DS]traitinthehand.Then,thatDNAdigivolvedDigimonmayattack.": "〔進化〕特徴に「DS」を持つLv.5:コスト3\n\n【進化時】このデジモンの進化元から、Lv.4以下のデジモンカード1枚をコストを支払わずに登場できる。\n【自分のターン】[ターンに1回]自分のデジモンが登場/進化したとき、そのデジモンが特徴に「DS」を持つなら、自分のデジモン2体で手札の特徴に「DS」を持つデジモンカードにジョグレス進化できる。その後、ジョグレス進化したそのデジモンでアタックできる。"
+    "[Digivolve]Lv.5w/[DS]trait:Cost3[WhenDigivolving]Youmayplay1level4orlowerDigimoncardfromthisDigimon'sdigivolutioncardswithoutpayingthecost.[YourTurn][OncePerTurn]WhenanyofyourDigimonareplayedordigivolve,ifanyofthemhavethe[DS]trait,2ofyourDigimonmayDNAdigivolveintoaDigimoncardwiththe[DS]traitinthehand.Then,thatDNAdigivolvedDigimonmayattack.": "〔進化〕特徴に「DS」を持つLv.5:コスト3\n\n【進化時】このデジモンの進化元から、Lv.4以下のデジモンカード1枚をコストを支払わずに登場できる。\n【自分のターン】[ターンに1回]自分のデジモンが登場/進化したとき、そのデジモンが特徴に「DS」を持つなら、自分のデジモン2体で手札の特徴に「DS」を持つデジモンカードにジョグレス進化できる。その後、ジョグレス進化したそのデジモンでアタックできる。"
   },
   "EX8-028": {
     "[Digivolve]Lv.5w/[Ice-Snow]trait:Cost3<IceClad>.<Barrier>[WhenDigivolving]Youmayplay1level4orlower[Ice-Snow]traitDigimoncardfromyourhandwithoutpayingthecost.Foreachofyouropponent'sDigimonwithnodigivolutioncards,add1tothiseffect'slevelmaximum.[WhenDigivolving][WhenAttacking][OncePerTurn]Byplacing1Digimonwithnodigivolutioncardsasthebottomsecuritycard,thisDigimonunsuspends.": "〔進化〕特徴に「氷雪型」を持つLv.5:コスト3\n\n≪氷装≫≪防壁≫\n【進化時】自分の手札から、特徴に「氷雪型」を持つLv.4以下のデジモンカード1枚をコストを支払わずに登場できる。進化元を持たない相手のデジモン1体ごとに、この効果のLv.上限+1。\n【進化時】【アタック時】[ターンに1回]進化元を持たないデジモン1体をセキュリティの下に置くことで、このデジモンをアクティブにする。"
@@ -13196,75 +13196,75 @@
     "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。"
   },
   "LM-054": {
-    "Whileyoudon'thave[TreadmillTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1yelloworblackcardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoayelloworblackDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "バトルエリアに自分の「トレッドミル・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の黄/黒のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の黄/黒のデジモンカードに支払う進化コスト-2で進化できる。",
-    "[Security]Revealthetop2cardsofyourdeck.Add1yelloworblackcardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の黄/黒のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
+    "Whileyoudon'thave[TreadmillTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1yelloworblackcardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoayelloworblackDigimoncardinthehandwiththedigivolutioncostreducedby2.": "バトルエリアに自分の「トレッドミル・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の黄/黒のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の黄/黒のデジモンカードに支払う進化コスト-2で進化できる。",
+    "[Security]Revealthetop2cardsofyourdeck.Add1yelloworblackcardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の黄/黒のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
   },
   "LM-055": {
-    "Whileyoudon'thave[SprintDashTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1greenorredcardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoagreenorredDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "バトルエリアに自分の「スプリントダッシュ・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の緑/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の緑/赤のデジモンカードに支払う進化コスト-2で進化できる。",
-    "[Security]Revealthetop2cardsofyourdeck.Add1greenorredcardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の緑/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
+    "Whileyoudon'thave[SprintDashTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1greenorredcardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoagreenorredDigimoncardinthehandwiththedigivolutioncostreducedby2.": "バトルエリアに自分の「スプリントダッシュ・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の緑/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の緑/赤のデジモンカードに支払う進化コスト-2で進化できる。",
+    "[Security]Revealthetop2cardsofyourdeck.Add1greenorredcardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の緑/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
   },
   "LM-056": {
-    "Whileyoudon'thave[ImageTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1blueorpurplecardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoablueorpurpleDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "バトルエリアに自分の「イメージ・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の紫/青のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の紫/青のデジモンカードに支払う進化コスト-2で進化できる。",
-    "[Security]Revealthetop2cardsofyourdeck.Add1blueorpurplecardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の紫/青のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
+    "Whileyoudon'thave[ImageTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1purpleorbluecardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoapurpleorblueDigimoncardinthehandwiththedigivolutioncostreducedby2.": "バトルエリアに自分の「イメージ・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の紫/青のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の紫/青のデジモンカードに支払う進化コスト-2で進化できる。",
+    "[Security]Revealthetop2cardsofyourdeck.Add1purpleorbluecardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の紫/青のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
   },
   "LM-057": {
-    "Whileyoudon'thave[WallTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1redorbluecardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoaredorblueDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "バトルエリアに自分の「ウォール・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の赤/青のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の赤/青のデジモンカードに支払うコスト-2で進化できる。",
-    "[Security]Revealthetop2cardsofyourdeck.Add1redorbluecardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の赤/青のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
+    "Whileyoudon'thave[WallTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1redorbluecardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoaredorblueDigimoncardinthehandwiththecostreducedby2.": "バトルエリアに自分の「ウォール・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の赤/青のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の赤/青のデジモンカードに支払うコスト-2で進化できる。",
+    "[Security]Revealthetop2cardsofyourdeck.Add1redorbluecardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の赤/青のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
   },
   "LM-058": {
-    "Whileyoudon'thave[ParkourTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1blueorgreencardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoablueorgreenDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "バトルエリアに自分の「パルクール・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の青/緑のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の青/緑のデジモンカードに支払うコスト-2で進化できる。",
-    "[Security]Revealthetop2cardsofyourdeck.Add1blueorgreencardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の青/緑のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
+    "Whileyoudon'thave[ParkourTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1blueorgreencardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoablueorgreenDigimoncardinthehandwiththecostreducedby2.": "バトルエリアに自分の「パルクール・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の青/緑のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の青/緑のデジモンカードに支払うコスト-2で進化できる。",
+    "[Security]Revealthetop2cardsofyourdeck.Add1blueorgreencardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の青/緑のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
   },
   "LM-059": {
-    "Whileyoudon'thave[HeatTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1yelloworredcardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoayelloworredDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "バトルエリアに自分の「ヒート・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の黄/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の黄/赤のデジモンカードに支払うコスト-2で進化できる。",
-    "[Security]Revealthetop2cardsofyourdeck.Add1yelloworredcardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の黄/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
+    "Whileyoudon'thave[HeatTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1yelloworredcardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoayelloworredDigimoncardinthehandwiththecostreducedby2.": "バトルエリアに自分の「ヒート・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の黄/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の黄/赤のデジモンカードに支払うコスト-2で進化できる。",
+    "[Security]Revealthetop2cardsofyourdeck.Add1yelloworredcardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の黄/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
   },
   "LM-060": {
-    "Whileyoudon'thave[ShadowTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1greenorpurplecardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoagreenorpurpleDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "バトルエリアに自分の「シャドー・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の緑/紫のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の緑/紫のデジモンカードに支払うコスト-2で進化できる。",
-    "[Security]Revealthetop2cardsofyourdeck.Add1greenorpurplecardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の緑/紫のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
+    "Whileyoudon'thave[ShadowTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1greenorpurplecardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoagreenorpurpleDigimoncardinthehandwiththecostreducedby2.": "バトルエリアに自分の「シャドー・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の緑/紫のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の緑/紫のデジモンカードに支払うコスト-2で進化できる。",
+    "[Security]Revealthetop2cardsofyourdeck.Add1greenorpurplecardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の緑/紫のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
   },
   "LM-061": {
-    "Whileyoudon'thave[PunchingTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1blackorredcardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoablackorredDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "バトルエリアに自分の「パンチング・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の黒/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の黒/赤のデジモンカードに支払うコスト-2で進化できる。",
-    "[Security]Revealthetop2cardsofyourdeck.Add1blackorredcardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の黒/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
+    "Whileyoudon'thave[PunchingTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1blackorredcardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoablackorredDigimoncardinthehandwiththecostreducedby2.": "バトルエリアに自分の「パンチング・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の黒/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の黒/赤のデジモンカードに支払うコスト-2で進化できる。",
+    "[Security]Revealthetop2cardsofyourdeck.Add1blackorredcardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の黒/赤のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
   },
   "LM-062": {
-    "Whileyoudon'thave[BreathingTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1purpleoryellowcardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoapurpleoryellowDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,yellowucethecostby2.": "バトルエリアに自分の「ブレッシング・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の紫/黄のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の紫/黄のデジモンカードに支払うコスト-2で進化できる。",
-    "[Security]Revealthetop2cardsofyourdeck.Add1purpleoryellowcardamongthemtothehand.Returntheresttothebottomofdeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の紫/黄のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
+    "Whileyoudon'thave[BreathingTraining]inthebattlearea,youcanignorethiscard'scolorrequirements.[Main]Revealthetop2cardsofyourdeck.Add1purpleoryellowcardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoapurpleoryellowDigimoncardinthehandwiththecostreducedby2.": "バトルエリアに自分の「ブレッシング・トレーニング」がない間、このカードは色条件を無視できる。\n【メイン】自分のデッキの上から2枚オープンする。その中の紫/黄のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫\n・自分のデジモン1体を手札の紫/黄のデジモンカードに支払うコスト-2で進化できる。",
+    "[Security]Revealthetop2cardsofyourdeck.Add1purpleoryellowcardamongthemtothehand.Returntheresttothebottomofthedeck.Then,placethiscardinthebattlearea.": "【セキュリティ】自分のデッキの上から2枚オープンする。その中の紫/黄のカード1枚を手札に加える。残りはデッキの下に戻す。その後、このカードをバトルエリアに置く。"
   },
   "P-001": {
     "[OnPlay]Delete1ofyouropponent'sDigimonwith3000DPorless.": "【登場時】DP3000以下の相手のデジモン1体を消滅させる。"
   },
   "P-002": {
-    "[YourTurn]WhenthisDigimondeletesoneofyouropponent'sDigimoninbattleandsurvives，trigger<Draw1>.(Draw1cardfromyourdeck.)": "【自分のターン】このデジモンがバトルで相手のデジモンだけを消滅させたとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
+    "[YourTurn]WhenthisDigimondeletesoneofyouropponent'sDigimoninbattleandsurvives,trigger<Draw1>.(Draw1cardfromyourdeck.)": "【自分のターン】このデジモンがバトルで相手のデジモンだけを消滅させたとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
   },
   "P-003": {
     "[OnPlay]Trashthebottomdigivolutioncardof1ofyouropponent'sDigimon.": "【登場時】相手のデジモン1体の進化元を、下から1枚破棄する。"
   },
   "P-004": {
-    "[YourTurn][OncePerTurn]Whenyoutrashadigivolutioncardof1ofyouropponent'sDigimon，gain1memory.": "【自分のターン】[ターンに1回]相手のデジモンの進化元を破棄したとき、メモリーを+1する。"
+    "[YourTurn][OncePerTurn]Whenyoutrashadigivolutioncardof1ofyouropponent'sDigimon,gain1memory.": "【自分のターン】[ターンに1回]相手のデジモンの進化元を破棄したとき、メモリーを+1する。"
   },
   "P-005": {
-    "[OnPlay]Ifyouhave1orfewersecuritycards，trigger<Recovery+1(Deck)>.(Placethetopcardofyourdeckontopofyoursecuritystack.)": "【登場時】自分のセキュリティが1枚以下のとき、≪リカバリー+1《デッキ》≫（自分のデッキの上から1枚をセキュリティの上に置く）。"
+    "[OnPlay]Ifyouhave1orfewersecuritycards,trigger<Recovery+1(Deck)>.(Placethetopcardofyourdeckontopofyoursecuritystack.)": "【登場時】自分のセキュリティが1枚以下のとき、≪リカバリー+1《デッキ》≫（自分のデッキの上から1枚をセキュリティの上に置く）。"
   },
   "P-006": {
-    "[YourTurn]Whileyouhave3ormoresecuritycards，thisDigimongets+1000DP.": "【自分のターン】自分のセキュリティが3枚以上の間、このデジモンのDPを+1000する。"
+    "[YourTurn]Whileyouhave3ormoresecuritycards,thisDigimongets+1000DP.": "【自分のターン】自分のセキュリティが3枚以上の間、このデジモンのDPを+1000する。"
   },
   "P-007": {
-    "[WhenAttacking]IfthisDigimonhas[Garurumon]initsname，trigger<Draw1>.(Draw1cardfromyourdeck.)": "【アタック時】このデジモンが名称に「ガルルモン」を含むとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
+    "[WhenAttacking]IfthisDigimonhas[Garurumon]initsname,trigger<Draw1>.(Draw1cardfromyourdeck.)": "【アタック時】このデジモンが名称に「ガルルモン」を含むとき、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
   },
   "P-008": {
-    "[WhenAttacking][OncePerTurn]IfthisDigimonhasa[Garurumon]digivolutioncard，unsuspendthisDigimon.": "【アタック時】[ターンに1回]このデジモンの進化元に「ガルルモン」があるなら、このデジモンをアクティブにする。",
-    "[YourTurn]Whileyouhave8ormorecardsinyourhand，thisDigimongains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】自分の手札が8枚以上の間、このデジモンは≪Sアタック+1≫を得る。"
+    "[WhenAttacking][OncePerTurn]IfthisDigimonhasa[Garurumon]digivolutioncard,unsuspendthisDigimon.": "【アタック時】[ターンに1回]このデジモンの進化元に「ガルルモン」があるなら、このデジモンをアクティブにする。",
+    "[YourTurn]Whileyouhave8ormorecardsinyourhand,thisDigimongains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】自分の手札が8枚以上の間、このデジモンは≪Sアタック+1≫を得る。"
   },
   "P-009": {
-    "[YourTurn]WhilethisDigimonhas[Greymon]initsname，itgets+2000DP.": "【自分のターン】このデジモンが名称に「グレイモン」を含む間、このデジモンのDPを+2000する。"
+    "[YourTurn]WhilethisDigimonhas[Greymon]initsname,itgets+2000DP.": "【自分のターン】このデジモンが名称に「グレイモン」を含む間、このデジモンのDPを+2000する。"
   },
   "P-010": {
-    "[YourTurn]WhilethisDigimonhasan[Agumon]digivolutioncard，itgains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】このデジモンの進化元に「アグモン」がある間、≪セキュリティアタック+1≫（このデジモンがセキュリティにアタックしたときにチェックする枚数+1）を得る。"
+    "[YourTurn]WhilethisDigimonhasan[Agumon]digivolutioncard,itgains<SecurityAttack+1>.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】このデジモンの進化元に「アグモン」がある間、≪セキュリティアタック+1≫（このデジモンがセキュリティにアタックしたときにチェックする枚数+1）を得る。"
   },
   "P-011": {
-    "[WhenAttacking]IfyouhaveablueTamer，youmaytrashthetop3cardsofyourdecktogivethisDigimon+2000DPfortheturn.": "【アタック時】青の自分のテイマーがいるなら、自分のデッキの上から3枚破棄することで、このターンの間、このデジモンをDP+2000。",
-    "[WhenAttacking]Youmayplace3non-Digi-Eggcardsfromyourtrashatthebottomofyourdeckinanyordertoactivate<Draw1>.(Draw1cardfromyourdeck.)": "【アタック時】自分のトラッシュからデジタマカード以外のカード3枚を好きな順番でデッキの下に戻すことで、≪1ドロー≫（自分のデッキからカードを1枚引く）。"
+    "[WhenAttacking]Youmayplace3non-Digi-Eggcardsfromyourtrashatthebottomofyourdeckinanyordertoactivate<Draw1>.(Draw1cardfromyourdeck.)": "【アタック時】自分のトラッシュからデジタマカード以外のカード3枚を好きな順番でデッキの下に戻すことで、≪1ドロー≫（自分のデッキからカードを1枚引く）。",
+    "[WhenAttacking]IfyouhaveablueTamer,youmaytrashthetop3cardsofyourdecktogivethisDigimon+2000DPfortheturn.": "【アタック時】青の自分のテイマーがいるなら、自分のデッキの上から3枚破棄することで、このターンの間、このデジモンをDP+2000。"
   },
   "P-012": {
     "[Main]IfyouhaveaDigimonwith[Veedramon]initsname,youmaysuspendthisTamertoactivateoneofthefollowingeffects:・Trigger<Draw1>.(Draw1cardfromyourdeck.・1ofyourDigimongets+1000DPfortheturn.": "【メイン】名称に「ブイドラモン」を含む自分のデジモンがいるとき、このテイマーをレストさせることで、以下の効果から1つを発揮する。\n・≪1ドロー≫（自分のデッキからカードを1枚引く）\n・このターンの間、自分のデジモン1体のDPを+1000する。",
@@ -13570,28 +13570,28 @@
     "[OnDeletion]Youmayplay1redorpurplelevel3Digimoncardfromyourtrashwithoutpayingthecost.": "【消滅時】自分のトラッシュから、紫か赤のLv.3のデジモンカード1枚をコストを支払わずに登場できる。"
   },
   "P-103": {
-    "[Main]Revealthetop2cardsofyourdeck.Add1redcardamongthemtoyourhand.Placetherestatthebottomofyourdeckinanyorder.Then,placethiscardintoyourbattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoaredDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の赤のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の赤のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。",
-    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。"
+    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。",
+    "[Main]Revealthetop2cardsofyourdeck.Add1redcardamongthemtothehand.Returntheresttothebottomofthedeckinanyorder.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoaredDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の赤のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の赤のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。"
   },
   "P-104": {
-    "[Main]Revealthetop2cardsofyourdeck.Add1bluecardamongthemtoyourhand.Placetherestatthebottomofyourdeckinanyorder.Then,placethiscardintoyourbattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoablueDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の青のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の青のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。",
-    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。"
+    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。",
+    "[Main]Revealthetop2cardsofyourdeck.Add1bluecardamongthemtothehand.Returntheresttothebottomofthedeckinanyorder.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoablueDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の青のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の青のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。"
   },
   "P-105": {
-    "[Main]Revealthetop2cardsofyourdeck.Add1yellowcardamongthemtoyourhand.Placetherestatthebottomofyourdeckinanyorder.Then,placethiscardintoyourbattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoayellowDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の黄のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の黄のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。",
-    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。"
+    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。",
+    "[Main]Revealthetop2cardsofyourdeck.Add1yellowcardamongthemtothehand.Returntheresttothebottomofthedeckinanyorder.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoayellowDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の黄のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の黄のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。"
   },
   "P-106": {
-    "[Main]Revealthetop2cardsofyourdeck.Add1greencardamongthemtoyourhand.Placetherestatthebottomofyourdeckinanyorder.Then,placethiscardintoyourbattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoagreenDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の緑のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の緑のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。",
-    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。"
+    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。",
+    "[Main]Revealthetop2cardsofyourdeck.Add1greencardamongthemtothehand.Returntheresttothebottomofthedeckinanyorder.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoagreenDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の緑のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の緑のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。"
   },
   "P-107": {
-    "[Main]Revealthetop2cardsofyourdeck.Add1blackcardamongthemtoyourhand.Placetherestatthebottomofyourdeckinanyorder.Then,placethiscardintoyourbattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoablackDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の黒のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の黒のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。",
-    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。"
+    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。",
+    "[Main]Revealthetop2cardsofyourdeck.Add1blackcardamongthemtothehand.Returntheresttothebottomofthedeckinanyorder.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoablackDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の黒のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の黒のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。"
   },
   "P-108": {
-    "[Main]Revealthetop2cardsofyourdeck.Add1purplecardamongthemtoyourhand.Placetherestatthebottomofyourdeckinanyorder.Then,placethiscardintoyourbattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoapurpleDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の紫のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の紫のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。",
-    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。"
+    "[Security]Placethiscardinthebattlearea.": "【セキュリティ】このカードをバトルエリアに置く。",
+    "[Main]Revealthetop2cardsofyourdeck.Add1purplecardamongthemtothehand.Returntheresttothebottomofthedeckinanyorder.Then,placethiscardinthebattlearea.[Main]<Delay>・1ofyourDigimonmaydigivolveintoapurpleDigimoncardinyourhandforitsdigivolutioncost.Whenitwoulddigivolvebythiseffect,reducethecostby2.": "【メイン】自分のデッキの上から2枚オープンする。その中の紫のカード1枚を手札に加える。残りは好きな順番でデッキの下に戻す。その後、このカードをバトルエリアに置く。\n【メイン】≪ディレイ≫（置いた次のターン以降にこのカードを破棄することで、効果を発揮する）\n・自分のデジモン1体を手札の紫のデジモンカードに進化コストを支払って進化できる。この効果で進化するとき、支払う進化コスト-2。"
   },
   "P-109": {
     "[Hand][Counter]<BlastDigivolve>(YourDigimonmaydigivolveintothiscardwithoutpayingthecost).[OnPlay][WhenDigivolving]Suspend1Digimon,thenunsuspend1Digimon.[AllTurns][OncePerTurn]WhenthisDigimonbecomessuspended,youmayplayaTamercardoraDigimoncardwith4000DPorlessfromyourhandwithoutpayingthecost.": "〔進化〕「パイルドラモン」/「ディノビーモン」:コスト3\n\n{手札}【カウンター】≪ブラスト進化≫（自分のデジモンをこのカードにコストを支払わずに進化できる）\n【登場時】【進化時】デジモン1体をレストさせる。その後、デジモン1体をアクティブにする。\n【お互いのターン】[ターンに1回]このデジモンがレストしたとき、自分の手札から、テイマーカードかDP4000以下のデジモンカード1枚をコストを支払わずに登場できる。\n\n≪オーバーフロー《-4》≫（バトルエリアかカードの下から、それ以外の場所に送られる場合、メモリー-4）"
@@ -13790,8 +13790,8 @@
     "<Piercing>.": "≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンを消滅させたとき、アタック終了前にチェックする）"
   },
   "P-161": {
-    "Whileyoudon'thave[BishopDevice],youmayignorethiscard'scolorrequirements.Whenaneffecttrashesthiscardinyourbattlearea,Whenthiscardistrashedfromthebattlearea,untiltheendofyouropponent'sturn,1oftheirDigimonorTamerscan'tSuspend.[Main]Untiltheendofyouropponent'sturn,1oftheirDigimonorTamerscan'tsuspend.Then,placethiscardinthebattlearea.": "自分の「ビショップ・デヴァイス」がバトルエリアにない間、このカードは色条件を無視できる。\nこのカードがバトルエリアから破棄されたとき、相手のターン終了まで、相手のデジモン/テイマー1体はレストできない。\n【メイン】相手のターン終了まで、相手のデジモン/テイマー1体はレストできない。その後、このカードをバトルエリアに置く。",
-    "[Security]Return1ofyouropponent'slevel5orlowerDigimontothebottomofthedeck.Then,addthiscardtothehand.": "【セキュリティ】Lv.5以下の相手のデジモン1体をデッキの下に戻す。その後、このカードを手札に加える。"
+    "[Security]Return1ofyouropponent'slevel5orlowerDigimontothebottomofthedeck.Then,addthiscardtothehand.": "【セキュリティ】Lv.5以下の相手のデジモン1体をデッキの下に戻す。その後、このカードを手札に加える。",
+    "Whileyoudon'thave[BishopDevice]inthebattlearea,youmayignorethiscard'scolorrequirements.Whenthiscardistrashedfromthebattlearea,untiltheendofyouropponent'sturn,1oftheirDigimonorTamerscan'tsuspend.[Main]Untiltheendofyouropponent'sturn,1oftheirDigimonorTamerscan'tsuspend.Then,placethiscardinthebattlearea.": "自分の「ビショップ・デヴァイス」がバトルエリアにない間、このカードは色条件を無視できる。\nこのカードがバトルエリアから破棄されたとき、相手のターン終了まで、相手のデジモン/テイマー1体はレストできない。\n【メイン】相手のターン終了まで、相手のデジモン/テイマー1体はレストできない。その後、このカードをバトルエリアに置く。"
   },
   "P-162": {
     "[Digivolve]Lv.3w/[DS]trait:Cost2[OnPlay][WhenDigivolving]1ofyour[DS]traitDigimoncan'thaveitsDPreducedorbeaffectedbyyouropponent's<De-Digivolve>effectsuntiltheendoftheirturn.": "〔進化〕特徴に「DS」を持つLv.3:コスト2\n\n【登場時】【進化時】相手のターン終了まで、特徴に「DS」を持つ自分のデジモン1体は相手の効果でDPをマイナスされず、≪退化≫の効果を受けない。",
@@ -14176,7 +14176,7 @@
     "[Opponent'sTurn]WhilethisDigimonhas[Monzaemon]or[Numemon]initsname,itgains<Blocker>.": "【相手のターン】このデジモンが名称に「もんざえモン」か「ヌメモン」を含む間、このデジモンは≪ブロッカー≫を得る。"
   },
   "RB1-018": {
-    "Digivolve:3fromLv.4w/[Numemon]inname[OnPlay]Byplacing1Digimoncardwith[Numemon]initsnamefromyourtrashasthisDigimon'sbottomdigivolutioncard,gain2memory.[OnPlay][WhenDigivolving]on]1ofyouropponent’sDigimongets-3000DPandgains<SecurityAttack-1>untiltheendoftheirturn.": "〔進化〕『名称に「ヌメモン」を含むLv.4』から3\n\n【登場時】自分のトラッシュから、名称に「ヌメモン」を含むデジモンカード1枚をこのデジモンの進化元の下に置くことで、メモリー+2。\n【登場時】【進化時】次の相手のターン終了まで、相手のデジモン1体をDP-3000し、≪セキュリティアタック-1≫を与える。",
+    "Digivolve:3fromLv.4w/[Numemon]inname[OnPlay]Byplacing1Digimoncardwith[Numemon]initsnamefromyourtrashasthisDigimon'sbottomdigivolutioncard,gain2memory.[OnPlay][WhenDigivolving]1ofyouropponent’sDigimongets-3000DPandgains<SecurityAttack-1>untiltheendoftheirturn.": "〔進化〕『名称に「ヌメモン」を含むLv.4』から3\n\n【登場時】自分のトラッシュから、名称に「ヌメモン」を含むデジモンカード1枚をこのデジモンの進化元の下に置くことで、メモリー+2。\n【登場時】【進化時】次の相手のターン終了まで、相手のデジモン1体をDP-3000し、≪セキュリティアタック-1≫を与える。",
     "[YourTurn]WhilethisDigimonhas[Monzaemon]or[Numemon]initsname,itgains<SecurityAttack+1>.": "【自分のターン】このデジモンが名称に「もんざえモン」か「ヌメモン」を含む間、このデジモンは≪セキュリティアタック+1≫を得る。"
   },
   "RB1-019": {
@@ -15550,5 +15550,40 @@
   "BT27-093": {
     "[StartofYourMainPhase]Byplacing1cardwith[Chessmon]initstextfromyourhandfacedownunderthisTamer,<Draw1>andgain1memory.[Main]BysuspendingthisTamerandtrashing2bottomface-downcardsfromunderanyofyourTamers,1ofyourDigimonmaydigivolveintoaDigimoncardwith[Chessmon]initsnameinthehandwiththecostreducedby2.": "【自分のメインフェイズ開始時】自分の手札から、「チェスモン」の記述があるカード1枚をこのテイマーの下に裏向きで置くことで、≪1ドロー≫、メモリー+1。\n【メイン】このテイマーをレストさせ、自分のテイマーの下にある裏向きのカードを下から2枚破棄することで、自分のデジモン1体を手札の名称に「チェスモン」を含むデジモンカードに支払うコスト-2で進化できる。",
     "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BT27-053": {
+    "[Digivolve]Lv.5w/[Leomon]innameorw/[DATASQUAD]trait:Cost4Whenthiscardwouldbeplayed,ifyouropponenthasaDigimonwith11000DPormore,reducethecostby6.<Blocker><Fortitude>[OnPlay][WhenDigivolving][WhenAttacking][OncePerTurn]ThisDigimonmaybattle1ofyouropponent'sDigimon.[OnDeletion]Youmayplayoruse1TamerorOptioncardwiththe[Boss]or[DATASQUAD]traitfromyourhandwithoutpayingthecost.": "〔進化〕名称に「レオモン」を含むLv.5/特徴「セイバーズ」を持つLv.5:コスト4\nこのカードが登場するとき、DP11000以上の相手のデジモンがいるなら、支払うコスト-6。\n≪ブロッカー≫ ≪不屈≫\n【登場時】【進化時】【アタック時】【ターンに1回】このデジモンと相手のデジモン1体でバトルできる。\n【消滅時】自分の手札から、特徴「バンチョー」/「セイバーズ」を持つテイマーカード/オプションカード1枚をコストを支払わず登場/使用できる。"
+  },
+  "BT27-090": {
+    "[StartofYourTurn]Ifyouhave2orlessmemory,setitto3.[AllTurns]WhenanyofyourDigimonwith[Leomon]intheirnamesorthe[Boss]or[DATASQUAD]traitareplayed,byplacingthisTamerasanyofthoseDigimon'sbottomdigivolutioncard,youropponent'seffectscan'treturn1ofyourDigimontohandsordecks,ortrashitsstackedcardsuntiltheirturnends.": "【自分のターン開始時】メモリーが2以下なら、3にする。\n【お互いのターン】名称に「レオモン」を含むか特徴「バンチョー」/「セイバーズ」を持つ自分のデジモンが登場したとき、このテイマーをそのデジモンの進化元の下に置くことで、相手のターン終了まで、自分のデジモン1体は相手の効果で手札/デッキに戻らず、重ねられているカードは破棄されない。",
+    "[AllTurns]ThisDigimonwith[Leomon]initsnameorthe[Boss]or[DATASQUAD]traitgets+3000DP.": "【お互いのターン】名称に「レオモン」を含むか特徴「バンチョー」/「セイバーズ」を持つこのデジモンをDP+3000。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BT27-092": {
+    "[StartofYourMainPhase]Byplacing1[Kurata'sArmy]traitcardfromyourhandfacedownunderthisTamer,<Draw1>andgain1memory.[Main][OncePerTurn]Bytrashing2bottomface-downcardsfromunderanyofyourTamers,thisTamermaydigivolveintoa[Kurata'sArmy]traitDigimoncardinthehandortrashwiththecostreducedby2.": "【自分のメインフェイズ開始時】自分の手札から、特徴「倉田軍団」を持つカード1枚をこのテイマーの下に裏向きで置くことで、≪1ドロー≫、メモリー+1。\n【メイン】[ターン1回]自分のテイマーの下にある裏向きのカードを下から2枚破棄することで、このテイマーを手札/トラッシュの特徴「倉田軍団」を持つデジモンカードに支払うコスト-2で進化できる。",
+    "[EndofAttack][OncePerTurn]Bychoosing1ofyourDigimon,deleteitand1ofyouropponent'sDigimonwithasmuchDPasthisDigimonorless.": "【アタック終了時】[ターン1回]自分のデジモン1体を選ぶことで、このデジモンのDP以下の相手のデジモン1体と選んだ自分のデジモンを消滅させる。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BT27-102": {
+    "[Main]Youmayplay1[Kurata'sArmy]traitTamercardfromyourhandortrashwithoutpayingthecost.Then,placethiscardinthebattlearea.[AllTurns]WhenanyDigimononthefieldaredeleted,<Delay>・1ofyourTamersmaydigivolveintoa[Kurata'sArmy]traitDigimoncardinthehandortrashwithoutpayingthecost.": "【メイン】自分の手札/トラッシュから、特徴「倉田軍団」を持つテイマーカード1枚をコストを支払わず登場できる。その後、このカードをバトルエリアに置く。\n【お互いのターン】エリアのデジモンが消滅したとき、≪ディレイ≫。\n・自分のテイマー1体を手札/トラッシュの特徴「倉田軍団」を持つデジモンカードにコストを支払わず進化できる。",
+    "[Security]Youmayplay1playcost5orlower[Kurata'sArmy]traitcardfromyourhandortrashwithoutpayingthecost.": "【セキュリティ】自分の手札/トラッシュから、特徴「倉田軍団」を持つ登場コスト5以下のカード1枚をコストを支払わず登場できる。"
+  },
+  "BT27-048": {
+    "[Digivolve]Tamerw/[Kurata'sArmy]trait:Cost2<ArmorPurge>[OnPlay][WhenDigivolving][WhenAttacking][OncePerTurn]Youmaysuspend1Digimon.Then,bychoosing1ofyourDigimon,deletethechosenDigimon,and1ofyouropponent'sDigimonorTamerscan'tunsuspenduntiltheirturnends.[Rule]Trait:Has[Dinosaur]Type.": "〔進化〕特徴「倉田軍団」を持つテイマー:コスト2\n≪アーマー解除≫\n【登場時】【進化時】【アタック時】[ターン1回]デジモン1体をレストできる。その後、自分のデジモン1体を選ぶことで、選んだデジモンを消滅させ、相手のターン終了まで、相手のデジモン/テイマー1体はアクティブにならない。\n〈ルール〉特徴:タイプ「恐竜型」を持つ。"
+  },
+  "BT27-017": {
+    "[Digivolve][Stegomon]w/[Bio]trait:Cost5[Digivolve]Tamerw/[Kurata'sArmy]trait:Cost7<SecurityA.+1><ArmorPurge><Engage>(Attheendofyourturn,thisDigimonmayattack.)[OnPlay][WhenDigivolving]Delete1ofyouropponent'sDigimonwithasmuchDPasthisDigimonorless.[AllTurns]ThisDigimoncan'tdigivolve.[Opponent'sTurn]WhilethisDigimonissuspended,noneofyouropponent'sDigimoncanattackplayers.": "〔進化〕特徴「バイオ」を持つ「ステゴモン」:コスト5\n〔進化〕特徴「倉田軍団」を持つテイマー:コスト7\n≪Sアタック+1≫ ≪アーマー解除≫ ≪急襲≫（自分のターン終了時、このデジモンでアタックできる）\n【登場時】【進化時】このデジモンのDP以下の相手のデジモン1体を消滅させる。\n【お互いのターン】このデジモンは進化できない。\n【相手のターン】このデジモンがレスト状態の間、相手のデジモン全てはプレイヤーにアタックできない。"
+  },
+  "BT27-026": {
+    "[Digivolve]Tamerw/[Kurata'sArmy]trait:Cost2<ArmorPurge>[OnPlay][WhenDigivolving][WhenAttacking][OncePerTurn]Youmaytrashany2digivolutioncardsfromyouropponent'sDigimon.Then,bychoosing1ofyourDigimon,deletethechosenDigimonand1oftheirDigimoncan'tsuspenduntiltheirturnends.": "〔進化〕特徴「倉田軍団」を持つテイマー:コスト2\n≪アーマー解除≫\n【登場時】【進化時】【アタック時】[ターン1回]相手のデジモンの進化元を選んで2枚破棄できる。その後、自分のデジモン1体を選ぶことで、選んだデジモンを消滅させ、相手のターン終了まで、相手のデジモン1体はレストできない。"
+  },
+  "BT27-038": {
+    "[Digivolve]Tamerw/[Kurata'sArmy]trait:Cost2<ArmorPurge>[OnPlay][WhenDigivolving][WhenAttacking][OncePerTurn]Give1ofyouropponent'sDigimon<SecurityA.-1>untiltheirturnends.Then,bychoosing1ofyourDigimon,deletethechosenDigimon,and1oftheirDigimongets-6000DPuntiltheirturnends.": "〔進化〕特徴「倉田軍団」を持つテイマー:コスト2\n≪アーマー解除≫\n【登場時】【進化時】【アタック時】[ターン1回]相手のターン終了まで、相手のデジモン1体に≪Sアタック-1≫を与える。その後、自分のデジモン1体を選ぶことで、選んだデジモンを消滅させ、相手のターン終了まで、相手のデジモン1体をDP-6000。"
+  },
+  "BT27-055": {
+    "[Digivolve][Quetzalmon]w/[Bio]trait:Cost5[Digivolve]Tamerw/[Kurata'sArmy]trait:Cost7<Piercing><Vortex><ArmorPurge>[WhenDigivolving][WhenAttacking][OncePerTurn]Suspendupto2ofyouropponent'sDigimonorTamers.Then,1oftheirDigimonorTamerscan'tunsuspenduntiltheirturnends.[AllTurns][OncePerTurn]WhenanyDigimonsuspend,thisDigimonmayunsuspend.[AllTurns]ThisDigimoncan'tdigivolve.": "〔進化〕特徴「バイオ」を持つ「クアトルモン」:コスト5\n〔進化〕特徴「倉田軍団」を持つテイマー:コスト7\n≪貫通≫ ≪ヴォルテクス≫ ≪アーマー解除≫\n【進化時】【アタック時】[ターン1回]相手のデジモン/テイマー2体までをレストさせる。その後、相手のターン終了まで、相手のデジモン/テイマー1体はアクティブにならない。\n【お互いのターン】[ターン1回]デジモンがレストしたとき、このデジモンをアクティブにできる。\n【お互いのターン】このデジモンは進化できない。"
+  },
+  "BT27-071": {
+    "[Digivolve][Thunderbirdmon]w/[Bio]trait:Cost5[Digivolve]Tamerw/[Kurata'sArmy]trait:Cost7<Reboot><Blocker><ArmorPurge>[WhenDigivolving]Youropponent'sDigimoneffectsdon'taffectthisDigimonuntiltheirturnends.[WhenAttacking][Counter][OncePerTurn]<De-Digivolve2>1ofyouropponent'sDigimon.[AllTurns]ThisDigimoncan'tdigivolve.": "〔進化〕特徴「バイオ」を持つ「サンダーバーモン」:コスト5\n〔進化〕特徴「倉田軍団」を持つテイマー:コスト7\n≪再起動≫ ≪ブロッカー≫ ≪アーマー解除≫\n【進化時】相手のターン終了まで、このデジモンは相手のデジモンの効果を受けない。\n【アタック時】【カウンター】[ターン1回]相手のデジモン1体を≪退化2≫。\n【お互いのターン】このデジモンは進化できない。"
   }
 }

@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Suspend 1 level 6 or lower Digimon.",
           kind: "Suspend",
           target: {
             filter: {
@@ -21,6 +22,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "1 of your Digimon with the [Insectoid] trait gets +3000 DP until the end of your opponent's turn.",
           kind: "ModifyDP",
           target: {
             filter: {

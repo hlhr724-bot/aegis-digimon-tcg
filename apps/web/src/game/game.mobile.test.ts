@@ -202,7 +202,9 @@ describe("mobile portrait match layout", () => {
     expect(portraitRules).toMatch(
       /\.decision-board-return \{[^}]*top:\s*calc\(env\(safe-area-inset-top,[^}]*bottom:\s*auto/,
     );
-    expect(portraitRules).toMatch(/\.decision-board-return > button \{[^}]*min-height:\s*44px/);
+    expect(portraitRules).toMatch(
+      /\.decision-board-return > button:not\(\.decision-board-return__move-handle\) \{[^}]*min-height:\s*44px/,
+    );
   });
 
   it("spends the decision sheet on the targets, not on its header", () => {

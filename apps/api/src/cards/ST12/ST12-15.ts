@@ -42,6 +42,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "The next time one of your Digimon would digivolve this turn, reduce the digivolution cost by 1.",
           kind: "CostModifier",
           mode: "reduce",
           costType: "digivolve",

@@ -28,9 +28,6 @@ export function CircuitCatalogSection({ canCreate, onOpen, onCreate }: Props) {
     }
   }, []);
   usePolledRequest(load, apply, POLL_MS);
-  if (circuits.length === 0 && !canCreate) {
-    return null;
-  }
   const dateFormat = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
   const nextFormat = new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
@@ -44,7 +41,7 @@ export function CircuitCatalogSection({ canCreate, onOpen, onCreate }: Props) {
           <p>{t("tournaments.circuits.subtitle")}</p>
         </div>
         {canCreate ? (
-          <Button variant="secondary" icon={Icons.Plus} onClick={onCreate}>
+          <Button size="sm" variant="secondary" icon={Icons.Plus} onClick={onCreate}>
             {t("tournaments.circuits.create")}
           </Button>
         ) : null}
@@ -54,7 +51,11 @@ export function CircuitCatalogSection({ canCreate, onOpen, onCreate }: Props) {
         {circuits.map((circuit) => (
           <li key={circuit.id}>
             <button type="button" className="circuits-card" onClick={() => onOpen(circuit.id)}>
+              <span className="circuits-card__icon" aria-hidden="true">
+                <Icons.Trophy size={18} />
+              </span>
               <span className="circuits-card__name">{circuit.name}</span>
+              {circuit.description ? <span className="circuits-card__description">{circuit.description}</span> : null}
               <span className="circuits-card__period">
                 {t("tournaments.circuits.period", {
                   start: dateFormat.format(circuit.startsAt),
@@ -67,6 +68,7 @@ export function CircuitCatalogSection({ canCreate, onOpen, onCreate }: Props) {
                 ))}
               </span>
               <span className="circuits-card__next">
+                <Icons.Calendar size={14} aria-hidden="true" />
                 {circuit.nextOccurrenceAt === null
                   ? t("tournaments.circuits.noNext")
                   : t("tournaments.circuits.next", {

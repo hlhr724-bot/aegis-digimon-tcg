@@ -13,6 +13,7 @@ import { TrashViewerOverlay } from "../../overlay";
 import { Side } from "../../side";
 import type { PresentedPlayer } from "../types";
 import type { RevealedZones, RevealedZoneView } from "../model/gameOutcome";
+import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
 
 export function PileViewers({
   trashView,
@@ -24,11 +25,13 @@ export function PileViewers({
   revealedZoneView,
   sheet,
   trashActivatable,
+  effectSourceMarks,
   onActivateTrashEffect,
   onCloseTrash,
   onCloseSecurity,
   onCloseRevealedZone,
 }: {
+  effectSourceMarks?: ReadonlyMap<string, EffectSourceMark>;
   /** Which player's trash is open, or nothing. */
   trashView: Side | null;
   /** Which player's security stack is open, or nothing. */
@@ -74,6 +77,7 @@ export function PileViewers({
           instanceIds={trashOwner.trash.map((c) => c.instanceId)}
           artIds={trashOwner.trash.map((c) => c.artId)}
           effects={trashEffects}
+          effectSourceMarks={effectSourceMarks}
           sheet={sheet}
           onActivateEffect={onActivateTrashEffect}
           onClose={onCloseTrash}

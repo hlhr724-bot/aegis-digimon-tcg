@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Up to 2 of your Digimon gain ＜Security Attack +1＞ (This Digimon checks 1 additional security card) for the turn.",
           kind: "GainKeyword",
           target: {
             filter: {

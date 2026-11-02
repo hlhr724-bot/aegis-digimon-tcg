@@ -54,8 +54,14 @@ const compiled: CompiledCard = {
     {
       trigger: "Main",
       actions: [
-        { kind: "SelectBind", target: { ...machineOrCyborg, count: 1, bindAs: "chosenMachine" } },
         {
+          effectTextPart: "[Main] Choose 1 of your Digimon with a [Machine] or [Cyborg] trait.",
+          kind: "SelectBind",
+          target: { ...machineOrCyborg, count: 1, bindAs: "chosenMachine" },
+        },
+        {
+          effectTextPart:
+            "Delete 1 of your opponent's Digimon with DP less than or equal to that Digimon and delete your chosen Digimon.",
           kind: "Delete",
           target: {
             filter: {
@@ -86,6 +92,7 @@ const compiled: CompiledCard = {
             kind: "trash",
             target: { ...handMachineOrCyborg, count: 1 },
             bindResultAs: "trashedMachine",
+            raw: "By trashing 1 card with a [Cyborg] or [Machine] trait from your hand",
           },
           optional: true,
           abortOnDecline: true,

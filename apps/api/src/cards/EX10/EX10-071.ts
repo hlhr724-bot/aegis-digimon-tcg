@@ -87,6 +87,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Until your opponent's turn ends, 1 of your Digimon with [Lucemon]\u00a0in its name gains ＜Raid＞ , ＜Piercing＞ , ＜Blocker＞ and +3000 DP.",
           kind: "GainKeyword",
           target: {
             filter: {
@@ -109,6 +111,8 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] Until your opponent's turn ends, 1 of your Digimon with [Lucemon]\u00a0in its name gains ＜Raid＞ , ＜Piercing＞ , ＜Blocker＞ and +3000 DP.",
           kind: "GainKeyword",
           target: {
             filter: {},
@@ -122,6 +126,8 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] Until your opponent's turn ends, 1 of your Digimon with [Lucemon]\u00a0in its name gains ＜Raid＞ , ＜Piercing＞ , ＜Blocker＞ and +3000 DP.",
           kind: "GainKeyword",
           target: {
             filter: {},
@@ -135,6 +141,8 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] Until your opponent's turn ends, 1 of your Digimon with [Lucemon]\u00a0in its name gains ＜Raid＞ , ＜Piercing＞ , ＜Blocker＞ and +3000 DP.",
           kind: "ModifyDP",
           target: {
             filter: {},

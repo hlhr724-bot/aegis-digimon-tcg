@@ -21,10 +21,12 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "For each color your Digimon have, activate it again.",
           kind: "RepeatPerCount",
           countSource: "distinctOwnDigimonColors",
           countScaling: { per: 1, filter: { controller: "mine", kind: ["Digimon"] }, unit: "colors" },
           action: {
+            effectTextPart: "1 of your opponent's Digimon gets -6000 DP for the turn.",
             kind: "ModifyDP",
             target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
             amount: -6000,
@@ -32,6 +34,7 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart: "1 of your opponent's Digimon gets -6000 DP for the turn.",
           kind: "ModifyDP",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
           amount: -6000,

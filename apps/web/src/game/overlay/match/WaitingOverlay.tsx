@@ -9,6 +9,7 @@ export function WaitingOverlay({
   actionLabel,
   onAction,
   aside,
+  status,
   cancelLabel,
   onCancel,
 }: {
@@ -20,6 +21,7 @@ export function WaitingOverlay({
   /** A side panel, such as the private host's invite panel; it sits beside the wait on
       desktop and under it in the mobile bottom sheet. */
   aside?: ReactNode;
+  status?: ReactNode;
   cancelLabel?: string;
   onCancel?: () => void;
 }) {
@@ -36,6 +38,7 @@ export function WaitingOverlay({
         )}
         <h2 id="aegis-waiting-title">{title}</h2>
         <p>{detail}</p>
+        {status}
         {actionLabel && onAction ? (
           <Button full variant="secondary" className="waiting-dialog__action" onClick={onAction}>
             {actionLabel}

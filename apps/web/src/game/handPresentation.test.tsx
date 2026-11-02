@@ -16,11 +16,14 @@ import { snapshotGameState } from "../net/presentedState";
 import type { ServerBatch } from "../net/serverBatches";
 import { GameScreen } from "./GameScreen";
 import { HandSortMode, setHandSortMode } from "./handSortMode";
+import { HandSortDirection } from "@/game/HandSortDirection";
+import { setHandSortDirection } from "@/game/handSortDirectionPreference";
 import { TIMINGS } from "./timings";
 
 afterEach(() => {
   cleanup();
   setHandSortMode(HandSortMode.Type);
+  setHandSortDirection(HandSortDirection.ASCENDING.value);
   vi.useRealTimers();
 });
 
@@ -174,7 +177,7 @@ it("sorts from the hand tray without opening settings and appends later draws", 
     </I18nProvider>
   );
   const rendered = render(view());
-  const button = screen.getByRole("button", { name: "Sort hand: By type" });
+  const button = screen.getByRole("button", { name: "Sort hand: By type, Low to high" });
   expect(button.closest(".game-player-dock")?.querySelector('[data-testid="hand"]')).toBeTruthy();
   expect(screen.queryByRole("dialog", { name: "Match settings" })).toBeNull();
   const ids = () =>
@@ -198,8 +201,16 @@ it("sorts from the hand tray without opening settings and appends later draws", 
   fireEvent.click(screen.getByRole("menuitemradio", { name: "By cost" }));
   expect(screen.queryByRole("menu")).toBeNull();
   expect(ids()).toEqual(["sort-card-1", "later-draw", "sort-card-0", "sort-card-2"]);
-  expect(screen.getByRole("button", { name: "Sort hand: By cost" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Sort hand: By cost, Low to high" })).toBeTruthy();
   expect(localStorage.getItem("aegis.hand.sort-mode")).toBe("cost");
+
+  fireEvent.click(screen.getByRole("button", { name: "Choose sort order" }));
+  expect(screen.getByRole("menuitemradio", { name: "Low to high" }).getAttribute("aria-checked")).toBe("true");
+  fireEvent.click(screen.getByRole("menuitemradio", { name: "High to low" }));
+  expect(screen.queryByRole("menu")).toBeNull();
+  expect(ids()).toEqual(["sort-card-2", "sort-card-0", "sort-card-1", "later-draw"]);
+  expect(screen.getByRole("button", { name: "Sort hand: By cost, High to low" })).toBeTruthy();
+  expect(localStorage.getItem("aegis.hand.sort-direction")).toBe("descending");
 });
 
 it.each([0, 1])("shows all redealt physical cards when a mulligan retains %s original identities", (retained) => {
