@@ -862,8 +862,8 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
     adjustedPlayCost: (_state, seat, definition, base) =>
       engine.modifiers.playCostFor({ def: definition, controllerSeat: seat }, base),
     canReducePlayCost: (_state, seat) => !engine.continuous.blocksCostReduction(seat, "play"),
-    finalizePlayCost: async (_state, _seat, instance, _definition, baseCost) =>
-      fireBeforePayCost(engine, instance, baseCost, false, "hand"),
+    finalizePlayCost: async (_state, _seat, instance, _definition, baseCost, materialInstanceIds) =>
+      fireBeforePayCost(engine, instance, baseCost, false, "hand", false, 1, materialInstanceIds),
     digiXrosNamesOf: (instanceId) => {
       const located = findInstance(engine, instanceId);
       if (located === undefined) return [];
