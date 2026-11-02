@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import type { CommunityDeckSummary } from "@aegis/shared";
 import { communityApi } from "../../community/client";
 import { communityTileListing } from "../../community/communityDeckListing";
-import { ColorDot, IconButton } from "../../design/primitives";
+import { Badge, ColorDot, IconButton } from "../../design/primitives";
 import { Icons } from "../../design/icons";
 import { useTranslation } from "../../i18n";
 import { DeckListCard } from "../DeckListCard";
@@ -80,10 +80,18 @@ export function LobbyCommunityDecks({
                 subtitle={t("community.byAuthor", { name: deck.author.displayName })}
                 actions={
                   <>
-                    <span className="community-tile__colors" aria-hidden="true">
-                      {deck.colors.map((color) => (
-                        <ColorDot key={color} color={color} size={10} />
-                      ))}
+                    <span className="community-lobby-decks__meta">
+                      <span className="community-tile__colors" aria-hidden="true">
+                        {deck.colors.map((color) => (
+                          <ColorDot key={color} color={color} size={10} />
+                        ))}
+                      </span>
+                      {deck.hasGuide ? (
+                        <Badge tone="primary">
+                          <Icons.BookOpen size={12} />
+                          {t("community.guide.label")}
+                        </Badge>
+                      ) : null}
                     </span>
                     <LikeButton
                       key={`${deck.id}:${deck.likeCount}:${deck.likedByMe}`}
