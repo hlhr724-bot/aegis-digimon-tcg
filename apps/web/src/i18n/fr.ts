@@ -2414,7 +2414,9 @@ const interfaceMessages = {
   "deck.artCopyPrompt": "Choisissez un exemplaire",
   "deck.artEditingCopy":
     "Modification de l'exemplaire {number}. Choisissez une illustration pour l'enregistrer immédiatement.",
-  "deck.artApplyAll": "Utiliser sur tous les exemplaires",
+  "deck.artAllCopies": "Tous les exemplaires",
+  "deck.artEditingAllCopies":
+    "Modification de tous les exemplaires. Choisissez une illustration pour l'enregistrer immédiatement.",
   "deck.artDoubleClickHint": "Double-cliquez sur une illustration pour l'utiliser sur tous les exemplaires de ce deck.",
   "common.done": "Terminé",
   "redesign.foundation.arena.preview": "Aperçu du plateau avec vos couleurs et votre champ de bataille",
