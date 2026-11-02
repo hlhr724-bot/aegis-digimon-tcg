@@ -936,3 +936,10 @@
 .arena-permanent-inspector[data-compact] .arena-permanent-inspector__strip-detail > .arena-permanent-inspector__source {
   border: 1px solid var(--inspector-line);
 }
+
+@media (max-width: 599px) and (orientation: portrait) {
+  .arena-permanent-inspector[data-compact] .arena-permanent-inspector__header {
+    grid-template-columns: min(36vw, 9rem) minmax(0, 1fr) var(--ds-touch-target);
+    column-gap: 0.875rem;
+  }
+}
