@@ -822,8 +822,8 @@
         },
         "decisionId": "dec-10"
       },
-      "engineEvents": 95,
-      "stateVersion": 62
+      "engineEvents": 94,
+      "stateVersion": 61
     },
     {
       "ok": true,
@@ -837,8 +837,8 @@
         },
         "decisionId": "dec-11"
       },
-      "engineEvents": 97,
-      "stateVersion": 64
+      "engineEvents": 95,
+      "stateVersion": 62
     },
     {
       "ok": true,
@@ -848,8 +848,8 @@
         "type": "moveFromBreeding",
         "permanentId": "perm-3"
       },
-      "engineEvents": 103,
-      "stateVersion": 70
+      "engineEvents": 101,
+      "stateVersion": 68
     },
     {
       "ok": true,
@@ -863,8 +863,8 @@
         },
         "decisionId": "dec-12"
       },
-      "engineEvents": 109,
-      "stateVersion": 72
+      "engineEvents": 107,
+      "stateVersion": 70
     },
     {
       "ok": true,
@@ -881,8 +881,8 @@
         },
         "decisionId": "dec-13"
       },
-      "engineEvents": 110,
-      "stateVersion": 73
+      "engineEvents": 108,
+      "stateVersion": 71
     },
     {
       "ok": true,
@@ -893,8 +893,8 @@
         "effectKey": "LM-051/ir-27-0",
         "sourceInstanceId": "s1-bacc5e5a0c1bf099c2556c42963bf190a66dcd2545158ced8dbbc92d8d467931"
       },
-      "engineEvents": 113,
-      "stateVersion": 76
+      "engineEvents": 111,
+      "stateVersion": 74
     },
     {
       "ok": true,
@@ -904,8 +904,8 @@
         "type": "playCard",
         "instanceId": "s1-c18d3a703cd63e90701e2cf2eef1bca8f4e645559934a0cefc446b4c06ded6b3"
       },
-      "engineEvents": 118,
-      "stateVersion": 81
+      "engineEvents": 116,
+      "stateVersion": 79
     },
     {
       "ok": true,
@@ -919,8 +919,8 @@
         },
         "decisionId": "dec-14"
       },
-      "engineEvents": 126,
-      "stateVersion": 83
+      "engineEvents": 124,
+      "stateVersion": 81
     },
     {
       "ok": true,
@@ -937,8 +937,8 @@
         },
         "decisionId": "dec-15"
       },
-      "engineEvents": 127,
-      "stateVersion": 84
+      "engineEvents": 125,
+      "stateVersion": 82
     },
     {
       "ok": true,
@@ -949,8 +949,8 @@
         "instanceId": "s1-6cc664c82acc966ac08e85750e30360886c29946586a88598fc46fc9cb82babb",
         "permanentId": "perm-3"
       },
-      "engineEvents": 129,
-      "stateVersion": 86
+      "engineEvents": 127,
+      "stateVersion": 84
     },
     {
       "ok": true,
@@ -964,8 +964,8 @@
         },
         "decisionId": "dec-16"
       },
-      "engineEvents": 132,
-      "stateVersion": 88
+      "engineEvents": 130,
+      "stateVersion": 86
     },
     {
       "ok": true,
@@ -979,8 +979,8 @@
         },
         "decisionId": "dec-17"
       },
-      "engineEvents": 137,
-      "stateVersion": 91
+      "engineEvents": 135,
+      "stateVersion": 89
     },
     {
       "ok": true,
@@ -994,8 +994,8 @@
         },
         "decisionId": "dec-18"
       },
-      "engineEvents": 138,
-      "stateVersion": 92
+      "engineEvents": 136,
+      "stateVersion": 90
     },
     {
       "ok": true,
@@ -1006,8 +1006,8 @@
         "instanceId": "s1-db09330dc20db14d44366fb64176f446702a13ed59d246a3f8081bb1eebdb38c",
         "permanentId": "perm-8"
       },
-      "engineEvents": 140,
-      "stateVersion": 94
+      "engineEvents": 138,
+      "stateVersion": 92
     },
     {
       "ok": true,
@@ -1021,8 +1021,8 @@
         },
         "decisionId": "dec-19"
       },
-      "engineEvents": 143,
-      "stateVersion": 96
+      "engineEvents": 141,
+      "stateVersion": 94
     },
     {
       "ok": true,
@@ -1036,8 +1036,8 @@
         },
         "decisionId": "dec-20"
       },
-      "engineEvents": 148,
-      "stateVersion": 99
+      "engineEvents": 146,
+      "stateVersion": 97
     },
     {
       "ok": true,
@@ -1047,8 +1047,8 @@
         "type": "playCard",
         "instanceId": "s1-b813a1f09c7f468e480139b31c6e85081ccb60e36ecf8af4adbe781675c5b462"
       },
-      "engineEvents": 152,
-      "stateVersion": 103
+      "engineEvents": 150,
+      "stateVersion": 101
     },
     {
       "ok": true,
@@ -1062,8 +1062,8 @@
         },
         "decisionId": "dec-21"
       },
-      "engineEvents": 155,
-      "stateVersion": 104
+      "engineEvents": 153,
+      "stateVersion": 102
     },
     {
       "ok": true,
@@ -1077,8 +1077,8 @@
         },
         "decisionId": "dec-22"
       },
-      "engineEvents": 156,
-      "stateVersion": 105
+      "engineEvents": 154,
+      "stateVersion": 103
     },
     {
       "ok": true,
@@ -1093,8 +1093,8 @@
         },
         "decisionId": "dec-23"
       },
-      "engineEvents": 161,
-      "stateVersion": 108
+      "engineEvents": 159,
+      "stateVersion": 106
     },
     {
       "ok": true,
@@ -1108,8 +1108,8 @@
         },
         "decisionId": "dec-24"
       },
-      "engineEvents": 166,
-      "stateVersion": 110
+      "engineEvents": 164,
+      "stateVersion": 108
     },
     {
       "ok": true,
@@ -1126,8 +1126,8 @@
         },
         "decisionId": "dec-25"
       },
-      "engineEvents": 167,
-      "stateVersion": 111
+      "engineEvents": 165,
+      "stateVersion": 109
     },
     {
       "ok": true,
@@ -1143,8 +1143,8 @@
         },
         "decisionId": "dec-26"
       },
-      "engineEvents": 169,
-      "stateVersion": 113
+      "engineEvents": 167,
+      "stateVersion": 111
     },
     {
       "ok": true,
@@ -1158,8 +1158,8 @@
         },
         "decisionId": "dec-27"
       },
-      "engineEvents": 171,
-      "stateVersion": 115
+      "engineEvents": 169,
+      "stateVersion": 113
     },
     {
       "ok": true,
@@ -1173,8 +1173,8 @@
         },
         "decisionId": "dec-28"
       },
-      "engineEvents": 171,
-      "stateVersion": 115
+      "engineEvents": 169,
+      "stateVersion": 113
     },
     {
       "ok": true,
@@ -1188,8 +1188,8 @@
         },
         "decisionId": "dec-29"
       },
-      "engineEvents": 179,
-      "stateVersion": 120
+      "engineEvents": 177,
+      "stateVersion": 118
     },
     {
       "ok": true,
@@ -1203,8 +1203,8 @@
         },
         "decisionId": "dec-30"
       },
-      "engineEvents": 180,
-      "stateVersion": 121
+      "engineEvents": 178,
+      "stateVersion": 119
     },
     {
       "ok": true,
@@ -1218,8 +1218,8 @@
         },
         "decisionId": "dec-31"
       },
-      "engineEvents": 180,
-      "stateVersion": 121
+      "engineEvents": 178,
+      "stateVersion": 119
     },
     {
       "ok": true,
@@ -1235,8 +1235,8 @@
         },
         "decisionId": "dec-32"
       },
-      "engineEvents": 188,
-      "stateVersion": 126
+      "engineEvents": 186,
+      "stateVersion": 124
     },
     {
       "ok": true,
@@ -1250,8 +1250,8 @@
         },
         "decisionId": "dec-33"
       },
-      "engineEvents": 190,
-      "stateVersion": 128
+      "engineEvents": 188,
+      "stateVersion": 126
     },
     {
       "ok": true,
@@ -1265,8 +1265,8 @@
         },
         "decisionId": "dec-34"
       },
-      "engineEvents": 194,
-      "stateVersion": 131
+      "engineEvents": 192,
+      "stateVersion": 129
     },
     {
       "ok": true,
@@ -1280,8 +1280,8 @@
         },
         "decisionId": "dec-35"
       },
-      "engineEvents": 195,
-      "stateVersion": 132
+      "engineEvents": 193,
+      "stateVersion": 130
     },
     {
       "ok": true,
@@ -1297,8 +1297,8 @@
         },
         "decisionId": "dec-36"
       },
-      "engineEvents": 197,
-      "stateVersion": 134
+      "engineEvents": 195,
+      "stateVersion": 132
     },
     {
       "ok": true,
@@ -1312,8 +1312,8 @@
         },
         "decisionId": "dec-37"
       },
-      "engineEvents": 205,
-      "stateVersion": 141
+      "engineEvents": 203,
+      "stateVersion": 139
     },
     {
       "ok": true,
@@ -1327,8 +1327,8 @@
         },
         "decisionId": "dec-38"
       },
-      "engineEvents": 208,
-      "stateVersion": 143
+      "engineEvents": 206,
+      "stateVersion": 141
     },
     {
       "ok": true,
@@ -1344,8 +1344,8 @@
         },
         "decisionId": "dec-39"
       },
-      "engineEvents": 211,
-      "stateVersion": 144
+      "engineEvents": 209,
+      "stateVersion": 142
     },
     {
       "ok": true,
@@ -1359,21 +1359,21 @@
         },
         "decisionId": "dec-40"
       },
-      "engineEvents": 212,
-      "stateVersion": 145
+      "engineEvents": 210,
+      "stateVersion": 143
     },
     {
       "kind": "disconnect",
       "seat": 0,
       "final": false,
-      "engineEvents": 217,
-      "stateVersion": 149
+      "engineEvents": 213,
+      "stateVersion": 145
     },
     {
       "kind": "reconnect",
       "seat": 0,
-      "engineEvents": 217,
-      "stateVersion": 149
+      "engineEvents": 213,
+      "stateVersion": 145
     },
     {
       "ok": true,

@@ -109,6 +109,20 @@ export function createPreventReplacementInstall({
           ...(ctx.activeTiming !== undefined ? { activeTiming: ctx.activeTiming } : {}),
           ...(ctx.activeEffectIsInherited === true ? { activeEffectIsInherited: true } : {}),
         };
+        if (action.optional !== false) {
+          const preventReason =
+            printedClause(action.raw) ??
+            printedClause(preventCost?.raw) ??
+            printedClause(subCtx.activeEffectText) ??
+            printedClause(subCtx.source.definition.effectText);
+          const askCtx = {
+            ...subCtx,
+            ...(preventReason === undefined ? {} : { activeEffectText: preventReason, ...clauseProvenance }),
+            activeDecisionSelectionGoal: DecisionSelectionGoal.PROTECT.value,
+          };
+          const yes = await askCtx.ask.optional(askCtx, "Prevent leaving the battle area?");
+          if (!yes) return false;
+        }
         const resolveNotice = subCtx.fx.announceEffect?.(subCtx, {
           beforeRemoval: true,
           effectKey: activationIdentity ?? `replacement/${ctx.source.cardId}/prevent`,
@@ -121,20 +135,6 @@ export function createPreventReplacementInstall({
           ...(clauseProvenance.activeEffectIsInherited === true ? { isInherited: true } : {}),
         });
         try {
-          if (action.optional !== false) {
-            const preventReason =
-              printedClause(action.raw) ??
-              printedClause(preventCost?.raw) ??
-              printedClause(subCtx.activeEffectText) ??
-              printedClause(subCtx.source.definition.effectText);
-            const askCtx = {
-              ...subCtx,
-              ...(preventReason === undefined ? {} : { activeEffectText: preventReason, ...clauseProvenance }),
-              activeDecisionSelectionGoal: DecisionSelectionGoal.PROTECT.value,
-            };
-            const yes = await askCtx.ask.optional(askCtx, "Prevent leaving the battle area?");
-            if (!yes) return false;
-          }
           subCtx.onActivationChosen?.();
           subCtx.oncePerTurnActivationChosen = true;
           if (action.digivolveFromTrash === true) {
