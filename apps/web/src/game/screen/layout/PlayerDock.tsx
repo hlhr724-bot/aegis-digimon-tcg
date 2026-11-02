@@ -5,6 +5,7 @@ import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
    short desktop moves the deck and trash down from the right rail the same way. */
 
 import type { ReactNode, RefObject } from "react";
+import type { FinalRevealCard } from "@aegis/shared";
 import { CardBack } from "../../../design/cards";
 import { useTranslation } from "../../../i18n";
 import { ArenaCounters } from "../../ArenaCounters";
@@ -15,12 +16,14 @@ import { HandSortMode } from "../../handSortMode";
 import { ActionBar } from "./ActionBar";
 import { HandSortControl } from "./HandSortControl";
 import { PlayerLine } from "./PlayerLine";
+import { RevealedHandCard } from "./RevealedHandCard";
 import type { EffectActivation } from "../../effectSource";
 import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
 
 export function PlayerDock({
   spectating = false,
   showRecordedHand = false,
+  revealedHand,
   timer,
   playerName,
   playerAvatarId,
@@ -61,6 +64,7 @@ export function PlayerDock({
   onSortHand?: (mode: HandSortMode, direction: HandSortDirection) => void;
   /** Authorised replay cards can be inspected while every gameplay action stays disabled. */
   showRecordedHand?: boolean;
+  revealedHand?: readonly FinalRevealCard[];
   onMoveHandCard?: (instanceId: string, direction: -1 | 1) => void;
   reorderDropBeforeInstanceId?: string | null;
   timer?: ReactNode;
@@ -149,9 +153,11 @@ export function PlayerDock({
         <div className="game-hand-tray">
           {spectating && !showRecordedHand ? (
             <div className="game-spectator-hand" aria-label={t("game.handCount", { count: handCount })}>
-              {Array.from({ length: handCount }, (_, index) => (
-                <CardBack key={index} width={40} useSelectedSleeve={false} />
-              ))}
+              {revealedHand
+                ? revealedHand.map((card, index) => <RevealedHandCard key={index} card={card} width={40} />)
+                : Array.from({ length: handCount }, (_, index) => (
+                    <CardBack key={index} width={40} useSelectedSleeve={false} />
+                  ))}
             </div>
           ) : (
             <Hand

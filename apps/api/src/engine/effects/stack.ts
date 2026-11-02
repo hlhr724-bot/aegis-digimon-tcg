@@ -167,6 +167,8 @@ export interface ResolutionEnv {
    */
   onResolving?(timing: EffectTiming, collected: CollectedEffect): void;
 
+  onLapsed?(timing: EffectTiming, collected: CollectedEffect): void;
+
   /** Public narration starts only once the resolving clause accepts its processing. */
   onActivating?(timing: EffectTiming, collected: CollectedEffect): void;
 
@@ -544,10 +546,8 @@ export async function resolveTiming(
         }
 
         const activeTier = Math.max(...active.map((c) => activationTiers.get(declineKey(c))!));
-        const ordered = orderTurnPlayerFirst(
-          active.filter((c) => activationTiers.get(declineKey(c)) === activeTier),
-          env.turnSeat,
-        );
+        const inActiveTier = (c: CollectedEffect): boolean => activationTiers.get(declineKey(c)) === activeTier;
+        const ordered = orderTurnPlayerFirst(active.filter(inActiveTier), env.turnSeat);
 
         // The frontmost contiguous group sharing the frontmost controller is the set of
         // that player's simultaneous triggers they may order among (rulebook: the turn
@@ -555,6 +555,18 @@ export async function resolveTiming(
         // theirs). Cross-player ordering is fixed by orderTurnPlayerFirst, so we only ever
         // prompt within one controller's group.
         const frontSeat = orderingSeatOf(ordered[0]!);
+
+        const tierStillProcessing = [...inProgress].some((key) => activationTiers.get(key) === activeTier);
+        if (frontSeat !== env.turnSeat && !tierStillProcessing) {
+          const lapsed = pending.filter(
+            (c) => inActiveTier(c) && orderingSeatOf(c) === env.turnSeat && !active.includes(c),
+          );
+          if (inProgress.size === 0) reportWithoutLegalOutcome(lapsed);
+          for (const c of lapsed) {
+            departed.add(declineKey(c));
+            env.onLapsed?.(timing, c);
+          }
+        }
         const group = ordered.filter((c) => orderingSeatOf(c) === frontSeat);
         const waiting = active.filter((c) => !group.includes(c) && orderingSeatOf(c) === frontSeat);
 
