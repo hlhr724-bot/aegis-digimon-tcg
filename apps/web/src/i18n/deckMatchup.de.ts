@@ -41,4 +41,6 @@ export const deckMatchupDe = {
   "deckMatchup.table.rangeValue": "{low} bis {high}",
   "deckMatchup.table.games": "Partien",
   "deckMatchup.table.gamesValue": "{done} von {total}",
+  "deckMatchup.watch": "Zug für Zug ansehen",
+  "deckMatchup.replayUnavailable": "Diese Beispielpartie ist nicht mehr verfügbar. Starten Sie das Duell erneut.",
 };

@@ -41,4 +41,7 @@ export const deckMatchupFr = {
   "deckMatchup.table.rangeValue": "{low} à {high}",
   "deckMatchup.table.games": "Parties",
   "deckMatchup.table.gamesValue": "{done} sur {total}",
+  "deckMatchup.watch": "Revoir tour par tour",
+  "deckMatchup.replayUnavailable":
+    "Cette partie d'exemple n'est plus disponible. Relancez l'affrontement pour la revoir.",
 };

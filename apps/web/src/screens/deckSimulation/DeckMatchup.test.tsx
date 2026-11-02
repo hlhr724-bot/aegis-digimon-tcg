@@ -64,7 +64,7 @@ describe("DeckMatchup", () => {
     expect(await screen.findByText("Win rate 63%")).toBeTruthy();
     expect(screen.getByText("95% range 41% to 80%")).toBeTruthy();
     expect(screen.getByText("12 wins, 7 losses, 1 draws")).toBeTruthy();
-    expect(screen.getByText("Game 1: win in 9 turns, Going first")).toBeTruthy();
+    expect(screen.getByText(/Game 1: win in 9 turns, Going first/)).toBeTruthy();
     const [path, init] = fetch.mock.calls[0]!;
     expect(path).toMatch(/\/account\/deck-simulations\/matchups$/);
     const body = JSON.parse(String(init?.body));
@@ -115,6 +115,24 @@ describe("DeckMatchup", () => {
     const body = JSON.parse(String(start[1]?.body));
     expect(body.opponent).toEqual({ community: {} });
     expect(body.games).toBe(4);
+  });
+
+  it("asks the server for the sample replay and explains when it has expired", async () => {
+    const fetch = vi.fn<(path: string, init?: RequestInit) => Promise<Response>>(async (path) =>
+      String(path).includes("/replays/")
+        ? new Response("", { status: 404 })
+        : new Response(JSON.stringify(finishedJob), { status: 202 }),
+    );
+    vi.stubGlobal("fetch", fetch);
+    renderMatchup(FULL_DECK);
+    fireEvent.click(screen.getByRole("button", { name: "Run matchup" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Watch turn by turn" }));
+    expect(
+      await screen.findByText("This sample game is no longer available. Run the matchup again to watch it."),
+    ).toBeTruthy();
+    expect(fetch.mock.calls.some(([path]) => String(path).endsWith(`/matchups/${finishedJob.id}/replays/0`))).toBe(
+      true,
+    );
   });
 
   it("explains a conflict with a matchup that is still running", async () => {

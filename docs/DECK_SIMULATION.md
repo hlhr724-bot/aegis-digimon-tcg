@@ -118,3 +118,21 @@ read them as a first screen, not a verdict.
 Bot results are kept apart from human statistics. `043-deck-composition-matchups`
 indexes human match records by deck composition for deck statistics; bot games are
 never written there, so they cannot skew those numbers.
+
+## Turn-by-turn playthrough
+
+Each sample game in a matchup has a **Watch turn by turn** button. It opens the game in
+the existing replay viewer (`ReplayViewer`), which steps frame by frame and jumps
+between turns. The panel shows the viewer full screen over the editor; closing it
+returns to the editor.
+
+The worker records the sample games' inputs with `createMatchReplayRecorder` (through
+`runBotMatch`'s `recordReplay`). Right after such a game, the same worker turns the
+record into a viewer file with `exportPlayerReplay`, so the re-simulation never runs on
+the game loop. It keeps a file only when the re-run has no divergence. The simulator
+holds up to three gzipped files per job (about 30 to 45 KB each) in memory, for the
+same 15 minutes as the results. With one opponent, the first three games are samples.
+With several opponents, the first game against each of the first three opponents is.
+
+A goldfish playthrough is not offered: draw odds are exact calculations, not simulated
+games, so there is no game to replay.

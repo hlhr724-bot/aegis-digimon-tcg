@@ -23,8 +23,14 @@ function createTask(overrides: Partial<MatchupJobTask> = {}): MatchupJobTask {
 }
 
 describe("runMatchupJob", () => {
-  it("plays each opponent in turn with Standard bots and records only the sample replays", async () => {
-    const games: { index: number; opponentIndex: number; playerFirst: boolean; outcome: MatchupGameOutcome }[] = [];
+  it("plays each opponent in turn and exports only the sample games as viewer replays", async () => {
+    const games: {
+      index: number;
+      opponentIndex: number;
+      playerFirst: boolean;
+      outcome: MatchupGameOutcome;
+      replayFile?: Uint8Array;
+    }[] = [];
     const end = await runMatchupJob({
       task: createTask(),
       signal: new AbortController().signal,
@@ -36,8 +42,9 @@ describe("runMatchupJob", () => {
       [1, 1, true],
     ]);
     expect(games.every((game) => game.outcome.result !== undefined && game.outcome.turns > 0)).toBe(true);
-    expect(games[0]!.outcome.replay?.inputs.length).toBeGreaterThan(0);
-    expect(games[1]!.outcome.replay).toBeUndefined();
+    expect(games[0]!.replayFile?.[0]).toBe(0x1f);
+    expect(games[0]!.outcome.replay).toBeUndefined();
+    expect(games[1]!.replayFile).toBeUndefined();
   }, 300_000);
 
   it("stops before the first game when the time budget is already spent", async () => {

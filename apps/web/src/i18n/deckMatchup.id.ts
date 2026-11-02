@@ -40,4 +40,6 @@ export const deckMatchupId = {
   "deckMatchup.table.rangeValue": "{low} sampai {high}",
   "deckMatchup.table.games": "Permainan",
   "deckMatchup.table.gamesValue": "{done} dari {total}",
+  "deckMatchup.watch": "Tonton per giliran",
+  "deckMatchup.replayUnavailable": "Contoh permainan ini sudah tidak tersedia. Mulai duel lagi untuk menontonnya.",
 };

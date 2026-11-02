@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { createPortal } from "react-dom";
 import { VALIDATED_FAMOUS_DECKS } from "@aegis/shared";
 import type { MatchupJob } from "@aegis/shared/deckSimulation/MatchupJob";
 import { MatchupJobStatus } from "@aegis/shared/deckSimulation/MatchupJobStatus";
@@ -11,6 +12,7 @@ import { expand, MAIN_TARGET, total, type CountMap } from "@/screens/deckCounts"
 import { CommunityOpponentPicker } from "@/screens/deckSimulation/CommunityOpponentPicker";
 import { matchupApi, type MatchupOpponentChoice } from "@/screens/deckSimulation/matchupApi";
 import { MatchupOpponentTable } from "@/screens/deckSimulation/MatchupOpponentTable";
+import { ReplayViewer, useReplayFile } from "@/replays/ReplayViewer";
 import { usePolling } from "@/tournaments/hooks";
 import "@/screens/deckBuilder.css";
 
@@ -51,6 +53,8 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
   const gameChoices: readonly number[] = community ? COMMUNITY_MATCHUP_LIMITS.gamesPerOpponent : MATCHUP_GAME_COUNTS;
   const [job, setJob] = useState<MatchupJob | undefined>();
   const [error, setError] = useState<TranslationKey | undefined>();
+  const viewer = useReplayFile();
+  const [replayFailed, setReplayFailed] = useState(false);
   const running = job !== undefined && !isFinished(job);
   const deckReady = total(main) === MAIN_TARGET;
 
@@ -85,6 +89,16 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
       );
     } catch (failure) {
       setError(errorKey(failure));
+    }
+  };
+
+  const watch = async (index: number) => {
+    if (jobId === undefined) return;
+    setReplayFailed(false);
+    try {
+      await viewer.open(await matchupApi.replayFile(jobId, index));
+    } catch {
+      setReplayFailed(true);
     }
   };
 
@@ -194,7 +208,7 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
           {job.samples.length > 0 ? (
             <ul className="deck-draw-odds__sensitivity" aria-label={t("deckMatchup.samples")}>
               {job.samples.map((sample) => (
-                <li key={sample.index}>
+                <li key={sample.index} className="deck-matchup__sample">
                   {t(job.opponents.length > 1 ? "deckMatchup.sampleAgainst" : "deckMatchup.sample", {
                     index: sample.index + 1,
                     opponent: job.opponents[sample.opponentIndex]?.name ?? "",
@@ -202,13 +216,34 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
                     turns: sample.turns,
                     order: t(sample.wentFirst ? "deckOdds.goingFirst" : "deckOdds.goingSecond"),
                   })}
+                  <button
+                    type="button"
+                    className="deck-draw-odds__toggle"
+                    disabled={viewer.loading}
+                    onClick={() => void watch(sample.index)}
+                  >
+                    {t("deckMatchup.watch")}
+                  </button>
                 </li>
               ))}
             </ul>
           ) : null}
         </div>
       )}
+      {replayFailed || viewer.error !== undefined ? (
+        <p className="deck-draw-odds__hint" role="alert">
+          {t("deckMatchup.replayUnavailable")}
+        </p>
+      ) : null}
       <p className="deck-draw-odds__note">{t("deckMatchup.note")}</p>
+      {viewer.replay === undefined
+        ? null
+        : createPortal(
+            <div className="deck-matchup__viewer" role="dialog" aria-modal="true" aria-label={t("deckMatchup.watch")}>
+              <ReplayViewer replay={viewer.replay} onClose={viewer.close} />
+            </div>,
+            document.body,
+          )}
     </section>
   );
 }

@@ -40,4 +40,6 @@ export const deckMatchupKo = {
   "deckMatchup.table.rangeValue": "{low}~{high}",
   "deckMatchup.table.games": "대전 수",
   "deckMatchup.table.gamesValue": "{total}판 중 {done}판",
+  "deckMatchup.watch": "턴별로 보기",
+  "deckMatchup.replayUnavailable": "이 샘플 대전은 더 이상 볼 수 없습니다. 시뮬레이션을 다시 실행하세요.",
 };

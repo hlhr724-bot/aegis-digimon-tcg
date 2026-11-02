@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RED_DECK } from "#api/engine/testDecks";
-import type { ReplayRecord } from "#api/replays/inputs/types";
 import { MatchupSimulator } from "#api/deckSimulation/MatchupSimulator";
 import type { MatchupRequest } from "#api/deckSimulation/MatchupRequest";
 import type { MatchupWorkerHandle } from "#api/deckSimulation/MatchupWorkerHandle";
@@ -61,14 +60,15 @@ describe("MatchupSimulator", () => {
     worker.emit({ type: "ready" });
     const jobId = lastJobId(worker.posted);
     expect(simulator.get({ accountId: "a", jobId })?.status).toBe("running");
-    const replay = { seed: 1 } as unknown as ReplayRecord;
+    const replayFile = new Uint8Array([31, 139, 8]);
     worker.emit({
       type: "game",
       jobId,
       index: 0,
       opponentIndex: 0,
       playerFirst: true,
-      outcome: { result: "win", reason: "security", turns: 9, replay },
+      outcome: { result: "win", reason: "security", turns: 9 },
+      replayFile,
     });
     worker.emit({
       type: "game",
@@ -120,7 +120,8 @@ describe("MatchupSimulator", () => {
     ]);
     expect(finished.interval![0]).toBeLessThan(0.5);
     expect(finished.interval![1]).toBeGreaterThan(0.5);
-    expect(simulator.replay({ accountId: "a", jobId, index: 0 })).toBe(replay);
+    expect(simulator.replay({ accountId: "a", jobId, index: 0 })).toBe(replayFile);
+    expect(simulator.replay({ accountId: "a", jobId, index: 1 })).toBeUndefined();
   });
 
   it("cancels a queued job at once and asks the worker to stop a running one", () => {

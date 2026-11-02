@@ -41,4 +41,6 @@ export const deckMatchupIt = {
   "deckMatchup.table.rangeValue": "da {low} a {high}",
   "deckMatchup.table.games": "Partite",
   "deckMatchup.table.gamesValue": "{done} di {total}",
+  "deckMatchup.watch": "Guarda turno per turno",
+  "deckMatchup.replayUnavailable": "Questa partita di esempio non è più disponibile. Avvia di nuovo la sfida.",
 };

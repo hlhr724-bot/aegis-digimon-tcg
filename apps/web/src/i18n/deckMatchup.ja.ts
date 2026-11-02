@@ -40,4 +40,6 @@ export const deckMatchupJa = {
   "deckMatchup.table.rangeValue": "{low}～{high}",
   "deckMatchup.table.games": "対戦数",
   "deckMatchup.table.gamesValue": "{total}戦中{done}戦",
+  "deckMatchup.watch": "ターンごとに見る",
+  "deckMatchup.replayUnavailable": "このサンプル対戦はもう見られません。もう一度シミュレーションを行ってください。",
 };

@@ -39,4 +39,6 @@ export const deckMatchupZhCN = {
   "deckMatchup.table.rangeValue": "{low}至{high}",
   "deckMatchup.table.games": "对局",
   "deckMatchup.table.gamesValue": "{done}/{total}",
+  "deckMatchup.watch": "逐回合观看",
+  "deckMatchup.replayUnavailable": "这局示例对局已无法观看。请重新进行模拟。",
 };

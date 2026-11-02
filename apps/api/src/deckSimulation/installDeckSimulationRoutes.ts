@@ -96,4 +96,23 @@ export function installDeckSimulationRoutes({ app, simulator, communityDecks, se
       res.json(job);
     }),
   );
+
+  app.get(
+    "/account/deck-simulations/matchups/:id/replays/:index",
+    route((req, res, accountId) => {
+      const jobId = String(req.params.id ?? "");
+      const index = Number(req.params.index);
+      const file =
+        JOB_ID.test(jobId) && Number.isSafeInteger(index) && index >= 0
+          ? simulator.replay({ accountId, jobId, index })
+          : undefined;
+      if (file === undefined) {
+        res.sendStatus(404);
+        return;
+      }
+      res.setHeader("Content-Type", "application/gzip");
+      res.setHeader("Content-Disposition", `attachment; filename="aegis-matchup-${jobId}-${index + 1}.aegis-replay"`);
+      res.send(Buffer.from(file));
+    }),
+  );
 }

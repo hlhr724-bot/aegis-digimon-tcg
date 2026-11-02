@@ -40,4 +40,6 @@ export const deckMatchupEn = {
   "deckMatchup.table.rangeValue": "{low} to {high}",
   "deckMatchup.table.games": "Games",
   "deckMatchup.table.gamesValue": "{done} of {total}",
+  "deckMatchup.watch": "Watch turn by turn",
+  "deckMatchup.replayUnavailable": "This sample game is no longer available. Run the matchup again to watch it.",
 };

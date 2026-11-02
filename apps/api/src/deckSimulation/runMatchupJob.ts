@@ -2,8 +2,22 @@ import type { MatchupGameOutcome } from "#api/deckSimulation/MatchupGameOutcome"
 import type { MatchupJobTask } from "#api/deckSimulation/MatchupJobTask";
 import type { MatchupJobEnd } from "#api/deckSimulation/MatchupWorkerMessage";
 import { runMatchupGame } from "#api/deckSimulation/runMatchupGame";
+import { exportPlayerReplay } from "#api/replays/inputs/export";
+import type { ReplayRecord } from "#api/replays/inputs/types";
 
-type PlayedGame = { index: number; opponentIndex: number; playerFirst: boolean; outcome: MatchupGameOutcome };
+type PlayedGame = {
+  index: number;
+  opponentIndex: number;
+  playerFirst: boolean;
+  outcome: MatchupGameOutcome;
+  replayFile?: Uint8Array;
+};
+
+async function exportReplayFile(record: ReplayRecord | undefined): Promise<Uint8Array | undefined> {
+  if (record === undefined) return undefined;
+  const exported = await exportPlayerReplay(record);
+  return exported.divergences.length === 0 ? new Uint8Array(exported.file) : undefined;
+}
 
 type Params = {
   task: MatchupJobTask;
@@ -33,7 +47,16 @@ export async function runMatchupJob({ task, signal, now = Date.now, onGame }: Pa
       });
       if (signal.aborted) return "cancelled";
       if (recordReplay) recorded++;
-      onGame({ index, opponentIndex, playerFirst, outcome });
+      const { replay, ...summary } = outcome;
+      const replayFile = outcome.result === undefined ? undefined : await exportReplayFile(replay);
+      if (signal.aborted) return "cancelled";
+      onGame({
+        index,
+        opponentIndex,
+        playerFirst,
+        outcome: summary,
+        ...(replayFile === undefined ? {} : { replayFile }),
+      });
       await new Promise<void>((resolve) => setImmediate(resolve));
     }
   }

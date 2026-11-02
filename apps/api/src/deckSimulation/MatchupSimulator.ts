@@ -3,7 +3,6 @@ import { availableParallelism, loadavg } from "node:os";
 import { MatchupGameResult } from "@aegis/shared/deckSimulation/MatchupGameResult";
 import type { MatchupJob, MatchupSampleGame, MatchupTally } from "@aegis/shared/deckSimulation/MatchupJob";
 import { MatchupJobStatus } from "@aegis/shared/deckSimulation/MatchupJobStatus";
-import type { ReplayRecord } from "#api/replays/inputs/types";
 import { MATCHUP_LIMITS } from "#api/deckSimulation/MATCHUP_LIMITS";
 import { MatchupLimitError } from "#api/deckSimulation/MatchupLimitError";
 import type { MatchupRequest } from "#api/deckSimulation/MatchupRequest";
@@ -21,7 +20,7 @@ type JobRecord = {
   status: MatchupJobStatus;
   counts: Counts[];
   samples: MatchupSampleGame[];
-  replays: Map<number, ReplayRecord>;
+  replays: Map<number, Uint8Array>;
   createdAt: number;
   finishedAt?: number;
 };
@@ -103,7 +102,7 @@ export class MatchupSimulator {
     return job?.accountId === accountId ? this.#view(job) : undefined;
   }
 
-  replay({ accountId, jobId, index }: { accountId: string; jobId: string; index: number }): ReplayRecord | undefined {
+  replay({ accountId, jobId, index }: { accountId: string; jobId: string; index: number }): Uint8Array | undefined {
     this.#prune();
     const job = this.#jobs.get(jobId);
     return job?.accountId === accountId ? job.replays.get(index) : undefined;
@@ -223,8 +222,8 @@ export class MatchupSimulator {
       else if (outcome.result === MatchupGameResult.LOSS.value) counts.losses++;
       else if (outcome.result === MatchupGameResult.DRAW.value) counts.draws++;
       else counts.invalidGames++;
-      if (outcome.replay !== undefined && outcome.result !== undefined) {
-        job.replays.set(message.index, outcome.replay);
+      if (message.replayFile !== undefined && outcome.result !== undefined) {
+        job.replays.set(message.index, message.replayFile);
         job.samples.push({
           index: message.index,
           opponentIndex: message.opponentIndex,

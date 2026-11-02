@@ -217,6 +217,11 @@ plus one tally per opponent in `opponents`.
 `interval` is the 95% Wilson interval of that score. Games that end on an engine
 error count in `invalidGames`, not in the score.
 
+`GET /account/deck-simulations/matchups/:id/replays/:index` returns one sample game as a
+gzipped `MatchReplay` (`application/gzip`), the same file the replay viewer opens.
+`index` is a `samples[].index` from the job. It answers `404` for a game without a
+sample, an expired job or another account's job.
+
 `DELETE /account/deck-simulations/matchups/:id` cancels the caller's job. A queued job
 ends as `cancelled` at once. A running job stops at the current game and keeps the
 results it already has.

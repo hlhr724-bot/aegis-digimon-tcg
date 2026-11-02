@@ -1754,3 +1754,19 @@
 .deck-matchup__table tr[data-standing="worst"] th[scope="row"] {
   color: var(--ds-danger);
 }
+
+.deck-matchup__sample {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.deck-matchup__viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: auto;
+  background: var(--ds-sheet);
+}

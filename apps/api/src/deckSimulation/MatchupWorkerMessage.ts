@@ -14,6 +14,7 @@ export type MatchupWorkerMessage =
       opponentIndex: number;
       playerFirst: boolean;
       outcome: MatchupGameOutcome;
+      replayFile?: Uint8Array;
     }
   | { type: "finished"; jobId: string; end: MatchupJobEnd }
   | { type: "failed"; jobId: string; error: string };
