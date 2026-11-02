@@ -850,7 +850,7 @@
 .tournaments-tree__card > .tournaments-watch-button {
   align-self: stretch;
   justify-content: center;
-  margin-top: var(--ds-space-1);
+  margin: var(--ds-space-1) 0 0;
 }
 
 .tournaments-bracket__match[data-mine] > .tournaments-tree__card {
