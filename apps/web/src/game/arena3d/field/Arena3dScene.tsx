@@ -249,9 +249,9 @@ function ArenaSceneContents(props: Props) {
       <ArenaQualityGovernor
         automatic={props.automaticQuality}
         canDowngrade={quality.rank > 0}
+        frameRate={quality.frameRate}
         activity={activity}
         onDowngrade={props.onDowngrade}
-        frameRate={quality.frameRate}
         onContextLost={props.onContextLost}
       />
       {quality.bloom ? <ArenaPostEffects isLight={colors.isLight} /> : null}
