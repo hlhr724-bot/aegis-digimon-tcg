@@ -1,4 +1,94 @@
 {
+  "releases.1.47.0-beta.summary": {
+    "en": "Try the new Arena 3D board, watch live tournament games from the bracket, find live matches in Play > Rooms, and filter community decks by guide. Adds BT27 cards and rules fixes.",
+    "pt-BR": "Experimente o novo tabuleiro Arena 3D, assista a partidas de torneio ao vivo direto da chave, encontre partidas ao vivo em Jogar > Salas e filtre decks da comunidade com guia. Inclui cartas de BT27 e correções de regras.",
+    "es": "Prueba el nuevo tablero Arena 3D, mira partidas de torneo en vivo desde el cuadro, encuentra partidas en vivo en Jugar > Salas y filtra mazos de la comunidad con guía. Incluye cartas de BT27 y correcciones de reglas.",
+    "it": "Prova il nuovo tabellone Arena 3D, guarda le partite dei tornei in diretta dal tabellone, trova le partite in diretta in Gioca > Stanze e filtra i mazzi della community con guida. Include carte BT27 e correzioni alle regole."
+  },
+  "releases.1.47.0-beta.feature.arena3d": {
+    "en": "Settings has a new Arena 3D board style: cards lie on a hologram floor with 3D effects for plays, digivolutions, attacks and the final blow. Choose a quality level or leave it on Auto. Classic 2D stays the default.",
+    "pt-BR": "As Configurações têm um novo estilo de tabuleiro Arena 3D: as cartas ficam sobre um piso holográfico, com efeitos 3D para jogadas, digievoluções, ataques e o golpe final. Escolha um nível de qualidade ou deixe em Automático. O 2D Clássico continua sendo o padrão.",
+    "es": "Los Ajustes tienen un nuevo estilo de tablero Arena 3D: las cartas quedan sobre un suelo holográfico, con efectos 3D para jugadas, digievoluciones, ataques y el golpe final. Elige un nivel de calidad o déjalo en Automático. El 2D Clásico sigue siendo el predeterminado.",
+    "it": "Le Impostazioni hanno un nuovo stile di tabellone Arena 3D: le carte stanno su un pavimento olografico, con effetti 3D per giocate, digievoluzioni, attacchi e il colpo finale. Scegli un livello di qualità o lascialo su Automatico. Il 2D Classico resta il predefinito."
+  },
+  "releases.1.47.0-beta.feature.tournaments": {
+    "en": "Live games in tournament brackets and the Swiss Top Cut show a Watch badge. Tap the card to spectate, when the tournament allows spectators.",
+    "pt-BR": "Partidas ao vivo na chave do torneio e no Top Cut do Suíço mostram um selo Assistir. Toque na carta para assistir, quando o torneio permite espectadores.",
+    "es": "Las partidas en vivo en el cuadro del torneo y en el Top Cut del suizo muestran una insignia Ver. Toca la tarjeta para mirar, cuando el torneo permite espectadores.",
+    "it": "Le partite in diretta nel tabellone del torneo e nel Top Cut dello svizzero mostrano un badge Guarda. Tocca la scheda per guardare, se il torneo ammette spettatori."
+  },
+  "releases.1.47.0-beta.feature.rooms": {
+    "en": "Play > Rooms lists live matches with the same cards as Home: deck art, format, players, time, spectators and Watch.",
+    "pt-BR": "Jogar > Salas lista as partidas ao vivo com os mesmos cards da tela inicial: arte do deck, formato, jogadores, tempo, espectadores e Assistir.",
+    "es": "Jugar > Salas muestra las partidas en vivo con las mismas tarjetas del inicio: arte del mazo, formato, jugadores, tiempo, espectadores y Ver.",
+    "it": "Gioca > Stanze elenca le partite in diretta con le stesse schede della Home: arte del mazzo, formato, giocatori, tempo, spettatori e Guarda."
+  },
+  "releases.1.47.0-beta.feature.community": {
+    "en": "Community decks have a Has a guide filter. The lobby deck picker marks community decks that have a guide.",
+    "pt-BR": "Os decks da comunidade têm o filtro Tem guia. O seletor de deck do lobby marca os decks da comunidade que têm guia.",
+    "es": "Los mazos de la comunidad tienen el filtro Tiene guía. El selector de mazos del lobby marca los mazos de la comunidad que tienen guía.",
+    "it": "I mazzi della community hanno il filtro Con guida. Il selettore di mazzi della lobby segnala i mazzi della community che hanno una guida."
+  },
+  "releases.1.47.0-beta.feature.cards": {
+    "en": "New BT27 cards: Stegomon, Spinomon, Thunderbirdmon, Quetzalmon, Lotosmon and Darkdramon.",
+    "pt-BR": "Novas cartas de BT27: Stegomon, Spinomon, Thunderbirdmon, Quetzalmon, Lotosmon e Darkdramon.",
+    "es": "Nuevas cartas de BT27: Stegomon, Spinomon, Thunderbirdmon, Quetzalmon, Lotosmon y Darkdramon.",
+    "it": "Nuove carte BT27: Stegomon, Spinomon, Thunderbirdmon, Quetzalmon, Lotosmon e Darkdramon."
+  },
+  "releases.1.47.0-beta.fix.leaveProtection": {
+    "en": "Optional protections that prevent leaving the battle area, such as Slayerdramon’s, are announced only when you accept them. Declining no longer shows the effect as activated.",
+    "pt-BR": "Proteções opcionais que impedem sair da área de batalha, como a de Slayerdramon, só são anunciadas quando você as aceita. Recusar não mostra mais o efeito como ativado.",
+    "es": "Las protecciones opcionales que impiden salir del área de batalla, como la de Slayerdramon, solo se anuncian cuando las aceptas. Rechazarlas ya no muestra el efecto como activado.",
+    "it": "Le protezioni facoltative che impediscono di lasciare l’area di battaglia, come quella di Slayerdramon, vengono annunciate solo quando le accetti. Rifiutarle non mostra più l’effetto come attivato."
+  },
+  "releases.1.47.0-beta.fix.progress": {
+    "en": "Your opponent’s Security Attack -1 no longer applies while your Digimon with Progress attacks.",
+    "pt-BR": "O Security Attack -1 do oponente não se aplica mais enquanto seu Digimon com Progress ataca.",
+    "es": "El Security Attack -1 del oponente ya no se aplica mientras tu Digimon con Progress ataca.",
+    "it": "Il Security Attack -1 dell’avversario non si applica più mentre attacca il tuo Digimon con Progress."
+  },
+  "releases.1.47.0-beta.fix.fragment": {
+    "en": "Digivolution cards trashed again after Fragment put them back now trigger their trash effects again.",
+    "pt-BR": "Cartas de digievolução descartadas de novo depois que Fragment as devolveu agora ativam outra vez seus efeitos de descarte.",
+    "es": "Las cartas de digievolución descartadas otra vez después de que Fragment las devolviera ahora activan de nuevo sus efectos de descarte.",
+    "it": "Le carte digievoluzione scartate di nuovo dopo che Fragment le ha rimesse a posto ora attivano di nuovo i loro effetti di scarto."
+  },
+  "releases.1.47.0-beta.fix.exactNames": {
+    "en": "“Digivolve into [Greymon]” accepts only cards named exactly Greymon, not WarGreymon.",
+    "pt-BR": "“Digievolua para [Greymon]” aceita apenas cartas com o nome exato Greymon, e não WarGreymon.",
+    "es": "“Digievoluciona en [Greymon]” solo acepta cartas llamadas exactamente Greymon, no WarGreymon.",
+    "it": "“Digievolvi in [Greymon]” accetta solo carte chiamate esattamente Greymon, non WarGreymon."
+  },
+  "releases.1.47.0-beta.fix.turnOrder": {
+    "en": "The turn player’s simultaneous effects resolve before the opponent’s. An effect with no target no longer waits and resolves later in the turn.",
+    "pt-BR": "Os efeitos simultâneos do jogador do turno resolvem antes dos do oponente. Um efeito sem alvo não fica mais esperando para resolver mais tarde no turno.",
+    "es": "Los efectos simultáneos del jugador del turno se resuelven antes que los del oponente. Un efecto sin objetivo ya no queda esperando para resolverse más tarde en el turno.",
+    "it": "Gli effetti simultanei del giocatore di turno si risolvono prima di quelli dell’avversario. Un effetto senza bersaglio non resta più in attesa per risolversi più avanti nel turno."
+  },
+  "releases.1.47.0-beta.fix.yuu": {
+    "en": "With two Yuu Amano, the cards chosen under your Tamers now go under the played Digimon. The same card can no longer be chosen twice.",
+    "pt-BR": "Com dois Yuu Amano, as cartas escolhidas debaixo dos seus Tamers agora vão para debaixo do Digimon jogado. A mesma carta não pode mais ser escolhida duas vezes.",
+    "es": "Con dos Yuu Amano, las cartas elegidas debajo de tus Tamers ahora van debajo del Digimon jugado. La misma carta ya no puede elegirse dos veces.",
+    "it": "Con due Yuu Amano, le carte scelte sotto i tuoi Tamer ora vanno sotto il Digimon giocato. La stessa carta non può più essere scelta due volte."
+  },
+  "releases.1.47.0-beta.fix.costLock": {
+    "en": "When an effect stops play cost reductions, DigiXros and Assembly cards you can’t afford are no longer shown as playable.",
+    "pt-BR": "Quando um efeito impede reduções de custo de jogo, cartas de DigiXros e Assembly que você não pode pagar não aparecem mais como jogáveis.",
+    "es": "Cuando un efecto impide reducir costes de juego, las cartas de DigiXros y Assembly que no puedes pagar ya no aparecen como jugables.",
+    "it": "Quando un effetto impedisce di ridurre i costi di gioco, le carte DigiXros e Assembly che non puoi pagare non appaiono più come giocabili."
+  },
+  "releases.1.47.0-beta.fix.seventhCruz": {
+    "en": "BT19-094 Seventh Divine Cruz asks whether to activate its trash effect.",
+    "pt-BR": "BT19-094 Seventh Divine Cruz pergunta se você quer ativar o efeito no descarte.",
+    "es": "BT19-094 Seventh Divine Cruz pregunta si quieres activar su efecto en la papelera.",
+    "it": "BT19-094 Seventh Divine Cruz chiede se attivare il suo effetto nella pila degli scarti."
+  },
+  "releases.1.47.0-beta.fix.spectatorHand": {
+    "en": "After a match ends, spectators see both players’ hands revealed and can open each card.",
+    "pt-BR": "Quando a partida termina, os espectadores veem as mãos dos dois jogadores reveladas e podem abrir cada carta.",
+    "es": "Cuando termina la partida, los espectadores ven las manos de ambos jugadores reveladas y pueden abrir cada carta.",
+    "it": "Alla fine della partita, gli spettatori vedono rivelate le mani di entrambi i giocatori e possono aprire ogni carta."
+  },
   "releases.1.46.0-beta.summary": {
     "en": "Chat after a match, see which inherited effects were used this turn, learn DNA, App Fusion, DigiXros and Assembly from card text, and play fairer tournament tiebreakers. Adds BT27 cards and rules fixes.",
     "pt-BR": "Converse depois da partida, veja quais efeitos herdados já foram usados no turno, entenda DNA, App Fusion, DigiXros e Assembly direto no texto da carta e jogue torneios com desempates mais justos. Inclui cartas de BT27 e correções de regras.",
