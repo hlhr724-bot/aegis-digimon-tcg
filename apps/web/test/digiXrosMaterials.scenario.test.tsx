@@ -39,8 +39,8 @@ scenario("digi-xros-materials", () => {
   it.each(["hand", "battle area"] as const)(
     "orders two selected materials from %s by the printed recipe",
     async (zone) => {
-      // Seed 22 opens two Shoutmon, Ballistamon, Shoutmon X5 and Biyomon.
-      const { owner, opponent } = await connectScenario(server, DECK, 22);
+      // Seed 314 opens two Shoutmon, Ballistamon, Shoutmon X5 and Biyomon.
+      const { owner, opponent } = await connectScenario(server, DECK, 314);
       await enterMain(opponent);
       const player = owner.state.players[0]!;
       const shoutmonIds = player.hand.filter((card) => card.cardId === "BT5-009").map((card) => card.instanceId);
@@ -100,8 +100,14 @@ scenario("digi-xros-materials", () => {
         .closest('[data-drop="perm-you"]') as HTMLElement;
       expect(within(result).getByText("×2")).toBeTruthy();
       tap(result);
-      expect(await screen.findByRole("button", { name: /^open shoutmon$/i })).toBeTruthy();
-      expect(screen.getByRole("button", { name: /^open ballistamon$/i })).toBeTruthy();
+      expect(
+        within(await screen.findByRole("group", { name: /^\d+ sources?$/i })).getByRole("button", {
+          name: /^shoutmon$/i,
+        }),
+      ).toBeTruthy();
+      expect(
+        within(screen.getByRole("group", { name: /^\d+ sources?$/i })).getByRole("button", { name: /^ballistamon$/i }),
+      ).toBeTruthy();
       await opponent.leave();
     },
     45_000,

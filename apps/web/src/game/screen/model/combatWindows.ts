@@ -8,11 +8,19 @@ import {
   type OpenCombatWindow,
 } from "../../combatWindowModel";
 import { findPermanentInState } from "../../decisionModel";
+import { trackOpenAttack } from "../../fieldClash";
+
+function openAttackTargetPermanentId(events: readonly SequencedServerEvent[]): string | undefined {
+  let declared = events.length - 1;
+  while (declared >= 0 && events[declared]!.kind !== "attackDeclared") declared -= 1;
+  if (declared < 0) return undefined;
+  return events.slice(declared).reduce(trackOpenAttack, null)?.targetPermanentId ?? undefined;
+}
 
 /** The five combat prompts, each present only when this viewer still owes it an answer. */
 export type CombatWindows = {
   blockWindow: ReturnType<typeof activeBlockWindow>;
-  counterWindow: ReturnType<typeof activeCounterWindow>;
+  counterWindow: (NonNullable<ReturnType<typeof activeCounterWindow>> & { attackTargetPermanentId?: string }) | null;
   allianceWindow: { permanentId: string; eligibleAllyIds: readonly string[]; stateVersion?: number } | null;
   evadeWindow: { permanentId: string; stateVersion?: number } | null;
   barrierWindow: { permanentId: string; stateVersion?: number } | null;
@@ -150,7 +158,7 @@ export function combatWindowsFor({
       blockWindowRaw && !answeredCombatWindow(`block:${blockWindowRaw.attackerPermanentId}`) ? blockWindowRaw : null,
     counterWindow:
       counterWindowRaw && !answeredCombatWindow(`counter:${counterWindowRaw.attackerPermanentId}`)
-        ? counterWindowRaw
+        ? { ...counterWindowRaw, attackTargetPermanentId: openAttackTargetPermanentId(events) }
         : null,
     allianceWindow:
       allianceWindowRaw && !answeredCombatWindow(`alliance:${allianceWindowRaw.permanentId}`)

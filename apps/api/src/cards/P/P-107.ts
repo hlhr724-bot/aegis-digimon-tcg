@@ -8,7 +8,7 @@ const compiled: CompiledCard = {
         {
           kind: "RevealAdd",
           effectTextPart:
-            "[Main] Reveal the top 2 cards of your deck. Add 1 black card among them to your hand. Place the rest at the bottom of your deck in any order.",
+            "[Main] Reveal the top 2 cards of your deck. Add 1 black card among them to the hand. Return the rest to the bottom of the deck in any order.",
           revealCount: 2,
           add: [
             {
@@ -24,7 +24,7 @@ const compiled: CompiledCard = {
         },
         {
           kind: "PlaceInBattleAreaSelf",
-          effectTextPart: "Then, place this card into your battle area.",
+          effectTextPart: "Then, place this card in the battle area.",
         },
       ],
     },
@@ -32,6 +32,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "1 of your Digimon may digivolve into a black Digimon card in your hand for its digivolution cost. When it would digivolve by this effect, reduce the cost by 2.",
           kind: "Digivolve",
           target: {
             filter: {

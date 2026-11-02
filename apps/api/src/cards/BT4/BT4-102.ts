@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Return 1 of your Digimon to its owner's hand to return up to 2 of your opponent's level 4 or lower Digimon to their owners' hands. Trash all of the digivolution cards of those Digimon.",
           kind: "Return",
           target: {
             filter: {
@@ -20,6 +22,8 @@ const compiled: CompiledCard = {
           raw: "by returning 1 of your Digimon to its owner's hand",
         },
         {
+          effectTextPart:
+            "[Main] Return 1 of your Digimon to its owner's hand to return up to 2 of your opponent's level 4 or lower Digimon to their owners' hands. Trash all of the digivolution cards of those Digimon.",
           kind: "Return",
           target: {
             filter: {

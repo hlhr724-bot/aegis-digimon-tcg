@@ -94,16 +94,8 @@ describe("P-237 engine behavior", () => {
         response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision?.kind === "optional");
-    const linkDecision = s.state.pendingDecision!;
-    expect(
-      s.engine.applyIntent(0, {
-        type: "respondDecision",
-        decisionId: linkDecision.decisionId,
-        response: { kind: "optional", accept: false },
-      }),
-    ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision === undefined);
+    expect(s.decisions.filter(({ req }) => req.sourceCardId === "EX11-027")).toEqual([]);
     expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.instanceId === maquinamonId)).toBe(
       true,
     );

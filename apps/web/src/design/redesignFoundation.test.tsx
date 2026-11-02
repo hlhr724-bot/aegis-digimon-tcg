@@ -21,6 +21,7 @@ import {
   setBattlefieldId,
   setCustomBattlefield,
 } from "./battlefield";
+import { FieldLayout, getFieldLayout, setFieldLayout } from "@/design/fieldLayout";
 import { ArenaLookSettings } from "./ArenaLookSettings";
 import { BattleLanes, setBattleLanes } from "./battleLanes";
 import { InfoNote, Panel, SectionHeading, StatStrip } from "./surfaces";
@@ -132,6 +133,21 @@ describe("ArenaLookSettings", () => {
     expect(getCustomBattlefieldSrc()).toBeUndefined();
     expect(screen.getByRole("button", { name: en["settings.playmatUpload"] })).toBeTruthy();
   });
+
+  it.each([BattleLanes.One, BattleLanes.Two])(
+    "applies two battle rows over a classic layout with saved %s lanes",
+    (lanes) => {
+      setFieldLayout(FieldLayout.Classic);
+      setBattleLanes(lanes);
+      render(
+        <I18nProvider>
+          <ArenaLookSettings />
+        </I18nProvider>,
+      );
+      fireEvent.click(screen.getByRole("radio", { name: en["redesign.foundation.arena.lanes.two"] }));
+      expect(getFieldLayout()).toBe(FieldLayout.Organized);
+    },
+  );
 
   it("draws the preview with the chosen number of lanes per side", () => {
     setBattleLanes(BattleLanes.Two);

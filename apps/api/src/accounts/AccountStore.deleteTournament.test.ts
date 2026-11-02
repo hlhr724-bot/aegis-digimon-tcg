@@ -1,4 +1,4 @@
-import { newDb } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 import { describe, expect, it } from "vitest";
 import { ParticipantStore } from "../tournaments/participants/index.js";
 import { AccountStore, type Account } from "./AccountStore.js";
@@ -8,7 +8,7 @@ import { AccountStore, type Account } from "./AccountStore.js";
 // method forgot.
 
 function createStore(): AccountStore {
-  const adapter = newDb().adapters.createPg();
+  const adapter = createMemoryDatabase().adapters.createPg();
   return new AccountStore(new adapter.Pool() as never);
 }
 

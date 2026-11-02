@@ -11,11 +11,13 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 [Maquinamon]",
               filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Maquinamon"], match: "nameExact" }] },
               count: 1,
               to: "hand",
             },
             {
+              effectTextPart: "1 card with [Maquinamon] in its text among them to the hand.",
               filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Maquinamon"], match: "text" }] },
               count: 1,
               to: "hand",

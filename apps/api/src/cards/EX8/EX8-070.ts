@@ -20,6 +20,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] By trashing any 1 digivolution card of 1 of your Digimon with the [Mineral]/[Rock]\u00a0trait, until the end of your opponent's turn, that Digimon gains ＜Collision＞ , ＜Piercing＞ , ＜Reboot＞ , and your opponent's effects can't return it to hands or decks, and it gets +3000 DP.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -48,6 +50,8 @@ export const compiled: CompiledCard = {
           abortOnDecline: true,
         },
         {
+          effectTextPart:
+            "[Main] By trashing any 1 digivolution card of 1 of your Digimon with the [Mineral]/[Rock]\u00a0trait, until the end of your opponent's turn, that Digimon gains ＜Collision＞ , ＜Piercing＞ , ＜Reboot＞ , and your opponent's effects can't return it to hands or decks, and it gets +3000 DP.",
           kind: "GainKeyword",
           target: {
             fromSelectionRef: "thatDigimon",
@@ -61,6 +65,8 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] By trashing any 1 digivolution card of 1 of your Digimon with the [Mineral]/[Rock]\u00a0trait, until the end of your opponent's turn, that Digimon gains ＜Collision＞ , ＜Piercing＞ , ＜Reboot＞ , and your opponent's effects can't return it to hands or decks, and it gets +3000 DP.",
           kind: "GainKeyword",
           target: {
             fromSelectionRef: "thatDigimon",
@@ -74,6 +80,8 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] By trashing any 1 digivolution card of 1 of your Digimon with the [Mineral]/[Rock]\u00a0trait, until the end of your opponent's turn, that Digimon gains ＜Collision＞ , ＜Piercing＞ , ＜Reboot＞ , and your opponent's effects can't return it to hands or decks, and it gets +3000 DP.",
           kind: "GainKeyword",
           target: {
             fromSelectionRef: "thatDigimon",
@@ -87,6 +95,8 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] By trashing any 1 digivolution card of 1 of your Digimon with the [Mineral]/[Rock]\u00a0trait, until the end of your opponent's turn, that Digimon gains ＜Collision＞ , ＜Piercing＞ , ＜Reboot＞ , and your opponent's effects can't return it to hands or decks, and it gets +3000 DP.",
           kind: "Restrict",
           target: {
             fromSelectionRef: "thatDigimon",
@@ -98,6 +108,8 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] By trashing any 1 digivolution card of 1 of your Digimon with the [Mineral]/[Rock]\u00a0trait, until the end of your opponent's turn, that Digimon gains ＜Collision＞ , ＜Piercing＞ , ＜Reboot＞ , and your opponent's effects can't return it to hands or decks, and it gets +3000 DP.",
           kind: "ModifyDP",
           target: {
             fromSelectionRef: "thatDigimon",

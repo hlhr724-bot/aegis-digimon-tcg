@@ -142,8 +142,12 @@ describe("recovered nested Merciful On Play sequence (Q2859)", () => {
         expect(s.perm("matt").isSuspended).toBe(true);
         originalAttackStillResolving();
         respond(warning, { kind: "optional", accept: true });
-        await pick("EX13-077", "chooseTargets", [merciful.permanentId]);
         const firstMode = await decision("EX13-077", "chooseOption");
+        expect(
+          s.decisions.filter(
+            ({ req }) => req.kind === "chooseTargets" && req.options?.selectionContext === "attackSource",
+          ),
+        ).toEqual([]);
         originalAttackStillResolving();
         respond(firstMode, { kind: "chooseOption", optionIndex: 0 });
         await optional("EX13-077");

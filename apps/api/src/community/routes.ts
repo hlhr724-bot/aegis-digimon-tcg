@@ -1,13 +1,17 @@
+import { reviewDeckGuide } from "#api/community/reviewDeckGuide";
 import { isDeckFormat } from "@aegis/shared/deckFormat";
 import {
   CardColor,
   COMMUNITY_MODERATION_ACTIONS,
+  COMMUNITY_MODERATION_NOTE_MAX,
   COMMUNITY_PERIODS,
   COMMUNITY_REPORT_DETAILS_MAX,
   COMMUNITY_REPORT_REASONS,
   COMMUNITY_SORTS,
+  type CommunityModerationInput,
   type CommunityPeriod,
   type CommunityReportInput,
+  type CommunityReviewError,
   type CommunitySort,
 } from "@aegis/shared";
 import type { Express, NextFunction, Request, Response } from "express";
@@ -22,6 +26,13 @@ const LIKE_RATE_LIMIT: TokenBucketOptions = { capacity: 30, refillMs: 2_000 };
 const PUBLISH_RATE_LIMIT: TokenBucketOptions = { capacity: 10, refillMs: 30_000 };
 // A report is typed by hand and may also become a public issue, so the budget is a few per minute.
 const REPORT_RATE_LIMIT: TokenBucketOptions = { capacity: 5, refillMs: 60_000 };
+const REVIEW_ERROR_STATUS: Record<CommunityReviewError, number> = {
+  deck_not_found: 404,
+  deck_not_hidden: 409,
+  review_pending: 409,
+  deck_not_legal: 422,
+  name_not_allowed: 422,
+};
 const MAX_SEARCH = 60;
 const MAX_PAGE = 200;
 const DECK_COLORS: readonly string[] = Object.values(CardColor).filter((color) => color !== CardColor.None);
@@ -127,6 +138,35 @@ export function installCommunityDeckRoutes({
       }),
     );
 
+  app.put(
+    "/community/decks/:id/guide",
+    route(async (req, res) => {
+      const current = await requireSession(req, res);
+      if (!current) {
+        return;
+      }
+      if (!limitPublish(current.account.id)) {
+        res.status(429).json({ error: "too_many_requests" });
+        return;
+      }
+      const review = reviewDeckGuide({ raw: req.body?.guide });
+      if (!review.allowed) {
+        res.status(review.error === "invalid_guide" ? 400 : 422).json({ error: review.error });
+        return;
+      }
+      const saved = await store.updateGuide({
+        accountId: current.account.id,
+        publicDeckId: req.params.id!,
+        guide: review.guide,
+      });
+      if (!saved) {
+        res.status(404).json({ error: "deck_not_found" });
+        return;
+      }
+      res.json({ guide: review.guide });
+    }),
+  );
+
   app.post(
     "/community/decks/:id/copies",
     route(async (req, res) => {
@@ -177,18 +217,18 @@ export function installCommunityDeckRoutes({
     ["/admin/community/decks/:id/moderation", "/account/admin/community/decks/:id/moderation"],
     route(async (req, res) => {
       if (!(await requireAdmin(req, res))) return;
-      const action = COMMUNITY_MODERATION_ACTIONS.find((value) => value === req.body?.action);
-      if (!action) {
+      const input = parseModeration(req.body);
+      if (!input) {
         res.status(400).json({ error: "invalid_action" });
         return;
       }
-      const status = await store.moderate(req.params.id!, action);
+      const status = await store.moderate(req.params.id!, input);
       if (!status) {
         res.sendStatus(404);
         return;
       }
       // Hiding is the moderator acting on the reports, so they leave the queue.
-      if (action === "hide") await reportStore.dismiss(req.params.id!);
+      if (input.action === "hide") await reportStore.dismiss(req.params.id!);
       res.json({ status });
     }),
   );
@@ -249,6 +289,30 @@ export function installCommunityDeckRoutes({
     }),
   );
 
+  app.post(
+    "/community/publications/:deckId/review",
+    route(async (req, res) => {
+      const current = await requireSession(req, res);
+      if (!current) return;
+      const note = parseNote(req.body?.note);
+      if (note === undefined) {
+        res.status(400).json({ error: "invalid_review" });
+        return;
+      }
+      if (!limitPublish(current.account.id)) {
+        res.status(429).json({ error: "too_many_requests" });
+        return;
+      }
+      const result = await store.requestReview({
+        accountId: current.account.id,
+        sourceDeckId: req.params.deckId!,
+        note,
+      });
+      if (result.ok) res.json(result.publication);
+      else res.status(REVIEW_ERROR_STATUS[result.error]).json({ error: result.error });
+    }),
+  );
+
   app.delete(
     "/community/publications/:deckId",
     route(async (req, res) => {
@@ -256,6 +320,28 @@ export function installCommunityDeckRoutes({
       if (current) res.sendStatus((await store.unpublish(current.account.id, req.params.deckId!)) ? 204 : 404);
     }),
   );
+}
+
+function parseModeration(body: unknown): CommunityModerationInput | undefined {
+  if (typeof body !== "object" || body === null) return undefined;
+  const { action, reason, note } = body as Record<string, unknown>;
+  const knownAction = COMMUNITY_MODERATION_ACTIONS.find((value) => value === action);
+  if (knownAction === "restore") return { action: knownAction };
+  const parsedNote = parseNote(note);
+  if (parsedNote === undefined) return undefined;
+  const withNote = parsedNote === null ? {} : { note: parsedNote };
+  if (knownAction === "decline_review") return { action: knownAction, ...withNote };
+  const knownReason = COMMUNITY_REPORT_REASONS.find((value) => value === reason);
+  if (knownAction === "hide" && knownReason) return { action: knownAction, reason: knownReason, ...withNote };
+  return undefined;
+}
+
+function parseNote(note: unknown): string | null | undefined {
+  if (note === undefined || note === null) return null;
+  if (typeof note !== "string") return undefined;
+  const trimmed = note.trim();
+  if (trimmed.length > COMMUNITY_MODERATION_NOTE_MAX) return undefined;
+  return trimmed || null;
 }
 
 function parseReport(body: unknown): CommunityReportInput | undefined {

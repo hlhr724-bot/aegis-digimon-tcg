@@ -366,7 +366,7 @@ describe("tiebreaker chain", () => {
       },
     });
 
-    expect(report.unresolvedTiebreakers).toEqual(["extra_match", "head_to_head", "judge_random_draw"]);
+    expect(report.unresolvedTiebreakers).toEqual(["extra_match"]);
   });
 
   it("rejects an unknown criterion instead of ignoring it", () => {
@@ -399,6 +399,111 @@ describe("tiebreaker chain", () => {
     const rateA = rowOf(report.rows, "a").opponentMatchWinRate;
     const rateD = rowOf(report.rows, "d").opponentMatchWinRate;
     expect(rowB.opponentOpponentMatchWinRate).toBeCloseTo((rateA + rateD) / 2, 10);
+  });
+});
+
+describe("head-to-head tiebreaker", () => {
+  const headToHeadScoring = { ...officialScoring, tiebreakers: ["points", "head_to_head"] };
+
+  function orderOf(ledger: LedgerEntry[], seeds: Record<string, number>): string[] {
+    return computeStandings({
+      ledger,
+      standings: headToHeadScoring,
+      participants: Object.entries(seeds).map(([id, seed]) => ({ id, seed })),
+    }).map((row) => row.participantId);
+  }
+
+  it("ranks the winner of the match between two tied players first", () => {
+    const ledger: LedgerEntry[] = [
+      ...match("b", "a", 1),
+      ...match("a", "c", 2),
+      entry("b", "z", 2, "double_loss"),
+      entry("z", "b", 2, "double_loss"),
+    ];
+
+    expect(orderOf(ledger, { a: 1, b: 2, c: 3, z: 4 })).toEqual(["b", "a", "c", "z"]);
+  });
+
+  it("ranks a player who beat every other tied player first, then settles the rest the same way", () => {
+    const ledger: LedgerEntry[] = [
+      ...match("a", "b", 1),
+      ...match("a", "c", 2),
+      ...match("r", "a", 3),
+      ...match("b", "p", 2),
+      ...match("b", "c", 3),
+      ...match("c", "q", 1),
+      ...match("c", "t", 4),
+    ];
+
+    expect(orderOf(ledger, { c: 1, b: 2, a: 3, r: 4, p: 5, q: 6, t: 7 }).slice(0, 3)).toEqual(["a", "b", "c"]);
+  });
+
+  it("leaves a three-way cycle to the next criterion", () => {
+    const ledger: LedgerEntry[] = [...match("a", "b", 1), ...match("b", "c", 2), ...match("c", "a", 3)];
+
+    expect(orderOf(ledger, { c: 1, a: 2, b: 3 })).toEqual(["c", "a", "b"]);
+  });
+
+  it("leaves tied players who never met to the next criterion", () => {
+    const ledger: LedgerEntry[] = [...match("a", "x", 1), ...match("b", "y", 1)];
+
+    expect(orderOf(ledger, { b: 1, a: 2, x: 3, y: 4 })).toEqual(["b", "a", "x", "y"]);
+  });
+
+  it("does not let a rematch split decide the order", () => {
+    const ledger: LedgerEntry[] = [...match("a", "b", 1), ...match("b", "a", 2)];
+
+    expect(orderOf(ledger, { b: 1, a: 2 })).toEqual(["b", "a"]);
+  });
+});
+
+describe("judge random draw tiebreaker", () => {
+  const drawScoring = { ...officialScoring, tiebreakers: ["points", "judge_random_draw"] };
+  const field = ["a", "b", "c", "d", "e", "f"];
+
+  function drawOrder(
+    drawSeed: string,
+    seeds: readonly (number | null)[] = field.map((_, index) => index + 1),
+  ): string[] {
+    return computeStandings({
+      ledger: [],
+      standings: drawScoring,
+      participants: field.map((id, index) => ({ id, seed: seeds[index] ?? null })),
+      drawSeed,
+    }).map((row) => row.participantId);
+  }
+
+  it("returns the same order for the same draw seed", () => {
+    expect(drawOrder("tournament-1")).toEqual(drawOrder("tournament-1"));
+  });
+
+  it("ignores registration seeds", () => {
+    expect(drawOrder("tournament-1", [6, 5, 4, 3, 2, 1])).toEqual(drawOrder("tournament-1"));
+  });
+
+  it("produces different orders for different draw seeds", () => {
+    const orders = new Set(["t1", "t2", "t3", "t4", "t5"].map((seed) => drawOrder(seed).join(",")));
+
+    expect(orders.size).toBeGreaterThan(1);
+  });
+
+  it("applies after head-to-head", () => {
+    const ledger: LedgerEntry[] = [
+      ...match("b", "a", 1),
+      ...match("a", "c", 2),
+      entry("b", "z", 2, "double_loss"),
+      entry("z", "b", 2, "double_loss"),
+    ];
+
+    for (const drawSeed of ["t1", "t2", "t3", "t4", "t5"]) {
+      const rows = computeStandings({
+        ledger,
+        standings: { ...officialScoring, tiebreakers: ["points", "head_to_head", "judge_random_draw"] },
+        drawSeed,
+      });
+      const tied = rows.filter((row) => row.points === 3).map((row) => row.participantId);
+      expect(tied.indexOf("b")).toBeLessThan(tied.indexOf("a"));
+    }
   });
 });
 

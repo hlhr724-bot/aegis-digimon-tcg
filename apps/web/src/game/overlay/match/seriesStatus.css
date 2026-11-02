@@ -127,11 +127,11 @@
     rgb(255 255 255 / 14%);
 }
 
-.game-result .series-leave {
+.game-result .game-result__link.series-leave {
   color: rgb(255 168 168);
 }
 
-.game-result .series-leave:is(:hover, :active, :focus-visible) {
+.game-result .game-result__link.series-leave:is(:hover, :active, :focus-visible) {
   color: #fff;
   background: rgb(255 255 255 / 10%);
 }
@@ -139,4 +139,77 @@
 /* "Series won" is two words where "Victory" is one, so it steps down to stay on one line. */
 .game-result .game-result__title--series {
   font-size: clamp(1.5rem, 11cqi, 4rem);
+}
+
+.rematch-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: 0.6rem;
+}
+
+.rematch-option {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.3rem;
+  padding: 0.75rem 0.9rem;
+  font: inherit;
+  text-align: center;
+  color: #fff;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: var(--ds-radius-lg);
+  background: rgb(15 23 42 / 72%);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
+}
+
+.rematch-option:hover {
+  border-color: var(--ds-accent);
+  background: rgb(30 41 59 / 82%);
+}
+
+.rematch-option:focus-visible {
+  outline: none;
+  box-shadow: var(--ds-focus-ring);
+}
+
+.rematch-option__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--ds-font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.rematch-option__label svg {
+  flex: none;
+  color: var(--ds-accent);
+}
+
+.rematch-option__hint {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  text-wrap: balance;
+  color: rgb(226 232 240 / 72%);
+}
+
+.aegis-dialog.series-deck-dialog {
+  width: min(100%, 960px);
+}
+
+.series-deck-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+  margin-bottom: var(--ds-space-4);
+}
+
+.series-deck-dialog__header h2 {
+  margin: 0;
 }

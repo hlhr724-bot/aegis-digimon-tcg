@@ -92,12 +92,12 @@
   visibility: hidden;
 }
 
-/* Unread chat count on the chat button's corner (or the phone's match-menu button). */
-:has(> .game-chat-unread) {
+/* Unread chat, friends and log counts on their button's corner (or the phone's match-menu button). */
+:has(> .game-unread-badge) {
   position: relative;
 }
 
-.game-chat-unread {
+.game-unread-badge {
   position: absolute;
   top: -5px;
   right: -5px;
@@ -111,10 +111,10 @@
   border-radius: 999px;
   background: var(--ds-accent);
   box-shadow: 0 0 0 2px var(--ds-sheet);
-  animation: game-chat-unread-pop 220ms ease-out;
+  animation: game-unread-badge-pop 220ms ease-out;
 }
 
-@keyframes game-chat-unread-pop {
+@keyframes game-unread-badge-pop {
   from {
     transform: scale(0.4);
     opacity: 0;
@@ -122,7 +122,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .game-chat-unread {
+  .game-unread-badge {
     animation: none;
   }
 }

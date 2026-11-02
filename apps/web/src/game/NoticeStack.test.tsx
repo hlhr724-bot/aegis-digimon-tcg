@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { I18nContext } from "@/i18n/I18nContext";
+import { translator } from "@/i18n/translator";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { CardOpenerProvider } from "./cardLinks";
@@ -9,6 +11,70 @@ import { NOTICE_LIFETIME_MS, type MatchNotice } from "./notices";
 import { Side } from "./side";
 
 afterEach(cleanup);
+
+it.each([
+  {
+    cardId: "AD1-011",
+    timing: "WhenWouldLeaveBattleArea",
+    isInherited: true,
+    expected: "＜分裂＞：可以不支付费用登场指定的进化源卡牌。",
+    description: "＜Partition＞: you may play the specified digivolution cards without paying their costs.",
+    effectTextPart: undefined,
+  },
+  {
+    cardId: "BT16-025",
+    timing: "WhenWouldLeaveBattleArea",
+    isInherited: true,
+    expected: "＜分裂＞：可以不支付费用登场指定的进化源卡牌。",
+    description: "＜Partition＞: you may play the specified digivolution cards without paying their costs.",
+    effectTextPart: undefined,
+  },
+  {
+    cardId: "BT16-025",
+    timing: "WhenWouldLeaveBattleArea",
+    expected: "＜分裂＞：可以不支付费用登场指定的进化源卡牌。",
+    description: "＜Partition＞: you may play the specified digivolution cards without paying their costs.",
+    effectTextPart: undefined,
+  },
+  {
+    cardId: "BT10-008",
+    timing: "OnPlay",
+    expected: "3张卡牌",
+    description: undefined,
+    effectTextPart: "Add 1 Digimon card",
+  },
+  { cardId: "BT3-093", timing: "OnPlay", expected: "1张蓝色", description: undefined, effectTextPart: "Add 1 blue" },
+  { cardId: "EX6-025", timing: "OnPlay", expected: "沙悟兽", description: undefined, effectTextPart: "[Sagomon]" },
+  { cardId: "EX13-077", timing: "OnPlay", expected: "每有2种颜色", description: undefined, effectTextPart: undefined },
+  {
+    cardId: "AD1-008",
+    timing: "WhenDigivolving",
+    expected: "[进化时] ＜进击＞",
+    description: "[When Digivolving] ＜Blitz＞",
+    effectTextPart: undefined,
+  },
+  {
+    cardId: "AD1-003",
+    timing: "OnPlay",
+    expected: "6000",
+    description: undefined,
+    effectTextPart: "Then, you may delete 1 of your opponent's Digimon with 6000 DP or less.",
+  },
+])("renders translated notice context for $cardId", async ({ expected, ...body }) => {
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <NoticeStack
+        notice={notice({ body: { variant: "effect", ...body } })}
+        remainingMs={NOTICE_LIFETIME_MS}
+        onDismiss={() => undefined}
+      />
+    </I18nContext.Provider>,
+  );
+  const getClause = () => document.querySelector(".match-notice__text");
+  await waitFor(() => expect(getClause()?.textContent).toContain(expected));
+  expect(getClause()?.textContent).not.toMatch(/When Digivolving|On Play|Then,|for every/);
+  expect(getClause()?.querySelector(".card-effect-text")?.getAttribute("data-translation-status")).toBe("complete");
+});
 
 function notice(overrides: Partial<MatchNotice> = {}): MatchNotice {
   return {
@@ -34,6 +100,75 @@ function renderNotice(
 }
 
 describe("NoticeStack", () => {
+  it.each([
+    ["AD1-009", "退化3"],
+    ["AD1-012", "Lv.数值最低"],
+    ["AD1-025", "卡组最下方"],
+  ])("shows the resolving Assembly card effect rather than an adjacent paragraph for %s", async (cardId, expected) => {
+    render(
+      <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+        <NoticeStack
+          notice={notice({ body: { variant: "effect", cardId, timing: "OnPlay" } })}
+          remainingMs={NOTICE_LIFETIME_MS}
+          onDismiss={() => undefined}
+        />
+      </I18nContext.Provider>,
+    );
+    const getText = () => screen.getByTestId("match-notice").querySelector(".match-notice__text")?.textContent;
+    await waitFor(() => expect(getText()).toContain(expected));
+    expect(getText()).not.toContain("[组装");
+  });
+
+  it("translates the resolving Main clause from a complete Chinese option-card entry", async () => {
+    render(
+      <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+        <NoticeStack
+          notice={notice({ body: { variant: "effect", cardId: "LM-034", timing: "Main" } })}
+          remainingMs={NOTICE_LIFETIME_MS}
+          onDismiss={() => undefined}
+        />
+      </I18nContext.Provider>,
+    );
+    const shown = screen.getByTestId("match-notice");
+    await waitFor(() =>
+      expect(shown.querySelector(".match-notice__text")?.textContent).toContain("蓝色/红色数码宝贝卡牌"),
+    );
+    const text = shown.querySelector(".match-notice__text")!.textContent;
+    expect(text).toContain("此后，将此卡牌置于战斗区。");
+    expect(text).not.toContain("Reveal");
+    expect(text).not.toContain("延迟");
+    expect(text).not.toContain("内存值");
+    expect(shown.querySelector('mark[data-kind="timing"]')?.textContent).toBe("[主要]");
+  });
+
+  it.each(["OnPlay", "WhenDigivolving"])(
+    "translates TigerVespamon's security placement clause for %s",
+    async (timing) => {
+      render(
+        <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+          <NoticeStack
+            notice={notice({
+              body: {
+                variant: "effect",
+                cardId: "BT23-045",
+                timing,
+                description:
+                  "By placing 1 [Royal Base] or [Zaxon] trait Digimon card from your hand or trash face up as the bottom security card, return 1 of your opponent's Digimon with as much or less DP as this Digimon to the hand.",
+              },
+            })}
+            remainingMs={NOTICE_LIFETIME_MS}
+            onDismiss={() => undefined}
+          />
+        </I18nContext.Provider>,
+      );
+      const shown = screen.getByTestId("match-notice");
+      const getText = () => shown.querySelector(".match-notice__text")?.textContent;
+      await waitFor(() => expect(getText()).toContain("正面朝上置于安防区最下方"));
+      expect(getText()).toContain("将对方1只DP不高于此数码宝贝DP的数码宝贝放回到其手牌中。");
+      expect(getText()).not.toContain("By placing");
+    },
+  );
+
   it("shows the resolving clause under its printed timing label", () => {
     renderNotice(
       notice({
@@ -167,7 +302,7 @@ describe("NoticeStack", () => {
         </CardOpenerProvider>
       </I18nProvider>,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Open Agumon" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open Agumon (BT1-010)" }));
     expect(opened).toEqual(["BT1-010"]);
   });
 
@@ -272,7 +407,9 @@ describe("NoticeStack stack strip", () => {
       }),
     );
     expect(screen.getByText("Top card trashed")).toBeTruthy();
-    expect(screen.getByText("Aegiochusmon: Blue trashed your KingEtemon from the top of its Digimon")).toBeTruthy();
+    expect(
+      screen.getByText("Aegiochusmon: Blue (BT25-025) trashed your KingEtemon (EX13-035) from the top of its Digimon"),
+    ).toBeTruthy();
   });
 
   it("names the opponent's card when the stripped permanent is theirs", () => {
@@ -284,7 +421,9 @@ describe("NoticeStack stack strip", () => {
     );
     expect(screen.getByText("Top card trashed")).toBeTruthy();
     expect(
-      screen.getByText("Aegiochusmon: Blue trashed the opponent's KingEtemon from the top of its Digimon"),
+      screen.getByText(
+        "Aegiochusmon: Blue (BT25-025) trashed the opponent's KingEtemon (EX13-035) from the top of its Digimon",
+      ),
     ).toBeTruthy();
   });
 
@@ -305,4 +444,32 @@ describe("NoticeStack stack strip", () => {
     expect(art?.getAttribute("src")).toContain("EX9-018_P1");
     expect(art?.getAttribute("src")).not.toContain("EX13-063");
   });
+});
+
+it.each([
+  "[When Digivolving] Delete up to 10000 DP total worth of your opponent's Digimon. Then, this Digimon may attack.",
+  "[When Digivolving] [When Attacking] [Once Per Turn] Delete 1 of your opponent's lowest DP Digimon.",
+  "[When Digivolving] ＜Blitz＞",
+])("keeps Gallantmon's separate pending effects distinct: %s", (description) => {
+  renderNotice(notice({ body: { variant: "effect", cardId: "AD1-008", timing: "WhenDigivolving", description } }));
+  expect(document.querySelector(".match-notice__text")?.textContent).toBe(description);
+});
+
+it("renders a manual signal through the standard effect toast and opens the source card", () => {
+  const onOpenCard = vi.fn<(cardId: string, artId?: string) => void>();
+  const shown = notice({
+    body: { variant: "effect", cardId: "BT1-010", manualSignalText: "First signals an effect · Effect target: Second" },
+  });
+  render(
+    <I18nProvider>
+      <CardOpenerProvider onOpenCard={onOpenCard}>
+        <NoticeStack notice={shown} remainingMs={NOTICE_LIFETIME_MS} onDismiss={() => undefined} />
+      </CardOpenerProvider>
+    </I18nProvider>,
+  );
+  expect(screen.getByTestId("match-notice").getAttribute("data-variant")).toBe("effect");
+  expect(screen.getByText("First signals an effect · Effect target: Second")).toBeTruthy();
+  expect(screen.getByText("Effect signal")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Open Agumon (BT1-010)" }));
+  expect(onOpenCard).toHaveBeenCalledWith("BT1-010", undefined);
 });

@@ -1,0 +1,6142 @@
+{
+  "scope": "Declared-cost correctness and an independently rejected heuristic candidate; local source and evidence only",
+  "candidatePromoted": false,
+  "candidateProgram": {
+    "schemaVersion": 1,
+    "title": "Human panel activation memory costs: free-bonus",
+    "rules": [
+      {
+        "feature": "cost",
+        "weight": -0.6361,
+        "advice": "In the main phase, avoid actions with a higher memory cost.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "handover",
+        "weight": -1.0042,
+        "advice": "In the main phase, avoid actions that pass more memory to the opponent.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackPlayer",
+        "weight": -0.3003,
+        "advice": "In the main phase, avoid attacks on the opponent's security.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "lethal",
+        "weight": 16.0,
+        "advice": "In the main phase, favor attacks on the player at zero opposing security.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackWinningBattle",
+        "weight": 1.0,
+        "advice": "In the main phase, favor attacks on opposing Digimon with lower DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackLosingBattle",
+        "weight": -5.3753,
+        "advice": "In the main phase, avoid attacks on an opposing Digimon with equal or higher DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "digivolve",
+        "weight": 1.271,
+        "advice": "In the main phase, favor digivolving.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "breedingGrowth",
+        "weight": 0.1889,
+        "advice": "In the main phase, favor digivolving the Digimon in the breeding area.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "levelGain",
+        "weight": 1.0427,
+        "advice": "In the main phase, favor digivolutions that gain more levels.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "dpGain",
+        "weight": 0.2493,
+        "advice": "In the main phase, favor digivolutions that gain more DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playBody",
+        "weight": 0.0126,
+        "advice": "In the main phase, favor playing Digimon from hand, more so for higher DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playTamer",
+        "weight": 0.1098,
+        "advice": "In the main phase, favor playing Tamers.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playOption",
+        "weight": 0.3141,
+        "advice": "In the main phase, favor using Option cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceLevel",
+        "weight": 0.3504,
+        "advice": "In the main phase, favor actions by higher-level cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceDp",
+        "weight": 0.4002,
+        "advice": "In the main phase, favor actions by higher-DP cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "targetDp",
+        "weight": -0.1007,
+        "advice": "In the main phase, avoid actions that target higher-DP Digimon.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "pass",
+        "weight": -8.0148,
+        "advice": "In the main phase, avoid ending the main phase.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "activate",
+        "weight": 2.5335,
+        "advice": "In the main phase, favor activating card effects.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceInHand",
+        "weight": -1.3832,
+        "advice": "In the main phase, avoid actions that use a card from hand.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceInTrash",
+        "weight": -6.7499,
+        "advice": "In the main phase, avoid actions that use a card from the trash.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceOnBoard",
+        "weight": -0.5031,
+        "advice": "In the main phase, avoid actions by a Digimon already on the battle area.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceOpponent",
+        "weight": -1.3601,
+        "advice": "In the main phase, avoid actions whose source is an opposing card.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.239,
+        "advice": "In the main phase, favor actions by more valuable cards (DP, level, and cost combined).",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "digiXros",
+        "weight": -0.1419,
+        "advice": "In the main phase, avoid DigiXros plays.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "assembly",
+        "weight": 2.3499,
+        "advice": "In the main phase, favor Assembly plays.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "dnaDigivolve",
+        "weight": 0.0391,
+        "advice": "In the main phase, favor DNA digivolution.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "appFusion",
+        "weight": 5.7053,
+        "advice": "In the main phase, favor App Fusion.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "link",
+        "weight": -0.9559,
+        "advice": "In the main phase, avoid linking cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "materials",
+        "weight": 0.0676,
+        "advice": "In the main phase, favor actions that use more material cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "activate",
+        "weight": 3,
+        "advice": "In the main phase, favor activated effects with no declared immediate memory payment.",
+        "when": {
+          "kind": "main",
+          "minimum": {
+            "freeActivation": 1
+          }
+        }
+      },
+      {
+        "feature": "hatch",
+        "weight": 10,
+        "advice": "Hatch when the breeding area is empty."
+      },
+      {
+        "feature": "deploy",
+        "weight": 2,
+        "advice": "Move a developed line out to contest the board."
+      },
+      {
+        "feature": "criticalBlock",
+        "weight": 100,
+        "advice": "At zero security, prioritize blocking an attack on the player."
+      },
+      {
+        "feature": "accept",
+        "weight": 1,
+        "advice": "Consider optional effects and defensive responses when their costs are acceptable."
+      },
+      {
+        "feature": "finish",
+        "weight": 0.1,
+        "advice": "Finish optional selections when additional cards do not improve the outcome."
+      },
+      {
+        "feature": "openingRookie",
+        "weight": 5,
+        "advice": "Keep an opening hand with a rookie that can start your line."
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.2,
+        "advice": "When choosing targets for your own effect among opposing cards, favor the most valuable opposing Digimon (higher DP and level).",
+        "when": {
+          "kind": "chooseTargets",
+          "minimum": {
+            "sourceOpponent": 1
+          }
+        }
+      },
+      {
+        "feature": "block",
+        "weight": -0.5,
+        "advice": "When you still have 3 or more security cards, decline ordinary blocks and keep your Digimon; take the security check instead.",
+        "when": {
+          "kind": "block",
+          "minimum": {
+            "ownSecurity": 3
+          }
+        }
+      },
+      {
+        "feature": "sourceInHand",
+        "weight": 1,
+        "advice": "In a counter window, favor using a counter card from hand, such as Blast Digivolve, over declining.",
+        "when": {
+          "kind": "counter"
+        }
+      },
+      {
+        "feature": "accept",
+        "weight": -2,
+        "advice": "Decline a Barrier response when you have 1 or fewer security cards; keeping the last security card matters more than saving the Digimon.",
+        "when": {
+          "kind": "respondBarrier",
+          "maximum": {
+            "ownSecurity": 1
+          }
+        }
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.2,
+        "advice": "When a card selection picks among opposing cards on the battle area, favor the most valuable opposing Digimon (higher DP and level).",
+        "when": {
+          "kind": "selectCards",
+          "minimum": {
+            "sourceOpponent": 1,
+            "sourceOnBoard": 1
+          }
+        }
+      },
+      {
+        "feature": "finish",
+        "weight": -0.2,
+        "advice": "When choosing targets for your own effect, prefer picking a legal target over finishing the selection early.",
+        "when": {
+          "kind": "chooseTargets"
+        }
+      },
+      {
+        "feature": "activate",
+        "weight": -4,
+        "advice": "In the main phase, reduce the preference for activating effects from hand.",
+        "when": {
+          "kind": "main",
+          "minimum": {
+            "sourceInHand": 1
+          }
+        }
+      }
+    ]
+  },
+  "baselineCatalog": "apps/api/src/bot/evolution/programs/human-panel-v3.json",
+  "candidateProgramSha256": "a8fc82cd45ebd8e81429e9f7d80be3961e5fe192845c15988cbd44b4c37e0cec",
+  "baselineCatalogSha256": "e19d7a99b23218eed96ed78458c331e90a5c21b117f9e0c515494c0b3acab83c",
+  "runtimeFingerprint": "ae57be956ad965f7c10db02f5d034f97bf089ac4601cf0e98d26dd57a095e51e",
+  "compiledRuntimeArchiveSha256": "c6a53bfd49ab2b87861d3f1a6285f6ca707d4d09e536ffe1b421d96ade90d8c5",
+  "confirmationProtocol": {
+    "runtime": "ae57be956ad965f7c10db02f5d034f97bf089ac4601cf0e98d26dd57a095e51e",
+    "node": "v26.12.0",
+    "workers": 4,
+    "heapMegabytes": 512,
+    "timeoutSeconds": 60,
+    "maxRssMegabytes": 2560,
+    "batchSha256": "5001ceea0d1886fdaa6d060da0a262c325002ef54dcdbd44fcad7ccf4a92711e",
+    "poolSha256": "5472bcf4f559700d92ac5454c32f254cfa80d2accc0c6f2831646fe707eba227",
+    "checkpointSha256": "f215225871a159e197ffc57a8d84e3d844775c0d69c689cab8f84f5f1a84dafc",
+    "candidateSha256": "a8fc82cd45ebd8e81429e9f7d80be3961e5fe192845c15988cbd44b4c37e0cec",
+    "baselineSha256": "34baabe101eaace8efea9dab3b1b5de8dcbd1b79947ad4cb5d3fdac7cc874895",
+    "pairsSha256": "8aff58e9ecd192e5bda2ed68df1b576c7f554a969bb42822205ed46c0f41d24e",
+    "sourceSha256": "a69925eb9d453357b2f2170d132a34655ffb598c08ca733bfa9a66ec16675b81",
+    "seedBase": 31000000,
+    "baselineActivationMemoryCosts": false,
+    "candidateActivationMemoryCosts": true,
+    "primaryMetric": "Failure-as-loss paired matchup points",
+    "weights": {
+      "certified": 0.5,
+      "legacy": 0.25,
+      "v3": 0.25
+    },
+    "minimumOpponentBlocks": 20,
+    "maximumOpponentDrop": 0.02,
+    "acceptance": "Weighted lower95 above zero, certified gain positive, no opponent drop above2pp, no more invalid games"
+  },
+  "development": {
+    "complete": true,
+    "selectedSource": "free-bonus",
+    "screen": {
+      "historical-v3": {
+        "fitness": 0.53515625,
+        "invalid": 2,
+        "opponents": {
+          "certified": {
+            "rate": 0.5390625,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.53125,
+            "games": 64,
+            "invalid": 2
+          },
+          "v3": {
+            "rate": 0.53125,
+            "games": 64,
+            "invalid": 0
+          }
+        }
+      },
+      "projection-only": {
+        "fitness": 0.53515625,
+        "invalid": 2,
+        "opponents": {
+          "certified": {
+            "rate": 0.5390625,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.53125,
+            "games": 64,
+            "invalid": 2
+          },
+          "v3": {
+            "rate": 0.53125,
+            "games": 64,
+            "invalid": 0
+          }
+        }
+      },
+      "free-bonus": {
+        "fitness": 0.53125,
+        "invalid": 2,
+        "opponents": {
+          "certified": {
+            "rate": 0.5234375,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.53125,
+            "games": 64,
+            "invalid": 2
+          },
+          "v3": {
+            "rate": 0.546875,
+            "games": 64,
+            "invalid": 0
+          }
+        }
+      },
+      "uncertainty075": {
+        "fitness": 0.5234375,
+        "invalid": 2,
+        "opponents": {
+          "certified": {
+            "rate": 0.515625,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.53125,
+            "games": 64,
+            "invalid": 2
+          },
+          "v3": {
+            "rate": 0.53125,
+            "games": 64,
+            "invalid": 0
+          }
+        }
+      },
+      "uncertainty150": {
+        "fitness": 0.52734375,
+        "invalid": 2,
+        "opponents": {
+          "certified": {
+            "rate": 0.5234375,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.53125,
+            "games": 64,
+            "invalid": 2
+          },
+          "v3": {
+            "rate": 0.53125,
+            "games": 64,
+            "invalid": 0
+          }
+        }
+      }
+    },
+    "selection": {
+      "historical-v3": {
+        "fitness": 0.505859375,
+        "invalid": 2,
+        "opponents": {
+          "certified": {
+            "rate": 0.4609375,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.578125,
+            "games": 128,
+            "invalid": 2
+          },
+          "v3": {
+            "rate": 0.5234375,
+            "games": 128,
+            "invalid": 0
+          }
+        }
+      },
+      "free-bonus": {
+        "fitness": 0.513671875,
+        "invalid": 2,
+        "opponents": {
+          "certified": {
+            "rate": 0.46875,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.5859375,
+            "games": 128,
+            "invalid": 2
+          },
+          "v3": {
+            "rate": 0.53125,
+            "games": 128,
+            "invalid": 0
+          }
+        }
+      }
+    },
+    "developmentAccepted": true,
+    "requiresIndependentConfirmation": true,
+    "peakWorkerRssMiB": 1466
+  },
+  "confirmation": {
+    "complete": true,
+    "games": 2560,
+    "matchups": 320,
+    "peakWorkerRssMiB": 1346,
+    "opponents": {
+      "certified": {
+        "arms": {
+          "baseline": {
+            "games": 640,
+            "valid": 640,
+            "invalid": 0,
+            "rate": 0.4953125,
+            "failureAsLossRate": 0.4953125,
+            "wins": 317,
+            "draws": 0
+          },
+          "candidate": {
+            "games": 640,
+            "valid": 640,
+            "invalid": 0,
+            "rate": 0.490625,
+            "failureAsLossRate": 0.490625,
+            "wins": 314,
+            "draws": 0
+          }
+        },
+        "pairedFailureAsLoss": {
+          "mean": -0.0046875,
+          "low": -0.01940282056717264,
+          "high": 0.010027820567172639,
+          "varianceOfMean": 5.636731033805031e-5,
+          "blocks": 160
+        },
+        "pairedValidBlocks": {
+          "mean": -0.0046875,
+          "low": -0.01940282056717264,
+          "high": 0.010027820567172639,
+          "varianceOfMean": 5.636731033805031e-5,
+          "blocks": 160
+        }
+      },
+      "legacy": {
+        "arms": {
+          "baseline": {
+            "games": 320,
+            "valid": 313,
+            "invalid": 7,
+            "rate": 0.6230031948881789,
+            "failureAsLossRate": 0.609375,
+            "wins": 195,
+            "draws": 0
+          },
+          "candidate": {
+            "games": 320,
+            "valid": 313,
+            "invalid": 7,
+            "rate": 0.6166134185303515,
+            "failureAsLossRate": 0.603125,
+            "wins": 193,
+            "draws": 0
+          }
+        },
+        "pairedFailureAsLoss": {
+          "mean": -0.00625,
+          "low": -0.023628852819345,
+          "high": 0.011128852819344998,
+          "varianceOfMean": 7.861946202531646e-5,
+          "blocks": 80
+        },
+        "pairedValidBlocks": {
+          "mean": -0.006666666666666667,
+          "low": -0.025208048028982227,
+          "high": 0.01187471469564889,
+          "varianceOfMean": 8.948948948948949e-5,
+          "blocks": 75
+        }
+      },
+      "v3": {
+        "arms": {
+          "baseline": {
+            "games": 320,
+            "valid": 319,
+            "invalid": 1,
+            "rate": 0.5047021943573667,
+            "failureAsLossRate": 0.503125,
+            "wins": 161,
+            "draws": 0
+          },
+          "candidate": {
+            "games": 320,
+            "valid": 319,
+            "invalid": 1,
+            "rate": 0.5015673981191222,
+            "failureAsLossRate": 0.5,
+            "wins": 160,
+            "draws": 0
+          }
+        },
+        "pairedFailureAsLoss": {
+          "mean": -0.003125,
+          "low": -0.02160308636284914,
+          "high": 0.015353086362849142,
+          "varianceOfMean": 8.887954905063291e-5,
+          "blocks": 80
+        },
+        "pairedValidBlocks": {
+          "mean": -0.0031645569620253164,
+          "low": -0.021877877720843267,
+          "high": 0.015548763796792636,
+          "varianceOfMean": 9.115690697168025e-5,
+          "blocks": 79
+        }
+      }
+    },
+    "weightedPairedDifference": {
+      "mean": -0.0046875,
+      "low": -0.01440097916083619,
+      "high": 0.005025979160836191
+    },
+    "baselineInvalid": 8,
+    "candidateInvalid": 8,
+    "accepted": false,
+    "primaryMetric": "Paired matchup points; invalid games count as zero",
+    "interval": "Approximate 95% normal interval, clustered by matchup and stratified by opponent",
+    "opponentWeights": {
+      "certified": 0.5,
+      "legacy": 0.25,
+      "v3": 0.25
+    }
+  },
+  "archetypes": {
+    "groups": {
+      "learner": [
+        {
+          "archetype": "Unclassified",
+          "games": 596,
+          "matchups": 231,
+          "arms": {
+            "baseline": {
+              "valid": 592,
+              "invalid": 4,
+              "wins": 304,
+              "losses": 288,
+              "draws": 0,
+              "points": 304.0,
+              "validRate": 0.5135135135135135,
+              "failureAsLossRate": 0.5100671140939598
+            },
+            "candidate": {
+              "valid": 592,
+              "invalid": 4,
+              "wins": 300,
+              "losses": 292,
+              "draws": 0,
+              "points": 300.0,
+              "validRate": 0.5067567567567568,
+              "failureAsLossRate": 0.5033557046979866
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 300,
+              "valid": 300,
+              "wins": 139,
+              "losses": 161,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 148,
+              "valid": 148,
+              "wins": 76,
+              "losses": 72,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 148,
+              "valid": 144,
+              "wins": 85,
+              "losses": 59,
+              "invalid": 4
+            }
+          },
+          "uniqueDecks": 228,
+          "pairedFailureAsLossDifference": -0.006711409395973154,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Examon",
+          "games": 102,
+          "matchups": 50,
+          "arms": {
+            "baseline": {
+              "valid": 102,
+              "invalid": 0,
+              "wins": 60,
+              "losses": 42,
+              "draws": 0,
+              "points": 60.0,
+              "validRate": 0.5882352941176471,
+              "failureAsLossRate": 0.5882352941176471
+            },
+            "candidate": {
+              "valid": 102,
+              "invalid": 0,
+              "wins": 59,
+              "losses": 43,
+              "draws": 0,
+              "points": 59.0,
+              "validRate": 0.5784313725490197,
+              "failureAsLossRate": 0.5784313725490197
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 58,
+              "valid": 58,
+              "wins": 31,
+              "losses": 27,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 20,
+              "valid": 20,
+              "wins": 15,
+              "losses": 5,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 24,
+              "valid": 24,
+              "wins": 13,
+              "losses": 11,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 43,
+          "pairedFailureAsLossDifference": -0.00980392156862745,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Adventure",
+          "games": 62,
+          "matchups": 31,
+          "arms": {
+            "baseline": {
+              "valid": 62,
+              "invalid": 0,
+              "wins": 36,
+              "losses": 26,
+              "draws": 0,
+              "points": 36.0,
+              "validRate": 0.5806451612903226,
+              "failureAsLossRate": 0.5806451612903226
+            },
+            "candidate": {
+              "valid": 62,
+              "invalid": 0,
+              "wins": 36,
+              "losses": 26,
+              "draws": 0,
+              "points": 36.0,
+              "validRate": 0.5806451612903226,
+              "failureAsLossRate": 0.5806451612903226
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 18,
+              "valid": 18,
+              "wins": 13,
+              "losses": 5,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 28,
+              "valid": 28,
+              "wins": 16,
+              "losses": 12,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 16,
+              "valid": 16,
+              "wins": 7,
+              "losses": 9,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 20,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Alphamon",
+          "games": 52,
+          "matchups": 26,
+          "arms": {
+            "baseline": {
+              "valid": 52,
+              "invalid": 0,
+              "wins": 33,
+              "losses": 19,
+              "draws": 0,
+              "points": 33.0,
+              "validRate": 0.6346153846153846,
+              "failureAsLossRate": 0.6346153846153846
+            },
+            "candidate": {
+              "valid": 52,
+              "invalid": 0,
+              "wins": 33,
+              "losses": 19,
+              "draws": 0,
+              "points": 33.0,
+              "validRate": 0.6346153846153846,
+              "failureAsLossRate": 0.6346153846153846
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 18,
+              "valid": 18,
+              "wins": 11,
+              "losses": 7,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 22,
+              "valid": 22,
+              "wins": 14,
+              "losses": 8,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 12,
+              "valid": 12,
+              "wins": 8,
+              "losses": 4,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 20,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Gankoomon & Jesmon",
+          "games": 46,
+          "matchups": 21,
+          "arms": {
+            "baseline": {
+              "valid": 44,
+              "invalid": 2,
+              "wins": 21,
+              "losses": 23,
+              "draws": 0,
+              "points": 21.0,
+              "validRate": 0.4772727272727273,
+              "failureAsLossRate": 0.45652173913043476
+            },
+            "candidate": {
+              "valid": 44,
+              "invalid": 2,
+              "wins": 22,
+              "losses": 22,
+              "draws": 0,
+              "points": 22.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.4782608695652174
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 26,
+              "valid": 26,
+              "wins": 11,
+              "losses": 15,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 12,
+              "valid": 12,
+              "wins": 6,
+              "losses": 6,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 8,
+              "valid": 6,
+              "wins": 5,
+              "losses": 1,
+              "invalid": 2
+            }
+          },
+          "uniqueDecks": 18,
+          "pairedFailureAsLossDifference": 0.021739130434782608,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Jupitermon",
+          "games": 38,
+          "matchups": 19,
+          "arms": {
+            "baseline": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 26,
+              "losses": 12,
+              "draws": 0,
+              "points": 26.0,
+              "validRate": 0.6842105263157895,
+              "failureAsLossRate": 0.6842105263157895
+            },
+            "candidate": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 27,
+              "losses": 11,
+              "draws": 0,
+              "points": 27.0,
+              "validRate": 0.7105263157894737,
+              "failureAsLossRate": 0.7105263157894737
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 14,
+              "valid": 14,
+              "wins": 12,
+              "losses": 2,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 16,
+              "valid": 16,
+              "wins": 9,
+              "losses": 7,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 6,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 11,
+          "pairedFailureAsLossDifference": 0.02631578947368421,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Omnimon",
+          "games": 38,
+          "matchups": 19,
+          "arms": {
+            "baseline": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 19,
+              "losses": 19,
+              "draws": 0,
+              "points": 19.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 15,
+              "losses": 23,
+              "draws": 0,
+              "points": 15.0,
+              "validRate": 0.39473684210526316,
+              "failureAsLossRate": 0.39473684210526316
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 16,
+              "valid": 16,
+              "wins": 10,
+              "losses": 6,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 14,
+              "valid": 14,
+              "wins": 3,
+              "losses": 11,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 2,
+              "losses": 6,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 16,
+          "pairedFailureAsLossDifference": -0.10526315789473684,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Imperialdramon",
+          "games": 34,
+          "matchups": 17,
+          "arms": {
+            "baseline": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 17,
+              "losses": 17,
+              "draws": 0,
+              "points": 17.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 16,
+              "losses": 18,
+              "draws": 0,
+              "points": 16.0,
+              "validRate": 0.47058823529411764,
+              "failureAsLossRate": 0.47058823529411764
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 8,
+              "valid": 8,
+              "wins": 3,
+              "losses": 5,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 6,
+              "valid": 6,
+              "wins": 3,
+              "losses": 3,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 20,
+              "valid": 20,
+              "wins": 10,
+              "losses": 10,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 14,
+          "pairedFailureAsLossDifference": -0.029411764705882353,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Plutomon",
+          "games": 34,
+          "matchups": 16,
+          "arms": {
+            "baseline": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 9,
+              "losses": 25,
+              "draws": 0,
+              "points": 9.0,
+              "validRate": 0.2647058823529412,
+              "failureAsLossRate": 0.2647058823529412
+            },
+            "candidate": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 8,
+              "losses": 26,
+              "draws": 0,
+              "points": 8.0,
+              "validRate": 0.23529411764705882,
+              "failureAsLossRate": 0.23529411764705882
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 6,
+              "valid": 6,
+              "wins": 1,
+              "losses": 5,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 20,
+              "valid": 20,
+              "wins": 4,
+              "losses": 16,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 3,
+              "losses": 5,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 12,
+          "pairedFailureAsLossDifference": -0.029411764705882353,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Dynasmon",
+          "games": 28,
+          "matchups": 13,
+          "arms": {
+            "baseline": {
+              "valid": 28,
+              "invalid": 0,
+              "wins": 18,
+              "losses": 10,
+              "draws": 0,
+              "points": 18.0,
+              "validRate": 0.6428571428571429,
+              "failureAsLossRate": 0.6428571428571429
+            },
+            "candidate": {
+              "valid": 28,
+              "invalid": 0,
+              "wins": 18,
+              "losses": 10,
+              "draws": 0,
+              "points": 18.0,
+              "validRate": 0.6428571428571429,
+              "failureAsLossRate": 0.6428571428571429
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 20,
+              "valid": 20,
+              "wins": 14,
+              "losses": 6,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 6,
+              "valid": 6,
+              "wins": 3,
+              "losses": 3,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 10,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Toho Braves",
+          "games": 24,
+          "matchups": 12,
+          "arms": {
+            "baseline": {
+              "valid": 24,
+              "invalid": 0,
+              "wins": 16,
+              "losses": 8,
+              "draws": 0,
+              "points": 16.0,
+              "validRate": 0.6666666666666666,
+              "failureAsLossRate": 0.6666666666666666
+            },
+            "candidate": {
+              "valid": 24,
+              "invalid": 0,
+              "wins": 17,
+              "losses": 7,
+              "draws": 0,
+              "points": 17.0,
+              "validRate": 0.7083333333333334,
+              "failureAsLossRate": 0.7083333333333334
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 1,
+              "losses": 7,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 8,
+              "valid": 8,
+              "wins": 8,
+              "losses": 0,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 8,
+              "valid": 8,
+              "wins": 8,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 11,
+          "pairedFailureAsLossDifference": 0.041666666666666664,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Glowing Dawn",
+          "games": 22,
+          "matchups": 9,
+          "arms": {
+            "baseline": {
+              "valid": 22,
+              "invalid": 0,
+              "wins": 13,
+              "losses": 9,
+              "draws": 0,
+              "points": 13.0,
+              "validRate": 0.5909090909090909,
+              "failureAsLossRate": 0.5909090909090909
+            },
+            "candidate": {
+              "valid": 22,
+              "invalid": 0,
+              "wins": 13,
+              "losses": 9,
+              "draws": 0,
+              "points": 13.0,
+              "validRate": 0.5909090909090909,
+              "failureAsLossRate": 0.5909090909090909
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 10,
+              "valid": 10,
+              "wins": 7,
+              "losses": 3,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 8,
+              "valid": 8,
+              "wins": 4,
+              "losses": 4,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 4,
+              "valid": 4,
+              "wins": 2,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 9,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "LordKnightmon",
+          "games": 18,
+          "matchups": 9,
+          "arms": {
+            "baseline": {
+              "valid": 18,
+              "invalid": 0,
+              "wins": 5,
+              "losses": 13,
+              "draws": 0,
+              "points": 5.0,
+              "validRate": 0.2777777777777778,
+              "failureAsLossRate": 0.2777777777777778
+            },
+            "candidate": {
+              "valid": 18,
+              "invalid": 0,
+              "wins": 5,
+              "losses": 13,
+              "draws": 0,
+              "points": 5.0,
+              "validRate": 0.2777777777777778,
+              "failureAsLossRate": 0.2777777777777778
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 6,
+              "valid": 6,
+              "wins": 1,
+              "losses": 5,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 4,
+              "valid": 4,
+              "wins": 3,
+              "losses": 1,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 1,
+              "losses": 7,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 4,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "UlforceVeedramon",
+          "games": 18,
+          "matchups": 9,
+          "arms": {
+            "baseline": {
+              "valid": 18,
+              "invalid": 0,
+              "wins": 13,
+              "losses": 5,
+              "draws": 0,
+              "points": 13.0,
+              "validRate": 0.7222222222222222,
+              "failureAsLossRate": 0.7222222222222222
+            },
+            "candidate": {
+              "valid": 18,
+              "invalid": 0,
+              "wins": 13,
+              "losses": 5,
+              "draws": 0,
+              "points": 13.0,
+              "validRate": 0.7222222222222222,
+              "failureAsLossRate": 0.7222222222222222
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 6,
+              "valid": 6,
+              "wins": 4,
+              "losses": 2,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 6,
+              "valid": 6,
+              "wins": 5,
+              "losses": 1,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 6,
+              "valid": 6,
+              "wins": 4,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 7,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Metal Empire",
+          "games": 14,
+          "matchups": 7,
+          "arms": {
+            "baseline": {
+              "valid": 14,
+              "invalid": 0,
+              "wins": 8,
+              "losses": 6,
+              "draws": 0,
+              "points": 8.0,
+              "validRate": 0.5714285714285714,
+              "failureAsLossRate": 0.5714285714285714
+            },
+            "candidate": {
+              "valid": 14,
+              "invalid": 0,
+              "wins": 9,
+              "losses": 5,
+              "draws": 0,
+              "points": 9.0,
+              "validRate": 0.6428571428571429,
+              "failureAsLossRate": 0.6428571428571429
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 4,
+              "valid": 4,
+              "wins": 4,
+              "losses": 0,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 8,
+              "valid": 8,
+              "wins": 4,
+              "losses": 4,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 7,
+          "pairedFailureAsLossDifference": 0.07142857142857142,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Omnimon Alter S",
+          "games": 14,
+          "matchups": 7,
+          "arms": {
+            "baseline": {
+              "valid": 14,
+              "invalid": 0,
+              "wins": 9,
+              "losses": 5,
+              "draws": 0,
+              "points": 9.0,
+              "validRate": 0.6428571428571429,
+              "failureAsLossRate": 0.6428571428571429
+            },
+            "candidate": {
+              "valid": 14,
+              "invalid": 0,
+              "wins": 9,
+              "losses": 5,
+              "draws": 0,
+              "points": 9.0,
+              "validRate": 0.6428571428571429,
+              "failureAsLossRate": 0.6428571428571429
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 12,
+              "valid": 12,
+              "wins": 7,
+              "losses": 5,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 6,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Chronomon",
+          "games": 12,
+          "matchups": 6,
+          "arms": {
+            "baseline": {
+              "valid": 12,
+              "invalid": 0,
+              "wins": 7,
+              "losses": 5,
+              "draws": 0,
+              "points": 7.0,
+              "validRate": 0.5833333333333334,
+              "failureAsLossRate": 0.5833333333333334
+            },
+            "candidate": {
+              "valid": 12,
+              "invalid": 0,
+              "wins": 7,
+              "losses": 5,
+              "draws": 0,
+              "points": 7.0,
+              "validRate": 0.5833333333333334,
+              "failureAsLossRate": 0.5833333333333334
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 6,
+              "valid": 6,
+              "wins": 3,
+              "losses": 3,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 2,
+              "losses": 2,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 3,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Vortexdramon",
+          "games": 12,
+          "matchups": 6,
+          "arms": {
+            "baseline": {
+              "valid": 12,
+              "invalid": 0,
+              "wins": 9,
+              "losses": 3,
+              "draws": 0,
+              "points": 9.0,
+              "validRate": 0.75,
+              "failureAsLossRate": 0.75
+            },
+            "candidate": {
+              "valid": 12,
+              "invalid": 0,
+              "wins": 9,
+              "losses": 3,
+              "draws": 0,
+              "points": 9.0,
+              "validRate": 0.75,
+              "failureAsLossRate": 0.75
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 6,
+              "valid": 6,
+              "wins": 5,
+              "losses": 1,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 4,
+              "valid": 4,
+              "wins": 3,
+              "losses": 1,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 5,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Kentaurosmon",
+          "games": 10,
+          "matchups": 5,
+          "arms": {
+            "baseline": {
+              "valid": 10,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 8,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 0.2,
+              "failureAsLossRate": 0.2
+            },
+            "candidate": {
+              "valid": 10,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 8,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 0.2,
+              "failureAsLossRate": 0.2
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 4,
+              "valid": 4,
+              "wins": 0,
+              "losses": 4,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 1,
+              "losses": 3,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 4,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Xros Heart",
+          "games": 10,
+          "matchups": 5,
+          "arms": {
+            "baseline": {
+              "valid": 9,
+              "invalid": 1,
+              "wins": 4,
+              "losses": 5,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 0.4444444444444444,
+              "failureAsLossRate": 0.4
+            },
+            "candidate": {
+              "valid": 9,
+              "invalid": 1,
+              "wins": 5,
+              "losses": 4,
+              "draws": 0,
+              "points": 5.0,
+              "validRate": 0.5555555555555556,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 8,
+              "valid": 7,
+              "wins": 5,
+              "losses": 2,
+              "invalid": 1
+            },
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 5,
+          "pairedFailureAsLossDifference": 0.1,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Galacticmon",
+          "games": 8,
+          "matchups": 4,
+          "arms": {
+            "baseline": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 7,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.125,
+              "failureAsLossRate": 0.125
+            },
+            "candidate": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 7,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.125,
+              "failureAsLossRate": 0.125
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 4,
+              "valid": 4,
+              "wins": 0,
+              "losses": 4,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 1,
+              "losses": 3,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 4,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "HeavyMetaldramon",
+          "games": 8,
+          "matchups": 4,
+          "arms": {
+            "baseline": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 7,
+              "losses": 1,
+              "draws": 0,
+              "points": 7.0,
+              "validRate": 0.875,
+              "failureAsLossRate": 0.875
+            },
+            "candidate": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 7,
+              "losses": 1,
+              "draws": 0,
+              "points": 7.0,
+              "validRate": 0.875,
+              "failureAsLossRate": 0.875
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 4,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 3,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Jesmon",
+          "games": 8,
+          "matchups": 4,
+          "arms": {
+            "baseline": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 6,
+              "losses": 2,
+              "draws": 0,
+              "points": 6.0,
+              "validRate": 0.75,
+              "failureAsLossRate": 0.75
+            },
+            "candidate": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 6,
+              "losses": 2,
+              "draws": 0,
+              "points": 6.0,
+              "validRate": 0.75,
+              "failureAsLossRate": 0.75
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 4,
+              "valid": 4,
+              "wins": 3,
+              "losses": 1,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 3,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Puppets",
+          "games": 8,
+          "matchups": 4,
+          "arms": {
+            "baseline": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 4,
+              "losses": 4,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 4,
+              "losses": 4,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 2,
+              "losses": 2,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 4,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "ShineGreymon",
+          "games": 8,
+          "matchups": 4,
+          "arms": {
+            "baseline": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 7,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.125,
+              "failureAsLossRate": 0.125
+            },
+            "candidate": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 6,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 0.25,
+              "failureAsLossRate": 0.25
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 1,
+              "losses": 3,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 3,
+          "pairedFailureAsLossDifference": 0.125,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "BeelStarmon",
+          "games": 6,
+          "matchups": 3,
+          "arms": {
+            "baseline": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 4,
+              "losses": 2,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 0.6666666666666666,
+              "failureAsLossRate": 0.6666666666666666
+            },
+            "candidate": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 3,
+              "losses": 3,
+              "draws": 0,
+              "points": 3.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 3,
+          "pairedFailureAsLossDifference": -0.16666666666666666,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Millenniummon",
+          "games": 6,
+          "matchups": 3,
+          "arms": {
+            "baseline": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 6,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 6,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 0,
+              "losses": 4,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Sanmyojin",
+          "games": 6,
+          "matchups": 3,
+          "arms": {
+            "baseline": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 6,
+              "losses": 0,
+              "draws": 0,
+              "points": 6.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            },
+            "candidate": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 6,
+              "losses": 0,
+              "draws": 0,
+              "points": 6.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 6,
+              "valid": 6,
+              "wins": 6,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Abbadomon",
+          "games": 4,
+          "matchups": 2,
+          "arms": {
+            "baseline": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 4,
+              "losses": 0,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            },
+            "candidate": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 4,
+              "losses": 0,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 4,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Dantemon",
+          "games": 4,
+          "matchups": 2,
+          "arms": {
+            "baseline": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 3,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.25,
+              "failureAsLossRate": 0.25
+            },
+            "candidate": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 3,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.25,
+              "failureAsLossRate": 0.25
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Magneticdramon",
+          "games": 4,
+          "matchups": 2,
+          "arms": {
+            "baseline": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 3,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.25,
+              "failureAsLossRate": 0.25
+            },
+            "candidate": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 3,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.25,
+              "failureAsLossRate": 0.25
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 1,
+              "losses": 3,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Vulcanusmon",
+          "games": 4,
+          "matchups": 2,
+          "arms": {
+            "baseline": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 4,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 4,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Creepymon",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Four Sovereigns",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Imperialdramon Virus",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Magnamon",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Marsmon",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Purple Hybrid",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 1,
+              "invalid": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 1,
+              "invalid": 1,
+              "wins": 0,
+              "losses": 1,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 2,
+              "valid": 1,
+              "wins": 0,
+              "losses": 1,
+              "invalid": 1
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Rebootmon",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Red Hybrid",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Royal Base",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Royal Knights",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Styracomon",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        }
+      ],
+      "opponent": [
+        {
+          "archetype": "Unclassified",
+          "games": 596,
+          "matchups": 231,
+          "arms": {
+            "baseline": {
+              "valid": 595,
+              "invalid": 1,
+              "wins": 324,
+              "losses": 271,
+              "draws": 0,
+              "points": 324.0,
+              "validRate": 0.5445378151260504,
+              "failureAsLossRate": 0.5436241610738255
+            },
+            "candidate": {
+              "valid": 595,
+              "invalid": 1,
+              "wins": 323,
+              "losses": 272,
+              "draws": 0,
+              "points": 323.0,
+              "validRate": 0.5428571428571428,
+              "failureAsLossRate": 0.5419463087248322
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 300,
+              "valid": 300,
+              "wins": 153,
+              "losses": 147,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 148,
+              "valid": 148,
+              "wins": 76,
+              "losses": 72,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 148,
+              "valid": 147,
+              "wins": 94,
+              "losses": 53,
+              "invalid": 1
+            }
+          },
+          "uniqueDecks": 228,
+          "pairedFailureAsLossDifference": -0.0016778523489932886,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Examon",
+          "games": 102,
+          "matchups": 50,
+          "arms": {
+            "baseline": {
+              "valid": 102,
+              "invalid": 0,
+              "wins": 42,
+              "losses": 60,
+              "draws": 0,
+              "points": 42.0,
+              "validRate": 0.4117647058823529,
+              "failureAsLossRate": 0.4117647058823529
+            },
+            "candidate": {
+              "valid": 102,
+              "invalid": 0,
+              "wins": 43,
+              "losses": 59,
+              "draws": 0,
+              "points": 43.0,
+              "validRate": 0.4215686274509804,
+              "failureAsLossRate": 0.4215686274509804
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 58,
+              "valid": 58,
+              "wins": 26,
+              "losses": 32,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 20,
+              "valid": 20,
+              "wins": 12,
+              "losses": 8,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 24,
+              "valid": 24,
+              "wins": 5,
+              "losses": 19,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 43,
+          "pairedFailureAsLossDifference": 0.00980392156862745,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Adventure",
+          "games": 62,
+          "matchups": 31,
+          "arms": {
+            "baseline": {
+              "valid": 62,
+              "invalid": 0,
+              "wins": 28,
+              "losses": 34,
+              "draws": 0,
+              "points": 28.0,
+              "validRate": 0.45161290322580644,
+              "failureAsLossRate": 0.45161290322580644
+            },
+            "candidate": {
+              "valid": 62,
+              "invalid": 0,
+              "wins": 28,
+              "losses": 34,
+              "draws": 0,
+              "points": 28.0,
+              "validRate": 0.45161290322580644,
+              "failureAsLossRate": 0.45161290322580644
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 18,
+              "valid": 18,
+              "wins": 9,
+              "losses": 9,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 28,
+              "valid": 28,
+              "wins": 10,
+              "losses": 18,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 16,
+              "valid": 16,
+              "wins": 9,
+              "losses": 7,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 20,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Alphamon",
+          "games": 52,
+          "matchups": 26,
+          "arms": {
+            "baseline": {
+              "valid": 52,
+              "invalid": 0,
+              "wins": 22,
+              "losses": 30,
+              "draws": 0,
+              "points": 22.0,
+              "validRate": 0.4230769230769231,
+              "failureAsLossRate": 0.4230769230769231
+            },
+            "candidate": {
+              "valid": 52,
+              "invalid": 0,
+              "wins": 22,
+              "losses": 30,
+              "draws": 0,
+              "points": 22.0,
+              "validRate": 0.4230769230769231,
+              "failureAsLossRate": 0.4230769230769231
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 18,
+              "valid": 18,
+              "wins": 11,
+              "losses": 7,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 22,
+              "valid": 22,
+              "wins": 9,
+              "losses": 13,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 12,
+              "valid": 12,
+              "wins": 2,
+              "losses": 10,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 20,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Gankoomon & Jesmon",
+          "games": 46,
+          "matchups": 21,
+          "arms": {
+            "baseline": {
+              "valid": 44,
+              "invalid": 2,
+              "wins": 22,
+              "losses": 22,
+              "draws": 0,
+              "points": 22.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.4782608695652174
+            },
+            "candidate": {
+              "valid": 44,
+              "invalid": 2,
+              "wins": 20,
+              "losses": 24,
+              "draws": 0,
+              "points": 20.0,
+              "validRate": 0.45454545454545453,
+              "failureAsLossRate": 0.43478260869565216
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 26,
+              "valid": 26,
+              "wins": 9,
+              "losses": 17,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 12,
+              "valid": 12,
+              "wins": 7,
+              "losses": 5,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 8,
+              "valid": 6,
+              "wins": 4,
+              "losses": 2,
+              "invalid": 2
+            }
+          },
+          "uniqueDecks": 18,
+          "pairedFailureAsLossDifference": -0.043478260869565216,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Jupitermon",
+          "games": 38,
+          "matchups": 19,
+          "arms": {
+            "baseline": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 15,
+              "losses": 23,
+              "draws": 0,
+              "points": 15.0,
+              "validRate": 0.39473684210526316,
+              "failureAsLossRate": 0.39473684210526316
+            },
+            "candidate": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 15,
+              "losses": 23,
+              "draws": 0,
+              "points": 15.0,
+              "validRate": 0.39473684210526316,
+              "failureAsLossRate": 0.39473684210526316
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 14,
+              "valid": 14,
+              "wins": 6,
+              "losses": 8,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 16,
+              "valid": 16,
+              "wins": 7,
+              "losses": 9,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 2,
+              "losses": 6,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 11,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Omnimon",
+          "games": 38,
+          "matchups": 19,
+          "arms": {
+            "baseline": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 27,
+              "losses": 11,
+              "draws": 0,
+              "points": 27.0,
+              "validRate": 0.7105263157894737,
+              "failureAsLossRate": 0.7105263157894737
+            },
+            "candidate": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 27,
+              "losses": 11,
+              "draws": 0,
+              "points": 27.0,
+              "validRate": 0.7105263157894737,
+              "failureAsLossRate": 0.7105263157894737
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 16,
+              "valid": 16,
+              "wins": 13,
+              "losses": 3,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 14,
+              "valid": 14,
+              "wins": 10,
+              "losses": 4,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 4,
+              "losses": 4,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 16,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Imperialdramon",
+          "games": 34,
+          "matchups": 17,
+          "arms": {
+            "baseline": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 19,
+              "losses": 15,
+              "draws": 0,
+              "points": 19.0,
+              "validRate": 0.5588235294117647,
+              "failureAsLossRate": 0.5588235294117647
+            },
+            "candidate": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 18,
+              "losses": 16,
+              "draws": 0,
+              "points": 18.0,
+              "validRate": 0.5294117647058824,
+              "failureAsLossRate": 0.5294117647058824
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 8,
+              "valid": 8,
+              "wins": 3,
+              "losses": 5,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 6,
+              "valid": 6,
+              "wins": 4,
+              "losses": 2,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 20,
+              "valid": 20,
+              "wins": 11,
+              "losses": 9,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 14,
+          "pairedFailureAsLossDifference": -0.029411764705882353,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Plutomon",
+          "games": 34,
+          "matchups": 16,
+          "arms": {
+            "baseline": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 20,
+              "losses": 14,
+              "draws": 0,
+              "points": 20.0,
+              "validRate": 0.5882352941176471,
+              "failureAsLossRate": 0.5882352941176471
+            },
+            "candidate": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 19,
+              "losses": 15,
+              "draws": 0,
+              "points": 19.0,
+              "validRate": 0.5588235294117647,
+              "failureAsLossRate": 0.5588235294117647
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 6,
+              "valid": 6,
+              "wins": 5,
+              "losses": 1,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 20,
+              "valid": 20,
+              "wins": 8,
+              "losses": 12,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 6,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 12,
+          "pairedFailureAsLossDifference": -0.029411764705882353,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Dynasmon",
+          "games": 28,
+          "matchups": 13,
+          "arms": {
+            "baseline": {
+              "valid": 28,
+              "invalid": 0,
+              "wins": 12,
+              "losses": 16,
+              "draws": 0,
+              "points": 12.0,
+              "validRate": 0.42857142857142855,
+              "failureAsLossRate": 0.42857142857142855
+            },
+            "candidate": {
+              "valid": 28,
+              "invalid": 0,
+              "wins": 11,
+              "losses": 17,
+              "draws": 0,
+              "points": 11.0,
+              "validRate": 0.39285714285714285,
+              "failureAsLossRate": 0.39285714285714285
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 20,
+              "valid": 20,
+              "wins": 6,
+              "losses": 14,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 6,
+              "valid": 6,
+              "wins": 4,
+              "losses": 2,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 10,
+          "pairedFailureAsLossDifference": -0.03571428571428571,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Toho Braves",
+          "games": 24,
+          "matchups": 12,
+          "arms": {
+            "baseline": {
+              "valid": 24,
+              "invalid": 0,
+              "wins": 7,
+              "losses": 17,
+              "draws": 0,
+              "points": 7.0,
+              "validRate": 0.2916666666666667,
+              "failureAsLossRate": 0.2916666666666667
+            },
+            "candidate": {
+              "valid": 24,
+              "invalid": 0,
+              "wins": 6,
+              "losses": 18,
+              "draws": 0,
+              "points": 6.0,
+              "validRate": 0.25,
+              "failureAsLossRate": 0.25
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 3,
+              "losses": 5,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 8,
+              "valid": 8,
+              "wins": 2,
+              "losses": 6,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 8,
+              "valid": 8,
+              "wins": 1,
+              "losses": 7,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 11,
+          "pairedFailureAsLossDifference": -0.041666666666666664,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Glowing Dawn",
+          "games": 22,
+          "matchups": 9,
+          "arms": {
+            "baseline": {
+              "valid": 22,
+              "invalid": 0,
+              "wins": 16,
+              "losses": 6,
+              "draws": 0,
+              "points": 16.0,
+              "validRate": 0.7272727272727273,
+              "failureAsLossRate": 0.7272727272727273
+            },
+            "candidate": {
+              "valid": 22,
+              "invalid": 0,
+              "wins": 16,
+              "losses": 6,
+              "draws": 0,
+              "points": 16.0,
+              "validRate": 0.7272727272727273,
+              "failureAsLossRate": 0.7272727272727273
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 10,
+              "valid": 10,
+              "wins": 7,
+              "losses": 3,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 8,
+              "valid": 8,
+              "wins": 5,
+              "losses": 3,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 4,
+              "valid": 4,
+              "wins": 4,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 9,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "LordKnightmon",
+          "games": 18,
+          "matchups": 9,
+          "arms": {
+            "baseline": {
+              "valid": 16,
+              "invalid": 2,
+              "wins": 13,
+              "losses": 3,
+              "draws": 0,
+              "points": 13.0,
+              "validRate": 0.8125,
+              "failureAsLossRate": 0.7222222222222222
+            },
+            "candidate": {
+              "valid": 16,
+              "invalid": 2,
+              "wins": 13,
+              "losses": 3,
+              "draws": 0,
+              "points": 13.0,
+              "validRate": 0.8125,
+              "failureAsLossRate": 0.7222222222222222
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 6,
+              "valid": 6,
+              "wins": 5,
+              "losses": 1,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 4,
+              "valid": 3,
+              "wins": 1,
+              "losses": 2,
+              "invalid": 1
+            },
+            "v3": {
+              "games": 8,
+              "valid": 7,
+              "wins": 7,
+              "losses": 0,
+              "invalid": 1
+            }
+          },
+          "uniqueDecks": 4,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "UlforceVeedramon",
+          "games": 18,
+          "matchups": 9,
+          "arms": {
+            "baseline": {
+              "valid": 18,
+              "invalid": 0,
+              "wins": 11,
+              "losses": 7,
+              "draws": 0,
+              "points": 11.0,
+              "validRate": 0.6111111111111112,
+              "failureAsLossRate": 0.6111111111111112
+            },
+            "candidate": {
+              "valid": 18,
+              "invalid": 0,
+              "wins": 11,
+              "losses": 7,
+              "draws": 0,
+              "points": 11.0,
+              "validRate": 0.6111111111111112,
+              "failureAsLossRate": 0.6111111111111112
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 6,
+              "valid": 6,
+              "wins": 3,
+              "losses": 3,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 6,
+              "valid": 6,
+              "wins": 4,
+              "losses": 2,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 6,
+              "valid": 6,
+              "wins": 4,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 7,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Metal Empire",
+          "games": 14,
+          "matchups": 7,
+          "arms": {
+            "baseline": {
+              "valid": 14,
+              "invalid": 0,
+              "wins": 9,
+              "losses": 5,
+              "draws": 0,
+              "points": 9.0,
+              "validRate": 0.6428571428571429,
+              "failureAsLossRate": 0.6428571428571429
+            },
+            "candidate": {
+              "valid": 14,
+              "invalid": 0,
+              "wins": 6,
+              "losses": 8,
+              "draws": 0,
+              "points": 6.0,
+              "validRate": 0.42857142857142855,
+              "failureAsLossRate": 0.42857142857142855
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 4,
+              "valid": 4,
+              "wins": 1,
+              "losses": 3,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 8,
+              "valid": 8,
+              "wins": 4,
+              "losses": 4,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 7,
+          "pairedFailureAsLossDifference": -0.21428571428571427,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Omnimon Alter S",
+          "games": 14,
+          "matchups": 7,
+          "arms": {
+            "baseline": {
+              "valid": 14,
+              "invalid": 0,
+              "wins": 6,
+              "losses": 8,
+              "draws": 0,
+              "points": 6.0,
+              "validRate": 0.42857142857142855,
+              "failureAsLossRate": 0.42857142857142855
+            },
+            "candidate": {
+              "valid": 14,
+              "invalid": 0,
+              "wins": 6,
+              "losses": 8,
+              "draws": 0,
+              "points": 6.0,
+              "validRate": 0.42857142857142855,
+              "failureAsLossRate": 0.42857142857142855
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 12,
+              "valid": 12,
+              "wins": 6,
+              "losses": 6,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 6,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Chronomon",
+          "games": 12,
+          "matchups": 6,
+          "arms": {
+            "baseline": {
+              "valid": 12,
+              "invalid": 0,
+              "wins": 8,
+              "losses": 4,
+              "draws": 0,
+              "points": 8.0,
+              "validRate": 0.6666666666666666,
+              "failureAsLossRate": 0.6666666666666666
+            },
+            "candidate": {
+              "valid": 12,
+              "invalid": 0,
+              "wins": 9,
+              "losses": 3,
+              "draws": 0,
+              "points": 9.0,
+              "validRate": 0.75,
+              "failureAsLossRate": 0.75
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 6,
+              "valid": 6,
+              "wins": 5,
+              "losses": 1,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 3,
+              "losses": 1,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 3,
+          "pairedFailureAsLossDifference": 0.08333333333333333,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Vortexdramon",
+          "games": 12,
+          "matchups": 6,
+          "arms": {
+            "baseline": {
+              "valid": 12,
+              "invalid": 0,
+              "wins": 7,
+              "losses": 5,
+              "draws": 0,
+              "points": 7.0,
+              "validRate": 0.5833333333333334,
+              "failureAsLossRate": 0.5833333333333334
+            },
+            "candidate": {
+              "valid": 12,
+              "invalid": 0,
+              "wins": 7,
+              "losses": 5,
+              "draws": 0,
+              "points": 7.0,
+              "validRate": 0.5833333333333334,
+              "failureAsLossRate": 0.5833333333333334
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 6,
+              "valid": 6,
+              "wins": 4,
+              "losses": 2,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 4,
+              "valid": 4,
+              "wins": 3,
+              "losses": 1,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 5,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Kentaurosmon",
+          "games": 10,
+          "matchups": 5,
+          "arms": {
+            "baseline": {
+              "valid": 10,
+              "invalid": 0,
+              "wins": 8,
+              "losses": 2,
+              "draws": 0,
+              "points": 8.0,
+              "validRate": 0.8,
+              "failureAsLossRate": 0.8
+            },
+            "candidate": {
+              "valid": 10,
+              "invalid": 0,
+              "wins": 8,
+              "losses": 2,
+              "draws": 0,
+              "points": 8.0,
+              "validRate": 0.8,
+              "failureAsLossRate": 0.8
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 4,
+              "valid": 4,
+              "wins": 4,
+              "losses": 0,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 3,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 4,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Xros Heart",
+          "games": 10,
+          "matchups": 5,
+          "arms": {
+            "baseline": {
+              "valid": 10,
+              "invalid": 0,
+              "wins": 6,
+              "losses": 4,
+              "draws": 0,
+              "points": 6.0,
+              "validRate": 0.6,
+              "failureAsLossRate": 0.6
+            },
+            "candidate": {
+              "valid": 10,
+              "invalid": 0,
+              "wins": 6,
+              "losses": 4,
+              "draws": 0,
+              "points": 6.0,
+              "validRate": 0.6,
+              "failureAsLossRate": 0.6
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 4,
+              "losses": 4,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 5,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Galacticmon",
+          "games": 8,
+          "matchups": 4,
+          "arms": {
+            "baseline": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 7,
+              "losses": 1,
+              "draws": 0,
+              "points": 7.0,
+              "validRate": 0.875,
+              "failureAsLossRate": 0.875
+            },
+            "candidate": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 7,
+              "losses": 1,
+              "draws": 0,
+              "points": 7.0,
+              "validRate": 0.875,
+              "failureAsLossRate": 0.875
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 4,
+              "valid": 4,
+              "wins": 4,
+              "losses": 0,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 3,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 4,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "HeavyMetaldramon",
+          "games": 8,
+          "matchups": 4,
+          "arms": {
+            "baseline": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 4,
+              "losses": 4,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 4,
+              "losses": 4,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 1,
+              "losses": 3,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 3,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Jesmon",
+          "games": 8,
+          "matchups": 4,
+          "arms": {
+            "baseline": {
+              "valid": 5,
+              "invalid": 3,
+              "wins": 1,
+              "losses": 4,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.2,
+              "failureAsLossRate": 0.125
+            },
+            "candidate": {
+              "valid": 5,
+              "invalid": 3,
+              "wins": 1,
+              "losses": 4,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.2,
+              "failureAsLossRate": 0.125
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 4,
+              "valid": 1,
+              "wins": 0,
+              "losses": 1,
+              "invalid": 3
+            },
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 1,
+              "losses": 3,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Puppets",
+          "games": 8,
+          "matchups": 4,
+          "arms": {
+            "baseline": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 4,
+              "losses": 4,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 4,
+              "losses": 4,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 2,
+              "losses": 2,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 4,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "ShineGreymon",
+          "games": 8,
+          "matchups": 4,
+          "arms": {
+            "baseline": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 6,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 0.25,
+              "failureAsLossRate": 0.25
+            },
+            "candidate": {
+              "valid": 8,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 6,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 0.25,
+              "failureAsLossRate": 0.25
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 2,
+              "losses": 2,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 3,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "BeelStarmon",
+          "games": 6,
+          "matchups": 3,
+          "arms": {
+            "baseline": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 5,
+              "losses": 1,
+              "draws": 0,
+              "points": 5.0,
+              "validRate": 0.8333333333333334,
+              "failureAsLossRate": 0.8333333333333334
+            },
+            "candidate": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 5,
+              "losses": 1,
+              "draws": 0,
+              "points": 5.0,
+              "validRate": 0.8333333333333334,
+              "failureAsLossRate": 0.8333333333333334
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 3,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Millenniummon",
+          "games": 6,
+          "matchups": 3,
+          "arms": {
+            "baseline": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 3,
+              "losses": 3,
+              "draws": 0,
+              "points": 3.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 3,
+              "losses": 3,
+              "draws": 0,
+              "points": 3.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 1,
+              "losses": 3,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Sanmyojin",
+          "games": 6,
+          "matchups": 3,
+          "arms": {
+            "baseline": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 6,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 6,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 6,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 6,
+              "valid": 6,
+              "wins": 0,
+              "losses": 6,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Abbadomon",
+          "games": 4,
+          "matchups": 2,
+          "arms": {
+            "baseline": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 3,
+              "losses": 1,
+              "draws": 0,
+              "points": 3.0,
+              "validRate": 0.75,
+              "failureAsLossRate": 0.75
+            },
+            "candidate": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 3,
+              "losses": 1,
+              "draws": 0,
+              "points": 3.0,
+              "validRate": 0.75,
+              "failureAsLossRate": 0.75
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 3,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Dantemon",
+          "games": 4,
+          "matchups": 2,
+          "arms": {
+            "baseline": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 3,
+              "losses": 1,
+              "draws": 0,
+              "points": 3.0,
+              "validRate": 0.75,
+              "failureAsLossRate": 0.75
+            },
+            "candidate": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 3,
+              "losses": 1,
+              "draws": 0,
+              "points": 3.0,
+              "validRate": 0.75,
+              "failureAsLossRate": 0.75
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Magneticdramon",
+          "games": 4,
+          "matchups": 2,
+          "arms": {
+            "baseline": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 3,
+              "losses": 1,
+              "draws": 0,
+              "points": 3.0,
+              "validRate": 0.75,
+              "failureAsLossRate": 0.75
+            },
+            "candidate": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 3,
+              "losses": 1,
+              "draws": 0,
+              "points": 3.0,
+              "validRate": 0.75,
+              "failureAsLossRate": 0.75
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 4,
+              "valid": 4,
+              "wins": 3,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Vulcanusmon",
+          "games": 4,
+          "matchups": 2,
+          "arms": {
+            "baseline": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 4,
+              "losses": 0,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            },
+            "candidate": {
+              "valid": 4,
+              "invalid": 0,
+              "wins": 4,
+              "losses": 0,
+              "draws": 0,
+              "points": 4.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 2,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Creepymon",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Four Sovereigns",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Imperialdramon Virus",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Magnamon",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.5,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Marsmon",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 0,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Purple Hybrid",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Rebootmon",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Red Hybrid",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Royal Base",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Royal Knights",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 0,
+              "losses": 2,
+              "draws": 0,
+              "points": 0.0,
+              "validRate": 0.0,
+              "failureAsLossRate": 0.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 1,
+              "losses": 1,
+              "draws": 0,
+              "points": 1.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.5,
+          "enoughForPriority": false
+        },
+        {
+          "archetype": "Styracomon",
+          "games": 2,
+          "matchups": 1,
+          "arms": {
+            "baseline": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            },
+            "candidate": {
+              "valid": 2,
+              "invalid": 0,
+              "wins": 2,
+              "losses": 0,
+              "draws": 0,
+              "points": 2.0,
+              "validRate": 1.0,
+              "failureAsLossRate": 1.0
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 2,
+              "valid": 2,
+              "wins": 2,
+              "losses": 0,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 1,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": false
+        }
+      ]
+    },
+    "priorities": {
+      "learner": [
+        {
+          "archetype": "Plutomon",
+          "games": 34,
+          "matchups": 16,
+          "arms": {
+            "baseline": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 9,
+              "losses": 25,
+              "draws": 0,
+              "points": 9.0,
+              "validRate": 0.2647058823529412,
+              "failureAsLossRate": 0.2647058823529412
+            },
+            "candidate": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 8,
+              "losses": 26,
+              "draws": 0,
+              "points": 8.0,
+              "validRate": 0.23529411764705882,
+              "failureAsLossRate": 0.23529411764705882
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 6,
+              "valid": 6,
+              "wins": 1,
+              "losses": 5,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 20,
+              "valid": 20,
+              "wins": 4,
+              "losses": 16,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 3,
+              "losses": 5,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 12,
+          "pairedFailureAsLossDifference": -0.029411764705882353,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Omnimon",
+          "games": 38,
+          "matchups": 19,
+          "arms": {
+            "baseline": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 19,
+              "losses": 19,
+              "draws": 0,
+              "points": 19.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 15,
+              "losses": 23,
+              "draws": 0,
+              "points": 15.0,
+              "validRate": 0.39473684210526316,
+              "failureAsLossRate": 0.39473684210526316
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 16,
+              "valid": 16,
+              "wins": 10,
+              "losses": 6,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 14,
+              "valid": 14,
+              "wins": 3,
+              "losses": 11,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 2,
+              "losses": 6,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 16,
+          "pairedFailureAsLossDifference": -0.10526315789473684,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Imperialdramon",
+          "games": 34,
+          "matchups": 17,
+          "arms": {
+            "baseline": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 17,
+              "losses": 17,
+              "draws": 0,
+              "points": 17.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.5
+            },
+            "candidate": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 16,
+              "losses": 18,
+              "draws": 0,
+              "points": 16.0,
+              "validRate": 0.47058823529411764,
+              "failureAsLossRate": 0.47058823529411764
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 8,
+              "valid": 8,
+              "wins": 3,
+              "losses": 5,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 6,
+              "valid": 6,
+              "wins": 3,
+              "losses": 3,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 20,
+              "valid": 20,
+              "wins": 10,
+              "losses": 10,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 14,
+          "pairedFailureAsLossDifference": -0.029411764705882353,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Gankoomon & Jesmon",
+          "games": 46,
+          "matchups": 21,
+          "arms": {
+            "baseline": {
+              "valid": 44,
+              "invalid": 2,
+              "wins": 21,
+              "losses": 23,
+              "draws": 0,
+              "points": 21.0,
+              "validRate": 0.4772727272727273,
+              "failureAsLossRate": 0.45652173913043476
+            },
+            "candidate": {
+              "valid": 44,
+              "invalid": 2,
+              "wins": 22,
+              "losses": 22,
+              "draws": 0,
+              "points": 22.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.4782608695652174
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 26,
+              "valid": 26,
+              "wins": 11,
+              "losses": 15,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 12,
+              "valid": 12,
+              "wins": 6,
+              "losses": 6,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 8,
+              "valid": 6,
+              "wins": 5,
+              "losses": 1,
+              "invalid": 2
+            }
+          },
+          "uniqueDecks": 18,
+          "pairedFailureAsLossDifference": 0.021739130434782608,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Examon",
+          "games": 102,
+          "matchups": 50,
+          "arms": {
+            "baseline": {
+              "valid": 102,
+              "invalid": 0,
+              "wins": 60,
+              "losses": 42,
+              "draws": 0,
+              "points": 60.0,
+              "validRate": 0.5882352941176471,
+              "failureAsLossRate": 0.5882352941176471
+            },
+            "candidate": {
+              "valid": 102,
+              "invalid": 0,
+              "wins": 59,
+              "losses": 43,
+              "draws": 0,
+              "points": 59.0,
+              "validRate": 0.5784313725490197,
+              "failureAsLossRate": 0.5784313725490197
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 58,
+              "valid": 58,
+              "wins": 31,
+              "losses": 27,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 20,
+              "valid": 20,
+              "wins": 15,
+              "losses": 5,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 24,
+              "valid": 24,
+              "wins": 13,
+              "losses": 11,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 43,
+          "pairedFailureAsLossDifference": -0.00980392156862745,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Adventure",
+          "games": 62,
+          "matchups": 31,
+          "arms": {
+            "baseline": {
+              "valid": 62,
+              "invalid": 0,
+              "wins": 36,
+              "losses": 26,
+              "draws": 0,
+              "points": 36.0,
+              "validRate": 0.5806451612903226,
+              "failureAsLossRate": 0.5806451612903226
+            },
+            "candidate": {
+              "valid": 62,
+              "invalid": 0,
+              "wins": 36,
+              "losses": 26,
+              "draws": 0,
+              "points": 36.0,
+              "validRate": 0.5806451612903226,
+              "failureAsLossRate": 0.5806451612903226
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 18,
+              "valid": 18,
+              "wins": 13,
+              "losses": 5,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 28,
+              "valid": 28,
+              "wins": 16,
+              "losses": 12,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 16,
+              "valid": 16,
+              "wins": 7,
+              "losses": 9,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 20,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Glowing Dawn",
+          "games": 22,
+          "matchups": 9,
+          "arms": {
+            "baseline": {
+              "valid": 22,
+              "invalid": 0,
+              "wins": 13,
+              "losses": 9,
+              "draws": 0,
+              "points": 13.0,
+              "validRate": 0.5909090909090909,
+              "failureAsLossRate": 0.5909090909090909
+            },
+            "candidate": {
+              "valid": 22,
+              "invalid": 0,
+              "wins": 13,
+              "losses": 9,
+              "draws": 0,
+              "points": 13.0,
+              "validRate": 0.5909090909090909,
+              "failureAsLossRate": 0.5909090909090909
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 10,
+              "valid": 10,
+              "wins": 7,
+              "losses": 3,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 8,
+              "valid": 8,
+              "wins": 4,
+              "losses": 4,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 4,
+              "valid": 4,
+              "wins": 2,
+              "losses": 2,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 9,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Alphamon",
+          "games": 52,
+          "matchups": 26,
+          "arms": {
+            "baseline": {
+              "valid": 52,
+              "invalid": 0,
+              "wins": 33,
+              "losses": 19,
+              "draws": 0,
+              "points": 33.0,
+              "validRate": 0.6346153846153846,
+              "failureAsLossRate": 0.6346153846153846
+            },
+            "candidate": {
+              "valid": 52,
+              "invalid": 0,
+              "wins": 33,
+              "losses": 19,
+              "draws": 0,
+              "points": 33.0,
+              "validRate": 0.6346153846153846,
+              "failureAsLossRate": 0.6346153846153846
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 18,
+              "valid": 18,
+              "wins": 11,
+              "losses": 7,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 22,
+              "valid": 22,
+              "wins": 14,
+              "losses": 8,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 12,
+              "valid": 12,
+              "wins": 8,
+              "losses": 4,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 20,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        }
+      ],
+      "opponent": [
+        {
+          "archetype": "Toho Braves",
+          "games": 24,
+          "matchups": 12,
+          "arms": {
+            "baseline": {
+              "valid": 24,
+              "invalid": 0,
+              "wins": 7,
+              "losses": 17,
+              "draws": 0,
+              "points": 7.0,
+              "validRate": 0.2916666666666667,
+              "failureAsLossRate": 0.2916666666666667
+            },
+            "candidate": {
+              "valid": 24,
+              "invalid": 0,
+              "wins": 6,
+              "losses": 18,
+              "draws": 0,
+              "points": 6.0,
+              "validRate": 0.25,
+              "failureAsLossRate": 0.25
+            }
+          },
+          "opponents": {
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 3,
+              "losses": 5,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 8,
+              "valid": 8,
+              "wins": 2,
+              "losses": 6,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 8,
+              "valid": 8,
+              "wins": 1,
+              "losses": 7,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 11,
+          "pairedFailureAsLossDifference": -0.041666666666666664,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Dynasmon",
+          "games": 28,
+          "matchups": 13,
+          "arms": {
+            "baseline": {
+              "valid": 28,
+              "invalid": 0,
+              "wins": 12,
+              "losses": 16,
+              "draws": 0,
+              "points": 12.0,
+              "validRate": 0.42857142857142855,
+              "failureAsLossRate": 0.42857142857142855
+            },
+            "candidate": {
+              "valid": 28,
+              "invalid": 0,
+              "wins": 11,
+              "losses": 17,
+              "draws": 0,
+              "points": 11.0,
+              "validRate": 0.39285714285714285,
+              "failureAsLossRate": 0.39285714285714285
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 20,
+              "valid": 20,
+              "wins": 6,
+              "losses": 14,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 6,
+              "valid": 6,
+              "wins": 4,
+              "losses": 2,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 2,
+              "valid": 2,
+              "wins": 1,
+              "losses": 1,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 10,
+          "pairedFailureAsLossDifference": -0.03571428571428571,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Jupitermon",
+          "games": 38,
+          "matchups": 19,
+          "arms": {
+            "baseline": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 15,
+              "losses": 23,
+              "draws": 0,
+              "points": 15.0,
+              "validRate": 0.39473684210526316,
+              "failureAsLossRate": 0.39473684210526316
+            },
+            "candidate": {
+              "valid": 38,
+              "invalid": 0,
+              "wins": 15,
+              "losses": 23,
+              "draws": 0,
+              "points": 15.0,
+              "validRate": 0.39473684210526316,
+              "failureAsLossRate": 0.39473684210526316
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 14,
+              "valid": 14,
+              "wins": 6,
+              "losses": 8,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 16,
+              "valid": 16,
+              "wins": 7,
+              "losses": 9,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 8,
+              "valid": 8,
+              "wins": 2,
+              "losses": 6,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 11,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Examon",
+          "games": 102,
+          "matchups": 50,
+          "arms": {
+            "baseline": {
+              "valid": 102,
+              "invalid": 0,
+              "wins": 42,
+              "losses": 60,
+              "draws": 0,
+              "points": 42.0,
+              "validRate": 0.4117647058823529,
+              "failureAsLossRate": 0.4117647058823529
+            },
+            "candidate": {
+              "valid": 102,
+              "invalid": 0,
+              "wins": 43,
+              "losses": 59,
+              "draws": 0,
+              "points": 43.0,
+              "validRate": 0.4215686274509804,
+              "failureAsLossRate": 0.4215686274509804
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 58,
+              "valid": 58,
+              "wins": 26,
+              "losses": 32,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 20,
+              "valid": 20,
+              "wins": 12,
+              "losses": 8,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 24,
+              "valid": 24,
+              "wins": 5,
+              "losses": 19,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 43,
+          "pairedFailureAsLossDifference": 0.00980392156862745,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Alphamon",
+          "games": 52,
+          "matchups": 26,
+          "arms": {
+            "baseline": {
+              "valid": 52,
+              "invalid": 0,
+              "wins": 22,
+              "losses": 30,
+              "draws": 0,
+              "points": 22.0,
+              "validRate": 0.4230769230769231,
+              "failureAsLossRate": 0.4230769230769231
+            },
+            "candidate": {
+              "valid": 52,
+              "invalid": 0,
+              "wins": 22,
+              "losses": 30,
+              "draws": 0,
+              "points": 22.0,
+              "validRate": 0.4230769230769231,
+              "failureAsLossRate": 0.4230769230769231
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 18,
+              "valid": 18,
+              "wins": 11,
+              "losses": 7,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 22,
+              "valid": 22,
+              "wins": 9,
+              "losses": 13,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 12,
+              "valid": 12,
+              "wins": 2,
+              "losses": 10,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 20,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Adventure",
+          "games": 62,
+          "matchups": 31,
+          "arms": {
+            "baseline": {
+              "valid": 62,
+              "invalid": 0,
+              "wins": 28,
+              "losses": 34,
+              "draws": 0,
+              "points": 28.0,
+              "validRate": 0.45161290322580644,
+              "failureAsLossRate": 0.45161290322580644
+            },
+            "candidate": {
+              "valid": 62,
+              "invalid": 0,
+              "wins": 28,
+              "losses": 34,
+              "draws": 0,
+              "points": 28.0,
+              "validRate": 0.45161290322580644,
+              "failureAsLossRate": 0.45161290322580644
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 18,
+              "valid": 18,
+              "wins": 9,
+              "losses": 9,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 28,
+              "valid": 28,
+              "wins": 10,
+              "losses": 18,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 16,
+              "valid": 16,
+              "wins": 9,
+              "losses": 7,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 20,
+          "pairedFailureAsLossDifference": 0.0,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Gankoomon & Jesmon",
+          "games": 46,
+          "matchups": 21,
+          "arms": {
+            "baseline": {
+              "valid": 44,
+              "invalid": 2,
+              "wins": 22,
+              "losses": 22,
+              "draws": 0,
+              "points": 22.0,
+              "validRate": 0.5,
+              "failureAsLossRate": 0.4782608695652174
+            },
+            "candidate": {
+              "valid": 44,
+              "invalid": 2,
+              "wins": 20,
+              "losses": 24,
+              "draws": 0,
+              "points": 20.0,
+              "validRate": 0.45454545454545453,
+              "failureAsLossRate": 0.43478260869565216
+            }
+          },
+          "opponents": {
+            "certified": {
+              "games": 26,
+              "valid": 26,
+              "wins": 9,
+              "losses": 17,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 12,
+              "valid": 12,
+              "wins": 7,
+              "losses": 5,
+              "invalid": 0
+            },
+            "legacy": {
+              "games": 8,
+              "valid": 6,
+              "wins": 4,
+              "losses": 2,
+              "invalid": 2
+            }
+          },
+          "uniqueDecks": 18,
+          "pairedFailureAsLossDifference": -0.043478260869565216,
+          "enoughForPriority": true
+        },
+        {
+          "archetype": "Imperialdramon",
+          "games": 34,
+          "matchups": 17,
+          "arms": {
+            "baseline": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 19,
+              "losses": 15,
+              "draws": 0,
+              "points": 19.0,
+              "validRate": 0.5588235294117647,
+              "failureAsLossRate": 0.5588235294117647
+            },
+            "candidate": {
+              "valid": 34,
+              "invalid": 0,
+              "wins": 18,
+              "losses": 16,
+              "draws": 0,
+              "points": 18.0,
+              "validRate": 0.5294117647058824,
+              "failureAsLossRate": 0.5294117647058824
+            }
+          },
+          "opponents": {
+            "legacy": {
+              "games": 8,
+              "valid": 8,
+              "wins": 3,
+              "losses": 5,
+              "invalid": 0
+            },
+            "v3": {
+              "games": 6,
+              "valid": 6,
+              "wins": 4,
+              "losses": 2,
+              "invalid": 0
+            },
+            "certified": {
+              "games": 20,
+              "valid": 20,
+              "wins": 11,
+              "losses": 9,
+              "invalid": 0
+            }
+          },
+          "uniqueDecks": 14,
+          "pairedFailureAsLossDifference": -0.029411764705882353,
+          "enoughForPriority": true
+        }
+      ]
+    },
+    "pairedGames": 1280,
+    "scope": "Exploratory reference-based archetype grouping; descriptive, unadjusted for opponent mix; no new candidate selection or per-archetype strength certificate",
+    "programs": {
+      "baseline": "Finishing pressure and board control",
+      "candidate": "Human panel activation memory costs: free-bonus"
+    },
+    "classifier": {
+      "referenceDecks": 363,
+      "referenceArchetypes": 144,
+      "minimumScore": 0.45,
+      "minimumSharedCopies": 16,
+      "minimumMargin": 0.05,
+      "method": "Archetype-IDF-weighted main-deck multiset Jaccard, closest recipe per family; ambiguous or unsupported decks remain Unclassified"
+    },
+    "sha256": {
+      "results": "f67f344f2e3d7c960f48909e7b59cb4d92eb55f9d011e6e23f23165654928773",
+      "pairs": "8aff58e9ecd192e5bda2ed68df1b576c7f554a969bb42822205ed46c0f41d24e",
+      "references": "9915679896d18c90042480b62e34a35a9cf22ca4ed4f6bc77d48750a8299a515",
+      "source": "ac577db50eac39eb9a49f90e51d85d61970ba148163e44d1ccf4f391d42bf1bb",
+      "classifierSource": "37adb1c39314d26ba4323c0fe11ac7b2d34615e892c1f30cd4274c6e707ff2ec"
+    }
+  },
+  "diagnosticReproduction": {
+    "complete": true,
+    "games": 16,
+    "priorities": ["Plutomon", "Omnimon", "Imperialdramon", "Gankoomon & Jesmon"],
+    "selectionSeed": 20261022,
+    "sampling": "Four distinct losing matchups per lowest-rate classified learner group with sufficient data",
+    "divergent": [],
+    "capturedDecisions": 558,
+    "traceLimitGames": 0,
+    "runtime": "ae57be956ad965f7c10db02f5d034f97bf089ac4601cf0e98d26dd57a095e51e",
+    "sourceSha256": "493d7a880086eb1508d9572c8b5926ed0bac91cab6c3699a529585c747ee1df9",
+    "classificationSha256": "7b0c2cfb03a6cd81d5e55a022fed252c5cdbe72de37b6cfa43b5715ecddd6831"
+  },
+  "diagnosticCounts": {
+    "mulligan": {
+      "decisions": 16,
+      "equalTopRecordedScores": 0,
+      "handoverAtLeastThree": 0,
+      "chosenUncertainActivation": 0,
+      "chosenFreeActivation": 0
+    },
+    "breeding": {
+      "decisions": 64,
+      "equalTopRecordedScores": 0,
+      "handoverAtLeastThree": 0,
+      "chosenUncertainActivation": 0,
+      "chosenFreeActivation": 0
+    },
+    "main": {
+      "decisions": 205,
+      "equalTopRecordedScores": 6,
+      "handoverAtLeastThree": 34,
+      "chosenUncertainActivation": 10,
+      "chosenFreeActivation": 4
+    },
+    "selectCards": {
+      "decisions": 122,
+      "equalTopRecordedScores": 64,
+      "handoverAtLeastThree": 32,
+      "chosenUncertainActivation": 0,
+      "chosenFreeActivation": 0,
+      "differentRecordedFeatures": 53
+    },
+    "chooseOption": {
+      "decisions": 9,
+      "equalTopRecordedScores": 9,
+      "handoverAtLeastThree": 6,
+      "chosenUncertainActivation": 0,
+      "chosenFreeActivation": 0,
+      "differentRecordedFeatures": 0
+    },
+    "optional": {
+      "decisions": 50,
+      "equalTopRecordedScores": 0,
+      "handoverAtLeastThree": 17,
+      "chosenUncertainActivation": 0,
+      "chosenFreeActivation": 0
+    },
+    "block": {
+      "decisions": 12,
+      "equalTopRecordedScores": 3,
+      "handoverAtLeastThree": 0,
+      "chosenUncertainActivation": 0,
+      "chosenFreeActivation": 0
+    },
+    "chooseTargets": {
+      "decisions": 19,
+      "equalTopRecordedScores": 6,
+      "handoverAtLeastThree": 5,
+      "chosenUncertainActivation": 0,
+      "chosenFreeActivation": 0,
+      "differentRecordedFeatures": 2
+    },
+    "orderCards": {
+      "decisions": 11,
+      "equalTopRecordedScores": 11,
+      "handoverAtLeastThree": 3,
+      "chosenUncertainActivation": 0,
+      "chosenFreeActivation": 0
+    },
+    "orderTriggers": {
+      "decisions": 46,
+      "equalTopRecordedScores": 46,
+      "handoverAtLeastThree": 9,
+      "chosenUncertainActivation": 0,
+      "chosenFreeActivation": 0,
+      "differentRecordedFeatures": 0
+    },
+    "counter": {
+      "decisions": 1,
+      "equalTopRecordedScores": 1,
+      "handoverAtLeastThree": 0,
+      "chosenUncertainActivation": 0,
+      "chosenFreeActivation": 0
+    },
+    "alliance": {
+      "decisions": 3,
+      "equalTopRecordedScores": 3,
+      "handoverAtLeastThree": 0,
+      "chosenUncertainActivation": 0,
+      "chosenFreeActivation": 0
+    }
+  },
+  "diagnosticGroups": {
+    "Plutomon": {
+      "games": 4,
+      "decisions": 120,
+      "kinds": {
+        "mulligan": {
+          "decisions": 4,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "breeding": {
+          "decisions": 15,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "main": {
+          "decisions": 42,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 12,
+          "chosenUncertainActivation": 2,
+          "chosenFreeActivation": 0
+        },
+        "selectCards": {
+          "decisions": 45,
+          "equalTopRecordedScores": 11,
+          "handoverAtLeastThree": 20,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 11
+        },
+        "chooseOption": {
+          "decisions": 2,
+          "equalTopRecordedScores": 2,
+          "handoverAtLeastThree": 1,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 0
+        },
+        "optional": {
+          "decisions": 9,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 5,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "block": {
+          "decisions": 1,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "chooseTargets": {
+          "decisions": 1,
+          "equalTopRecordedScores": 1,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 0
+        },
+        "orderCards": {
+          "decisions": 1,
+          "equalTopRecordedScores": 1,
+          "handoverAtLeastThree": 1,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        }
+      }
+    },
+    "Omnimon": {
+      "games": 4,
+      "decisions": 179,
+      "kinds": {
+        "mulligan": {
+          "decisions": 4,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "breeding": {
+          "decisions": 17,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "main": {
+          "decisions": 52,
+          "equalTopRecordedScores": 4,
+          "handoverAtLeastThree": 7,
+          "chosenUncertainActivation": 7,
+          "chosenFreeActivation": 3
+        },
+        "selectCards": {
+          "decisions": 37,
+          "equalTopRecordedScores": 27,
+          "handoverAtLeastThree": 7,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 21
+        },
+        "optional": {
+          "decisions": 24,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 7,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "orderCards": {
+          "decisions": 4,
+          "equalTopRecordedScores": 4,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "orderTriggers": {
+          "decisions": 24,
+          "equalTopRecordedScores": 24,
+          "handoverAtLeastThree": 7,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 0
+        },
+        "block": {
+          "decisions": 1,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "chooseOption": {
+          "decisions": 6,
+          "equalTopRecordedScores": 6,
+          "handoverAtLeastThree": 5,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 0
+        },
+        "chooseTargets": {
+          "decisions": 9,
+          "equalTopRecordedScores": 2,
+          "handoverAtLeastThree": 1,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 0
+        },
+        "counter": {
+          "decisions": 1,
+          "equalTopRecordedScores": 1,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        }
+      }
+    },
+    "Imperialdramon": {
+      "games": 4,
+      "decisions": 90,
+      "kinds": {
+        "mulligan": {
+          "decisions": 4,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "breeding": {
+          "decisions": 14,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "main": {
+          "decisions": 49,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 7,
+          "chosenUncertainActivation": 1,
+          "chosenFreeActivation": 0
+        },
+        "selectCards": {
+          "decisions": 10,
+          "equalTopRecordedScores": 5,
+          "handoverAtLeastThree": 3,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 4
+        },
+        "chooseTargets": {
+          "decisions": 3,
+          "equalTopRecordedScores": 1,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 0
+        },
+        "orderCards": {
+          "decisions": 3,
+          "equalTopRecordedScores": 3,
+          "handoverAtLeastThree": 2,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "orderTriggers": {
+          "decisions": 3,
+          "equalTopRecordedScores": 3,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 0
+        },
+        "optional": {
+          "decisions": 4,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        }
+      }
+    },
+    "Gankoomon & Jesmon": {
+      "games": 4,
+      "decisions": 169,
+      "kinds": {
+        "mulligan": {
+          "decisions": 4,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "breeding": {
+          "decisions": 18,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "main": {
+          "decisions": 62,
+          "equalTopRecordedScores": 2,
+          "handoverAtLeastThree": 8,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 1
+        },
+        "selectCards": {
+          "decisions": 30,
+          "equalTopRecordedScores": 21,
+          "handoverAtLeastThree": 2,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 17
+        },
+        "orderCards": {
+          "decisions": 3,
+          "equalTopRecordedScores": 3,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "block": {
+          "decisions": 10,
+          "equalTopRecordedScores": 3,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "orderTriggers": {
+          "decisions": 19,
+          "equalTopRecordedScores": 19,
+          "handoverAtLeastThree": 2,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 0
+        },
+        "chooseTargets": {
+          "decisions": 6,
+          "equalTopRecordedScores": 2,
+          "handoverAtLeastThree": 4,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 2
+        },
+        "optional": {
+          "decisions": 13,
+          "equalTopRecordedScores": 0,
+          "handoverAtLeastThree": 5,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "alliance": {
+          "decisions": 3,
+          "equalTopRecordedScores": 3,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0
+        },
+        "chooseOption": {
+          "decisions": 1,
+          "equalTopRecordedScores": 1,
+          "handoverAtLeastThree": 0,
+          "chosenUncertainActivation": 0,
+          "chosenFreeActivation": 0,
+          "differentRecordedFeatures": 0
+        }
+      }
+    }
+  },
+  "independentAudits": {
+    "development-review.json": "a0e35975d47de160a9d83e2391dbcbe1f8241c727f5e112826e602a7f9ffea6a",
+    "confirmation-review.json": "4b2e36b59e080eb882b5b3f03dff0f1de7185b942750ade8365d3b2e503a1448",
+    "runtime-archive-review.json": "675c4d71dae993d6f04d83f818470d2eeb94fb06c080c57efce8d37cb17dd1aa",
+    "final-source-review.json": "0a6f0c3ad664cdbd985c1faeaca966cf4fc42c9edd95a9eecfdbfcd6ceba9e71"
+  },
+  "provenance": {
+    "pairReservation": {
+      "pathsSelected": 1000,
+      "extracted": 454,
+      "sourceWindowUtc": ["2026-10-20T02:00:00Z", "2026-10-20T08:00:00Z"],
+      "selectionSeed": 20261021,
+      "readOnly": true,
+      "guard": "aegis-safe",
+      "legal": 454,
+      "overlapOrDuplicatesRemoved": 5,
+      "eligibleDisjoint": 449,
+      "reservedMatchups": 320,
+      "sha256": "8aff58e9ecd192e5bda2ed68df1b576c7f554a969bb42822205ed46c0f41d24e",
+      "purpose": "One independently frozen activation-cost candidate confirmation only; never training or selection"
+    },
+    "historicalControl": {
+      "complete": true,
+      "games": 12,
+      "divergent": [],
+      "runtime": "ae57be956ad965f7c10db02f5d034f97bf089ac4601cf0e98d26dd57a095e51e",
+      "scope": "Historical v3 behavior on frozen v3-confirmation tasks, both activated-cost projections disabled"
+    },
+    "localEvidence": ".local/bot-lab/v4-evidence",
+    "localRawResults": ".local/bot-lab/v4-confirmation/games/results.jsonl"
+  },
+  "limitations": [
+    "Independent strength gain was not established; the selected candidate is not promoted.",
+    "Approximate normal confidence interval clustered by matchup and stratified by opponent.",
+    "Real human deck lists with simulated bot opponents; no live-human win-rate claim.",
+    "Certified opponents use the current default scorer in both arms; historical controls apply to the learner and frozen v3.",
+    "Gross immediate memory spending excludes refunds, triggered responses and deferred payments; unknown costs stay uncertain.",
+    "Eight invalid games in each arm on matching tasks: seven legacy-opponent evolution rejections and one worker timeout.",
+    "Archetype labels cover 53.4375% of learner exposures and rates are unadjusted for opponent mix.",
+    "Diagnostic scores are rounded to three decimals and show only the chosen action plus top-three alternatives; selected losses do not prove counterfactual wins.",
+    "Concurrent local validation competed for CPU during part of confirmation; the test-type compiler was stopped and subsequently rerun after game evaluation.",
+    "No MCTS, planner or model API calls were used for this experiment."
+  ],
+  "verification": {
+    "pnpmCheck": "passed; baseline warnings retained",
+    "pnpmTypecheck": "passed across shared/API/web",
+    "focusedApiTests": 68,
+    "affectedRegistrationAndConformanceTests": 73,
+    "focusedPythonTests": 58,
+    "nodeScoringWindowTests": 2,
+    "fullPythonSuite": {
+      "passed": 310,
+      "failed": 1,
+      "baselineFailure": "tools/bot-evolution/test_adapter.py::test_screening_rollout_bound_reaches_only_mcts_payloads_and_cache_keys",
+      "unchangedAdapterAndTestVerifiedAgainstHead": true,
+      "isolatedFailureReproduced": true
+    },
+    "testTypecheck": {
+      "status": "failed on baseline diagnostics only",
+      "errors": 12,
+      "files": 8,
+      "newTestErrors": 0,
+      "baselineFilesUnchangedFromHead": true
+    },
+    "ruff": "passed check and format on relevant files",
+    "gitDiffCheck": "passed",
+    "developmentStartup": "API and web started; local PostgreSQL authentication failed, so database-backed flows were not verified"
+  },
+  "finalSourcesSha256": {
+    "apps/api/src/engine/effects/ActivationMemoryCost.ts": "b4463e4a6a4fa7c8fc6ae53b0d8a8dd1d81f041f2def433ab7d3ecc2aa2f88d3",
+    "apps/api/src/engine/effects/Effect.ts": "cfa1a3a65fe9256d8da5dfbc65c059d84aee041d62820c07215d7f8394cf227c",
+    "apps/api/src/engine/effects/interpreter/getActivationMemoryCost.ts": "c4f438c433a64b0a8249a4e58190193cbbba23c8dcef60f856f0c5be86e28672",
+    "apps/api/src/engine/effects/interpreter/registration/module.ts": "929ac05fc76924d0d2368879828132d1828cf0bbea00aebf88922e66a84b47c5",
+    "apps/api/src/bot/training/actions.ts": "b0d1bf44d03bcdd959216079e4e6be8c691fd57662d5b9061a6005a5653e5f81",
+    "apps/api/src/bot/evolution/heuristic.ts": "bd42e2e31a8d8afbd3351a142334572cbcfc4597e55e1514f1316e851ea0ded4",
+    "apps/api/src/engine/effects/interpreter/getActivationMemoryCost.test.ts": "34ca43555c2f32f88a9aceceb37ebc2ba9a5c2cbaa83ac40572b61c7011d0d96",
+    "apps/api/src/bot/training/activationMemoryCost.test.ts": "48b111230608fcadf7eb539647c7a15e198a1eb2d426dd6852af24721ceeb3ec",
+    "tools/bot-evolution/DiagonalCma.py": "9c1db0f4d1b5bd58489f77dde46ac042533ff1c6eb754300aa6a13a59e723d27",
+    "tools/bot-evolution/PanelArchetypeClassifier.py": "37adb1c39314d26ba4323c0fe11ac7b2d34615e892c1f30cd4274c6e707ff2ec",
+    "tools/bot-evolution/PanelBatch.py": "5001ceea0d1886fdaa6d060da0a262c325002ef54dcdbd44fcad7ccf4a92711e",
+    "tools/bot-evolution/PanelCheckpoint.py": "f215225871a159e197ffc57a8d84e3d844775c0d69c689cab8f84f5f1a84dafc",
+    "tools/bot-evolution/PanelWeightProgram.py": "3557aec7e7dfac248309ad535608d75f301c8a2b57d3ff321017c7e43fb17e6d",
+    "tools/bot-evolution/panel_activation_costs.py": "ff79c9f1cf6f6eef6a476ed83599079761ffeb4dddd3d4915782be836ef9e93b",
+    "tools/bot-evolution/panel_archetypes.py": "ac577db50eac39eb9a49f90e51d85d61970ba148163e44d1ccf4f391d42bf1bb",
+    "tools/bot-evolution/panel_confirm.py": "a69925eb9d453357b2f2170d132a34655ffb598c08ca733bfa9a66ec16675b81",
+    "tools/bot-evolution/panel_diagnose.py": "6cc38f5f59d11ae7e9a59ff0edb2a426c423a60f1a65ed48057c0d165db13b8d",
+    "tools/bot-evolution/panel_tune.py": "2d9b9ee396fbb35687437eba078943de6d44b4518e7e4f72ac5042d687b3f5eb",
+    "tools/bot-evolution/panel_pool.py": "5472bcf4f559700d92ac5454c32f254cfa80d2accc0c6f2831646fe707eba227",
+    "tools/bot-evolution/panel_program.py": "51ff9780388f2fa72e264c5346828611c12a277dfd7e89a2e599abe58730a960",
+    "tools/bot-evolution/panel_reflection_template.py": "7c4545926dde5b5d27282065e87e51d01974aca1573125efc83d6707117ce167",
+    "tools/bot-evolution/panel_worker.mjs": "23e2e55ba8111f332c567c9434a0f2bc5218905c8be30eaa521f2c67a955f154",
+    "tools/bot-evolution/getPanelScoringWindow.mjs": "11cea9ad345cc11b74a1b91ff611730fb184d0b186ea9bcd9214688657607e5b"
+  },
+  "localProof": {
+    "path": ".local/bot-lab/v4-evidence/proof.tgz",
+    "bytes": 26986866,
+    "sha256": "6dfc2cd2a352e4fdfa43a310632a2b544ea99bb2b46be530198d531e44897453",
+    "scope": "Frozen runtime, evaluated and final source snapshots, raw development and confirmation, reservations, archetypes, exact replays, audits, reports and verification logs; production-derived data remains ignored"
+  }
+}

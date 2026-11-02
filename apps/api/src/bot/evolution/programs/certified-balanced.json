@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "generic": {
+    "schemaVersion": 1,
+    "basePolicy": "projected-balanced",
+    "title": "Deterministic residual: sourceDp=0.2",
+    "rules": [
+      {
+        "feature": "cost",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "handover",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "attackPlayer",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "attackWinningBattle",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "attackLosingBattle",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "digivolve",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "breedingGrowth",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "levelGain",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "dpGain",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "playBody",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "playTamer",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "playOption",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "pass",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "activate",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "materials",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "sourceDp",
+        "weight": 0.2,
+        "advice": "Give additional preference to the selected Digimon's DP when comparing otherwise similar plays."
+      },
+      {
+        "feature": "securityChecks",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      },
+      {
+        "feature": "readyAttackers",
+        "weight": 0,
+        "advice": "Use the balanced evaluation until a situational preference is demonstrated."
+      }
+    ]
+  },
+  "pilots": {}
+}

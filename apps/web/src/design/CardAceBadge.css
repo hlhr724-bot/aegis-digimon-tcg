@@ -1,0 +1,16 @@
+.card-ace-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  align-self: center;
+  padding: 0.08em 0.45em;
+  border: 1px solid currentColor;
+  border-radius: 0.3rem;
+  color: var(--ds-danger);
+  background: var(--ds-danger-soft);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: 0.07em;
+  vertical-align: middle;
+}

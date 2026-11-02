@@ -31,6 +31,7 @@ export const compiled: CompiledCard = {
           event: "endOfTurn",
           turnScope: "opponentsTurn",
           once: true,
+          printedClause: "[Pending] At the next end of your opponent’s turn, return it to the hand.",
           on: {
             filter: {
               boundRef: "playedVeemonOrWormmon",

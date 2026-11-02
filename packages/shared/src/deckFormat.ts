@@ -1,3 +1,4 @@
+import { getLimitedCardAvailability } from "#shared/cards/getLimitedCardAvailability";
 import { banlistAsOf, BANLIST_AS_OF_DATE, bannedPairViolations } from "./banlist.js";
 import { allProductLabels, releaseDateForCard, releaseDateForSet } from "./cards/cardPool.js";
 import { getCardDefinition } from "./cards/registry.js";
@@ -73,8 +74,7 @@ export function formatCardViolation(cardId: string, format: DeckFormat): string 
     return `${cardId} is not Common or Uncommon (Pauper allows C/U only)`;
   const cutoff = releaseDateForSet(set);
   if (cutoff !== undefined) {
-    // LM combines many products under one id; its date is explicitly unverified.
-    const released = card.set === "LM" ? undefined : releaseDateForCard(card);
+    const released = getLimitedCardAvailability(cardId)?.legalDate ?? releaseDateForCard(card);
     if (released === undefined || released > cutoff)
       return `${cardId} is outside the ${set} card pool (through ${cutoff})`;
   }

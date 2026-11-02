@@ -123,6 +123,44 @@ describe("BT26-060 Chronomon: Destroy Mode", () => {
     ).toEqual(expect.objectContaining({ ok: false }));
   });
 
+  it("leaves a protected stack intact while returning an unprotected stack", async () => {
+    const preferred: string[] = [];
+    const options = {
+      autoAcceptOptional: true,
+      autoDeclineOptional: false,
+      autoSelectCards: true,
+      autoOrderCards: true,
+      preferInstanceIds: preferred,
+    };
+    const s = setupEngine(
+      {
+        0: { hand: [{ card: CARD_ID, as: "chronomon" }] },
+        1: {
+          battleArea: [
+            { card: "BT26-029", as: "holy", under: [{ card: "BT26-012", as: "protectedSource" }] },
+            { card: "BT1-015", as: "unprotected", under: [{ card: "BT1-009", as: "remaining" }] },
+          ],
+          security: ["BT1-009"],
+        },
+      },
+      options,
+    );
+    preferred.push(s.perm("holy").permanentId);
+    await s.ready();
+    await advance(s.engine).fire(EffectTiming.OnPlay, s.perm("holy"));
+    options.autoAcceptOptional = false;
+    options.autoDeclineOptional = true;
+    const protectedTop = s.perm("holy").topCard.instanceId;
+    s.state.memory = 20;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("chronomon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.perm("unprotected").topCard.instanceId === s.inst("remaining").instanceId);
+    expect(s.perm("holy").topCard.instanceId).toBe(protectedTop);
+    expect(s.perm("holy").stack.map((card) => card.instanceId)).toEqual([s.inst("protectedSource").instanceId]);
+    expect(s.state.players[1]!.deck.map((card) => card.cardId)).toEqual(["BT1-015"]);
+  });
+
   it("Q7079/Q7081 returns the current top and at most 4 sources from exactly 3 targets, leaving one card", async () => {
     const s = setupEngine(
       {

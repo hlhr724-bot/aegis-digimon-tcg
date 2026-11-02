@@ -78,10 +78,10 @@ describe("§16-4-4 <Security A.> floor (comprehensive-0222)", () => {
       "16-4-4 even if the modified number of security checks is negative, the actual number is 0",
       "471c3ca2923b2e688ac6e53edb3789646e7d01b6cb0be7e736fd3a3d2b82d60e",
     );
-    // 1 (base) + 5 inverted +1 grants (each flipped to -1) = 1 - 5 = -4, floored to 0.
-    expect(securityStrikeCount([{ amount: 1 }, { amount: 1 }, { amount: 1 }, { amount: 1 }, { amount: 1 }], true)).toBe(
-      0,
-    );
+    // 1 (base) + 5 ＜Security A. -1＞ grants = 1 - 5 = -4, floored to 0.
+    expect(
+      securityStrikeCount([{ amount: -1 }, { amount: -1 }, { amount: -1 }, { amount: -1 }, { amount: -1 }], false),
+    ).toBe(0);
   });
 });
 

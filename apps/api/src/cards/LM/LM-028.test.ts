@@ -4,6 +4,7 @@ import { runtimeCompiledCard } from "../../engine/effects/interpreter.js";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import "./LM-028.js";
+import "#api/cards/BT19/BT19-017";
 import "../BT12/BT12-024.js";
 import "../BT13/BT13-033.js";
 import { describeScrambleRulings } from "./scrambleRulings.testSupport.js";
@@ -26,6 +27,53 @@ async function closeTurn(s: ReturnType<typeof setupEngine>, turn: Promise<void>)
 }
 
 describe("LM-028 Blue Scramble", () => {
+  it("adds Sangomon's two search cards before the single phase draw after Delay", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "LM-028", as: "option", placedByEffect: true }],
+          trash: ["BT1-027", "BT19-017"],
+          deck: ["BT19-017", "EX7-024", "BT1-085", "BT1-085"],
+        },
+        1: { battleArea: ["BT1-010"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.isFirstPlayersFirstTurn = false;
+    const turn = s.engine.runOneTurn();
+    await advance(s.engine).waitForMainPhase(0);
+    expect(s.state.players[0]!.hand.map(({ cardId }) => cardId).sort()).toEqual(
+      ["EX7-024", "BT1-085", "BT19-017"].sort(),
+    );
+    expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId)).toEqual(["BT19-017"]);
+    await closeTurn(s, turn);
+  });
+
+  it("draws only one card after two Delay effects return cards to the deck", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "LM-028", as: "first" }, { card: "LM-028", as: "second" }, "BT1-029"],
+          trash: ["BT1-027", "BT1-031"],
+          deck: ["BT1-085", "BT1-085"],
+        },
+        1: { battleArea: ["BT1-010"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.perm("first").placedByEffect = true;
+    s.perm("second").placedByEffect = true;
+    s.state.isFirstPlayersFirstTurn = false;
+    const turn = s.engine.runOneTurn();
+    await advance(s.engine).waitForMainPhase(0);
+    expect(s.state.players[0]!.hand).toHaveLength(1);
+    expect(s.state.players[0]!.deck).toHaveLength(3);
+    expect(s.state.players[0]!.trash.filter((card) => card.cardId === "LM-028")).toHaveLength(2);
+    await closeTurn(s, turn);
+  });
+
   it("Discord 1556998094070095964: accepting Delay still lets the sole rookie stay in trash", async () => {
     const s = setupEngine(
       {

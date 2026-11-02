@@ -1,0 +1,21 @@
+export const lucemonTournamentDeck = {
+  sourceUrl: "https://digimon.digilab.cards/decklist/112711",
+  mainDeck: [
+    ["EX6-018", 4],
+    ["BT18-034", 4],
+    ["EX10-013", 4],
+    ["EX6-054", 4],
+    ["BT18-082", 1],
+    ["EX10-052", 4],
+    ["AD1-018", 3],
+    ["BT19-043", 3],
+    ["BT18-086", 4],
+    ["BT18-101", 1],
+    ["EX10-060", 3],
+    ["EX11-067", 4],
+    ["EX10-071", 4],
+    ["BT19-094", 4],
+    ["BT7-109", 3],
+  ],
+  eggDeck: [["EX10-004", 4]],
+} as const;

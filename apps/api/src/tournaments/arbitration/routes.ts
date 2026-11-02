@@ -85,6 +85,28 @@ export function installArbitrationRoutes({ app, arbitration, session, limiter }:
       })().catch(next);
     });
 
+  command("/tournaments/:id/arbitration/pairings/swap", async ({ req, accountId, reason, commandId }) => {
+    const { firstMatchId, firstSeat, secondMatchId, secondSeat } = (req.body ?? {}) as Record<string, unknown>;
+    if (
+      typeof firstMatchId !== "string" ||
+      typeof secondMatchId !== "string" ||
+      (firstSeat !== 0 && firstSeat !== 1) ||
+      (secondSeat !== 0 && secondSeat !== 1)
+    ) {
+      return { ok: false, reason: "pairings_not_editable" } as const;
+    }
+    return arbitration.swapPairings({
+      tournamentId: req.params.id!,
+      actorAccountId: accountId,
+      reason,
+      commandId,
+      firstMatchId,
+      firstSeat,
+      secondMatchId,
+      secondSeat,
+    });
+  });
+
   command("/tournaments/:id/arbitration/series/:seriesId/decide", async ({ req, accountId, reason, commandId }) => {
     const decision = parseDecision((req.body ?? {}) as Record<string, unknown>);
     if (!decision) return { ok: false, reason: "not_a_participant" } as const;
@@ -156,7 +178,7 @@ export function installArbitrationRoutes({ app, arbitration, session, limiter }:
       const trail = await arbitration.trail(req.params.id!);
       // An empty trail for a tournament nobody owns must not distinguish "not yours" from "no
       // events", so authorization is checked through the same command path the writes use.
-      const allowed = await arbitration.isOrganizer(req.params.id!, auth.account.id);
+      const allowed = await arbitration.canArbitrate(req.params.id!, auth.account.id);
       if (!allowed) {
         res.sendStatus(403);
         return;

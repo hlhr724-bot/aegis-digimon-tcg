@@ -10,6 +10,9 @@
    dispatched, and the sequence it was dispatched at is what a later rejection is measured
    against. */
 
+import { shouldConfirmCardPlay } from "@/game/cardConfirmation/shouldConfirmCardPlay";
+import { CardConfirmationMode } from "@/game/cardConfirmation/CardConfirmationMode";
+
 import type { MutableRefObject } from "react";
 import {
   type AssemblyPlan,
@@ -42,7 +45,7 @@ export function matchIntents({
   handEntries,
   digivolveRoutesOf,
   mainActionBlocked,
-  actionConfirmationsEnabled,
+  cardConfirmationMode,
   lastPlayAttemptRef,
   playAttemptEventSeqRef,
   setOptimisticPlayedInstanceId,
@@ -61,7 +64,7 @@ export function matchIntents({
   handEntries: HandEntry[];
   digivolveRoutesOf: (instanceId: string) => readonly ProjectedDigivolveRoute[] | undefined;
   mainActionBlocked: boolean;
-  actionConfirmationsEnabled: boolean;
+  cardConfirmationMode: CardConfirmationMode;
   playGameCue: (kind: SoundKind) => void;
   lastPlayAttemptRef: MutableRefObject<string | undefined>;
   playAttemptEventSeqRef: MutableRefObject<number>;
@@ -87,14 +90,27 @@ export function matchIntents({
     intents.playCard(activeRoom, instanceId, targetSlot, digiXros, assembly, useAs);
   };
 
-  const playCard = (instanceId: string, confirmDrop = false, preferDna = false) => {
+  const playCard = (instanceId: string, confirmDrop = false, preferDna = false, skipNegamon = false) => {
     if (mainActionBlocked) return;
+    const entry = handEntries.find((candidate) => candidate.instanceId === instanceId);
+    const breedingCard = viewer.breeding?.topCard;
+    if (!skipNegamon && !preferDna && entry?.negamonPlayEffectKey && breedingCard) {
+      overlays.setActionConfirm({
+        kind: "negamon",
+        instanceId,
+        cardId: entry.cardId,
+        sourceInstanceId: breedingCard.instanceId,
+        effectKey: entry.negamonPlayEffectKey,
+        confirmDrop,
+      });
+      return;
+    }
     const prompt = prePlayPromptFor({
       entry: handEntries.find((h) => h.instanceId === instanceId),
       viewer,
       confirmDrop,
       preferDna,
-      actionConfirmationsEnabled,
+      actionConfirmationsEnabled: shouldConfirmCardPlay({ entry, mode: cardConfirmationMode }),
     });
     if (prompt?.kind === "dual") {
       overlays.setDualPlay({ instanceId, cardId: prompt.cardId });
@@ -220,7 +236,8 @@ export function matchIntents({
       });
       return;
     }
-    if (confirmDrop && actionConfirmationsEnabled) {
+    const targetsBreeding = viewer.breeding?.permanentId === permanentId;
+    if ((confirmDrop || targetsBreeding) && cardConfirmationMode !== CardConfirmationMode.NEVER.value) {
       overlays.setActionConfirm({
         kind: "digivolve",
         instanceId,

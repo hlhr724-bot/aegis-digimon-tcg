@@ -1,0 +1,1049 @@
+{
+  "scope": "Structured decision context and one independently unconfirmed heuristic candidate; simulated bot matches on human deck lists, not a live-human win rate",
+  "candidatePromoted": false,
+  "candidateProgram": {
+    "schemaVersion": 1,
+    "title": "Human panel decision context: ordering",
+    "rules": [
+      {
+        "feature": "cost",
+        "weight": -0.6361,
+        "advice": "In the main phase, avoid actions with a higher memory cost.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "handover",
+        "weight": -1.0042,
+        "advice": "In the main phase, avoid actions that pass more memory to the opponent.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackPlayer",
+        "weight": -0.3003,
+        "advice": "In the main phase, avoid attacks on the opponent's security.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "lethal",
+        "weight": 16.0,
+        "advice": "In the main phase, favor attacks on the player at zero opposing security.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackWinningBattle",
+        "weight": 1.0,
+        "advice": "In the main phase, favor attacks on opposing Digimon with lower DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackLosingBattle",
+        "weight": -5.3753,
+        "advice": "In the main phase, avoid attacks on an opposing Digimon with equal or higher DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "digivolve",
+        "weight": 1.271,
+        "advice": "In the main phase, favor digivolving.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "breedingGrowth",
+        "weight": 0.1889,
+        "advice": "In the main phase, favor digivolving the Digimon in the breeding area.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "levelGain",
+        "weight": 1.0427,
+        "advice": "In the main phase, favor digivolutions that gain more levels.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "dpGain",
+        "weight": 0.2493,
+        "advice": "In the main phase, favor digivolutions that gain more DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playBody",
+        "weight": 0.0126,
+        "advice": "In the main phase, favor playing Digimon from hand, more so for higher DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playTamer",
+        "weight": 0.1098,
+        "advice": "In the main phase, favor playing Tamers.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playOption",
+        "weight": 0.3141,
+        "advice": "In the main phase, favor using Option cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceLevel",
+        "weight": 0.3504,
+        "advice": "In the main phase, favor actions by higher-level cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceDp",
+        "weight": 0.4002,
+        "advice": "In the main phase, favor actions by higher-DP cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "targetDp",
+        "weight": -0.1007,
+        "advice": "In the main phase, avoid actions that target higher-DP Digimon.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "pass",
+        "weight": -8.0148,
+        "advice": "In the main phase, avoid ending the main phase.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "activate",
+        "weight": 2.5335,
+        "advice": "In the main phase, favor activating card effects.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceInHand",
+        "weight": -1.3832,
+        "advice": "In the main phase, avoid actions that use a card from hand.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceInTrash",
+        "weight": -6.7499,
+        "advice": "In the main phase, avoid actions that use a card from the trash.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceOnBoard",
+        "weight": -0.5031,
+        "advice": "In the main phase, avoid actions by a Digimon already on the battle area.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceOpponent",
+        "weight": -1.3601,
+        "advice": "In the main phase, avoid actions whose source is an opposing card.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.239,
+        "advice": "In the main phase, favor actions by more valuable cards (DP, level, and cost combined).",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "digiXros",
+        "weight": -0.1419,
+        "advice": "In the main phase, avoid DigiXros plays.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "assembly",
+        "weight": 2.3499,
+        "advice": "In the main phase, favor Assembly plays.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "dnaDigivolve",
+        "weight": 0.0391,
+        "advice": "In the main phase, favor DNA digivolution.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "appFusion",
+        "weight": 5.7053,
+        "advice": "In the main phase, favor App Fusion.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "link",
+        "weight": -0.9559,
+        "advice": "In the main phase, avoid linking cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "materials",
+        "weight": 0.0676,
+        "advice": "In the main phase, favor actions that use more material cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "activate",
+        "weight": 3,
+        "advice": "In the main phase, use activated effects that cost no memory before other plays, because they never end the turn and often make the next play cheaper.",
+        "when": {
+          "kind": "main",
+          "maximum": {
+            "handover": 0
+          }
+        }
+      },
+      {
+        "feature": "hatch",
+        "weight": 10,
+        "advice": "Hatch when the breeding area is empty."
+      },
+      {
+        "feature": "deploy",
+        "weight": 2,
+        "advice": "Move a developed line out to contest the board."
+      },
+      {
+        "feature": "criticalBlock",
+        "weight": 100,
+        "advice": "At zero security, prioritize blocking an attack on the player."
+      },
+      {
+        "feature": "accept",
+        "weight": 1,
+        "advice": "Consider optional effects and defensive responses when their costs are acceptable."
+      },
+      {
+        "feature": "finish",
+        "weight": 0.1,
+        "advice": "Finish optional selections when additional cards do not improve the outcome."
+      },
+      {
+        "feature": "openingRookie",
+        "weight": 5,
+        "advice": "Keep an opening hand with a rookie that can start your line."
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.2,
+        "advice": "When choosing targets for your own effect among opposing cards, favor the most valuable opposing Digimon (higher DP and level).",
+        "when": {
+          "kind": "chooseTargets",
+          "minimum": {
+            "sourceOpponent": 1
+          }
+        }
+      },
+      {
+        "feature": "block",
+        "weight": -0.5,
+        "advice": "When you still have 3 or more security cards, decline ordinary blocks and keep your Digimon; take the security check instead.",
+        "when": {
+          "kind": "block",
+          "minimum": {
+            "ownSecurity": 3
+          }
+        }
+      },
+      {
+        "feature": "sourceInHand",
+        "weight": 1,
+        "advice": "In a counter window, favor using a counter card from hand, such as Blast Digivolve, over declining.",
+        "when": {
+          "kind": "counter"
+        }
+      },
+      {
+        "feature": "accept",
+        "weight": -2,
+        "advice": "Decline a Barrier response when you have 1 or fewer security cards; keeping the last security card matters more than saving the Digimon.",
+        "when": {
+          "kind": "respondBarrier",
+          "maximum": {
+            "ownSecurity": 1
+          }
+        }
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.2,
+        "advice": "When a card selection picks among opposing cards on the battle area, favor the most valuable opposing Digimon (higher DP and level).",
+        "when": {
+          "kind": "selectCards",
+          "minimum": {
+            "sourceOpponent": 1,
+            "sourceOnBoard": 1
+          }
+        }
+      },
+      {
+        "feature": "finish",
+        "weight": -0.2,
+        "advice": "When choosing targets for your own effect, prefer picking a legal target over finishing the selection early.",
+        "when": {
+          "kind": "chooseTargets"
+        }
+      },
+      {
+        "feature": "activate",
+        "weight": -4,
+        "advice": "In the main phase, reduce the preference for activating effects from hand.",
+        "when": {
+          "kind": "main",
+          "minimum": {
+            "sourceInHand": 1
+          }
+        }
+      },
+      {
+        "feature": "decisionMemory",
+        "weight": 2.0,
+        "advice": "Prefer declared immediate memory gain.",
+        "when": {
+          "kind": "orderTriggers"
+        }
+      },
+      {
+        "feature": "decisionDraw",
+        "weight": 1.5,
+        "advice": "Value declared card draw.",
+        "when": {
+          "kind": "orderTriggers"
+        }
+      },
+      {
+        "feature": "decisionRecovery",
+        "weight": 3.0,
+        "advice": "Value declared security recovery.",
+        "when": {
+          "kind": "orderTriggers"
+        }
+      },
+      {
+        "feature": "decisionRemoval",
+        "weight": 2.0,
+        "advice": "Value disruption when its affected player has a visible board.",
+        "when": {
+          "kind": "orderTriggers"
+        }
+      },
+      {
+        "feature": "decisionPlay",
+        "weight": 2.0,
+        "advice": "Value declared play operations.",
+        "when": {
+          "kind": "orderTriggers"
+        }
+      },
+      {
+        "feature": "decisionEvolution",
+        "weight": 2.0,
+        "advice": "Value declared evolution operations.",
+        "when": {
+          "kind": "orderTriggers"
+        }
+      },
+      {
+        "feature": "decisionUnsuspend",
+        "weight": 1.0,
+        "advice": "Consider declared unsuspend operations.",
+        "when": {
+          "kind": "orderTriggers"
+        }
+      },
+      {
+        "feature": "decisionCost",
+        "weight": -1.0,
+        "advice": "Prefer lower known immediate spending for effect choices.",
+        "when": {
+          "kind": "orderTriggers"
+        }
+      },
+      {
+        "feature": "decisionUncertain",
+        "weight": -0.2,
+        "advice": "Reduce confidence in unresolved declared outcomes.",
+        "when": {
+          "kind": "orderTriggers"
+        }
+      }
+    ]
+  },
+  "candidateLock": {
+    "selectedSource": "ordering",
+    "candidateSha256": "cea5ff26cfa4e4092353a1ad762845cc1b3d62a262361cc8d93af5eb6dc940b2",
+    "baselineSha256": "34baabe101eaace8efea9dab3b1b5de8dcbd1b79947ad4cb5d3fdac7cc874895",
+    "reserveSha256": "b3e7e7d3c1ad1b4315c3fea04f16af3024bf3d4d6cf21ccd305edca15ed24d94"
+  },
+  "primaryRates": {
+    "baseline": 0.509765625,
+    "candidate": 0.525390625
+  },
+  "development": {
+    "complete": true,
+    "selectedSource": "ordering",
+    "screen": {
+      "historical-v3": {
+        "fitness": 0.48828125,
+        "invalid": 0,
+        "opponents": {
+          "certified": {
+            "rate": 0.453125,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.546875,
+            "games": 64,
+            "invalid": 0
+          },
+          "v3": {
+            "rate": 0.5,
+            "games": 64,
+            "invalid": 0
+          }
+        }
+      },
+      "selections": {
+        "fitness": 0.51953125,
+        "invalid": 0,
+        "opponents": {
+          "certified": {
+            "rate": 0.4765625,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.640625,
+            "games": 64,
+            "invalid": 0
+          },
+          "v3": {
+            "rate": 0.484375,
+            "games": 64,
+            "invalid": 0
+          }
+        }
+      },
+      "choices": {
+        "fitness": 0.49609375,
+        "invalid": 0,
+        "opponents": {
+          "certified": {
+            "rate": 0.453125,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.578125,
+            "games": 64,
+            "invalid": 0
+          },
+          "v3": {
+            "rate": 0.5,
+            "games": 64,
+            "invalid": 0
+          }
+        }
+      },
+      "ordering": {
+        "fitness": 0.50390625,
+        "invalid": 0,
+        "opponents": {
+          "certified": {
+            "rate": 0.4609375,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.59375,
+            "games": 64,
+            "invalid": 0
+          },
+          "v3": {
+            "rate": 0.5,
+            "games": 64,
+            "invalid": 0
+          }
+        }
+      },
+      "combined": {
+        "fitness": 0.5234375,
+        "invalid": 0,
+        "opponents": {
+          "certified": {
+            "rate": 0.4921875,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.609375,
+            "games": 64,
+            "invalid": 0
+          },
+          "v3": {
+            "rate": 0.5,
+            "games": 64,
+            "invalid": 0
+          }
+        }
+      }
+    },
+    "selection": {
+      "historical-v3": {
+        "fitness": 0.53515625,
+        "invalid": 1,
+        "opponents": {
+          "certified": {
+            "rate": 0.5546875,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.5703125,
+            "games": 128,
+            "invalid": 1
+          },
+          "v3": {
+            "rate": 0.4609375,
+            "games": 128,
+            "invalid": 0
+          }
+        }
+      },
+      "selections": {
+        "fitness": 0.548828125,
+        "invalid": 2,
+        "opponents": {
+          "certified": {
+            "rate": 0.5390625,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.609375,
+            "games": 128,
+            "invalid": 2
+          },
+          "v3": {
+            "rate": 0.5078125,
+            "games": 128,
+            "invalid": 0
+          }
+        }
+      },
+      "choices": {
+        "fitness": 0.537109375,
+        "invalid": 2,
+        "opponents": {
+          "certified": {
+            "rate": 0.5390625,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.578125,
+            "games": 128,
+            "invalid": 2
+          },
+          "v3": {
+            "rate": 0.4921875,
+            "games": 128,
+            "invalid": 0
+          }
+        }
+      },
+      "ordering": {
+        "fitness": 0.541015625,
+        "invalid": 1,
+        "opponents": {
+          "certified": {
+            "rate": 0.5390625,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.578125,
+            "games": 128,
+            "invalid": 1
+          },
+          "v3": {
+            "rate": 0.5078125,
+            "games": 128,
+            "invalid": 0
+          }
+        }
+      },
+      "combined": {
+        "fitness": 0.5390625,
+        "invalid": 3,
+        "opponents": {
+          "certified": {
+            "rate": 0.515625,
+            "games": 128,
+            "invalid": 0
+          },
+          "legacy": {
+            "rate": 0.6171875,
+            "games": 128,
+            "invalid": 3
+          },
+          "v3": {
+            "rate": 0.5078125,
+            "games": 128,
+            "invalid": 0
+          }
+        }
+      }
+    },
+    "developmentAccepted": true,
+    "requiresIndependentConfirmation": true,
+    "peakWorkerRssMiB": 1427
+  },
+  "confirmation": {
+    "complete": true,
+    "games": 1024,
+    "matchups": 128,
+    "peakWorkerRssMiB": 1409,
+    "opponents": {
+      "certified": {
+        "arms": {
+          "baseline": {
+            "games": 256,
+            "valid": 256,
+            "invalid": 0,
+            "rate": 0.48046875,
+            "failureAsLossRate": 0.48046875,
+            "wins": 123,
+            "draws": 0
+          },
+          "candidate": {
+            "games": 256,
+            "valid": 256,
+            "invalid": 0,
+            "rate": 0.5,
+            "failureAsLossRate": 0.5,
+            "wins": 128,
+            "draws": 0
+          }
+        },
+        "pairedFailureAsLoss": {
+          "mean": 0.01953125,
+          "low": -0.028418042561184423,
+          "high": 0.06748054256118442,
+          "varianceOfMean": 0.0005984836154513889,
+          "blocks": 64
+        },
+        "pairedValidBlocks": {
+          "mean": 0.01953125,
+          "low": -0.028418042561184423,
+          "high": 0.06748054256118442,
+          "varianceOfMean": 0.0005984836154513889,
+          "blocks": 64
+        }
+      },
+      "legacy": {
+        "arms": {
+          "baseline": {
+            "games": 128,
+            "valid": 126,
+            "invalid": 2,
+            "rate": 0.5793650793650794,
+            "failureAsLossRate": 0.5703125,
+            "wins": 73,
+            "draws": 0
+          },
+          "candidate": {
+            "games": 128,
+            "valid": 127,
+            "invalid": 1,
+            "rate": 0.6141732283464567,
+            "failureAsLossRate": 0.609375,
+            "wins": 78,
+            "draws": 0
+          }
+        },
+        "pairedFailureAsLoss": {
+          "mean": 0.0390625,
+          "low": -0.040598588285907566,
+          "high": 0.11872358828590757,
+          "varianceOfMean": 0.0016518869707661291,
+          "blocks": 32
+        },
+        "pairedValidBlocks": {
+          "mean": 0.025,
+          "low": -0.05414971990423933,
+          "high": 0.10414971990423932,
+          "varianceOfMean": 0.0016307471264367817,
+          "blocks": 30
+        }
+      },
+      "v3": {
+        "arms": {
+          "baseline": {
+            "games": 128,
+            "valid": 128,
+            "invalid": 0,
+            "rate": 0.5078125,
+            "failureAsLossRate": 0.5078125,
+            "wins": 65,
+            "draws": 0
+          },
+          "candidate": {
+            "games": 128,
+            "valid": 128,
+            "invalid": 0,
+            "rate": 0.4921875,
+            "failureAsLossRate": 0.4921875,
+            "wins": 63,
+            "draws": 0
+          }
+        },
+        "pairedFailureAsLoss": {
+          "mean": -0.015625,
+          "low": -0.091642211415913,
+          "high": 0.060392211415913,
+          "varianceOfMean": 0.0015042212701612903,
+          "blocks": 32
+        },
+        "pairedValidBlocks": {
+          "mean": -0.015625,
+          "low": -0.091642211415913,
+          "high": 0.060392211415913,
+          "varianceOfMean": 0.0015042212701612903,
+          "blocks": 32
+        }
+      }
+    },
+    "weightedPairedDifference": {
+      "mean": 0.015625,
+      "low": -0.020879318277789917,
+      "high": 0.05212931827778992
+    },
+    "baselineInvalid": 2,
+    "candidateInvalid": 1,
+    "accepted": false,
+    "primaryMetric": "Paired matchup points; invalid games count as zero",
+    "interval": "Approximate 95% normal interval, clustered by matchup and stratified by opponent",
+    "opponentWeights": {
+      "certified": 0.5,
+      "legacy": 0.25,
+      "v3": 0.25
+    }
+  },
+  "partitionAudit": {
+    "fitnessMatchIds": 64,
+    "fitnessUniqueDeckPairs": 63,
+    "validationMatchIds": 96,
+    "validationUniqueDeckPairs": 96,
+    "fitnessValidationDeckPairOverlap": 0,
+    "testMatchIdsAndOutcomesUsed": false,
+    "fitnessDeckPairsAlsoInOriginalTest": 4,
+    "validationDeckPairsAlsoInOriginalTest": 4,
+    "reserveMatchIds": 128,
+    "reserveUniqueDeckPairs": 128,
+    "reserveOverlapByIdOrExactDeckPair": 0,
+    "qualification": "Original split is by match ID; only the fresh reserve establishes the independent matchup-composition confirmation"
+  },
+  "diagnostics": {
+    "games": 16,
+    "divergent": [],
+    "runtime": "b829497c6842b756ae3fde6c1664fb92814371c80b10e8c4b452116468ef235b",
+    "capturedDecisions": 596,
+    "decisionKinds": {
+      "mulligan": 16,
+      "breeding": 70,
+      "main": 215,
+      "selectCards": 113,
+      "optional": 75,
+      "block": 13,
+      "chooseOption": 12,
+      "orderTriggers": 40,
+      "orderCards": 17,
+      "chooseTargets": 23,
+      "alliance": 2
+    },
+    "contextualDecisions": {
+      "selectCards": 85,
+      "orderTriggers": 39,
+      "chooseOption": 11,
+      "chooseTargets": 13
+    },
+    "roundedTopAlternativeTies": {
+      "selectCards": 64,
+      "block": 4,
+      "chooseOption": 12,
+      "main": 6,
+      "orderTriggers": 15,
+      "orderCards": 17,
+      "chooseTargets": 6,
+      "alliance": 2
+    },
+    "traceLimitGames": 0,
+    "sourceSha256": "6990a2c4d650c3209543993af307af581e78b8c2079b120be977def81cde80a8"
+  },
+  "archetypes": {
+    "scope": "Exploratory reference-based archetype grouping; descriptive, unadjusted for opponent mix; no new candidate selection or per-archetype strength certificate",
+    "classifiedLearnerExposures": 278,
+    "learnerExposures": 512,
+    "focus": [
+      {
+        "archetype": "Plutomon",
+        "games": 22,
+        "matchups": 11,
+        "arms": {
+          "baseline": {
+            "valid": 22,
+            "invalid": 0,
+            "wins": 5,
+            "losses": 17,
+            "draws": 0,
+            "points": 5.0,
+            "validRate": 0.22727272727272727,
+            "failureAsLossRate": 0.22727272727272727
+          },
+          "candidate": {
+            "valid": 22,
+            "invalid": 0,
+            "wins": 7,
+            "losses": 15,
+            "draws": 0,
+            "points": 7.0,
+            "validRate": 0.3181818181818182,
+            "failureAsLossRate": 0.3181818181818182
+          }
+        },
+        "opponents": {
+          "v3": {
+            "games": 8,
+            "valid": 8,
+            "wins": 1,
+            "losses": 7,
+            "invalid": 0
+          },
+          "certified": {
+            "games": 10,
+            "valid": 10,
+            "wins": 3,
+            "losses": 7,
+            "invalid": 0
+          },
+          "legacy": {
+            "games": 4,
+            "valid": 4,
+            "wins": 3,
+            "losses": 1,
+            "invalid": 0
+          }
+        },
+        "uniqueDecks": 11,
+        "pairedFailureAsLossDifference": 0.09090909090909091,
+        "enoughForPriority": true
+      },
+      {
+        "archetype": "Omnimon",
+        "games": 16,
+        "matchups": 8,
+        "arms": {
+          "baseline": {
+            "valid": 16,
+            "invalid": 0,
+            "wins": 7,
+            "losses": 9,
+            "draws": 0,
+            "points": 7.0,
+            "validRate": 0.4375,
+            "failureAsLossRate": 0.4375
+          },
+          "candidate": {
+            "valid": 16,
+            "invalid": 0,
+            "wins": 7,
+            "losses": 9,
+            "draws": 0,
+            "points": 7.0,
+            "validRate": 0.4375,
+            "failureAsLossRate": 0.4375
+          }
+        },
+        "opponents": {
+          "certified": {
+            "games": 8,
+            "valid": 8,
+            "wins": 1,
+            "losses": 7,
+            "invalid": 0
+          },
+          "legacy": {
+            "games": 8,
+            "valid": 8,
+            "wins": 6,
+            "losses": 2,
+            "invalid": 0
+          }
+        },
+        "uniqueDecks": 7,
+        "pairedFailureAsLossDifference": 0.0,
+        "enoughForPriority": false
+      }
+    ],
+    "sha256": {
+      "results": "d2942965a59af558deb7a0d85f8f82fb4f8ba0ec9e4bfd23d3083d39cfdf061d",
+      "pairs": "b3e7e7d3c1ad1b4315c3fea04f16af3024bf3d4d6cf21ccd305edca15ed24d94",
+      "references": "9915679896d18c90042480b62e34a35a9cf22ca4ed4f6bc77d48750a8299a515",
+      "source": "ac577db50eac39eb9a49f90e51d85d61970ba148163e44d1ccf4f391d42bf1bb",
+      "classifierSource": "37adb1c39314d26ba4323c0fe11ac7b2d34615e892c1f30cd4274c6e707ff2ec"
+    }
+  },
+  "wholeGameTiming": {
+    "scope": "Observed concurrent wall time for valid games; no causal comparison or per-decision latency claim",
+    "arms": {
+      "baseline": {
+        "games": 512,
+        "valid": 510,
+        "invalid": 2,
+        "medianGameMs": 816.5,
+        "meanGameMs": 1230.6960784313726,
+        "totalGameMs": 628652
+      },
+      "candidate": {
+        "games": 512,
+        "valid": 511,
+        "invalid": 1,
+        "medianGameMs": 843,
+        "meanGameMs": 1262.3228962818005,
+        "totalGameMs": 645791
+      }
+    }
+  },
+  "controlReproduction": {
+    "games": 7,
+    "divergent": [],
+    "runtime": "b829497c6842b756ae3fde6c1664fb92814371c80b10e8c4b452116468ef235b",
+    "scope": "Old v4 losses versus legacy and frozen-v3; new decision context disabled on both scripted scorers; historical activation flags retained"
+  },
+  "runtime": {
+    "runtime": "b829497c6842b756ae3fde6c1664fb92814371c80b10e8c4b452116468ef235b",
+    "compiledFiles": 48826,
+    "compiledArchiveSha256": "a6887c4dd0c6f87d02467b4f63869e8622d3d8ac921f2c26790332bb0f5f55bf",
+    "compiledArchiveBytes": 26600789,
+    "sourceFiles": 65,
+    "sourcesArchiveSha256": "a45e645079e63d45f5035124203590dfe13e80e244aad74e36e31c725ce6fbd5",
+    "reservePairsSha256": "b3e7e7d3c1ad1b4315c3fea04f16af3024bf3d4d6cf21ccd305edca15ed24d94"
+  },
+  "verification": {
+    "apiRegressionTests": 1425,
+    "webContractTests": 62,
+    "focusedPythonTests": 38,
+    "nodeScoringAdapterTests": 3,
+    "focusedNewTestTypecheck": "Five touched API decision-context test files passed; web test types covered by full application typecheck",
+    "applicationTypecheck": "passed",
+    "style": "passed",
+    "knownFullPythonBaseline": "Existing adapter MCTS scheduling-order test fails; unchanged by this task",
+    "databaseFlows": "Unverified: local PostgreSQL authentication fails",
+    "fullApiTestTypecheck": {
+      "status": "Stopped after several minutes without diagnostics; optional full test-type gate did not complete",
+      "earlierBaselineErrorCount": 12,
+      "earlierBaselineFiles": 8,
+      "qualification": "Earlier baseline is preserved under ignored v4 evidence; this task does not claim a full test-type pass"
+    },
+    "diffCheck": "passed",
+    "fiveChangedApiTestFilesTypecheck": "passed",
+    "ruff": "passed",
+    "runtimeByteInventory": "48826 files match frozen archive"
+  },
+  "delivery": {
+    "defaultCatalog": "human-panel-v2",
+    "newCatalogCreated": false,
+    "experimentActivated": false,
+    "pushed": false,
+    "deployed": false,
+    "mctsOrModelApiUsed": false,
+    "qualification": "Keeping the old catalog does not guarantee identical tie-breaking after deploying newly added request metadata"
+  },
+  "sha256": {
+    ".local/bot-lab/decision-context/development/screen/results.jsonl": "6194f47396934512c625c03cf274eeff1168d759a9f00b6c19c82c940402bc6c",
+    ".local/bot-lab/decision-context/development/selection/results.jsonl": "7bbe33f06c9c5f30b42e04f7d4bcec8e305d63f76c77c74574d5f879e8e76272",
+    ".local/bot-lab/decision-context/confirmation/games/results.jsonl": "d2942965a59af558deb7a0d85f8f82fb4f8ba0ec9e4bfd23d3083d39cfdf061d",
+    ".local/bot-lab/decision-context/reproduction/games/results.jsonl": "d992ec73bdeecef50731643f533d596518dadb2abc552a5226a3e47b38bae50f"
+  },
+  "audits": {
+    "sourceReview": "passed after recipient/default fixes",
+    "reserveReconstruction": "passed independently",
+    "developmentJobsSha256": [
+      "3ab8e16e3fafb971fcc482d4cc62cf85256826fb2bc6c96a42cadf1e9b7e4428",
+      "b5ac08c592410284c8af329d27fbdc95174cb6dc68bad0c0d893025669b05d56"
+    ],
+    "confirmationJobsSha256": "2d63bf3e8ecd1db5f233a6eaddf4c7760dcaeb79b6cbd733ebce9daa2bab7618",
+    "weightedVarianceOfMean": 0.00034687766892081093,
+    "developmentInvalids": {
+      "opponentLegacyEvolutionRejections": 7,
+      "unattributable": 2
+    },
+    "confirmationInvalids": {
+      "opponentLegacyEvolutionRejections": 2,
+      "unattributableBaseline": 1
+    }
+  },
+  "localProof": {
+    "path": ".local/bot-lab/decision-context/evidence/proof.tgz",
+    "bytes": 30862620,
+    "sha256": "25dc78c18cf10cb923ad6c58e24472495e1c58fa455a9c55ea3a0b913af074b8",
+    "scope": "Frozen compiled/source archives, byte verification, programs, raw development and confirmation, reserved and excluded inputs, grouping, repeated loss summaries, audits and validation logs; production-derived data remains ignored"
+  }
+}

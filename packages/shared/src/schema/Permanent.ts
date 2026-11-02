@@ -1,3 +1,4 @@
+import type { AttackRedirection } from "#shared/schema/AttackRedirection";
 import { Schema, ArraySchema, type } from "@colyseus/schema";
 import { CardInstance } from "./CardInstance.js";
 import type { Seat } from "./enums.js";
@@ -7,6 +8,7 @@ import type { Seat } from "./enums.js";
  * Mirrors documented behavior.
  */
 export class Permanent extends Schema {
+  attackRedirectTargets: Record<string, AttackRedirection> = {};
   @type("string") permanentId!: string;
   @type("uint8") controllerSeat!: Seat;
   @type(CardInstance) topCard!: CardInstance; // the active Digimon/Tamer
@@ -114,6 +116,7 @@ export class Permanent extends Schema {
   @type("boolean") protectedFromDpReduction = false;
   @type("boolean") protectedFromDeDigivolve = false;
   @type("boolean") protectedFromEffectDeletion = false;
+  @type("boolean") protectedFromBattleDeletion = false;
   @type("boolean") protectedFromEffectReturn = false;
   // A duration-scoped gained effect will force this Digimon to attack when its controller's
   // next Main phase starts. Projected from the authoritative SubTrigger subscription so the
@@ -145,4 +148,9 @@ export class Permanent extends Schema {
   // has no ＜Vortex＞.
   @type(["string"]) vortexAttackablePermanentIds = new ArraySchema<string>();
   @type("boolean") canVortexAttackPlayer = false;
+  @type("boolean") protectedFromStackTrash = false;
+  @type("boolean") protectedFromStackReturn = false;
+  @type("string") heldDpEffectsJson = "";
+  @type("string") manualMarker = "";
+  @type(["string"]) manualStatuses = new ArraySchema<string>();
 }

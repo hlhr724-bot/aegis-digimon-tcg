@@ -25,6 +25,7 @@ export const compiled: CompiledCard = {
         {
           kind: "SubTrigger",
           event: "endOfTurn",
+          printedClause: "[Pending] At the end of the turn, return this Digimon to the hand.",
           once: true,
           actions: [
             {

@@ -2,7 +2,7 @@ import type { Permanent } from "@aegis/shared";
 import type { RestrictionBadge } from "../fieldBadges";
 import type { PendingFateBadge } from "../pendingFate";
 import type { Translate } from "../../i18n";
-import { formatDpDelta } from "./formatDpDelta";
+import { formatDp } from "@/design/formatDp";
 
 /**
  * The accessible name a permanent speaks when it is interactive: the card name,
@@ -44,7 +44,7 @@ export function permanentAriaLabel({
   ].filter((state): state is string => state !== undefined);
   const stateLabel = states.length ? ` (${states.join(", ")})` : "";
   const dpLabel = hasDpDelta
-    ? `, ${perm.currentDP.toLocaleString()} DP, DP ${delta > 0 ? "+" : "−"}${formatDpDelta(Math.abs(delta))}`
+    ? `, ${perm.currentDP.toLocaleString()} DP, DP ${delta > 0 ? "+" : "−"}${formatDp(Math.abs(delta))}`
     : "";
   return `${cardName}${stateLabel}${dpLabel}`;
 }

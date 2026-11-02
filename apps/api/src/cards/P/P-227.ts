@@ -13,6 +13,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 Digimon card with [Tyrannomon] in its name or the [Reptile] or [Dinosaur] trait",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -35,6 +36,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [LIBERATOR] trait card among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

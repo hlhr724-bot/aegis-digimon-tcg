@@ -18,7 +18,7 @@ describe("BT1-007 Tanemon", () => {
       evoCosts: [],
       forms: ["In-Training"],
       types: ["Bulb"],
-      inheritedEffectText: "[When Attacking] If you've digivolved this turn， this Digimon gets +1000 DP for the turn.",
+      inheritedEffectText: "[When Attacking] If you've digivolved this turn, this Digimon gets +1000 DP for the turn.",
     });
     expect(getCardDefinition("BT1-007")?.effectText).toBeUndefined();
     expect(compiled.effects).toEqual([

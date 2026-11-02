@@ -121,3 +121,23 @@ it("waits for the live action guard before confirming a selected DNA pair", () =
   fireEvent.click(confirm);
   expect(onConfirm).toHaveBeenCalledExactlyOnceWith(["yellow", "first-purple"]);
 });
+
+it("allows a normal play while DNA materials are available", () => {
+  const onConfirm = vi.fn<(ids: string[]) => void>();
+  const onNormalPlay = vi.fn<() => void>();
+  render(
+    <I18nProvider>
+      <DnaMaterialChoiceOverlay
+        routes={routes}
+        permanents={permanents}
+        pickedPermanentIds={[]}
+        onConfirm={onConfirm}
+        onNormalPlay={onNormalPlay}
+        onCancel={vi.fn<() => void>()}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Play normally" }));
+  expect(onNormalPlay).toHaveBeenCalledOnce();
+  expect(onConfirm).not.toHaveBeenCalled();
+});

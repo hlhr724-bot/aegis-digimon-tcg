@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 [Kiriha Aonuma]",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 blue or black card with DigiXros requirements among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 colors: ["Blue", "Black"],

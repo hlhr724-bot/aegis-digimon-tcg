@@ -90,15 +90,15 @@ describe("BT21-044 compiled implementation", () => {
     }
   });
 
-  it("shares one once-per-turn budget between the main and inherited deletion watchers", () => {
+  it("declares independent once-per-turn main and inherited deletion watchers", () => {
     const watchers = compiled.effects.filter((effect) => effect.trigger === "AllTurns");
     expect(watchers).toHaveLength(2);
     expect(watchers[0]).toMatchObject({ frequency: "OncePerTurn", sharedUseKey: "bt21-044-marcus-security" });
     expect(watchers[1]).toMatchObject({
       frequency: "OncePerTurn",
-      sharedUseKey: "bt21-044-marcus-security",
       isInherited: true,
     });
+    expect(watchers[1]?.sharedUseKey).not.toBe(watchers[0]?.sharedUseKey);
     expect(watchers[0]?.actions).toEqual(watchers[1]?.actions);
   });
 
@@ -307,70 +307,73 @@ describe("BT21-044 compiled implementation", () => {
     expect(s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("marcus").instanceId)).toBe(false);
   });
 
-  it("publicly recovers Marcus after the first red/yellow Tamer deletion and shares the once-per-turn limit", async () => {
-    const s = setupEngine(
-      {
-        0: {
-          battleArea: [
-            { card: "BT21-044", as: "rize" },
-            { card: "BT1-087", as: "yellowTamer" },
-            { card: "BT13-095", as: "redTamer" },
-          ],
-          trash: [
-            { card: "BT13-095", as: "marcus1" },
-            { card: "BT12-092", as: "marcus2" },
-          ],
-          security: [{ card: "BT1-001", as: "existingSecurity" }],
+  it.each([false, true])(
+    "recovers only once per turn for each printed deletion effect, inherited: %s",
+    async (inherited) => {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [
+              inherited ? { card: "BT13-018", as: "rize", under: ["BT21-044"] } : { card: "BT21-044", as: "rize" },
+              { card: "BT1-087", as: "yellowTamer" },
+              { card: "BT13-095", as: "redTamer" },
+            ],
+            trash: [
+              { card: "BT13-095", as: "marcus1" },
+              { card: "BT12-092", as: "marcus2" },
+            ],
+            security: [{ card: "BT1-001", as: "existingSecurity" }],
+          },
+          1: {
+            battleArea: [{ card: "BT15-055", as: "blackSource" }],
+            hand: [
+              { card: "BT15-097", as: "slicer1" },
+              { card: "BT15-097", as: "slicer2" },
+              { card: "BT15-055", as: "machine1" },
+              { card: "BT15-055", as: "machine2" },
+            ],
+          },
         },
-        1: {
-          battleArea: [{ card: "BT15-055", as: "blackSource" }],
-          hand: [
-            { card: "BT15-097", as: "slicer1" },
-            { card: "BT15-097", as: "slicer2" },
-            { card: "BT15-055", as: "machine1" },
-            { card: "BT15-055", as: "machine2" },
-          ],
-        },
-      },
-      { autoAcceptOptional: true, autoSelectCards: true },
-    );
-    const yellowTamerId = s.perm("yellowTamer").permanentId;
-    const redTamerId = s.perm("redTamer").permanentId;
-    const firstMarcusId = s.inst("marcus1").instanceId;
-    const secondMarcusId = s.inst("marcus2").instanceId;
-    s.state.turnSeat = 1;
-    s.state.memory = 10;
-    await s.ready();
+        { autoAcceptOptional: true, autoSelectCards: true },
+      );
+      const yellowTamerId = s.perm("yellowTamer").permanentId;
+      const redTamerId = s.perm("redTamer").permanentId;
+      const firstMarcusId = s.inst("marcus1").instanceId;
+      const secondMarcusId = s.inst("marcus2").instanceId;
+      s.state.turnSeat = 1;
+      s.state.memory = 10;
+      await s.ready();
 
-    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("slicer1").instanceId })).toEqual({
-      ok: true,
-    });
-    await settle(() => s.state.players[0]!.security[0]?.instanceId === firstMarcusId);
-    expect(s.state.players[0]!.battleArea.some((p) => p.permanentId === yellowTamerId)).toBe(false);
-    expect(s.state.players[0]!.battleArea.some((p) => p.permanentId === redTamerId)).toBe(true);
-    expect(s.state.players[0]!.security[0]?.instanceId).toBe(firstMarcusId);
-    expect(s.state.players[0]!.security[0]?.faceUp).toBe(false);
-    expect(s.state.players[0]!.trash.some((card) => card.instanceId === firstMarcusId)).toBe(false);
-    expect(s.state.players[1]!.trash.some((card) => card.instanceId === s.inst("machine1").instanceId)).toBe(true);
-    expect(s.state.players[1]!.trash.some((card) => card.instanceId === s.inst("slicer1").instanceId)).toBe(true);
-    expect(s.state.memory).toBe(5);
+      expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("slicer1").instanceId })).toEqual({
+        ok: true,
+      });
+      await settle(() => s.state.players[0]!.security[0]?.instanceId === firstMarcusId);
+      expect(s.state.players[0]!.battleArea.some((p) => p.permanentId === yellowTamerId)).toBe(false);
+      expect(s.state.players[0]!.battleArea.some((p) => p.permanentId === redTamerId)).toBe(true);
+      expect(s.state.players[0]!.security[0]?.instanceId).toBe(firstMarcusId);
+      expect(s.state.players[0]!.security[0]?.faceUp).toBe(false);
+      expect(s.state.players[0]!.trash.some((card) => card.instanceId === firstMarcusId)).toBe(false);
+      expect(s.state.players[1]!.trash.some((card) => card.instanceId === s.inst("machine1").instanceId)).toBe(true);
+      expect(s.state.players[1]!.trash.some((card) => card.instanceId === s.inst("slicer1").instanceId)).toBe(true);
+      expect(s.state.memory).toBe(5);
 
-    const optionalCountAfterFirst = s.decisions.filter(({ req }) => req.kind === "optional").length;
-    expect(optionalCountAfterFirst).toBe(1);
-    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("slicer2").instanceId })).toEqual({
-      ok: true,
-    });
-    await settle(() => s.state.players[0]!.battleArea.some((p) => p.permanentId === redTamerId) === false);
+      const optionalCountAfterFirst = s.decisions.filter(({ req }) => req.kind === "optional").length;
+      expect(optionalCountAfterFirst).toBe(1);
+      expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("slicer2").instanceId })).toEqual({
+        ok: true,
+      });
+      await settle(() => s.state.players[0]!.battleArea.some((p) => p.permanentId === redTamerId) === false);
 
-    expect(s.state.players[0]!.security).toHaveLength(2);
-    expect(s.state.players[0]!.security[0]?.instanceId).toBe(firstMarcusId);
-    expect(s.state.players[0]!.security.some((card) => card.instanceId === secondMarcusId)).toBe(false);
-    expect(s.state.players[0]!.trash.some((card) => card.instanceId === secondMarcusId)).toBe(true);
-    expect(s.state.players[1]!.trash.some((card) => card.instanceId === s.inst("machine2").instanceId)).toBe(true);
-    expect(s.state.players[1]!.trash.some((card) => card.instanceId === s.inst("slicer2").instanceId)).toBe(true);
-    expect(s.decisions.filter(({ req }) => req.kind === "optional")).toHaveLength(optionalCountAfterFirst);
-    expect(s.state.memory).toBe(0);
-  });
+      expect(s.state.players[0]!.security).toHaveLength(2);
+      expect(s.state.players[0]!.security[0]?.instanceId).toBe(firstMarcusId);
+      expect(s.state.players[0]!.security.some((card) => card.instanceId === secondMarcusId)).toBe(false);
+      expect(s.state.players[0]!.trash.some((card) => card.instanceId === secondMarcusId)).toBe(true);
+      expect(s.state.players[1]!.trash.some((card) => card.instanceId === s.inst("machine2").instanceId)).toBe(true);
+      expect(s.state.players[1]!.trash.some((card) => card.instanceId === s.inst("slicer2").instanceId)).toBe(true);
+      expect(s.decisions.filter(({ req }) => req.kind === "optional")).toHaveLength(optionalCountAfterFirst);
+      expect(s.state.memory).toBe(0);
+    },
+  );
 
   it("does not trigger the security recovery for a non-red, non-yellow Tamer deletion", async () => {
     const s = setupEngine(

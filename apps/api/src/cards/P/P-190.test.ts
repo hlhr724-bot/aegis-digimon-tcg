@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { runtimeCompiledCard } from "../../engine/effects/interpreter.js";
-import { setupEngine, settle } from "../../engine/testkit/harness.js";
-import "./P-190.js";
+import { runtimeCompiledCard } from "#api/engine/effects/interpreter";
+import { setupEngine, settle } from "#api/engine/testkit/harness";
+import "#api/cards/P/P-190";
+import "#api/cards/EX10/EX10-073";
+import "#api/cards/BT21/BT21-009";
 
 describe("P-190 Tweetmon", () => {
   it("encodes Appmon evolution and Link requirements", () => {
@@ -10,17 +12,11 @@ describe("P-190 Tweetmon", () => {
     expect(card.linkRequirement).toEqual([{ cost: 1, traits: ["Appmon"] }]);
   });
 
-  it("keeps its printed linked-only Draw 1 watcher", () => {
+  it("encodes the printed linked-only Draw 1 timing", () => {
     const card = runtimeCompiledCard("P-190")!;
-    expect(card.effects.find((effect) => effect.trigger === "YourTurn")).toMatchObject({
+    expect(card.effects.find((effect) => effect.trigger === "WhenLinking")).toMatchObject({
       isLinked: true,
-      actions: [
-        {
-          event: "whenLinked",
-          on: { filter: { isSelfRef: true } },
-          actions: [{ kind: "Draw", controller: "mine", amount: 1 }],
-        },
-      ],
+      actions: [{ kind: "Draw", controller: "mine", amount: 1 }],
     });
   });
 
@@ -107,4 +103,26 @@ describe("P-190 engine behavior", () => {
     ).toEqual({ ok: false, reason: "link-requirement-unmet" });
     expect(s.state.memory).toBe(10);
   });
+});
+
+it("does not repeat Tweetmon's draw when another card links beside it", async () => {
+  const s = setupEngine({
+    0: {
+      battleArea: [{ card: "EX10-073", as: "host", linked: [{ card: "P-190", as: "tweetmon" }] }],
+      hand: [{ card: "BT21-009", as: "newLink" }],
+      deck: [{ card: "BT1-009", as: "drawn" }],
+    },
+  });
+  s.state.memory = 5;
+  await s.ready();
+  expect(
+    s.engine.applyIntent(0, {
+      type: "linkCard",
+      instanceId: s.inst("newLink").instanceId,
+      targetPermanentId: s.perm("host").permanentId,
+    }),
+  ).toEqual({ ok: true });
+  await settle(() => s.perm("host").linked.length === 2 && !s.state.pendingDecision);
+  expect(s.state.players[0]!.hand).toHaveLength(0);
+  expect(s.state.players[0]!.deck.map((card) => card.instanceId)).toEqual([s.inst("drawn").instanceId]);
 });

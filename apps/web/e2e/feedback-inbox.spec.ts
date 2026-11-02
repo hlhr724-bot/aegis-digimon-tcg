@@ -33,27 +33,29 @@ class FeedbackInboxPage {
       reporterConfirmedBugs: 0,
     };
     const port = process.env.AEGIS_E2E_EDGE_PORT ?? "2569";
+    const responses: Record<string, unknown> = {
+      "/auth/me": { id: "admin-fixture", displayName: "Vn", isAdmin, avatarUrl: null, avatarId: null },
+      "/account/admin/feedback": {
+        items: [item],
+        nextBefore: null,
+        counts: Object.fromEntries(
+          FEEDBACK_STATUSES.map((status) => [status, status === FeedbackStatus.NEW.value ? 1 : 0]),
+        ),
+        reopenedCount: 0,
+      },
+      "/account/admin/feedback/42": item,
+      "/account/admin/community/reports": { decks: [] },
+      "/account/admin/playtest/members": { members: [] },
+      "/account/admin/playtest/studies": { open: [], past: [] },
+      "/account/decks": [],
+    };
     await this.page.route(`http://127.0.0.1:${port}/**`, async (route) => {
-      const path = new URL(route.request().url()).pathname;
+      const request = route.request();
+      const path = new URL(request.url()).pathname;
       const body =
-        path === "/auth/me"
-          ? { id: "admin-fixture", displayName: "Vn", isAdmin, avatarUrl: null, avatarId: null }
-          : path === "/account/admin/feedback"
-            ? {
-                items: [item],
-                nextBefore: null,
-                counts: Object.fromEntries(
-                  FEEDBACK_STATUSES.map((status) => [status, status === FeedbackStatus.NEW.value ? 1 : 0]),
-                ),
-                reopenedCount: 0,
-              }
-            : path === "/account/admin/feedback/42"
-              ? item
-              : path === "/account/admin/community/reports"
-                ? { decks: [] }
-                : path === "/account/decks"
-                  ? []
-                  : {};
+        path === "/account/preferences" && request.method() === "PUT"
+          ? request.postDataJSON()
+          : (responses[path] ?? {});
       await route.fulfill({ json: body });
     });
     await this.page.goto("/admin/feedback");

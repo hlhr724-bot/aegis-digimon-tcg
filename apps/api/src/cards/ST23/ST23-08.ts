@@ -163,6 +163,7 @@ const compiled: CompiledCard = {
           target: {
             filter: {
               isSelfRef: true,
+              nameOrTrait: [{ tokens: ["Glowing Dawn"], match: "trait" }],
             },
             count: 1,
             isSelf: true,

@@ -30,6 +30,7 @@ export const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 of each [Gokuumon]",
               filter: {
                 nameOrTrait: [{ tokens: ["Gokuumon"], match: "nameExact" }],
               },
@@ -37,6 +38,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "[Sagomon]",
               filter: {
                 nameOrTrait: [{ tokens: ["Sagomon"], match: "nameExact" }],
               },
@@ -44,6 +46,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "[Cho-Hakkaimon]",
               filter: {
                 nameOrTrait: [{ tokens: ["Cho-Hakkaimon"], match: "nameExact" }],
               },
@@ -51,6 +54,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "[Shakamon] among them to the hand.",
               filter: {
                 nameOrTrait: [{ tokens: ["Shakamon"], match: "nameExact" }],
               },
@@ -96,6 +100,7 @@ export const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 of each [Gokuumon]",
               filter: {
                 nameOrTrait: [{ tokens: ["Gokuumon"], match: "nameExact" }],
               },
@@ -103,6 +108,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "[Sagomon]",
               filter: {
                 nameOrTrait: [{ tokens: ["Sagomon"], match: "nameExact" }],
               },
@@ -110,6 +116,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "[Cho-Hakkaimon]",
               filter: {
                 nameOrTrait: [{ tokens: ["Cho-Hakkaimon"], match: "nameExact" }],
               },
@@ -117,6 +124,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "[Shakamon] among them to the hand.",
               filter: {
                 nameOrTrait: [{ tokens: ["Shakamon"], match: "nameExact" }],
               },

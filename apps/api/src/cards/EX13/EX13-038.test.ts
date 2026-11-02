@@ -37,6 +37,7 @@ describe("EX13-038 Salamon", () => {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [Leopardmon] in its text",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [{ tokens: ["Leopardmon"], match: "text" }],
@@ -45,6 +46,8 @@ describe("EX13-038 Salamon", () => {
               to: "hand",
             },
             {
+              effectTextPart:
+                "1 Digimon card with [Beast], [Animal] or [Sovereign], other than [Sea Animal], in any of its traits among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],

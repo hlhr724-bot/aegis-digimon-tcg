@@ -12,10 +12,11 @@ const compiled: CompiledCard = {
           sourceFilter: {
             controllerDefault: "mine",
             zone: "hand",
+            kind: ["Digimon"],
             nameOrTrait: [
               {
                 tokens: ["Arukenimon", "Mummymon"],
-                match: "name",
+                match: "nameExact",
               },
             ],
           },

@@ -1,3 +1,4 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import type { AddressInfo } from "node:net";
 import type { Seat, ServerEvent } from "@aegis/shared";
 import type { Client } from "colyseus";
@@ -14,7 +15,7 @@ import { readTournamentEvents, type TournamentEvent } from "./audit/index.js";
 import { BotSeatingStore } from "./bots/index.js";
 import { EliminationStore } from "./elimination/index.js";
 import { ParticipantStore } from "./participants/index.js";
-import { BANDAI_GENERAL_PRESET } from "./rules/index.js";
+
 import { DeadlineScheduler } from "./scheduler/index.js";
 import { SeriesStore } from "./series/index.js";
 import { SwissProgram } from "./swiss/index.js";
@@ -180,7 +181,7 @@ async function joinDeadlineOf(matchId: string): Promise<number | null> {
 
 /** The origin every attendance penalty is measured from: the instant the round was published. */
 async function attendanceBase(matchId: string): Promise<number> {
-  return (await joinDeadlineOf(matchId))! - BANDAI_GENERAL_PRESET.attendance.joinGraceMs;
+  return (await joinDeadlineOf(matchId))! - buildTournamentRules({ bestOf: 3 }).attendance.joinGraceMs;
 }
 
 type Fixture = {
@@ -242,7 +243,7 @@ async function buildFixture(pool: Pool): Promise<Fixture> {
 
   cookieOf = new Map();
   const organizer = await accounts.accountForIdentity("discord", "organizer", "Organizer");
-  await accounts.pool.query("UPDATE accounts SET is_admin=true WHERE id=$1", [organizer.id]);
+  await accounts.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [organizer.id]);
   cookieOf.set("organizer", `aegis_session=${(await accounts.issueSession(organizer)).id}`);
   for (const name of PLAYERS) {
     const account = await accounts.accountForIdentity("discord", name, name);
@@ -276,14 +277,12 @@ describe("a full official Swiss event", () => {
       structure: "swiss",
       bestOf: 3,
       topCut: false,
-      startsAt: Date.now() + 86_400_000,
+      startsAt: Date.now() + 30 * 60_000,
       maxPlayers: 8,
-      rulesetPreset: BANDAI_GENERAL_PRESET.id,
       banlist: { mode: "current" },
     });
     expect(created.status).toBe(201);
     tournamentId = created.body.id;
-    expect(created.body.rulesetVersion).toBe(BANDAI_GENERAL_PRESET.version);
 
     // ── Entry and check-in, every step over HTTP ────────────────────────────────────────────
     for (const name of SWISS_PLAYERS) {
@@ -351,9 +350,9 @@ describe("a full official Swiss event", () => {
     const base = await attendanceBase(noShow.matchId);
     // A null game-loss step means a ruleset that goes straight to the match loss; the official
     // preset has both rungs, and the two-step ladder is precisely what this asserts.
-    expect(BANDAI_GENERAL_PRESET.attendance.gameLossAtMs).not.toBeNull();
-    const gameLossAt = base + BANDAI_GENERAL_PRESET.attendance.gameLossAtMs!;
-    const matchLossAt = base + BANDAI_GENERAL_PRESET.attendance.matchLossAtMs;
+    expect(buildTournamentRules({ bestOf: 3 }).attendance.gameLossAtMs).not.toBeNull();
+    const gameLossAt = base + buildTournamentRules({ bestOf: 3 }).attendance.gameLossAtMs!;
+    const matchLossAt = base + buildTournamentRules({ bestOf: 3 }).attendance.matchLossAtMs;
     expect(await scheduler.processDueDeadlines(gameLossAt - 1)).toBe(0);
     expect(await scheduler.processDueDeadlines(gameLossAt)).toBe(1);
     expect((await series.seriesForMatch(noShow.matchId))?.wins).toEqual([1, 0]);
@@ -508,9 +507,8 @@ describe("a full official Swiss event that cuts", () => {
       structure: "swiss",
       bestOf: 3,
       topCut: true,
-      startsAt: Date.now() + 86_400_000,
+      startsAt: Date.now() + 30 * 60_000,
       maxPlayers: PLAYERS.length,
-      rulesetPreset: BANDAI_GENERAL_PRESET.id,
       banlist: { mode: "current" },
     });
     expect(created.status).toBe(201);

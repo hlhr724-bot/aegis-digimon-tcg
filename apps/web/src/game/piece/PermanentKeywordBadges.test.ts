@@ -18,3 +18,8 @@ describe("keyword pills that fit one line", () => {
     expect(visibleKeywordCount(["Security Attack +1", "Barrier"], 60)).toBe(0);
   });
 });
+
+it("reserves full character widths for Chinese keyword labels", () => {
+  expect(visibleKeywordCount(["重启", "阻挡者", "屏障"], 100)).toBe(2);
+  expect(visibleKeywordCount(["重启", "阻挡者", "屏障"], 116)).toBe(3);
+});

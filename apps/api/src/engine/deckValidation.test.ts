@@ -261,3 +261,30 @@ describe("seatPlayer rejects an illegal deck on join (server-authoritative)", ()
     expect(state.players[illegalSeat]).toBeDefined();
   });
 });
+
+describe("frozen tournament restrictions", () => {
+  it("uses the saved banlist instead of current restrictions and retains printed copy limits", () => {
+    const deck = clone(RED_DECK);
+    deck.mainDeck.splice(0, 4, ...Array<string>(4).fill("BT5-109"));
+    expect(validateDecklist(deck).ok).toBe(false);
+    expect(validateDecklist(deck, { banlistCards: [] })).toEqual({ ok: true });
+    expect(
+      validateDecklist(deck, { banlistCards: [{ cardId: "BT5-109", status: "restricted", allowedCopies: 1 }] }).ok,
+    ).toBe(false);
+    deck.mainDeck[4] = "BT5-109";
+    expect(validateDecklist(deck, { banlistCards: [] }).ok).toBe(false);
+  });
+
+  it("applies only the saved pair topology", () => {
+    const deck = clone(RED_DECK);
+    deck.eggDeck = ["EX2-007"];
+    deck.mainDeck[0] = "EX7-064";
+    expect(validateDecklist(deck).ok).toBe(false);
+    expect(validateDecklist(deck, { banlistCards: [] })).toEqual({ ok: true });
+    expect(
+      validateDecklist(deck, {
+        banlistCards: [{ cardId: "EX2-007", status: "banned_pair", allowedCopies: 4, pairPartnerIds: ["EX7-064"] }],
+      }).ok,
+    ).toBe(false);
+  });
+});

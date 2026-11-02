@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { I18nContext } from "@/i18n/I18nContext";
+import { translator } from "@/i18n/translator";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../../../i18n";
 import { setEffectPromptPosition } from "../../effectPromptPosition";
@@ -8,25 +10,11 @@ import { sourceClearPlacement } from "./useSourceClearPlacement";
 
 describe("sourceClearPlacement", () => {
   it("caps the prompt below a source card on the viewer's field", () => {
-    expect(sourceClearPlacement({ source: { top: 400, bottom: 484 }, viewportHeight: 844, topLimit: 120 })).toEqual({
-      side: "below",
-      top: 492,
-      space: 336,
-    });
+    expect(sourceClearPlacement({ source: { bottom: 244 }, viewportHeight: 844 })).toEqual({ space: 576 });
   });
 
-  it("moves the prompt above a source card that sits too low", () => {
-    expect(sourceClearPlacement({ source: { top: 560, bottom: 644 }, viewportHeight: 844, topLimit: 120 })).toEqual({
-      side: "above",
-      top: 120,
-      space: 432,
-    });
-  });
-
-  it("keeps the usual placement when neither side has room for the answers", () => {
-    expect(
-      sourceClearPlacement({ source: { top: 300, bottom: 600 }, viewportHeight: 844, topLimit: 120 }),
-    ).toBeUndefined();
+  it("keeps the usual placement when the card sits too low for a readable clause", () => {
+    expect(sourceClearPlacement({ source: { bottom: 484 }, viewportHeight: 844 })).toBeUndefined();
   });
 });
 
@@ -38,6 +26,38 @@ function viewport(width: number, height: number) {
 }
 
 describe("phone activation prompt", () => {
+  it.each(["LM-034", "ST1-02"])(
+    "translates the printed effect using its provenance rather than the host %s",
+    async (sourceCardId) => {
+      render(
+        <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+          <DecisionOverlay
+            request={{
+              decisionId: "translated-activation",
+              seat: 0,
+              kind: "optional",
+              promptText: "Activate this effect?",
+              options: { timing: "Main", effectTextCardId: "LM-034" },
+            }}
+            sourceCardId={sourceCardId}
+            candidates={[]}
+            picks={[]}
+            onTogglePick={() => undefined}
+            onRespond={() => undefined}
+          />
+        </I18nContext.Provider>,
+      );
+      await waitFor(() =>
+        expect(screen.getByRole("dialog").querySelector(".decision-overlay__effect-text")?.textContent).toContain(
+          "蓝色/红色数码宝贝卡牌",
+        ),
+      );
+      expect(screen.getByRole("dialog").querySelector(".decision-overlay__effect-text")?.textContent).not.toContain(
+        "内存值",
+      );
+    },
+  );
+
   beforeEach(() => {
     viewport(390, 844);
     vi.stubGlobal("matchMedia", (query: string) => ({
@@ -62,7 +82,7 @@ describe("phone activation prompt", () => {
     source.dataset.drop = "perm-you";
     source.dataset.id = "source";
     source.getBoundingClientRect = () =>
-      ({ top: 400, bottom: 484, left: 150, right: 210, width: 60, height: 84 }) as DOMRect;
+      ({ top: 160, bottom: 244, left: 150, right: 210, width: 60, height: 84 }) as DOMRect;
     document.body.append(source);
     render(
       <I18nProvider>
@@ -86,6 +106,6 @@ describe("phone activation prompt", () => {
     });
     const panel = screen.getByRole("dialog");
     expect(panel.dataset.sourceClear).toBe("below");
-    expect(panel.style.getPropertyValue("--effect-prompt-source-space")).toBe("336px");
+    expect(panel.style.getPropertyValue("--effect-prompt-source-space")).toBe("576px");
   });
 });

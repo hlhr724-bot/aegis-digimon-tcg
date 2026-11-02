@@ -85,6 +85,7 @@ export interface BoardPrimitives {
     sourceInstanceId: string,
     opts?: {
       payCost?: boolean;
+      byEffect?: boolean;
       draw?: boolean;
       costDelta?: number;
       /**
@@ -125,7 +126,12 @@ export interface BoardPrimitives {
   dnaDigivolveInto(
     materialPermanentIds: string[],
     resultInstanceId: string,
-    opts?: { payCost?: boolean; extraMaterialInstanceIds?: string[]; extraMaterialsOnBottom?: boolean },
+    opts?: {
+      payCost?: boolean;
+      extraMaterialInstanceIds?: string[];
+      extraMaterialsOnBottom?: boolean;
+      publicEntry?: boolean;
+    },
   ): Promise<Permanent | undefined>;
   /**
    * App Fusion: play the fusion-target card `resultInstanceId` (a loose card in trash/hand)

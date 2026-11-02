@@ -97,7 +97,7 @@ describe("run", () => {
     expect(out.find((line) => line.startsWith("Position: turn "))).toMatch(/phase, seat [01] to play, memory -?\d+/);
     expect(out.find((line) => line.startsWith("Seat 0: hand "))).toMatch(/deck \d+, security \d+, trash \d+/);
     expect(out.find((line) => line.startsWith("Seat 1: hand "))).toBeDefined();
-    expect(out.some((line) => /^ {2}BT\d+-\d{3} .+ \d+ DP \(perm-\d+\/s[01]-\d+\)/.test(line))).toBe(true);
+    expect(out.some((line) => /^ {2}BT\d+-\d{3} .+ \d+ DP \(perm-\d+\/s[01]-[a-f0-9]+\)/.test(line))).toBe(true);
   });
 
   it("stops before --until and prints machine-readable output with --json", async () => {
@@ -211,7 +211,7 @@ describe("scaffold", () => {
       until,
       testPath,
       replayDir: join(dir, "src", "replays", "inputs"),
-      issue: 321,
+      issue: "321",
     });
 
     expect(scaffold.fixturePath).toBe(join(dir, "src", "engine", "scenarios", "bugReplay.replay.json"));

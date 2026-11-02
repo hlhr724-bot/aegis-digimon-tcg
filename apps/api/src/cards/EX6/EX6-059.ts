@@ -43,7 +43,10 @@ export const compiled: CompiledCard = {
             },
           ],
         }
-      : effect,
+      : {
+          ...effect,
+          actions: effect.actions.map((action) => (action.kind === "Trash" ? { ...action, blind: true } : action)),
+        },
   ),
   coverage: "full",
   residual: [],

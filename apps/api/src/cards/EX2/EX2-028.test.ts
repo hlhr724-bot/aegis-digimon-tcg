@@ -31,7 +31,7 @@ describe("EX2-028 Parasitemon", () => {
       forms: ["Mega"],
       attributes: ["Virus"],
       types: ["Parasite"],
-      effectText: "[End of Attack] You may place this Digimon under 1 of your Digimon as its bottom digivolution card.",
+      effectText: "[End of Attack] You may place this Digimon as 1 of your other Digimon's bottom digivolution card.",
       inheritedEffectText:
         "＜Security Attack +1＞ (This Digimon checks 1 additional security card.) [Your Turn] This Digimon gets +2000 DP.",
     });

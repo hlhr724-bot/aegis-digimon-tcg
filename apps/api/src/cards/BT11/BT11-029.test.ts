@@ -221,4 +221,26 @@ describe("BT11-029 AeroVeedramon", () => {
     expect(observe(s.engine).hasKeyword(s.perm("veemon"), "Blocker")).toBe(false);
     expect(observe(s.engine).hasKeyword(s.perm("veemon"), "Evade")).toBe(false);
   });
+
+  it("does not activate Rina when an opposing Digimon attacks", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT11-033", as: "host", under: ["BT11-029"] },
+            { card: "BT11-112", as: "rina" },
+            { card: "BT11-023", as: "veemon" },
+          ],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "opponent" }] },
+      },
+      { autoSelectCards: true, autoAcceptOptional: true },
+    );
+    await advance(s.engine).fireSubTrigger("whenAttacking", {
+      attackerPermanentId: s.perm("opponent").permanentId,
+    });
+    expect(observe(s.engine).hasKeyword(s.perm("veemon"), "Blocker")).toBe(false);
+    expect(observe(s.engine).hasKeyword(s.perm("veemon"), "Evade")).toBe(false);
+    expect(s.events.some((event) => event.kind === "effectTriggered" && event.sourceCardId === "BT11-029")).toBe(false);
+  });
 });

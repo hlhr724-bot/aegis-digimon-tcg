@@ -27,7 +27,7 @@ const compiled: CompiledCard = {
       actions: [
         {
           effectTextPart:
-            "[On Play] [When Digivolving] You may place 1 card with [Gammamon]&#160;in its text from your hand as this Digimon's bottom digivolution card.",
+            "[On Play] [When Digivolving] You may place 1 card with [Gammamon] in its text from your hand as this Digimon's bottom digivolution card.",
           kind: "PlaceUnder",
           target: {
             filter: {
@@ -88,7 +88,7 @@ const compiled: CompiledCard = {
       actions: [
         {
           effectTextPart:
-            "[On Play] [When Digivolving] You may place 1 card with [Gammamon]&#160;in its text from your hand as this Digimon's bottom digivolution card.",
+            "[On Play] [When Digivolving] You may place 1 card with [Gammamon] in its text from your hand as this Digimon's bottom digivolution card.",
           kind: "PlaceUnder",
           target: {
             filter: {

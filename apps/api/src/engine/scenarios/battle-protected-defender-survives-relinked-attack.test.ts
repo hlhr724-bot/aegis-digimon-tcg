@@ -99,7 +99,7 @@ describe("Battle-protected defender survives a relinked attack", () => {
 
   it("resolves the recorded Rebootmon attack as a battle Paildramon survives", async () => {
     const events: ServerEvent[] = [];
-    const replay = await runReplay(record, { untilInput: 64, onBatch: (_state, batch) => events.push(...batch) });
+    const replay = await runReplay(record, { untilInput: 62, onBatch: (_state, batch) => events.push(...batch) });
     try {
       expect(replay.divergences).toEqual([]);
       const recordedAttack = events.findLastIndex(

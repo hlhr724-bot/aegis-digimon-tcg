@@ -19,7 +19,7 @@ const compiled: CompiledCard = {
               zone: "battleArea",
               controllerDefault: "mine",
               kind: ["Digimon"],
-              nameOrTrait: [{ tokens: ["Guilmon"], match: "name" }],
+              nameOrTrait: [{ tokens: ["Guilmon"], match: "nameExact" }],
             },
           },
           {
@@ -42,7 +42,7 @@ const compiled: CompiledCard = {
               zone: "battleArea",
               controller: "mine",
               kind: ["Digimon"],
-              nameOrTrait: [{ tokens: ["Guilmon"], match: "name" }],
+              nameOrTrait: [{ tokens: ["Guilmon"], match: "nameExact" }],
             },
             count: 1,
             bindAs: "bt12_089_host",

@@ -63,6 +63,7 @@ describe("BT4-021 through BT4-030 IR coverage", () => {
           revealCount: 3,
           add: expect.arrayContaining([
             {
+              effectTextPart: "Add 1 Digimon card with [Hybrid] in its form",
               count: 1,
               to: "hand",
               filter: {
@@ -71,7 +72,12 @@ describe("BT4-021 through BT4-030 IR coverage", () => {
                 nameOrTrait: [{ tokens: ["Hybrid"], match: "trait" }],
               },
             },
-            { count: 1, to: "hand", filter: { controllerDefault: "mine", kind: ["Tamer"], colors: ["Blue"] } },
+            {
+              effectTextPart: "1 blue Tamer card among them to your hand.",
+              count: 1,
+              to: "hand",
+              filter: { controllerDefault: "mine", kind: ["Tamer"], colors: ["Blue"] },
+            },
           ]),
           rest: "deckBottom",
         },

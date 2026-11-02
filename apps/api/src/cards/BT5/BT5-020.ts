@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 Digimon card with [Garurumon] in its name",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -25,6 +26,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 Digimon card with [Omnimon] in its name among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],

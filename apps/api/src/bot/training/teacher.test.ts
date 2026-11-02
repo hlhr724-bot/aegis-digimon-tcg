@@ -36,6 +36,50 @@ describe("demonstration labels", () => {
     expect(teacherActionIndex(selection([]), { ...intent, decisionId: "stale" })).toBeUndefined();
   });
 
+  it("maps client declarations that spell out engine defaults", () => {
+    const window: TrainingWindow = {
+      observation: trainingObservation(new GameState(), 0),
+      kind: "main",
+      selected: [],
+      actions: [
+        { label: "End main phase", intent: { type: "endPhase" } },
+        {
+          label: "Attack player",
+          intent: { type: "attack", attackerPermanentId: "perm-3", target: { kind: "player" } },
+        },
+        {
+          label: "Alternate digivolution 2",
+          intent: { type: "digivolve", instanceId: "s0-a", permanentId: "perm-3", alternateRequirementIndex: 2 },
+        },
+      ],
+    };
+    expect(
+      teacherActionIndex(window, {
+        type: "attack",
+        attackerPermanentId: "perm-3",
+        target: { kind: "player" },
+        vortex: false,
+      }),
+    ).toBe(1);
+    expect(
+      teacherActionIndex(window, {
+        type: "attack",
+        attackerPermanentId: "perm-3",
+        target: { kind: "player" },
+        vortex: true,
+      }),
+    ).toBeUndefined();
+    expect(
+      teacherActionIndex(window, {
+        type: "digivolve",
+        instanceId: "s0-a",
+        permanentId: "perm-3",
+        useAlternateCost: true,
+        alternateRequirementIndex: 2,
+      }),
+    ).toBe(2);
+  });
+
   it("records unavailable teacher actions without changing legal actions", async () => {
     const setup = setupEngine({ 0: { hand: ["BT26-025"], breeding: { card: "ST23-01" } } });
     await setup.ready();

@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { Phase, getCardDefinition, type Seat } from "@aegis/shared";
+import { GameState, Permanent, PlayerState, Phase, getCardDefinition, type Seat } from "@aegis/shared";
 import { enumerateMainPhaseCandidates } from "./candidates.js";
 import { appraiseBlock, memoryPenalty, scoreCandidate } from "./evaluate.js";
 import { createEvaluationPolicy } from "./policy.js";
 import { BOT_PROFILES } from "./profiles.js";
 import type { BotHandCard, BotUnit, BotView } from "./view.js";
+import { buildBotView } from "./view.js";
 
 /**
  * The competence checklist, asserted directly against the evaluation.
@@ -63,6 +64,44 @@ function handCard(cardId: string, definition: BotHandCard["definition"]): BotHan
 
 const balanced = BOT_PROFILES.balanced;
 
+it("uses an affordable removal Option against a large threat instead of passing", () => {
+  const threat = unit({
+    permanentId: "threat",
+    cardId: "BT1-025",
+    definition: getCardDefinition("BT1-025"),
+    level: 6,
+    dp: 12_000,
+  });
+  const state = view({
+    hand: [handCard("ST1-16", getCardDefinition("ST1-16"))],
+    opponentBoard: [threat],
+  });
+
+  expect(createEvaluationPolicy().chooseMainAction(state)).toEqual({
+    type: "playCard",
+    instanceId: "i-ST1-16",
+  });
+});
+
+it("saves expensive removal when it has no target or only a small body", () => {
+  const small = unit({
+    permanentId: "small",
+    definition: getCardDefinition("BT1-009"),
+    level: 3,
+    dp: 2_000,
+  });
+  for (const opponentBoard of [[], [small]]) {
+    expect(
+      createEvaluationPolicy().chooseMainAction(
+        view({
+          hand: [handCard("ST1-16", getCardDefinition("ST1-16"))],
+          opponentBoard,
+        }),
+      ),
+    ).toEqual({ type: "endPhase" });
+  }
+});
+
 it("classifies a Dual hand action as Option use, not Digimon development", () => {
   const state = view({
     hand: [handCard("BT25-043", getCardDefinition("BT25-043"))],
@@ -88,6 +127,47 @@ function scoreOf(state: BotView, key: string, profile = balanced): number {
 }
 
 describe("attack evaluation", () => {
+  it("uses live public security-check projections, preserving explicit zero", () => {
+    const state = new GameState();
+    const player = new PlayerState();
+    const attacker = new Permanent();
+    attacker.permanentId = "projected";
+    player.battleArea.push(attacker);
+    state.players.push(player);
+
+    for (const checks of [0, 1, 3]) {
+      attacker.securityAttack = checks;
+      expect(buildBotView(state, 0)?.board[0]?.securityAttack).toBe(checks);
+    }
+  });
+
+  it("prioritizes multiple projected security checks over a larger single-check body", () => {
+    const multi = unit({ permanentId: "multi", dp: 8_000, securityAttack: 3, canAttackPlayer: true });
+    const big = unit({ permanentId: "big", dp: 12_000, securityAttack: 1, canAttackPlayer: true });
+    const state = view({ board: [big, multi] });
+
+    expect(createEvaluationPolicy().chooseMainAction(state)).toMatchObject({
+      type: "attack",
+      attackerPermanentId: "multi",
+    });
+  });
+
+  it("gives zero checks no security value or direct lethal credit", () => {
+    const attacker = unit({ permanentId: "zero", securityAttack: 0, canAttackPlayer: true });
+    const state = view({ board: [attacker] });
+
+    expect(scoreOf(state, "attackPlayer:zero")).toBe(0);
+    expect(scoreOf(view({ board: [attacker], opponentSecurityCount: 0 }), "attackPlayer:zero")).toBe(0);
+  });
+
+  it("caps security-check value at the remaining security stack", () => {
+    const attacker = unit({ permanentId: "multi", dp: 8_000, securityAttack: 3, canAttackPlayer: true });
+    const single = { ...attacker, securityAttack: 1 };
+    expect(scoreOf(view({ board: [attacker], opponentSecurityCount: 1 }), "attackPlayer:multi")).toBeCloseTo(
+      scoreOf(view({ board: [single], opponentSecurityCount: 1 }), "attackPlayer:multi"),
+    );
+  });
+
   it("treats an attack into an empty security stack as lethal", () => {
     const attacker = unit({ permanentId: "p1", canAttackPlayer: true });
     const empty = view({ board: [attacker], opponentSecurityCount: 0 });
@@ -344,6 +424,20 @@ describe("candidate legality", () => {
 });
 
 describe("decision candidate ranking", () => {
+  it("accepts an optional unsuspend and chooses the largest suspended ally", () => {
+    const ready = unit({ permanentId: "ready", dp: 15_000, level: 7 });
+    const small = unit({ permanentId: "small", dp: 3_000, level: 3, suspended: true });
+    const large = unit({ permanentId: "large", dp: 11_000, level: 6, suspended: true });
+    const intent = createEvaluationPolicy().answerDecision(view({ board: [ready, small, large] }), {
+      decisionId: "unsuspend",
+      seat: 1,
+      kind: "chooseTargets",
+      promptText: "Unsuspend up to 1 of your Digimon",
+      options: { candidateInstanceIds: ["ready", "small", "large"], min: 0, max: 1, targetFate: "unsuspend" },
+    });
+    expect(intent).toMatchObject({ response: { instanceIds: ["large"] } });
+  });
+
   it("ranks a removal-style board selection by the biggest opposing body", () => {
     const policy = createEvaluationPolicy({ profile: balanced, seed: 3 });
     const small = unit({ permanentId: "perm-e1", dp: 3_000, level: 3 });
@@ -552,4 +646,71 @@ describe("personalities", () => {
       expect(first.chooseMainAction(state)).toEqual(second.chooseMainAction(state));
     }
   });
+});
+
+it.each([false, true])(
+  "only counts an unsuspended Alliance ally against a larger interceptor (suspended=%s)",
+  (suspended) => {
+    const attacker = unit({
+      permanentId: "attacker",
+      dp: 12000,
+      level: 6,
+      keywords: ["Alliance"],
+      canAttackPlayer: true,
+    });
+    const ally = unit({ permanentId: "ally", dp: 2000, level: 3, suspended });
+    const blocker = unit({ permanentId: "blocker", dp: 13000, level: 6, keywords: ["Blocker"] });
+    const state = view({ board: [attacker, ally], opponentBoard: [blocker] });
+    const score = scoreOf(state, "attackPlayer:attacker");
+    expect(score > 0).toBe(!suspended);
+  },
+);
+
+it.each([false, true])("uses the strongest eligible Alliance ally against suspended=%s opponents", (suspended) => {
+  const attacker = unit({
+    permanentId: "attacker",
+    dp: 12000,
+    keywords: ["Alliance"],
+    canAttackPlayer: true,
+    attackablePermanentIds: ["target"],
+  });
+  const weak = unit({ permanentId: "weak", dp: 1000 });
+  const strong = unit({ permanentId: "strong", dp: 4000 });
+  const target = unit({ permanentId: "target", dp: 14000, suspended, keywords: ["Blocker"] });
+  const state = view({ board: [attacker, weak, strong], opponentBoard: [target] });
+  const policy = createEvaluationPolicy({ profile: balanced, seed: 42 });
+  expect(
+    policy.chooseAllianceResponse(state, {
+      kind: "alliancePrompt",
+      permanentId: "attacker",
+      eligibleAllyIds: ["weak", "strong"],
+    }),
+  ).toEqual({ type: "respondAlliance", allyPermanentId: "strong" });
+  expect(scoreOf(state, suspended ? "attackDigimon:attacker:target" : "attackPlayer:attacker")).toBeGreaterThan(0);
+});
+
+it("uses the original Alliance attacker DP for next-turn retaliation", () => {
+  const attacker = unit({ permanentId: "attacker", dp: 12000, keywords: ["Alliance"], canAttackPlayer: true });
+  const ally = unit({ permanentId: "ally", dp: 4000 });
+  const threat = unit({ permanentId: "threat", dp: 14000, suspended: true });
+  const state = view({ board: [attacker, ally], opponentBoard: [threat] });
+  const noRetaliation = { ...balanced, weights: { ...balanced.weights, retaliation: 0 } };
+  const baseline = scoreOf(state, "attackPlayer:attacker", noRetaliation);
+  expect(baseline - scoreOf(state, "attackPlayer:attacker")).toBeCloseTo(
+    balanced.weights.retaliation * (attacker.level + (attacker.dp / 1000) * 0.6) * 0.3,
+  );
+});
+
+it("accepts an eligible transformed Tamer for Alliance", () => {
+  const attacker = unit({ permanentId: "attacker", dp: 12000, keywords: ["Alliance"] });
+  const marcus = unit({ permanentId: "marcus", dp: 3000, definition: getCardDefinition("BT12-092") });
+  const state = view({ board: [attacker, marcus], opponentBoard: [unit({ permanentId: "opponent", dp: 14000 })] });
+  const policy = createEvaluationPolicy({ profile: balanced, seed: 42 });
+  expect(
+    policy.chooseAllianceResponse(state, {
+      kind: "alliancePrompt",
+      permanentId: "attacker",
+      eligibleAllyIds: ["marcus"],
+    }),
+  ).toEqual({ type: "respondAlliance", allyPermanentId: "marcus" });
 });

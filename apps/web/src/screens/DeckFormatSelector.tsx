@@ -1,3 +1,4 @@
+import { deckFormatLabel } from "@/screens/deckFormatLabel";
 import { useId } from "react";
 import {
   createDeckFormat,
@@ -9,27 +10,21 @@ import {
   type DeckRuleMode,
   type HistoricalDeckSet,
 } from "@aegis/shared";
-import { useTranslation, type Translate } from "../i18n";
+import { useTranslation } from "../i18n";
 import { useMediaQuery } from "../design/useMediaQuery";
 import "./deckFormatSelector.css";
 import { BanlistTooltip } from "./BanlistTooltip";
-
-export function deckFormatLabel(value: DeckFormat, t: Translate): string {
-  const { set, rules } = deckFormatSettings(value);
-  const label = t(
-    rules === "unlimited" ? "lobby.unlimited" : rules === "pauper" ? "deckFormat.pauper" : "deckFormat.standard",
-  );
-  return set === "all" ? label : `${set} · ${label}`;
-}
 
 export function DeckFormatSelector({
   value,
   onChange,
   disabled = false,
+  showBanlist = true,
 }: {
   value: DeckFormat;
   onChange: (format: DeckFormat) => void;
   disabled?: boolean;
+  showBanlist?: boolean;
 }) {
   const { t } = useTranslation();
   const id = useId();
@@ -81,7 +76,7 @@ export function DeckFormatSelector({
         <span className="deck-format-selector__pool-hint">
           {date ? t("deckFormat.poolHint", { set }) : t("deckFormat.allSetsHint")}
         </span>{" "}
-        {rules === "unlimited" ? (
+        {!showBanlist ? null : rules === "unlimited" ? (
           t("deckFormat.noBanlist")
         ) : (
           <BanlistTooltip

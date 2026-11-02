@@ -1,3 +1,5 @@
+import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
+import { GameMode } from "@aegis/shared/manual/GameMode";
 /* What the board will let the viewer do right now.
 
    Ordinary actions wait for the presented board to catch up, then follow the live match,
@@ -31,14 +33,23 @@ export function actionGuards({
   phasePresentationPending: boolean;
 }) {
   const isMyTurn = !spectating && state.turnSeat === viewerSeat;
+  const manual = state.gameMode === GameMode.MANUAL.value;
   const turnActionBlocked =
     state.gameOver ||
+    (manual &&
+      (state.manual.undoRequester !== -1 ||
+        state.manual.resultRequester !== -1 ||
+        state.manual.restartRequester !== -1)) ||
     decisionOpen ||
     Boolean(state.combatWindow) ||
     presenting ||
     phasePresentationPending ||
-    !isMyTurn;
-  const breedingWindow = isBreedingWindow({ phase: state.phase, turnSeat: state.turnSeat, viewerSeat });
+    (!manual && !isMyTurn);
+  const breedingWindow = isBreedingWindow({
+    phase: manual ? state.manual.turnPhase : state.phase,
+    turnSeat: state.turnSeat,
+    viewerSeat,
+  });
   // An activated ＜Blitz＞ attacks inside the effect that processed it, which can resolve
   // outside Main (an [End of Your Turn] digivolution). The server projects an attack
   // outside Main only for that pending declaration.
@@ -47,13 +58,19 @@ export function actionGuards({
     isMyTurn,
     turnActionBlocked,
     mainActionBlocked: turnActionBlocked || (state.phase !== Phase.Main && !blitzAttackPending),
-    endPhaseBlocked: turnActionBlocked || (state.phase !== Phase.Main && state.phase !== Phase.Breeding),
+    endPhaseBlocked:
+      (manual &&
+        (!isMyTurn ||
+          (state.manual.turnPhase !== Phase.Main && state.manual.turnPhase !== Phase.Breeding) ||
+          state.manual.combatStage !== ManualCombatStage.NONE.value)) ||
+      turnActionBlocked ||
+      (state.phase !== Phase.Main && state.phase !== Phase.Breeding),
     breedingWindow,
     // The breeding step is answered on the board rather than in a dialog: the egg
     // deck hatches, the raising slot moves out and the turn control ends the step.
     // These drive the highlights and the hint that stand in for the old modal.
-    canHatchEgg: viewer.eggDeckCount > 0 && !viewer.breeding,
-    canMoveOutOfBreeding: canMoveFromBreeding(viewer.breeding),
+    canHatchEgg: manual ? state.manual.canHatch : viewer.eggDeckCount > 0 && !viewer.breeding,
+    canMoveOutOfBreeding: manual ? state.manual.canMoveFromBreeding : canMoveFromBreeding(viewer.breeding),
     /** Breeding actions open only after the phase presentation has finished. */
     breedingActionsOpen: breedingWindow && !turnActionBlocked,
   };

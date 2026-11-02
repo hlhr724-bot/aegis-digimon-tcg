@@ -1,5 +1,5 @@
-import type { CompiledCard } from "@aegis/shared";
-import { registerIrCard } from "../../engine/effects/interpreter.js";
+import type { CompiledCard } from "@aegis/shared/effects/ir/card";
+import { registerIrCard } from "#api/engine/effects/interpreter/registration/module";
 
 export const compiled: CompiledCard = {
   effects: [
@@ -46,6 +46,7 @@ export const compiled: CompiledCard = {
         {
           kind: "SubTrigger",
           event: "whenUnsuspended",
+          sourceFilter: { controller: "any", kind: ["Digimon"] },
           actions: [
             {
               kind: "Restrict",

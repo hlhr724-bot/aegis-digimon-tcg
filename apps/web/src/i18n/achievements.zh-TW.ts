@@ -1,0 +1,18 @@
+export const achievementsZhTw = {
+  "achievements.trophies.description": "社群賽事成就。",
+  "achievements.trophies.show": "顯示獎盃",
+  "achievements.trophies.title": "獎盃",
+  "achievements.trophies.empty": "尚無獎盃。在社群賽事中進入前8名即可獲得。",
+  "achievements.trophies.error": "無法載入你的獎盃。請重新整理頁面後再試一次。",
+  "achievements.trophies.awardedOn": "{date} 獲得",
+  "achievements.tier.bronze": "銅獎盃",
+  "achievements.tier.silver": "銀獎盃",
+  "achievements.tier.gold": "金獎盃",
+  "achievements.tier.rainbow": "彩虹獎盃",
+  "achievements.award.tournament_champion": "冠軍",
+  "achievements.award.tournament_top_four": "前 4 名",
+  "achievements.award.tournament_top_eight": "前 8 名",
+  "achievements.award.circuit_champion": "巡迴賽冠軍",
+  "achievements.award.circuit_top_four": "巡迴賽前 4 名",
+  "achievements.award.circuit_top_eight": "巡迴賽前 8 名",
+} as const;

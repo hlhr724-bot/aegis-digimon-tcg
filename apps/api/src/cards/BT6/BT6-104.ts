@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            '[Main] 1 of your Digimon gains "[On Deletion] Gain 2 memory" until the end of your opponent\'s next turn.',
           kind: "GrantStatic",
           target: {
             filter: {

@@ -74,3 +74,10 @@ it.each(["cancel", "skip", "drain", "source-left"])("releases the painted wait o
   await vi.advanceTimersByTimeAsync(16);
   expect(cue.queue.isIdle()).toBe(true);
 });
+
+it("finishes hand preparation when the browser keeps an animation clock stalled", async () => {
+  const cue = paintedHand();
+  await vi.advanceTimersByTimeAsync(1000);
+  expect(cue.reading).toBe(true);
+  expect(cue.queue.isIdle()).toBe(true);
+});

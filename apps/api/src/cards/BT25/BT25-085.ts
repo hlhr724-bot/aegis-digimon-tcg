@@ -221,6 +221,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete 1 of your opponent's highest level Digimon.",
           kind: "Delete",
           target: {
             filter: {
@@ -232,6 +233,8 @@ export const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "Then, you may place 1 [Three Musketeers] trait card from your hand or trash as any of your Digimon's bottom digivolution card.",
           kind: "PlaceUnder",
           target: {
             filter: {

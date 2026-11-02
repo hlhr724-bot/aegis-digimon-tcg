@@ -1145,6 +1145,11 @@
    only draws it. Each star's resting position on the ellipse comes from its index, so
    with the orbit stopped the ring still reads as a ring.
 
+   The ring box hangs from the lane's badge strip (`--field-lane-top`), not from the
+   card's height: the lane clips above that strip, and a percentage of a tall card put
+   the top star past it. The highest star sits a tenth of the box below its top, so
+   nine pixels of offset keep the star and its glow inside the strip at any card size.
+
    The orbit is two sine waves, not `offset-path`: Firefox re-flattens a motion path
    into Bezier segments for every star on every frame, which cost about 40% of the
    main thread on a busy board. A cosine on `translate` (x) and the same wave a quarter
@@ -1153,7 +1158,7 @@
 
 .game-summoning-ring {
   position: absolute;
-  top: -26%;
+  top: calc(9px - var(--field-lane-top, 22px));
   right: 0;
   left: 0;
   z-index: 2;
@@ -1390,4 +1395,70 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+}
+
+.game-permanent--candidate {
+  --target-accent: var(--ds-game-accent, var(--ds-accent));
+  --target-ink: var(--ds-game-sheet, #102536);
+  --target-on-accent: var(--ds-game-on-accent, var(--ds-on-accent));
+  --target-rim: rgb(245 250 255 / 92%);
+  --target-keyline: color-mix(in srgb, var(--target-ink) 72%, transparent);
+}
+
+.game-permanent--candidate::after {
+  content: "";
+  position: absolute;
+  inset: -0.2rem;
+  z-index: 4;
+  pointer-events: none;
+  border: 2px solid var(--target-rim);
+  border-radius: 0.65rem;
+  box-shadow:
+    0 0 0 1px var(--target-keyline),
+    inset 0 0 0 1px var(--target-keyline),
+    0 0 10px rgb(245 250 255 / 35%);
+  transition:
+    box-shadow 150ms,
+    border-color 150ms;
+}
+
+.game-permanent--candidate[data-suspended]::after {
+  inset: calc(var(--permanent-width, 76px) * 0.2 - 0.2rem) calc(var(--permanent-width, 76px) * -0.2 - 0.2rem);
+}
+
+.game-permanent--candidate.game-permanent--picked::after {
+  border-color: var(--target-accent);
+  box-shadow:
+    0 0 0 1px var(--target-keyline),
+    inset 0 0 0 1px var(--target-keyline),
+    0 0 14px 2px color-mix(in srgb, var(--target-accent) 55%, transparent);
+}
+
+.game-permanent__picked-mark {
+  position: absolute;
+  top: -0.6rem;
+  right: -0.6rem;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1.5px solid var(--target-rim);
+  border-radius: 50%;
+  color: var(--target-on-accent);
+  background: var(--target-accent);
+  box-shadow:
+    0 0 0 1px var(--target-keyline),
+    0 2px 6px rgb(5 16 28 / 35%);
+  pointer-events: none;
+}
+
+.game-permanent__picked-mark svg {
+  width: 62%;
+  height: 62%;
+}
+
+.game-permanent[data-suspended] > .game-permanent__picked-mark {
+  top: calc(var(--permanent-width, 76px) * 0.2 - 0.6rem);
+  right: calc(var(--permanent-width, 76px) * -0.2 - 0.6rem);
 }

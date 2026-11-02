@@ -45,11 +45,12 @@ function mockApi(handler: (url: string, init?: RequestInit) => Reply) {
   return fetchMock;
 }
 
-function Harness({ accountId, onOpenFeedback }: { accountId?: string; onOpenFeedback: (id?: number) => void }) {
+type HarnessParams = { accountId?: string; onOpenFeedback: (id?: number) => void; onViewAll?: () => void };
+function Harness({ accountId, onOpenFeedback, onViewAll = () => {} }: HarnessParams) {
   const inbox = useNotificationInbox(accountId);
   return (
     <I18nProvider>
-      <NotificationBell inbox={inbox} onOpenFeedback={onOpenFeedback} />
+      <NotificationBell inbox={inbox} onOpenFeedback={onOpenFeedback} onViewAll={onViewAll} />
     </I18nProvider>
   );
 }
@@ -139,15 +140,17 @@ describe("notification bell", () => {
       if (url.endsWith("/notifications/read")) return [200, { unread: 0 }];
       return [200, { items: [resolved], nextBefore: null, unread: 1 }];
     });
-    render(<Harness accountId="kai" onOpenFeedback={onOpenFeedback} />);
+    const onViewAll = vi.fn<() => void>();
+    render(<Harness accountId="kai" onOpenFeedback={onOpenFeedback} onViewAll={onViewAll} />);
     fireEvent.click(await screen.findByRole("button", { name: "Notifications, 1 unread" }));
     fireEvent.click(await screen.findByRole("button", { name: "Mark all as read" }));
     await screen.findByRole("button", { name: "Notifications" });
     const markRead = fetchMock.mock.calls.find(([input]) => String(input).endsWith("/notifications/read"))!;
     expect(JSON.parse(String(markRead[1]!.body))).toEqual({ all: true });
 
-    fireEvent.click(screen.getByRole("button", { name: "View all my feedback" }));
-    expect(onOpenFeedback).toHaveBeenCalledWith();
+    fireEvent.click(screen.getByRole("button", { name: "View all notifications" }));
+    expect(onViewAll).toHaveBeenCalled();
+    expect(onOpenFeedback).not.toHaveBeenCalled();
   });
 
   it("closes on Escape and returns focus to the bell", async () => {
@@ -192,6 +195,43 @@ describe("notification bell", () => {
     expect(openSpy).toHaveBeenCalledWith("https://cal.example/aegis", "_blank", "noopener");
     expect(onOpenFeedback).not.toHaveBeenCalled();
     openSpy.mockRestore();
+  });
+
+  it("tells a reported opponent that a ranked game was voided and how their Elo changed", async () => {
+    const ruling: AccountNotification = {
+      id: 14,
+      kind: "ranked_report_ruling",
+      payload: {
+        reportId: "00000000-0000-4000-8000-000000000001",
+        status: "confirmed",
+        seasonId: 1,
+        format: "BT10",
+        opponentName: "Tai",
+        reporter: false,
+        ratingChange: -16,
+      },
+      createdAt: Date.now() - 60_000,
+      readAt: null,
+    };
+    const page: NotificationPage = { items: [ruling], nextBefore: null, unread: 1 };
+    const fetchMock = mockApi((url) => {
+      if (url.endsWith("/notifications/unread-count")) return [200, { unread: 1 }];
+      if (url.endsWith("/notifications/read")) return [200, { unread: 0 }];
+      if (url.includes("/notifications")) return [200, page];
+      return [404, {}];
+    });
+    const onOpenFeedback = vi.fn<(id?: number) => void>();
+    render(<Harness accountId="a1" onOpenFeedback={onOpenFeedback} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Notifications/ }));
+    const item = await screen.findByRole("button", {
+      name: /A report on your game against Tai was confirmed\. The game was voided\./,
+    });
+    expect(item.textContent).toContain("Elo change: -16");
+    fireEvent.click(item);
+    await waitFor(() =>
+      expect(fetchMock.mock.calls.some(([input]) => String(input).endsWith("/notifications/read"))).toBe(true),
+    );
+    expect(onOpenFeedback).not.toHaveBeenCalled();
   });
 
   it("labels a closed study and does not open its link", async () => {

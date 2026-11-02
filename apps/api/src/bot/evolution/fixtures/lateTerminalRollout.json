@@ -1,0 +1,232 @@
+{
+  "seed": 420010101,
+  "learnerSeat": 1,
+  "decks": [420010003, 420010004],
+  "searchSeed": 420010778,
+  "target": 37,
+  "simulationIndex": 2,
+  "roots": [
+    {
+      "information": "01148ed9d048ec4893745e248b1e4be44f6f06392a84e43d84c189a8f68ac529",
+      "actionCount": 9,
+      "action": 0
+    },
+    {
+      "information": "bee3a7e43d60a9add62d13da89dc469a44418bda8515faf5ffebafa2f98cec0b",
+      "actionCount": 11,
+      "action": 0
+    },
+    {
+      "information": "2894219c0b69be0f00806340d2e530f1ee52d75e0d73b434c56e4490ba648acd",
+      "actionCount": 13,
+      "action": 0
+    },
+    {
+      "information": "b67d20a132dad4dbd338198e2271ebafcc428b4e585fc957b94f3f2aecf4adcf",
+      "actionCount": 14,
+      "action": 0
+    },
+    {
+      "information": "c4b7a743ee0304c425c4b6d150db1ffb0480d2c019263e8ce02048b158e62145",
+      "actionCount": 15,
+      "action": 0
+    },
+    {
+      "information": "928c40d7ac70bebe19247f2fcb3fd44e42cc0481d6f8d03256cb67fa99682e22",
+      "actionCount": 17,
+      "action": 0
+    },
+    {
+      "information": "7753bcc15daade2d62b407245a982d494e36c007ed3f1949c553289bf7c5f3d4",
+      "actionCount": 18,
+      "action": 0
+    },
+    {
+      "information": "910e5db5ad78963ce12a8959ede4ea207c18f02a331b4d6a2937f6b6a9f84bad",
+      "actionCount": 21,
+      "action": 0
+    },
+    {
+      "information": "4f88c8933c95308b153db7c6c7d37c7d95a350b22943c50d7b45b5e89b2c853a",
+      "actionCount": 23,
+      "action": 0
+    },
+    {
+      "information": "3c88c3afcfb16f75975c4abb5c84c885e8faf2b6641d7351c63ebe7dd31bffe3",
+      "actionCount": 24,
+      "action": 0
+    },
+    {
+      "information": "f84bf64a2e71f30d7358dfee6726aaf4bc76a24bc17128595d05c5dd13e8b95d",
+      "actionCount": 26,
+      "action": 0
+    },
+    {
+      "information": "f583d87ddb79b43f8bfbadd3364285b9fb34f7baa2f1400cae91f3852e72fdc8",
+      "actionCount": 26,
+      "action": 0
+    },
+    {
+      "information": "458df4d00ce125d1467ffe36127940467970d576263731117755c2ad818405b1",
+      "actionCount": 27,
+      "action": 1
+    },
+    {
+      "information": "7e01dd36fb11da8baff622ec35d0d4087386f3c1f6f17b33094d5f0727711417",
+      "actionCount": 26,
+      "action": 2
+    },
+    {
+      "information": "120a71aed6f4d0a3eb33383481153c6fc75a4cb535768f09fe02d134703f096a",
+      "actionCount": 28,
+      "action": 2
+    },
+    {
+      "information": "6037a3b9c79495e48b30db3e4a78aaf24b9b64b914a1f7c8007fe786e8a172d2",
+      "actionCount": 26,
+      "action": 0
+    },
+    {
+      "information": "40ef4dbf3ac8fb717691fef8d206f4be50ebec7a7c4c272c31e5f6ced16ac347",
+      "actionCount": 28,
+      "action": 1
+    },
+    {
+      "information": "4c0e770d828969860ab1f353e260f205cafcc7fee1491d0997963b5fc493a451",
+      "actionCount": 32,
+      "action": 1
+    },
+    {
+      "information": "b794dfaa6749c8bff75109fbabbcae5258e84e3ace9dbc79d5db91ca524ecef1",
+      "actionCount": 43,
+      "action": 0
+    },
+    {
+      "information": "c31fcf3ce166609fabc576d5b2a60ba66baab42f057f90509c5c74eae665f464",
+      "actionCount": 49,
+      "action": 1
+    },
+    {
+      "information": "9b30fad9383952d237f29dae8540c35f06ef91abcb974bd9235585e8e9f55814",
+      "actionCount": 50,
+      "action": 0
+    },
+    {
+      "information": "02be9968a4a2751b65d401a7c47f178840e4ef4d860d74e0783ed5c9af14ca5b",
+      "actionCount": 53,
+      "action": 0
+    },
+    {
+      "information": "1f889d23dfa989d3bceb46c7862d6ba0fe7dfafaa84eacce7a80a6c714693e07",
+      "actionCount": 53,
+      "action": 0
+    },
+    {
+      "information": "cec12f22d13289328080c0a20751b31aa1fe8ab33e99af627c0d3707866211bb",
+      "actionCount": 55,
+      "action": 0
+    },
+    {
+      "information": "549323b87b89497d45dd091c027dae751dbb2840259461151fa37a6602fd9e0e",
+      "actionCount": 58,
+      "action": 0
+    },
+    {
+      "information": "7936a14d21d9b4ce20883da681adae2b680ad5fb85b1409ca04faabd56a197e2",
+      "actionCount": 61,
+      "action": 0
+    },
+    {
+      "information": "2b19b0c32cfa0fe99c1947469ea5ee96b1d7230ea7175f469d584cdd94657b1d",
+      "actionCount": 61,
+      "action": 0
+    },
+    {
+      "information": "b1a1294898f3676f0e5f529b4bfe4b7c6adc9da73827f0892205b778c37408d2",
+      "actionCount": 64,
+      "action": 0
+    },
+    {
+      "information": "d464ed16cac3130261d1343f53238471d71b1d4314102d18231cb8c0878a363a",
+      "actionCount": 66,
+      "action": 0
+    },
+    {
+      "information": "856ddde4a455b789b2dec174ca98ebdc058ab55df0124ed7a0b02795ba9e2615",
+      "actionCount": 69,
+      "action": 0
+    },
+    {
+      "information": "d57740ef4223166dba178cd82a151e74967cf24a3fb0a2b28458dba30fdae316",
+      "actionCount": 69,
+      "action": 0
+    },
+    {
+      "information": "0d79bc3f1c6af358a23f924f4514206ff0ed02e5728167cc56682cd4b3dbe3bb",
+      "actionCount": 71,
+      "action": 18
+    },
+    {
+      "information": "61cc1f62c2458e84f1df3d472d9b2ee5165b07a2f19e7fc416b18176484e9efe",
+      "actionCount": 72,
+      "action": 66
+    },
+    {
+      "information": "ad48dde03281d9c3d179db6fb3e5049efd73a5b8a9c4ba950e832f27c09d0b9b",
+      "actionCount": 69,
+      "action": 63
+    },
+    {
+      "information": "2032685e212c29813ed16539f672c402ee79b10f9e6c634ca0c1c55905784e2e",
+      "actionCount": 68,
+      "action": 63
+    },
+    {
+      "information": "0f50fbeecab856314d06ad86ee1084d4aa2cc8172e0ada914e9c66519200c887",
+      "actionCount": 62,
+      "action": 61
+    },
+    {
+      "information": "d80eacae79a9d6c4bd1162dace3ad730bdd0acee019075ba44319ce96837563f",
+      "actionCount": 60,
+      "action": 59
+    },
+    {
+      "information": "ccc276d9f6a58958b4bdc788bac93135b902d9b868e94a30e27cd651a4d02d7c",
+      "actionCount": 51,
+      "action": 50
+    },
+    {
+      "information": "09bd57fa4147dc694d226a0ef17e561ca529a1ee92fb0df5795ea3a299e57623",
+      "actionCount": 50,
+      "action": 49
+    },
+    {
+      "information": "4f9237cecc8750f8bc0bf4678322236976a97ce6a0b28a4500959bd26c7d6b75",
+      "actionCount": 49,
+      "action": 48
+    }
+  ],
+  "rolloutChoices": [
+    {
+      "information": "ccc276d9f6a58958b4bdc788bac93135b902d9b868e94a30e27cd651a4d02d7c",
+      "action": 0
+    },
+    {
+      "information": "73b2fbffa189e19ed10006daca9d838cdfe9fbfba36decb286721a3f6255f163",
+      "action": 1
+    },
+    {
+      "information": "f4cab3a61b598b0cab29d691c737cf6e994f6e4373d3c0c1485cb7ac5aa83341",
+      "action": 29
+    },
+    {
+      "information": "da0ce0e16141bdc03ea6d56b55ec5650c316546e7b8d470ad4cd4b1f3abefffb",
+      "action": 54
+    },
+    {
+      "information": "4ef77e14faf05d0117e697d31e98d321622fdf42476aeaff9a6f38a436ab1f5b",
+      "action": 54
+    }
+  ]
+}

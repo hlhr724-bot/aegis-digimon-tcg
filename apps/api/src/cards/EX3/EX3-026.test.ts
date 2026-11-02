@@ -205,7 +205,7 @@ describe("EX3-026 Aegisdramon", () => {
     const selection = s.state.pendingDecision!;
     const candidates = candidateIds(selection.payloadJson);
     const eligible = [baseSeadramonId, s.inst("blueLevel3").instanceId, s.inst("redSeaAnimal").instanceId];
-    const visible = [...eligible, s.inst("invalidBlueLevel4").instanceId, s.inst("invalidUnderRed").instanceId];
+    const visible = [...eligible, s.inst("invalidBlueLevel4").instanceId];
     expect(candidates).toEqual(eligible);
     expect(candidates).not.toContain(s.inst("invalidBlueLevel4").instanceId);
     expect(candidates).not.toContain(s.inst("invalidUnderRed").instanceId);
@@ -218,14 +218,14 @@ describe("EX3-026 Aegisdramon", () => {
         { instanceId: s.inst("blueLevel3").instanceId, cardId: "BT1-029" },
         { instanceId: s.inst("redSeaAnimal").instanceId, cardId: "BT14-008" },
         { instanceId: s.inst("invalidBlueLevel4").instanceId, cardId: "EX3-019" },
-        { instanceId: s.inst("invalidUnderRed").instanceId, cardId: "BT1-030" },
       ],
       timing: "WhenDigivolving",
       effectText: expect.stringContaining("without paying its memory cost"),
       min: 0,
       max: 1,
     });
-    expect(payload(selection).visibleCards).toHaveLength(5);
+    expect(payload(selection).visibleCards).toHaveLength(4);
+    expect(payload(selection).visibleInstanceIds).not.toContain(s.inst("invalidUnderRed").instanceId);
     expect(payload(selection).visibleInstanceIds).not.toContain(opponentSourceId);
     expect(
       s.engine.applyIntent(0, {

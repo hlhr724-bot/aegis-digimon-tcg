@@ -93,7 +93,7 @@ describe("Chiropmon payment followed by retrieval through the asynchronous polic
     await settle(() => mainActionReady(setup.engine));
     expect(mainActionReady(setup.engine)).toBe(true);
     expect(setup.state.pendingDecision).toBeUndefined();
-    expect(optionals).toHaveLength(1);
+    expect(optionals).toHaveLength(payer < 0 ? 1 : 2);
     expect(paymentWindows.map((window) => window.actions.map((action) => action.sourceId))).toEqual(
       payer < 0 ? [] : [payerIds],
     );

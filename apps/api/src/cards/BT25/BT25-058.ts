@@ -34,8 +34,15 @@ export const compiled: CompiledCard = {
       frequency: "OncePerTurn",
       sharedUseKey: "ir-shared-0",
       actions: [
-        { kind: "Suspend", target: { filter: opponentDigimonOrTamer, count: 1 }, optional: true },
         {
+          effectTextPart:
+            "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may suspend 1 of your opponent's Digimon or Tamers.",
+          kind: "Suspend",
+          target: { filter: opponentDigimonOrTamer, count: 1 },
+          optional: true,
+        },
+        {
+          effectTextPart: "Then, 1 of their Digimon or Tamers can't unsuspend until their turn ends.",
           kind: "Restrict",
           target: { filter: opponentDigimonOrTamer, count: 1 },
           restriction: "unsuspend",
@@ -61,6 +68,7 @@ export const compiled: CompiledCard = {
               condition: { kind: "triggerPlayedOrDigivolvedByEffect" },
             },
             {
+              effectTextPart: "Then, this Digimon may battle 1 of your opponent's Digimon.",
               kind: "Battle",
               attacker: { filter: { isSelfRef: true }, count: 1, isSelf: true },
               target: { filter: opponentDigimon, count: 1 },
@@ -83,6 +91,7 @@ export const compiled: CompiledCard = {
               condition: { kind: "triggerPlayedOrDigivolvedByEffect" },
             },
             {
+              effectTextPart: "Then, this Digimon may battle 1 of your opponent's Digimon.",
               kind: "Battle",
               attacker: { filter: { isSelfRef: true }, count: 1, isSelf: true },
               target: { filter: opponentDigimon, count: 1 },

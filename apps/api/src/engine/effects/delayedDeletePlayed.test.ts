@@ -107,4 +107,39 @@ describe("DelayedDeletePlayed timing modes", () => {
     expect(s.engine.applyIntent(1, { type: "surrender" })).toEqual({ ok: true });
     await loop;
   });
+  it("deletes at a repeated end-of-turn timing when memory restoration resumes the same turn", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT1-009", as: "target" }], deck: Array<string>(8).fill("BT1-010") },
+      1: { deck: Array<string>(8).fill("BT1-010") },
+    });
+    const targetId = s.perm("target").permanentId;
+    const loop = s.engine.startTurnLoop();
+    let installed = false;
+    try {
+      await advance(s.engine).waitForMainPhase(0);
+      const internals = internalsOf(s.engine);
+      internals.subTriggers.subscribe({
+        event: "endOfTurn",
+        sourcePermanentId: targetId,
+        once: true,
+        description: "Schedule deletion and restore memory",
+        run: async () => {
+          internals.primitives.delayedDeletePlayed!(targetId, "endOfCurrentTurn");
+          internals.primitives.gainMemoryForSeat(0, 10);
+          installed = true;
+        },
+      });
+      expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+      await settle(() => installed);
+      await advance(s.engine).waitForMainPhase(0);
+      expect(s.state.players[0]!.battleArea.some((p) => p.permanentId === targetId)).toBe(true);
+      expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+      await advance(s.engine).waitForMainPhase(1);
+      expect(s.state.players[0]!.battleArea.some((p) => p.permanentId === targetId)).toBe(false);
+      expect(s.state.players[0]!.trash.some((c) => c.cardId === "BT1-009")).toBe(true);
+    } finally {
+      s.engine.applyIntent(s.state.turnSeat, { type: "surrender" });
+      await loop;
+    }
+  });
 });

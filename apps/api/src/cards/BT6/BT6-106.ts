@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete all of your opponent's Digimon with the highest play cost.",
           kind: "Delete",
           target: {
             filter: {

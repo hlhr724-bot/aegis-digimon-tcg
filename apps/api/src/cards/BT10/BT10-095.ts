@@ -7,11 +7,14 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Activate 1 of the effects below.",
           kind: "Modal",
           choose: 1,
           options: [
             [
               {
+                effectTextPart:
+                  "1 of your Digimon with [Xros Heart] in its traits gains ＜Security Attack +1＞ for the turn.",
                 kind: "GainKeyword",
                 target: {
                   filter: {
@@ -36,6 +39,7 @@ const compiled: CompiledCard = {
             ],
             [
               {
+                effectTextPart: "＜Draw 2＞ (Draw 2 cards from your deck.)",
                 kind: "Draw",
                 controller: "mine",
                 amount: 2,
@@ -61,6 +65,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "1 of your Digimon with [Xros Heart] in its traits gains ＜Security Attack +1＞ for the turn.",
           kind: "GainKeyword",
           target: {
             filter: {
@@ -97,6 +103,7 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart: "＜Draw 2＞ (Draw 2 cards from your deck.)",
           kind: "Draw",
           controller: "mine",
           amount: 2,

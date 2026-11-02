@@ -1,12 +1,41 @@
 import { getCardDefinition } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
-import { setupEngine, settle } from "../../engine/testkit/harness.js";
+import { drainMicrotasks, setupEngine, settle } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
 import { compiled } from "./BT15-058.js";
 import "../index.js";
 
 describe("BT15-058", () => {
+  it.each([
+    ["BT15-056", false],
+    ["BT15-087", true],
+  ])("requires a DigiPolice Tamer rather than a Digimon for its evolution bonus: %s", async (source, allowed) => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT15-055", as: "host", under: [{ card: source, faceUp: true }] }],
+          hand: [{ card: "BT15-058", as: "evolution" }],
+          deck: ["BT1-009", "BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "target", suspended: false }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.memory = 10;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("host").permanentId,
+        instanceId: s.inst("evolution").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("host").topCard.cardId === "BT15-058" && s.state.pendingDecision === undefined);
+    await drainMicrotasks();
+    expect(observe(s.engine).hasRestriction(s.perm("target"), "unsuspend")).toBe(allowed);
+  });
+
   it("matches the catalog identity and black/green level-4 evolution routes", () => {
     expect(getCardDefinition("BT15-058")).toMatchObject({
       nameEn: "Ginryumon",
@@ -29,7 +58,7 @@ describe("BT15-058", () => {
     expect(compiled.effects?.[1]).toMatchObject({
       trigger: "OnPlay",
       actions: [
-        { kind: "SelectBind", target: { bindAs: "suspended", filter: { unsuspended: true } } },
+        { kind: "SelectBind", target: { bindAs: "suspended", filter: { kind: ["Digimon"] } } },
         { kind: "Suspend", target: { fromSelectionRef: "suspended" } },
         {
           kind: "Restrict",

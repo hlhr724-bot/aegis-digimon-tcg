@@ -6,6 +6,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Trash all digivolution cards under 1 of your opponent's Digimon.",
           kind: "TrashDigivolution",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
           amount: "all",

@@ -17,9 +17,9 @@ import { tap } from "./scenarioHarness/tap";
 
 // BT21-041 Calendamon and BT21-009 Gatchmon both have [Appmon] and [Link] cost 1.
 // Four copies replace the four same-position base-deck cards, preserving legality and
-// the seed-22 opening arrangement used to exercise hand and field Link origins.
+// the seed-76 opening arrangement used to exercise hand and field Link origins.
 const PROTAGONIST_DECK = swapMainDeckCard(swapMainDeckCard(RED_DECK, "BT1-013", "BT21-041"), "BT1-020", "BT21-009");
-const SEED = 22;
+const SEED = 76;
 
 scenario("link", () => {
   let server: TestServer;

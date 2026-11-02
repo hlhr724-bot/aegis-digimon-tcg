@@ -1,3 +1,4 @@
+import { EffectDuration } from "@aegis/shared/schema/enums";
 import { requireCardDefinition, type AttackTarget } from "@aegis/shared";
 import type { Primitives } from "../EffectContext.js";
 import type { ForceAttackOptions } from "../context/primitives/index.js";
@@ -97,7 +98,27 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     await combat.resolveAttack(controllerSeat, attacker, target, {
       withoutTap: opts?.withoutSuspending ?? false,
       attackMechanic: opts?.attackMechanic,
-      afterAttackDeclaration: opts?.afterAttackDeclaration,
+      afterAttackDeclaration: async () => {
+        if (opts?.attackMechanic === "Execute") {
+          continuous.addCustomEffectGrant(
+            attacker.topCard.instanceId,
+            controllerSeat,
+            "Execute deletion",
+            EffectDuration.UntilEndAttack,
+            { sourceCardId: opts.decisionProvenance?.sourceCardId ?? attacker.topCard.cardId },
+          );
+        }
+        if (opts?.deleteAtEndOfAttack === true) {
+          continuous.addCustomEffectGrant(
+            attacker.topCard.instanceId,
+            controllerSeat,
+            "[End of Attack] Delete this Digimon.",
+            EffectDuration.UntilEndAttack,
+            { sourceCardId: opts.decisionProvenance?.sourceCardId ?? attacker.topCard.cardId },
+          );
+        }
+        await opts?.afterAttackDeclaration?.();
+      },
       afterAttackTriggers: async () => {
         await opts?.afterAttackTriggers?.();
         const option = player(controllerSeat).resolvingOption;
@@ -152,6 +173,10 @@ export function createCombatVerbs(pc: PrimitivesContext) {
 
   const isAttackResolving = (): boolean => engine.combat?.isAttacking === true;
 
+  function isAttackTargetLocked(attackerPermanentId = engine.combat?.currentAttackerId): boolean {
+    return attackerPermanentId !== undefined && continuous.hasRestriction(attackerPermanentId, "attackTargetChange");
+  }
+
   /**
    * Redirect the currently-resolving attack onto one of `candidatePermanentIds`
    * (chosen by the source's controller). The reserved id `"player"` represents the
@@ -159,7 +184,7 @@ export function createCombatVerbs(pc: PrimitivesContext) {
    */
   const redirectAttack: Primitives["redirectAttack"] = async (candidatePermanentIds, opts) => {
     const combat = engine.combat;
-    if (combat === undefined || !combat.isAttacking) return;
+    if (combat === undefined || !combat.isAttacking || isAttackTargetLocked()) return;
     const candidates = candidatePermanentIds.filter((id) => id === "player" || access.permanentById(id) !== undefined);
     if (candidates.length === 0) return;
     // The chooser is the source's controller by default; BT4-075 passes the opponent seat so
@@ -188,11 +213,13 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     }
     const pick = chosen[0];
     if (pick === undefined) return; // declined (or no pick): attack proceeds unchanged
-    combat.redirectTarget(pick === playerPromptId ? { kind: "player" } : { kind: "permanent", permanentId: pick });
+    const redirected = combat.redirectTarget(
+      pick === playerPromptId ? { kind: "player" } : { kind: "permanent", permanentId: pick },
+    );
     // The attack target was just switched — notify reactive watchers ("when this Digimon's
     // attack target is switched", BT11-008). The attacker is the event subject; a watcher's
     // sourceFilter isSelfRef gates it to its own attack.
-    if (attackerId !== undefined) {
+    if (redirected && attackerId !== undefined) {
       await engine.fireSubTrigger?.("whenAttackTargetSwitched", {
         subjectPermanentId: attackerId,
         attackerPermanentId: attackerId,
@@ -200,5 +227,5 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     }
   };
 
-  return { forceAttack, canForceAttack, blitzAttack, isAttackResolving, redirectAttack };
+  return { forceAttack, canForceAttack, blitzAttack, isAttackResolving, isAttackTargetLocked, redirectAttack };
 }

@@ -1,0 +1,18 @@
+export const achievementsKo = {
+  "achievements.trophies.description": "커뮤니티 토너먼트 업적.",
+  "achievements.trophies.show": "트로피 표시",
+  "achievements.trophies.title": "트로피",
+  "achievements.trophies.empty": "아직 트로피가 없습니다. 커뮤니티 토너먼트에서 상위 8위에 들면 획득할 수 있습니다.",
+  "achievements.trophies.error": "트로피를 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도하세요.",
+  "achievements.trophies.awardedOn": "{date} 획득",
+  "achievements.tier.bronze": "브론즈 트로피",
+  "achievements.tier.silver": "실버 트로피",
+  "achievements.tier.gold": "골드 트로피",
+  "achievements.tier.rainbow": "레인보우 트로피",
+  "achievements.award.tournament_champion": "우승",
+  "achievements.award.tournament_top_four": "Top 4",
+  "achievements.award.tournament_top_eight": "Top 8",
+  "achievements.award.circuit_champion": "서킷 챔피언",
+  "achievements.award.circuit_top_four": "서킷 Top 4",
+  "achievements.award.circuit_top_eight": "서킷 Top 8",
+} as const;

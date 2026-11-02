@@ -89,6 +89,38 @@ Interaction (all clicks become server-validated intents):
 - The action bar covers ready, hatch egg, end phase, surrender, and the block window
   (declare / decline) when one is open.
 
+## Card library keyword filter
+
+The filter rail in the deck builder and the collection has a collapsible **Keywords**
+group. It works like the other chip groups.
+
+- **Source of the list:** the chips come from the keyword glossary
+  (`game/keywordGlossary.ts`) and use the same printed names as the Learn rules page
+  (`game/getKeywordName.ts`). The rail shows only keywords found in the current card
+  pool.
+- **Several chips:** a card matches when it has **any** selected keyword (OR), like
+  level, cost, and rarity. Other filter groups still combine with AND.
+- **Security Attack:** the filter splits it into `Security A. +` (bonuses, including
+  `S Attack +1`) and `Security A. -` (penalties such as `Security Attack -1`).
+
+`screens/findCardKeywords.ts` decides which keywords a card has. It parses each card
+once and caches the result per card, so typing in the search box does not re-parse.
+
+- **Brackets only:** a keyword counts only inside keyword brackets (`＜Blocker＞` or
+  `<Blocker>`). "Can't be blocked" is not Blocker (BT1-034).
+- **Text fields:** main, inherited, security, option, dual, and link effect text all
+  count. Inherited text counts because the stack gives it to the Digimon on top.
+  Kokuwamon (BT14-055) has Blocker only as an inherited effect.
+- **Performed or granted:** `＜Draw 1＞` and `gains ＜Rush＞` count.
+- **Reminder text:** text in parentheses does not count. Sheepmon's Collision
+  reminder names Blocker, but Sheepmon has no Blocker (BT16-032).
+- **References:** a keyword after `with`, `without`, `w/`, `has`, `have`, `had`, or
+  `affected by` is a reference, not presence: "Delete 1 of your opponent's Digimon
+  with ＜Blocker＞" (BT1-023). A list joined by `and`, `or`, `,`, `/`, or `&` keeps
+  the first item's status.
+- **Unlisted keywords:** keywords the glossary does not define, such as Arts
+  Digivolve, have no chip.
+
 ## Smoke test (connect + render + intent, headless)
 
 With an api running on `:2567`:

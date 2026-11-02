@@ -156,7 +156,7 @@ describe("EX3-023 Plesiomon", () => {
     expect(playPayload.candidateInstanceIds.sort()).toEqual(
       [s.inst("blueLevel3").instanceId, s.inst("redSeaAnimalLevel3").instanceId].sort(),
     );
-    expect(playPayload.visibleInstanceIds).toHaveLength(6);
+    expect(playPayload.visibleInstanceIds).toHaveLength(5);
     expect(playPayload.visibleInstanceIds).toEqual(
       expect.arrayContaining(
         ["blueLevel3", "redSeaAnimalLevel3", "invalidBlueLevel4", "invalidAquaticLevel5"].map(
@@ -164,7 +164,7 @@ describe("EX3-023 Plesiomon", () => {
         ),
       ),
     );
-    expect(playPayload.visibleInstanceIds).toContain(s.inst("invalidBlueUnderRed").instanceId);
+    expect(playPayload.visibleInstanceIds).not.toContain(s.inst("invalidBlueUnderRed").instanceId);
     expect(s.decisions.at(-1)!.req).toMatchObject({
       sourceCardId: "EX3-023",
       options: { min: 0, max: 1, timing: "WhenDigivolving", effectText: expect.stringContaining("play 1 blue") },

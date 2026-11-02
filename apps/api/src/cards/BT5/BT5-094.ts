@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] You may place 1 red level 4 or lower Digimon card from your hand under 1 of your Digimon as its bottom digivolution card.",
           kind: "PlaceUnder",
           target: {
             filter: {
@@ -30,6 +32,7 @@ const compiled: CompiledCard = {
           abortOnDecline: true,
         },
         {
+          effectTextPart: "If you do, trigger ＜Draw 2＞. (Draw 2 cards from your deck.)",
           kind: "Draw",
           controller: "mine",
           amount: 2,

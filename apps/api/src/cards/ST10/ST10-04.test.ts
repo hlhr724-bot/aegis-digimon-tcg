@@ -773,4 +773,57 @@ describe("ST10-04 Gatomon — KB Q&A rulings", () => {
     // 10 - 5 (play Gatomon) + 1 (Mirei) - max(0, 3 - 1 - 2) (digivolve) = 6; Mirei's -1 alone would leave 4.
     expect(s.state.memory).toBe(6);
   });
+
+  it("names the color each reveal selection asks for when a dual-color card fills the yellow pick", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [{ card: "ST10-04", as: "gatomon" }],
+          deck: [
+            { card: "BT23-102", as: "mastemon" },
+            { card: "BT23-067", as: "ladyDevimonA" },
+            { card: "BT23-067", as: "ladyDevimonB" },
+          ],
+        },
+      },
+      { autoOrderTriggers: true, autoSelectCards: false },
+    );
+    s.state.memory = 5;
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("gatomon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+
+    const yellow = s.decisions.at(-1)!.req;
+    expect(yellow.options?.effectTextPart).toBe("Add 1 yellow Digimon card");
+    expect(yellow.options?.candidateInstanceIds).toEqual([s.inst("mastemon").instanceId]);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: yellow.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("mastemon").instanceId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.decisionId !== yellow.decisionId);
+
+    const purple = s.decisions.at(-1)!.req;
+    expect(purple.options?.effectTextPart).toBe("1 purple Digimon card among them to your hand.");
+    expect(purple.options?.candidateInstanceIds).toEqual([
+      s.inst("ladyDevimonA").instanceId,
+      s.inst("ladyDevimonB").instanceId,
+    ]);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: purple.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("ladyDevimonA").instanceId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.hand.length === 2);
+
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual(
+      expect.arrayContaining([s.inst("mastemon").instanceId, s.inst("ladyDevimonA").instanceId]),
+    );
+  });
 });

@@ -9,7 +9,7 @@ import type { Target } from "@aegis/shared";
 const PRIVATE_ZONES = ["hand", "deck", "security"] as const;
 
 /** Filter keys that only scope where to look, not which card qualifies ("place 1 card from hand"). */
-const SCOPE_ONLY_FILTER_KEYS = new Set<string>(["controller", "controllerDefault", "zone", "excludeSelf"]);
+const SCOPE_ONLY_FILTER_KEYS = new Set<string>(["controller", "controllerDefault", "zone", "position", "excludeSelf"]);
 
 export function targetHasRequirement(target: Target): boolean {
   return (

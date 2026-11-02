@@ -23,6 +23,7 @@ afterEach(() => {
 
 async function runDeferredSourceMove(
   move: (ctx: EffectContext, hostId: string, sourceId: string, otherHostId: string) => Promise<void>,
+  bindDiscardedSelf = false,
 ): Promise<{
   fired: number;
   sourceId: string;
@@ -50,7 +51,7 @@ async function runDeferredSourceMove(
   let fired = 0;
   advance(s.engine).ledgers.subTriggers.subscribe({
     event: "onDigivolutionCardsDiscardedBatch",
-    sourcePermanentId: host.permanentId,
+    ...(bindDiscardedSelf ? { watchesSelf: true, isInheritedSource: true } : { sourcePermanentId: host.permanentId }),
     sourceInstanceId: discarded.instanceId,
     once: false,
     matches: (ctx) => (ctx.trigger.trashedDigivolutionInstanceIds ?? []).includes(ctx.source.instanceId),
@@ -229,5 +230,22 @@ describe("discarded stack-source SubTrigger context", () => {
     expect(result.fired).toBe(0);
     expect(result.hostInBreeding).toBe(true);
     expect(result.hostInBattleArea).toBe(false);
+  });
+  it("does not revive a discarded-self trigger after its source leaves trash and returns", async () => {
+    const result = await runDeferredSourceMove(async (ctx, _hostId, sourceId) => {
+      await ctx.fx.returnToHand([sourceId]);
+      await ctx.fx.trash([sourceId]);
+    }, true);
+    expect(result.fired).toBe(0);
+    expect(result.sourceInTrash).toBe(true);
+  });
+
+  it("does not resolve a discarded-self trigger after its source moves to another stack", async () => {
+    const result = await runDeferredSourceMove(async (ctx, _hostId, sourceId, otherHostId) => {
+      await ctx.fx.placeUnder(otherHostId, [sourceId]);
+    }, true);
+    expect(result.fired).toBe(0);
+    expect(result.sourceOnOtherHost).toBe(true);
+    expect(result.sourceInTrash).toBe(false);
   });
 });

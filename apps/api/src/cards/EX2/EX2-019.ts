@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 card with [Kyubimon], [Taomon], or [Sakuyamon] in its name",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -28,6 +29,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Rika Nonaka] among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { EffectDuration, type FieldEffectView } from "@aegis/shared";
+import { CardKind, EffectDuration, type FieldEffectView } from "@aegis/shared";
 import { I18nProvider } from "../../../i18n";
-import { FieldEffectsIndicator, readFieldEffects } from "./FieldEffectsIndicator";
+import { FieldEffectsIndicator } from "./FieldEffectsIndicator";
+import { readFieldEffects } from "@/game/readFieldEffects";
 
 afterEach(() => {
   cleanup();
@@ -230,4 +231,23 @@ it("updates both field anchors on scrolling and fold resize and removes offscree
   fireEvent.pointerDown(document.body);
   fireEvent.keyDown(document.body, { key: "Escape" });
   expect(document.querySelectorAll(".game-field-effects")).toHaveLength(0);
+});
+
+it.each([
+  { kind: CardKind.Digimon, label: "Protected from opposing Digimon effects" },
+  { kind: CardKind.Option, label: "Protected from opposing Option effects" },
+])("names the specific $kind effects that a field protection blocks", ({ kind, label }) => {
+  render(
+    indicator([
+      {
+        kind: "restriction",
+        value: "beAffected",
+        duration: EffectDuration.UntilOpponentTurnEnd,
+        ownerSeat: 0,
+        fromSourceKind: [kind],
+        byOpponentEffectsOnly: true,
+      },
+    ]),
+  );
+  expect(screen.getByLabelText(`Your field: ${label}`)).toBeTruthy();
 });

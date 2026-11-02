@@ -1,7 +1,8 @@
 import type { Pool, PoolClient } from "pg";
+import { setTimeout } from "node:timers/promises";
 
 export type Queryable = Pick<Pool | PoolClient, "query">;
-export type Migration = { id: string; up: string | ((db: Queryable) => Promise<void>) };
+export type Migration = { id: string; lock?: string; up: string | ((db: Queryable) => Promise<void>) };
 export type ReleaseLock = () => Promise<void>;
 export type AcquireLock = (pool: Pool) => Promise<ReleaseLock>;
 
@@ -70,7 +71,7 @@ async function applyPending(pool: Pool, migrations: readonly Migration[]): Promi
   for (const migration of pending) {
     const client = await pool.connect();
     try {
-      await client.query("BEGIN");
+      await beginMigration(client, migration);
       if (typeof migration.up === "string") await client.query(migration.up);
       else await migration.up(client);
       await client.query("INSERT INTO schema_migrations (id, applied_at) VALUES ($1,$2)", [migration.id, Date.now()]);
@@ -85,6 +86,25 @@ async function applyPending(pool: Pool, migrations: readonly Migration[]): Promi
     }
   }
   return pending.map((migration) => migration.id);
+}
+
+async function beginMigration(client: PoolClient, migration: Migration): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    await client.query("BEGIN");
+    if (!migration.lock) {
+      return;
+    }
+    try {
+      await client.query(migration.lock);
+      return;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      if (!(error instanceof Error) || !("code" in error) || error.code !== "55P03" || attempt >= 29) {
+        throw error;
+      }
+      await setTimeout(Math.min(50 * (attempt + 1), 500));
+    }
+  }
 }
 
 function lacksAdvisoryLocks(error: unknown): boolean {

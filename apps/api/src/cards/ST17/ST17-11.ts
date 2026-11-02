@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 green Digimon card",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -20,6 +21,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 such Tamer card among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Tamer"],
@@ -40,6 +42,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "You may play 1 [Terriermon] or [Lopmon] from your hand without paying the cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

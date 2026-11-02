@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Client } from "colyseus";
 import { ALL_FAMOUS_DECKS, type Intent } from "@aegis/shared";
 import { AegisRoom } from "./AegisRoom.js";
+import { botPersonaForDeck } from "@aegis/shared/bot/personas/botPersonaForDeck";
 import { RED_DECK } from "../engine/testDecks.js";
 import { InferenceClient } from "../bot/training/inferenceClient.js";
 import { trainingDeck, TRAINING_DECK_VERSIONS } from "../bot/training/decks.js";
@@ -61,8 +62,11 @@ describe("opt-in trained policies in Aegis rooms", () => {
     await startBotInference({});
     const { room } = roomWithHuman();
     expect(room.addBot(requestedDeck(1))).toBe(true);
-    expect(room.state.players[1]!.displayName).toBe("Bot");
+    expect(room.state.players[1]!.displayName).toBe(botPersonaForDeck({ deckId: requestedDeck(1) }).displayName);
+    expect(room.state.players[1]!.botPersonaId).toBe(botPersonaForDeck({ deckId: requestedDeck(1) }).id);
     expect(InferenceClient.start).not.toHaveBeenCalled();
+    const bot = (room as unknown as { bots: BotPlayer[] }).bots[1]!;
+    expect(bot.policyName).toMatch(/^level:standard:[a-z]+:evaluation:/);
   });
 
   it.each([0, 1] as const)("uses the real async adapter for supported bot deck %i", async (deckIndex) => {
@@ -71,7 +75,10 @@ describe("opt-in trained policies in Aegis rooms", () => {
     deck.mainDeck.reverse();
     const { room, human } = roomWithHuman(deck);
     expect(room.addBot(requestedDeck(deckIndex))).toBe(true);
-    expect(room.state.players[1]!.displayName).toBe("BT26 AI");
+    expect(room.state.players[1]!.displayName).toBe(
+      botPersonaForDeck({ deckId: requestedDeck(deckIndex) }).displayName,
+    );
+    expect(room.state.players[1]!.botPersonaId).toBe(botPersonaForDeck({ deckId: requestedDeck(deckIndex) }).id);
     expect(room.addBot(requestedDeck(deckIndex))).toBe(true);
     await keepAndAdvance(room, human);
     expect(choose).toHaveBeenCalled();
@@ -87,7 +94,8 @@ describe("opt-in trained policies in Aegis rooms", () => {
     await startBotInference({ AEGIS_BOT_CHECKPOINT: checkpoint });
     const { room, human } = roomWithHuman(RED_DECK);
     expect(room.addBot(requestedDeck(1))).toBe(true);
-    expect(room.state.players[1]!.displayName).toBe("Bot");
+    expect(room.state.players[1]!.displayName).toBe(botPersonaForDeck({ deckId: requestedDeck(1) }).displayName);
+    expect(room.state.players[1]!.botPersonaId).toBe(botPersonaForDeck({ deckId: requestedDeck(1) }).id);
     await keepAndAdvance(room, human);
     expect(choose).not.toHaveBeenCalled();
   });
@@ -182,7 +190,8 @@ describe("opt-in trained policies in Aegis rooms", () => {
     expect(close).toHaveBeenCalledTimes(1);
     const { room } = roomWithHuman();
     room.addBot(requestedDeck(1));
-    expect(room.state.players[1]!.displayName).toBe("Bot");
+    expect(room.state.players[1]!.displayName).toBe(botPersonaForDeck({ deckId: requestedDeck(1) }).displayName);
+    expect(room.state.players[1]!.botPersonaId).toBe(botPersonaForDeck({ deckId: requestedDeck(1) }).id);
   });
 
   it("propagates startup incompatibility instead of claiming a loaded checkpoint", async () => {
@@ -192,6 +201,7 @@ describe("opt-in trained policies in Aegis rooms", () => {
     );
     const { room } = roomWithHuman();
     room.addBot(requestedDeck(1));
-    expect(room.state.players[1]!.displayName).toBe("Bot");
+    expect(room.state.players[1]!.displayName).toBe(botPersonaForDeck({ deckId: requestedDeck(1) }).displayName);
+    expect(room.state.players[1]!.botPersonaId).toBe(botPersonaForDeck({ deckId: requestedDeck(1) }).id);
   });
 });

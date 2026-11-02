@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, cleanup, fireEvent, render, renderHook, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CHAT_CHANNEL,
@@ -10,6 +10,8 @@ import {
   type ChatSender,
   type Seat,
 } from "@aegis/shared";
+import { BotLine } from "@aegis/shared/bot/BotLine";
+import { LOCALE_STORAGE_KEY } from "@/i18n/locales";
 import { playSound } from "../../design/sound";
 import { I18nProvider } from "../../i18n";
 import type { AegisRoom } from "../../net/client";
@@ -61,7 +63,7 @@ describe("useMatchChat", () => {
     fake.receive({ sender: player(0), message: { kind: "text", text: "hi" } });
     fake.receive({ sender: spectator("someone", 1), message: { kind: "text", text: "go" } });
     fake.receive({ sender: player(1), message: { kind: "emote", emote: "runAway" } });
-    expect(result.current.entries.map((entry) => entry.own)).toEqual([false, true, false, false]);
+    expect(result.current.entries.map((entry) => entry.own)).toEqual([false, true, false]);
     expect(result.current.latest[1]?.message).toEqual({ kind: "emote", emote: "runAway" });
     expect(result.current.latest[0]?.message).toEqual({ kind: "text", text: "hi" });
   });
@@ -71,7 +73,8 @@ describe("useMatchChat", () => {
     const { result } = renderHook(() => useMatchChat({ room: fake.room, viewerSeat: 0, spectating: true }));
     fake.receive({ sender: player(0), message: { kind: "text", text: "player" } });
     fake.receive({ sender: spectator("watcher", 1), message: { kind: "text", text: "me" } });
-    expect(result.current.entries.map((entry) => entry.own)).toEqual([false, true]);
+    expect(result.current.entries.map((entry) => entry.own)).toEqual([true]);
+    expect(result.current.latest).toEqual({});
   });
 
   it("hides the opponent and the spectators separately, but never the viewer's own messages", () => {
@@ -81,7 +84,7 @@ describe("useMatchChat", () => {
     fake.receive({ sender: player(0), message: { kind: "emote", emote: "praise" } });
     fake.receive({ sender: spectator("someone", 1), message: { kind: "text", text: "lol" } });
     act(() => result.current.setMutedOpponent(true));
-    expect(result.current.entries.map((entry) => entry.sender.kind)).toEqual(["player", "spectator"]);
+    expect(result.current.entries.map((entry) => entry.sender.kind)).toEqual(["player"]);
     expect(result.current.latest[1]).toBeUndefined();
     act(() => result.current.setMutedSpectators(true));
     expect(result.current.entries.map((entry) => entry.own)).toEqual([true]);
@@ -125,7 +128,7 @@ describe("useMatchChat", () => {
       expect(playSound).not.toHaveBeenCalled();
       fake.receive({ sender: player(1), message: { kind: "text", text: "hi" } });
       fake.receive({ sender: spectator("someone", 1), message: { kind: "emote", emote: "praise" } });
-      expect(playSound).toHaveBeenCalledTimes(2);
+      expect(playSound).toHaveBeenCalledTimes(1);
       expect(playSound).toHaveBeenCalledWith("prompt");
     });
 
@@ -155,6 +158,7 @@ describe("MatchChatWindow", () => {
   });
   afterEach(() => {
     cleanup();
+    localStorage.removeItem(LOCALE_STORAGE_KEY);
   });
 
   const entries: ChatEntry[] = [
@@ -183,6 +187,22 @@ describe("MatchChatWindow", () => {
     return { chat, onClose };
   }
 
+  it("blocks the current opponent on the server before enabling the local mute", async () => {
+    const fetcher = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ blocked: true }));
+    try {
+      const { chat } = renderWindow({ roomId: "active-room" });
+      fireEvent.click(screen.getByRole("button", { name: "Chat settings" }));
+      fireEvent.click(screen.getByRole("button", { name: "Block player" }));
+      await waitFor(() => expect(chat.setMutedOpponent).toHaveBeenCalledWith(true));
+      expect(fetcher).toHaveBeenCalledWith(
+        expect.stringContaining("/account/blocks/opponent"),
+        expect.objectContaining({ method: "POST", body: JSON.stringify({ roomId: "active-room" }) }),
+      );
+    } finally {
+      fetcher.mockRestore();
+    }
+  });
+
   const openPicker = () => fireEvent.click(screen.getByRole("button", { name: "Tamer commands" }));
 
   it("names players and spectators in the history and shows emotes as icons only", () => {
@@ -194,9 +214,32 @@ describe("MatchChatWindow", () => {
     expect(screen.getByRole("img", { name: "Change target!" })).toBeTruthy();
   });
 
+  it.each([
+    ["en", "Digivolve! Go, WarGreymon!"],
+    ["pt-BR", "Digievoluir! Vai, WarGreymon!"],
+  ])("shows a bot line in %s with the digivolved card name", async (locale, text) => {
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    renderWindow({
+      entries: [
+        {
+          id: 2,
+          own: false,
+          sender: player(1),
+          message: {
+            kind: "botLine",
+            line: BotLine.BIG_DIGIVOLVE.value,
+            text: "Digivolve! Go, WarGreymon!",
+            cardId: "BT21-026",
+          },
+        },
+      ],
+    });
+    expect(await screen.findByText(text)).toBeTruthy();
+  });
+
   it("expands and shrinks from the title bar", () => {
     renderWindow();
-    const chatWindow = screen.getByRole("region", { name: "Chat" });
+    const chatWindow = screen.getByRole("region", { name: "Players’ chat" });
     const expand = screen.getByRole("button", { name: "Expand chat" });
     fireEvent.click(expand);
     expect(chatWindow.hasAttribute("data-expanded")).toBe(true);
@@ -260,7 +303,8 @@ describe("MatchChatWindow", () => {
 
   it("lets a spectator write and mute other spectators, but not mute a player", () => {
     const { chat } = renderWindow({}, true);
-    fireEvent.change(screen.getByRole("textbox", { name: "Message the match" }), { target: { value: "gg" } });
+    expect(screen.getByRole("region", { name: "Spectators’ chat" })).toBeTruthy();
+    fireEvent.change(screen.getByRole("textbox", { name: "Message other spectators" }), { target: { value: "gg" } });
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
     expect(chat.send).toHaveBeenCalledWith({ kind: "text", text: "gg" });
     openSettings();
@@ -273,18 +317,17 @@ describe("MatchChatWindow", () => {
     renderWindow();
     expect(screen.queryByRole("switch")).toBeNull();
     openSettings();
-    expect(screen.getAllByRole("switch")).toHaveLength(3);
+    expect(screen.getAllByRole("switch")).toHaveLength(2);
     fireEvent.pointerDown(screen.getByRole("list"));
     expect(screen.queryByRole("switch")).toBeNull();
   });
 
-  it("gives a player both mute switches and closes from the title bar", () => {
+  it("gives a player only the opponent mute switch and closes from the title bar", () => {
     const { chat, onClose } = renderWindow();
     openSettings();
     fireEvent.click(screen.getByRole("switch", { name: "Mute opponent" }));
     expect(chat.setMutedOpponent).toHaveBeenCalledWith(true);
-    fireEvent.click(screen.getByRole("switch", { name: "Mute spectators" }));
-    expect(chat.setMutedSpectators).toHaveBeenCalledWith(true);
+    expect(screen.queryByRole("switch", { name: "Mute spectators" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Close chat" }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -302,9 +345,9 @@ describe("MatchChatWindow", () => {
 
   it("moves with its title bar and stays inside the viewport", () => {
     renderWindow();
-    const chatWindow = screen.getByRole("region", { name: "Chat" });
+    const chatWindow = screen.getByRole("region", { name: "Players’ chat" });
     vi.spyOn(chatWindow, "getBoundingClientRect").mockReturnValue(new DOMRect(700, 80, 288, 300));
-    const title = screen.getByRole("heading", { name: "Chat" }).parentElement!;
+    const title = screen.getByRole("heading", { name: "Players’ chat" }).parentElement!;
     fireEvent.pointerDown(title, { pointerId: 1, button: 0, clientX: 720, clientY: 90 });
     fireEvent.pointerMove(title, { pointerId: 1, clientX: 420, clientY: 190 });
     expect(chatWindow.style.left).toBe("400px");

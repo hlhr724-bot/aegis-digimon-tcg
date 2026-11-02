@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "add 1 card with [Lilithmon] in its text to the hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "trash 1 purple card.",
               filter: {
                 controllerDefault: "mine",
                 colors: ["Purple"],

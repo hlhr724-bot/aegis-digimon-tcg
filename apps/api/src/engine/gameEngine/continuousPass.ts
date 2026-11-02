@@ -1,3 +1,4 @@
+import { createNoPromptDecisionApi } from "#api/engine/decisions/createNoPromptDecisionApi";
 import { EffectTiming } from "@aegis/shared";
 import { effectProvenanceKinds } from "../effects/effectProvenance.js";
 import { canActivate, canTrigger } from "../effects/kernel.js";
@@ -11,6 +12,9 @@ import { sameNumericMap } from "./schemaSync.js";
 import { listCandidateInstances } from "./ruleProcess.js";
 import { buildEffectContext, cardSourceOf } from "./effectContext.js";
 import type { GameEngine } from "../GameEngine.js";
+import { runWithPreparedCardLocation } from "#api/engine/effects/runWithPreparedCardLocation";
+import { nestedTriggerSourceStillResident } from "#api/engine/gameEngine/subTriggers";
+import { applyEntryGrants } from "#api/engine/gameEngine/applyEntryGrants";
 
 /**
  * Re-derive every continuous (persistent / `EffectTiming.None`) effect from a clean
@@ -38,24 +42,24 @@ import type { GameEngine } from "../GameEngine.js";
  * the timing/boundary hooks do not already cover.
  */
 export async function recomputeContinuousEffects(engine: GameEngine, publish = true): Promise<void> {
+  engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter((pending) =>
+    nestedTriggerSourceStillResident(engine, pending),
+  );
+  if (publish && engine.continuousScope.getStore() !== true) await applyEntryGrants(engine);
   if (engine.recomputeInFlight !== undefined) {
     if (engine.continuousScope.getStore() === true) return;
     engine.recomputeQueued = true;
     await engine.recomputeInFlight;
-    if (publish) publishContinuousState(engine);
+    if (publish) {
+      await publishContinuousState(engine);
+    }
     return;
   }
   // Continuous effects are passive modifiers and never prompt (ARCHITECTURE.md §5);
   // a Static effect whose action has `optional:true` must be auto-declined here so
   // we don't open a nested DecisionManager request that collides with an already-open
   // dec-1 (#residual-gaps/nested-decision-crash).
-  const noPromptAsk: DecisionApi = {
-    optional: async () => false,
-    chooseTargets: async () => [],
-    selectCards: async () => [],
-    selectPermanents: async () => [],
-    chooseOption: async () => 0,
-  };
+  const noPromptAsk = createNoPromptDecisionApi();
   // Defer the driver by one microtask so `recomputeInFlight` is installed before the
   // first pass can recursively reach engine method through a static effect primitive.
   const task = Promise.resolve().then(async () => {
@@ -86,10 +90,11 @@ export async function recomputeContinuousEffects(engine: GameEngine, publish = t
       if (!converged) {
         throw new Error(`continuous effects did not converge after ${maxFixpointPasses} passes`);
       }
+      engine.modifiers.refreshReducedDp(engine.state);
+      if (publish) {
+        await publishContinuousState(engine);
+      }
     } while (engine.recomputeQueued);
-
-    engine.modifiers.refreshReducedDp(engine.state);
-    if (publish) publishContinuousState(engine);
   });
   engine.recomputeInFlight = task;
   try {
@@ -100,9 +105,10 @@ export async function recomputeContinuousEffects(engine: GameEngine, publish = t
 }
 
 /** Intermediate stack tops derive ledgers but publish memory thresholds/affordances at the final boundary. */
-function publishContinuousState(engine: GameEngine): void {
+async function publishContinuousState(engine: GameEngine): Promise<void> {
   engine.memory.commitTurnEndMinMemoryRecompute();
   engine.projection.syncActivatableEffects();
+  engine.projection.syncOncePerTurnUsage();
   engine.projection.syncKeywords();
   engine.projection.syncSummoningSickness();
   engine.projection.syncRestrictions();
@@ -110,6 +116,7 @@ function publishContinuousState(engine: GameEngine): void {
   engine.projection.syncAttackTargets();
   engine.projection.syncHandAffordances();
   engine.projection.syncLinkTargets();
+  await engine.projection.syncNegamonPlayEffects();
 }
 
 /**
@@ -180,14 +187,26 @@ async function derivePass(
     (left, right) => (left.effect.continuousPriority ?? 0) - (right.effect.continuousPriority ?? 0),
   );
   for (const { source, effect } of continuousEffects) {
-    const ctx = buildEffectContext(engine, source, {}, noPromptAsk);
-    ctx.activeTiming = effect.irTrigger ?? EffectTiming[EffectTiming.None];
-    ctx.continuousPass = true;
-    // Persistent effects re-apply whenever their guard holds; canTrigger here is
-    // the builder's on-field/`when` gate (maxPerTurn is irrelevant — uncounted).
-    if (!canTrigger(effect, ctx, engine.tracker)) continue;
-    if (!canActivate(effect, ctx, engine.tracker)) continue;
-    const restoreSource = enterContinuousEffectSource(ctx, effect);
+    const prepared = runWithPreparedCardLocation({
+      state: engine.state,
+      execute: () => {
+        const ctx = buildEffectContext(engine, source, {}, noPromptAsk);
+        ctx.activeTiming = effect.irTrigger ?? EffectTiming[EffectTiming.None];
+        ctx.continuousPass = true;
+        if (!canTrigger(effect, ctx, engine.tracker)) {
+          return undefined;
+        }
+        if (!canActivate(effect, ctx, engine.tracker)) {
+          return undefined;
+        }
+        const restoreSource = enterContinuousEffectSource(ctx, effect);
+        return { ctx, restoreSource };
+      },
+    });
+    if (prepared === undefined) {
+      continue;
+    }
+    const { ctx, restoreSource } = prepared;
     try {
       await effect.resolve(ctx);
     } finally {

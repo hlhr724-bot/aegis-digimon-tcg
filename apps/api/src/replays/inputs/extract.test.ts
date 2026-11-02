@@ -25,6 +25,21 @@ function interleaved(): string[] {
 }
 
 describe("extractReplay", () => {
+  it("preserves a tournament banlist snapshot in seat inputs", () => {
+    const banlistCards = [{ cardId: "BT5-109", status: "banned", allowedCopies: 0 }];
+    const lines = first.lines.map((line) => {
+      const entry = JSON.parse(line);
+      if (entry.data?.[0] === "replay.seat") {
+        entry.data[1].deckRules = { ...entry.data[1].deckRules, banlistCards };
+      }
+      return JSON.stringify(entry);
+    });
+    const replay = extractReplay(lines, first.matchId);
+    const seats = replay.inputs.filter((input) => input.kind === "seat");
+    expect(seats.length).toBeGreaterThan(0);
+    for (const seat of seats) expect(seat.deckRules.banlistCards).toEqual(banlistCards);
+  });
+
   it("builds a versioned record of the match and nothing else", () => {
     const record = extractReplay(first.lines, first.matchId);
 
@@ -32,6 +47,7 @@ describe("extractReplay", () => {
       format: REPLAY_FORMAT,
       matchId: first.matchId,
       seed: 20260914,
+      randomKey: expect.stringMatching(/^[a-f0-9]{64}$/),
       rules: { deckFormat: "standard", unlimited: false, betaBattle: false },
     });
     expect(record.seats[0].bot).toBeUndefined();

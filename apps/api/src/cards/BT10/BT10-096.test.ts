@@ -97,7 +97,7 @@ describe("BT10-096 Burning Star Crusher", () => {
     expect(s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("added").instanceId)).toBe(true);
   });
 
-  it("may decline the entire Security effect without revealing or moving cards", async () => {
+  it("always reveals, and declining the add and play sends all 3 revealed cards to the bottom", async () => {
     const s = setupEngine(
       {
         0: {
@@ -106,16 +106,20 @@ describe("BT10-096 Burning Star Crusher", () => {
             { card: "BT10-034", as: "xrosHeart" },
             { card: "BT10-087", as: "taiki" },
             { card: "BT1-009", as: "rest" },
+            { card: "BT1-010", as: "unrevealedFirst" },
+            { card: "BT1-011", as: "unrevealedSecond" },
           ],
         },
       },
-      { autoDeclineOptional: true, autoOrderTriggers: true },
+      { autoDeclineOptional: true, autoOrderCards: true, autoOrderTriggers: true },
     );
-    const originalOrder = s.state.players[0]!.deck.map((card) => card.instanceId);
+    const revealed = ["xrosHeart", "taiki", "rest"].map((alias) => s.inst(alias).instanceId);
 
     await advance(s.engine).fireForInstance(EffectTiming.SecuritySkill, s.inst("option"));
 
-    expect(s.state.players[0]!.deck.map((card) => card.instanceId)).toEqual(originalOrder);
+    const deck = s.state.players[0]!.deck.map((card) => card.instanceId);
+    expect(deck.slice(0, 2)).toEqual([s.inst("unrevealedFirst").instanceId, s.inst("unrevealedSecond").instanceId]);
+    expect(new Set(deck.slice(2))).toEqual(new Set(revealed));
     expect(s.state.players[0]!.hand).toHaveLength(0);
     expect(s.state.players[0]!.battleArea).toHaveLength(0);
   });

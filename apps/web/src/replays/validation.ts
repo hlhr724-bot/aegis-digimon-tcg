@@ -1,3 +1,4 @@
+import { SPECTATOR_REPLAY_SEAT } from "@aegis/shared/replays/spectatorReplaySeat";
 import {
   GameState,
   PlayerState,
@@ -6,6 +7,9 @@ import {
   REPLAY_FORMAT_VERSION,
   type MatchReplay,
 } from "@aegis/shared";
+import { ManualStatus } from "@aegis/shared/manual/ManualStatus";
+import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
+import { Phase, Zone } from "@aegis/shared/schema/enums";
 import { validReplayEvent } from "./eventValidation";
 
 const stateDefaults = new GameState().toJSON();
@@ -48,6 +52,14 @@ function safeTree(value: unknown, depth = 0): boolean {
 }
 
 function card(value: unknown): boolean {
+  if (record(value) && value.faceUp === false) {
+    if (value.cardId === undefined) {
+      value.cardId = "";
+    }
+    if (value.artId === undefined) {
+      value.artId = "";
+    }
+  }
   return (
     record(value) &&
     defaultFields(value, cardDefaults) &&
@@ -72,6 +84,7 @@ function permanent(value: unknown): boolean {
     array(value.linked, card) &&
     number(value.currentDP) &&
     typeof value.isSuspended === "boolean" &&
+    array(value.manualStatuses, (status) => Object.values(ManualStatus).some((entry) => entry.value === status)) &&
     [
       "keywords",
       "grantedKeywords",
@@ -82,6 +95,47 @@ function permanent(value: unknown): boolean {
       "vortexAttackablePermanentIds",
     ].every((key) => array(value[key], string))
   );
+}
+
+function manualTable(value: unknown): boolean {
+  if (
+    !record(value) ||
+    !defaultFields(value, stateDefaults.manual) ||
+    !Number.isInteger(value.revision) ||
+    (value.revision as number) < 0 ||
+    !array(value.history, string) ||
+    (value.history as unknown[]).length > 200 ||
+    ![-1, 0, 1].includes(value.undoRequester as number) ||
+    ![-1, 0, 1].includes(value.resultRequester as number) ||
+    ![-1, 0, 1].includes(value.proposedWinner as number) ||
+    !string(value.revealedJson) ||
+    !Object.values(ManualCombatStage).some((entry) => entry.value === value.combatStage) ||
+    !Object.values(Phase).some((phase) => phase !== Phase.None && phase === value.turnPhase) ||
+    ![-1, 0, 1].includes(value.attackerSeat as number) ||
+    ![-1, 0, 1].includes(value.signalSeat as number) ||
+    ![-1, 0, 1].includes(value.signalTargetSeat as number) ||
+    ![-1, 0, 1].includes(value.restartRequester as number) ||
+    ![-1, 0, 1].includes(value.restartFirstSeat as number) ||
+    !Number.isInteger(value.signalRevision) ||
+    (value.signalRevision as number) < 0 ||
+    !Number.isInteger(value.restartCount) ||
+    (value.restartCount as number) < 0
+  )
+    return false;
+  try {
+    return array(
+      JSON.parse(value.revealedJson),
+      (item) =>
+        record(item) &&
+        string(item.cardId) &&
+        (item.artId === undefined || string(item.artId)) &&
+        (item.instanceId === undefined || string(item.instanceId)) &&
+        (item.zone === undefined || Object.values(Zone).includes(item.zone as Zone)) &&
+        seat(item.seat),
+    );
+  } catch {
+    return false;
+  }
 }
 
 function player(value: unknown, index: number): boolean {
@@ -120,20 +174,56 @@ function player(value: unknown, index: number): boolean {
   );
 }
 
+function isValidReplayDeckMetadata(value: RecordValue): boolean {
+  const icons = value.deckIcons;
+  if (
+    icons !== undefined &&
+    (!Array.isArray(icons) || icons.length !== 2 || !icons.every((item) => item === null || string(item)))
+  ) {
+    return false;
+  }
+  if (value.decks === undefined) {
+    return true;
+  }
+  if (!Array.isArray(value.decks) || value.decks.length !== 2) {
+    return false;
+  }
+  return value.decks.every((deck, seatIndex) => {
+    if (deck === null) {
+      return icons === undefined || icons[seatIndex] === null;
+    }
+    return (
+      record(deck) &&
+      string(deck.deckName) &&
+      deck.deckName.length <= 256 &&
+      array(deck.mainDeck, string) &&
+      (deck.mainDeck as unknown[]).length <= 100 &&
+      array(deck.eggDeck, string) &&
+      (deck.eggDeck as unknown[]).length <= 100 &&
+      (deck.mainDeckArts === undefined || array(deck.mainDeckArts, string)) &&
+      (deck.eggDeckArts === undefined || array(deck.eggDeckArts, string)) &&
+      (icons === undefined || icons[seatIndex] === null || (deck.mainDeck as unknown[]).includes(icons[seatIndex]))
+    );
+  });
+}
+
 export function validateReplay(value: unknown): value is MatchReplay {
   if (
     !record(value) ||
     !safeTree(value) ||
+    !isValidReplayDeckMetadata(value) ||
     value.format !== "aegis-replay" ||
     value.version !== REPLAY_FORMAT_VERSION ||
     !string(value.id) ||
-    !seat(value.viewerSeat) ||
+    (!seat(value.viewerSeat) && value.viewerSeat !== SPECTATOR_REPLAY_SEAT) ||
     !Array.isArray(value.visibleHandSeats) ||
     !array(value.visibleHandSeats, seat) ||
-    value.visibleHandSeats.length < 1 ||
+    value.visibleHandSeats.length < (value.viewerSeat === SPECTATOR_REPLAY_SEAT ? 0 : 1) ||
     value.visibleHandSeats.length > 2 ||
     new Set(value.visibleHandSeats).size !== value.visibleHandSeats.length ||
-    !value.visibleHandSeats.includes(value.viewerSeat) ||
+    (value.viewerSeat === SPECTATOR_REPLAY_SEAT
+      ? value.visibleHandSeats.length !== 0
+      : !value.visibleHandSeats.includes(value.viewerSeat)) ||
     !array(value.players, string) ||
     (value.players as unknown[]).length !== 2 ||
     !string(value.mode) ||
@@ -155,6 +245,7 @@ export function validateReplay(value: unknown): value is MatchReplay {
     const state = frame.state;
     if (
       !defaultFields(state, stateDefaults) ||
+      !manualTable(state.manual) ||
       !number(state.stateVersion) ||
       state.stateVersion <= previousVersion ||
       !number(state.turnCount) ||
@@ -188,7 +279,8 @@ export function validateReplay(value: unknown): value is MatchReplay {
         (p: RecordValue) =>
           (p.deck as unknown[]).length > 0 ||
           (p.eggDeck as unknown[]).length > 0 ||
-          (p.security as unknown[]).length > 0,
+          (p.security as unknown[]).length > 0 ||
+          p.manualInspectionJson !== "[]",
       )
     )
       return false;

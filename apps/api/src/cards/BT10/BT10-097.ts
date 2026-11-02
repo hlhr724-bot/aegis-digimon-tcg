@@ -14,6 +14,7 @@ const compiled: CompiledCard = {
           reserveForLaterSlots: true,
           add: [
             {
+              effectTextPart: "You may add 2 cards with [Blue Flare] in their traits among them to your hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -27,6 +28,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "play 1 [Kiriha Aonuma] among them without paying its memory cost.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -51,12 +53,7 @@ const compiled: CompiledCard = {
     },
     {
       trigger: "Main",
-      actions: [
-        {
-          kind: "GainMemory",
-          amount: 2,
-        },
-      ],
+      actions: [{ effectTextPart: "Gain 2 memory.", kind: "GainMemory", amount: 2 }],
       keywords: [
         {
           keyword: "Delay",

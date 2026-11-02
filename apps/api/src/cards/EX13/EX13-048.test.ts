@@ -57,11 +57,13 @@ describe("EX13-048 Kotemon", () => {
         revealCount: 3,
         add: [
           {
+            effectTextPart: "Add 1 card with [Knightmon] in its text",
             filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Knightmon"], match: "text" }] },
             count: 1,
             to: "hand",
           },
           {
+            effectTextPart: "1 card with [Knightmon] in its name among them to the hand.",
             filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Knightmon"], match: "name" }] },
             count: 1,
             to: "hand",

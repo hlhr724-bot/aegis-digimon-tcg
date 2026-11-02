@@ -9,7 +9,7 @@ function history() {
     seed: 0,
     rules: { deckFormat: "standard", unlimited: false, betaBattle: false },
   });
-  result.beforeTurn(1, new GameState());
+  result.beforeTurn(1, { state: new GameState(), refreshHandAffordances: () => {} });
   result.append({ kind: "intent", seat: 0, intent: { type: "endPhase" }, stateVersion: 0 });
   result.acceptAction(0);
   return result;

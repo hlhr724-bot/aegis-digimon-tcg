@@ -1,3 +1,4 @@
+import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
 // Choosing between the options of a modal action.
 
 import type { EffectContext } from "../../EffectContext.js";
@@ -20,7 +21,13 @@ import {
   playableTokenRefs,
 } from "./play.js";
 import { canAttemptPlaceUnder } from "./placeUnder.js";
-import { printedModalBullets, splitPrintedClauses, type Action, type CardInstance } from "@aegis/shared";
+import {
+  printedModalBullets,
+  printedModalPreamble,
+  splitPrintedClauses,
+  type Action,
+  type CardInstance,
+} from "@aegis/shared";
 
 /** Read a prospective hand card's printed waiver without installing a color grant. */
 function prospectiveColorWaiver(ctx: EffectContext, card: CardInstance): boolean {
@@ -187,7 +194,7 @@ export function mergedPlayOrUseAction(
       ...play.target,
       upTo: play.optional === true,
       minimum: 0,
-      filter: { ...playFilter, kind: ["Digimon", "Tamer", "Option"] },
+      filter: { ...playFilter, kind: [...new Set([...(playFilter.kind ?? ["Digimon", "Tamer"]), "Option" as const])] },
     },
     raw: play.raw ?? use.raw,
   };
@@ -246,6 +253,47 @@ export function modalOptionClauses(
   return candidates.length === 1 ? candidates[0] : undefined;
 }
 
+function withScaledModalHeader(ctx: EffectContext, action: Extract<Action, { kind: "Modal" }>): EffectContext {
+  const text = ctx.activeEffectText;
+  if (text === undefined) return ctx;
+  const clauses = splitPrintedClauses(text);
+  const bulleted = (clauses.length > 0 ? clauses.map((clause) => clause.text) : [text]).filter(
+    (clause) => printedModalBullets(clause).length === action.options.length,
+  );
+  if (bulleted.length !== 1) return ctx;
+  const header = printedModalPreamble(bulleted[0]!)
+    .split(/(?<=\.)\s+/)
+    .at(-1)
+    ?.trim();
+  return header ? { ...ctx, activeEffectTextPart: text, activeEffectTextEmphasis: header } : ctx;
+}
+
+function optionalByCostAction(option: readonly Action[]): Action | undefined {
+  const first = option[0];
+  if (first === undefined || !("cost" in first)) return undefined;
+  const cost = first.cost;
+  return typeof cost === "object" && cost !== null && cost.optional === true && /^by\b/i.test(cost.raw ?? "")
+    ? first
+    : undefined;
+}
+
+async function askModalOption(
+  ctx: EffectContext,
+  action: Extract<Action, { kind: "Modal" }>,
+  indices: readonly number[],
+  clauses: readonly string[] | undefined,
+  askCtx: EffectContext = ctx,
+  activation?: { index: number; total: number },
+): Promise<number> {
+  const labels = indices.map((idx) => optionLabel(action, idx));
+  const pick = await ctx.ask.chooseOption(askCtx, labels, {
+    choiceSummaries: indices.map((index) => getDecisionEffectSummary({ actions: action.options[index]! })),
+    ...choiceClauses(clauses, indices),
+    ...(activation === undefined ? {} : { activation }),
+  });
+  return indices[pick] ?? indices[0]!;
+}
+
 function choiceClauses(clauses: readonly string[] | undefined, optionIndices: readonly number[]) {
   return clauses === undefined ? undefined : { choiceClauses: optionIndices.map((idx) => clauses[idx]!) };
 }
@@ -260,6 +308,11 @@ async function runOption(
   idx: number,
   clauses: readonly string[] | undefined,
 ): Promise<void> {
+  const paidAction = optionalByCostAction(action.options[idx]!);
+  if (paidAction !== undefined) {
+    ctx.costDeclinedAtSelection ??= new Set();
+    ctx.costDeclinedAtSelection.add(paidAction);
+  }
   const clause = clauses?.[idx];
   const outerTextPart = ctx.activeEffectTextPart;
   if (clause !== undefined) {
@@ -344,12 +397,14 @@ export async function runModal(ctx: EffectContext, action: Extract<Action, { kin
   // activation may choose the same bullet again (EX12-037 Q6795-Q6797). Re-evaluate which
   // bullets are executable after each resolution, but never recalculate the activation count.
   if (action.chooseScaling !== undefined) {
+    const headerCtx = withScaledModalHeader(ctx, action);
     for (let i = 0; i < rawChoose; i += 1) {
       const currentAvailable = availableOptionIndices(ctx, action);
       if (currentAvailable.length === 0) break;
-      const labels = currentAvailable.map((idx) => optionLabel(action, idx));
-      const pick = await ctx.ask.chooseOption(ctx, labels, choiceClauses(clauses, currentAvailable));
-      const chosen = currentAvailable[pick] ?? currentAvailable[0]!;
+      const chosen = await askModalOption(ctx, action, currentAvailable, clauses, headerCtx, {
+        index: i + 1,
+        total: rawChoose,
+      });
       await runOption(ctx, action, chosen, clauses);
     }
     return false;
@@ -361,10 +416,7 @@ export async function runModal(ctx: EffectContext, action: Extract<Action, { kin
     if (chosenIndices.length >= choose) break;
     const remaining = availableIndices.filter((idx) => !chosenIndices.includes(idx));
     if (remaining.length === 0) break;
-    const labels = remaining.map((idx) => optionLabel(action, idx));
-    const pick = await ctx.ask.chooseOption(ctx, labels, choiceClauses(clauses, remaining));
-    const chosen = remaining[pick] ?? remaining[0]!;
-    chosenIndices.push(chosen);
+    chosenIndices.push(await askModalOption(ctx, action, remaining, clauses));
   }
   for (const idx of chosenIndices) await runOption(ctx, action, idx, clauses);
   return false;

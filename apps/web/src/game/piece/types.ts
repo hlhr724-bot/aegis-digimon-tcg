@@ -7,6 +7,7 @@ export interface HandEntry {
   instanceId: string;
   cardId: string;
   activatableEffectsJson: string;
+  negamonPlayEffectKey?: string;
   /** Server projection: this card can be played right now. */
   playableFromHand: boolean;
   /** Server projection: memory this play would cost with active reducers applied; -1 if not projected. */

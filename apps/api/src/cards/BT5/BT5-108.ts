@@ -6,6 +6,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Delete 1 of your opponent's unsuspended level 4 Digimon and 1 of your opponent's unsuspended level 5 Digimon.",
           kind: "Delete",
           target: { filter: { controller: "opponent", unsuspended: true, kind: ["Digimon"], levels: [4] }, count: 1 },
           additionalSimultaneousTargets: [

@@ -17,6 +17,33 @@ Step 3 exists because email security scanners (Outlook Safe Links, Defender, Pro
 others) open every link in an email before the player does. When `GET` used up the token, the
 player's own click always failed with "invalid or expired sign-in link" (issue #5458).
 
+## Local development
+
+Start PostgreSQL and a local Mailpit inbox before running the app:
+
+```sh
+brew services start postgresql@16
+mkdir -p .local
+mailpit --listen 127.0.0.1:8025 --smtp 127.0.0.1:1025 --database .local/mailpit.db
+```
+
+Configure the ignored `apps/api/.env.development` file:
+
+```dotenv
+AEGIS_DEV_SMTP_URL=smtp://127.0.0.1:1025
+AEGIS_API_URL=http://localhost:2567
+AEGIS_WEB_URL=http://localhost:5173
+```
+
+Set `DATABASE_URL` there if PostgreSQL is not available through the default local
+connection. Restart `pnpm dev` after changing API configuration. Request a sign-in
+link in the app and open it from [the local inbox](http://127.0.0.1:8025).
+Messages stay on the machine. This creates or uses an account in the local database;
+it does not access the account or decks from the deployed site.
+
+`AEGIS_DEV_SMTP_URL` overrides external delivery only outside production and accepts
+only an SMTP server on a loopback hostname. Production ignores this setting.
+
 ## Responses
 
 | Status | Body                                | Cause                                                                        |

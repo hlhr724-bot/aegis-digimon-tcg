@@ -1,4 +1,7 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
 import { Zone, CardInstance } from "@aegis/shared";
+import type { Permanent } from "@aegis/shared/schema/Permanent";
 import { applyOverflow, insertCard, removeFromStackAt } from "../../state/access.js";
 import type { Primitives } from "../EffectContext.js";
 
@@ -23,6 +26,7 @@ export function createTrashStackVerbs(pc: PrimitivesContext) {
     const uniqueIds = new Set(selections.map(({ instanceId }) => instanceId));
     if (uniqueIds.size !== exactCount) return [];
 
+    const hostSnapshots = new Map<string, Permanent>();
     const validated: {
       hostPermanentId: string;
       card: CardInstance;
@@ -42,6 +46,9 @@ export function createTrashStackVerbs(pc: PrimitivesContext) {
       if (continuous.stackCardTrashLocked(instanceId)) return [];
       const index = host.stack.findIndex((card) => card.instanceId === instanceId);
       if (index < 0) return [];
+      if (!hostSnapshots.has(hostPermanentId)) {
+        hostSnapshots.set(hostPermanentId, host.clone());
+      }
       validated.push({
         hostPermanentId,
         card: host.stack[index]!,
@@ -50,6 +57,7 @@ export function createTrashStackVerbs(pc: PrimitivesContext) {
       });
     }
 
+    const origins = locateMoveOrigins({ state, instanceIds: validated.map(({ card }) => card.instanceId) });
     // Commit every move before publishing any event/trigger.
     for (const entry of validated) {
       const host = access.permanentById(entry.hostPermanentId)!;
@@ -61,12 +69,14 @@ export function createTrashStackVerbs(pc: PrimitivesContext) {
     }
     const moved = validated.map(({ card }) => card);
     applyOverflow(engine.memory, moved, state.turnSeat);
-    engine.emit({
-      kind: "cardsMoved",
-      instanceIds: moved.map((card) => card.instanceId),
-      from: "various",
-      to: Zone.Trash,
-    });
+    for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: moved })) {
+      engine.emit({
+        kind: "cardsMoved",
+        instanceIds: cards.map((card) => card.instanceId),
+        ...origin,
+        to: Zone.Trash,
+      });
+    }
     if (engine.fireSubTrigger) {
       const byHost = new Map<string, typeof validated>();
       for (const entry of validated) {
@@ -79,6 +89,7 @@ export function createTrashStackVerbs(pc: PrimitivesContext) {
         if (opts?.isDigiBurst === true) {
           await engine.fireSubTrigger("onDigiBurstCardDiscarded", {
             subjectPermanentId: hostPermanentId,
+            trashedDigivolutionHost: hostSnapshots.get(hostPermanentId),
             trashedDigivolutionInstanceIds: ids,
             ...(opts.byEffectSeat !== undefined ? { byEffectSeat: opts.byEffectSeat } : {}),
             ...(opts.byEffectCardId !== undefined ? { byEffectCardId: opts.byEffectCardId } : {}),
@@ -87,6 +98,7 @@ export function createTrashStackVerbs(pc: PrimitivesContext) {
         }
         await engine.fireSubTrigger("onDigivolutionCardsDiscardedBatch", {
           subjectPermanentId: hostPermanentId,
+          trashedDigivolutionHost: hostSnapshots.get(hostPermanentId),
           trashedDigivolutionInstanceIds: ids,
           trashedFaceDownDigivolutionInstanceIds: entries
             .filter(({ wasFaceDown }) => wasFaceDown)
@@ -98,6 +110,7 @@ export function createTrashStackVerbs(pc: PrimitivesContext) {
         for (const entry of entries) {
           await engine.fireSubTrigger("onDigivolutionCardDiscarded", {
             subjectPermanentId: hostPermanentId,
+            trashedDigivolutionHost: hostSnapshots.get(hostPermanentId),
             trashedDigivolutionInstanceId: entry.card.instanceId,
             ...(opts?.byEffectSeat !== undefined ? { byEffectSeat: opts.byEffectSeat } : {}),
             ...(opts?.byEffectCardId !== undefined ? { byEffectCardId: opts.byEffectCardId } : {}),

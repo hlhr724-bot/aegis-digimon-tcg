@@ -10,7 +10,10 @@ describe("Turn player block triggers resolve first in the recorded match", () =>
       readFileSync(new URL("./turn-player-block-triggers-resolve-first-replay.replay.json", import.meta.url), "utf8"),
     ) as ReplayRecord;
     const events: ServerEvent[] = [];
-    const replay = await runReplay(record, { untilInput: 99, onBatch: (_state, batch) => events.push(...batch) });
+    const replay = await runReplay(record, {
+      untilInput: record.inputs.length - 1,
+      onBatch: (_state, batch) => events.push(...batch),
+    });
     try {
       expect(replay.divergences).toEqual([]);
       const block = events.findLastIndex((event) => event.kind === "blocked");

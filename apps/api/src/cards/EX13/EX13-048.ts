@@ -20,8 +20,18 @@ export const compiled: CompiledCard = {
           kind: "RevealAdd",
           revealCount: 3,
           add: [
-            { filter: knightmonInText, count: 1, to: "hand" },
-            { filter: knightmonInName, count: 1, to: "hand" },
+            {
+              effectTextPart: "Add 1 card with [Knightmon] in its text",
+              filter: knightmonInText,
+              count: 1,
+              to: "hand",
+            },
+            {
+              effectTextPart: "1 card with [Knightmon] in its name among them to the hand.",
+              filter: knightmonInName,
+              count: 1,
+              to: "hand",
+            },
           ],
           rest: "deckBottom",
         },

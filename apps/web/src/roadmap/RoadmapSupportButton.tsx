@@ -30,14 +30,15 @@ export function RoadmapSupportButton({ item, signedIn, onSignIn, onChanged, onFa
   };
   return (
     <Button
-      variant={item.supported ? "primary" : "secondary"}
+      variant="secondary"
       size="sm"
-      icon={Icons.Heart}
+      className="roadmap-vote"
       aria-pressed={item.supported}
       aria-label={t("roadmap.supportItem", { title: item.title, count: item.supportCount })}
       disabled={saving}
       onClick={toggle}
     >
+      <Icons.ChevronUp size={14} />
       {item.supportCount}
     </Button>
   );

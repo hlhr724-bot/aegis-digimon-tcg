@@ -1,3 +1,9 @@
+import { ManualBreedingChoice } from "@aegis/shared/manual/ManualBreedingChoice";
+import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
+import { ManualAction } from "@aegis/shared/manual/ManualAction";
+import { GameMode } from "@aegis/shared/manual/GameMode";
+import { sendManualCommand } from "@/game/manual/sendManualCommand";
+import { Zone, Phase } from "@aegis/shared/schema/enums";
 /* What a tap or a drop on the board does.
 
    The board is answered by pointing at it, so one gesture means different things
@@ -195,6 +201,11 @@ export function boardActions({
   }
 
   const selectHandCard = (entry: HandEntry) => {
+    if (state.gameMode === GameMode.MANUAL.value) {
+      setHandSel(entry.instanceId);
+      setSelPerm(null);
+      return;
+    }
     playSound("select");
     setHandSel(entry.instanceId);
     setHandPreview(entry.instanceId);
@@ -204,6 +215,11 @@ export function boardActions({
   };
 
   const handleTap = (d: DragState) => {
+    if (state.gameMode === GameMode.MANUAL.value && d.kind === DragKind.Attack) {
+      setSelPerm(d.permanentId);
+      setHandSel(null);
+      return;
+    }
     if (d.kind === DragKind.Play) {
       const entry = handEntries.find((candidate) => candidate.instanceId === d.instanceId);
       if (entry) selectHandCard(entry);
@@ -217,6 +233,78 @@ export function boardActions({
     const zone = dropZoneAt(cx, cy);
     if (!zone) return;
     const { target, id } = zone;
+    if (state.gameMode === GameMode.MANUAL.value && room) {
+      if (mainActionBlocked) return;
+      if (d.kind === DragKind.Play) {
+        const targetPermanentId = target === "breeding-you" ? viewer.breeding?.permanentId : id;
+        if (target === "battle-you" || target === "breeding-you" || target === "perm-you") {
+          sendManualCommand({
+            room,
+            command: {
+              action: ManualAction.MOVE.value,
+              wholePile: false,
+              from: { zone: Zone.Hand, instanceId: d.instanceId },
+              to: {
+                zone: target === "breeding-you" ? Zone.Breeding : Zone.BattleArea,
+                ...((target === "perm-you" || target === "breeding-you") && targetPermanentId
+                  ? { permanentId: targetPermanentId, part: "top" as const }
+                  : {}),
+              },
+            },
+          });
+        }
+      } else if (target === "battle-you" || target === "breeding-you" || target === "perm-you") {
+        const permanent = findPermanent(d.permanentId);
+        if (permanent) {
+          if (permanent.inBreeding && target === "battle-you" && breedingActionsOpen) {
+            if (state.manual.canMoveFromBreeding) {
+              sendManualCommand({
+                room,
+                command: { action: ManualAction.BREEDING.value, choice: ManualBreedingChoice.MOVE.value },
+              });
+            }
+            return;
+          }
+          sendManualCommand({
+            room,
+            command: {
+              action: ManualAction.MOVE.value,
+              wholePile: true,
+              from: {
+                zone: permanent.inBreeding ? Zone.Breeding : Zone.BattleArea,
+                permanentId: permanent.permanentId,
+                part: "top",
+              },
+              to: {
+                zone: target === "breeding-you" ? Zone.Breeding : Zone.BattleArea,
+                ...(target === "perm-you" && id ? { permanentId: id, part: "source" as const } : {}),
+              },
+            },
+          });
+        }
+      } else if (target === "opp-security" || (target === "perm-opp" && id)) {
+        const attacker = findPermanent(d.permanentId);
+        if (
+          !isMyTurn ||
+          state.manual.turnPhase !== Phase.Main ||
+          state.manual.combatStage !== ManualCombatStage.NONE.value ||
+          !attacker ||
+          attacker.inBreeding ||
+          attacker.topCard.faceUp === false
+        ) {
+          return;
+        }
+        sendManualCommand({
+          room,
+          command: {
+            action: ManualAction.ATTACK.value,
+            permanentId: d.permanentId,
+            targetPermanentId: target === "perm-opp" ? id : undefined,
+          },
+        });
+      }
+      return;
+    }
 
     if (d.kind === DragKind.Play) {
       if (mainActionBlocked) return;
@@ -269,6 +357,9 @@ export function boardActions({
           });
           return;
         }
+        const droppedEntry = handEntries.find((entry) => entry.instanceId === d.instanceId);
+        if (droppedEntry && parseActivatable(droppedEntry.activatableEffectsJson).length > 0)
+          return selectHandCard(droppedEntry);
         if (!def?.kinds.includes(CardKind.Option)) return playCard(d.instanceId, true);
         ping(t("game.hint.dropOption"));
         return;
@@ -307,6 +398,12 @@ export function boardActions({
   };
 
   const onYourPerm = (perm: Permanent): (() => void) | undefined => {
+    if (state.gameMode === GameMode.MANUAL.value) {
+      return () => {
+        setSelPerm(perm.permanentId);
+        setHandSel(null);
+      };
+    }
     if (selPerm === perm.permanentId) return clearSel;
     if (linkSel) {
       if (linkSel.targetPermanentIds.includes(perm.permanentId)) {
@@ -360,6 +457,26 @@ export function boardActions({
   };
 
   const onBreeding = () => {
+    if (state.gameMode === GameMode.MANUAL.value) {
+      if (breedingActionsOpen && room) {
+        if (viewer.breeding && !state.manual.canMoveFromBreeding) {
+          return;
+        }
+        if (!viewer.breeding && !state.manual.canHatch) {
+          return;
+        }
+        sendManualCommand({
+          room,
+          command: {
+            action: ManualAction.BREEDING.value,
+            choice: viewer.breeding ? ManualBreedingChoice.MOVE.value : ManualBreedingChoice.HATCH.value,
+          },
+        });
+      } else if (viewer.breeding) {
+        setSelPerm(viewer.breeding.permanentId);
+      }
+      return;
+    }
     if (selCardId && viewer.breeding && eligibleBase(viewer.breeding)) {
       if (!mainActionBlocked)
         return digivolveWithChoice(viewer.breeding.permanentId, handSel!, selCardId!, viewer.breeding);

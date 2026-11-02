@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [Insectoid] or [Machine] in its traits",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [X Antibody] among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -49,6 +51,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [Insectoid] or [Machine] in its traits",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -62,6 +65,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [X Antibody] among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

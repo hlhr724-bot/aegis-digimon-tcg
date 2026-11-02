@@ -1,4 +1,5 @@
 import type { LedgerEntry, ParticipantKind, StandingsRow, TournamentRules } from "@aegis/shared";
+import { rankStandingsRows } from "#api/tournaments/standings/rankStandingsRows";
 
 // Standings are a pure projection of an immutable result ledger. Nothing here
 // reads or writes mutable counters, a database, or a clock: the same ledger and
@@ -29,21 +30,20 @@ export type StandingsTiebreaker =
   | "opponent_match_win_rate"
   // Average of the opponents' OMW% (OOMW%), used by the World Championship ruleset.
   | "opponent_opponent_match_win_rate"
-  // Officially defined but not resolvable from the ledger alone: they need a
-  // judge, a clock, or a physical draw. Accepted so a ruleset can list the full
-  // official chain; applied as no-ops and reported in `unresolvedTiebreakers`.
   | "head_to_head"
-  | "extra_match"
-  | "judge_random_draw";
+  | "judge_random_draw"
+  | "extra_match";
 
 const RESOLVABLE_TIEBREAKERS = new Set<StandingsTiebreaker>([
   "points",
   "match_win_rate",
   "opponent_match_win_rate",
   "opponent_opponent_match_win_rate",
+  "head_to_head",
+  "judge_random_draw",
 ]);
 
-const UNRESOLVABLE_TIEBREAKERS = new Set<StandingsTiebreaker>(["head_to_head", "extra_match", "judge_random_draw"]);
+const UNRESOLVABLE_TIEBREAKERS = new Set<StandingsTiebreaker>(["extra_match"]);
 
 export class UnknownTiebreakerError extends Error {
   constructor(readonly tiebreaker: string) {
@@ -91,6 +91,7 @@ export type ComputeStandingsInput = {
   // Omitted: the roster is derived from the ledger and every seed is null.
   participants?: readonly StandingsParticipant[];
   options?: StandingsOptions;
+  drawSeed?: string;
 };
 
 export type StandingsDetailRow = StandingsRow & {
@@ -329,13 +330,13 @@ export function computeStandingsReport(input: ComputeStandingsInput): StandingsR
     unratedOpponentMatches: unratedOpponentMatches.get(accumulator.id) ?? 0,
   }));
 
-  rows.sort((left, right) => compareRows(left, right, tiebreakers));
-  rows.forEach((row, index) => {
+  const ranked = rankStandingsRows({ rows, ledger: input.ledger, tiebreakers, drawSeed: input.drawSeed ?? "" });
+  ranked.forEach((row, index) => {
     row.rank = index + 1;
   });
 
   return {
-    rows,
+    rows: ranked,
     unresolvedTiebreakers: tiebreakers.filter((tiebreaker) => UNRESOLVABLE_TIEBREAKERS.has(tiebreaker)),
     botOpponentsIncluded: includeBots,
   };
@@ -353,46 +354,4 @@ export function computeStandings(input: ComputeStandingsInput): StandingsRow[] {
     draws: row.draws,
     byes: row.byes,
   }));
-}
-
-function tiebreakerValue(row: StandingsDetailRow, tiebreaker: StandingsTiebreaker): number {
-  switch (tiebreaker) {
-    case "points":
-      return row.points;
-    case "match_win_rate":
-      return row.matchWinRate;
-    case "opponent_match_win_rate":
-      return row.opponentMatchWinRate;
-    case "opponent_opponent_match_win_rate":
-      return row.opponentOpponentMatchWinRate;
-    case "head_to_head":
-    case "extra_match":
-    case "judge_random_draw":
-      return 0;
-  }
-}
-
-// Points always lead (manual section 5.4); the configured chain only breaks
-// ties below them. The final seed/id fallback makes the order total, so ranks
-// are always distinct and Top Cut seeding never has to guess.
-function compareRows(
-  left: StandingsDetailRow,
-  right: StandingsDetailRow,
-  tiebreakers: readonly StandingsTiebreaker[],
-): number {
-  if (left.points !== right.points) return right.points - left.points;
-
-  for (const tiebreaker of tiebreakers) {
-    const leftValue = tiebreakerValue(left, tiebreaker);
-    const rightValue = tiebreakerValue(right, tiebreaker);
-    if (leftValue !== rightValue) return rightValue - leftValue;
-  }
-
-  if (left.seed !== right.seed) {
-    if (left.seed === null) return 1;
-    if (right.seed === null) return -1;
-    return left.seed - right.seed;
-  }
-
-  return left.participantId < right.participantId ? -1 : 1;
 }

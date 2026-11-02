@@ -1,0 +1,1 @@
+export const SEAT_TRANSFERRED_CLOSE_CODE = 4004;

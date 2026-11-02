@@ -27,6 +27,9 @@ const compiled: CompiledCard = {
             isSelf: true,
           },
           amount: 2,
+          choose: true,
+          abortOnDecline: true,
+          raw: "＜Digi-Burst 2＞",
         },
         {
           kind: "Suspend",

@@ -4,7 +4,13 @@ export const compiled: CompiledCard = {
   effects: [
     {
       trigger: "Main",
-      actions: [{ kind: "Suspend", target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 } }],
+      actions: [
+        {
+          effectTextPart: "[Main] Suspend 1 of your opponent's Digimon.",
+          kind: "Suspend",
+          target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
+        },
+      ],
     },
     {
       trigger: "Security",

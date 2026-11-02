@@ -37,6 +37,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete all Digimon with play costs of 7 or less.",
           kind: "Delete",
           target: {
             filter: {

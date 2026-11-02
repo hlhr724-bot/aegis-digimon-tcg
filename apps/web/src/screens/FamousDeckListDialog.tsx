@@ -1,9 +1,9 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 /* Read-only card list for a famous preset, opened from the lobby. Lets a player
    inspect a tournament list before playing it, without copying it first. */
 
 import { useEffect, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
-import { getCardDefinition } from "@aegis/shared";
 import { CardFull } from "../design/cards";
 import { Button, Dialog, Eyebrow, IconButton } from "../design/primitives";
 import { Icons } from "../design/icons";
@@ -17,6 +17,7 @@ import "./famousDeckListDialog.css";
    above the dialog; key events still bubble through React to the dialog, so
    Escape is stopped here to close only the lightbox. */
 function CardLightbox({ cardId, onClose }: { cardId: string; onClose: () => void }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   useEffect(() => {
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -29,7 +30,7 @@ function CardLightbox({ cardId, onClose }: { cardId: string; onClose: () => void
     event.stopPropagation();
     onClose();
   };
-  const name = getCardDefinition(cardId)?.nameEn ?? cardId;
+  const name = getCardName(cardId);
   return createPortal(
     <div
       id="famous-deck-lightbox"
@@ -72,11 +73,12 @@ export function FamousDeckListDialog({
   collection: string;
   active: boolean;
   onUse?: () => void;
-  onCopy: () => void;
+  onCopy?: () => void;
   onClose: () => void;
   eyebrow?: string;
   copied?: boolean;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const sections = deckSections(deck, t);
   const [inspectedCardId, setInspectedCardId] = useState<string | null>(null);
@@ -111,14 +113,14 @@ export function FamousDeckListDialog({
                   <button
                     type="button"
                     className="famous-deck-dialog__card-button"
-                    aria-label={getCardDefinition(cardId)?.nameEn ?? cardId}
+                    aria-label={getCardName(cardId)}
                     onClick={() => setInspectedCardId(cardId)}
                   >
                     <CardFull cardId={cardId} width={72} zoomOnHover />
                     <span className="famous-deck-dialog__count">×{count}</span>
                   </button>
                   <span className="famous-deck-dialog__card-name" aria-hidden="true">
-                    {getCardDefinition(cardId)?.nameEn ?? cardId}
+                    {getCardName(cardId)}
                   </span>
                 </li>
               ))}
@@ -134,9 +136,11 @@ export function FamousDeckListDialog({
           className="famous-deck-dialog__export"
           label={t("deck.exportPng")}
         />
-        <Button variant="secondary" icon={Icons.FileText} onClick={onCopy} disabled={copied}>
-          {copied ? t("common.copied") : t("lobby.copyPreset")}
-        </Button>
+        {onCopy ? (
+          <Button variant="secondary" icon={Icons.FileText} onClick={onCopy} disabled={copied}>
+            {copied ? t("common.copied") : t("lobby.copyPreset")}
+          </Button>
+        ) : null}
         {onUse ? (
           <Button icon={active ? Icons.Check : Icons.Swords} disabled={active} onClick={onUse}>
             {active ? t("deck.active") : t("lobby.useDeck")}

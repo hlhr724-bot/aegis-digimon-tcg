@@ -60,6 +60,7 @@ function createContextState(engine: PrimitivesEngine) {
   const effectSeatStack: Seat[] = [];
   const effectSourceKindsStack: string[][] = [];
   const effectSourcePermanentIdStack: (string | undefined)[] = [];
+  const effectTargetsEmittedStack: Set<string>[] = [];
   /**
    * Tell the client that a keyword paid to prevent `saved`'s deletion. These keywords resolve
    * through a plain decision and then a silent board change, so without this the viewer sees
@@ -99,6 +100,7 @@ function createContextState(engine: PrimitivesEngine) {
       activationTurnSeat: Seat;
       perPlay?: boolean;
       pendingPlayInstanceId?: string;
+      materialLimits?: Partial<Record<ZoneRef, number>>;
     }>
   >();
   const digiXrosExpansionIsActive = (
@@ -145,10 +147,12 @@ function createContextState(engine: PrimitivesEngine) {
     duration: EffectDuration,
     perPlay = false,
     pendingPlayInstanceId?: string,
+    materialLimits?: Partial<Record<ZoneRef, number>>,
   ): void => {
     const entries = digiXrosZoneExpansions.get(seat) ?? [];
     entries.push({
       zones: [...new Set(zones)],
+      ...(materialLimits === undefined ? {} : { materialLimits: { ...materialLimits } }),
       duration,
       activationTurnCount: state.turnCount,
       activationTurnSeat: state.turnSeat,
@@ -205,6 +209,8 @@ function createContextState(engine: PrimitivesEngine) {
   };
 
   return {
+    sequences: { delayedMemorySequence: 0, stripSequence: 0 },
+    customGrants: new Map<string, { grant: Record<string, unknown>; duration: EffectDuration }[]>(),
     engine,
     state,
     access,
@@ -215,6 +221,7 @@ function createContextState(engine: PrimitivesEngine) {
     effectSeatStack,
     effectSourceKindsStack,
     effectSourcePermanentIdStack,
+    effectTargetsEmittedStack,
     emitDeletionPrevented,
     currentHandAddProvenance,
     digiXrosZoneExpansions,

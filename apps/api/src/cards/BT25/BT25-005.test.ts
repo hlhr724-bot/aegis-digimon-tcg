@@ -6,20 +6,29 @@ import "../index.js";
 
 async function answerUntilPagumonDecision(s: ReturnType<typeof setupEngine>, accept: boolean): Promise<void> {
   for (let i = 0; i < 20; i += 1) {
-    await settle(() => s.state.pendingDecision?.kind === "optional");
-    const decision = s.state.pendingDecision;
-    if (decision?.kind !== "optional") return;
-    const isPagumon = decision.promptText === "Digivolve";
+    await settle(() => s.state.pendingDecision !== undefined);
+    const decision = s.decisions.at(-1)!.req;
+    const isPagumon = decision.sourceCardId === "BT25-005";
+    expect(decision.kind).toBe(isPagumon ? "selectCards" : "optional");
+    expect(decision.options).toMatchObject(isPagumon ? { min: 0, max: 1, purpose: "optionalTarget" } : {});
+    const selectionKind = decision.kind === "chooseTargets" ? "chooseTargets" : "selectCards";
+    const candidates = decision.options?.candidateInstanceIds ?? [];
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: decision.decisionId,
-        response: { kind: "optional", accept: isPagumon ? accept : false },
+        response:
+          decision.kind === "optional"
+            ? { kind: "optional", accept: false }
+            : {
+                kind: selectionKind,
+                instanceIds: isPagumon && !accept ? [] : candidates.slice(0, decision.options?.max ?? 1),
+              },
       }),
     ).toEqual({ ok: true });
     if (isPagumon) return;
   }
-  throw new Error("Pagumon optional decision did not appear");
+  throw new Error("Pagumon evolution choice did not appear");
 }
 
 async function declinePendingOptionals(s: ReturnType<typeof setupEngine>): Promise<void> {
@@ -291,7 +300,7 @@ describe("BT25-005 Pagumon", () => {
         },
         1: { battleArea: [{ card: "BT1-013", as: "opponent" }] },
       },
-      { autoSelectCards: true, autoChooseOption: true, preferInstanceIds: preferred },
+      { autoChooseOption: true, preferInstanceIds: preferred },
     );
     preferred.push(s.inst("firstSource").instanceId, s.inst("secondSource").instanceId, s.inst("target").instanceId);
     s.state.memory = 10;
@@ -334,7 +343,7 @@ describe("BT25-005 Pagumon", () => {
         },
         1: { battleArea: [{ card: "BT1-013", as: "opponent" }] },
       },
-      { autoSelectCards: true, autoChooseOption: true, preferInstanceIds: preferred },
+      { autoChooseOption: true, preferInstanceIds: preferred },
     );
     preferred.push(
       s.inst("firstSource").instanceId,

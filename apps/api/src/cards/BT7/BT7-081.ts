@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 5,
           add: [
             {
+              effectTextPart: "Add 1 card with [Hybrid] or [Ten Warriors] in its traits",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [{ tokens: ["Hybrid", "Ten Warriors"], match: "traitContains" }],
@@ -18,7 +19,12 @@ const compiled: CompiledCard = {
               count: 1,
               to: "hand",
             },
-            { filter: { controllerDefault: "mine", kind: ["Tamer"] }, count: 1, to: "hand" },
+            {
+              effectTextPart: "1 Tamer card among them to your hand.",
+              filter: { controllerDefault: "mine", kind: ["Tamer"] },
+              count: 1,
+              to: "hand",
+            },
           ],
           rest: "deckBottom",
         },

@@ -1,3 +1,6 @@
+import { InterpreterCallbackKind } from "#api/engine/effects/interpreter/snapshot/InterpreterCallbackKind";
+import { createDelayedEffectBody } from "#api/engine/effects/interpreter/snapshot/createDelayedEffectBody";
+import { createDelayedEffectMatcher } from "#api/engine/effects/interpreter/snapshot/createDelayedEffectMatcher";
 // Branching, delay, and arming event-driven sub-effects.
 
 import type { EffectContext } from "../../EffectContext.js";
@@ -44,32 +47,21 @@ export async function runControlFlowAction(ctx: EffectContext, action: Action): 
         // simultaneous set it lands in (KB Q5564/Q5566/Q5568).
         orderedByTurnPlayer: true,
         expiresOnTurnEndOf: ctx.game.opponentOf(ctx.source.ownerSeat),
-        matches: (subCtx) => !subCtx.source.isOwnersTurn(),
+        matches:
+          ctx.game?.runtimeCallbacks === undefined
+            ? createDelayedEffectMatcher()
+            : ctx.game?.runtimeCallbacks.create<ReturnType<typeof createDelayedEffectMatcher>>({
+                key: InterpreterCallbackKind.DELAYED_MATCH.value,
+                payload: null,
+              }),
         description: action.raw ?? "DelayedEffect(nextEndOfOpponentTurn)",
-        run: async (subCtx) => {
-          const writable = subCtx as unknown as {
-            boundPlayed?: Map<string, Set<string>>;
-            boundCardInstances?: Map<string, Set<string>>;
-            selections?: Map<string, string>;
-            namedCounts?: Map<string, number>;
-          };
-          if (armedBindings.boundPlayed !== undefined) {
-            writable.boundPlayed = new Map([...(writable.boundPlayed ?? []), ...armedBindings.boundPlayed]);
-          }
-          if (armedBindings.boundCardInstances !== undefined) {
-            writable.boundCardInstances = new Map([
-              ...(writable.boundCardInstances ?? []),
-              ...armedBindings.boundCardInstances,
-            ]);
-          }
-          if (armedBindings.selections !== undefined) {
-            writable.selections = new Map([...(writable.selections ?? []), ...armedBindings.selections]);
-          }
-          if (armedBindings.namedCounts !== undefined) {
-            writable.namedCounts = new Map([...(writable.namedCounts ?? []), ...armedBindings.namedCounts]);
-          }
-          await runAction(subCtx, action.effect);
-        },
+        run:
+          ctx.game?.runtimeCallbacks === undefined
+            ? createDelayedEffectBody({ effect: action.effect, bindings: armedBindings })
+            : ctx.game?.runtimeCallbacks.create<ReturnType<typeof createDelayedEffectBody>>({
+                key: InterpreterCallbackKind.DELAYED_BODY.value,
+                payload: { effect: action.effect, bindings: armedBindings },
+              }),
       });
       return false;
     }

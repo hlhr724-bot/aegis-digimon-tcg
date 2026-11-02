@@ -1,5 +1,5 @@
-import type { CompiledCard } from "@aegis/shared";
-import { registerIrCard } from "../../engine/effects/interpreter.js";
+import type { CompiledCard } from "@aegis/shared/effects/ir/card";
+import { registerIrCard } from "#api/engine/effects/interpreter/registration/module";
 
 export const compiled: CompiledCard = {
   effects: [
@@ -68,7 +68,6 @@ export const compiled: CompiledCard = {
             bindHostAs: "bt24_016_elizamon",
             raw: "by placing 1 [Dimetromon] from your trash as any of your [Elizamon]'s bottom digivolution card",
           },
-          optional: true,
           abortOnDecline: true,
         },
       ],

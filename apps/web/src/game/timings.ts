@@ -200,6 +200,7 @@ export const BATTLE_TIMING_VARIABLES: Readonly<Record<string, number>> = {
   "--t-turn-control-pulse": TIMINGS.turnControlPulse,
   "--t-log-sidebar": TIMINGS.logSidebar,
   "--t-freeze-shake": TIMINGS.freezeShake,
+  "--t-status-pulse": TIMINGS.statusPulse,
   "--t-deck-riffle": TIMINGS.deckRiffle,
   "--t-landing-bounce": TIMINGS.landingBounce,
   "--t-security-flight": TIMINGS.securityFlight,

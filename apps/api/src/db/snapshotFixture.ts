@@ -1,5 +1,5 @@
 import type { Pool } from "pg";
-import { newDb } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 import type { IBackup } from "pg-mem";
 import { afterAll } from "vitest";
 
@@ -40,7 +40,7 @@ export function snapshotFixtures<T>(): (key: string, build: (pool: Pool) => Prom
       cached.backup.restore();
       return cached.value;
     }
-    const db = newDb({ noAstCoverageCheck: true });
+    const db = createMemoryDatabase({ noAstCoverageCheck: true });
     const value = await build(new (db.adapters.createPg().Pool)() as Pool);
     cache.set(key, { value, backup: db.backup() });
     return value;

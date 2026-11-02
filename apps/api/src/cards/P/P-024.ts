@@ -24,6 +24,8 @@ const compiled: CompiledCard = {
       optional: true,
       actions: [
         {
+          effectTextPart:
+            "[Main] If you have [Tai Kamiya] in play, you may place 1 of your [Agumon] cards at the bottom of its owner's deck to trigger ＜Draw 3＞. (Draw 3 cards from your deck.) Trash that Digimon's digivolution cards.",
           kind: "Return",
           target: {
             filter: {
@@ -41,6 +43,8 @@ const compiled: CompiledCard = {
           bindResultAs: "returnedAgumon",
         },
         {
+          effectTextPart:
+            "[Main] If you have [Tai Kamiya] in play, you may place 1 of your [Agumon] cards at the bottom of its owner's deck to trigger ＜Draw 3＞. (Draw 3 cards from your deck.) Trash that Digimon's digivolution cards.",
           kind: "Draw",
           amount: 3,
           controller: "mine",

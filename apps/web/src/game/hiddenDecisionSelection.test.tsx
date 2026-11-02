@@ -9,42 +9,45 @@ import { DecisionOverlay } from "./overlay";
 
 afterEach(cleanup);
 
-it("lets Mirage select concealed opponent hand positions without exposing remembered identities", () => {
-  const ids = Array.from({ length: 10 }, (_, i) => `opponent-hand-${i}`);
-  const request: DecisionRequest = {
-    decisionId: "mirage-hidden-hand",
-    seat: 0,
-    kind: "selectCards",
-    sourceCardId: "BT13-033",
-    promptText: "MirageGaogamon: Burst Mode",
-    options: { candidateInstanceIds: ids, visibleInstanceIds: [], visibleCards: [], min: 2, max: 2 },
-  };
-  const onRespond = vi.fn<(response: DecisionResponse) => void>();
-  const remembered = new Map(ids.map((id) => [id, "BT1-010"]));
-  function Prompt() {
-    const [picks, setPicks] = useState<string[]>([]);
-    return (
-      <I18nProvider>
-        <DecisionOverlay
-          request={request}
-          sourceCardId={request.sourceCardId}
-          candidates={decisionVisibleCards(request.options, remembered)}
-          picks={picks}
-          onTogglePick={(id) => setPicks((old) => (old.includes(id) ? old.filter((p) => p !== id) : [...old, id]))}
-          onRespond={onRespond}
-        />
-      </I18nProvider>
-    );
-  }
-  const { container } = render(<Prompt />);
-  const tiles = container.querySelectorAll<HTMLButtonElement>(".decision-overlay__candidate");
-  expect(tiles).toHaveLength(10);
-  expect(container.querySelector('img[src*="BT1-010"]')).toBeNull();
-  fireEvent.click(tiles[7]!);
-  fireEvent.click(tiles[2]!);
-  fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
-  expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: [ids[7], ids[2]] });
-});
+it.each(["BT13-033", "EX10-059"])(
+  "keeps %s concealed hand choices independent of remembered identities",
+  (sourceCardId) => {
+    const ids = Array.from({ length: 10 }, (_, i) => `opponent-hand-${i}`);
+    const request: DecisionRequest = {
+      decisionId: "mirage-hidden-hand",
+      seat: 0,
+      kind: "selectCards",
+      sourceCardId,
+      promptText: "Choose without looking",
+      options: { candidateInstanceIds: ids, visibleInstanceIds: [], visibleCards: [], min: 2, max: 2 },
+    };
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
+    const remembered = new Map(ids.map((id) => [id, "BT1-010"]));
+    function Prompt() {
+      const [picks, setPicks] = useState<string[]>([]);
+      return (
+        <I18nProvider>
+          <DecisionOverlay
+            request={request}
+            sourceCardId={request.sourceCardId}
+            candidates={decisionVisibleCards(request.options, remembered)}
+            picks={picks}
+            onTogglePick={(id) => setPicks((old) => (old.includes(id) ? old.filter((p) => p !== id) : [...old, id]))}
+            onRespond={onRespond}
+          />
+        </I18nProvider>
+      );
+    }
+    const { container } = render(<Prompt />);
+    const tiles = container.querySelectorAll<HTMLButtonElement>(".decision-overlay__candidate");
+    expect(tiles).toHaveLength(10);
+    expect(container.querySelector('img[src*="BT1-010"]')).toBeNull();
+    fireEvent.click(tiles[7]!);
+    fireEvent.click(tiles[2]!);
+    fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
+    expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: [ids[7], ids[2]] });
+  },
+);
 
 it("keeps revealed nonselectable inspection cards and concealed selectable candidates together", () => {
   expect(

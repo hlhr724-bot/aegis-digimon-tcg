@@ -69,11 +69,7 @@ export function SeriesNextGame({
   if (series.stage === "starting") {
     return (
       <div className="series-next" role="status">
-        <p className="series-next__title">
-          {series.viewerGoesFirst
-            ? t("overlay.series.startingYou", { game: nextGame })
-            : t("overlay.series.startingOpponent", { game: nextGame, name: opponentName })}
-        </p>
+        <p className="series-next__title">{getStartingTitle({ series, nextGame, opponentName, t })}</p>
         <p className="series-next__detail">{t("overlay.series.joining")}</p>
       </div>
     );
@@ -118,4 +114,21 @@ export function SeriesNextGame({
       {countdown}
     </div>
   );
+}
+
+type GetStartingTitleParams = {
+  series: SeriesView;
+  nextGame: number;
+  opponentName: string;
+  t: ReturnType<typeof useTranslation>["t"];
+};
+
+function getStartingTitle({ series, nextGame, opponentName, t }: GetStartingTitleParams): string {
+  if (series.viewerGoesFirst === undefined) {
+    return t("overlay.series.startingDrawn", { game: nextGame });
+  }
+  if (series.viewerGoesFirst) {
+    return t("overlay.series.startingYou", { game: nextGame });
+  }
+  return t("overlay.series.startingOpponent", { game: nextGame, name: opponentName });
 }

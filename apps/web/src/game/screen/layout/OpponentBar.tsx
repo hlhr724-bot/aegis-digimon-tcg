@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { SpectatorInvite } from "./SpectatorInvite";
 /* The bar across the top of the board: the opponent's counters, the fan of card
    backs that stands for their hand, and the match-level controls.
@@ -13,7 +14,7 @@ import { useTranslation } from "../../../i18n";
 import { Icons } from "../../../design/icons";
 import { CardBack } from "../../../design/cards";
 import { CardArt } from "../../overlay/CardArt";
-import { printedCardName } from "../../overlay/printedCardName";
+
 import { useCardOpener } from "../../cardLinks";
 import { ArenaCounters } from "../../ArenaCounters";
 import { useEnterAnimation } from "../../animations";
@@ -22,17 +23,22 @@ import { PlayerLine } from "./PlayerLine";
 import { useFullscreen } from "../hooks/useFullscreen";
 import { useHeldFlag } from "../hooks/useHeldFlag";
 import { TopbarTooltip, useTopbarTooltip, type TopbarTooltipId } from "./TopbarTooltip";
+import { useFriendsDrawerLauncher } from "@/messages/useFriendsDrawerLauncher";
 
 const OPPONENT_NAME_MAX_LENGTH = 12;
 /** Animation batches arrive with short gaps; the skip button outlasts them instead of blinking. */
 export const SKIP_BUTTON_HOLD_MS = 700;
-const CHAT_UNREAD_SHOWN_MAX = 9;
+const UNREAD_SHOWN_MAX = 9;
 
-function ChatUnreadBadge({ count }: { count: number }) {
-  if (count <= 0) return null;
+type UnreadBadgeParams = { count: number; testId: string };
+
+function UnreadBadge({ count, testId }: UnreadBadgeParams) {
+  if (count <= 0) {
+    return null;
+  }
   return (
-    <span className="game-chat-unread" aria-hidden="true" data-testid="chat-unread">
-      {count > CHAT_UNREAD_SHOWN_MAX ? `${CHAT_UNREAD_SHOWN_MAX}+` : count}
+    <span className="game-unread-badge" aria-hidden="true" data-testid={testId}>
+      {count > UNREAD_SHOWN_MAX ? `${UNREAD_SHOWN_MAX}+` : count}
     </span>
   );
 }
@@ -41,10 +47,14 @@ export function OpponentBar({
   rollbackControls,
   spectating = false,
   spectatorCode,
+  spectatorNamesJson,
+  anonymousSpectatorCount,
   timer,
   handStripRef,
   opponentName,
   opponentAvatarId,
+  opponentEquippedRankedTier,
+  opponentBotPersonaId,
   viewerSeat,
   displayedTurnSeat,
   displayedTurnCount,
@@ -65,17 +75,23 @@ export function OpponentBar({
   onToggleChat,
   chatOpen = false,
   chatUnread = 0,
+  logUnread = 0,
   onSurrender,
+  gameOver = false,
   onSkipPresentation,
   onResetScenario,
 }: {
   rollbackControls?: ReactNode;
   spectating?: boolean;
   spectatorCode?: string;
+  spectatorNamesJson?: string;
+  anonymousSpectatorCount?: number;
   timer?: ReactNode;
   handStripRef: RefObject<HTMLDivElement | null>;
   opponentName: string;
   opponentAvatarId: string;
+  opponentEquippedRankedTier?: string;
+  opponentBotPersonaId?: string;
   viewerSeat: Seat;
   displayedTurnSeat: Seat;
   displayedTurnCount: number;
@@ -100,23 +116,35 @@ export function OpponentBar({
   chatOpen?: boolean;
   /** Messages from others since the chat window was last open. */
   chatUnread?: number;
+  logUnread?: number;
   onSurrender: () => void;
+  gameOver?: boolean;
   onSkipPresentation: () => void;
   onResetScenario?: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const fullscreen = useFullscreen();
   const fullscreenLabel = fullscreen.active ? t("game.fullscreen.exit") : t("game.fullscreen.enter");
   const FullscreenIcon = fullscreen.active ? Icons.Minimize : Icons.Maximize;
   const chatLabel = chatUnread > 0 ? t("chat.openUnread", { count: chatUnread }) : t("chat.open");
+  const logLabel = logUnread > 0 ? t("game.matchLogUnread", { count: logUnread }) : t("game.matchLog");
   const openCard = useCardOpener();
   const skipShown = useHeldFlag(skippable, SKIP_BUTTON_HOLD_MS);
   const tooltip = useTopbarTooltip();
-  const leaveLabel = t(spectating ? "spectator.leave" : "game.surrender");
+  const friendsDrawer = useFriendsDrawerLauncher();
+  let leaveLabel = t("game.surrender");
+  if (gameOver) {
+    leaveLabel = t("game.leaveMatch");
+  }
+  if (spectating) {
+    leaveLabel = t("spectator.leave");
+  }
   const tooltipText: Record<TopbarTooltipId, string | undefined> = {
-    log: t("game.matchLog"),
+    log: logLabel,
     feedback: t("bugReport.button"),
     chat: chatLabel,
+    friends: friendsDrawer?.label,
     fullscreen: fullscreenLabel,
     skip: skipShown ? t("game.skipPresentation") : undefined,
     look: t("redesign.arena.look.open"),
@@ -141,6 +169,8 @@ export function OpponentBar({
       <PlayerLine
         name={opponentName}
         avatarId={opponentAvatarId}
+        equippedRankedTier={opponentEquippedRankedTier}
+        botPersonaId={opponentBotPersonaId}
         side="opponent"
         maxLength={OPPONENT_NAME_MAX_LENGTH}
         timer={timer}
@@ -180,7 +210,7 @@ export function OpponentBar({
               <button
                 type="button"
                 className="game-opponent-hand__reveal"
-                aria-label={printedCardName(revealedHand[i].cardId)}
+                aria-label={getCardName(revealedHand[i].cardId)}
                 onClick={() => openCard?.(revealedHand[i]!.cardId, revealedHand[i]!.artId)}
               >
                 <CardArt cardId={revealedHand[i].cardId} artId={revealedHand[i].artId} width={30} />
@@ -230,22 +260,34 @@ export function OpponentBar({
         >
           <summary aria-label={t("mobile.board.matchMenu")}>
             <Icons.MoreVertical size={20} />
-            <ChatUnreadBadge count={chatUnread} />
+            <UnreadBadge count={chatUnread + logUnread} testId="menu-unread" />
           </summary>
           <div className="game-mobile-menu__actions">
             {rollbackControls}
-            {spectatorCode ? <SpectatorInvite code={spectatorCode} variant="menu" /> : null}
+            {spectatorCode ? (
+              <SpectatorInvite
+                spectatorNamesJson={spectatorNamesJson}
+                anonymousSpectatorCount={anonymousSpectatorCount}
+                code={spectatorCode}
+                variant="menu"
+              />
+            ) : null}
             {onResetScenario ? (
               <button type="button" onClick={onResetScenario}>
                 ↻ Reset battle
               </button>
             ) : null}
             <button type="button" onClick={onOpenLog}>
-              <Icons.ScrollText size={18} /> {t("game.matchLog")}
+              <Icons.ScrollText size={18} /> {logLabel}
             </button>
             {onToggleChat ? (
               <button type="button" onClick={onToggleChat}>
                 <Icons.MessageSquare size={18} /> {chatLabel}
+              </button>
+            ) : null}
+            {friendsDrawer ? (
+              <button type="button" onClick={friendsDrawer.toggle}>
+                <Icons.Users size={18} /> {friendsDrawer.label}
               </button>
             ) : null}
             {fullscreen.supported ? (
@@ -260,22 +302,30 @@ export function OpponentBar({
               <Icons.Settings size={18} /> {t("redesign.arena.look.open")}
             </button>
             <button type="button" onClick={onSurrender}>
-              <Icons.LogOut size={18} /> {t(spectating ? "spectator.leave" : "game.surrender")}
+              <Icons.LogOut size={18} /> {leaveLabel}
             </button>
           </div>
         </details>
       ) : narrowGameLayout ? (
         <>
           {rollbackControls}
-          {spectatorCode ? <SpectatorInvite code={spectatorCode} variant="mobile" /> : null}
+          {spectatorCode ? (
+            <SpectatorInvite
+              spectatorNamesJson={spectatorNamesJson}
+              anonymousSpectatorCount={anonymousSpectatorCount}
+              code={spectatorCode}
+              variant="mobile"
+            />
+          ) : null}
           <button
             type="button"
             className="game-mobile-log"
             onClick={onOpenLog}
-            aria-label={t("game.matchLog")}
+            aria-label={logLabel}
             data-testid="log-strip"
           >
             <Icons.ScrollText size={16} />
+            <UnreadBadge count={logUnread} testId="log-unread" />
           </button>
           {onToggleChat ? (
             <button
@@ -286,7 +336,19 @@ export function OpponentBar({
               aria-pressed={chatOpen}
             >
               <Icons.MessageSquare size={16} />
-              <ChatUnreadBadge count={chatUnread} />
+              <UnreadBadge count={chatUnread} testId="chat-unread" />
+            </button>
+          ) : null}
+          {friendsDrawer ? (
+            <button
+              type="button"
+              className="game-mobile-log game-mobile-friends"
+              onClick={friendsDrawer.toggle}
+              aria-label={friendsDrawer.label}
+              aria-expanded={friendsDrawer.expanded}
+            >
+              <Icons.Users size={16} />
+              <UnreadBadge count={friendsDrawer.unread} testId="friends-unread" />
             </button>
           ) : null}
           {fullscreen.supported ? (
@@ -303,7 +365,7 @@ export function OpponentBar({
           <button
             className="game-mobile-surrender"
             onClick={onResetScenario ?? onSurrender}
-            aria-label={onResetScenario ? "Reset battle" : t(spectating ? "spectator.leave" : "game.surrender")}
+            aria-label={onResetScenario ? "Reset battle" : leaveLabel}
           >
             {onResetScenario ? "↻" : <Icons.LogOut size={16} />}
           </button>
@@ -311,7 +373,13 @@ export function OpponentBar({
       ) : (
         <div className="game-topbar-actions">
           {rollbackControls}
-          {spectatorCode ? <SpectatorInvite code={spectatorCode} /> : null}
+          {spectatorCode ? (
+            <SpectatorInvite
+              spectatorNamesJson={spectatorNamesJson}
+              anonymousSpectatorCount={anonymousSpectatorCount}
+              code={spectatorCode}
+            />
+          ) : null}
           {onResetScenario ? (
             <button
               type="button"
@@ -321,8 +389,9 @@ export function OpponentBar({
               ↻
             </button>
           ) : null}
-          <button className="game-topbar-button" {...tooltip.describe("log", t("game.matchLog"), onOpenLog)}>
+          <button className="game-topbar-button" {...tooltip.describe("log", logLabel, onOpenLog)}>
             <Icons.ScrollText size={17} />
+            <UnreadBadge count={logUnread} testId="log-unread" />
           </button>
           {onToggleChat ? (
             <button
@@ -331,7 +400,17 @@ export function OpponentBar({
               {...tooltip.describe("chat", chatLabel, onToggleChat)}
             >
               <Icons.MessageSquare size={17} />
-              <ChatUnreadBadge count={chatUnread} />
+              <UnreadBadge count={chatUnread} testId="chat-unread" />
+            </button>
+          ) : null}
+          {friendsDrawer ? (
+            <button
+              className="game-topbar-button"
+              aria-expanded={friendsDrawer.expanded}
+              {...tooltip.describe("friends", friendsDrawer.label, friendsDrawer.toggle)}
+            >
+              <Icons.Users size={17} />
+              <UnreadBadge count={friendsDrawer.unread} testId="friends-unread" />
             </button>
           ) : null}
           {fullscreen.supported ? (

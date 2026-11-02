@@ -1,3 +1,11 @@
+import { ReplayDeckIcons } from "@/replays/ReplayDeckIcons";
+import { DeckPerformanceCollection } from "@/account/DeckPerformanceCollection";
+import { MatchOwnDeckAction } from "@/account/MatchOwnDeckAction";
+import { DeckHistoryStats } from "@/account/DeckHistoryStats";
+import { DeckStatsWindow } from "@aegis/shared/decks/DeckStatsWindow";
+import { AddFriendButton } from "@/friends/AddFriendButton";
+import type { DeckListing } from "@/game/decks";
+import { MatchOpponentDeckAction } from "@/account/MatchOpponentDeckAction";
 import { useEffect, useRef, useState } from "react";
 import {
   MATCH_HISTORY_LIMIT,
@@ -14,6 +22,7 @@ import {
 import { Avatar, Button } from "../design/primitives";
 import { Icons } from "../design/icons";
 import { useTranslation, type TranslationKey } from "../i18n";
+import { ExportMatchHistory } from "@/account/ExportMatchHistory";
 import { AccountApiError, accountApi } from "./client";
 import { ReplaySharing } from "../replays/ReplaySharing";
 import { replayApi, replayPath } from "../replays/library";
@@ -45,7 +54,9 @@ export function MatchHistory({
   openError,
   onReplaysChange,
   onWinRateChange,
+  onCopyDeck,
 }: {
+  onCopyDeck?: (deck: DeckListing) => void;
   onOpenFile: (file: Blob) => void;
   opening: boolean;
   openError?: TranslationKey;
@@ -60,6 +71,7 @@ export function MatchHistory({
   const [page, setPage] = useState(1);
   const [reload, setReload] = useState(0);
   const [history, setHistory] = useState<HistoryState>({ kind: "loading" });
+  const [decks, setDecks] = useState<Array<{ id: string; name: string }>>([]);
   const [notice, setNotice] = useState<Notice>();
   const [trashOffer, setTrashOffer] = useState<SavedReplay>();
   const [busy, setBusy] = useState(false);
@@ -92,6 +104,7 @@ export function MatchHistory({
         if (page > lastPage) setPage(lastPage);
         else {
           setHistory({ kind: "ready", page: next });
+          setDecks(next.decks ?? []);
           onWinRateChange(next.winRate);
         }
       })
@@ -177,7 +190,7 @@ export function MatchHistory({
   }
 
   const ready = history.kind === "ready" ? history.page : undefined;
-  const filtered = Boolean(filter.result || filter.mode || filter.opponent || search.trim());
+  const filtered = Boolean(filter.result || filter.mode || filter.opponent || filter.deckId || search.trim());
   const pages = ready ? Math.max(1, Math.ceil(ready.total / ready.limit)) : 1;
   const first = ready && ready.total ? (ready.page - 1) * ready.limit + 1 : 0;
   const last = ready ? first + ready.matches.length - (ready.matches.length ? 1 : 0) : 0;
@@ -191,7 +204,21 @@ export function MatchHistory({
           </span>
         ) : null}
         <OpenReplayFile onOpen={onOpenFile} opening={opening} />
+        <ExportMatchHistory onError={() => setNotice({ key: "profile.exportHistoryFailed", alert: true })} />
         <div className="profile-filters">
+          <select
+            className="profile-filters__mode"
+            aria-label={t("profile.filter.deck")}
+            value={filter.deckId ?? ""}
+            onChange={(event) => changeFilter({ ...filter, deckId: event.target.value || undefined })}
+          >
+            <option value="">{t("profile.filter.allDecks")}</option>
+            {decks.map((deck) => (
+              <option key={deck.id} value={deck.id}>
+                {deck.name}
+              </option>
+            ))}
+          </select>
           <div className="profile-filter" role="group" aria-label={t("profile.filter.result")}>
             {([undefined, ...MATCH_RESULTS] as const).map((value) => (
               <button
@@ -237,6 +264,25 @@ export function MatchHistory({
           ) : null}
         </div>
       </header>
+      {!filter.deckId && ready?.deckRecords?.length ? (
+        <DeckPerformanceCollection
+          records={ready.deckRecords}
+          statsWindow={filter.deckWindow ?? DeckStatsWindow.ALL.value}
+          onWindowChange={(deckWindow) => changeFilter({ ...filter, deckWindow })}
+          onSelect={(deckId) => changeFilter({ ...filter, deckId })}
+        />
+      ) : null}
+      {ready?.deckStats ? (
+        <DeckHistoryStats
+          key={filter.deckId}
+          stats={ready.deckStats}
+          details={ready.deckDetails}
+          recentResults={ready.recentDeckResults}
+          deckName={decks.find((deck) => deck.id === filter.deckId)?.name}
+          statsWindow={filter.deckWindow ?? DeckStatsWindow.ALL.value}
+          onWindowChange={(deckWindow) => changeFilter({ ...filter, deckWindow })}
+        />
+      ) : null}
       {openError ? (
         <p className="profile-history__notice" role="alert">
           {t(openError)}
@@ -301,6 +347,7 @@ export function MatchHistory({
             <span>{t("profile.column.result")}</span>
             <span>{t("profile.column.mode")}</span>
             <span>{t("profile.column.opponent")}</span>
+            <span>{t("profile.filter.deck")}</span>
             <span>{t("profile.column.date")}</span>
             <span>{t("profile.column.replay")}</span>
           </div>
@@ -309,8 +356,10 @@ export function MatchHistory({
               <MatchRow
                 key={match.id}
                 match={match}
+                onCopyDeck={onCopyDeck}
                 local={onDevice.get(match.id)}
-                sharing={ready.sharing}
+                sharing={ready.sharing || ready.friendsSharing === true}
+                publicSharing={ready.sharing}
                 onRemoved={(replay) => replayRemoved(match, replay)}
                 onChanged={(replay) => replayChanged(match.id, replay)}
                 onFailure={(key) => setNotice({ key, alert: true })}
@@ -354,14 +403,18 @@ function MatchRow({
   match,
   local,
   sharing,
+  publicSharing,
   onRemoved,
   onChanged,
   onFailure,
+  onCopyDeck,
 }: {
+  onCopyDeck?: (deck: DeckListing) => void;
   match: MatchHistoryEntry;
   /** This browser's copy, shown when the replay never reached Google Drive. */
   local?: LocalReplay;
   sharing: boolean;
+  publicSharing?: boolean;
   onRemoved: (replay: SavedReplay) => void;
   onChanged: (replay: SavedReplay) => void;
   onFailure: (key: TranslationKey) => void;
@@ -369,34 +422,48 @@ function MatchRow({
   const { t, locale } = useTranslation();
   const finished = new Date(match.finishedAt);
   return (
-    <li data-result={match.result}>
+    <li data-result={match.result} data-replay={match.replay || local ? "available" : "missing"}>
       <span className="profile-result" data-result={match.result}>
         {t(`account.result.${match.result}`)}
       </span>
       <span className="profile-matches__mode">{t(`replay.mode.${match.mode}`)}</span>
       <span className="profile-matches__opponent">
         <Avatar name={match.opponentName} avatarId={match.opponentAvatarId} size={32} />
-        <strong>{match.opponentName}</strong>
+        <span className="profile-matches__opponent-info">
+          <strong>{match.opponentName}</strong>
+          {match.hasOpponentDeck ? <MatchOpponentDeckAction matchId={match.id} onCopy={onCopyDeck} /> : null}
+        </span>
+        {match.canAddOpponent ? <AddFriendButton matchId={match.id} /> : null}
+      </span>
+      <span className="profile-matches__deck" aria-label={t("profile.filter.deck")} title={match.deckName}>
+        {match.hasOwnDeck ? (
+          <MatchOwnDeckAction matchId={match.id} deckName={match.deckName} onCopy={onCopyDeck} />
+        ) : (
+          (match.deckName ?? "—")
+        )}
       </span>
       <time className="profile-matches__date" dateTime={finished.toISOString()}>
         {finished.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })}
         <span aria-hidden="true"> · </span>
         {finished.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
       </time>
-      {match.replay ? (
-        <ReplayActions
-          replay={match.replay}
-          opponent={match.opponentName}
-          sharing={sharing}
-          onRemoved={onRemoved}
-          onChanged={onChanged}
-          onFailure={onFailure}
-        />
-      ) : local ? (
-        <LocalReplayActions entry={local} opponent={match.opponentName} onSynced={onChanged} onFailure={onFailure} />
-      ) : (
-        <span className="profile-matches__missing">{t("profile.noReplay")}</span>
-      )}
+      <div className="profile-matches__replay">
+        {match.replay ? (
+          <ReplayActions
+            replay={match.replay}
+            opponent={match.opponentName}
+            sharing={sharing}
+            publicSharing={publicSharing}
+            onRemoved={onRemoved}
+            onChanged={onChanged}
+            onFailure={onFailure}
+          />
+        ) : local ? (
+          <LocalReplayActions entry={local} opponent={match.opponentName} onSynced={onChanged} onFailure={onFailure} />
+        ) : (
+          <span className="profile-matches__missing">{t("profile.noReplay")}</span>
+        )}
+      </div>
     </li>
   );
 }
@@ -405,6 +472,7 @@ function ReplayActions({
   replay,
   opponent,
   sharing,
+  publicSharing,
   onRemoved,
   onChanged,
   onFailure,
@@ -412,6 +480,7 @@ function ReplayActions({
   replay: SavedReplay;
   opponent: string;
   sharing: boolean;
+  publicSharing?: boolean;
   onRemoved: (replay: SavedReplay) => void;
   onChanged: (replay: SavedReplay) => void;
   onFailure: (key: TranslationKey) => void;
@@ -467,6 +536,7 @@ function ReplayActions({
     );
   return (
     <div className="profile-matches__replay">
+      <ReplayDeckIcons summary={replay.summary} />
       <a
         className="aegis-button aegis-button--secondary aegis-button--sm profile-watch"
         href={replayPath(replay.id)}
@@ -492,7 +562,7 @@ function ReplayActions({
             <Icons.ExternalLink size={16} aria-hidden="true" />
             {t("replay.drive.open")}
           </a>
-          {sharing ? <ReplaySharing replay={replay} onChange={onChanged} /> : null}
+          {sharing ? <ReplaySharing replay={replay} onChange={onChanged} publicSharing={publicSharing} /> : null}
           <button type="button" onClick={() => setConfirming(true)}>
             <Icons.Trash size={16} aria-hidden="true" />
             {t("profile.deleteReplay")}
@@ -537,6 +607,7 @@ function LocalReplayActions({
 
   return (
     <div className="profile-matches__replay">
+      <ReplayDeckIcons summary={entry.summary} />
       <span className="profile-local-badge" title={t("replay.local.notSynced")}>
         <Icons.Devices size={14} aria-hidden="true" />
         {t("replay.local.badge")}

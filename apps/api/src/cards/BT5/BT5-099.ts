@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] For each Digimon you have in play, activate the effect below.",
           kind: "RepeatPerCount",
           countSource: "youHave",
           countFilter: {
@@ -15,6 +16,7 @@ const compiled: CompiledCard = {
             kind: ["Digimon"],
           },
           action: {
+            effectTextPart: "1 of your opponent's Digimon gets -3000 DP for the turn.",
             kind: "ModifyDP",
             target: {
               filter: {

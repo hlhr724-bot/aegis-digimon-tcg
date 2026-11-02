@@ -194,6 +194,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Trash any 4 cards under your opponent's Digimon or Tamers.",
           kind: "TrashDigivolution",
           target: {
             filter: {
@@ -208,6 +209,8 @@ const compiled: CompiledCard = {
           fromTop: false,
         },
         {
+          effectTextPart:
+            "Then, you may return 1 of your opponent's Digimon or Tamers without cards under it to the hand.",
           kind: "Return",
           target: {
             filter: {

@@ -74,6 +74,99 @@ describe("EX10-061 Apocalymon — catalog and IR", () => {
 });
 
 describe("EX10-061 Apocalymon — [When this card would be played] cost reduction", () => {
+  it("resolves security removal after Apocalymon's On Play has played its Dark Masters", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [{ card: CARD_ID, as: "apocalymon" }],
+          deck: FILLER_DECK,
+          security: [
+            { card: "EX10-012", as: "metal", faceUp: true },
+            { card: "EX10-020", as: "puppet", faceUp: true },
+            { card: "EX10-035", as: "machinedramon", faceUp: true },
+            "BT1-009",
+          ],
+        },
+        1: { battleArea: [{ card: "BT20-018", as: "ouryumon" }], deck: FILLER_DECK },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.memory = 5;
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("apocalymon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "BT20-018"));
+    await settle(() => s.state.pendingDecision === undefined);
+
+    const apocalymonResolved = s.events.findIndex(
+      (event) => event.kind === "effectResolved" && event.sourceCardId === CARD_ID && event.timing === "OnPlay",
+    );
+    const ouryumonTriggered = s.events.findIndex(
+      (event) => event.kind === "effectTriggered" && event.sourceCardId === "BT20-018",
+    );
+    expect(apocalymonResolved).toBeGreaterThanOrEqual(0);
+    expect(ouryumonTriggered).toBeGreaterThan(apocalymonResolved);
+    expect(s.state.players[0]!.battleArea).toHaveLength(3);
+    expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId)).toContain(CARD_ID);
+    expect(
+      s.events.filter((event) => event.kind === "effectTriggered" && event.sourceCardId === "BT20-018"),
+    ).toHaveLength(1);
+  });
+
+  it("lets the turn player resolve a security-removal watcher before Apocalymon's On Play", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [{ card: CARD_ID, as: "apocalymon" }],
+          battleArea: [{ card: "BT20-018", as: "ouryumon" }],
+          deck: FILLER_DECK,
+          security: [
+            { card: "EX10-012", as: "metal", faceUp: true },
+            { card: "EX10-020", as: "puppet", faceUp: true },
+            { card: "EX10-035", as: "machinedramon", faceUp: true },
+            "BT1-009",
+          ],
+        },
+        1: { battleArea: [{ card: "BT1-010", as: "victim" }], deck: FILLER_DECK },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, preferTriggerKeys: ["BT20-018"] },
+    );
+    await s.ready();
+    s.state.memory = 5;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("apocalymon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() =>
+      s.events.some(
+        (event) => event.kind === "effectResolved" && event.sourceCardId === CARD_ID && event.timing === "OnPlay",
+      ),
+    );
+    await settle(() => s.state.pendingDecision === undefined);
+    const watcherResolved = s.events.findIndex(
+      (event) => event.kind === "effectResolved" && event.sourceCardId === "BT20-018",
+    );
+    const onPlayActivated = s.events.findIndex(
+      (event) => event.kind === "effectTriggered" && event.sourceCardId === CARD_ID && event.timing === "OnPlay",
+    );
+    expect(watcherResolved).toBeGreaterThanOrEqual(0);
+    expect(onPlayActivated).toBeGreaterThan(watcherResolved);
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    expect(s.state.players[0]!.battleArea).toHaveLength(5);
+    expect(
+      s.events.filter((event) => event.kind === "effectTriggered" && event.sourceCardId === "BT20-018"),
+    ).toHaveLength(1);
+    expect(
+      s.decisions.some(
+        ({ req }) =>
+          req.kind === "orderTriggers" &&
+          req.options?.triggerCardIds?.includes(CARD_ID) &&
+          req.options.triggerCardIds.includes("BT20-018"),
+      ),
+    ).toBe(true);
+  });
+
   it("Q5783/Q5785/Q5741: places the single face-up card, pays 13, plays it out, deletes it at turn end", async () => {
     const s = setupEngine(
       {

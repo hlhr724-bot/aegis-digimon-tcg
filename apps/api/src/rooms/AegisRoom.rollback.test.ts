@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Client } from "colyseus";
+import { ClientState, type Client } from "colyseus";
 import { Phase, type Intent, type Seat } from "@aegis/shared";
 import { RollbackKind } from "@aegis/shared/protocol/RollbackKind";
 import { AegisRoom } from "#api/rooms/AegisRoom";
 import { RED_DECK, BLUE_DECK } from "#api/engine/testDecks";
 import fixture from "#api/engine/scenarios/matchRollback.fixture";
+import decisionRollbackFixture from "#api/engine/scenarios/decisionRollbackHandAffordances.fixture";
+import playCostReductionRollbackFixture from "#api/engine/scenarios/playCostReductionRollbackHandAffordances.fixture";
 import { addLogSink } from "#api/logger";
 import { extractReplay } from "#api/replays/inputs/extract";
 import { runReplay } from "#api/replays/inputs/run";
@@ -14,6 +16,7 @@ import { GameState } from "@aegis/shared/schema/GameState";
 import type { GameEngine } from "#api/engine/GameEngine";
 import { createEvaluationPolicy } from "#api/bot/policy";
 import { BotPlayer } from "#api/bot/BotPlayer";
+import { pushOnStack } from "#api/engine/state/access";
 
 const rooms: AegisRoom[] = [];
 
@@ -42,7 +45,13 @@ async function start(options: Record<string, unknown> = {}, board = fixture) {
   await room.onCreate({ seed: 0, allowRollback: true, ...options });
   const clients = [0, 1].map(
     (seat) =>
-      ({ sessionId: `seat-${seat}`, send: vi.fn<Client["send"]>(), raw: vi.fn<Client["raw"]>() }) as unknown as Client,
+      ({
+        sessionId: `seat-${seat}`,
+        state: ClientState.JOINED,
+        send: vi.fn<Client["send"]>(),
+        raw: vi.fn<Client["raw"]>(),
+        enqueueRaw: vi.fn<Client["enqueueRaw"]>(),
+      }) as unknown as Client,
   );
   for (const [seat, client] of clients.entries()) {
     room.clients.push(client);
@@ -238,6 +247,38 @@ describe("consensual match rollback", () => {
     expect(room.state.pendingDecision).toBeUndefined();
   });
 
+  it("undoes an answer to a start-of-main-phase effect after a patch refreshed the hand", async () => {
+    const board = structuredClone(fixture);
+    board.board[1] = {
+      hand: ["EX8-047", "BT1-009"],
+      deck: ["BT1-009", "BT1-012", "BT1-013"],
+      eggDeck: ["BT1-001"],
+      security: ["BT1-019"],
+      battleArea: [{ card: "EX11-065", as: "close" }],
+    };
+    const { room, clients } = await start({}, board);
+    await main(room);
+    expect(send(room, 0, { type: "endPhase" })).toEqual({ ok: true });
+    await idle();
+    await main(room);
+    const decision = room.state.pendingDecision!;
+    expect(decision).toMatchObject({ seat: 1, kind: "selectCards" });
+    room.onBeforePatch();
+    const options = JSON.parse(decision.payloadJson) as { candidateInstanceIds: string[] };
+    expect(
+      send(room, 1, {
+        type: "respondDecision",
+        decisionId: decision.decisionId,
+        response: { kind: "selectCards", instanceIds: options.candidateInstanceIds.slice(0, 1) },
+      }),
+    ).toEqual({ ok: true });
+    await idle();
+    await request(room, clients[1]!, RollbackKind.ACTION.value);
+    await answer(room, clients[0]!, true);
+    expect(room.state.rollbackRevision).toBe(1);
+    expect(room.state.pendingDecision?.decisionId).toBe(decision.decisionId);
+  });
+
   it.each([{ allowRollback: false }, { allowRollback: undefined }, { rankedRoom: true }, { tournamentRoom: true }])(
     "enforces disabled and ineligible modes despite a forged request: %j",
     async (options) => {
@@ -263,16 +304,18 @@ describe("consensual match rollback", () => {
     },
   );
 
-  it("accepts immediately against a bot, discards scheduled work and resumes the restored phase", async () => {
+  it("accepts immediately against a bot with a persona, discards scheduled work and resumes the restored phase", async () => {
     const { room, clients } = await start({ botRoom: true });
     const sent = vi.fn<(intent: Intent) => ReturnType<typeof send>>((intent: Intent) => send(room, 1, intent));
     const bot = new BotPlayer(1, room.state, sent, { minThinkMs: 0, maxThinkMs: 0 });
     Reflect.get(room, "bots")[1] = bot;
+    room.state.players[1]!.botPersonaId = "rollback-persona";
     expect(send(room, 0, { type: "hatchEgg" })).toEqual({ ok: true });
     await idle();
     await request(room, clients[0]!, RollbackKind.ACTION.value);
     await idle();
     expect(room.state.rollbackRevision).toBe(1);
+    expect(room.state.players[1]!.botPersonaId).toBe("rollback-persona");
     expect(room.state.rollbackRequestId).toBe("");
     expect(room.state.players[0]!.breeding).toBeUndefined();
     expect(Reflect.get(room, "bots")[1]).not.toBe(bot);
@@ -317,6 +360,20 @@ describe("consensual match rollback", () => {
     expect(opponent.state.players[0]!.security).toHaveLength(0);
   });
 
+  it("keeps card moves of the replaced engine out of the restored views", async () => {
+    const { room, clients } = await start();
+    send(room, 0, { type: "hatchEgg" });
+    await idle();
+    const replaced = room.state;
+    const permanent = replaced.players[0]!.breeding!;
+    const card = replaced.players[0]!.hand[0]!;
+    await request(room, clients[0]!, RollbackKind.ACTION.value);
+    await answer(room, clients[1]!, true);
+    expect(room.state).not.toBe(replaced);
+    pushOnStack(permanent, card);
+    expect(() => room.broadcastPatch()).not.toThrow();
+  });
+
   it("keeps an exact playable replay after repeated action and turn rollbacks", async () => {
     const lines: string[] = [];
     const stop = addLogSink((line) => lines.push(line));
@@ -338,6 +395,8 @@ describe("consensual match rollback", () => {
       const replay = await runReplay(record, { stopOnDivergence: true });
       try {
         expect(replay.divergences).toEqual([]);
+        engine(room).flushHandAffordances();
+        replay.engine.flushHandAffordances();
         const actual = comparableState(room.state) as Record<string, unknown>;
         const expected = comparableState(replay.state) as Record<string, unknown>;
         for (const key of [
@@ -469,5 +528,76 @@ describe("consensual match rollback", () => {
     expect(room.state.rollbackRequestId).toBe("");
     expect(send(room, 0, { type: "surrender" }).ok).toBe(false);
     expect(persist).toHaveBeenCalledTimes(2);
+  });
+
+  it("undoes a source selection after a digivolution decision refreshed hand affordances", async () => {
+    const { room, clients } = await start({ betaBattleRoom: true }, decisionRollbackFixture);
+    await main(room);
+    const card = room.state.players[0]!.hand.find((entry) => entry.cardId === "BT18-042")!;
+    const host = room.state.players[0]!.battleArea[0]!;
+    expect(send(room, 0, { type: "digivolve", instanceId: card.instanceId, permanentId: host.permanentId })).toEqual({
+      ok: true,
+    });
+    await idle();
+    let decision = room.state.pendingDecision!;
+    expect(decision.kind).toBe("optional");
+    expect(
+      send(room, 0, {
+        type: "respondDecision",
+        decisionId: decision.decisionId,
+        response: { kind: "optional", accept: true },
+      }),
+    ).toEqual({ ok: true });
+    await idle();
+    decision = room.state.pendingDecision!;
+    expect(decision.kind).toBe("selectCards");
+    const options = JSON.parse(decision.payloadJson) as { candidateInstanceIds: string[] };
+    expect(
+      send(room, 0, {
+        type: "respondDecision",
+        decisionId: decision.decisionId,
+        response: { kind: "selectCards", instanceIds: options.candidateInstanceIds.slice(0, 1) },
+      }),
+    ).toEqual({ ok: true });
+    await idle();
+    await request(room, clients[0]!, RollbackKind.ACTION.value);
+    await answer(room, clients[1]!, true);
+    expect(room.state.rollbackRevision).toBe(1);
+    expect(room.state.pendingDecision?.decisionId).toBe(decision.decisionId);
+    expect(room.state.pendingDecision?.payloadJson).toBe(decision.payloadJson);
+    expect(room.state.players[0]!.security).toHaveLength(2);
+    expect(
+      send(room, 0, {
+        type: "respondDecision",
+        decisionId: decision.decisionId,
+        response: { kind: "selectCards", instanceIds: options.candidateInstanceIds.slice(0, 1) },
+      }),
+    ).toEqual({ ok: true });
+    await idle();
+    expect(room.state.players[0]!.security).toHaveLength(3);
+    expect(room.state.pendingDecision).toBeUndefined();
+  });
+
+  it("undoes accepting a play cost reduction whose prompt opened over current hand affordances", async () => {
+    const { room, clients } = await start({ betaBattleRoom: true }, playCostReductionRollbackFixture);
+    await main(room);
+    const card = room.state.players[0]!.hand.find((entry) => entry.cardId === "BT13-080")!;
+    expect(send(room, 0, { type: "playCard", instanceId: card.instanceId })).toEqual({ ok: true });
+    await idle();
+    const decision = room.state.pendingDecision!;
+    expect(decision.kind).toBe("optional");
+    expect(
+      send(room, 0, {
+        type: "respondDecision",
+        decisionId: decision.decisionId,
+        response: { kind: "optional", accept: true },
+      }),
+    ).toEqual({ ok: true });
+    await idle();
+    expect(room.state.pendingDecision?.kind).toBe("selectCards");
+    await request(room, clients[0]!, RollbackKind.ACTION.value);
+    await answer(room, clients[1]!, true);
+    expect(room.state.rollbackRevision).toBe(1);
+    expect(room.state.pendingDecision?.decisionId).toBe(decision.decisionId);
   });
 });

@@ -1,3 +1,4 @@
+import { CardInstance } from "@aegis/shared/schema/CardInstance";
 import { configureLocalScenario, clearLocalScenario } from "../engine/scenario/local.js";
 import fixtureMatchTimer from "../engine/scenarios/match-timer.fixture.js";
 import fixtureChronomonEngageOrder from "../engine/scenarios/chronomon-engage-order.fixture.js";
@@ -9,6 +10,7 @@ import {
   EVENT_CHANNEL,
   MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN,
   MATCH_TIMER_DECISION_BONUS_SECONDS,
+  MATCH_TIMER_START_SECONDS,
   MULLIGAN_TIMER_SECONDS,
   PendingDecision,
   Phase,
@@ -146,7 +148,7 @@ describe("room clock enforcement", () => {
     expect(game.state.timerRemaining0).toBe(50);
   });
 
-  it("#37 publishes fresh thinking windows once at each turn", () => {
+  it("publishes the 60s/30s turn bonuses once while retaining each player's reserve", () => {
     const now = vi.spyOn(performance, "now").mockReturnValue(0);
     const game = room({ private: true, matchTimer: true, timerStartSeconds: 300, timerRefillSeconds: 0 });
     begin(game, 0);
@@ -166,7 +168,7 @@ describe("room clock enforcement", () => {
     game.state.turnSeat = 1;
     sync(game);
     expect(game.state.timerRemaining1).toBe(300);
-    expect(game.state.timerRemaining0).toBe(300);
+    expect(game.state.timerRemaining0).toBe(230);
     now.mockReturnValue(170_000);
     sync(game);
     expect(game.state.timerRemaining1).toBe(280);
@@ -175,15 +177,15 @@ describe("room clock enforcement", () => {
     sync(game);
     now.mockReturnValue(220_000);
     sync(game);
-    expect(game.state.timerRemaining0).toBe(250);
+    expect(game.state.timerRemaining0).toBe(180);
     game.state.turnCount = 3;
     game.state.turnSeat = 0;
     sync(game);
-    expect(game.state.timerRemaining0).toBe(300);
+    expect(game.state.timerRemaining0).toBe(240);
     expect(game.state.timerRemaining1).toBe(300);
     now.mockReturnValue(230_000);
     sync(game);
-    expect(game.state.timerRemaining0).toBe(290);
+    expect(game.state.timerRemaining0).toBe(230);
   });
 
   it("#39 adds combo time only for confirmed card plays and digivolutions", () => {
@@ -299,7 +301,7 @@ describe("room clock enforcement", () => {
       configureLocalScenario(fixture);
       const game = room({ botRoom: true, devScenario: "local-fixture" });
       expect(game.state.matchTimer).toBe(true);
-      expect(game.state.timerStartSeconds).toBe(300);
+      expect(game.state.timerStartSeconds).toBe(MATCH_TIMER_START_SECONDS);
       expect(game.state.timerRefillSeconds).toBe(60);
       configureLocalScenario(fixtureArena);
       expect(room({ botRoom: true, devScenario: "local-fixture", matchTimer: true }).state.matchTimer).toBe(false);
@@ -316,7 +318,9 @@ describe("room clock enforcement", () => {
     const game = room();
     expect(game.state.timerStartSeconds).toBe(60);
     expect(game.state.timerRefillSeconds).toBe(60);
-    expect(room({ matchTimer: true, timerStartSeconds: 60, timerRefillSeconds: 0 }).state.timerStartSeconds).toBe(300);
+    expect(room({ matchTimer: true, timerStartSeconds: 60, timerRefillSeconds: 0 }).state.timerStartSeconds).toBe(
+      MATCH_TIMER_START_SECONDS,
+    );
   });
 });
 
@@ -340,9 +344,9 @@ describe("timer improvements from the Discord suggestion", () => {
       await new Promise<void>((resolve) => setTimeout(resolve, 0));
   }
 
-  async function startedMatch() {
+  async function startedMatch(options?: Parameters<AegisRoom["onCreate"]>[0]) {
     const now = vi.spyOn(performance, "now").mockReturnValue(0);
-    const game = room();
+    const game = room(options);
     const internals = game as unknown as Internals;
     const clients = [player("host"), player("guest")] as const;
     game.clients.push(clients[0]);
@@ -396,9 +400,55 @@ describe("timer improvements from the Discord suggestion", () => {
     expect(remaining(game, second)).toBe(60);
   });
 
-  async function inMainPhase() {
-    const match = await startedMatch();
-    const { game, internals, clients, advance } = match;
+  it.each(["breeding", "main"] as const)(
+    "enforces ninety seconds for the first public %s input after both mulligans",
+    async (phase) => {
+      const { game, internals, clients, advance, finishPresentation } = await startedMatch({ matchTimer: true });
+      for (let index = 0; index < 2; index += 1) {
+        await settleRounds(() => game.state.pendingDecision?.kind === "mulligan");
+        const seat = game.state.pendingDecision!.seat;
+        expect(game.state.inactivitySeat).toBe(-1);
+        finishPresentation();
+        advance(5000);
+        internals.handleIntent(clients[seat], { type: "mulligan", keep: true });
+        await settleRounds(
+          () =>
+            game.state.pendingDecision?.kind === "mulligan" ||
+            engine(game).breeding.isOpen ||
+            engine(game).mainPhase.isOpen,
+        );
+      }
+      await settleRounds(() => game.state.pendingDecision === undefined && engine(game).inputSeat !== undefined);
+      const seat = game.state.turnSeat as Seat;
+      expect(engine(game).breeding.isOpen).toBe(true);
+      if (phase === "main") {
+        internals.handleIntent(clients[seat], { type: "endPhase" });
+        await settleRounds(() => engine(game).mainPhase.isOpen && engine(game).inputSeat === seat);
+      }
+      expect(game.state.phase).toBe(phase === "main" ? Phase.Main : Phase.Breeding);
+      sync(game);
+      expect(game.state.inactivitySeat).toBe(seat);
+      expect(game.state.inactivityRemainingSeconds).toBe(90);
+      expect(remaining(game, seat)).toBe(300);
+      expect(remaining(game, (1 - seat) as Seat)).toBe(300);
+      finishPresentation();
+      advance(89_999);
+      expect(game.state.gameOver).toBe(false);
+      advance(1);
+      expect(game.state.gameOver).toBe(true);
+      expect(game.state.winnerSeat).toBe(1 - seat);
+      expect(game.state.inactivityRemainingSeconds).toBe(0);
+      expect(remaining(game, seat)).toBe(210);
+      expect(game.broadcast).toHaveBeenCalledWith(
+        EVENT_CHANNEL,
+        expect.objectContaining({ kind: "gameOver", reason: "timeout" }),
+      );
+    },
+  );
+
+  async function inMainPhase(options?: Parameters<AegisRoom["onCreate"]>[0]) {
+    const match = await startedMatch(options);
+    const { game, internals, clients } = match;
     for (let index = 0; index < 2; index += 1) {
       const seat = game.state.pendingDecision!.seat as Seat;
       internals.handleIntent(clients[seat], { type: "mulligan", keep: true });
@@ -475,6 +525,40 @@ describe("timer improvements from the Discord suggestion", () => {
     expect(remaining(game, turnSeat)).toBe(before - 10);
   });
 
+  it("keeps the public decision budget visible and paused while the opponent reconnects", async () => {
+    const { game, clients, advance, finishPresentation, turnSeat } = await inMainPhase({ matchTimer: true });
+    const away = (1 - turnSeat) as Seat;
+    let reconnect!: (client: Client) => void;
+    game.allowReconnection = vi.fn<() => Promise<Client>>(
+      () =>
+        new Promise<Client>((resolve) => {
+          reconnect = resolve;
+        }),
+    ) as unknown as AegisRoom["allowReconnection"];
+    advance(20_000);
+    expect(game.state.inactivityRemainingSeconds).toBe(70);
+    const leaving = game.onLeave(clients[away], 1006);
+    await settleRounds(() => reconnect !== undefined);
+    advance(40_000);
+    expect(game.state.inactivitySeat).toBe(turnSeat);
+    expect(game.state.timerActiveSeat).toBe(-1);
+    expect(game.state.inactivityRemainingSeconds).toBe(70);
+    expect(remaining(game, turnSeat)).toBe(280);
+    const back = player("reconnected-opponent");
+    game.clients.push(back);
+    reconnect(back);
+    await leaving;
+    finishPresentation();
+    expect(game.state.inactivitySeat).toBe(turnSeat);
+    expect(game.state.inactivityRemainingSeconds).toBe(70);
+    advance(69_999);
+    expect(game.state.gameOver).toBe(false);
+    advance(1);
+    expect(game.state.gameOver).toBe(true);
+    expect(game.state.winnerSeat).toBe(away);
+    expect(game.state.inactivityRemainingSeconds).toBe(0);
+  });
+
   it("D: adds 3 s per effect decision, up to 30 s per player per turn, and none for the mulligan", async () => {
     const { game, internals, advance, turnSeat } = await inMainPhase();
     const request = (kind: string, id: string) =>
@@ -492,3 +576,114 @@ describe("timer improvements from the Discord suggestion", () => {
     expect(remaining(game, turnSeat)).toBe(10 + MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN + 3);
   });
 });
+
+describe("public inactivity enforcement", () => {
+  it("ignores invalid and repeated ready intents and ends the actual unanswered Main wait", () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const game = room({ matchTimer: true });
+    begin(game, 0);
+    sync(game);
+    const apply = (
+      game as unknown as { applyLoggedIntent(seat: Seat, intent: { type: string }): { ok: boolean } }
+    ).applyLoggedIntent.bind(game);
+    now.mockReturnValue(60_000);
+    expect(apply(1, { type: "endPhase" }).ok).toBe(false);
+    expect(apply(0, { type: "ready" }).ok).toBe(true);
+    expect(game.state.inactivityRemainingSeconds).toBe(30);
+    now.mockReturnValue(90_000);
+    sync(game);
+    expect(game.state.gameOver).toBe(true);
+    expect(game.state.winnerSeat).toBe(1);
+    expect(engine(game).mainPhase.isOpen).toBe(false);
+    expect(game.state.timerRemaining0).toBeGreaterThan(0);
+  });
+});
+
+it("refreshes inactivity after a legal Main play without resetting the match clock", async () => {
+  const now = vi.spyOn(performance, "now").mockReturnValue(0);
+  const game = room({ matchTimer: true });
+  engine(game).seatPlayer(0, "active-player", { displayName: "Active", deck: RED_DECK });
+  engine(game).seatPlayer(1, "waiting-player", { displayName: "Waiting", deck: RED_DECK });
+  begin(game, 0);
+  game.state.memory = 10;
+  const card = new CardInstance();
+  card.instanceId = "main-play";
+  card.cardId = "BT1-010";
+  card.ownerSeat = 0;
+  game.state.players[0]!.hand.push(card);
+  sync(game);
+  now.mockReturnValue(70_000);
+  sync(game);
+  const apply = (
+    game as unknown as { applyLoggedIntent(seat: Seat, intent: { type: string; instanceId: string }): { ok: boolean } }
+  ).applyLoggedIntent.bind(game);
+  expect(apply(0, { type: "playCard", instanceId: card.instanceId }).ok).toBe(true);
+  for (let round = 0; round < 100 && engine(game).inputSeat === undefined; round++) {
+    await Promise.resolve();
+  }
+  sync(game);
+  expect(game.state.inactivityRemainingSeconds).toBe(90);
+  expect(game.state.timerRemaining0).toBeLessThan(300);
+  expect(game.state.players[0]!.battleArea.some((permanent) => permanent.topCard.instanceId === card.instanceId)).toBe(
+    true,
+  );
+});
+
+it.each(
+  ([0, 1] as const).flatMap((seat) =>
+    (["optional", "chooseTargets", "selectCards", "chooseOption", "orderCards", "orderTriggers"] as const).map(
+      (kind) => ({ seat, kind }),
+    ),
+  ),
+)("expires a real $kind decision for seat$seat after its own ninety seconds", async ({ seat, kind }) => {
+  const now = vi.spyOn(performance, "now").mockReturnValue(0);
+  const game = room({ matchTimer: true });
+  begin(game, 0);
+  const waiting = engine(game).decisions.request({
+    seat,
+    kind,
+    promptText: "Select a target",
+    options: { candidateInstanceIds: ["target"], min: 1, max: 1 },
+  });
+  sync(game);
+  expect(game.state.inactivitySeat).toBe(seat);
+  expect(game.state.inactivityRemainingSeconds).toBe(90);
+  now.mockReturnValue(89_999);
+  sync(game);
+  expect(game.state.gameOver).toBe(false);
+  now.mockReturnValue(90_000);
+  sync(game);
+  await waiting;
+  expect(game.state.gameOver).toBe(true);
+  expect(game.state.winnerSeat).toBe(1 - seat);
+  expect(game.state.pendingDecision).toBeUndefined();
+  expect(game.state.inactivityRemainingSeconds).toBe(0);
+});
+
+it.each(["block", "counter", "alliance", "evade", "barrier"] as const)(
+  "applies the ninety-second budget to the %s combat window",
+  (kind) => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const game = room({ matchTimer: true });
+    begin(game, 0);
+    const window = new CombatWindow();
+    window.kind = kind;
+    const seat = kind === "alliance" ? 0 : 1;
+    window.seat = seat;
+    window.attackerPermanentId = "attacker";
+    window.permanentId = "defender";
+    game.state.combatWindow = window;
+    sync(game);
+    expect(game.state.inactivitySeat).toBe(seat);
+    expect(game.state.inactivityRemainingSeconds).toBe(90);
+    now.mockReturnValue(89_999);
+    sync(game);
+    expect(game.state.gameOver).toBe(false);
+    now.mockReturnValue(90_000);
+    sync(game);
+    expect(game.state.gameOver).toBe(true);
+    expect(game.state.winnerSeat).toBe(1 - seat);
+    expect(seat === 0 ? game.state.timerRemaining0 : game.state.timerRemaining1).toBe(210);
+    expect(game.state.inactivityRemainingSeconds).toBe(0);
+  },
+);

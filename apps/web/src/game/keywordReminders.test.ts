@@ -10,11 +10,14 @@ describe("keyword reminders", () => {
     expect(keywordBaseName("＜Armor Purge＞")).toBe("ArmorPurge");
     expect(keywordBaseName("De-Digivolve 1")).toBe("DeDigivolve");
     expect(keywordBaseName("Security A. +1")).toBe("SecurityAttack");
+    expect(keywordBaseName("＜S Attack +1＞")).toBe("SecurityAttack");
     expect(keywordBaseName("Decoy (Black)")).toBe("Decoy");
     expect(keywordBaseName("<Use Req.>")).toBe("UseReq");
     expect(keywordBaseName("<Link +1>")).toBe("Link");
     expect(keywordBaseName("<Partition (blue Lv.4 & green Lv.4)>")).toBe("Partition");
     expect(keywordBaseName("<Blast DNA Digivolve>")).toBe("BlastDNADigivolve");
+    expect(keywordBaseName("＜Ice Clad＞")).toBe("Iceclad");
+    expect(keywordBaseName("<Iceclad>")).toBe("Iceclad");
   });
 
   it("explains Security Attack with the modifier the permanent carries or the card prints", () => {

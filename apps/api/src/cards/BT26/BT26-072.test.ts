@@ -1,5 +1,8 @@
+import costHostFixture from "#api/engine/scenarios/cost-host-selection-does-not-delete.fixture";
+import { setupScenario } from "#api/engine/testkit/scenario";
 import { describe, expect, it } from "vitest";
 import { getCardDefinition } from "@aegis/shared";
+import { Phase } from "@aegis/shared/schema/enums";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import { compiled } from "./BT26-072.js";
@@ -215,6 +218,27 @@ describe("BT26-072 Peckmon", () => {
 
     await advance(s.engine).verb.trashDigivolutionCards(s.perm("keenan").permanentId, [s.inst("cost").instanceId], 0);
     expect(s.state.players[0]!.trash.find(({ cardId }) => cardId === "BT1-009")?.faceUp).toBe(true);
+  });
+
+  it("places a cost card under a chosen Keenan without presenting its host as a deletion target", async () => {
+    const s = setupScenario(costHostFixture, { autoAcceptOptional: true, autoSelectCards: true, preferOptionIndex: 1 });
+    s.state.memory = 4;
+    await s.ready();
+    s.state.phase = Phase.Main;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("peckmon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.perm("firstKeenan").stack.length === 1 && s.state.pendingDecision === undefined);
+    const hostChoice = s.decisions.find(({ req }) => req.kind === "chooseTargets")?.req;
+    expect(hostChoice?.options?.candidateInstanceIds).toEqual([
+      s.perm("firstKeenan").permanentId,
+      s.perm("secondKeenan").permanentId,
+    ]);
+    expect(hostChoice?.options?.purpose).toBe("cost");
+    expect(hostChoice?.options?.targetFate).toBeUndefined();
+    expect(s.perm("firstKeenan").stack[0]?.instanceId).toBe(s.inst("cost").instanceId);
+    expect(s.state.players[0]!.battleArea).toHaveLength(3);
+    expect(s.state.players[1]!.trash).toHaveLength(0);
   });
 
   it("executes Blocker and prevents the security check", async () => {

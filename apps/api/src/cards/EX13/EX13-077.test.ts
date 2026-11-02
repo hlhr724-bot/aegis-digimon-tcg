@@ -79,7 +79,7 @@ describe("EX13-077 Omnimon: Merciful Mode", () => {
         },
         1: { deck: ["BT1-009"], security: ["BT1-090"] },
       },
-      { autoDeclineOptional: true, autoChooseOption: true, autoSelectCards: true },
+      { autoDeclineOptional: true, autoChooseOption: true, autoSelectCards: true, preferOptionIndex: 1 },
     );
     s.state.memory = 6;
     await s.ready();
@@ -331,6 +331,43 @@ describe("EX13-077 Omnimon: Merciful Mode", () => {
     expect(s.state.players[0]!.deck.map(({ cardId }) => cardId)).toEqual(["BT1-012"]);
   });
 
+  it("offers Don't use on the Recovery cost selection when nothing can be battled, and declining pays nothing", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [{ card: CARD_ID, as: "merciful" }],
+          battleArea: [{ card: "AD1-001", as: "redAlly" }],
+          deck: ["BT1-012"],
+          security: ["BT1-090"],
+        },
+        1: {
+          trash: ["BT1-009", "BT1-010", "BT1-011", "BT1-012", "BT1-013"],
+          deck: ["BT1-013"],
+          security: ["BT1-014"],
+        },
+      },
+      { autoDeclineOptional: true, autoChooseOption: true },
+    );
+    await s.ready();
+    s.state.memory = 10;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("merciful").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.decisions.at(-1)?.req.kind === "selectCards");
+    const costSelection = s.decisions.at(-1)!.req;
+    expect(costSelection.options).toMatchObject({ min: 5, max: 5, purpose: "cost", declinesCost: true });
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: costSelection.decisionId,
+        response: { kind: "selectCards", instanceIds: [] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision === undefined);
+    expect(s.state.players[1]!.trash).toHaveLength(5);
+    expect(s.state.players[0]!.security.map(({ cardId }) => cardId)).toEqual(["BT1-090"]);
+  });
+
   it("Q7473/Q7476: resolves the second color-scaled choice after Battle, and Recovery removes the pending On Deletion source", async () => {
     const s = setupEngine(
       {
@@ -435,6 +472,35 @@ describe("EX13-077 Omnimon: Merciful Mode", () => {
       s.inst("egg").instanceId,
     ]);
     expect(s.state.players[1]!.deck.map(({ instanceId }) => instanceId)).not.toContain(s.inst("egg").instanceId);
+  });
+
+  it("battles without any Tamers when its own Digimon colors meet the threshold", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [{ card: CARD_ID, as: "merciful" }],
+          battleArea: [{ card: "AD1-001", as: "redDigimon" }],
+          deck: ["BT1-012"],
+          security: ["BT1-090"],
+        },
+        1: {
+          battleArea: [{ card: "BT1-009", as: "opponentDigimon" }],
+          deck: ["BT1-013"],
+          security: ["BT1-014"],
+        },
+      },
+      { autoAcceptOptional: true, autoChooseOption: true, autoSelectCards: true, preferOptionIndex: 0 },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("merciful").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.players[1]!.battleArea.length === 0);
+
+    expect(s.state.players[1]!.trash.map(({ cardId }) => cardId)).toContain("BT1-009");
+    expect(s.perm("merciful").isSuspended).toBe(false);
+    expect(s.state.players[0]!.battleArea.some(({ topCard }) => topCard?.cardId === CARD_ID)).toBe(true);
   });
 
   it("Q7468: the modal Battle branch immediately performs a normal DP battle", async () => {

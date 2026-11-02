@@ -6,6 +6,23 @@ import { mainActions } from "./actions.js";
 import "../../cards/index.js";
 
 describe("training play affordability", () => {
+  it.each(["BT10-087", "BT10-088", "BT11-095"])(
+    "excludes unaffordable plays with an unrelated DigiXros material provider (%s)",
+    async (card) => {
+      const setup = setupEngine({
+        0: { hand: [{ card: "BT5-112", as: "played" }], battleArea: [{ card }] },
+      });
+      setup.state.memory = 1;
+      await setup.ready();
+      const intent = { type: "playCard" as const, instanceId: setup.inst("played").instanceId };
+      const before = setup.state.toJSON();
+      expect(mainActions(setup.engine, 0).map((action) => action.intent)).not.toContainEqual(intent);
+      expect(setup.engine.applyIntent(0, intent)).toEqual({ ok: false, reason: "insufficient-memory" });
+      expect(setup.state.toJSON()).toEqual(before);
+      expect(setup.decisions).toEqual([]);
+    },
+  );
+
   it("preserves a payable sacrifice with an existing resident sacrifice effect", async () => {
     const setup = setupEngine(
       {

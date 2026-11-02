@@ -70,3 +70,31 @@ test("private guests see both fixed host controls", async ({ page }) => {
     '["private_guest","ABC234",null,null,null,null,"BT13:pauper"]',
   );
 });
+
+test("switches manual matchmaking with touch and keyboard at narrow and wide widths", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("aegis:locale", "en"));
+  await page.goto("/e2e/lobby-formats.html");
+  await page.getByText("Advanced settings", { exact: true }).click();
+  const modeSwitch = page.getByRole("switch", { name: "Game mode", exact: true });
+  await expect(modeSwitch).not.toBeChecked();
+  await modeSwitch.click();
+  await expect(modeSwitch).toBeChecked();
+  await page.getByRole("button", { name: "Enter queue", exact: true }).click();
+  await expect(page.getByRole("status", { name: "Match request" })).toContainText('"manual"');
+  await modeSwitch.press("ArrowLeft");
+  await expect(modeSwitch).not.toBeChecked();
+  await modeSwitch.press("ArrowRight");
+  await expect(modeSwitch).toBeChecked();
+  for (const width of [320, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const dark of [false, true]) {
+      await page.evaluate((enabled) => document.documentElement.classList.toggle("dark", enabled), dark);
+      await modeSwitch.scrollIntoViewIfNeeded();
+      const bounds = (await modeSwitch.boundingBox())!;
+      expect(bounds.x).toBeGreaterThanOrEqual(0);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+      expect(bounds.height).toBeGreaterThanOrEqual(44);
+      await page.screenshot({ path: test.info().outputPath(`manual-switch-${width}-${dark ? "dark" : "light"}.png`) });
+    }
+  }
+});

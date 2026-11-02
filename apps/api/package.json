@@ -1,11 +1,36 @@
 {
   "name": "@aegis/api",
-  "version": "1.26.0-beta",
+  "version": "1.46.0-beta",
   "private": true,
   "description": "Aegis authoritative game server: Node + TypeScript + Colyseus. Owns 100% of game state and rules.",
   "type": "module",
   "main": "./dist/index.js",
   "imports": {
+    "#api/bot/levels/level-calibration.json": {
+      "types": "./src/bot/levels/level-calibration.json",
+      "development": "./src/bot/levels/level-calibration.json",
+      "default": "./dist/bot/levels/level-calibration.json"
+    },
+    "#api/bot/evolution/digilab-decks.json": {
+      "types": "./src/bot/evolution/digilab-decks.json",
+      "development": "./src/bot/evolution/digilab-decks.json",
+      "default": "./dist/bot/evolution/digilab-decks.json"
+    },
+    "#api/bot/evolution/programs/certified-pilots.json": {
+      "types": "./src/bot/evolution/programs/certified-pilots.json",
+      "development": "./src/bot/evolution/programs/certified-pilots.json",
+      "default": "./dist/bot/evolution/programs/certified-pilots.json"
+    },
+    "#api/bot/evolution/programs/human-panel-v2.json": {
+      "types": "./src/bot/evolution/programs/human-panel-v2.json",
+      "development": "./src/bot/evolution/programs/human-panel-v2.json",
+      "default": "./dist/bot/evolution/programs/human-panel-v2.json"
+    },
+    "#api/bot/evolution/programs/certified-balanced.json": {
+      "types": "./src/bot/evolution/programs/certified-balanced.json",
+      "development": "./src/bot/evolution/programs/certified-balanced.json",
+      "default": "./dist/bot/evolution/programs/certified-balanced.json"
+    },
     "#api/*": {
       "types": "./src/*.ts",
       "development": "./src/*.ts",
@@ -13,11 +38,11 @@
     }
   },
   "scripts": {
-    "dev": "GOMEMLIMIT=1GiB tsc -p tsconfig.dev.json --incremental --singleThreaded && node --enable-source-maps dist/index.js",
-    "dev:fast": "GOMEMLIMIT=1GiB tsc -p tsconfig.dev.json --incremental --noCheck --singleThreaded && node --enable-source-maps dist/index.js",
-    "build": "GOMEMLIMIT=1GiB tsc --noCheck -p tsconfig.build.json --singleThreaded",
+    "dev": "node ../../tools/typescript/tsc.mjs api -p tsconfig.dev.json --incremental --singleThreaded && node --enable-source-maps dist/index.js",
+    "dev:fast": "node ../../tools/typescript/tsc.mjs api -p tsconfig.dev.json --incremental --noCheck --singleThreaded && node --enable-source-maps dist/index.js",
+    "build": "node ../../tools/typescript/tsc.mjs api --noCheck -p tsconfig.build.json --singleThreaded",
     "start": "node dist/index.js",
-    "typecheck": "GOMEMLIMIT=1GiB tsc --noEmit -p tsconfig.json --singleThreaded",
+    "typecheck": "node ../../tools/typescript/tsc.mjs api --noEmit -p tsconfig.json --singleThreaded",
     "test": "pnpm --filter @aegis/shared build && TEST_BATCH_CARDS=1 vitest run",
     "test:fast": "FAST=1 vitest run",
     "test:watch": "FAST=1 vitest --passWithNoTests",
@@ -32,9 +57,10 @@
     "replay": "AEGIS_CARDS_BUNDLE=0 node --conditions=development --import=./test-support/ts-loader.mjs src/replays/inputs/cli.ts",
     "test:postgres": "POSTGRES_TESTS=1 vitest run src/db/postgres.atomicity",
     "test:parallel": "concurrently -n fast,cards 'pnpm test:fast' 'pnpm test:cards'",
-    "typecheck:tests": "GOMEMLIMIT=1GiB tsc --noEmit -p tsconfig.tests.json --singleThreaded"
+    "typecheck:tests": "node ../../tools/typescript/tsc.mjs api --noEmit -p tsconfig.tests.json --singleThreaded"
   },
   "dependencies": {
+    "@2toad/profanity": "^3.3.0",
     "@aegis/shared": "workspace:*",
     "@colyseus/redis-driver": "^0.18.3",
     "@colyseus/redis-presence": "^0.18.5",
@@ -42,15 +68,22 @@
     "@colyseus/ws-transport": "^0.18.3",
     "colyseus": "^0.18.8",
     "express": "^5.2.1",
+    "jpeg-js": "^0.4.4",
+    "naughty-words": "^1.2.0",
     "nodemailer": "^7.0.13",
     "obscenity": "^0.4.6",
-    "pg": "^8.23.0"
+    "onnxruntime-web": "1.31.1",
+    "pg": "^8.23.0",
+    "pngjs": "^7.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/jpeg-js": "^0.3.7",
+    "@types/naughty-words": "^1.2.3",
     "@types/node": "^26.6.2",
     "@types/nodemailer": "^7.0.12",
     "@types/pg": "^8.23.1",
+    "@types/pngjs": "^6.0.5",
     "@vitest/ui": "5.0.1",
     "concurrently": "^10.0.0",
     "es-module-lexer": "^3.0.2",

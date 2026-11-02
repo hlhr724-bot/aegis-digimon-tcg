@@ -62,8 +62,13 @@ describe("EX13-027 Chuumon", () => {
           kind: "RevealAdd",
           revealCount: 3,
           add: [
-            { filter: nameUnion, count: 1, to: "hand" },
-            { filter: nameUnion, count: 1, to: "trash", requiresMinRevealed: 2 },
+            {
+              effectTextPart: "add 1 card with [Sukamon] or [Etemon] in its name to the hand",
+              filter: nameUnion,
+              count: 1,
+              to: "hand",
+            },
+            { effectTextPart: "trash 1 such card.", filter: nameUnion, count: 1, to: "trash", requiresMinRevealed: 2 },
           ],
           rest: "deckBottom",
         },

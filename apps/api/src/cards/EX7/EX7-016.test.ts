@@ -41,6 +41,7 @@ describe("EX7-016 Bulucomon", () => {
             revealCount: 3,
             add: [
               {
+                effectTextPart: "Add 1 card with [Paledramon]/[Hexeblaumon] in its name",
                 filter: {
                   controllerDefault: "mine",
                   nameOrTrait: [{ tokens: ["Paledramon", "Hexeblaumon"], match: "name" }],
@@ -49,6 +50,7 @@ describe("EX7-016 Bulucomon", () => {
                 to: "hand",
               },
               {
+                effectTextPart: "1 card with the [Ice-Snow] trait among them to the hand.",
                 filter: {
                   controllerDefault: "mine",
                   nameOrTrait: [{ tokens: ["Ice-Snow"], match: "trait" }],

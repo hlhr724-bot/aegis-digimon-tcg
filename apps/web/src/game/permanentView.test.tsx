@@ -5,8 +5,28 @@ import { CardInstance, Permanent } from "@aegis/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { PermanentView } from "./piece";
+import { setFieldReferenceVisible } from "@/design/fieldReference/setFieldReferenceVisible";
 
 afterEach(() => cleanup());
+
+it.each([false, true])("shows ACE from the field's top card while suspended=%s", (isSuspended) => {
+  const perm = opponentWithDpDown();
+  perm.topCard = Object.assign(new CardInstance(), { cardId: "BT17-018", instanceId: "ace-top" });
+  perm.currentDP = 15000;
+  perm.isSuspended = isSuspended;
+  const view = () => (
+    <I18nProvider>
+      <PermanentView perm={perm} onClick={() => undefined} />
+    </I18nProvider>
+  );
+  const { container, rerender } = render(view());
+  expect(container.querySelector(".game-permanent > .card-ace-badge")?.textContent).toBe("ACE");
+  expect(container.querySelector(".game-permanent > .card-ace-badge")?.getAttribute("data-overflow")).toBe("5");
+  perm.stack.push(perm.topCard);
+  perm.topCard = Object.assign(new CardInstance(), { cardId: "EX2-073", instanceId: "ordinary-top" });
+  rerender(view());
+  expect(container.querySelector(".game-permanent > .card-ace-badge")).toBeNull();
+});
 
 it("keeps the host entrance when sources or its stripped top change, and remounts for an accepted evolution", () => {
   const perm = opponentWithDpDown();
@@ -282,9 +302,11 @@ describe("PermanentView DP changes", () => {
       </I18nProvider>,
     );
 
-    expect(screen.getByRole("button", { name: /Darkdramon, 14,000 DP, DP \+2K/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Darkdramon.*14,000 DP, DP \+2K/i })).toBeTruthy();
     expect(screen.getByText("14K")).toBeTruthy();
     expect(screen.getByTitle(/DP \+2K/)).toBeTruthy();
+    expect(document.querySelector(".game-dp-delta-badge")).toBeNull();
+    expect(screen.getByTitle(/DP \+2K/).closest('[data-dp-layout="stacked"]')).toBeTruthy();
   });
 
   it("Discord 1555271931203158056: shows a Sukamon-rewritten Machinedramon as Sukamon at 3K DP", () => {
@@ -535,4 +557,106 @@ describe("PermanentView forced attack", () => {
     expect(tooltip.textContent).toContain("[Start of Your Main Phase] This Digimon attacks.");
     expect(tooltip.textContent).toContain("Trident Arm");
   });
+});
+
+it.each(["BT1-043", undefined])(
+  "keeps a face-down field card interactive without showing its identity (%s)",
+  (cardId) => {
+    const permanent = opponentWithDpDown();
+    permanent.topCard.faceUp = false;
+    permanent.topCard.cardId = cardId as string;
+    const onClick = vi.fn<() => void>();
+    const { container } = render(
+      <I18nProvider>
+        <PermanentView perm={permanent} onClick={onClick} drop={{ "data-drop": "hidden-target" }} />
+      </I18nProvider>,
+    );
+    const target = screen.getByRole("button", { name: /Face down/ });
+    expect(target.getAttribute("data-drop")).toBe("hidden-target");
+    expect(container.querySelector('[title="MetalGarurumon"]')).toBeNull();
+    expect(container.textContent).not.toContain("BT1-043");
+    fireEvent.click(target);
+    expect(onClick).toHaveBeenCalledOnce();
+  },
+);
+
+it("shows all manually selected visual statuses together on the field", () => {
+  const permanent = opponentWithDpDown();
+  permanent.manualStatuses.push("sick", "taunt", "immune");
+  const { container } = render(
+    <I18nProvider>
+      <PermanentView perm={permanent} onClick={vi.fn<() => void>()} />
+    </I18nProvider>,
+  );
+  expect(container.querySelectorAll(".game-keyword-badges")).toHaveLength(1);
+  expect(container.querySelector(".game-keyword-badges")?.getAttribute("aria-label")).toContain("Sick, Taunt, Immune");
+  expect(screen.getByRole("button").getAttribute("aria-label")).toContain("Sick");
+  expect(screen.getByRole("button").getAttribute("aria-label")).toContain("Immune");
+});
+
+it("shares keyword overflow and hints with manual statuses and free-text markers", () => {
+  const permanent = opponentWithDpDown();
+  permanent.manualStatuses.push("sick", "immune");
+  permanent.manualMarker = "Custom reminder";
+  permanent.grantedKeywords.push("Rush");
+  permanent.stack.push(Object.assign(new CardInstance(), { cardId: "BT1-010", instanceId: "source" }));
+  const { container } = render(
+    <I18nProvider>
+      <PermanentView perm={permanent} width={400} />
+    </I18nProvider>,
+  );
+  const row = container.querySelector(".game-keyword-badges")!;
+  expect(row.getAttribute("aria-label")).toBe("Active keywords: Rush, Sick, Immune, Custom reminder");
+  expect(row.querySelectorAll(".game-keyword-badge")).toHaveLength(4);
+  expect(row.textContent).toContain("+1");
+  expect(container.querySelector(".game-source-badge")).toBeTruthy();
+  expect(container.querySelector(".manual-permanent-statuses, .game-permanent-manual-marker")).toBeNull();
+  fireEvent.click(row.querySelector(".game-keyword-badge--more")!);
+  expect(screen.getByRole("tooltip").textContent).toContain("Custom reminder");
+});
+
+it("shows the projected Security Attack bonus for five Tamers sharing four distinct colors", () => {
+  const permanent = new Permanent();
+  permanent.permanentId = "four-color-tamer-bonus";
+  permanent.topCard = Object.assign(new CardInstance(), { cardId: "AD1-004" });
+  permanent.currentDP = 16_000;
+  permanent.securityAttack = 2;
+  permanent.securityAttackModifier = 1;
+  permanent.keywords.push("Rush", "Blocker", "Raid", "SecurityAttack", "Reboot");
+  permanent.grantedKeywords.push("Rush", "Blocker", "Raid", "SecurityAttack", "Reboot");
+  render(
+    <I18nProvider>
+      <PermanentView perm={permanent} />
+    </I18nProvider>,
+  );
+  expect(screen.getByLabelText(/Active keywords:.*Security Attack \+1/)).toBeTruthy();
+  expect(screen.queryByLabelText(/Active keywords:.*Security Attack \+2/)).toBeNull();
+});
+
+it("hides field references from the card name by default and keeps them accessible", () => {
+  const perm = opponentWithDpDown();
+  perm.permanentId = "perm-18";
+  render(
+    <I18nProvider>
+      <PermanentView perm={perm} onClick={vi.fn<() => void>()} />
+    </I18nProvider>,
+  );
+  expect(screen.queryByText("#18")).toBeNull();
+  expect(screen.getByRole("button", { name: /Field reference #18/ })).toBeTruthy();
+});
+
+it("prefixes the card name with the first field reference and keeps every reference accessible", () => {
+  setFieldReferenceVisible(true);
+  const perm = opponentWithDpDown();
+  perm.permanentId = "perm-18";
+  render(
+    <I18nProvider>
+      <PermanentView perm={perm} copies={2} fieldReferenceIds={["perm-18", "perm-25"]} onClick={vi.fn<() => void>()} />
+    </I18nProvider>,
+  );
+  expect(screen.getByText("#18 +1")).toBeTruthy();
+  expect(screen.queryByText("#18, #25")).toBeNull();
+  expect(screen.getByRole("button", { name: /Field reference #18, #25/ })).toBeTruthy();
+  expect(screen.getByRole("button").getAttribute("data-permanent-id")).toBe("perm-18");
+  setFieldReferenceVisible(false);
 });

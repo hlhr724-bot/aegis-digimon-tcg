@@ -49,6 +49,7 @@ describe("EX2-069 Fist of the Beast King", () => {
           trigger: "Main",
           actions: [
             {
+              effectTextPart: "[Main] Unsuspend 1 of your Digimon with [Leomon] or [Beelzemon] in its name.",
               kind: "Unsuspend",
               target: {
                 filter: {

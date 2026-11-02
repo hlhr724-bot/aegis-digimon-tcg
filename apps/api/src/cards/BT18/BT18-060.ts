@@ -11,11 +11,13 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [Vemmon] in its text among them to the hand",
               filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Vemmon"], match: "text" }] },
               count: 1,
               to: "hand",
             },
             {
+              effectTextPart: "place 1 [Vemmon] among them as the bottom digivolution card of 1 of your Digimon.",
               filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Vemmon"], match: "name" }] },
               count: 1,
               to: "placeUnder",

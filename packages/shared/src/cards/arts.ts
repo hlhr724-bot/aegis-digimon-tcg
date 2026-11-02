@@ -1,4 +1,5 @@
 import artsJson from "./data/arts.json" with { type: "json" };
+import regionalArtsJson from "./data/regional-arts.json" with { type: "json" };
 import { cardData } from "./data/index.js";
 import type { CardArt } from "./types.js";
 
@@ -9,19 +10,23 @@ interface EncodedCardArts {
   cards: Readonly<Record<string, readonly EncodedCardArt[]>>;
 }
 
-const encodedArts = artsJson as unknown as EncodedCardArts;
+const encodedArtSources = [artsJson, regionalArtsJson] as unknown as readonly EncodedCardArts[];
 const decodedAlternateArts = new Map<string, readonly CardArt[]>();
+
+function decodeArts(encodedArts: EncodedCardArts, cardId: string): CardArt[] {
+  const encoded = Object.hasOwn(encodedArts.cards, cardId) ? encodedArts.cards[cardId]! : [];
+  return encoded.map(([suffix, labelIndex, imageId]): CardArt => {
+    const artId = `${cardId}${suffix}`;
+    return { artId, imageId: imageId ?? artId, label: encodedArts.labels[labelIndex] ?? "" };
+  });
+}
 
 function getAlternateArts(cardId: string): readonly CardArt[] {
   const cached = decodedAlternateArts.get(cardId);
   if (cached) {
     return cached;
   }
-  const encoded = Object.hasOwn(encodedArts.cards, cardId) ? encodedArts.cards[cardId]! : [];
-  const decoded = encoded.map(([suffix, labelIndex, imageId]): CardArt => {
-    const artId = `${cardId}${suffix}`;
-    return { artId, imageId: imageId ?? artId, label: encodedArts.labels[labelIndex] ?? "" };
-  });
+  const decoded = encodedArtSources.flatMap((encodedArts) => decodeArts(encodedArts, cardId));
   decodedAlternateArts.set(cardId, decoded);
   return decoded;
 }
@@ -40,9 +45,4 @@ export function getCardArts(cardId: string): readonly CardArt[] {
 export function resolveCardArt(cardId: string, artId?: string): CardArt {
   const arts = getCardArts(cardId);
   return arts.find((art) => art.artId === artId) ?? arts[0]!;
-}
-
-/** Japanese printings use `-J` art IDs, set by tools/lib/card-arts.mjs. */
-export function isJapaneseArt(artId: string): boolean {
-  return artId.endsWith("-J");
 }

@@ -28,7 +28,7 @@ const compiled: CompiledCard = {
           kind: "Delete",
           target: {
             filter: {
-              controllerDefault: "opponent",
+              controller: "any",
               kind: ["Digimon"],
               playCostLte: 3,
             },
@@ -62,7 +62,7 @@ const compiled: CompiledCard = {
           kind: "Delete",
           target: {
             filter: {
-              controllerDefault: "opponent",
+              controller: "any",
               kind: ["Digimon"],
               playCostLte: 3,
             },
@@ -87,6 +87,7 @@ const compiled: CompiledCard = {
           filter: {
             nameOrTrait: [{ tokens: ["Gammamon"], match: "name" }],
           },
+          excludeInherited: true,
           duration: "permanent",
         },
       ],
@@ -107,6 +108,7 @@ const compiled: CompiledCard = {
           filter: {
             nameOrTrait: [{ tokens: ["Gammamon"], match: "name" }],
           },
+          excludeInherited: true,
           duration: "permanent",
         },
       ],

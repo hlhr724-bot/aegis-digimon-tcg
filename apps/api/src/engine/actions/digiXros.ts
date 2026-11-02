@@ -8,6 +8,7 @@ import {
   Zone,
   digiXrosRequirementFor,
   digiXrosSlotMatches,
+  effectiveExactNames,
   type CardDefinition,
   type DigiXrosMaterial,
   type DigiXrosRequirement,
@@ -16,6 +17,7 @@ import {
   type PlayerState,
   type Seat,
 } from "@aegis/shared";
+import { hasDistinctRepresentatives } from "@aegis/shared/effects/hasDistinctRepresentatives";
 import { cardHasTrait, definitionOf, dpOf } from "../cards/cardData.js";
 import { extractCardAt, placePermanent as appendPermanent, setTopCard } from "../state/access.js";
 import { digiXrosZoneExpanderFor } from "../digiXros/zoneExpanders.js";
@@ -104,6 +106,8 @@ export interface DigiXrosDeps {
   reservedMaterialInstanceIds?(instance: CardInstance): readonly string[];
   conditionalTrashAllowed?(instance: CardInstance): boolean | undefined;
   pendingSelfReduction?(instance: CardInstance): number;
+  hasBeforePayCost?(instance: CardInstance): boolean;
+  minimumDeferredPlayCost?(instance: CardInstance, baseCost: number): number | undefined;
   maxAffordable(state: GameState, seat: Seat): number;
   payMemory(state: GameState, seat: Seat, cost: number): void;
   /** Apply continuous play-cost modifiers to the printed cost (before the DigiXros reduction). */
@@ -196,6 +200,8 @@ export function validateDigiXros(
     | "reservedMaterialInstanceIds"
     | "conditionalTrashAllowed"
     | "pendingSelfReduction"
+    | "hasBeforePayCost"
+    | "minimumDeferredPlayCost"
     | "adjustedPlayCost"
     | "canReducePlayCost"
     | "digiXrosNamesOf"
@@ -359,8 +365,13 @@ export function validateDigiXros(
         ? (requirement.costReduction ?? 1)
         : requirement.count;
   const cost = Math.max(0, base - materials.length * perMaterialReduction);
-  if (deps.maxAffordable(state, seat) < Math.max(0, cost - (deps.pendingSelfReduction?.(instance) ?? 0)))
-    return { ok: false, reason: "insufficient-memory" };
+  const payableCost = Math.max(0, cost - (deps.pendingSelfReduction?.(instance) ?? 0));
+  const affordable = deps.maxAffordable(state, seat);
+  if (affordable < payableCost) {
+    const minimum = deps.minimumDeferredPlayCost?.(instance, payableCost);
+    if (deps.hasBeforePayCost?.(instance) !== true || (minimum !== undefined && minimum > affordable))
+      return { ok: false, reason: "insufficient-memory" };
+  }
 
   return {
     ok: true,
@@ -610,9 +621,15 @@ export function materialsSatisfyRecipe(
       const ids = materials.map((m) => m.cardId);
       if (new Set(ids).size !== ids.length) return false;
     }
-    if (slot.differentNames === true) {
-      const names = materials.map((material) => material.nameEn.toLowerCase());
-      if (new Set(names).size !== names.length) return false;
+    if (
+      slot.differentNames === true &&
+      !hasDistinctRepresentatives(
+        materials.map((material, index) =>
+          [...effectiveExactNames(material), ...(digiXrosNamesAt?.(index) ?? [])].map((name) => name.toLowerCase()),
+        ),
+      )
+    ) {
+      return false;
     }
     return true;
   }

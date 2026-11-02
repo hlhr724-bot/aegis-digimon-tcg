@@ -219,6 +219,30 @@ export function FilterRail({
           </div>
         ) : null}
 
+        {filter.availableKeywords.length > 0 ? (
+          <details className="card-filter-group card-filter-disclosure">
+            <summary className="card-filter-label">
+              {t("library.keywords")}
+              {filter.keywords.length > 0 ? (
+                <span className="card-filter-disclosure__count">{filter.keywords.length}</span>
+              ) : null}
+            </summary>
+            <div className="card-filter-chips" role="group" aria-label={t("library.keywords")}>
+              {filter.availableKeywords.map((keyword) => (
+                <button
+                  key={keyword.value}
+                  className="card-filter-chip"
+                  lang="en"
+                  onClick={() => filter.toggleKeyword(keyword.value)}
+                  aria-pressed={filter.keywords.includes(keyword.value)}
+                >
+                  {keyword.label}
+                </button>
+              ))}
+            </div>
+          </details>
+        ) : null}
+
         {showSort ? (
           <div className="card-filter-group">
             <div className="card-filter-label">{t("library.sort")}</div>

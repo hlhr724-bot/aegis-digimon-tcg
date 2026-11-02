@@ -53,6 +53,60 @@ describe("EX11-011 Dinomon", () => {
     ]);
   });
 
+  it("requires a highest-cost survivor instead of allowing both players to skip it", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "EX7-035", as: "base" },
+            { card: "EX11-011", as: "otherDinomon" },
+          ],
+          hand: [{ card: "EX11-011", as: "dinomon" }],
+          deck: ["BT1-009"],
+        },
+        1: { battleArea: [{ card: "EX11-010", as: "opponent" }] },
+      },
+      { autoDeclineOptional: true },
+    );
+    s.state.memory = 4;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("dinomon").instanceId,
+        useAlternateCost: true,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() =>
+      s.decisions.some(({ req }) => req.kind === "chooseTargets" && req.options?.purpose !== "optionalTarget"),
+    );
+
+    const choice = s.decisions.find(
+      ({ req }) => req.kind === "chooseTargets" && req.options?.purpose !== "optionalTarget",
+    )!;
+    expect(choice.req.options?.min).toBe(1);
+    expect(choice.req.options?.effectTextPart).toContain("choose 1 of each player");
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: choice.req.decisionId,
+        response: { kind: "chooseTargets", instanceIds: [] },
+      }).ok,
+    ).toBe(false);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: choice.req.decisionId,
+        response: { kind: "chooseTargets", instanceIds: [s.perm("base").permanentId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.battleArea.length === 1);
+
+    expect(s.state.players[0]!.battleArea[0]!.permanentId).toBe(s.perm("base").permanentId);
+    expect(s.state.players[1]!.battleArea[0]!.permanentId).toBe(s.perm("opponent").permanentId);
+    assertNoLoudGap(s);
+  });
+
   it("deletes every non-chosen Digimon even when the optional suspension is declined", async () => {
     const s = setupEngine(
       {

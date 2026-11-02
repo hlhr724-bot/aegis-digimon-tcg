@@ -8,6 +8,7 @@ import {
   noteRoutedUsedOption,
   setBreeding,
   setResolvingOption,
+  spliceById,
 } from "../../state/access.js";
 import type { SubTriggerInstall } from "../EffectContext.js";
 import type { SubTriggerRootZone } from "../subtriggers.js";
@@ -344,14 +345,4 @@ export function collectForReturn(
   // permanent left play, so no ledger teardown — `onPermanentRemoved` is not called.
   const loose = removeLooseInstance(state, instanceId);
   return loose ? [loose] : undefined;
-}
-
-/** Splice the first element with `instanceId` out of an array-like, returning it. */
-export function spliceById(
-  list: { findIndex(p: (c: CardInstance) => boolean): number; splice(i: number, n: number): CardInstance[] },
-  instanceId: string,
-): CardInstance | undefined {
-  const index = list.findIndex((c) => c.instanceId === instanceId);
-  if (index < 0) return undefined;
-  return list.splice(index, 1)[0];
 }

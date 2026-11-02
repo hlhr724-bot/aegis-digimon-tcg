@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            '[Main] 1 of your Digimon gains "This Digimon doesn\'t activate the [Security] effects of any Option cards it checks" for the turn.',
           kind: "GrantStatic",
           target: {
             filter: {

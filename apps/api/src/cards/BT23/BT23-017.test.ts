@@ -291,7 +291,7 @@ describe("BT23-017 Betamon", () => {
       {
         0: {
           battleArea: [
-            { card: "BT23-018", as: "host", under: ["BT23-017"], dp: 20_000 },
+            { card: "BT1-041", as: "host", under: ["BT23-017"], dp: 20_000 },
             { card: "BT23-027", as: "yellowMaterial" },
           ],
           hand: [
@@ -326,6 +326,59 @@ describe("BT23-017 Betamon", () => {
     expect(
       s.state.players[0]!.battleArea.some((p) => p.topCard?.instanceId === s.inst("blackMaterial").instanceId),
     ).toBe(true);
+  });
+
+  it("uses an alternate legal DNA pair while preserving the Digimon locked by this inherited effect", async () => {
+    const preferInstanceIds: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT23-018", as: "host", under: ["BT23-017"], dp: 20_000 },
+            { card: "BT23-027", as: "yellowMaterial" },
+          ],
+          hand: [
+            { card: "BT23-050", as: "blackMaterial" },
+            { card: "BT23-032", as: "shakkoumon" },
+          ],
+          deck: ["BT1-009", "BT1-010", "BT1-011", "BT1-012"],
+        },
+        1: { security: ["BT1-009", "BT1-013", "BT1-027"], deck: ["BT1-014", "BT1-015", "BT1-016"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds },
+    );
+    s.state.memory = 5;
+    await s.ready();
+    const yellowPermanentId = s.perm("yellowMaterial").permanentId;
+    const hostPermanentId = s.perm("host").permanentId;
+    const materialInstanceIds = [s.perm("host").topCard.instanceId, s.perm("yellowMaterial").topCard.instanceId];
+    preferInstanceIds.push(s.perm("yellowMaterial").topCard.instanceId, s.inst("blackMaterial").instanceId);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("host").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() =>
+      s.state.players[0]!.battleArea.some((p) => p.topCard?.instanceId === s.inst("blackMaterial").instanceId),
+    );
+    await settle(() => !observe(s.engine).isAttacking());
+
+    const result = s.state.players[0]!.battleArea.find(
+      (p) => p.topCard?.instanceId === s.inst("shakkoumon").instanceId,
+    );
+    const locked = s.state.players[0]!.battleArea.find(
+      (p) => p.topCard?.instanceId === s.inst("blackMaterial").instanceId,
+    );
+    expect(result).toBeDefined();
+    expect(result!.stack.map((card) => card.instanceId)).toEqual(expect.arrayContaining(materialInstanceIds));
+    expect(result!.stack.map((card) => card.instanceId)).not.toContain(s.inst("blackMaterial").instanceId);
+    expect(s.state.players[0]!.battleArea.some((p) => p.permanentId === yellowPermanentId)).toBe(false);
+    expect(s.state.players[0]!.battleArea.some((p) => p.permanentId === hostPermanentId)).toBe(false);
+    expect(locked).toBeDefined();
+    expect(observe(s.engine).isRestricted(locked!, "digivolve")).toBe(true);
+    expect(s.state.pendingDecision).toBeUndefined();
   });
 
   it("lets the same DNA recipe succeed when neither material was played by the inherited effect", async () => {

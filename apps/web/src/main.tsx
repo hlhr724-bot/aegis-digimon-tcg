@@ -12,9 +12,11 @@ import { Panel } from "./design/surfaces";
 import { installTranslationCompatibility } from "./translationCompatibility";
 import { applyDarkMode } from "./design/darkMode";
 import { applyInterfaceTheme } from "./design/interfaceTheme";
+import { motionPreference } from "@/design/motion/motionPreference";
 import { preventIosFocusZoom } from "./design/iosViewport";
 import { clientErrorReporter } from "@/clientErrors/clientErrorReporter";
 import { installClientErrorListeners } from "@/clientErrors/installClientErrorListeners";
+import { reportRecoverableRenderError } from "@/clientErrors/reportRecoverableRenderError";
 import { installPreloadErrorRecovery } from "@/net/installPreloadErrorRecovery";
 import "./design/tokens.css";
 import "./design/base.css";
@@ -84,14 +86,22 @@ installPreloadErrorRecovery({
   target: window,
   readStorage: () => window.sessionStorage,
   reload: () => window.location.reload(),
+  isOnline: () => navigator.onLine,
 });
 const container = document.getElementById("root");
 if (!container) throw new Error("#root not found");
 applyDarkMode();
 applyInterfaceTheme();
+motionPreference.apply();
 preventIosFocusZoom();
 installTranslationCompatibility(container);
 loadFamousDecks().catch(() => undefined);
 void loadDictionary(loadLocale())
   .catch(() => undefined)
-  .finally(() => createRoot(container).render(<Startup />));
+  .finally(() => {
+    const rootOptions =
+      import.meta.env.PROD || import.meta.env.VITE_AEGIS_CLIENT_ERRORS === "on"
+        ? { onRecoverableError: reportRecoverableRenderError }
+        : undefined;
+    createRoot(container, rootOptions).render(<Startup />);
+  });

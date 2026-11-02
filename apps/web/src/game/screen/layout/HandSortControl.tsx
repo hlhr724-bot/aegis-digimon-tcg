@@ -1,3 +1,4 @@
+import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
 /* A split button: the main part re-applies the last sort order, and the caret opens a
    menu that picks another order and applies it at once. The menu is portaled and fixed to
    the caret because the hand tray clips overflow and stacks its cards above the control. */
@@ -7,6 +8,7 @@ import { createPortal } from "react-dom";
 import { Icons } from "../../../design/icons";
 import { useTranslation, type TranslationKey } from "../../../i18n";
 import { useDismissOnOutsidePress } from "../../chat/useDismissOnOutsidePress";
+import { HAND_SORT_DIRECTIONS, HandSortDirection } from "@/game/HandSortDirection";
 import { HAND_SORT_MODES, HandSortMode } from "../../handSortMode";
 
 const MODE_LABELS: Record<HandSortMode, TranslationKey> = {
@@ -15,14 +17,29 @@ const MODE_LABELS: Record<HandSortMode, TranslationKey> = {
   [HandSortMode.Color]: "game.handSort.color",
 };
 
+const DIRECTION_LABELS: Record<HandSortDirection, TranslationKey> = {
+  [HandSortDirection.ASCENDING.value]: "game.handSort.ascending",
+  [HandSortDirection.DESCENDING.value]: "game.handSort.descending",
+};
+
+function DirectionIcon({ direction, size }: { direction: HandSortDirection; size: number }) {
+  return direction === HandSortDirection.DESCENDING.value ? (
+    <Icons.ArrowDown size={size} />
+  ) : (
+    <Icons.ArrowUp size={size} />
+  );
+}
+
 export function HandSortControl({
   mode,
+  direction,
   disabled,
   onSort,
 }: {
   mode: HandSortMode;
+  direction: HandSortDirection;
   disabled: boolean;
-  onSort: (mode: HandSortMode) => void;
+  onSort: (mode: HandSortMode, direction: HandSortDirection) => void;
 }) {
   const { t } = useTranslation();
   const [menuPosition, setMenuPosition] = useState<CSSProperties>();
@@ -32,6 +49,13 @@ export function HandSortControl({
   const caretRef = useRef<HTMLButtonElement>(null);
   const close = useCallback(() => setMenuPosition(undefined), []);
   useDismissOnOutsidePress(menuRef, caretRef.current, close);
+  useArenaInputCancel({
+    ref: menuRef,
+    onCancel: () => {
+      close();
+      caretRef.current?.focus();
+    },
+  });
 
   useEffect(() => {
     if (disabled) close();
@@ -62,10 +86,11 @@ export function HandSortControl({
   }, [open]);
 
   const modeLabel = t(MODE_LABELS[mode]);
-  const choose = (next: HandSortMode) => {
+  const directionLabel = t(DIRECTION_LABELS[direction]);
+  const choose = (nextMode: HandSortMode, nextDirection: HandSortDirection) => {
     close();
     caretRef.current?.focus();
-    onSort(next);
+    onSort(nextMode, nextDirection);
   };
 
   return (
@@ -73,15 +98,18 @@ export function HandSortControl({
       <button
         type="button"
         className="game-hand-sort__apply"
-        aria-label={`${t("settings.sortHand")}: ${modeLabel}`}
+        aria-label={`${t("settings.sortHand")}: ${modeLabel}, ${directionLabel}`}
         title={t("settings.sortHandDesc")}
         disabled={disabled}
-        onClick={() => onSort(mode)}
+        onClick={() => onSort(mode, direction)}
       >
         <span aria-hidden="true">
           <Icons.List size={18} />
         </span>
         <span className="game-hand-sort__label">{modeLabel}</span>
+        <span className="game-hand-sort__direction" aria-hidden="true">
+          <DirectionIcon direction={direction} size={12} />
+        </span>
       </button>
       <button
         ref={caretRef}
@@ -131,20 +159,40 @@ export function HandSortControl({
                 items[next]?.focus();
               }}
             >
-              {HAND_SORT_MODES.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  role="menuitemradio"
-                  aria-checked={option === mode}
-                  onClick={() => choose(option)}
-                >
-                  <span className="game-hand-sort__check" aria-hidden="true">
-                    {option === mode ? <Icons.Check size={14} /> : null}
-                  </span>
-                  {t(MODE_LABELS[option])}
-                </button>
-              ))}
+              <div role="group" aria-label={t("game.handSort.orderGroup")}>
+                {HAND_SORT_MODES.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={option === mode}
+                    onClick={() => choose(option, direction)}
+                  >
+                    <span className="game-hand-sort__check" aria-hidden="true">
+                      {option === mode ? <Icons.Check size={14} /> : null}
+                    </span>
+                    {t(MODE_LABELS[option])}
+                  </button>
+                ))}
+              </div>
+              <div role="separator" className="game-hand-sort__separator" />
+              <div role="group" aria-label={t("game.handSort.directionGroup")}>
+                {HAND_SORT_DIRECTIONS.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={option === direction}
+                    onClick={() => choose(mode, option)}
+                  >
+                    <span className="game-hand-sort__check" aria-hidden="true">
+                      {option === direction ? <Icons.Check size={14} /> : null}
+                    </span>
+                    <DirectionIcon direction={option} size={14} />
+                    {t(DIRECTION_LABELS[option])}
+                  </button>
+                ))}
+              </div>
             </div>,
             document.body,
           )

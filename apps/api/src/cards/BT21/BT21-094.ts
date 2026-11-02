@@ -13,11 +13,13 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [Davis Motomiya] in its name",
               filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Davis Motomiya"], match: "name" }] },
               count: 1,
               to: "hand",
             },
             {
+              effectTextPart: "1 card with the [Free] trait among them to the hand.",
               filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Free"], match: "trait" }] },
               count: 1,
               to: "hand",

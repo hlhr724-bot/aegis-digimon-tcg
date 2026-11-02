@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [D-Reaper] in its traits",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [ADR-02 Searcher] among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

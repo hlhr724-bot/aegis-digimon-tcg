@@ -301,3 +301,27 @@ describe("EX13-070 Davis Motomiya & Ken Ichijoji", () => {
     expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard.cardId)).toContain(CARD_ID);
   });
 });
+
+describe("Davis and Ken end-of-turn breeding boundary", () => {
+  it("leaves the breeding Digimon unchanged when it is the only possible evolution base", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: CARD_ID, as: "tamer" }],
+          breeding: { card: "BT12-021", as: "breeding" },
+          hand: [{ card: "BT12-022", as: "evolution" }],
+          deck: ["BT1-010"],
+        },
+        1: { battleArea: [{ card: "BT1-009" }], deck: ["BT1-011"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true },
+    );
+    await s.ready();
+    const memoryBefore = s.state.memory;
+    await advance(s.engine).fire(EffectTiming.EndOfYourTurn, s.perm("tamer"));
+    expect(s.perm("breeding").topCard.cardId).toBe("BT12-021");
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(s.inst("evolution").instanceId);
+    expect(s.state.memory).toBe(memoryBefore);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
+});

@@ -7,7 +7,7 @@ test("viewing the used deck from the result screen shows the deck in front of th
   const result = page.getByRole("dialog", { name: "Victory" });
   await expect(result).toBeVisible();
 
-  await page.getByRole("button", { name: "View used deck" }).click();
+  await page.getByRole("button", { name: "Your deck" }).click();
   const deck = page.getByRole("dialog", { name: /Deck/ });
   await expect(deck).toBeVisible();
   await expect(result).toBeHidden();

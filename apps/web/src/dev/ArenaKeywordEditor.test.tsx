@@ -123,7 +123,7 @@ it("keeps more than ten grants summarized on the field and individually accessib
     name: "Active keywords",
   });
   expect(region.tabIndex).toBe(0);
-  expect([...region.children].map((chip) => chip.textContent)).toEqual(keywords);
+  expect([...region.children].map((chip) => chip.textContent)).toEqual(keywords.map((keyword) => `<${keyword}>`));
 });
 
 it("traps focus inside the modal and returns to its trigger on Escape", () => {

@@ -20,7 +20,9 @@ it("reports only public whole-field returns, grouped with the correct recipient"
     s.inst("private").instanceId,
     opponent.topCard.instanceId,
   ]);
-  const additions = s.events.filter((event) => event.kind === "cardsMoved" && event.to === "hand");
+  const additions = s.events.filter(
+    (event) => event.kind === "cardsMoved" && event.to === "hand" && event.returnedPermanents !== undefined,
+  );
   expect(additions).toHaveLength(2);
   expect(additions.map((event) => (event.kind === "cardsMoved" ? event.returnedPermanents : []))).toEqual([
     [{ permanentId: own.permanentId, instanceId: own.topCard.instanceId, cardId: "BT1-010", seat: 0 }],

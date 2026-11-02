@@ -77,8 +77,11 @@ export type RestrictionBadgeKind =
   | "immuneToOpponentDigimonEffects"
   | "immuneToOpponentOptionEffects"
   | "immuneToOpponentTamerEffects"
+  | "protectedFromStackTrash"
+  | "protectedFromStackReturn"
   | "protectedFromDpReduction"
   | "protectedFromDeDigivolve"
+  | "protectedFromBattleDeletion"
   | "protectedFromEffectDeletion"
   | "protectedFromEffectReturn"
   | "attacksAtStartOfMainPhase";
@@ -115,6 +118,26 @@ export interface RestrictionBadge {
  * cannot do in combat first, then what it cannot do on its own turn.
  */
 const RESTRICTION_BADGES: readonly RestrictionBadge[] = [
+  {
+    kind: "protectedFromBattleDeletion",
+    labelKey: "game.restriction.protectedFromBattleDeletion",
+    protection: true,
+    icon: "deleteShield",
+  },
+  {
+    kind: "protectedFromStackTrash",
+    labelKey: "game.restriction.protectedFromStackTrash",
+    shortLabelKey: "game.protectionBadge.protectedFromStackTrash",
+    protection: true,
+    icon: "deDigivolveShield",
+  },
+  {
+    kind: "protectedFromStackReturn",
+    labelKey: "game.restriction.protectedFromStackReturn",
+    shortLabelKey: "game.protectionBadge.protectedFromStackReturn",
+    protection: true,
+    icon: "returnShield",
+  },
   {
     kind: "attacksAtStartOfMainPhase",
     labelKey: "game.restriction.attacksAtStartOfMainPhase",
@@ -211,10 +234,14 @@ export function forcedAttackGrants(permanent: Pick<Permanent, "forcedAttackGrant
 }
 
 /** "Trident Arm granted: [Start of Your Main Phase] This Digimon attacks." */
-export function forcedAttackGrantText({ clause, sourceCardId }: ForcedAttackGrant, t: Translate): string {
+export function forcedAttackGrantText(
+  { clause, sourceCardId }: ForcedAttackGrant,
+  t: Translate,
+  getCardName?: (cardId: string) => string,
+): string {
   return sourceCardId
     ? t("redesign.arena.restriction.attacksAtStartOfMainPhaseGranted", {
-        card: cardDisplayName(sourceCardId, t),
+        card: getCardName?.(sourceCardId) ?? cardDisplayName(sourceCardId, t),
         clause,
       })
     : clause;

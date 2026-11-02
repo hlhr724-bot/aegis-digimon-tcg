@@ -37,6 +37,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete 1 of your opponent's Digimon with the highest DP.",
           kind: "Delete",
           target: {
             filter: {

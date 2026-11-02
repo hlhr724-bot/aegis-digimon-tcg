@@ -19,7 +19,7 @@ describe("BT1-068 Kokuwamon", () => {
       attributes: ["Data"],
       types: ["Machine"],
       inheritedEffectText:
-        "[Your Turn] While this Digimon is level 6 or higher， it gains ＜Security Attack +1＞. (This Digimon checks 1 additional security card.)",
+        "[Your Turn] While this Digimon is level 6 or higher, it gains ＜Security Attack +1＞. (This Digimon checks 1 additional security card.)",
     });
     expect(compiled).toEqual({
       effects: [

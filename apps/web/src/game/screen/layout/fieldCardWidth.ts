@@ -23,11 +23,15 @@ const reports = new Map<string, RowCardWidths>();
 const listeners = new Set<() => void>();
 let narrowest: RowCardWidths | undefined;
 
+function holdOnePixelShrink(heightFitted: number): number {
+  return narrowest?.heightFitted === heightFitted + 1 ? narrowest.heightFitted : heightFitted;
+}
+
 function settle() {
   const all = [...reports.values()];
   const next = all.length
     ? {
-        heightFitted: Math.min(...all.map((widths) => widths.heightFitted)),
+        heightFitted: holdOnePixelShrink(Math.min(...all.map((widths) => widths.heightFitted))),
         drawn: Math.min(...all.map((widths) => widths.drawn)),
         beside: Math.min(...all.map((widths) => widths.beside)),
       }

@@ -27,8 +27,8 @@ it is not an automated source-drift check.
 Eight English excluded-token groups yield twelve name/token pairs and forty
 committed physical card definitions at this baseline. The PDF also supplies
 an English positive Kimeramon inclusion for MarineChimairamon; the shared
-predicate now encodes that inclusion, while no MarineChimairamon definition
-exists in the current committed catalog. Chinese/Japanese/Korean token mappings do not redefine the committed
+predicate now encodes that inclusion, and BT4-031 carries that errata-corrected
+name in the committed catalog. Chinese/Japanese/Korean token mappings do not redefine the committed
 English-name gates; complete multilingual support is outside this bounded
 proof and does not receive credit.
 

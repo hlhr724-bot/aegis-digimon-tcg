@@ -141,6 +141,10 @@ it("Discord 1557581905220730932: preserves the reported Cool Boy Main clause and
   try {
     const rail = screen.getByRole("region", { name: "Hand selection" });
     expect(rail.textContent).toContain("with the play cost reduced by 2.");
+    fireEvent.click(within(rail).getByRole("button", { name: "Hide effect" }));
+    expect(rail.textContent).not.toContain("with the play cost reduced by 2.");
+    fireEvent.click(within(rail).getByRole("button", { name: "View effect" }));
+    expect(rail.textContent).toContain("with the play cost reduced by 2.");
     expect(game.physical("copy-first").getAttribute("aria-pressed")).toBe("false");
     expect(game.physical("ineligible").getAttribute("aria-disabled")).toBe("true");
     expect(game.physical("unrelated-witness").getAttribute("aria-disabled")).toBe("true");
@@ -186,7 +190,7 @@ it.each(["selectCards", "chooseTargets"] as const)(
   },
 );
 
-it("enforces min/max, supports deselection and replaces the oldest pick at the server's max", () => {
+it("enforces min/max, supports deselection and keeps existing picks at the server's max", () => {
   const game = renderDecision(
     handDecision("selectCards", { candidateInstanceIds: ["copy-first", "copy-second", "ineligible"], min: 2, max: 2 }),
   );
@@ -199,10 +203,12 @@ it("enforces min/max, supports deselection and replaces the oldest pick at the s
     fireEvent.click(game.physical("copy-second"));
     expect(confirm.disabled).toBe(true);
     fireEvent.click(game.physical("copy-second"));
+    expect(game.physical("ineligible").getAttribute("aria-disabled")).toBe("true");
     fireEvent.click(game.physical("ineligible"));
-    expect(game.physical("copy-first").getAttribute("aria-pressed")).toBe("false");
+    expect(game.physical("copy-first").getAttribute("aria-pressed")).toBe("true");
+    expect(game.physical("ineligible").getAttribute("aria-pressed")).toBe("false");
     fireEvent.click(confirm);
-    expect(game.respond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: ["copy-second", "ineligible"] });
+    expect(game.respond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: ["copy-first", "copy-second"] });
   } finally {
     game.restore();
   }

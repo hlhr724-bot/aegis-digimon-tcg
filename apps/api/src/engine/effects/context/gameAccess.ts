@@ -1,7 +1,11 @@
+import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
+import type { RuntimeCallbackRegistry } from "#api/engine/snapshot/RuntimeCallbackRegistry";
 import type { CardDefinition, CardInstance, GameState, Permanent, PlayerState, Seat, ZoneRef } from "@aegis/shared";
 
 /** Read-only access to authoritative state for guards and effect bodies. */
 export interface GameAccess {
+  runtimeCallbacks?: RuntimeCallbackRegistry;
+  runtimeObjects?: RuntimeObjectRegistry;
   readonly state: GameState;
   player(seat: Seat): PlayerState;
   opponentOf(seat: Seat): Seat;

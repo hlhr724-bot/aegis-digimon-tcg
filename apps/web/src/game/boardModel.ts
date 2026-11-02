@@ -285,17 +285,18 @@ export function triggerLabels(
   triggerKeys: readonly string[],
   t: Translate,
   triggerCardIds: readonly string[] = [],
+  getDisplayName: (cardId: string) => string = (cardId) => getCardDefinition(cardId)?.nameEn ?? cardId,
 ): string[] {
   if (triggerKeys.length === 1) {
     const cardId = triggerCardIds[0] ?? triggerCardId(triggerKeys[0]!);
-    return [getCardDefinition(cardId)?.nameEn ?? cardId];
+    return [getDisplayName(cardId)];
   }
   // Effect-key suffixes are implementation details (`ir-6-0`, `GainMemory`) and
   // are neither stable nor meaningful to a player. The server now carries timing
   // separately for the printed clause; rows identify the actual source card only.
   const entries = triggerKeys.map((key, index) => {
     const cardId = triggerCardIds[index] ?? triggerCardId(key);
-    return { label: getCardDefinition(cardId)?.nameEn ?? cardId, instanceId: parseTriggerKey(key).instanceId };
+    return { label: getCardDefinition(cardId)?.nameEn ?? cardId, cardId, instanceId: parseTriggerKey(key).instanceId };
   });
   // Copy numbers are per PERMANENT, not per entry, so a permanent that queued two
   // effects keeps one identity and a card with no second permanent keeps none.
@@ -305,10 +306,13 @@ export function triggerLabels(
     if (!seen.includes(entry.instanceId)) seen.push(entry.instanceId);
     instancesByLabel.set(entry.label, seen);
   }
-  return entries.map(({ label, instanceId }) => {
+  return entries.map(({ label, cardId, instanceId }) => {
     const instances = instancesByLabel.get(label) ?? [];
-    if (instances.length <= 1) return label;
-    return t("log.copySuffix", { label, n: instances.indexOf(instanceId) + 1 });
+    const displayLabel = getDisplayName(cardId);
+    if (instances.length <= 1) {
+      return displayLabel;
+    }
+    return t("log.copySuffix", { label: displayLabel, n: instances.indexOf(instanceId) + 1 });
   });
 }
 

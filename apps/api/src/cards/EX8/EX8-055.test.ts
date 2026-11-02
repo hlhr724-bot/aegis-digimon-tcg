@@ -1,3 +1,5 @@
+import fixture from "#api/engine/scenarios/mineral-rock-end-turn-placement.fixture";
+import { setupScenario } from "#api/engine/testkit/scenario";
 import { describe, expect, it } from "vitest";
 import { EffectTiming, getCardDefinition } from "@aegis/shared";
 import { advance } from "../../engine/testkit/advance.js";
@@ -74,7 +76,9 @@ describe("EX8-055", () => {
       kind: "PlaceUnder",
       target: {
         filter: { zone: "trash", controller: "mine", nameOrTrait: [{ tokens: ["Mineral", "Rock"], match: "trait" }] },
-        count: 1,
+        count: 3,
+        upTo: true,
+        minimum: 1,
         from: ["trash"],
       },
       underFilter: { isSelfRef: true },
@@ -90,6 +94,30 @@ describe("EX8-055", () => {
     expect(s.perm("pyramid").stack.some((card) => card.cardId === "EX8-053")).toBe(true);
     expect(s.perm("pyramid").stack.some((card) => card.cardId === "EX8-005")).toBe(true);
     expect(s.state.players[0]!.trash.some((card) => card.cardId === "EX8-053")).toBe(false);
+  });
+  it("places three qualifying trash cards in one end-turn selection", async () => {
+    const s = setupScenario(fixture, { autoAcceptOptional: true, autoSelectCards: true });
+
+    await advance(s.engine).runTurn(0);
+
+    expect(s.perm("pyramid").stack.map(({ instanceId }) => instanceId)).toEqual(
+      expect.arrayContaining(["mineral", "rock", "egg"].map((alias) => s.inst(alias).instanceId)),
+    );
+    expect(s.perm("pyramid").stack).toHaveLength(3);
+    const selections = s.decisions.filter(({ req }) => req.sourceCardId === "EX8-055" && req.kind === "selectCards");
+    expect(selections).toHaveLength(1);
+    expect(selections[0]!.req.options).toMatchObject({ min: 1, max: 3 });
+    expect(s.state.players[0]!.trash.map(({ instanceId }) => instanceId)).toEqual([s.inst("unrelated").instanceId]);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
+  it("can decline the end-turn placement without moving a trash card", async () => {
+    const s = setupScenario(fixture, { autoDeclineOptional: true, autoSelectCards: true });
+
+    await advance(s.engine).runTurn(0);
+
+    expect(s.perm("pyramid").stack).toHaveLength(0);
+    expect(s.state.players[0]!.trash).toHaveLength(4);
+    expect(s.state.pendingDecision).toBeUndefined();
   });
   it("resets the optional end-turn placement on the next own turn", async () => {
     const s = setupEngine(

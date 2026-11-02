@@ -1,0 +1,17 @@
+export const staffRolesZhTW = {
+  "account.roles.admin": "管理員",
+  "account.roles.judge": "裁判",
+  "account.roles.organizer": "官方主辦者",
+  "account.roles.adminDescription": "管理網站、帳號和角色。",
+  "account.roles.judgeDescription": "裁定排位檢舉，並可擔任任何比賽的裁判。",
+  "account.roles.organizerDescription": "建立官方比賽和巡迴賽。",
+  "account.roles.title": "角色",
+  "account.roles.help": "管理員負責管理網站。裁判處理排位檢舉，並可在任何賽事中仲裁。官方主辦者可以建立官方賽事。",
+  "account.roles.search": "依名稱尋找玩家",
+  "account.roles.loadFailed": "無法載入帳號。",
+  "account.roles.saveFailed": "無法儲存角色變更。",
+  "account.roles.ownAdmin": "你無法移除自己的管理員角色。",
+  "account.roles.empty": "還沒有帳號擁有角色。",
+  "account.roles.noMatches": "沒有符合該名稱的玩家。",
+  "account.roles.rolesFor": "{name} 的角色",
+} as const;

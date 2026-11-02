@@ -5,11 +5,25 @@ import { CardInstance, Permanent, getCardArts } from "@aegis/shared";
 import { CardFull, CardMini } from "../design/cards";
 import { I18nProvider } from "../i18n";
 import { CardActionMenu, StackViewerOverlay, TrashViewerOverlay } from "./overlay";
+import { CardZoomOverlay } from "./overlay/viewer/CardZoomOverlay";
 import { buildPermanentDetail } from "./permanentDetail";
 
 const cardId = "BT1-010";
 const artId = getCardArts(cardId)[1]!.artId;
 afterEach(cleanup);
+
+it("shows readable English card effects beside a Japanese printing", () => {
+  render(
+    <I18nProvider>
+      <CardZoomOverlay cardId="BT1-010" artId="BT1-010-J" onClose={() => undefined} />
+    </I18nProvider>,
+  );
+
+  const dialog = screen.getByRole("dialog", { name: "Agumon" });
+  expect(within(dialog).getByAltText("Agumon").getAttribute("src")).toContain("BT1-010-J.webp");
+  fireEvent.click(within(dialog).getByRole("button", { name: "Show card text" }));
+  expect(dialog.textContent).toContain("Reveal 5 cards from the top of your deck");
+});
 
 it("keeps different images for the same canonical card and resets failed image state when switching art", () => {
   const { rerender } = render(<CardFull cardId={cardId} artId={artId} zoomOnHover={false} />);

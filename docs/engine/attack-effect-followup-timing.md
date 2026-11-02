@@ -41,3 +41,13 @@ bullets.
 - Commit `34d447938` (September 25) deferred a chosen Battle, and every later scaled
   activation, until the end of the attack. That order let [When Attacking] effects
   and the security check resolve first. This fix removes the deferral.
+
+## Rule-reaction queue ownership
+
+`collectRuleProcessPending` can replace the engine's pending-effects array while
+it awaits continuous-effect recomputation. Callers must await collection before
+reading the array they append to. Evaluating `array.push(...await collect())`
+retained the old array receiver and silently dropped deletion reactions during
+an effect-directed attack. The wrapper now collects into a local value and then
+appends to the current queue. `derivedTriggerPriority.test.ts` exercises this
+through public card interactions and verifies the resulting resolution order.

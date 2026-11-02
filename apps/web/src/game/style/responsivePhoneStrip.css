@@ -476,16 +476,32 @@
   body:has(.narration-peek) .decision-board-return {
     top: calc(env(safe-area-inset-top, 0px) + 8.5rem) !important;
   }
-  .decision-board-return > button {
+  .decision-board-return > button:not(.decision-board-return__move-handle) {
     min-height: 44px;
     flex: 1;
   }
   .decision-board-return--selection {
-    flex-wrap: wrap;
-    row-gap: var(--ds-space-2);
+    gap: var(--ds-space-2);
   }
   .decision-board-return--selection > .decision-board-return__status {
-    flex-basis: 100%;
+    flex: none;
+    padding-left: var(--ds-space-1);
+    white-space: nowrap;
+  }
+  .decision-board-return--selection > button:first-of-type {
+    flex: none;
+    width: 44px;
+    padding: 0;
+  }
+  .decision-board-return--selection > button:nth-of-type(2) {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-inline: var(--ds-space-2);
+    white-space: normal;
+    line-height: 1.2;
+  }
+  .decision-board-return--selection .decision-board-return__label {
+    display: none;
   }
   .action-confirmation > div:first-child {
     flex-wrap: nowrap !important;
@@ -514,7 +530,8 @@
     padding: max(var(--ds-space-4), env(safe-area-inset-top)) var(--ds-space-4)
       max(var(--ds-space-4), env(safe-area-inset-bottom));
     gap: var(--ds-space-3);
-    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto auto;
+    align-content: start;
     place-items: center;
     background: rgb(4 14 31 / 88%);
     backdrop-filter: blur(8px);
@@ -527,15 +544,12 @@
     aspect-ratio: 5 / 7;
     filter: drop-shadow(0 20px 40px rgb(0 0 0 / 55%));
   }
-  .card-zoom > button {
+  .card-zoom[data-printed-text="hidden"] > div:first-child {
+    width: min(92vw, 30rem) !important;
+  }
+  .card-zoom__actions > button {
     min-height: 44px;
     padding: var(--ds-space-2) var(--ds-space-6);
-    color: var(--ds-on-ink);
-    font-size: var(--ds-text-sm);
-    font-weight: 700;
-    border: 1px solid color-mix(in srgb, var(--ds-on-ink) 40%, transparent);
-    border-radius: var(--ds-radius-md);
-    background: color-mix(in srgb, var(--ds-on-ink) 10%, transparent);
   }
   .card-action-sheet__actions {
     display: grid;

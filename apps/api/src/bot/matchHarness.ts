@@ -1,10 +1,14 @@
 import { GameState, Phase, type Intent, type Seat, type ServerEvent } from "@aegis/shared";
 import { Decoder, Encoder } from "@colyseus/schema";
+import type { LiveSearchFallbackCounts } from "#api/bot/search/LiveSearchFallback";
 import { GameEngine } from "../engine/GameEngine.js";
+import type { ScenarioFixture } from "../engine/scenario/types.js";
 import { BLUE_DECK, RED_DECK, type Decklist } from "../engine/testDecks.js";
 import { BotPlayer } from "./BotPlayer.js";
 import { createEvaluationPolicy, type BotPolicy } from "./policy.js";
 import { resolveBotProfile, type BotProfile, type BotProfileName } from "./profiles.js";
+import { createMatchReplayRecorder, type MatchReplayCursor } from "#api/bot/createMatchReplayRecorder";
+import type { ReplayRecord } from "#api/replays/inputs/types";
 import "../cards/index.js";
 
 /**
@@ -22,7 +26,11 @@ export interface SeatConfig {
   policy?: BotPolicy<Intent | Promise<Intent>>;
   policyTimeoutMs?: number;
   /** Server-side adapter construction; only its explicit observation crosses the policy bridge. */
-  policyFactory?: (engine: GameEngine, seat: Seat) => BotPolicy<Intent | Promise<Intent>>;
+  policyFactory?: (
+    engine: GameEngine,
+    seat: Seat,
+    replay: MatchReplayCursor | undefined,
+  ) => BotPolicy<Intent | Promise<Intent>>;
   canChooseMainAction?: (engine: GameEngine) => boolean;
   maxMainPhaseActions?: number;
   deck?: Decklist;
@@ -30,7 +38,9 @@ export interface SeatConfig {
 }
 
 export interface MatchOptions {
+  omitHandAffordances?: boolean;
   seed: number;
+  firstSeat?: Seat;
   /** External experiment cancellation, e.g. an explicit model-decision budget. */
   signal?: AbortSignal;
   seats: readonly [SeatConfig, SeatConfig];
@@ -38,13 +48,18 @@ export interface MatchOptions {
   turnLimit?: number;
   /** Keep the public event stream for deterministic presentation analysis. */
   captureEvents?: boolean;
+  captureEventFilter?: (event: ServerEvent) => boolean;
+  measureDecisionLatencies?: boolean;
   /** Decode both client projections after each action and check hidden zones. */
   verifyProjections?: boolean;
+  recordReplay?: boolean;
+  fixture?: ScenarioFixture;
 }
 
 export interface SeatStats {
   label: string;
   attacksDeclared: number;
+  securityAttacksDeclared: number;
   securityCardsTaken: number;
   digimonPlayed: number;
   digivolutions: number;
@@ -52,6 +67,8 @@ export interface SeatStats {
   /** Main-phase policy latency (ms), including asynchronous completion; excludes fallback work. */
   decisionLatenciesMs: number[];
   inferenceFallbacks: { timeout: number; error: number };
+  searchFallbacks?: LiveSearchFallbackCounts;
+  searchErrors?: Record<string, number>;
 }
 
 export interface MatchResult {
@@ -75,6 +92,7 @@ export interface MatchResult {
   seats: [SeatStats, SeatStats];
   /** Present only when `captureEvents` was requested; avoids retaining large traces in benchmarks. */
   events?: ServerEvent[];
+  replay?: ReplayRecord;
 }
 
 const DEFAULT_TURN_LIMIT = 60;
@@ -83,6 +101,7 @@ function emptyStats(label: string): SeatStats {
   return {
     label,
     attacksDeclared: 0,
+    securityAttacksDeclared: 0,
     securityCardsTaken: 0,
     digimonPlayed: 0,
     digivolutions: 0,
@@ -90,6 +109,30 @@ function emptyStats(label: string): SeatStats {
     decisionLatenciesMs: [],
     inferenceFallbacks: { timeout: 0, error: 0 },
   };
+}
+
+function decodeProjection(decoder: Decoder<GameState>, bytes: Uint8Array, seat: Seat): void {
+  // Decoder recovery can log a missing refId and continue without throwing.
+  // Capture diagnostics only around its synchronous call: any such patch makes
+  // the game invalid, even if the later hidden-zone checks happen to pass.
+  const error = console.error;
+  const warn = console.warn;
+  const diagnostics: string[] = [];
+  console.error = (...args) => {
+    diagnostics.push(String(args[0]));
+    error(...args);
+  };
+  console.warn = (...args) => {
+    diagnostics.push(String(args[0]));
+    warn(...args);
+  };
+  try {
+    decoder.decode(bytes);
+  } finally {
+    console.error = error;
+    console.warn = warn;
+  }
+  if (diagnostics.length > 0) throw new Error(`projection seat ${seat}: decoder diagnostic: ${diagnostics[0]}`);
 }
 
 /** Run one complete match between two bot seats and report what happened. */
@@ -117,9 +160,14 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
   let checkProjections: (() => void) | undefined;
   let projectionChecks = 0;
   let acceptedActions = 0;
+  const recorder = options.recordReplay
+    ? createMatchReplayRecorder({ seed: options.seed, firstSeat: options.firstSeat, state })
+    : undefined;
 
   const engine = new GameEngine(state, {
+    omitHandAffordances: options.omitHandAffordances,
     seed: options.seed,
+    firstSeat: options.firstSeat,
     requestDecision: (seat, request) => {
       bots[seat]?.onDecisionRequested(request);
     },
@@ -127,8 +175,9 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
       bots[seat]?.onActionSettled(intentType);
     },
     emit: (event: ServerEvent) => {
+      recorder?.noteEvent();
       if (closed) return;
-      events?.push(structuredClone(event));
+      if (events !== undefined && (options.captureEventFilter?.(event) ?? true)) events.push(structuredClone(event));
       recordEvent(event, state, stats);
       if (event.kind === "gameOver") {
         finished = true;
@@ -143,7 +192,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
   for (const seat of [0, 1] as const) {
     const config = options.seats[seat];
     const send = (intent: Intent) => {
-      if (closed) return;
+      if (closed || options.signal?.aborted) return;
       const rejectedCardId =
         intent.type === "digivolve"
           ? state.players[seat]?.hand.find((card) => card.instanceId === intent.instanceId)?.cardId
@@ -158,7 +207,9 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
             )?.topCard?.cardId
           : undefined;
       try {
-        const result = engine.applyIntent(seat, intent);
+        const result = recorder
+          ? recorder.applyIntent(seat, intent, () => engine.applyIntent(seat, intent))
+          : engine.applyIntent(seat, intent);
         if (result.ok) acceptedActions++;
         checkProjections?.();
         if (!result.ok)
@@ -180,11 +231,14 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
     };
     const seed = options.seed + seat * 7919;
     const policy =
-      config.policyFactory?.(engine, seat) ??
+      config.policyFactory?.(engine, seat, recorder?.cursor) ??
       config.policy ??
       createEvaluationPolicy({ profile: resolveBotProfile(config.profile), seed });
     bots[seat] = new BotPlayer(seat, state, send, {
-      policy: timed(policy, stats[seat].decisionLatenciesMs, () => !closed),
+      policy:
+        options.measureDecisionLatencies === false
+          ? policy
+          : timed(policy, stats[seat].decisionLatenciesMs, () => !closed),
       seed,
       thinkDelay: microtask,
       ...(config.policyTimeoutMs === undefined ? {} : { policyTimeoutMs: config.policyTimeoutMs }),
@@ -195,14 +249,15 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
     });
   }
 
-  engine.seatPlayer(0, "bot-0", {
-    displayName: stats[0].label,
-    deck: options.seats[0].deck ?? RED_DECK,
-  });
-  engine.seatPlayer(1, "bot-1", {
-    displayName: stats[1].label,
-    deck: options.seats[1].deck ?? BLUE_DECK,
-  });
+  for (const seat of [0, 1] as const) {
+    const deck = options.seats[seat].deck ?? (seat === 0 ? RED_DECK : BLUE_DECK);
+    const seatPlayer = () => engine.seatPlayer(seat, `bot-${seat}`, { displayName: stats[seat].label, deck });
+    if (recorder) {
+      recorder.seatPlayer(seat, deck, seatPlayer);
+    } else {
+      seatPlayer();
+    }
+  }
   if (options.verifyProjections) {
     const encoder = new Encoder(state);
     const targets = ([0, 1] as const).map((seat) => ({
@@ -223,10 +278,12 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
         const sharedOffset = iterator.offset;
         for (const target of targets) {
           iterator.offset = sharedOffset;
-          target.decoder.decode(
+          decodeProjection(
+            target.decoder,
             full
               ? encoder.encodeAllView(target.view, sharedOffset, iterator)
               : encoder.encodeView(target.view, sharedOffset, iterator),
+            target.seat,
           );
           const projected = target.decoder.state as GameState;
           for (const ownerSeat of [0, 1] as const) {
@@ -257,7 +314,13 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
       }
     };
   }
-  engine.startMatch();
+  if (options.fixture) {
+    engine.startScenarioFixture(options.fixture);
+  } else if (recorder) {
+    recorder.startMatch(() => engine.startMatch());
+  } else {
+    engine.startMatch();
+  }
   checkProjections?.();
 
   // Drive the cooperative loop: every bot action is scheduled on the macrotask queue, so
@@ -303,7 +366,13 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
 
   closed = true;
   for (const bot of bots) bot?.dispose();
-  for (const seat of [0, 1] as const) stats[seat].inferenceFallbacks = { ...bots[seat]!.inferenceFallbacks };
+  for (const seat of [0, 1] as const) {
+    stats[seat].inferenceFallbacks = { ...bots[seat]!.inferenceFallbacks };
+    const searchFallbacks = bots[seat]!.searchFallbacks;
+    if (searchFallbacks !== undefined) stats[seat].searchFallbacks = { ...searchFallbacks };
+    const searchErrors = bots[seat]!.searchErrors;
+    if (searchErrors !== undefined) stats[seat].searchErrors = { ...searchErrors };
+  }
 
   return {
     seed: options.seed,
@@ -316,6 +385,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
     ...(options.verifyProjections ? { projectionChecks } : {}),
     seats: stats,
     ...(events ? { events } : {}),
+    ...(recorder ? { replay: recorder.buildRecord() } : {}),
   };
 }
 
@@ -347,6 +417,7 @@ function recordEvent(event: ServerEvent, state: GameState, stats: [SeatStats, Se
   switch (event.kind) {
     case "attackDeclared":
       stats[event.seat].attacksDeclared += 1;
+      if (!event.redirected && event.target.kind === "player") stats[event.seat].securityAttacksDeclared += 1;
       break;
     case "securityChecked":
       // `seat` is the seat whose security was checked, so the attacker took the card.
@@ -399,6 +470,7 @@ export interface SeriesResult {
 export interface AggregateStats {
   label: string;
   attacksPerTurn: number;
+  securityAttacksPerTurn: number;
   securityTakenPerGame: number;
   digimonPlayedPerGame: number;
   digivolutionsPerGame: number;
@@ -480,6 +552,7 @@ function aggregate(label: string, samples: readonly SeatStats[]): AggregateStats
   return {
     label,
     attacksPerTurn: samples.reduce((sum, sample) => sum + sample.attacksDeclared, 0) / totalTurns,
+    securityAttacksPerTurn: samples.reduce((sum, sample) => sum + sample.securityAttacksDeclared, 0) / totalTurns,
     securityTakenPerGame: samples.reduce((sum, sample) => sum + sample.securityCardsTaken, 0) / games,
     digimonPlayedPerGame: samples.reduce((sum, sample) => sum + sample.digimonPlayed, 0) / games,
     digivolutionsPerGame: samples.reduce((sum, sample) => sum + sample.digivolutions, 0) / games,

@@ -25,6 +25,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "Digivolve 1 of your Digimon into a Digimon card with ＜Save＞ in its text under one of your Tamers for its digivolution cost.",
           kind: "Digivolve",
           target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
           into: {

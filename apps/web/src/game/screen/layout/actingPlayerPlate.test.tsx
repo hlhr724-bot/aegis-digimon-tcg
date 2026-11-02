@@ -141,3 +141,19 @@ describe("the acting player's plate", () => {
     expect(plates.opponentChip).toBeNull();
   });
 });
+
+describe("equipped player frames", () => {
+  it("shows the opponent's equipped frame and leaves unequipped players unframed", () => {
+    const { container } = render(
+      <I18nProvider>
+        <PlayerLine name="Framed opponent" side="opponent" equippedRankedTier="diamond" />
+        <PlayerLine name="Unequipped player" side="player" />
+        <PlayerLine name="Invalid frame" side="opponent" equippedRankedTier="invalid" />
+      </I18nProvider>,
+    );
+    const frames = container.querySelectorAll(".game-player-line__avatar.ranked-equipped");
+    expect(frames).toHaveLength(1);
+    expect(frames[0]!.getAttribute("data-tier")).toBe("diamond");
+    expect(frames[0]!.closest(".game-player-line")?.getAttribute("data-side")).toBe("opponent");
+  });
+});

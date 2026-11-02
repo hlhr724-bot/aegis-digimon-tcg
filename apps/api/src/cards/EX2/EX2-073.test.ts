@@ -172,6 +172,43 @@ describe("EX2-073 Gallantmon: Crimson Mode", () => {
     expect(s.state.winnerSeat).toBe(0);
   });
 
+  it("still trashes the base security card with fewer than ten cards in the trash", async () => {
+    const nine = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT9-017", as: "base", under: ["EX2-011"] }],
+          hand: [{ card: "EX2-073", as: "attacker" }],
+          deck: ["BT1-014"],
+        },
+        1: {
+          trash: Array.from({ length: 9 }, () => "BT1-009"),
+          security: ["BT1-009", "BT1-010", "BT1-011", "BT1-012", "BT1-013"],
+          deck: ["BT1-014"],
+        },
+      },
+      { autoOrderTriggers: true, autoSelectCards: true },
+    );
+    nine.state.memory = 6;
+    expect(
+      nine.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: nine.perm("base").permanentId,
+        instanceId: nine.inst("attacker").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => nine.perm("base").topCard.cardId === "EX2-073");
+    await nine.ready();
+    expect(
+      nine.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: nine.perm("base").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => !observe(nine.engine).isAttacking());
+    expect(nine.state.players[1]!.security).toHaveLength(3);
+  });
+
   it("adds each complete ten-card trash group to its When Attacking security trash", async () => {
     const nineteen = setupEngine(
       {

@@ -48,6 +48,16 @@ export function useHandArrivalArt(
           },
           () => {
             if (decoding.get(image) === source) decoding.delete(image);
+            if (
+              active &&
+              card.isConnected &&
+              card.querySelector("img") === image &&
+              image.src === source &&
+              image.complete &&
+              image.naturalWidth > 0
+            ) {
+              markReady(id);
+            }
           },
         );
       }

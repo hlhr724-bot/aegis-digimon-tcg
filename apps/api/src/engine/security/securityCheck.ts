@@ -139,14 +139,6 @@ export interface SecurityCheckDeps {
     },
   ): Promise<void>;
 
-  /**
-   * Fire `whenFaceUpCardsAddedToOpponentSecurity` for the OTHER half of "a face-up card is
-   * added to security" (KB Q5789 binding: a check that flips a face-down card face-up counts
-   * as a face-up card being "added", not just an effect-driven security add). Optional so the
-   * security unit tests need no change; absent => no watcher runs.
-   */
-  fireFaceUpSecurityAdded?(info: { seat: Seat; instanceId: string }): Promise<void>;
-
   /** Capture all simultaneous check/removal triggers; activate after the immediate [Security] effect. */
   prepareCheckTriggers?(info: {
     attackerPermanentId: string;
@@ -334,8 +326,6 @@ export async function runSecurityCheck(
             attackerPermanentId: attacker.permanentId,
             securityInstanceId: revealed.instanceId,
           });
-        } else {
-          await deps.fireFaceUpSecurityAdded?.({ seat: defenderSeat, instanceId: revealed.instanceId });
         }
         const info = {
           attackerPermanentId: attacker.permanentId,

@@ -1,0 +1,97 @@
+import { buildStoryDrawPile } from "#api/story/buildStoryDrawPile";
+import { medusamonTournamentDeck } from "#api/story/decks/medusamonTournamentDeck";
+import type { ScenarioFixture } from "#api/engine/scenario/types";
+
+const fixture: ScenarioFixture = {
+  name: "world-championship-finals-story-adaptation",
+  memory: 3,
+  turnSeat: 0,
+  turnCount: 1,
+  isFirstPlayersFirstTurn: true,
+  presentation: {
+    timed: false,
+  },
+  board: {
+    "0": {
+      hand: ["BT11-061", "BT18-065", "P-094", "BT18-092", "BT18-071"],
+      security: ["BT11-065", "BT11-061", "BT4-109", "BT11-061", "BT11-111"],
+      deck: [
+        "BT11-061",
+        "BT11-061",
+        "BT11-061",
+        "BT11-061",
+        "BT11-061",
+        "BT11-061",
+        "BT11-061",
+        "BT11-105",
+        "BT11-065",
+        "BT11-061",
+        "BT11-061",
+        "BT11-061",
+        "BT11-105",
+        "BT18-092",
+        "BT18-092",
+        "BT11-061",
+        "BT18-060",
+        "P-094",
+        "BT18-071",
+        "BT11-061",
+        "BT18-060",
+        "BT4-109",
+        "BT11-061",
+        "P-094",
+        "BT18-065",
+        "BT11-061",
+        "BT11-111",
+        "BT18-065",
+        "BT11-061",
+        "BT18-060",
+        "BT11-061",
+        "P-094",
+        "BT11-061",
+        "BT11-105",
+        "BT11-061",
+        "BT11-105",
+        "BT18-065",
+        "BT11-111",
+        "BT18-092",
+        "BT18-060",
+      ],
+      eggDeck: ["BT7-005", "BT7-005", "BT7-005"],
+      battleArea: [],
+      breeding: {
+        card: "BT7-005",
+      },
+    },
+    "1": {
+      hand: ["BT21-007", "BT21-017", "BT24-016", "BT21-081", "BT21-026"],
+      security: ["BT24-012", "EX11-012", "BT24-016", "BT24-018", "P-035"],
+      deck: buildStoryDrawPile({
+        counts: medusamonTournamentDeck.mainDeck,
+        substitutions: [
+          ["BT24-008", "BT21-007", 1],
+          ["EX11-012", "BT21-026", 1],
+        ],
+        placed: [
+          "BT21-007",
+          "BT21-017",
+          "BT24-016",
+          "BT21-081",
+          "BT21-026",
+          "BT24-012",
+          "EX11-012",
+          "BT24-016",
+          "BT24-018",
+          "P-035",
+        ],
+      }),
+      eggDeck: ["BT21-001", "BT21-001", "BT21-001"],
+      battleArea: [],
+      breeding: {
+        card: "BT21-001",
+      },
+    },
+  },
+};
+
+export default fixture;

@@ -1,0 +1,18 @@
+export const achievementsId = {
+  "achievements.trophies.description": "Pencapaian turnamen komunitas.",
+  "achievements.trophies.show": "Tampilkan trofi",
+  "achievements.trophies.title": "Trofi",
+  "achievements.trophies.empty": "Belum ada trofi. Raih Top 8 dalam turnamen komunitas untuk mendapatkannya.",
+  "achievements.trophies.error": "Trofi Anda tidak dapat dimuat. Muat ulang halaman untuk mencoba lagi.",
+  "achievements.trophies.awardedOn": "Diraih {date}",
+  "achievements.tier.bronze": "Trofi perunggu",
+  "achievements.tier.silver": "Trofi perak",
+  "achievements.tier.gold": "Trofi emas",
+  "achievements.tier.rainbow": "Trofi pelangi",
+  "achievements.award.tournament_champion": "Juara",
+  "achievements.award.tournament_top_four": "Top 4",
+  "achievements.award.tournament_top_eight": "Top 8",
+  "achievements.award.circuit_champion": "Juara sirkuit",
+  "achievements.award.circuit_top_four": "Top 4 sirkuit",
+  "achievements.award.circuit_top_eight": "Top 8 sirkuit",
+} as const;

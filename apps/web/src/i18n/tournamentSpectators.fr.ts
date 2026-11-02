@@ -1,0 +1,32 @@
+export const tournamentSpectatorsFr = {
+  "tournaments.spectators.title": "Spectateurs",
+  "tournaments.spectators.policy.nobody": "Personne",
+  "tournaments.spectators.policy.nobodyHelp": "Seulement vous et les administrateurs",
+  "tournaments.spectators.policy.allowlist": "Liste autorisée",
+  "tournaments.spectators.policy.allowlistHelp": "Seulement les joueurs que vous ajoutez",
+  "tournaments.spectators.policy.signedIn": "Tout joueur connecté",
+  "tournaments.spectators.policy.signedInHelp": "Toute personne ayant un compte Aegis",
+  "tournaments.spectators.organizerHelp":
+    "Choisissez qui peut regarder les matchs en direct. Les spectateurs ne voient que les informations publiques ; les mains restent cachées. Les joueurs encore dans l'événement ne peuvent pas regarder les autres tables.",
+  "tournaments.spectators.allowedTitle": "Spectateurs autorisés",
+  "tournaments.spectators.allowedEmpty": "Aucun spectateur ajouté.",
+  "tournaments.spectators.addLabel": "Ajouter un spectateur",
+  "tournaments.spectators.addPlaceholder": "Nom affiché du joueur",
+  "tournaments.spectators.add": "Ajouter",
+  "tournaments.spectators.remove": "Retirer",
+  "tournaments.spectators.removeNamed": "Retirer {name}",
+  "tournaments.spectators.alwaysAllowed": "Vous et les administrateurs pouvez toujours regarder.",
+  "tournaments.spectators.error.accountNotFound": "Aucun joueur n'a ce nom affiché.",
+  "tournaments.spectators.error.limitReached": "La liste des spectateurs est pleine.",
+  "tournaments.spectators.error.generic": "Impossible d'enregistrer les spectateurs. Réessayez.",
+  "tournaments.spectators.watch": "Regarder",
+  "tournaments.spectators.watchMatch": "Regarder {players}",
+  "tournaments.spectators.live": "En direct",
+  "tournaments.spectators.publicOnly":
+    "Les spectateurs ne voient que les informations publiques. Les mains restent cachées.",
+  "tournaments.spectators.youCanWatch": "Vous pouvez regarder les matchs en direct.",
+  "tournaments.spectators.signedInAllowed": "Les joueurs connectés peuvent regarder.",
+  "tournaments.spectators.listOnly": "Seuls les spectateurs invités peuvent regarder.",
+  "tournaments.spectators.playersCannotWatch":
+    "Les joueurs de cet événement ne peuvent pas regarder les autres tables.",
+};

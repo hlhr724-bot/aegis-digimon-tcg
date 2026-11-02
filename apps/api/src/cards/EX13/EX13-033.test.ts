@@ -250,9 +250,65 @@ describe("EX13-033 Mistymon", () => {
         .map(({ req }) => req.options?.effectTextEmphasis),
     ).toEqual([
       "[On Play] [When Digivolving] You may place 1 [Witchelny] text card from your hand as the bottom security card.",
-      "by trashing your top security card",
-      "Then, by trashing your top security card, 1 of your Digimon may attack.",
+      "Then, by trashing your top security card",
+      "1 of your Digimon may attack",
     ]);
+  });
+
+  it.each([false, true])("can pay security and decline the attack after digivolving=%s", async (digivolving) => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: WITCHELNY_LV4, as: "source" }],
+          hand: [{ card: CARD_ID, as: "mistymon" }],
+          security: [
+            { card: "BT1-010", as: "top" },
+            { card: "BT1-011", as: "bottom" },
+          ],
+          deck: DECK,
+        },
+        1: { security: [INERT, INERT, INERT], deck: DECK },
+      },
+      { autoSelectCards: true, autoChooseOption: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+
+    const result = digivolving
+      ? s.engine.applyIntent(0, {
+          type: "digivolve",
+          permanentId: s.perm("source").permanentId,
+          instanceId: s.inst("mistymon").instanceId,
+          useAlternateCost: true,
+        })
+      : s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("mistymon").instanceId });
+    expect(result).toEqual({ ok: true });
+
+    async function answerOptional(accept: boolean) {
+      await settle(() => s.state.pendingDecision?.kind === "optional");
+      const decisionId = s.state.pendingDecision!.decisionId;
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId,
+          response: { kind: "optional", accept },
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.state.pendingDecision?.decisionId !== decisionId);
+    }
+
+    await answerOptional(false);
+    await answerOptional(true);
+    expect(s.state.players[0]!.security.map((card) => card.instanceId)).toEqual([s.inst("bottom").instanceId]);
+    expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toContain(s.inst("top").instanceId);
+    await answerOptional(false);
+    await drainMicrotasks();
+
+    expect(s.state.pendingDecision).toBeUndefined();
+    expect(s.state.players[1]!.security).toHaveLength(3);
+    expect(s.events.filter((event) => event.kind === "attackDeclared")).toEqual([]);
+    expect(observe(s.engine).hasAttackedThisTurn(s.perm("source"))).toBe(false);
+    expect(s.perm("source").isSuspended).toBe(false);
   });
 
   it("declines both halves without touching either stack", async () => {

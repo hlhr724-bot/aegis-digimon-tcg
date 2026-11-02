@@ -1,0 +1,95 @@
+.notifications-page {
+  position: relative;
+  height: calc(100% - var(--ds-nav-height-wide));
+  overflow-y: auto;
+}
+
+.notifications-column {
+  display: grid;
+  width: min(100%, 960px);
+  margin-inline: auto;
+  padding: var(--ds-space-8) var(--ds-space-4) var(--ds-space-12);
+  gap: var(--ds-space-5);
+}
+
+.notifications-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+}
+
+.notifications-header h1 {
+  margin: 0;
+}
+
+.notifications-tabs {
+  display: flex;
+  gap: var(--ds-space-2);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--ds-line);
+}
+
+.notifications-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-height: var(--ds-touch-target);
+  padding: var(--ds-space-3) var(--ds-space-2);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--ds-text-2);
+  font: inherit;
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.notifications-tabs button[aria-current] {
+  border-bottom-color: var(--ds-accent);
+  color: var(--ds-accent);
+}
+
+.notifications-tab-count {
+  display: inline-grid;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  padding-inline: 5px;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.notifications-card {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-sheet);
+}
+
+.notifications-card .aegis-notifications__more {
+  margin-block: var(--ds-space-2);
+}
+
+@media (min-width: 768px) {
+  .notifications-column {
+    padding-inline: var(--ds-gutter-desktop);
+  }
+}
+
+@media (width < 960px) {
+  .notifications-page {
+    height: 100%;
+  }
+
+  .notifications-column {
+    padding-bottom: calc(var(--ds-nav-height-narrow) + env(safe-area-inset-bottom) + var(--ds-space-6));
+  }
+}

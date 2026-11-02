@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 1,
           add: [
             {
+              effectTextPart: "you may play it without paying its memory cost.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -27,6 +28,7 @@ const compiled: CompiledCard = {
               optional: true,
             },
             {
+              effectTextPart: "Add the rest to your hand.",
               filter: {
                 controllerDefault: "mine",
               },

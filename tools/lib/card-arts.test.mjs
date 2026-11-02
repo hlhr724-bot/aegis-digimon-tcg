@@ -143,3 +143,15 @@ test("imports the Japanese base printing and Japanese arts under -J art IDs", ()
     { artId: "BT1-010-J", imageId: "BT1-010-J", label: "Japanese printing" },
   ]);
 });
+
+test("keeps the English alternate printing on the official illustration after import", () => {
+  const arts = sourceCardArts({ cardNumber: "EX12-033", AAs: [{ id: "EX12-033_P1", note: "Parallel Rare" }] });
+  assert.deepEqual(arts, [{ artId: "EX12-033_P1", imageId: "EX12-033_P1-Official", label: "Parallel Rare" }]);
+  const committed = JSON.parse(
+    readFileSync(new URL("../../packages/shared/src/cards/data/arts.json", import.meta.url), "utf8"),
+  );
+  assert.equal(
+    decodeCardArts(committed)["EX12-033"].find((art) => art.artId === "EX12-033_P1").imageId,
+    arts[0].imageId,
+  );
+});

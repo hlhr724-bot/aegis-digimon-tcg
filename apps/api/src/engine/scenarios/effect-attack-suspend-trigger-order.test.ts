@@ -24,7 +24,12 @@ function withoutLowestDigimon(value: ScenarioFixture): ScenarioFixture {
 }
 
 async function digivolveGallantmon(value: ScenarioFixture, answers: { attack: boolean; raid: boolean }) {
-  const s = setupScenario(value, { autoAcceptOptional: true, autoSelectCards: false, autoOrderTriggers: false });
+  const s = setupScenario(value, {
+    autoAcceptOptional: true,
+    autoSelectCards: false,
+    autoOrderTriggers: false,
+    declinePrompts: answers.attack ? [] : ["Attack"],
+  });
   const loop = s.engine.startTurnLoop();
   await advance(s.engine).waitForMainPhase(1);
   const veedramon = s.perm("veedramon").permanentId;
@@ -50,7 +55,11 @@ async function digivolveGallantmon(value: ScenarioFixture, answers: { attack: bo
         ? {
             kind: "orderTriggers" as const,
             order: orderedKeys(payload.triggerKeys!),
-            optionalAnswers: Object.fromEntries(payload.triggerKeys!.map((key) => [key, answer(key).accept])),
+            optionalAnswers: Object.fromEntries(
+              payload
+                .triggerKeys!.filter((key) => !key.endsWith(DELETE_THEN_ATTACK))
+                .map((key) => [key, answer(key).accept]),
+            ),
           }
         : {
             kind: pending.kind as "chooseTargets" | "selectCards",

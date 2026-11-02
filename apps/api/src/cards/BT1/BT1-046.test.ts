@@ -19,7 +19,7 @@ describe("BT1-046 Kudamon", () => {
       attributes: ["Vaccine"],
       types: ["Holy Beast"],
       effectText:
-        "[When Attacking] If you have 4 or less cards in your hand， trigger ＜Draw 1＞ (Draw 1 card from your deck).",
+        "[When Attacking] If you have 4 or less cards in your hand, trigger ＜Draw 1＞ (Draw 1 card from your deck).",
       rarity: "C",
       maxCountInDeck: 4,
       imageId: "BT1-046",

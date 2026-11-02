@@ -284,7 +284,7 @@ export async function resolveTotalDpCapTargets(ctx: EffectContext, target: Targe
 
   const selected = await ctx.ask.chooseTargets(ctx, {
     candidates: candidates.map(({ permanentId }) => permanentId),
-    min: 1,
+    min: target.upTo === true ? 0 : 1,
     max: candidates.length,
     maxTotalDP: budget,
   });
@@ -506,8 +506,10 @@ export async function resolvePermanentTargets(
     ).length < candidates.length;
   if (
     candidates.length <= want &&
+    ctx.optionalActivationCancellation?.available !== true &&
     !target.upTo &&
     opts?.allowDecline !== true &&
+    ctx.payingDeclinableCost !== true &&
     !(ctx.pickingAcceptedOptional === true && ctx.presetOptionalAnswer === true) &&
     !holdsUnaffectableCandidate &&
     (target as Target & { forceSelection?: boolean }).forceSelection !== true

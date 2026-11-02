@@ -51,7 +51,7 @@ export const compiled: CompiledCard = {
       isAlternate: true,
     },
   ],
-  linkRequirement: [{ traits: ["Appmon"], cost: 2 }],
+  linkRequirement: [{ traits: ["Appmon"], cost: 1 }],
 };
 
 registerIrCard("BT22-055", compiled);

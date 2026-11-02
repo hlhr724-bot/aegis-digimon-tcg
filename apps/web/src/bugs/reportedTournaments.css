@@ -1,0 +1,98 @@
+.reported-tournaments {
+  border: 1px solid color-mix(in srgb, var(--ds-danger) 35%, var(--ds-line));
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-sheet);
+}
+
+.reported-tournaments summary {
+  display: flex;
+  min-height: var(--ds-touch-target);
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: 0 var(--ds-space-4);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reported-tournaments summary:focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: -2px;
+}
+
+.reported-tournaments > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ds-line);
+}
+
+.reported-tournaments__item {
+  display: grid;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+}
+
+.reported-tournaments__item + .reported-tournaments__item {
+  border-top: 1px solid var(--ds-line);
+}
+
+.reported-tournaments__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ds-space-1) var(--ds-space-3);
+}
+
+.reported-tournaments__name {
+  color: var(--ds-text);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.reported-tournaments__meta,
+.reported-tournaments__hint {
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+}
+
+.reported-tournaments__reports {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reported-tournaments__reports li {
+  display: grid;
+  gap: var(--ds-space-1);
+  padding-inline-start: var(--ds-space-3);
+  border-inline-start: 2px solid var(--ds-line);
+}
+
+.reported-tournaments__reports p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.reported-tournaments__reports small {
+  color: var(--ds-text-2);
+}
+
+.reported-tournaments__confirm {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+
+.reported-tournaments__confirm p {
+  margin: 0;
+  font-size: var(--ds-text-sm);
+}
+
+.reported-tournaments__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+}

@@ -45,6 +45,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Until the end of your opponent's turn, 1 of their Digimon or Tamers can't suspend.",
           kind: "Restrict",
           target: {
             filter: {
@@ -56,9 +57,7 @@ const compiled: CompiledCard = {
           restriction: "suspend",
           duration: "untilOpponentTurnEnd",
         },
-        {
-          kind: "PlaceInBattleAreaSelf",
-        },
+        { effectTextPart: "Then, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
       ],
     },
     {

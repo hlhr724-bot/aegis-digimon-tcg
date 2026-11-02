@@ -23,6 +23,7 @@ export function digiXrosMaterialPool({
   intrinsicTrashMax,
   intrinsicUnderTamerMax,
   picks,
+  materialLimits = [],
 }: {
   requirement: DigiXrosRequirement;
   candidates: DigiXrosCandidate[];
@@ -32,6 +33,7 @@ export function digiXrosMaterialPool({
   intrinsicTrashMax: number;
   intrinsicUnderTamerMax: number;
   picks: string[];
+  materialLimits?: { candidateInstanceIds: string[]; max: number }[];
 }): DigiXrosMaterialPool {
   const chosenExpanders = eligibleExpanders.filter((e) => chosenExpanderPermanentIds.includes(e.permanentId));
   const underTamerMax = chosenExpanders.reduce((max, e) => Math.max(max, e.underTamerMax), intrinsicUnderTamerMax);
@@ -58,6 +60,11 @@ export function digiXrosMaterialPool({
         ];
   });
   const eligibleCandidateIds = eligibleDigiXrosCandidateIds(requirement, candidateDefinitions, picks);
+  for (const limit of materialLimits) {
+    if (picks.filter((id) => limit.candidateInstanceIds.includes(id)).length >= limit.max) {
+      for (const id of limit.candidateInstanceIds) eligibleCandidateIds.delete(id);
+    }
+  }
   for (const picked of picks) eligibleCandidateIds.add(picked);
   const pickedTrash = picks.filter((id) => candidateById.get(id)?.zone === "trash").length;
   const pickedUnderTamer = picks.filter((id) => candidateById.get(id)?.zone === "underTamer").length;

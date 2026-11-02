@@ -23,6 +23,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with the [Insectoid] trait",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -36,6 +37,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 card with the [NSp] trait among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

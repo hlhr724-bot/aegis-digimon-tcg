@@ -76,6 +76,42 @@ describe("AD1-004 WarGreymon", () => {
     expect(s.state.players[1]!.security).toHaveLength(1);
   });
 
+  it("counts four distinct colors across repeated Tai and Matt Tamers", async () => {
+    const s = setupEngine({
+      0: {
+        battleArea: [
+          { card: "AD1-004", as: "wargreymon" },
+          { card: "EX13-073", as: "blackPurpleTamer" },
+          { card: "EX9-066", as: "firstRedBlueTamer" },
+          { card: "BT17-081", as: "secondRedBlueTamer" },
+          { card: "EX9-066", as: "thirdRedBlueTamer" },
+          { card: "BT17-081", as: "fourthRedBlueTamer" },
+        ],
+      },
+    });
+    await s.ready();
+    expect(s.perm("wargreymon").currentDP).toBe(16000);
+    expect(observe(s.engine).keywordAmount(s.perm("wargreymon"), "SecurityAttack")).toBe(1);
+  });
+
+  it("has no Security Attack bonus with four Tamers sharing two distinct colors", async () => {
+    const s = setupEngine({
+      0: {
+        battleArea: [
+          { card: "AD1-004", dp: 12000, as: "wargreymon" },
+          { card: "AD1-019", as: "firstTamer" },
+          { card: "AD1-019", as: "secondTamer" },
+          { card: "AD1-019", as: "thirdTamer" },
+          { card: "AD1-019", as: "fourthTamer" },
+        ],
+      },
+    });
+    await s.ready();
+
+    expect(s.perm("wargreymon").currentDP).toBe(14000);
+    expect(observe(s.engine).keywordAmount(s.perm("wargreymon"), "SecurityAttack")).toBe(0);
+  });
+
   it("has no Security Attack bonus with only two distinct Tamer colors", async () => {
     const s = setupEngine({
       0: {

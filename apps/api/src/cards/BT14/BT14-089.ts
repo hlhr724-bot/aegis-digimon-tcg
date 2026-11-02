@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete 1 of your opponent's Digimon with 6000 DP or less.",
           kind: "Delete",
           target: {
             filter: {
@@ -39,6 +40,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "If you have a Digimon with [Greymon] in its name, delete 1 of your opponent's Digimon with the lowest DP instead.",
           kind: "Delete",
           target: {
             filter: {

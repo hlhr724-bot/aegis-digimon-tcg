@@ -156,6 +156,7 @@
 
 .aegis-notifications__copy {
   display: grid;
+  min-width: 0;
   gap: var(--ds-space-1);
   overflow-wrap: anywhere;
 }

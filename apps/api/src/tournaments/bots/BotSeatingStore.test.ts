@@ -20,14 +20,13 @@ let seating: BotSeatingStore;
 let organizer: string;
 let tournamentId: string;
 
-async function createTournament(overrides: { allowBots?: boolean; maxPlayers?: number; preset?: string } = {}) {
+async function createTournament(overrides: { allowBots?: boolean; maxPlayers?: number } = {}) {
   const tournament = await accounts.createTournament(organizer, {
     name: "Lightning Cup",
     block: "BT10",
     startsAt: 1,
     maxPlayers: overrides.maxPlayers ?? 8,
     allowBots: overrides.allowBots ?? true,
-    rulesetPreset: overrides.preset ?? "aegis_lightning",
   });
   tournamentId = tournament.id;
   return tournament;
@@ -102,12 +101,6 @@ describe("filling a short field", () => {
     for (const name of ["a", "b", "c"]) await addHuman(name);
     expect(await seating.fillAtClose({ tournamentId })).toEqual({ kind: "skipped", reason: "bots_not_allowed" });
     expect(await seating.bots(tournamentId)).toEqual([]);
-  });
-
-  it("seats nothing on an official ruleset", async () => {
-    await createTournament({ preset: "bandai_general" });
-    for (const name of ["a", "b", "c"]) await addHuman(name);
-    expect(await seating.fillAtClose({ tournamentId })).toEqual({ kind: "skipped", reason: "bots_not_allowed" });
   });
 
   it("asks for a cancellation rather than running one person against machines", async () => {

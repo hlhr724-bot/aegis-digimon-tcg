@@ -1,3 +1,4 @@
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 /* Timed side panels, ported from the reference client's right-hand stack.
    Whenever cards move in a way the player must see — discarded, deleted,
    revealed, added to hand, put under a stack — the reference client opens a
@@ -138,7 +139,13 @@ function trashTitle(from: string): TranslationKey | null {
     case "security":
     case "eggDeck":
     case "delay":
-    case "various":
+    case CardMovePosition.VARIOUS.value:
+    case CardMovePosition.DIGIVOLUTION_CARDS.value:
+    case CardMovePosition.LINKED_CARDS.value:
+    case CardMovePosition.UNDER_TAMER.value:
+    case CardMovePosition.RESOLVING_OPTION.value:
+    case CardMovePosition.DECK_TOP.value:
+    case CardMovePosition.DECK_BOTTOM.value:
       return "panel.trashedCards";
     default:
       return null;

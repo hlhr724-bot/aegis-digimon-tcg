@@ -8,7 +8,7 @@ import "../index.js";
 
 describe("BT26-085 compiled behavior", () => {
   it.each([false, true])(
-    "1556745762682183811: Execute deletes once after Giant Slayer evolves to Destroy Mode (Holy Mode=%s)",
+    "Execute deletes once after Giant Slayer evolves to Destroy Mode (Holy Mode=%s)",
     async (withHolyMode) => {
       const materials = ["BT26-001", "BT26-009", "BT26-011", "BT26-015", "BT26-016"];
       const s = setupEngine(
@@ -49,7 +49,7 @@ describe("BT26-085 compiled behavior", () => {
         expect(s.state.players[0]!.battleArea.map((p) => p.topCard.cardId)).toContain("BT26-060");
         expect(s.state.players[0]!.security).toHaveLength(2);
         expect(
-          s.events.filter((e) => e.kind === "effectTriggered" && e.effectKey.startsWith("granted/Execute/1/")),
+          s.events.filter((e) => e.kind === "effectTriggered" && e.effectKey.startsWith("granted/Execute deletion/")),
         ).toHaveLength(1);
         expect(
           s.decisions.filter(({ req }) => req.kind === "optional" && req.sourceCardId === "BT26-016"),

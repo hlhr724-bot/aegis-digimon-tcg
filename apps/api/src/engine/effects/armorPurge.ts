@@ -2,6 +2,7 @@ import type { CardInstance, Permanent } from "@aegis/shared";
 import type { ReplacementSubscriptionPrevent } from "./subtriggers.js";
 import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
 import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
+import { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 
 /** CR §16-19: order the top-card payment with the other reactions to this deletion. */
 export function armorPurgeLeaveReplacements(
@@ -39,7 +40,7 @@ export function armorPurgeLeaveReplacements(
             (
               await ctx.ask.selectCards(
                 { ...ctx, activeEffectText: description },
-                { candidates: [sourceInstanceId], min: 0, max: 1 },
+                { candidates: [sourceInstanceId], min: 0, max: 1, selectionGoal: DecisionSelectionGoal.PROTECT.value },
               )
             ).includes(sourceInstanceId);
           if (!accept) return false;

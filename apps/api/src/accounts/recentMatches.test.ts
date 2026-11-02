@@ -222,3 +222,31 @@ it("counts only humans across history pages, respects mode/opponent and ignores 
     expect((await page(owner.id, filter)).winRate).toEqual({ matches: 0, wins: 0, losses: 0, draws: 0 });
   expect((await page(other.id)).winRate).toEqual({ matches: 1, wins: 1, losses: 0, draws: 0 });
 });
+
+it("stores the bot experiment arm for analysis without listing it to the player", async () => {
+  const pool = createMemoryPool();
+  store = new AccountStore(pool);
+  const owner = await store.accountForIdentity("email", `${randomUUID()}@test.invalid`, "Owner");
+  await store.recordRecentMatch(owner.id, "bot-room", {
+    ...record(1),
+    botExperiment: "bot-ab-2026-10",
+    botArm: "humanPanelPlanner",
+    botArmFallback: true,
+  });
+  await store.recordRecentMatch(owner.id, "older-bot-room", record(3));
+  const stored = await pool.query<{ arm: string | null; fallback: string | null; experiment: string | null }>(
+    "SELECT record->>'botArm' arm, record->>'botArmFallback' fallback, record->>'botExperiment' experiment FROM account_recent_matches WHERE account_id=$1 ORDER BY finished_at",
+    [owner.id],
+  );
+  expect(stored.rows).toEqual([
+    { arm: "humanPanelPlanner", fallback: "true", experiment: "bot-ab-2026-10" },
+    { arm: null, fallback: null, experiment: null },
+  ]);
+  const history = await page(owner.id);
+  expect(history.matches).toHaveLength(2);
+  for (const match of history.matches) {
+    expect(Object.keys(match).sort()).toEqual(
+      [...Object.keys(record(1)), "canAddOpponent", "hasOpponentDeck", "hasOwnDeck"].sort(),
+    );
+  }
+});

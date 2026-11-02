@@ -7,7 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "StartOfYourMainPhase",
       actions: [
         {
-          kind: "GainMemory",
+          kind: "Draw",
+          controller: "mine",
           amount: 1,
           cost: {
             kind: "place",
@@ -26,7 +27,7 @@ export const compiled: CompiledCard = {
           optional: true,
           abortOnDecline: true,
         },
-        { kind: "Draw", controller: "mine", amount: 1 },
+        { kind: "GainMemory", amount: 1 },
       ],
     },
     {

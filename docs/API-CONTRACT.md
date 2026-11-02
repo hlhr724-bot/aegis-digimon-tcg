@@ -16,15 +16,93 @@ queue and sends `betaBattleMode: true` from each seat. This room type is always
 registered, including in production; it permits preview cards such as EX13 and
 upcoming promos. Beta matches are unranked. Both seats must explicitly opt in.
 Normal, ranked, private, and tournament rooms reject beta opt-in and retain their
-normal deck eligibility. Bot matches use a separate `aegis_bot` room, or
-`aegis_beta_bot` when the player opts into preview cards; both bot room types
-remain outside ranked, tournament, and private queues. Handler-owned beta
-settings cannot be overridden by client creation options.
+normal deck eligibility. Bot matches use one `aegis_bot` room type. Like a
+private room, it accepts preview cards without a beta opt-in, because it has
+one human seat and no public queue. The bot's own preset or random deck never
+contains preview cards; a custom bot deck the player picks may. Handler-owned
+beta settings cannot be overridden by client creation options. The legacy
+`aegis_beta_bot` wire name remains registered as an alias with the same bot rules
+so already-loaded clients can start practice matches during the rollout.
 
 Collection and deck-builder visibility is independent of battle eligibility:
 all deckable catalog entries remain visible, including preview cards. A deck
-containing beta-only cards needs the checkbox in Quick Match or Practice vs AI
-before launch.
+containing beta-only cards needs the checkbox in Quick Match before launch.
+
+## Match chat
+
+The `chat` message transport carries two isolated conversations. The API derives
+membership from the authenticated room role: seated players receive only player
+messages, and spectators receive only spectator messages. Both text and emotes
+follow this rule. Unseated clients receive neither conversation, and payloads
+cannot select a different sender role or audience. Existing moderation and
+per-sender cooldowns apply within each conversation.
+
+## Live match list
+
+`GET /spectate/live?offset=0&limit=10` returns a `LiveMatchPage`:
+`{ matches: LiveMatch[], total: number }`. Both types live in
+`packages/shared/src/protocol/LiveMatch.ts`. Each entry holds the spectator
+code, both display names, the deck format, the start time in epoch
+milliseconds, and the current spectator count.
+
+- Matches are sorted by spectator count, then by newest start.
+- `offset` is 0 to 10000 and defaults to 0. `limit` is 1 to 50 and defaults
+  to 10. Other values return 400.
+- `total` counts every listed match in this slot, not only the page.
+- Each API process caches the full list for 5 seconds and shares one room
+  query between concurrent requests, so the cost does not grow with the number
+  of viewers. A failed query is not cached and returns 503.
+
+A match is listed only when all of these are true:
+
+- It is a casual room: `aegis`, `aegis_unlimited` or `aegis_beta`. Private,
+  ranked, bot and tournament rooms are never listed.
+- Both seats belong to accounts whose preferences hold `listLiveMatches: true`.
+  A guest seat keeps the match unlisted.
+- The match has started, has not ended, and has fewer than 20 spectators.
+
+The room publishes the entry in its matchmaking metadata as `live`, and updates
+it when spectators join or leave. Each deployment slot answers only for its own
+rooms, so the web client asks each active and draining slot for its first
+`limit` matches, merges and sorts them, and keeps `limit`. "Show more" raises
+`limit` by one page, up to 50, instead of sending an `offset`, because offsets
+cannot be merged correctly across slots.
+Watching a listed match still goes through `POST /spectate/join` with the
+spectator code, which rechecks admission on the room's own process.
+
+## Tournament spectating
+
+Tournament rooms are never listed and have no spectator code. The organizer
+sets a spectator policy on each tournament:
+
+| Policy      | Who can watch                                  |
+| ----------- | ---------------------------------------------- |
+| `nobody`    | The organizer and site admins (default)        |
+| `allowlist` | The organizer, site admins and listed accounts |
+| `signed_in` | Any signed-in account                          |
+
+Every policy refuses an account that is still in the event (`registered`,
+`checked_in` or `active`), so a player cannot scout another table. Spectators
+get the same public view as casual spectators: hands stay hidden.
+
+Organizer and admin routes (signed in, `organizer_required` otherwise) return a
+`TournamentSpectatorSettings`:
+
+- `GET /tournaments/:id/spectators`
+- `PUT /tournaments/:id/spectators/policy` with `{ policy }`
+- `POST /tournaments/:id/spectators` with `{ displayName }`. An unknown name
+  returns `404 spectator_account_not_found`; more than 50 entries returns
+  `409 spectator_limit_reached`.
+- `DELETE /tournaments/:id/spectators/:accountId`
+
+`GET /tournaments/:id` adds `spectatorPolicy` and `canSpectate` for the
+current viewer. To watch, the client posts
+`{ tournamentId, matchId, authTicket }` to `POST /spectate/tournament` on each
+active and draining slot. The slot that hosts the game's `playing` room
+consumes the ticket, checks the policy, and reserves a spectator seat with a
+fresh room ticket. The room consumes that ticket and checks the policy again
+before it admits the socket, so a forged join cannot skip the check. A slot
+without the room answers `404 match_not_live`.
 
 ## Optional rollback
 
@@ -66,6 +144,31 @@ decoder, queued intents, decisions, snapshots, and animation session. Recorded
 input replays retain the valid active prefix and normalize subsequent batch
 versions; participant replay frames also retain the visible rollback moment.
 
+## Community text moderation
+
+The API checks published deck names on publication and republication, and checks
+guides on each guide update. Rejections use `name_not_allowed` or
+`guide_not_allowed` with HTTP 422. Private saved names and chat keep their existing
+behavior; existing publications are not rescanned automatically.
+
+`hasBlockedCommunityText` uses the `@2toad/profanity` engine with its English
+preset and the multilingual dictionaries from
+[`naughty-words`](https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words)
+(Shutterstock, CC-BY-4.0). The other translated presets from `@2toad/profanity`
+are not enabled because they include benign phrases such as Portuguese “boa sorte”.
+The ambiguous Korean dictionary entry “보지” is excluded because it also appears
+in ordinary auxiliary-verb constructions in strategy explanations.
+The existing `obscenity` filter still detects disguised profanity. Additional
+policy terms reject death-related names such as “Muerte a la Royal Base”.
+
+Normalization handles compatibility characters, invisible formatting characters,
+and Latin accents. Complete official card names that collide with the filter are
+exempted only within their matched spans, so a guide can discuss Death Claw without
+allowing a separate offensive phrase. A small set of explicit abusive
+and death-related phrases in Chinese, Japanese, and Korean also match inside
+unspaced text; broad dictionary terms keep word boundaries to limit false positives. Dictionary coverage is finite:
+it does not guarantee every language, inflection, obfuscation, or contextual insult.
+
 ## Random community decks and used decks
 
 `GET /community/decks/random?format=<DeckFormat>&beta=<true|false>` is public and
@@ -97,8 +200,9 @@ workflow; source edits, unpublishing and moderation cannot change that copy.
 Casual (`aegis` and `aegis_beta`) join options include `matchTimer: boolean`.
 Both queues filter on this option, so timed and untimed players cannot meet.
 Omitting the option leaves the timer off. Public clocks start with 300 seconds
-per player. Each subsequent turn starts a fresh 300-second reserve for both
-players; unused time does not accumulate. The opening turn uses the initial reserve.
+per player. Unused time carries over between turns. Each later turn start adds
+60 seconds to the turn owner and 30 seconds to the opponent, with both reserves
+capped at the starting time. The opening turn uses the initial reserve without a bonus.
 
 The mulligan has its own clock. Each player gets 30 seconds
 (`MULLIGAN_TIMER_SECONDS`) to answer their own mulligan, published as
@@ -120,10 +224,10 @@ timer constants live in `packages/shared/src/matchTimer.ts`.
 Private-room creators may also choose `timerStartSeconds` (60, 180, 300, 600).
 Invalid values use the defaults; private reserves are capped at their chosen starting time.
 `timerRefillSeconds` remains in the wire contract for compatibility, but join payloads
-cannot override the turn reset. The synchronized `timerRefillSeconds` field
-reports the legacy value 60, which no longer controls clock refills.
-The lobby uses a labelled on/off switch and a compact strip showing time per turn.
-Private hosts can change the per-turn reserve; its displayed value and cap update together.
+cannot override the fixed 60-second owner bonus; the opponent bonus is always 30 seconds.
+The synchronized `timerRefillSeconds` field reports 60, and the settings do not offer a refill control.
+The lobby uses a labelled on/off switch and a compact strip showing the starting time and both turn bonuses.
+Private hosts can change the starting time; its displayed value and cap update together.
 The on/off preference is saved under `aegis:match-timer` in browser localStorage
 and restored on reload for guests and signed-in users. It is local to that browser;
 joining a private room or entering a mode without timers does not overwrite it.
@@ -256,6 +360,29 @@ back online. If no answer arrives within 10 s, the client closes the socket and
 resumes its seat with the reconnect token. Production deployments route new rooms to
 the active blue, red, or green slot and retain older slots until their rooms drain.
 
+A dropped seat stays reserved for `RECONNECT_GRACE_SECONDS` (60 s). The room owns that
+deadline itself, not Colyseus. A reconnect takes two steps: an HTTP request that reserves
+the seat, then the socket. When the room accepts the request with less than 15 s left
+(Colyseus's seat reservation time), it extends the deadline to 15 s from that moment, so
+the socket still finds its seat. If the socket never arrives, the seat expires at the
+extended deadline. An early request never shortens the deadline.
+
+Each successful reconnect issues a new token in `JOIN_ROOM`. If the socket drops again
+before the client acknowledges `JOIN_ROOM`, the client may never have received that
+token. Colyseus refuses to hold a seat that never acknowledged its join, so the room
+clears that flag and holds the seat anyway, for both the new token and the token the
+client held before that reconnect. This relies on two Colyseus internals
+(`_enqueuedMessages` and `_reconnections`); `apps/web/test/reconnectHandshakeDrop.connection.test.ts`
+exercises it against a real server, so an upgrade that changes them fails that test.
+
+The client saves its reconnect token per tab and stamps it every 5 s while connected.
+Mobile browsers freeze those timers in the background while the socket itself stays alive,
+so the stamp can be minutes old when the server finally detects the drop and starts the
+grace. After a reload of the game page, the client therefore tries any saved token up to
+`RECONNECT_SESSION_MAX_AGE_MS` (2 h) old and lets the server decide: a seat that no longer
+exists answers at once (`410`, `522`, or `524`). Retries after a reload run for the grace
+period from the page load, not from the stale stamp.
+
 ## Events and errors
 
 State synchronization carries durable game state. Ephemeral presentation events
@@ -294,3 +421,13 @@ by engine tests.
 Protocol changes must remain compatible with the currently deployed web client
 or ship with the controlled reload/versioning policy. Persistence compatibility
 is handled separately by the numbered database migrations.
+
+## Community deck guides
+
+`PUT /community/decks/:id/guide` requires a session and the owner of the public deck ID. Body: `{ "guide": "text" }` or `{ "guide": null }`. Returns `200 { "guide": "normalized text" }`; null or blank clears the guide. Normalization applies NFKC, Unix newlines, trailing whitespace removal, at most one blank line, and trimming. The 5,000-character limit applies after normalization and rejects rather than truncates content.
+
+Errors: `400 invalid_guide`, `404 deck_not_found` (including another owner's or hidden deck), `422 guide_too_long`, `422 guide_not_allowed`, and `429 too_many_requests`. Guests receive 401. Guide edits share the publication rate limit. Saving changes no deck contents, publication timestamps, or `outdated` state. Republishing preserves the guide. Administrators can read hidden guides through the existing deck endpoint, but cannot edit them through this endpoint.
+
+Deck detail and random-deck responses contain `guide: string | null`; browse summaries contain only `hasGuide: boolean`. Search does not index guides.
+
+The client provides a rich text editor with headings, bold, and flat bullet lists, stored as a small text format: `## ` headings, `- ` bullets, `**bold**`, and blank-line paragraphs. Backslash escapes preserve literal backslashes, asterisks, hashes, and hyphens. No HTML is evaluated. Uppercase card codes are confirmed against the catalog; unknown codes remain text. Card suggestions include code and name. Rendered card links preview artwork on hover and open `/collection?q=<card-code>` with the collection search populated.

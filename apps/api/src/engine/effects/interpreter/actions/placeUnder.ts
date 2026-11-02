@@ -307,7 +307,7 @@ export async function runPlaceUnder(
     if (action.underSelectionRef && ctx.selections?.has(action.underSelectionRef)) {
       destId = ctx.selections.get(action.underSelectionRef);
     } else if (action.underFilter) {
-      const destTarget: Target = { filter: action.underFilter, count: 1 };
+      const destTarget: Target = { filter: { ...action.underFilter, excludeToken: true }, count: 1 };
       // "Other" excludes the cards being moved before the host choice is offered.
       // An empty result (including a chosen immune host) must not retarget the move.
       const destIds = await resolvePermanentTargets(ctx, destTarget, {
@@ -420,16 +420,16 @@ export async function runPlaceUnder(
     unsupported(ctx, action, "PlaceUnder of this card under a chosen permanent needs a destination selection");
     return;
   }
-  // "Place the top card of your deck face down under this Tamer / under any of
-  // your [TRAIT] Tamer" (ST23-13, ST24-03 etc.): take the top card of the
-  // controller's main deck. When underFilter is set the controller picks a
-  // destination permanent; otherwise the source permanent is the host.
   if (action.fromDeckTop) {
-    const top = ctx.game.player(ctx.source.ownerSeat).deck[0];
-    if (top === undefined) return;
+    const deck = ctx.game.player(ctx.source.ownerSeat).deck;
+    const count = action.target.count === "all" ? deck.length : Number(action.target.count ?? 1);
+    const cards = deck.slice(0, count);
+    if (cards.length === 0) {
+      return;
+    }
     let destId: string | undefined;
     if (action.underFilter) {
-      const destTarget: Target = { filter: action.underFilter, count: 1 };
+      const destTarget: Target = { filter: { ...action.underFilter, excludeToken: true }, count: 1 };
       const destIds = await resolvePermanentTargets(ctx, destTarget);
       if (destIds.length === 0) return;
       destId =
@@ -440,7 +440,14 @@ export async function runPlaceUnder(
       destId = self.permanentId;
     }
     if (destId === undefined) return;
-    await ctx.fx.placeUnder(destId, [top.instanceId], { belowTop: action.position !== "bottom", faceUp: false });
+    await ctx.fx.placeUnder(
+      destId,
+      cards.map((card) => card.instanceId),
+      {
+        belowTop: action.position !== "bottom",
+        faceUp: false,
+      },
+    );
     return;
   }
   // Cards to place: loose cards matching the target filter.
@@ -511,7 +518,7 @@ export async function runPlaceUnder(
     }
     if (hostId === undefined) return;
   } else if (action.underFilter) {
-    const destTarget: Target = { filter: action.underFilter, count: 1 };
+    const destTarget: Target = { filter: { ...action.underFilter, excludeToken: true }, count: 1 };
     const destIds = await resolvePermanentTargets(ctx, destTarget);
     if (destIds.length === 0) return;
     hostId =
@@ -526,6 +533,7 @@ export async function runPlaceUnder(
     hostId = self.permanentId;
   }
   if (hostId === undefined) return;
+  if (action.bindHostAs !== undefined) ctx.selections?.set(action.bindHostAs, hostId);
   // Older compiled PlaceUnder records carry their printed quantity on the action rather
   // than on `target`. Treat that quantity as "as many as possible, up to N": cards such as
   // EX10-025 require 2 when 2 exist but still permit the single available card (Q5078-Q5079).
@@ -541,7 +549,7 @@ export async function runPlaceUnder(
     scopedCandidates,
     undefined,
     ctx.ask,
-    action.blind === true ? undefined : scopedCandidates.map((candidate) => candidate.instanceId),
+    action.blind === true ? [] : scopedCandidates.map((candidate) => candidate.instanceId),
   );
   rememberPlacedUnder(ctx, chosen);
   // `asDigiXrosMaterial: true` marks placed cards as DigiXros materials for the host Digimon.
@@ -834,7 +842,7 @@ export async function runTrashDigivolution(
   // remaining cards and abort the payload. Mandatory trash effects still do as much as
   // possible, including after a BT10-084 redirect.
   if (
-    action.optional === true &&
+    (action.optional === true || isDigiBurst) &&
     action.abortOnDecline === true &&
     typeof amount === "number" &&
     permanentIds.some((pid) => (ctx.game.permanentById(pid)?.stack.filter(stackCardMatches).length ?? 0) < amount)
@@ -878,11 +886,14 @@ export async function runTrashDigivolution(
       ids =
         candidateIds.length <= take && action.upTo !== true
           ? candidateIds
-          : await chooser.selectCards(ctx, {
-              candidates: candidateIds,
-              min: action.upTo === true ? Math.min(action.minAmount ?? 1, candidateIds.length) : take,
-              max: take,
-            });
+          : await chooser.selectCards(
+              isDigiBurst && action.abortOnDecline === true ? { ...ctx, payingDeclinableCost: true } : ctx,
+              {
+                candidates: candidateIds,
+                min: action.upTo === true ? Math.min(action.minAmount ?? 1, candidateIds.length) : take,
+                max: take,
+              },
+            );
     } else {
       ids = [];
       for (let i = 0; i < take; i++) {

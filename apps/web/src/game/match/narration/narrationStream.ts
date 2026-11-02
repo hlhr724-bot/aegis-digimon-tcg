@@ -104,6 +104,7 @@ export interface NarrationStreamDeps {
   lastBatchIdRef: MutableRefObject<string>;
   narrationSequenceRef: MutableRefObject<number>;
   narrationRef: MutableRefObject<ReadonlyMap<string, NarrationItem>>;
+  awaitEffectConfirmation: (context: AnimationStepContext) => Promise<void> | undefined;
 }
 
 type NarrationTrackParams = {
@@ -209,6 +210,7 @@ export function narrationStream(deps: NarrationStreamDeps) {
     lastBatchIdRef,
     narrationSequenceRef,
     narrationRef,
+    awaitEffectConfirmation,
   } = deps;
 
   /** Publish the clause before the results queued behind its arrival. */
@@ -362,8 +364,10 @@ export function narrationStream(deps: NarrationStreamDeps) {
         ? pendingStepIds(
             queue,
             (step) =>
-              isEffectDrawFlight(step) &&
-              (step.origin?.stateVersion === undefined ? !unit : step.origin.stateVersion < (itemVersion ?? 0)),
+              (isEffectDrawFlight(step) &&
+                (step.origin?.stateVersion === undefined ? !unit : step.origin.stateVersion < (itemVersion ?? 0))) ||
+              (step.track === "handTrash" &&
+                (step.origin?.stateVersion === undefined || step.origin.stateVersion <= (itemVersion ?? 0))),
           )
         : new Set<string>();
     const earlierDrawGate = earlierDrawFlights.size > 0 && !costClause ? createPresentationGate() : undefined;
@@ -532,7 +536,7 @@ export function narrationStream(deps: NarrationStreamDeps) {
               : sourceIndex
                 ? initialSite
                 : cardSiteRef.current.locate(body.cardId, seat, body);
-            if (site && context.mode === "live") {
+            if (site && context.mode === "live" && body.isContinuation !== true) {
               activation = {
                 key: ++effectSourceKeyRef.current,
                 cardId: body.cardId,
@@ -575,6 +579,38 @@ export function narrationStream(deps: NarrationStreamDeps) {
             unit !== undefined ||
             (presentationPacingRef.current === "sequential" && published.notice?.body.variant === "effect");
           const publishClause = (published: NarrationItem) => {
+            const continuation = published.notice?.body;
+            if (continuation?.variant === "effect" && continuation.isContinuation === true) {
+              setNarration((items) => {
+                const previous = [...items.values()].reverse().find((candidate) => {
+                  const existing = candidate.notice?.body;
+                  return (
+                    candidate.side === published.side &&
+                    existing?.variant === "effect" &&
+                    existing.cardId === continuation.cardId &&
+                    (continuation.timing === undefined || existing.timing === continuation.timing) &&
+                    (continuation.effectKey === undefined || existing.effectKey === continuation.effectKey) &&
+                    (continuation.sourceInstanceId === undefined ||
+                      existing.sourceInstanceId === continuation.sourceInstanceId) &&
+                    (continuation.sourcePermanentId === undefined ||
+                      existing.sourcePermanentId === continuation.sourcePermanentId)
+                  );
+                });
+                if (previous?.notice?.body.variant !== "effect") {
+                  return items;
+                }
+                const updated = new Map(items);
+                updated.set(previous.id, {
+                  ...previous,
+                  notice: {
+                    ...previous.notice,
+                    body: { ...previous.notice.body, effectTextPart: continuation.effectTextPart },
+                  },
+                });
+                return updated;
+              });
+              return true;
+            }
             // A clause with an earlier draw, cost, or other result must still explain
             // that result before a later target question in the same effect.
             const question = targetDecisionRef.current;
@@ -620,15 +656,19 @@ export function narrationStream(deps: NarrationStreamDeps) {
           // the clause takes the screen first and the cards it moved follow a beat later.
           // The folded phone slot draws both halves in one item, so it is published whole.
           const takesColumnSlot = shown.notice !== undefined && !isCardListNotice(shown.notice);
-          if (unit || (takesColumnSlot && effectSequence.pendingCount() > 0)) {
-            // A full column pushes its oldest clause out: not before that clause could be read.
-            const { clauseReadableMs, clauseStackMs } = activePacing();
-            const columnLimit = clauseStackMs > 0 ? narrationLimitRef.current : 1;
-            const floorWaitMs =
-              clauseReadableMs > 0 ? effectSequence.readableFloorWaitMs(Date.now(), columnLimit, clauseReadableMs) : 0;
-            if (floorWaitMs > 0) await context.wait(floorWaitMs);
-            if (context.cancelled || narrationSkipRef.current) return;
-            effectSequence.noteClauseShown(Date.now(), body?.variant === "effect" ? body.cardId : undefined);
+          if (body?.variant !== "effect" || body.isContinuation !== true) {
+            if (unit || (takesColumnSlot && effectSequence.pendingCount() > 0)) {
+              // A full column pushes its oldest clause out: not before that clause could be read.
+              const { clauseReadableMs, clauseStackMs } = activePacing();
+              const columnLimit = clauseStackMs > 0 ? narrationLimitRef.current : 1;
+              const floorWaitMs =
+                clauseReadableMs > 0
+                  ? effectSequence.readableFloorWaitMs(Date.now(), columnLimit, clauseReadableMs)
+                  : 0;
+              if (floorWaitMs > 0) await context.wait(floorWaitMs);
+              if (context.cancelled || narrationSkipRef.current) return;
+              effectSequence.noteClauseShown(Date.now(), body?.variant === "effect" ? body.cardId : undefined);
+            }
           }
           const staggered = !collapseNarrationRef.current && shown.notice !== undefined && shown.panel !== undefined;
           if (staggered) {
@@ -649,9 +689,10 @@ export function narrationStream(deps: NarrationStreamDeps) {
           if (!unit) announceGate?.release();
           if (!unit) costClause?.read.release();
           if (published) reportShown(`narration-step-${item.id}`, context);
-          if (unit) {
+          if (unit && !(body?.variant === "effect" && body.isContinuation === true)) {
             // Sequential pacing: nothing the effect did plays until its clause has been read.
-            await context.wait(announceMsFor(unit));
+            const confirmation = published ? awaitEffectConfirmation(context) : undefined;
+            await (confirmation ?? context.wait(announceMsFor(unit)));
             announceGate?.release();
             unitAnnouncement?.release();
             costClause?.read.release();
@@ -660,7 +701,11 @@ export function narrationStream(deps: NarrationStreamDeps) {
           // single moment, give every clause one readable beat before the next server event
           // can replace it. The phone's folded band also shows only the newest moment,
           // even though its accordion retains several items for inspection.
-          if (shown.notice && (narrationLimitRef.current === 1 || collapseNarrationRef.current))
+          if (
+            shown.notice &&
+            !(body?.variant === "effect" && body.isContinuation === true) &&
+            (narrationLimitRef.current === 1 || collapseNarrationRef.current)
+          )
             await context.wait(TIMINGS.effectAnnounce);
         }
       },

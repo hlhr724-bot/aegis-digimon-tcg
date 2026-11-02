@@ -1,11 +1,12 @@
-import { useState } from "react";
-import type { PublishOutcome } from "../community/useCommunityPublications";
+import { COMMUNITY_MODERATION_NOTE_MAX } from "@aegis/shared";
+import { useId, useState } from "react";
+import type { PublishOutcome, ReviewOutcome } from "../community/useCommunityPublications";
 import { Button } from "../design/primitives";
 import { Icons } from "../design/icons";
 import type { DeckListing } from "../game/decks";
 import { useTranslation, type TranslationKey } from "../i18n";
 
-export type PublishMode = "publish" | "update" | "unpublish";
+export type PublishMode = "publish" | "update" | "unpublish" | "review";
 
 const COPY: Record<PublishMode, { title: TranslationKey; body: TranslationKey; confirm: TranslationKey }> = {
   publish: {
@@ -23,13 +24,23 @@ const COPY: Record<PublishMode, { title: TranslationKey; body: TranslationKey; c
     body: "community.publish.unpublishBody",
     confirm: "community.publish.unpublish",
   },
+  review: {
+    title: "community.review.title",
+    body: "community.review.body",
+    confirm: "community.review.action",
+  },
 };
 
-const ERRORS: Record<Exclude<PublishOutcome, { ok: true }>["error"], TranslationKey> = {
+const ERRORS: Record<
+  Exclude<PublishOutcome, { ok: true }>["error"] | Exclude<ReviewOutcome, { ok: true }>["error"],
+  TranslationKey
+> = {
   deck_not_found: "community.publish.errorGeneric",
   deck_not_legal: "community.publish.errorNotLegal",
   name_not_allowed: "community.publish.errorName",
   deck_hidden: "community.publish.errorHidden",
+  deck_not_hidden: "community.review.errorNotHidden",
+  review_pending: "community.review.errorPending",
   failed: "community.publish.errorGeneric",
 };
 
@@ -37,18 +48,22 @@ export function DeckPublishModal({
   deck,
   mode,
   onPublish,
+  onRequestReview,
   onUnpublish,
   onClose,
 }: {
   deck: DeckListing;
   mode: PublishMode;
   onPublish: (deck: DeckListing) => Promise<PublishOutcome>;
+  onRequestReview: (deck: DeckListing, note: string) => Promise<ReviewOutcome>;
   onUnpublish: (deckId: string) => Promise<boolean>;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const noteId = useId();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<TranslationKey>();
+  const [note, setNote] = useState("");
   const copy = COPY[mode];
 
   const confirm = async () => {
@@ -57,6 +72,10 @@ export function DeckPublishModal({
     if (mode === "unpublish") {
       if (await onUnpublish(deck.id)) onClose();
       else setError("community.publish.errorGeneric");
+    } else if (mode === "review") {
+      const outcome = await onRequestReview(deck, note);
+      if (outcome.ok) onClose();
+      else setError(ERRORS[outcome.error]);
     } else {
       const outcome = await onPublish(deck);
       if (outcome.ok) onClose();
@@ -73,6 +92,21 @@ export function DeckPublishModal({
         </h2>
         <p className="deck-modal__hint">{t(copy.body)}</p>
         {mode === "publish" ? <p className="deck-modal__hint">{t("community.publish.rules")}</p> : null}
+        {mode === "review" ? (
+          <div className="aegis-field">
+            <label className="aegis-field__label" htmlFor={noteId}>
+              {t("community.review.noteLabel")}
+            </label>
+            <textarea
+              id={noteId}
+              className="aegis-field__control"
+              rows={3}
+              maxLength={COMMUNITY_MODERATION_NOTE_MAX}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </div>
+        ) : null}
         {error ? (
           <p className="deck-modal__error" role="alert">
             {t(error)}

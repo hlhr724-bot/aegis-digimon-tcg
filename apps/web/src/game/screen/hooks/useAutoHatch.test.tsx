@@ -68,13 +68,23 @@ describe("auto hatch", () => {
     { state: { ...options().state, gameOver: true } as GameState },
     { state: { ...options().state, combatWindow: {} } as GameState },
     { viewer: { ...options().viewer, eggDeckCount: 0 } as PlayerState },
-    { viewer: { ...options().viewer, breeding: { permanentId: "egg" } } as PlayerState },
   ])("waits when blocked: %j", (blocked) => {
     setAutoHatchEnabled(true);
     const props = options();
     const { rerender } = renderHook(useAutoHatch, { initialProps: { ...props, ...blocked } });
     expect(intents.hatchEgg).not.toHaveBeenCalled();
     rerender(props);
+    expect(intents.hatchEgg).toHaveBeenCalledExactlyOnceWith(props.room);
+  });
+
+  it("does not hatch after the raising Digimon moves out during the same breeding step", () => {
+    setAutoHatchEnabled(true);
+    const props = options();
+    const raising = { ...props.viewer, breeding: { permanentId: "agumon" } } as PlayerState;
+    const { rerender } = renderHook(useAutoHatch, { initialProps: { ...props, viewer: raising } });
+    rerender(props);
+    expect(intents.hatchEgg).not.toHaveBeenCalled();
+    rerender({ ...props, state: { ...props.state, turnCount: 3 } as GameState });
     expect(intents.hatchEgg).toHaveBeenCalledExactlyOnceWith(props.room);
   });
 });

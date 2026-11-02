@@ -1,3 +1,5 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
 import {
   CardKind,
   Zone,
@@ -173,6 +175,7 @@ export function createDeckVerbs(pc: PrimitivesContext) {
     const trashedAttachments: CardInstance[] = [];
     const divertedToEggDeck: CardInstance[] = [];
     const overflowLeavers: CardInstance[] = [];
+    const origins = locateMoveOrigins({ state, instanceIds });
     for (const instanceId of instanceIds) {
       if (opts?.detachPermanentTop === true) {
         let permanent: Permanent | undefined;
@@ -276,11 +279,11 @@ export function createDeckVerbs(pc: PrimitivesContext) {
         to: Zone.Trash,
       });
     }
-    if (divertedToEggDeck.length > 0) {
+    for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: divertedToEggDeck })) {
       engine.emit({
         kind: "cardsMoved",
-        instanceIds: divertedToEggDeck.map((card) => card.instanceId),
-        from: "various",
+        instanceIds: cards.map((card) => card.instanceId),
+        ...origin,
         to: Zone.EggDeck,
       });
     }
@@ -289,13 +292,15 @@ export function createDeckVerbs(pc: PrimitivesContext) {
       // seat is the only thing a client can narrate the growth from: a net-zero patch
       // ("place 1 card as bottom security, then trash the top card", BT24-016) shows no
       // count change at all.
-      engine.emit({
-        kind: "cardsMoved",
-        instanceIds: added.map((c) => c.instanceId),
-        from: "various",
-        to: Zone.Security,
-        seat,
-      });
+      for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: added })) {
+        engine.emit({
+          kind: "cardsMoved",
+          instanceIds: cards.map((card) => card.instanceId),
+          ...origin,
+          to: Zone.Security,
+          seat,
+        });
+      }
       // SubTrigger bus: "when cards are added to security" —
       // PlaceToSecurityEffect runs through the same IAddSecurity.AddSecurity seam as ＜Recovery＞.
       // Awaited (not detached `void`) so the watcher body — which may prompt a decision — is

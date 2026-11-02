@@ -25,6 +25,7 @@ const compiled: CompiledCard = {
           actions: [
             {
               kind: "Return",
+              optional: true,
               target: {
                 filter: {
                   zone: "trash",

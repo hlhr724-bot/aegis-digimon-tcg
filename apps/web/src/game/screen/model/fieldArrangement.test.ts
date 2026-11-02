@@ -212,3 +212,39 @@ describe("carryGroupKeys", () => {
     expect(carryGroupKeys([group("watch-1", watch)], new Map(), isSuspended)[0]!.key).toBe("watch-1");
   });
 });
+
+it("keeps manually marked support cards distinct instead of hiding their annotations in a group", () => {
+  const plain = permanent("plain", AMI_AIBA);
+  const marked = permanent("marked", AMI_AIBA);
+  marked.manualMarker = "Once per turn used";
+  const status = permanent("status", AMI_AIBA);
+  status.manualStatuses.push("immune");
+  const color = permanent("color", AMI_AIBA);
+  color.originalColorsOverride.push("red");
+  const security = permanent("security", AMI_AIBA);
+  security.securityAttackModifier = 1;
+  const hidden = permanent("hidden", AMI_AIBA);
+  hidden.topCard.faceUp = false;
+  expect(arrangeField([plain, marked, status, color, security, hidden], plainOptions).support).toHaveLength(6);
+});
+
+it("displays each identical Tamer separately when grouping is disabled while retaining authoritative references", () => {
+  const field = [
+    permanent("perm-8", AMI_AIBA),
+    permanent("perm-12", AMI_AIBA),
+    permanent("perm-15", KUREMI_AGENCY),
+    permanent("perm-16", KUREMI_AGENCY),
+  ];
+  const enabled = arrangeField(field, plainOptions);
+  expect(enabled.support.map((group) => ids(group.members))).toEqual([
+    ["perm-8", "perm-12"],
+    ["perm-15", "perm-16"],
+  ]);
+  const disabled = arrangeField(field, { ...plainOptions, groupIdenticalTamers: false });
+  expect(disabled.support.map((group) => ids(group.members))).toEqual([
+    ["perm-8"],
+    ["perm-12"],
+    ["perm-15", "perm-16"],
+  ]);
+  expect(field.map((item) => item.permanentId)).toEqual(["perm-8", "perm-12", "perm-15", "perm-16"]);
+});

@@ -112,6 +112,93 @@ describe("DecisionManager", () => {
     await expect(promise).resolves.toEqual({ kind: "orderTriggers", order: [triggerKeys[1]!] });
   });
 
+  it.each([undefined, null, 0, "first", {}, [null], [0]])(
+    "rejects malformed trigger orders without closing the pending decision: %j",
+    async (order) => {
+      const state = makeState();
+      const { transport, sent } = recordingTransport();
+      const mgr = new DecisionManager(state, transport);
+      const promise = mgr.request({
+        seat: 0,
+        kind: "orderTriggers",
+        promptText: "Choose the next effect.",
+        options: { triggerKeys: ["first", "second"], acceptsResolutionPlan: true },
+      });
+      const id = sent[0]!.req.decisionId;
+      const malformed = { kind: "orderTriggers", optionIndex: 0, order } as unknown as DecisionResponse;
+
+      expect(mgr.respond(0, id, malformed)).toBe(false);
+      expect(mgr.hasPending).toBe(true);
+      expect(state.pendingDecision?.decisionId).toBe(id);
+      expect(mgr.respond(0, id, { kind: "orderTriggers", order: ["second"] })).toBe(true);
+      await expect(promise).resolves.toEqual({ kind: "orderTriggers", order: ["second"] });
+      expect(state.pendingDecision).toBeUndefined();
+    },
+  );
+
+  describe.each(["chooseTargets", "selectCards"] as const)("%s response validation", (kind) => {
+    it.each([undefined, null, 0, "first", {}, [null], [0]])(
+      "rejects malformed selections and allows a valid retry: %j",
+      async (instanceIds) => {
+        const state = makeState();
+        const { transport, sent } = recordingTransport();
+        const mgr = new DecisionManager(state, transport);
+        const promise = mgr.request({
+          seat: 0,
+          kind,
+          promptText: "Choose a card.",
+          options: { candidateInstanceIds: ["first"], min: 0, max: 1 },
+        });
+        const id = sent[0]!.req.decisionId;
+        const malformed = {
+          kind,
+          instanceIds,
+          targets: [{ kind: "permanent", permanentId: "first" }],
+        } as unknown as DecisionResponse;
+
+        expect(mgr.respond(0, id, malformed)).toBe(false);
+        expect(state.pendingDecision?.decisionId).toBe(id);
+        expect(mgr.respond(0, id, { kind, instanceIds: ["first"] })).toBe(true);
+        await expect(promise).resolves.toEqual({ kind, instanceIds: ["first"] });
+        expect(state.pendingDecision).toBeUndefined();
+      },
+    );
+  });
+
+  it.each([
+    { kind: "optional", valid: { kind: "optional", accept: false }, invalid: { kind: "optional", accept: "false" } },
+    {
+      kind: "chooseOption",
+      valid: { kind: "chooseOption", optionIndex: 0 },
+      invalid: { kind: "chooseOption", optionIndex: -1 },
+    },
+    {
+      kind: "chooseOption",
+      valid: { kind: "chooseOption", optionIndex: 0 },
+      invalid: { kind: "chooseOption", optionIndex: 0.5 },
+    },
+    { kind: "orderCards", valid: { kind: "orderCards", order: ["first"] }, invalid: { kind: "orderCards" } },
+    {
+      kind: "orderCards",
+      valid: { kind: "orderCards", order: ["first"] },
+      invalid: { kind: "orderCards", order: [0] },
+    },
+  ] as const)("rejects malformed $kind answers before resolving", async ({ kind, valid, invalid }) => {
+    const state = makeState();
+    const { transport, sent } = recordingTransport();
+    const mgr = new DecisionManager(state, transport);
+    const promise = mgr.request({ seat: 0, kind, promptText: "Choose.", options: { candidateInstanceIds: ["first"] } });
+    const id = sent[0]!.req.decisionId;
+
+    expect(mgr.respond(0, id, invalid as unknown as DecisionResponse)).toBe(false);
+    expect(mgr.respond(0, id, null as unknown as DecisionResponse)).toBe(false);
+    expect(mgr.respond(0, id, undefined as unknown as DecisionResponse)).toBe(false);
+    expect(state.pendingDecision?.decisionId).toBe(id);
+    expect(mgr.respond(0, id, structuredClone(valid) as DecisionResponse)).toBe(true);
+    await expect(promise).resolves.toEqual(valid);
+    expect(state.pendingDecision).toBeUndefined();
+  });
+
   it("throws when a second decision is requested while one is open", () => {
     const state = makeState();
     const { transport } = recordingTransport();

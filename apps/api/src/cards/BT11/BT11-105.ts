@@ -35,6 +35,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] By placing 1 [Vemmon] or [Destromon] from your trash under 1 of your Digimon as its bottom digivolution card, you may digivolve 1 of your Digimon into 1 [Destromon] or [Galacticmon] from your trash for its digivolution cost.",
           kind: "PlaceUnder",
           target: {
             filter: {
@@ -51,6 +53,8 @@ export const compiled: CompiledCard = {
           bindHostAs: "fusionizeHost",
         },
         {
+          effectTextPart:
+            "[Main] By placing 1 [Vemmon] or [Destromon] from your trash under 1 of your Digimon as its bottom digivolution card, you may digivolve 1 of your Digimon into 1 [Destromon] or [Galacticmon] from your trash for its digivolution cost.",
           kind: "Digivolve",
           condition: { kind: "ifThisEffectActed", raw: "if you placed a card under a Digimon" },
           target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },

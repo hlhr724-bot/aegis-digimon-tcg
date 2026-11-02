@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
+import { AccountRole } from "@aegis/shared/account/AccountRole";
 import { Alert, Avatar, Badge, Dialog, Field, Switch, TopNav, type Screen } from "./primitives";
 
 describe("design primitives", () => {
@@ -105,7 +106,7 @@ describe("design primitives", () => {
     expect(screen.getByText("TK")).toBeTruthy();
   });
 
-  it("routes the gear to settings and the portrait to the player menu", () => {
+  it("routes the tournaments tab and the portrait to their destinations", () => {
     const onNav = vi.fn<(screen: Screen) => void>();
     const onOpenPlayerMenu = vi.fn<() => void>();
     render(
@@ -119,11 +120,74 @@ describe("design primitives", () => {
       </I18nProvider>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
-    expect(onNav).toHaveBeenCalledWith("settings");
+    fireEvent.click(screen.getAllByRole("button", { name: "Tournaments" })[0]!);
+    expect(onNav).toHaveBeenCalledWith("tournaments");
 
     fireEvent.click(screen.getAllByRole("button", { name: "Open the player menu" })[0]!);
     expect(onOpenPlayerMenu).toHaveBeenCalled();
+  });
+
+  it("marks the portrait with the player's highest account role", () => {
+    const { container } = render(
+      <I18nProvider>
+        <TopNav
+          screen="home"
+          onNav={vi.fn<(screen: Screen) => void>()}
+          role={AccountRole.JUDGE}
+          player={{ name: "Tai Kamiya", color: "Blue", shards: 0, avatarId: "tyrannomon" }}
+        />
+      </I18nProvider>,
+    );
+
+    expect(screen.getAllByRole("button", { name: "Open the player menu (Judge)" })).toHaveLength(2);
+    expect(container.querySelectorAll('.account-role-badge[data-role="judge"]')).toHaveLength(2);
+  });
+
+  it("explains the account role in a tooltip on the portrait", async () => {
+    render(
+      <I18nProvider>
+        <TopNav
+          screen="home"
+          onNav={vi.fn<(screen: Screen) => void>()}
+          role={AccountRole.ORGANIZER}
+          player={{ name: "Tai Kamiya", color: "Blue", shards: 0, avatarId: "tyrannomon" }}
+        />
+      </I18nProvider>,
+    );
+
+    fireEvent.focus(screen.getAllByRole("button", { name: "Open the player menu (Official organizer)" })[0]!);
+
+    expect((await screen.findByRole("tooltip")).textContent).toContain("Creates official tournaments and circuits.");
+  });
+
+  it("gives tournaments their own tab and keeps Community active on the roadmap", () => {
+    const { rerender } = render(
+      <I18nProvider>
+        <TopNav
+          screen="tournaments"
+          onNav={vi.fn<(screen: Screen) => void>()}
+          player={{ name: "Tai Kamiya", color: "Blue", shards: 0, avatarId: "tyrannomon" }}
+        />
+      </I18nProvider>,
+    );
+
+    const tournaments = screen.getAllByRole("button", { name: "Tournaments" });
+    expect(tournaments).toHaveLength(2);
+    tournaments.forEach((button) => expect(button.getAttribute("aria-current")).toBe("page"));
+
+    rerender(
+      <I18nProvider>
+        <TopNav
+          screen="roadmap"
+          onNav={vi.fn<(screen: Screen) => void>()}
+          player={{ name: "Tai Kamiya", color: "Blue", shards: 0, avatarId: "tyrannomon" }}
+        />
+      </I18nProvider>,
+    );
+
+    const community = screen.getAllByRole("button", { name: "Community" });
+    expect(community).toHaveLength(2);
+    community.forEach((button) => expect(button.getAttribute("aria-current")).toBe("page"));
   });
 
   it("offers a guest a way in and drops it once they are signed in", () => {

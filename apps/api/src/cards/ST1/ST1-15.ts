@@ -7,6 +7,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete up to 2 of your opponent's Digimon with 4000 DP or less.",
           kind: "Delete",
           target: {
             filter: { controller: "opponent", kind: ["Digimon"], dp: { op: "lte", value: 4000 } },

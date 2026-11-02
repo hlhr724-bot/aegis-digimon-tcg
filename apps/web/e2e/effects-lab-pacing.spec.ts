@@ -1263,7 +1263,7 @@ test.describe("effects lab pacing in the browser", () => {
             const arrows = capture.arrows.filter((arrow) => arrow.source === attacker.permanentId);
             expect(arrows.length).toBeGreaterThan(1);
             expect(new Set(arrows.map((arrow) => arrow.key)).size).toBe(1);
-            const later = arrows.filter((arrow) => arrow.at >= capture.securityChecks[1]!.firstAt);
+            const later = arrows.filter((arrow) => arrow.at >= capture.securityChecks[0]!.removedAt!);
             expect(later.length).toBeGreaterThan(0);
             expect(later.every((arrow) => arrow.sweepMs !== undefined && arrow.sweepMs >= 380)).toBe(true);
           }
@@ -1787,6 +1787,7 @@ test.describe("effects lab pacing in the browser", () => {
                 );
               })
               .toBe(true);
+            await expect(page.locator(".narration-peek")).toHaveCount(0);
             await boundary("attack-security");
             await game.attack(attacker.permanentId, page.locator('[data-drop="opp-security"]'));
           } else {

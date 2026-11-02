@@ -1,8 +1,9 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useEffect, useState, type CSSProperties } from "react";
-import { cardImageUrls, getCardDefinition } from "@aegis/shared";
+import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
 import { CardBack } from "../design/cards";
-import { useMediaQuery } from "../design/useMediaQuery";
 import { securityCardEffects } from "./securityCardEffects";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 export const SECURITY_FLIP_DURATION = 420;
 
@@ -15,7 +16,8 @@ export function SecurityCardSlot({
   stackDepth,
   useSelectedSleeve = false,
 }: Partial<PublicCard> & { stackDepth?: number; useSelectedSleeve?: boolean }) {
-  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const getCardName = useTranslatedCardName();
+  const reducedMotion = motionPreference.useReduced();
   const [previous, setPrevious] = useState<PublicCard>({ cardId, artId, faceUp });
   const [turningDown, setTurningDown] = useState<PublicCard | null>(null);
   // Keep a value snapshot: Colyseus can mutate the original instance in place and
@@ -31,6 +33,7 @@ export function SecurityCardSlot({
     return () => window.clearTimeout(timer);
   }, [turningDown]);
   const publicCard = faceUp && cardId ? { cardId, artId } : turningDown;
+  const [publicCardUrl] = useCardImageUrls({ cardId: publicCard?.cardId, artId: publicCard?.artId });
   return (
     <i
       className={
@@ -42,10 +45,7 @@ export function SecurityCardSlot({
     >
       {publicCard ? (
         <span className="game-security-card__faces" aria-hidden={!faceUp || undefined}>
-          <img
-            src={cardImageUrls(publicCard.cardId, publicCard.artId)[0]}
-            alt={getCardDefinition(publicCard.cardId)?.nameEn ?? publicCard.cardId}
-          />
+          <img src={publicCardUrl} alt={getCardName(publicCard.cardId)} />
           {turningDown ? (
             <span className="game-security-card__back">
               <CardBack width={64} useSelectedSleeve={useSelectedSleeve} />

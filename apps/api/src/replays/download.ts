@@ -1,25 +1,19 @@
+import type { ReplayViewerSeat } from "@aegis/shared/replays/ReplayViewerSeat";
 import { promisify } from "node:util";
 import { gzip } from "node:zlib";
-import type { MatchReplay, ReplayDownloadMessage, Seat } from "@aegis/shared";
-import { projectReplay } from "./recording.js";
+import type { ReplayDownloadMessage } from "@aegis/shared";
+import type { ParticipantReplayFile } from "./recording.js";
 
 const compress = promisify(gzip);
 
-/** Export a copy so filtering one seat can never affect the other seat's file. */
-export async function replayDownload(recording: MatchReplay, seat: Seat): Promise<ReplayDownloadMessage> {
-  const replay = projectReplay(structuredClone(recording), seat);
-  const {
-    frames: _frames,
-    visibleHandSeats: _hands,
-    viewerSeat: _seat,
-    format: _format,
-    version: _version,
-    ...summary
-  } = replay;
+export async function replayDownload(
+  file: ParticipantReplayFile,
+  seat: ReplayViewerSeat,
+): Promise<ReplayDownloadMessage> {
   return {
     kind: "ready",
-    summary,
+    summary: file.summary,
     viewerSeat: seat,
-    data: (await compress(JSON.stringify(replay))).toString("base64"),
+    data: (await compress(file.json)).toString("base64"),
   };
 }

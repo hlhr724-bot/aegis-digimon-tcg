@@ -99,8 +99,8 @@ function makeContext(opts: {
   return { source: makeSource("BT14-077"), trigger: {}, game, fx, ask };
 }
 
-function revealedSeats(rec: Recorder): Seat[] {
-  return rec.calls.filter((c) => c.verb === "reveal").map((c) => c.args[0] as Seat);
+function discardedSeats(rec: Recorder): Seat[] {
+  return rec.calls.filter((c) => c.verb === "fireOnDiscardLibrary").map((c) => c.args[0] as Seat);
 }
 
 function trashedIds(rec: Recorder): string[] {
@@ -130,7 +130,7 @@ describe("BT14-077 both-decks mill A3", () => {
     expect(effects.length, "BT14-077 must expose an [On Play] effect").toBeGreaterThanOrEqual(1);
     await effects[0]!.resolve(ctx);
 
-    const seats = revealedSeats(recorder);
+    const seats = discardedSeats(recorder);
     expect(seats).toContain(0 as Seat);
     expect(seats).toContain(1 as Seat);
 
@@ -156,7 +156,7 @@ describe("BT14-077 both-decks mill A3", () => {
     expect(effects.length, "BT14-077 must expose a [When Digivolving] effect").toBeGreaterThanOrEqual(1);
     await effects[0]!.resolve(ctx);
 
-    const seats = revealedSeats(recorder);
+    const seats = discardedSeats(recorder);
     expect(seats).toContain(0 as Seat);
     expect(seats).toContain(1 as Seat);
 

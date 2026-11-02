@@ -125,4 +125,12 @@ test("Training discounts a legal level 5 evolution without activating the hand e
   const log = page.getByRole("dialog", { name: "Play log", exact: true });
   await expect(log).toContainText("Wall Training's effect resolved");
   await expect(log).not.toContainText("no digivolution performed");
+  const search = log.getByRole("searchbox", { name: "Search match history" });
+  await search.fill("Wall Training");
+  await expect(log.getByText("Wall Training's effect resolved")).toBeVisible();
+  await expect(log.getByText(/^Match started\./)).toHaveCount(0);
+  await log.getByRole("button", { name: "Open Wall Training" }).first().hover();
+  await expect(page.getByTestId("card-zoom-preview")).toBeVisible();
+  await log.getByRole("button", { name: "Clear search" }).click();
+  await expect(log.getByText(/^Match started\./)).toBeVisible();
 });

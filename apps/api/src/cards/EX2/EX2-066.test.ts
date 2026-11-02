@@ -50,6 +50,8 @@ describe("EX2-066 Offensive Plug-In A", () => {
           trigger: "Main",
           actions: [
             {
+              effectTextPart:
+                "[Main] 1 of your Digimon gains ＜Security Attack +1＞ for the turn. (This Digimon checks 1 additional security card.)",
               kind: "GainKeyword",
               target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
               keyword: { keyword: "SecurityAttack", amount: 1, raw: "＜Security Attack +1＞" },

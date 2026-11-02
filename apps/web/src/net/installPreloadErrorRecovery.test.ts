@@ -23,10 +23,11 @@ function setup({ readStorage }: { readStorage?: () => Storage } = {}) {
   installPreloadErrorRecovery({ target, readStorage: readStorage ?? (() => storage), reload, now: () => clock });
   const fail = () => {
     const event = new Event("vite:preloadError", { cancelable: true });
+    Object.assign(event, { payload: new TypeError("Failed to fetch dynamically imported module: /assets/game.js") });
     target.dispatchEvent(event);
     return event.defaultPrevented;
   };
-  return { reload, fail, advance: (ms: number) => (clock += ms) };
+  return { target, reload, fail, advance: (ms: number) => (clock += ms) };
 }
 
 describe("installPreloadErrorRecovery", () => {
@@ -53,6 +54,35 @@ describe("installPreloadErrorRecovery", () => {
 
     expect(fail()).toBe(true);
     expect(reload).toHaveBeenCalledTimes(2);
+  });
+
+  it("waits for connectivity before reloading a failed chunk", () => {
+    const target = new EventTarget();
+    const reload = vi.fn();
+    const storage = memoryStorage();
+    let online = false;
+    installPreloadErrorRecovery({ target, reload, readStorage: () => storage, isOnline: () => online });
+    const event = Object.assign(new Event("vite:preloadError", { cancelable: true }), {
+      payload: new TypeError("Failed to fetch dynamically imported module: /assets/game.js"),
+    });
+    target.dispatchEvent(event);
+    expect(reload).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+    online = true;
+    target.dispatchEvent(new Event("online"));
+    expect(reload).toHaveBeenCalledTimes(1);
+    target.dispatchEvent(new Event("online"));
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not reload for an exception thrown while evaluating a module", () => {
+    const { target, reload } = setup();
+    const event = Object.assign(new Event("vite:preloadError", { cancelable: true }), {
+      payload: new RangeError("Maximum call stack size exceeded"),
+    });
+    target.dispatchEvent(event);
+    expect(reload).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it("does not reload when session storage is unavailable", () => {

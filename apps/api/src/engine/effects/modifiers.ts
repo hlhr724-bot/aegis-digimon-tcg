@@ -1,3 +1,10 @@
+import type { RuntimeReferenceRegistry } from "#api/engine/snapshot/RuntimeReferenceRegistry";
+import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
+import type { ModifierLedgerState } from "#api/engine/effects/ModifierLedgerState";
+import type { RuntimeCallbackRegistry } from "#api/engine/snapshot/RuntimeCallbackRegistry";
+import type { RuntimeGraphSnapshot } from "#api/engine/snapshot/RuntimeGraphSnapshot";
+import { encodeRuntimeGraph } from "#api/engine/snapshot/encodeRuntimeGraph";
+import { decodeRuntimeGraph } from "#api/engine/snapshot/decodeRuntimeGraph";
 import {
   CardKind,
   EffectDuration,
@@ -306,6 +313,18 @@ function clearsAt(
   }
 }
 
+type SnapshotParams = {
+  callbacks?: RuntimeCallbackRegistry;
+  objects?: RuntimeObjectRegistry;
+  references?: RuntimeReferenceRegistry;
+};
+type RestoreParams = {
+  snapshot: RuntimeGraphSnapshot;
+  callbacks?: RuntimeCallbackRegistry;
+  objects?: RuntimeObjectRegistry;
+  references?: RuntimeReferenceRegistry;
+};
+
 export class ModifierLedger {
   private dpModifiers: DpModifier[] = [];
   private playerDpModifiers: PlayerDpModifier[] = [];
@@ -314,8 +333,68 @@ export class ModifierLedger {
   private pierceGrants: PierceGrant[] = [];
   private evoCostAdjustments: EvoCostAdjustment[] = [];
   private playCostAdjustments: PlayCostAdjustment[] = [];
-  private readonly durationOwners = new WeakMap<object, Seat>();
-  private readonly battleScopes = new Map<number, { parent?: number; entries: Set<object> }>();
+  private durationOwners = new WeakMap<object, Seat>();
+  private battleScopes = new Map<number, { parent?: number; entries: Set<object> }>();
+
+  getRuntimeState(): ModifierLedgerState {
+    return {
+      dpModifiers: this.dpModifiers,
+      playerDpModifiers: this.playerDpModifiers,
+      baseDpOverrides: this.baseDpOverrides,
+      minDpFloors: this.minDpFloors,
+      pierceGrants: this.pierceGrants,
+      evoCostAdjustments: this.evoCostAdjustments,
+      playCostAdjustments: this.playCostAdjustments,
+      durationOwners: this.allEntries().flatMap((entry): [object, Seat][] => {
+        const owner = this.durationOwners.get(entry);
+        return owner === undefined ? [] : [[entry, owner]];
+      }),
+      battleScopes: this.battleScopes,
+      baseDpOverrideSeq: this.baseDpOverrideSeq,
+      recomputedOverrideActivations: this.recomputedOverrideActivations,
+      evoCostSeq: this.evoCostSeq,
+      playCostSeq: this.playCostSeq,
+    };
+  }
+
+  snapshot({ callbacks, objects, references }: SnapshotParams = {}): RuntimeGraphSnapshot {
+    return encodeRuntimeGraph({
+      value: this.getRuntimeState(),
+      describeCallback: callbacks?.describe.bind(callbacks),
+      describeObject: objects?.describe.bind(objects),
+      references,
+    });
+  }
+
+  restore({ snapshot, callbacks, objects, references }: RestoreParams): void {
+    this.restoreRuntimeState(
+      decodeRuntimeGraph({
+        snapshot,
+        createCallback: callbacks?.create.bind(callbacks),
+        objects,
+        references,
+      }),
+    );
+  }
+
+  restoreRuntimeState(state: unknown): void {
+    if (!isModifierLedgerState(state)) {
+      throw new Error("Invalid modifier ledger snapshot");
+    }
+    this.dpModifiers = state.dpModifiers;
+    this.playerDpModifiers = state.playerDpModifiers;
+    this.baseDpOverrides = state.baseDpOverrides;
+    this.minDpFloors = state.minDpFloors;
+    this.pierceGrants = state.pierceGrants;
+    this.evoCostAdjustments = state.evoCostAdjustments;
+    this.playCostAdjustments = state.playCostAdjustments;
+    this.durationOwners = new WeakMap(state.durationOwners);
+    this.battleScopes = state.battleScopes;
+    this.baseDpOverrideSeq = state.baseDpOverrideSeq;
+    this.recomputedOverrideActivations = state.recomputedOverrideActivations;
+    this.evoCostSeq = state.evoCostSeq;
+    this.playCostSeq = state.playCostSeq;
+  }
 
   beginBattleScope(scopeId: number): void {
     const parent = [...this.battleScopes.keys()].at(-1);
@@ -419,6 +498,37 @@ export class ModifierLedger {
         sourceCardId: entry.sourceCardId,
         effectText: entry.effectText,
       }));
+  }
+
+  heldDpEffectViews(state: GameState, permanent: Permanent): FieldEffectView[] {
+    const held: FieldEffectView[] = [];
+    for (const modifier of this.dpModifiers) {
+      if (modifier.permanentId !== permanent.permanentId || modifier.delta === 0) continue;
+      if (!this.dpModifierIsSuppressed(state, modifier)) continue;
+      held.push({
+        kind: "dp",
+        value: modifier.delta,
+        duration: modifier.duration,
+        ownerSeat: this.durationOwners.get(modifier) ?? permanent.controllerSeat,
+        ...(modifier.continuous ? { continuous: true } : {}),
+        ...(modifier.skipsCurrentOpponentTurnEnd ? { skipsCurrentOpponentTurnEnd: true } : {}),
+      });
+    }
+    for (const modifier of this.playerDpModifiers) {
+      if (modifier.seat !== permanent.controllerSeat || modifier.delta === 0) continue;
+      if (modifier.matches !== undefined && !modifier.matches(permanent.permanentId)) continue;
+      const dpImmune = modifier.delta < 0 && this.continuous?.hasRestriction(permanent.permanentId, "dpImmune");
+      if (!dpImmune && !this.playerDpModifierIsSuppressed(permanent, modifier)) continue;
+      held.push({
+        kind: "dp",
+        value: modifier.delta,
+        duration: modifier.duration,
+        ownerSeat: modifier.ownerSeat ?? modifier.seat,
+        ...(modifier.sourceCardId ? { sourceCardId: modifier.sourceCardId } : {}),
+        ...(modifier.skipsCurrentOpponentTurnEnd ? { skipsCurrentOpponentTurnEnd: true } : {}),
+      });
+    }
+    return held;
   }
 
   /** Record a player-wide DP delta and immediately refresh all current affected Digimon. */
@@ -1188,4 +1298,61 @@ export class ModifierLedger {
 function ownerSeatOfPermanent(state: GameState, permanentId: string): Seat {
   const permanent = findPermanentInState(state, permanentId);
   return permanent?.controllerSeat ?? 0;
+}
+
+function isModifierLedgerState(value: unknown): value is ModifierLedgerState {
+  if (value === null || typeof value !== "object") {
+    return false;
+  }
+  const state = value as ModifierLedgerState;
+  const arrays = [
+    state.dpModifiers,
+    state.playerDpModifiers,
+    state.baseDpOverrides,
+    state.minDpFloors,
+    state.pierceGrants,
+    state.evoCostAdjustments,
+    state.playCostAdjustments,
+  ];
+  if (
+    !arrays.every(
+      (entries) => Array.isArray(entries) && entries.every((entry) => entry !== null && typeof entry === "object"),
+    )
+  ) {
+    return false;
+  }
+  if (
+    ![state.baseDpOverrideSeq, state.evoCostSeq, state.playCostSeq].every(
+      (sequence) => Number.isSafeInteger(sequence) && sequence >= 0,
+    )
+  ) {
+    return false;
+  }
+  if (
+    !(state.battleScopes instanceof Map) ||
+    !(state.recomputedOverrideActivations instanceof Map) ||
+    !Array.isArray(state.durationOwners)
+  ) {
+    return false;
+  }
+  if (
+    !state.durationOwners.every(
+      (entry) =>
+        Array.isArray(entry) &&
+        entry.length === 2 &&
+        entry[0] !== null &&
+        typeof entry[0] === "object" &&
+        (entry[1] === 0 || entry[1] === 1),
+    )
+  ) {
+    return false;
+  }
+  return (
+    state.evoCostAdjustments.every(
+      (entry) =>
+        typeof entry.match === "function" && (entry.onConsume === undefined || typeof entry.onConsume === "function"),
+    ) &&
+    state.playCostAdjustments.every((entry) => typeof entry.match === "function") &&
+    state.playerDpModifiers.every((entry) => entry.matches === undefined || typeof entry.matches === "function")
+  );
 }

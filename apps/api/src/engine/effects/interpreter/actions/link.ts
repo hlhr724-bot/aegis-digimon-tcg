@@ -39,10 +39,7 @@ export function canAttemptLink(ctx: EffectContext, action: Extract<Action, { kin
     .map((candidate) => ctx.game.definitionOf({ cardId: candidate.cardId } as never))
     .filter(linkEligible);
   const selfDefinition = ctx.game.definitionOf({ cardId: ctx.source.cardId } as never);
-  const selfMaterial =
-    linkTargetIncludesSelf(action) && ctx.source.permanent() !== undefined && linkEligible(selfDefinition)
-      ? [selfDefinition]
-      : [];
+  const selfMaterial = linkTargetIncludesSelf(action) && linkEligible(selfDefinition) ? [selfDefinition] : [];
   const materials = [...looseMaterial, ...selfMaterial];
   if (materials.length === 0) return false;
   const admitsSomeMaterial = (permanent: Permanent): boolean => {
@@ -143,6 +140,7 @@ export async function runLink(ctx: EffectContext, action: Extract<Action, { kind
   // The recipient is a chosen friendly Digimon ("link ... to 1 of your Digimon") or, by
   // default, the source permanent ("to this Digimon").
   let recipientId = ctx.source.permanent()?.permanentId;
+  let recipients: Permanent[];
   if (action.recipient !== undefined) {
     const recipientFilter: Filter = { controller: "mine", kind: ["Digimon"], ...action.recipient.filter };
     // Dynamic recipient eligibility: only a
@@ -159,7 +157,7 @@ export async function runLink(ctx: EffectContext, action: Extract<Action, { kind
           ? []
           : [triggerRecipient]
         : candidatePermanents(ctx, { ...action.recipient, filter: recipientFilter });
-    const recipients = recipientPool.filter(
+    recipients = recipientPool.filter(
       (p) =>
         matches(p, recipientFilter) &&
         candidatesHostedBy(p).length > 0 &&
@@ -172,30 +170,22 @@ export async function runLink(ctx: EffectContext, action: Extract<Action, { kind
         ),
     );
     if (recipients.length === 0) return;
-    const recipientTarget = action.recipient.count === "all" ? recipients.length : (action.recipient.count ?? 1);
-    if (recipients.length <= recipientTarget && !action.recipient.upTo) {
-      recipientId = recipients[0]?.permanentId;
-    } else {
-      const chosenRecipient = await ctx.ask.chooseTargets(ctx, {
-        candidates: recipients.map((p) => p.permanentId),
-        min: action.recipient.upTo ? 0 : 1,
-        max: 1,
-      });
-      // An empty optional selection declines the Link; do not fall back to the source.
-      if (chosenRecipient.length === 0) return;
-      recipientId = chosenRecipient[0];
+  } else {
+    if (recipientId === undefined) {
+      unsupported(ctx, action, "Link needs a recipient permanent (source not on the battle area)");
+      return;
     }
+    const source = ctx.game.permanentById(recipientId);
+    if (source === undefined) {
+      unsupported(ctx, action, "Link recipient permanent not on the battle area");
+      return;
+    }
+    recipients = [source];
   }
-  if (recipientId === undefined) {
-    unsupported(ctx, action, "Link needs a recipient permanent (source not on the battle area)");
-    return;
-  }
-  const recipient = ctx.game.permanentById(recipientId);
-  if (recipient === undefined) {
-    unsupported(ctx, action, "Link recipient permanent not on the battle area");
-    return;
-  }
-  const hostedCandidates = candidatesHostedBy(recipient);
+  const hostingRecipients = recipients;
+  const hostedCandidates = eligibleCandidates.filter((candidate) =>
+    hostingRecipients.some((permanent) => candidatesHostedBy(permanent).includes(candidate)),
+  );
   if (hostedCandidates.length === 0) return;
   // The link limit is NOT a declaration-time gate. §4-8-5: "1 card can have a maximum of 1
   // link card. When linking to a Digimon that has already reached the link limit, the same
@@ -216,6 +206,26 @@ export async function runLink(ctx: EffectContext, action: Extract<Action, { kind
     });
     if (names.some((name) => name === undefined) || new Set(names).size !== names.length) return;
   }
+  if (action.recipient !== undefined) {
+    const admitsChosen = hostingRecipients.filter((permanent) => {
+      const hosted = candidatesHostedBy(permanent).map((candidate) => candidate.instanceId);
+      return chosen.every((instanceId) => hosted.includes(instanceId));
+    });
+    if (admitsChosen.length === 0) return;
+    const recipientTarget = action.recipient.count === "all" ? admitsChosen.length : (action.recipient.count ?? 1);
+    if (admitsChosen.length <= recipientTarget && !action.recipient.upTo) {
+      recipientId = admitsChosen[0]?.permanentId;
+    } else {
+      const chosenRecipient = await ctx.ask.chooseTargets(ctx, {
+        candidates: admitsChosen.map((p) => p.permanentId),
+        min: action.recipient.upTo ? 0 : 1,
+        max: 1,
+      });
+      if (chosenRecipient.length === 0) return;
+      recipientId = chosenRecipient[0];
+    }
+  }
+  if (recipientId === undefined) return;
   // Real link-cost calculation (the seam Phase 8's BT25-004/045 link-cost REDUCTION builds on).
   // Each link card carries a printed link cost ("Cost N" in linkRequirement); `costDelta` is a
   // signed adjustment ("with the cost reduced by N" => negative). Pay the floored cost per card

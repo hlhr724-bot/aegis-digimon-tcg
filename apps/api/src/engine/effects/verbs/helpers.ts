@@ -48,6 +48,7 @@ export function createSharedHelpers(pc: PrimitivesContext) {
     originZone?: ZoneRef,
     projectOnly = false,
     simultaneousPlayCount = 1,
+    reservedInstanceIds: readonly string[] = [],
   ): Promise<number> => {
     const printed = normalizeCost(definition.playCost);
     const reductionsBlocked = !useAsOption && continuous.blocksCostReduction(controllerSeat, "play");
@@ -64,6 +65,7 @@ export function createSharedHelpers(pc: PrimitivesContext) {
         originZone,
         projectOnly,
         simultaneousPlayCount,
+        reservedInstanceIds,
       ) ?? reduced
     );
   };

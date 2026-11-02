@@ -31,6 +31,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your opponent's Digimon gets -6000 DP and cannot activate its [When Digivolving] effects until the end of your opponent's turn.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -42,6 +44,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] 1 of your opponent's Digimon gets -6000 DP and cannot activate its [When Digivolving] effects until the end of your opponent's turn.",
           kind: "ModifyDP",
           target: {
             filter: {
@@ -55,6 +59,8 @@ const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] 1 of your opponent's Digimon gets -6000 DP and cannot activate its [When Digivolving] effects until the end of your opponent's turn.",
           kind: "DisableTimingEffect",
           target: {
             filter: {

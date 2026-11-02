@@ -16,7 +16,21 @@ const LILLYMON = fixtureInstanceId("lillymon-card");
 
 describe("playable Ruin Mode lingering DP scenario", () => {
   it("deletes a 4000-DP play before its On Play (Q3523) but lets an 8000-DP play resolve its On Play", async () => {
-    const s = setupEngine({ 0: {}, 1: {} }, { autoAcceptOptional: true, autoSelectCards: true });
+    let lillymonDPAtResolution: number | undefined;
+    const s = setupEngine(
+      { 0: {}, 1: {} },
+      {
+        autoAcceptOptional: true,
+        autoSelectCards: true,
+        onEvent(event) {
+          if (event.kind === "effectResolved" && event.sourceCardId === "BT14-049") {
+            lillymonDPAtResolution = s.state.players[0]!.battleArea.find(
+              (permanent) => permanent.topCard.instanceId === LILLYMON,
+            )?.currentDP;
+          }
+        },
+      },
+    );
     layScenarioFixture(s.state, fixtureRuinModeOnPlay, [BLUE_DECK, RED_DECK], true);
     const human = s.state.players[0]!;
     const opponent = s.state.players[1]!;
@@ -49,8 +63,7 @@ describe("playable Ruin Mode lingering DP scenario", () => {
       await settle(() =>
         s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "BT14-049"),
       );
-      const lillymon = human.battleArea.find((permanent) => permanent.topCard.instanceId === LILLYMON);
-      expect(lillymon?.currentDP).toBe(3000);
+      expect(lillymonDPAtResolution).toBe(3000);
       expect(opponent.battleArea).toHaveLength(0);
       expect(opponent.deck.at(-1)?.instanceId).toBe(MONODRAMON_CARD);
     } finally {

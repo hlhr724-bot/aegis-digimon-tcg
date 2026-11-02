@@ -17,6 +17,34 @@ export class DeletionMaxDpLedger {
   private readonly ownerWide = new Map<Seat, number>();
   private readonly bySourcePermanent = new Map<string, number>();
 
+  snapshot(): { ownerWide: [Seat, number][]; bySourcePermanent: [string, number][] } {
+    return { ownerWide: [...this.ownerWide], bySourcePermanent: [...this.bySourcePermanent] };
+  }
+
+  restore(snapshot: { ownerWide: [Seat, number][]; bySourcePermanent: [string, number][] }): void {
+    const owners = new Map<Seat, number>();
+    const sources = new Map<string, number>();
+    for (const [seat, delta] of snapshot.ownerWide) {
+      if ((seat !== 0 && seat !== 1) || !Number.isFinite(delta) || owners.has(seat)) {
+        throw new Error("Invalid deletion maximum owner snapshot");
+      }
+      owners.set(seat, delta);
+    }
+    for (const [id, delta] of snapshot.bySourcePermanent) {
+      if (typeof id !== "string" || id.length === 0 || !Number.isFinite(delta) || sources.has(id)) {
+        throw new Error("Invalid deletion maximum source snapshot");
+      }
+      sources.set(id, delta);
+    }
+    this.clear();
+    for (const [seat, delta] of owners) {
+      this.ownerWide.set(seat, delta);
+    }
+    for (const [id, delta] of sources) {
+      this.bySourcePermanent.set(id, delta);
+    }
+  }
+
   addOwnerWide(seat: Seat, delta: number): void {
     this.ownerWide.set(seat, (this.ownerWide.get(seat) ?? 0) + delta);
   }

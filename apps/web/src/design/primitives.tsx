@@ -1,3 +1,4 @@
+import { InputSurfaceEvent } from "@/design/InputSurfaceEvent";
 /* Aegis shared chrome: the letterboxed 16:9 Stage, UI primitives, and the top nav.
    maintained as part of the Aegis design system. Presentational only. */
 
@@ -20,7 +21,11 @@ import { playSound, type SoundKind } from "./sound";
 import { useTranslation } from "../i18n";
 import { digimonAvatarUrl, type DigimonWorldAvatarId } from "../account/avatars";
 import { AegisLogo } from "./AegisLogo";
+import { AccountRoleBadge } from "@/account/roles/AccountRoleBadge";
+import { AccountRoleTooltip } from "@/account/roles/AccountRoleTooltip";
+import type { AccountRoleDefinition } from "@/account/roles/highestAccountRole";
 import { BrowserSupportNotice } from "./BrowserSupportNotice";
+import type { TranslationKey } from "@/i18n/translationTypes";
 
 /** The lightweight identity carried across screens (name + accent color). */
 export interface PlayerIdentity {
@@ -35,20 +40,28 @@ export interface PlayerIdentity {
 
 /** A screen key in the client router. */
 export type Screen =
+  | "friends"
   | "home"
+  | "booster"
   | "login"
   | "lobby"
+  | "story"
+  | "learn"
+  | "rules"
+  | "watch"
   | "deck"
   | "collection"
   | "community"
   | "roadmap"
   | "tournaments"
+  | "ranked"
   | "settings"
   | "replays"
   | "releases"
   | "feedback"
   | "privacy"
   | "myFeedback"
+  | "notifications"
   | "game";
 
 export function Stage({ children }: { children: ReactNode }) {
@@ -315,7 +328,27 @@ export function Dialog({
     return () => previousFocus?.focus();
   }, []);
 
+  useEffect(() => {
+    const surface = dialogRef.current;
+    if (!onClose || !closeOnEscape) {
+      return;
+    }
+    function cancelInput(event: Event) {
+      event.preventDefault();
+      onClose?.();
+    }
+    surface?.setAttribute("data-arena-cancelable", "");
+    surface?.addEventListener(InputSurfaceEvent.CANCEL.value, cancelInput);
+    return () => {
+      surface?.removeAttribute("data-arena-cancelable");
+      surface?.removeEventListener(InputSurfaceEvent.CANCEL.value, cancelInput);
+    };
+  }, [onClose, closeOnEscape]);
+
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.defaultPrevented) {
+      return;
+    }
     if (event.key === "Escape" && onClose) {
       event.preventDefault();
       if (closeOnEscape) onClose();
@@ -512,36 +545,56 @@ function NavItem({
   active,
   onSelect,
   compact = false,
+  raised = false,
 }: {
   item: { label: string; icon: IconComponent };
   active: boolean;
   onSelect: () => void;
   compact?: boolean;
+  raised?: boolean;
 }) {
+  const icon = raised ? (
+    <span className="aegis-nav-item__raised">
+      <item.icon size={22} />
+    </span>
+  ) : (
+    <item.icon size={22} />
+  );
   return (
     <button
-      className={`aegis-nav-item${compact ? " aegis-nav-item--compact" : ""}`}
+      className={`aegis-nav-item${compact ? " aegis-nav-item--compact" : ""}${raised ? " aegis-nav-item--raised" : ""}`}
       onClick={onSelect}
       aria-current={active ? "page" : undefined}
     >
-      {compact ? <item.icon size={20} /> : null}
+      {compact ? icon : null}
       {compact ? <span className="aegis-nav-item__label">{item.label}</span> : item.label}
     </button>
   );
 }
 
-/* ---- Top nav (persistent app chrome) ----
-   The navy bar carries the brand, the section links, and — on the right — the
-   theme toggle, the account controls (a sign-in call to action for guests and
-   the portrait button that opens the player menu) and "Play now". Settings
-   lives in the player menu on narrow screens, which keeps the bottom nav to
-   the four sections a thumb reaches for. */
+type NavEntry = { key: Screen; label: string; icon: IconComponent };
+
+const SCREEN_SECTIONS: Partial<Record<Screen, Screen>> = {
+  ranked: "lobby",
+  watch: "lobby",
+  story: "lobby",
+  learn: "lobby",
+  rules: "lobby",
+  roadmap: "community",
+  booster: "collection",
+};
+
+function getNavSection(screen: Screen): Screen {
+  return SCREEN_SECTIONS[screen] ?? screen;
+}
+
 export function TopNav({
   screen,
   onNav,
   player,
   actions,
   signedIn = false,
+  role,
   onOpenPlayerMenu,
   playerMenuOpen,
   dark,
@@ -549,18 +602,19 @@ export function TopNav({
   onOpenTheme,
   onSendFeedback,
   notifications,
+  friends,
   music,
 }: {
   screen: Screen;
   onNav: (s: Screen) => void;
   player: PlayerIdentity;
   actions?: ReactNode;
-  /** The signed-in player's notification bell; rendered in both the wide and the mobile bar. */
   notifications?: ReactNode;
+  friends?: ReactNode;
   signedIn?: boolean;
+  role?: AccountRoleDefinition;
   onOpenPlayerMenu?: (anchor: HTMLButtonElement) => void;
   playerMenuOpen?: boolean;
-  /** Opens the palette chooser when available, otherwise toggles light/dark. */
   dark?: boolean;
   onToggleDark?: (dark: boolean) => void;
   onOpenTheme?: () => void;
@@ -568,44 +622,43 @@ export function TopNav({
   music?: ReactNode;
 }) {
   const { t } = useTranslation();
-  const navActive = (key: Screen) => screen === key || (screen === "roadmap" && key === "community");
+  const section = getNavSection(screen);
   const navTo = (s: Screen) => {
     playSound("nav");
     onNav(s);
   };
-  const items: { key: Screen; label: string; icon: IconComponent }[] = [
-    { key: "home", label: t("nav.home"), icon: Icons.LayoutDashboard },
-    { key: "lobby", label: t("nav.play"), icon: Icons.Swords },
-    { key: "deck", label: t("nav.decks"), icon: Icons.LayoutDashboard },
-    { key: "community", label: t("nav.community"), icon: Icons.Users },
-    { key: "collection", label: t("nav.collection"), icon: Icons.BookOpen },
+  const entries: Record<"home" | "lobby" | "tournaments" | "deck" | "collection" | "community", NavEntry> = {
+    home: { key: "home", label: t("nav.home"), icon: Icons.House },
+    lobby: { key: "lobby", label: t("nav.play"), icon: Icons.Swords },
+    tournaments: { key: "tournaments", label: t("nav.tournaments"), icon: Icons.Trophy },
+    deck: { key: "deck", label: t("nav.decks"), icon: Icons.Cards },
+    collection: { key: "collection", label: t("nav.collection"), icon: Icons.BookOpen },
+    community: { key: "community", label: t("nav.community"), icon: Icons.Globe },
+  };
+  const wideItems = [
+    entries.home,
+    entries.lobby,
+    entries.tournaments,
+    entries.deck,
+    entries.collection,
+    entries.community,
   ];
+  const tabItems = [entries.home, entries.deck, entries.lobby, entries.collection, entries.tournaments];
   const signIn = signedIn ? null : (
     <button className="aegis-sign-in-button" onClick={() => navTo("login")} aria-label={t("nav.signIn")}>
       <Icons.LogIn size={16} />
       <span>{t("nav.signIn")}</span>
     </button>
   );
+  const themeLabel = getThemeToggleLabel({ palette: Boolean(onOpenTheme), dark: Boolean(dark) });
   const themeToggle =
     onOpenTheme || onToggleDark ? (
       <button
         className="aegis-icon-button aegis-theme-toggle"
         onClick={() => (onOpenTheme ? onOpenTheme() : onToggleDark?.(!dark))}
         aria-haspopup={onOpenTheme ? "dialog" : undefined}
-        aria-label={t(
-          onOpenTheme
-            ? "redesign.shell.theme.title"
-            : dark
-              ? "redesign.shell.theme.useLight"
-              : "redesign.shell.theme.useDark",
-        )}
-        title={t(
-          onOpenTheme
-            ? "redesign.shell.theme.title"
-            : dark
-              ? "redesign.shell.theme.useLight"
-              : "redesign.shell.theme.useDark",
-        )}
+        aria-label={t(themeLabel)}
+        title={t(themeLabel)}
       >
         {dark ? <Icons.Sun size={18} /> : <Icons.Moon size={18} />}
       </button>
@@ -623,7 +676,8 @@ export function TopNav({
     </button>
   ) : null;
 
-  const portrait = (size: number) => (
+  const portraitLabel = role ? `${t("playerMenu.open")} (${t(role.labelKey)})` : t("playerMenu.open");
+  const portraitButton = (size: number) => (
     <button
       className="aegis-portrait-button"
       onClick={(event) => {
@@ -632,8 +686,8 @@ export function TopNav({
       }}
       aria-expanded={playerMenuOpen ?? false}
       aria-controls={playerMenuOpen ? "player-menu" : undefined}
-      aria-label={t("playerMenu.open")}
-      title={t("playerMenu.open")}
+      aria-label={portraitLabel}
+      title={role ? undefined : portraitLabel}
     >
       <Avatar
         name={player.name}
@@ -642,49 +696,28 @@ export function TopNav({
         avatarUrl={player.avatarUrl}
         size={size}
       />
+      {role ? <AccountRoleBadge role={role.value} /> : null}
     </button>
   );
+  const portrait = (size: number) =>
+    role ? <AccountRoleTooltip role={role}>{portraitButton(size)}</AccountRoleTooltip> : portraitButton(size);
 
   return (
     <>
       <header className="aegis-top-nav">
         <div className="aegis-top-nav__primary">
           <button className="aegis-brand-button" onClick={() => navTo("home")} aria-label={t("nav.home")}>
-            <AegisLogo size={36} />
+            <AegisLogo size={32} tone="on-surface" />
           </button>
           <nav className="aegis-top-nav__links" aria-label={t("nav.primaryAria")}>
-            {items.map((it) => (
-              <NavItem key={it.key} item={it} active={navActive(it.key)} onSelect={() => navTo(it.key)} />
+            {wideItems.map((it) => (
+              <NavItem key={it.key} item={it} active={section === it.key} onSelect={() => navTo(it.key)} />
             ))}
           </nav>
         </div>
         <div className="aegis-top-nav__account">
           {actions}
-          {notifications}
-          {feedback}
-          {music}
-          {themeToggle}
-          <button
-            className="aegis-icon-button"
-            onClick={() => navTo("settings")}
-            aria-label={t("menu.settings")}
-            aria-current={screen === "settings" ? "page" : undefined}
-          >
-            <Icons.Settings size={18} />
-          </button>
-          {signIn}
-          <Button className="aegis-top-nav__play" size="sm" onClick={() => onNav("lobby")}>
-            {t("redesign.shell.playNow")}
-            <Icons.ArrowRight size={16} />
-          </Button>
-          {portrait(34)}
-        </div>
-      </header>
-      <header className="aegis-mobile-bar">
-        <button className="aegis-brand-button" onClick={() => navTo("home")} aria-label={t("nav.home")}>
-          <AegisLogo size={30} />
-        </button>
-        <div className="aegis-mobile-bar__actions">
+          {friends}
           {notifications}
           {feedback}
           {music}
@@ -693,11 +726,52 @@ export function TopNav({
           {portrait(32)}
         </div>
       </header>
+      <header className="aegis-mobile-bar">
+        <button className="aegis-brand-button" onClick={() => navTo("home")} aria-label={t("nav.home")}>
+          <AegisLogo size={28} tone="on-surface" />
+        </button>
+        <div className="aegis-mobile-bar__actions">
+          <button
+            className="aegis-icon-button"
+            onClick={() => navTo("community")}
+            aria-label={entries.community.label}
+            aria-current={section === "community" ? "page" : undefined}
+          >
+            <Icons.Globe size={18} />
+          </button>
+          {friends}
+          {notifications}
+          {feedback}
+          {music}
+          {themeToggle}
+          {signIn}
+          {portrait(30)}
+        </div>
+      </header>
       <nav className="aegis-bottom-nav" aria-label={t("nav.primaryAria")}>
-        {items.map((it) => (
-          <NavItem key={it.key} item={it} active={navActive(it.key)} onSelect={() => navTo(it.key)} compact />
+        {tabItems.map((it) => (
+          <NavItem
+            key={it.key}
+            item={it}
+            active={section === it.key}
+            onSelect={() => navTo(it.key)}
+            compact
+            raised={it.key === "lobby"}
+          />
         ))}
       </nav>
     </>
   );
+}
+
+type ThemeToggleLabelParams = { palette: boolean; dark: boolean };
+
+function getThemeToggleLabel({ palette, dark }: ThemeToggleLabelParams): TranslationKey {
+  if (palette) {
+    return "redesign.shell.theme.title";
+  }
+  if (dark) {
+    return "redesign.shell.theme.useLight";
+  }
+  return "redesign.shell.theme.useDark";
 }

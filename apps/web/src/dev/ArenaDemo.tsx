@@ -181,6 +181,8 @@ export function createArenaDemoState(
     state.timerRemaining0 = timerPreview === "low" ? 20 : 272;
     state.timerRemaining1 = 228;
     state.timerActiveSeat = 0;
+    state.inactivitySeat = 0;
+    state.inactivityRemainingSeconds = timerPreview === "low" ? 25 : 90;
   }
   state.phase = Phase.Main;
   state.turnCount = 5;

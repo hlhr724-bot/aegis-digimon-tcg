@@ -97,6 +97,14 @@ function toCloudFile(file: DriveFile): CloudReplayFile {
     bytes: file.size === undefined ? undefined : Number(file.size),
     webViewLink: file.webViewLink,
     players: file.appProperties?.players,
+    ...(file.appProperties?.deckIcon0 || file.appProperties?.deckIcon1
+      ? {
+          deckIcons: [file.appProperties?.deckIcon0 || null, file.appProperties?.deckIcon1 || null] as [
+            string | null,
+            string | null,
+          ],
+        }
+      : {}),
   };
 }
 
@@ -241,6 +249,12 @@ export function createGoogleDriveProvider(clientId: string): ReplayCloudProvider
       parents: [parent],
       appProperties: {
         aegisReplay: "1",
+        ...(replay.summary.deckIcons?.[0]
+          ? { deckIcon0: fitAppProperty("deckIcon0", replay.summary.deckIcons[0]) }
+          : {}),
+        ...(replay.summary.deckIcons?.[1]
+          ? { deckIcon1: fitAppProperty("deckIcon1", replay.summary.deckIcons[1]) }
+          : {}),
         matchId: fitAppProperty("matchId", replay.summary.id),
         viewerSeat: String(replay.viewerSeat),
         players: fitAppProperty("players", players),

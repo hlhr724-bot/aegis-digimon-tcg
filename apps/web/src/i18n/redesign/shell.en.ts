@@ -26,5 +26,8 @@ export const shellEn = {
   "redesign.shell.crash.body":
     "This screen stopped working. We sent an error report to the Aegis team. Reload the page to continue.",
   "redesign.shell.crash.reload": "Reload",
+  "redesign.shell.loadFailed.title": "Couldn’t load this screen",
+  "redesign.shell.loadFailed.body":
+    "Aegis couldn’t download part of this screen. Check your connection and reload the page.",
   "redesign.shell.ranked.eyebrow": "Ranked match",
 } as const;

@@ -1,9 +1,11 @@
+import type { TournamentOwnDeck } from "@aegis/shared/tournaments/TournamentOwnDeck";
 /* Wire shapes for the tournament endpoints, expressed on top of `@aegis/shared`.
    Only the parts the server does NOT yet publish are declared here; everything the
    shared contract already owns is imported, never re-typed. */
 
 import type {
   ParticipantView,
+  SeriesScoreView,
   PhaseView,
   StandingsRow,
   TournamentBanlistCard,
@@ -45,6 +47,8 @@ export type LegacyTournamentMatch = {
 };
 
 export type TournamentDetail = TournamentListing & {
+  ownDeck?: TournamentOwnDeck | null;
+  series?: SeriesScoreView[];
   rules: TournamentRules | null;
   banlistCards: TournamentBanlistCard[];
   matches: LegacyTournamentMatch[];
@@ -58,6 +62,8 @@ export type TournamentDetail = TournamentListing & {
   standings?: StandingsRow[];
   phases?: PhaseView[];
   serverNow?: number;
+  windows?: TournamentWindows;
+  canSpectate?: boolean;
 };
 
 /**
@@ -76,6 +82,7 @@ export type TournamentValidationError = {
 
 /** Mirrors `DeckViolation` in `apps/api/src/tournaments/participants/deckLegality.ts`. */
 export type DeckViolation =
+  | { kind: "outside_format"; cardId: string }
   | { kind: "unknown_card"; cardId: string }
   | { kind: "main_deck_size"; size: number; required: number }
   | { kind: "egg_deck_size"; size: number; max: number }
@@ -103,6 +110,7 @@ export const PARTICIPANT_FAILURES = [
   "check_in_closed",
   "already_checked_in",
   "already_dropped",
+  "incorrect_password",
 ] as const;
 
 export type ParticipantFailure = (typeof PARTICIPANT_FAILURES)[number];
@@ -111,13 +119,13 @@ export type ParticipantFailure = (typeof PARTICIPANT_FAILURES)[number];
 export const TOURNAMENT_VALIDATION_CODES = [
   "name_too_short",
   "name_too_long",
-  "unknown_preset",
-  "structure_not_allowed_by_preset",
-  "best_of_not_allowed_by_preset",
+  "description_too_long",
+  "clock_settings_invalid",
+  "password_invalid",
+  "format_invalid",
+  "structure_invalid",
+  "best_of_invalid",
   "top_cut_requires_swiss",
-  "top_cut_not_supported_by_preset",
-  "bots_require_custom_ruleset",
-  "unrestricted_banlist_requires_custom_ruleset",
   "banlist_mode_unknown",
   "banlist_set_unknown",
   "max_players_out_of_range",

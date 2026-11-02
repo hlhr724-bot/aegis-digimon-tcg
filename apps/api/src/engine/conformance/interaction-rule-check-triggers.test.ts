@@ -58,61 +58,67 @@ describe("CR §15-4-3-3 rule-check triggers join effects at the same timing", ()
     ]);
   });
 
-  it("orders rule-check Ascension with [Start of Your Turn] before its security placement", async () => {
-    cite(
-      "comprehensive-0164",
-      "§15-4-3-3 rule-check Ascension joins start-turn effects",
-      "8d2bf2fd50af6a37b28b64a0db252f4d9d0a9f033e72539337b25d6d330e5494",
-    );
-    const s = setupEngine(
-      {
-        0: {
-          battleArea: [
-            { card: "BT25-040", as: "ascendingAngemon", dp: 0 },
-            { card: "BT1-085", as: "startTurnTai" },
-          ],
-          hand: [{ card: "AD1-001", faceUp: true }],
-          deck: Array(5).fill("AD1-001"),
-          security: ["BT1-009"],
+  it.each([true, false])(
+    "orders rule-check Ascension with [Start of Your Turn] and accepts activation: %s",
+    async (accept) => {
+      cite(
+        "comprehensive-0164",
+        "§15-4-3-3 rule-check Ascension joins start-turn effects",
+        "8d2bf2fd50af6a37b28b64a0db252f4d9d0a9f033e72539337b25d6d330e5494",
+      );
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [
+              { card: "BT25-040", as: "ascendingAngemon", dp: 0 },
+              { card: "BT1-085", as: "startTurnTai" },
+            ],
+            hand: [{ card: "AD1-001", faceUp: true }],
+            deck: Array(5).fill("AD1-001"),
+            security: ["BT1-009"],
+          },
+          1: { deck: Array(5).fill("AD1-001") },
         },
-        1: { deck: Array(5).fill("AD1-001") },
-      },
-      { autoOrderTriggers: false },
-    );
-    s.state.isFirstPlayersFirstTurn = true;
-    s.state.memory = 1;
-    await s.ready();
-    const ascendingId = s.perm("ascendingAngemon").topCard!.instanceId;
-    const turn = s.engine.runOneTurn();
-    await settle(() => s.state.pendingDecision !== undefined);
-    expect(s.state.pendingDecision?.kind).toBe("orderTriggers");
-    const request = s.decisions.findLast(({ req }) => req.kind === "orderTriggers")!.req;
-    expect([...(request.options?.triggerCardIds ?? [])].sort()).toEqual(["BT1-085", "BT25-040"]);
-    const cardIds = request.options?.triggerCardIds ?? [];
-    const keys = request.options?.triggerKeys ?? [];
-    expect(
-      s.engine.applyIntent(0, {
-        type: "respondDecision",
-        decisionId: request.decisionId,
-        response: { kind: "orderTriggers", order: [keys[cardIds.indexOf("BT1-085")]!] },
-      }),
-    ).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision?.kind === "selectCards");
-    const ascent = s.decisions.findLast(({ req }) => req.kind === "selectCards")!.req;
-    expect(ascent.sourceCardId).toBe("BT25-040");
-    expect(
-      s.engine.applyIntent(0, {
-        type: "respondDecision",
-        decisionId: ascent.decisionId,
-        response: { kind: "selectCards", instanceIds: [ascendingId] },
-      }),
-    ).toEqual({ ok: true });
-    await advance(s.engine).waitForMainPhase(0);
-    expect(s.state.players[0]!.security.some(({ instanceId }) => instanceId === ascendingId)).toBe(true);
-    expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
-    await turn;
-    assertNoLoudGap(s);
-  });
+        { autoOrderTriggers: false },
+      );
+      s.state.isFirstPlayersFirstTurn = true;
+      s.state.memory = 1;
+      await s.ready();
+      const ascendingId = s.perm("ascendingAngemon").topCard!.instanceId;
+      const turn = s.engine.runOneTurn();
+      await settle(() => s.state.pendingDecision !== undefined);
+      expect(s.state.pendingDecision?.kind).toBe("orderTriggers");
+      const request = s.decisions.findLast(({ req }) => req.kind === "orderTriggers")!.req;
+      expect([...(request.options?.triggerCardIds ?? [])].sort()).toEqual(["BT1-085", "BT25-040"]);
+      const cardIds = request.options?.triggerCardIds ?? [];
+      const keys = request.options?.triggerKeys ?? [];
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: request.decisionId,
+          response: { kind: "orderTriggers", order: [keys[cardIds.indexOf("BT1-085")]!] },
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.state.pendingDecision?.kind === "optional");
+      const ascent = s.decisions.findLast(({ req }) => req.kind === "optional")!.req;
+      expect(ascent.options?.timing).toBe("Ascension");
+      expect(ascent.options?.candidateInstanceIds).toBeUndefined();
+      expect(ascent.sourceCardId).toBe("BT25-040");
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: ascent.decisionId,
+          response: { kind: "optional", accept },
+        }),
+      ).toEqual({ ok: true });
+      await advance(s.engine).waitForMainPhase(0);
+      expect(s.state.players[0]!.security.some(({ instanceId }) => instanceId === ascendingId)).toBe(accept);
+      expect(s.state.players[0]!.trash.some(({ instanceId }) => instanceId === ascendingId)).toBe(!accept);
+      expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+      await turn;
+      assertNoLoudGap(s);
+    },
+  );
 
   it("drops pending [On Deletion] when rule-check Ascension is chosen first", async () => {
     cite(
@@ -194,7 +200,7 @@ describe("CR §15-4-3-3 rule-check triggers join effects at the same timing", ()
         },
         1: { deck: Array(5).fill("AD1-001") },
       },
-      { autoOrderTriggers: false, autoSelectCards: true },
+      { autoOrderTriggers: false, autoSelectCards: true, autoAcceptOptional: true },
     );
     s.state.isFirstPlayersFirstTurn = true;
     s.state.memory = 1;

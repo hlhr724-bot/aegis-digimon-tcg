@@ -795,8 +795,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 50,
-      "engineEvents": 85
+      "stateVersion": 51,
+      "engineEvents": 86
     },
     {
       "kind": "intent",
@@ -805,8 +805,8 @@
         "type": "endPhase"
       },
       "ok": true,
-      "stateVersion": 56,
-      "engineEvents": 91
+      "stateVersion": 57,
+      "engineEvents": 92
     },
     {
       "kind": "intent",
@@ -819,8 +819,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 57,
-      "engineEvents": 92
+      "stateVersion": 58,
+      "engineEvents": 93
     },
     {
       "kind": "intent",
@@ -834,8 +834,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 58,
-      "engineEvents": 93
+      "stateVersion": 59,
+      "engineEvents": 94
     },
     {
       "kind": "intent",
@@ -845,8 +845,8 @@
         "instanceId": "hidden-s0-4746e6eedab0e8c900a74dea"
       },
       "ok": true,
-      "stateVersion": 61,
-      "engineEvents": 97
+      "stateVersion": 62,
+      "engineEvents": 98
     },
     {
       "kind": "intent",
@@ -860,8 +860,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 62,
-      "engineEvents": 100
+      "stateVersion": 63,
+      "engineEvents": 101
     },
     {
       "kind": "intent",
@@ -870,8 +870,8 @@
         "type": "hatchEgg"
       },
       "ok": true,
-      "stateVersion": 71,
-      "engineEvents": 110
+      "stateVersion": 72,
+      "engineEvents": 111
     },
     {
       "kind": "intent",
@@ -885,8 +885,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 73,
-      "engineEvents": 113
+      "stateVersion": 74,
+      "engineEvents": 114
     },
     {
       "kind": "intent",
@@ -897,8 +897,8 @@
         "instanceId": "s1-6"
       },
       "ok": true,
-      "stateVersion": 78,
-      "engineEvents": 118
+      "stateVersion": 79,
+      "engineEvents": 119
     },
     {
       "kind": "intent",
@@ -909,8 +909,8 @@
         "instanceId": "s1-27"
       },
       "ok": true,
-      "stateVersion": 80,
-      "engineEvents": 121
+      "stateVersion": 81,
+      "engineEvents": 122
     },
     {
       "kind": "intent",
@@ -924,8 +924,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 83,
-      "engineEvents": 127
+      "stateVersion": 84,
+      "engineEvents": 128
     },
     {
       "kind": "intent",
@@ -938,8 +938,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 84,
-      "engineEvents": 128
+      "stateVersion": 85,
+      "engineEvents": 129
     },
     {
       "kind": "intent",
@@ -953,8 +953,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 85,
-      "engineEvents": 129
+      "stateVersion": 86,
+      "engineEvents": 130
     },
     {
       "kind": "intent",
@@ -965,8 +965,8 @@
         "instanceId": "s1-34"
       },
       "ok": true,
-      "stateVersion": 88,
-      "engineEvents": 132
+      "stateVersion": 89,
+      "engineEvents": 133
     },
     {
       "kind": "intent",
@@ -980,8 +980,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 90,
-      "engineEvents": 135
+      "stateVersion": 91,
+      "engineEvents": 136
     },
     {
       "kind": "intent",
@@ -995,8 +995,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 90,
-      "engineEvents": 135
+      "stateVersion": 91,
+      "engineEvents": 136
     },
     {
       "kind": "intent",
@@ -1010,8 +1010,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 91,
-      "engineEvents": 136
+      "stateVersion": 92,
+      "engineEvents": 137
     },
     {
       "kind": "intent",
@@ -1025,8 +1025,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 94,
-      "engineEvents": 139
+      "stateVersion": 95,
+      "engineEvents": 140
     },
     {
       "kind": "intent",
@@ -1040,8 +1040,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 95,
-      "engineEvents": 142
+      "stateVersion": 96,
+      "engineEvents": 143
     },
     {
       "kind": "intent",
@@ -1054,8 +1054,8 @@
         "alternateRequirementIndex": 0
       },
       "ok": true,
-      "stateVersion": 105,
-      "engineEvents": 153
+      "stateVersion": 106,
+      "engineEvents": 154
     },
     {
       "kind": "intent",
@@ -1069,8 +1069,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 107,
-      "engineEvents": 158
+      "stateVersion": 108,
+      "engineEvents": 159
     },
     {
       "kind": "intent",
@@ -1084,8 +1084,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 108,
-      "engineEvents": 159
+      "stateVersion": 109,
+      "engineEvents": 160
     },
     {
       "kind": "intent",
@@ -1099,8 +1099,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 110,
-      "engineEvents": 162
+      "stateVersion": 111,
+      "engineEvents": 163
     },
     {
       "kind": "intent",
@@ -1114,8 +1114,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 112,
-      "engineEvents": 164
+      "stateVersion": 113,
+      "engineEvents": 165
     },
     {
       "kind": "intent",
@@ -1129,8 +1129,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 113,
-      "engineEvents": 165
+      "stateVersion": 114,
+      "engineEvents": 166
     },
     {
       "kind": "intent",
@@ -1144,8 +1144,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 113,
-      "engineEvents": 165
+      "stateVersion": 114,
+      "engineEvents": 166
     },
     {
       "kind": "intent",
@@ -1162,8 +1162,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 116,
-      "engineEvents": 169
+      "stateVersion": 117,
+      "engineEvents": 170
     },
     {
       "kind": "intent",
@@ -1177,8 +1177,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 120,
-      "engineEvents": 177
+      "stateVersion": 121,
+      "engineEvents": 178
     },
     {
       "kind": "intent",
@@ -1192,8 +1192,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 120,
-      "engineEvents": 177
+      "stateVersion": 121,
+      "engineEvents": 178
     },
     {
       "kind": "intent",
@@ -1203,8 +1203,8 @@
         "permanentId": "perm-3"
       },
       "ok": true,
-      "stateVersion": 128,
-      "engineEvents": 185
+      "stateVersion": 129,
+      "engineEvents": 186
     },
     {
       "kind": "intent",
@@ -1217,8 +1217,8 @@
         "alternateRequirementIndex": 1
       },
       "ok": true,
-      "stateVersion": 130,
-      "engineEvents": 188
+      "stateVersion": 131,
+      "engineEvents": 189
     },
     {
       "kind": "intent",
@@ -1231,8 +1231,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 132,
-      "engineEvents": 193
+      "stateVersion": 133,
+      "engineEvents": 194
     },
     {
       "kind": "intent",
@@ -1246,8 +1246,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 133,
-      "engineEvents": 194
+      "stateVersion": 134,
+      "engineEvents": 195
     },
     {
       "kind": "intent",
@@ -1261,8 +1261,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 134,
-      "engineEvents": 195
+      "stateVersion": 135,
+      "engineEvents": 196
     },
     {
       "kind": "intent",
@@ -1276,8 +1276,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 136,
-      "engineEvents": 197
+      "stateVersion": 137,
+      "engineEvents": 198
     },
     {
       "kind": "intent",
@@ -1291,8 +1291,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 136,
-      "engineEvents": 197
+      "stateVersion": 137,
+      "engineEvents": 198
     },
     {
       "kind": "intent",
@@ -1306,8 +1306,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 138,
-      "engineEvents": 201
+      "stateVersion": 139,
+      "engineEvents": 202
     },
     {
       "kind": "intent",
@@ -1321,8 +1321,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 141,
-      "engineEvents": 205
+      "stateVersion": 142,
+      "engineEvents": 206
     },
     {
       "kind": "intent",
@@ -1336,8 +1336,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 142,
-      "engineEvents": 206
+      "stateVersion": 143,
+      "engineEvents": 207
     },
     {
       "kind": "intent",
@@ -1351,8 +1351,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 144,
-      "engineEvents": 208
+      "stateVersion": 145,
+      "engineEvents": 209
     },
     {
       "kind": "intent",
@@ -1366,8 +1366,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 144,
-      "engineEvents": 208
+      "stateVersion": 145,
+      "engineEvents": 209
     },
     {
       "kind": "intent",
@@ -1381,8 +1381,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 147,
-      "engineEvents": 213
+      "stateVersion": 148,
+      "engineEvents": 214
     },
     {
       "kind": "intent",
@@ -1396,8 +1396,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 149,
-      "engineEvents": 215
+      "stateVersion": 151,
+      "engineEvents": 217
     },
     {
       "kind": "intent",
@@ -1411,8 +1411,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 149,
-      "engineEvents": 215
+      "stateVersion": 151,
+      "engineEvents": 217
     },
     {
       "kind": "intent",
@@ -1421,8 +1421,8 @@
         "type": "declineBlock"
       },
       "ok": true,
-      "stateVersion": 150,
-      "engineEvents": 216
+      "stateVersion": 152,
+      "engineEvents": 218
     },
     {
       "kind": "intent",
@@ -1435,8 +1435,8 @@
         "alternateRequirementIndex": 1
       },
       "ok": true,
-      "stateVersion": 154,
-      "engineEvents": 220
+      "stateVersion": 156,
+      "engineEvents": 222
     },
     {
       "kind": "intent",
@@ -1450,8 +1450,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 156,
-      "engineEvents": 225
+      "stateVersion": 158,
+      "engineEvents": 227
     },
     {
       "kind": "intent",
@@ -1465,8 +1465,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 157,
-      "engineEvents": 226
+      "stateVersion": 159,
+      "engineEvents": 228
     },
     {
       "kind": "intent",
@@ -1480,21 +1480,6 @@
         }
       },
       "ok": true,
-      "stateVersion": 159,
-      "engineEvents": 229
-    },
-    {
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "decisionId": "dec-46",
-        "response": {
-          "kind": "optional",
-          "accept": true
-        }
-      },
-      "ok": true,
       "stateVersion": 162,
       "engineEvents": 232
     },
@@ -1503,52 +1488,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-47",
-        "response": {
-          "kind": "chooseTargets",
-          "instanceIds": ["perm-14"]
-        }
-      },
-      "ok": true,
-      "stateVersion": 163,
-      "engineEvents": 233
-    },
-    {
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "decisionId": "dec-48",
-        "response": {
-          "kind": "selectCards",
-          "instanceIds": ["player"]
-        }
-      },
-      "ok": true,
-      "stateVersion": 163,
-      "engineEvents": 233
-    },
-    {
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "decisionId": "dec-49",
-        "response": {
-          "kind": "optional",
-          "accept": true
-        }
-      },
-      "ok": true,
-      "stateVersion": 164,
-      "engineEvents": 234
-    },
-    {
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "decisionId": "dec-50",
+        "decisionId": "dec-46",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1563,6 +1503,66 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
+        "decisionId": "dec-47",
+        "response": {
+          "kind": "chooseTargets",
+          "instanceIds": ["perm-14"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 167,
+      "engineEvents": 237
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-48",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["player"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 167,
+      "engineEvents": 237
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-49",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 168,
+      "engineEvents": 238
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-50",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 171,
+      "engineEvents": 241
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
         "decisionId": "dec-51",
         "response": {
           "kind": "selectCards",
@@ -1570,8 +1570,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 167,
-      "engineEvents": 237
+      "stateVersion": 172,
+      "engineEvents": 242
     },
     {
       "kind": "intent",
@@ -1585,8 +1585,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 167,
-      "engineEvents": 237
+      "stateVersion": 172,
+      "engineEvents": 242
     },
     {
       "kind": "intent",
@@ -1600,8 +1600,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 170,
-      "engineEvents": 243
+      "stateVersion": 175,
+      "engineEvents": 248
     },
     {
       "kind": "intent",
@@ -1615,8 +1615,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 171,
-      "engineEvents": 244
+      "stateVersion": 176,
+      "engineEvents": 249
     },
     {
       "kind": "intent",
@@ -1626,8 +1626,8 @@
         "blockerPermanentId": "perm-9"
       },
       "ok": true,
-      "stateVersion": 172,
-      "engineEvents": 245
+      "stateVersion": 177,
+      "engineEvents": 250
     },
     {
       "kind": "intent",
@@ -1638,8 +1638,8 @@
         "accept": true
       },
       "ok": true,
-      "stateVersion": 174,
-      "engineEvents": 248
+      "stateVersion": 179,
+      "engineEvents": 252
     },
     {
       "kind": "intent",
@@ -1653,8 +1653,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 177,
-      "engineEvents": 251
+      "stateVersion": 179,
+      "engineEvents": 252
     },
     {
       "kind": "intent",
@@ -1668,8 +1668,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 177,
-      "engineEvents": 251
+      "stateVersion": 179,
+      "engineEvents": 252
     }
   ]
 }

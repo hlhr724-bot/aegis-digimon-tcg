@@ -29,6 +29,7 @@ const compiled: CompiledCard = {
         {
           kind: "SubTrigger",
           event: "endOfTurn",
+          printedClause: "[Pending] At the next end of your opponent’s turn, return it to the hand.",
           turnScope: "opponentsTurn",
           once: true,
           on: {

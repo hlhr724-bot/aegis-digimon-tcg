@@ -21,7 +21,7 @@ import { colorsOf } from "../cards/cardData.js";
 import { effectiveColors } from "../effects/continuous.js";
 import { linkMax } from "../effects/mindLink.js";
 import { logError } from "../../logger.js";
-import { makeRng, seatSeed, runSetup, finalizeSecurity, mulliganRedraw, type Decklist } from "../setup.js";
+import { runSetup, finalizeSecurity, mulliganRedraw, makeRng, seatSeed, type Decklist } from "#api/engine/setup";
 import { layScenarioFixture, type ScenarioFixture } from "../scenario/fixture.js";
 import { validateDecklist } from "../deckValidation.js";
 import type { SeatJoinOptions } from "./types.js";
@@ -53,6 +53,7 @@ export function seatPlayer(engine: GameEngine, seat: Seat, sessionId: string, op
       betaBattleMode: options.betaBattleMode === true,
       unlimited: options.unlimited === true,
       format: options.format,
+      banlistCards: options.banlistCards,
     });
     if (!verdict.ok) throw new Error(`illegal deck: ${verdict.reason}`);
   }
@@ -104,7 +105,7 @@ export async function runMatch(engine: GameEngine): Promise<void> {
   const decks = collectStagedDecks(engine);
   if (decks === undefined) return; // a seat joined without a deck; cannot start
 
-  const firstSeat = chooseFirstPlayer(engine);
+  let firstSeat = chooseFirstPlayer(engine);
   const setup = runSetup(engine.state, {
     seats: [
       {
@@ -120,17 +121,38 @@ export async function runMatch(engine: GameEngine): Promise<void> {
     ],
     firstSeat,
     seed: engine.hooks.seed,
+    randomKey: engine.hooks.randomKey,
     onShuffled: (seat, deck) => engine.hooks.emit({ kind: "deckShuffled", seat, deck }),
   });
   engine.rngForSeat = setup.rngForSeat;
+  engine.randomStreams = [setup.rngForSeat(0).generator, setup.rngForSeat(1).generator];
 
+  if (engine.manual) {
+    const chooser = firstSeat;
+    const response = await engine.decisions.request({
+      seat: chooser,
+      kind: "chooseOption",
+      promptText: "Choose who goes first",
+      options: {
+        choices: [engine.state.players[chooser]!.displayName, engine.state.players[1 - chooser]!.displayName],
+      },
+    });
+    if (engine.state.gameOver) {
+      return;
+    }
+    firstSeat = response.kind === "chooseOption" && response.optionIndex === 1 ? ((1 - chooser) as Seat) : chooser;
+    engine.state.turnSeat = firstSeat;
+  }
   engine.hooks.emit({ kind: "matchStarted", firstSeat });
-
   await runMulliganWindow(engine, firstSeat);
   if (engine.state.gameOver) return; // a seat left during setup
 
   finalizeSecurity(engine.state);
 
+  if (engine.manual) {
+    engine.manual.begin();
+    return;
+  }
   void startTurnLoop(engine);
 }
 
@@ -142,9 +164,13 @@ export async function runMatch(engine: GameEngine): Promise<void> {
 export function startScenarioFixture(engine: GameEngine, fixture: ScenarioFixture): void {
   const decks = collectStagedDecks(engine);
   if (decks === undefined) return;
+  const random = [
+    makeRng(seatSeed(engine.hooks.seed, 0), engine.hooks.randomKey),
+    makeRng(seatSeed(engine.hooks.seed, 1), engine.hooks.randomKey),
+  ];
+  engine.rngForSeat = (seat) => random[seat]!;
+  engine.randomStreams = [random[0]!.generator, random[1]!.generator];
   const references = layScenarioFixture(engine.state, fixture, decks);
-  const rngs = ([0, 1] as const).map((seat) => makeRng(seatSeed(engine.hooks.seed, seat)));
-  engine.rngForSeat = (seat) => rngs[seat]!;
   engine.matchSetupStarted = true;
   applyScenarioEffects(engine, fixture, references);
   engine.hooks.emit({ kind: "matchStarted", firstSeat: engine.state.turnSeat });

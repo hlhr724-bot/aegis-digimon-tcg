@@ -1,0 +1,17 @@
+export const staffRolesZhCN = {
+  "account.roles.admin": "管理员",
+  "account.roles.judge": "裁判",
+  "account.roles.organizer": "官方主办方",
+  "account.roles.adminDescription": "管理网站、账号和角色。",
+  "account.roles.judgeDescription": "裁定排位举报，并可担任任何比赛的裁判。",
+  "account.roles.organizerDescription": "创建官方比赛和巡回赛。",
+  "account.roles.title": "角色",
+  "account.roles.help": "管理员负责管理网站。裁判处理排位举报，并可在任何赛事中仲裁。官方主办方可以创建官方赛事。",
+  "account.roles.search": "按名称查找玩家",
+  "account.roles.loadFailed": "无法加载账号。",
+  "account.roles.saveFailed": "无法保存角色更改。",
+  "account.roles.ownAdmin": "你不能移除自己的管理员角色。",
+  "account.roles.empty": "还没有账号拥有角色。",
+  "account.roles.noMatches": "没有与该名称匹配的玩家。",
+  "account.roles.rolesFor": "{name} 的角色",
+} as const;

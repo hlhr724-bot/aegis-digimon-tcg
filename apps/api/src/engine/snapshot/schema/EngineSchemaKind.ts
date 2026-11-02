@@ -1,0 +1,15 @@
+export const EngineSchemaKind = {
+  ARRAY: { name: "ARRAY", value: "schema-array" },
+  CARD_INSTANCE: { name: "CARD_INSTANCE", value: "schema-card-instance" },
+  PERMANENT: { name: "PERMANENT", value: "schema-permanent" },
+  PLAYER_STATE: { name: "PLAYER_STATE", value: "schema-player-state" },
+  GAME_STATE: { name: "GAME_STATE", value: "schema-game-state" },
+  SECURITY_CARD_VIEW: { name: "SECURITY_CARD_VIEW", value: "schema-security-card-view" },
+  PENDING_DECISION: { name: "PENDING_DECISION", value: "schema-pending-decision" },
+  COMBAT_WINDOW: { name: "COMBAT_WINDOW", value: "schema-combat-window" },
+  SERIES_STATE: { name: "SERIES_STATE", value: "schema-series-state" },
+  MANUAL_TABLE: { name: "MANUAL_TABLE", value: "schema-manual-table" },
+  APP_FUSION_ROUTE: { name: "APP_FUSION_ROUTE", value: "schema-app-fusion-route" },
+  DIGIVOLVE_ROUTE: { name: "DIGIVOLVE_ROUTE", value: "schema-digivolve-route" },
+  DNA_DIGIVOLVE_ROUTE: { name: "DNA_DIGIVOLVE_ROUTE", value: "schema-dna-digivolve-route" },
+} as const;

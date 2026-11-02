@@ -42,7 +42,7 @@ scenario("breeding", () => {
     const { GameScreen } = await import("../src/game/GameScreen");
 
     // Seed 4: seat 0 (protagonist, RED_DECK) goes first. Its dealt hand contains
-    // two Biyomon (BT1-012, Lv.3 Red) whose digivolution requirement — color Red,
+    // a Biyomon (BT1-012, Lv.3 Red) whose digivolution requirement — color Red,
     // level 2, memory cost 0 — is met for free by either RED_EGGS hatchling
     // (Yokomon/Bebydomon, both Lv.2 Red), so the raised Digimon can reach level 3
     // (the battle-area threshold) in the same turn it hatches.
@@ -91,6 +91,8 @@ scenario("breeding", () => {
     await waitForBoardActions();
     tap(biyomonImg!);
     fireEvent.click(yourBreedingSlot());
+    const confirmation = await screen.findByRole("dialog", { name: "Confirm action" });
+    fireEvent.click(within(confirmation).getByRole("button", { name: /^digivolve$/i }));
 
     await vi.waitFor(() => expect(within(yourBreedingSlot()).getByRole("img", { name: /^biyomon$/i })).toBeTruthy(), {
       timeout: 10_000,

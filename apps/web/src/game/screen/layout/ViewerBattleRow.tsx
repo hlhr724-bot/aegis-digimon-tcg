@@ -1,3 +1,5 @@
+import { useTamerGrouping } from "@/design/tamerGrouping/useTamerGrouping";
+import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 /* The viewer's half of the battle area.
 
    The whole row is a drop area: a card released anywhere in it is played. A permanent
@@ -52,6 +54,7 @@ export function ViewerBattleRow({
 }) {
   const { t } = useTranslation();
   const fieldLayout = useFieldLayout();
+  const groupIdenticalTamers = useTamerGrouping();
   const isSuspended = (p: Permanent) => p.isSuspended || chrome.heldSuspendedIds.has(p.permanentId);
   const playOrder = new Map(permanents.map((permanent, index) => [permanent.permanentId, index]));
   const rowStyle: CSSProperties = {
@@ -89,6 +92,7 @@ export function ViewerBattleRow({
         key={fieldKey}
         perm={p}
         copies={members.length}
+        fieldReferenceIds={members.map((member) => member.permanentId)}
         entranceKey={fieldKey}
         quietEntrance={
           splitOff ||
@@ -103,6 +107,10 @@ export function ViewerBattleRow({
           for (const member of members) chrome.permanentRefs.current[member.permanentId] = el;
         }}
         candidate={isBasePermanent(p)}
+        picked={
+          chrome.decisionPickedInstanceIds.has(p.permanentId) ||
+          chrome.decisionPickedInstanceIds.has(p.topCard.instanceId)
+        }
         selectionOrder={chrome.materialSelectionOrder?.get(p.permanentId)}
         {...groupChrome(members, chrome)}
         // A board-mode optional prompt points at the permanent whose
@@ -137,6 +145,7 @@ export function ViewerBattleRow({
 
   if (fieldLayout === FieldLayout.Organized) {
     const arrangement = arrangeField(permanents, {
+      groupIdenticalTamers,
       isSuspended,
       isSingledOut: (p) =>
         isSingledOut(p, chrome) ||
@@ -155,6 +164,7 @@ export function ViewerBattleRow({
         renderCard={renderCard}
         isSuspended={isSuspended}
         rowProps={{
+          "data-arena-region": ArenaInputRegion.VIEWER_FIELD.value,
           "data-drop": "battle-you",
           ...dropIntentAttrs("battle-you"),
           className: "game-battle-row game-battle-row--you",
@@ -168,6 +178,7 @@ export function ViewerBattleRow({
 
   return (
     <BattleRow
+      data-arena-region={ArenaInputRegion.VIEWER_FIELD.value}
       data-drop="battle-you"
       {...dropIntentAttrs("battle-you")}
       className="game-battle-row game-battle-row--you"

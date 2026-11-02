@@ -346,3 +346,24 @@ describe("painted presentation audio", () => {
     expect(seen.size).toBe(512);
   });
 });
+
+it("plays one discard sound for the hand-to-trash presentation without a draw sound", () => {
+  const result = soundsForPresentation(
+    cues({
+      drawFlights: [
+        { key: 1, x: 0, y: 0, dx: 200, dy: 100, duration: 600, handTrash: true, card: { cardId: "BT1-009" } },
+      ],
+      sidePanels: [
+        {
+          id: "discard",
+          titleKey: "panel.discardedCards",
+          side: Side.Opponent,
+          cards: [{ cardId: "BT1-009", badge: 1 }],
+          createdAt: 0,
+          ordered: false,
+        },
+      ],
+    }),
+  );
+  expect(result.map((sound) => sound.kind)).toEqual(["handTrash"]);
+});

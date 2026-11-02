@@ -48,6 +48,15 @@ it("dismisses outside without blocking the page", () => {
   expect(props.onClose).toHaveBeenCalled();
 });
 
+it("opens the avatar picker on the profile page", () => {
+  const onChangeAvatar = vi.fn();
+  const props = open({ onChangeAvatar });
+  expect(screen.queryByRole("dialog")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Change avatar" }));
+  expect(props.onClose).toHaveBeenCalled();
+  expect(onChangeAvatar).toHaveBeenCalled();
+});
+
 it("shows the feedback inbox only to signed-in administrators", () => {
   open({ signedIn: true });
   expect(screen.queryByRole("button", { name: "Player feedback" })).toBeNull();

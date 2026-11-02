@@ -13,6 +13,7 @@
 - For card or rules work, read [cards and rules](internal-docs/ai/cards-and-rules.md) and use [verify-card-implementation](.agents/skills/verify-card-implementation/SKILL.md). Register executable card behavior only through `registerIrCard` and synchronize changed effect snapshots.
 - For reports with a replay or match ID, reproduce the exact match first using [replay guidance](internal-docs/ai/replays.md). Resolve earlier divergence before trusting the reproduction.
 - For Discord reports, use [fix-discord-bug](.agents/skills/fix-discord-bug/SKILL.md), read the full thread and attachments, and follow the production host's instructions and resource guard.
+- For GitHub bug reports or an open-bug sweep, use [fix-github-bugs](.agents/skills/fix-github-bugs/SKILL.md); route authorized release and feedback closure to `aegis-release-feedback-closeout`.
 - Keep mockups, prototypes, and browser captures in ignored `.local/`; do not commit them to `docs/` or `apps/web/public/`.
 - Name regression tests and fixtures after behavior. Share preparation through `engine/scenario` and `setupScenario`; E2E uses `ScenarioPage.openFixture`. See [regression fixtures](docs/TESTING.md). Keep external IDs out of scenario identities; preserve necessary provenance in Markdown.
 - Open fixtures on demand with `pnpm scenario open <behavior>` or an ignored `.local/scenarios/<name>.fixture.ts`; regression fixtures require no arena registration. Add permanent demos only when requested.

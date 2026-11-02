@@ -7,6 +7,7 @@ import { UseTracker, canActivate, canTrigger } from "./kernel.js";
 
 /** One effect paired with the source that produced it (collection output). */
 export interface CollectedEffect {
+  sourceIdentityAtDefer?: string | null;
   /** Ledger identity of an effect granted to a Digimon, retained across digivolution. */
   grantedEffectId?: number;
   /** Stable identity of an event occurrence, separate from the effect's per-turn usage key. */

@@ -259,6 +259,48 @@ describe("BT10-093 Yuu Amano — KB Q&A rulings", () => {
     expect(s.state.memory).toBe(1);
   });
 
+  it("counts its reduction before refusing a DigiXros play the remaining memory can afford", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            {
+              card: YUU,
+              as: "yuu",
+              under: [{ card: CHUUCHUUMON }, { card: "EX10-039" }, { card: CHUUCHUUMON }],
+            },
+            { card: "EX10-056", as: "bagramon" },
+          ],
+          hand: [{ card: "EX10-059", as: "darknessBagramon" }],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 2;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "playCard",
+        instanceId: s.inst("darknessBagramon").instanceId,
+        digiXros: { materialInstanceIds: [s.inst("bagramon").instanceId] },
+      }),
+    ).toEqual({ ok: true });
+    await settleEngine(() =>
+      s.state.players[0]!.battleArea.some(
+        ({ topCard }) => topCard?.instanceId === s.inst("darknessBagramon").instanceId,
+      ),
+    );
+    await settleEngine();
+
+    expect(s.state.memory).toBe(-5);
+    const played = s.state.players[0]!.battleArea.find(
+      ({ topCard }) => topCard?.instanceId === s.inst("darknessBagramon").instanceId,
+    )!;
+    expect(played.stack.map(({ cardId }) => cardId)).toContain("EX10-056");
+    expect(s.perm("yuu").stack).toHaveLength(0);
+  });
+
   it("processes its effect before DigiXros, so DigiXros materials go beneath the cards it placed (Q2025)", async () => {
     const s = setupEngine(
       {

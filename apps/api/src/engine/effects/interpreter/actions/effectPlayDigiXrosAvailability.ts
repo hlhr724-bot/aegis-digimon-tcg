@@ -1,4 +1,4 @@
-import { digiXrosRequirementFor, type ZoneRef } from "@aegis/shared";
+import { digiXrosRequirementFor, effectiveExactNames, type ZoneRef } from "@aegis/shared";
 import { materialsSatisfyRecipe } from "../../../actions/digiXros.js";
 import { digiXrosZoneExpanderActiveOnTurn, digiXrosZoneExpanderFor } from "../../../digiXros/zoneExpanders.js";
 import type { EffectContext } from "../../EffectContext.js";
@@ -21,6 +21,9 @@ export function availableEffectPlayDigiXrosReduction(
   const playedDefinition = ctx.game.definitionOf({ cardId: playedCard.cardId });
   const expanders = Array.from(player.battleArea).flatMap((permanent) => {
     if (permanent.isSuspended || permanent.topCard === undefined) return [];
+    if (ctx.fx.canSuspend?.(permanent.permanentId, seat) === false) {
+      return [];
+    }
     const expander = digiXrosZoneExpanderFor(permanent.topCard.cardId);
     if (expander === undefined || !digiXrosZoneExpanderActiveOnTurn(expander, seat, ctx.game.state.turnSeat)) return [];
     return expander.appliesTo(playedDefinition) ? [expander] : [];
@@ -79,15 +82,13 @@ export function availableEffectPlayDigiXrosReduction(
     // This avoids counting duplicate names or the played card as its own material.
     const candidates = groups.flatMap((cards, group) => cards.map((card) => ({ card, group })));
     const repeatedSlot = requirement.materials.length === 1 ? requirement.materials[0] : undefined;
-    const identityOf = (card: LooseCandidate): string | undefined => {
-      if (repeatedSlot?.differentCardNumbers === true) return card.cardId;
+    const identitiesOf = (card: LooseCandidate): string[] | undefined => {
+      if (repeatedSlot?.differentCardNumbers === true) return [card.cardId];
       if (repeatedSlot?.differentNames === true)
-        return ctx.game.definitionOf({ cardId: card.cardId }).nameEn.toLowerCase();
+        return effectiveExactNames(ctx.game.definitionOf({ cardId: card.cardId })).map((name) => name.toLowerCase());
       return undefined;
     };
-    const identities = [...new Set(candidates.map(({ card }) => identityOf(card)))].filter(
-      (identity): identity is string => identity !== undefined,
-    );
+    const identities = [...new Set(candidates.flatMap(({ card }) => identitiesOf(card) ?? []))];
     const identityStart = 4 + candidates.length;
     const slotStart = identityStart + identities.length;
     const sink = slotStart + requirement.materials.length;
@@ -103,8 +104,12 @@ export function availableEffectPlayDigiXrosReduction(
       const definition = ctx.game.definitionOf({ cardId: card.cardId });
       requirement.materials.forEach((slot, slotIndex) => {
         if (!materialsSatisfyRecipe([definition], [slot])) return;
-        const identity = identityOf(card);
-        edge(node, identity === undefined ? slotStart + slotIndex : identityStart + identities.indexOf(identity), 1);
+        const cardIdentities = identitiesOf(card);
+        if (cardIdentities === undefined) {
+          edge(node, slotStart + slotIndex, 1);
+          return;
+        }
+        for (const identity of cardIdentities) edge(node, identityStart + identities.indexOf(identity), 1);
       });
     });
     identities.forEach((_identity, index) => edge(identityStart + index, slotStart, 1));

@@ -143,6 +143,7 @@ export const compiled: CompiledCard = {
               ],
             },
             count: 1,
+            source: "thisDigimon",
           },
           from: ["digivolutionCards"],
           payCost: false,

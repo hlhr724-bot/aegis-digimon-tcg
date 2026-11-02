@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your opponent's Digimon gets -6000 DP for the turn. If there are 3 or more Digimon, increase the DP reduction of this effect by -6000.",
           kind: "ModifyDP",
           target: {
             filter: {
@@ -19,6 +21,8 @@ const compiled: CompiledCard = {
           duration: "forTheTurn",
         },
         {
+          effectTextPart:
+            "[Main] 1 of your opponent's Digimon gets -6000 DP for the turn. If there are 3 or more Digimon, increase the DP reduction of this effect by -6000.",
           kind: "ModifyDP",
           target: {
             filter: {

@@ -8,9 +8,9 @@ const listeners = new Set<() => void>();
 
 function readProfileStatsShown(): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) === SHOWN;
+    return localStorage.getItem(STORAGE_KEY) !== HIDDEN;
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -41,5 +41,5 @@ function subscribe(listener: () => void): () => void {
 }
 
 export function useProfileStatsShown(): boolean {
-  return useSyncExternalStore(subscribe, areProfileStatsShown, () => false);
+  return useSyncExternalStore(subscribe, areProfileStatsShown, () => true);
 }

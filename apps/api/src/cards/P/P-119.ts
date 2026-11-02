@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 red or yellow card with 2 or more colors",
               filter: {
                 controllerDefault: "mine",
                 multicolor: true,
@@ -20,6 +21,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 Tamer card with [Yolei Inoue] in its name among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Tamer"],

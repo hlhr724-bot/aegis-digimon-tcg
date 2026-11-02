@@ -1,0 +1,357 @@
+{
+  "schemaVersion": 1,
+  "title": "Human panel v2: weights tuned for wins against real player decks, plus GEPA rules for targets, blocks and counters",
+  "program": {
+    "schemaVersion": 1,
+    "title": "Human panel v2: tuned main-phase weights with evolved targeting, blocking and counter rules",
+    "rules": [
+      {
+        "feature": "cost",
+        "weight": -0.6361,
+        "advice": "In the main phase, avoid actions with a higher memory cost.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "handover",
+        "weight": -1.0042,
+        "advice": "In the main phase, avoid actions that pass more memory to the opponent.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackPlayer",
+        "weight": -0.3003,
+        "advice": "In the main phase, avoid attacks on the opponent's security.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "lethal",
+        "weight": 0.8504,
+        "advice": "In the main phase, favor attacks on the player when the opponent has no security left.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackWinningBattle",
+        "weight": -2.557,
+        "advice": "In the main phase, avoid attacks on an opposing Digimon with lower DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackLosingBattle",
+        "weight": -5.3753,
+        "advice": "In the main phase, avoid attacks on an opposing Digimon with equal or higher DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "digivolve",
+        "weight": 1.271,
+        "advice": "In the main phase, favor digivolving.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "breedingGrowth",
+        "weight": 0.1889,
+        "advice": "In the main phase, favor digivolving the Digimon in the breeding area.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "levelGain",
+        "weight": 1.0427,
+        "advice": "In the main phase, favor digivolutions that gain more levels.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "dpGain",
+        "weight": 0.2493,
+        "advice": "In the main phase, favor digivolutions that gain more DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playBody",
+        "weight": 0.0126,
+        "advice": "In the main phase, favor playing Digimon from hand, more so for higher DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playTamer",
+        "weight": 0.1098,
+        "advice": "In the main phase, favor playing Tamers.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playOption",
+        "weight": 0.3141,
+        "advice": "In the main phase, favor using Option cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceLevel",
+        "weight": 0.3504,
+        "advice": "In the main phase, favor actions by higher-level cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceDp",
+        "weight": 0.4002,
+        "advice": "In the main phase, favor actions by higher-DP cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "targetDp",
+        "weight": -0.1007,
+        "advice": "In the main phase, avoid actions that target higher-DP Digimon.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "pass",
+        "weight": -8.0148,
+        "advice": "In the main phase, avoid ending the main phase.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "activate",
+        "weight": 2.5335,
+        "advice": "In the main phase, favor activating card effects.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceInHand",
+        "weight": -1.3832,
+        "advice": "In the main phase, avoid actions that use a card from hand.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceInTrash",
+        "weight": -6.7499,
+        "advice": "In the main phase, avoid actions that use a card from the trash.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceOnBoard",
+        "weight": -0.5031,
+        "advice": "In the main phase, avoid actions by a Digimon already on the battle area.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceOpponent",
+        "weight": -1.3601,
+        "advice": "In the main phase, avoid actions whose source is an opposing card.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.239,
+        "advice": "In the main phase, favor actions by more valuable cards (DP, level, and cost combined).",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "digiXros",
+        "weight": -0.1419,
+        "advice": "In the main phase, avoid DigiXros plays.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "assembly",
+        "weight": 2.3499,
+        "advice": "In the main phase, favor Assembly plays.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "dnaDigivolve",
+        "weight": 0.0391,
+        "advice": "In the main phase, favor DNA digivolution.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "appFusion",
+        "weight": 5.7053,
+        "advice": "In the main phase, favor App Fusion.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "link",
+        "weight": -0.9559,
+        "advice": "In the main phase, avoid linking cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "materials",
+        "weight": 0.0676,
+        "advice": "In the main phase, favor actions that use more material cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "activate",
+        "weight": 3,
+        "advice": "In the main phase, use activated effects that cost no memory before other plays, because they never end the turn and often make the next play cheaper.",
+        "when": {
+          "kind": "main",
+          "maximum": {
+            "handover": 0
+          }
+        }
+      },
+      {
+        "feature": "hatch",
+        "weight": 10,
+        "advice": "Hatch when the breeding area is empty."
+      },
+      {
+        "feature": "deploy",
+        "weight": 2,
+        "advice": "Move a developed line out to contest the board."
+      },
+      {
+        "feature": "criticalBlock",
+        "weight": 100,
+        "advice": "At zero security, prioritize blocking an attack on the player."
+      },
+      {
+        "feature": "accept",
+        "weight": 1,
+        "advice": "Consider optional effects and defensive responses when their costs are acceptable."
+      },
+      {
+        "feature": "finish",
+        "weight": 0.1,
+        "advice": "Finish optional selections when additional cards do not improve the outcome."
+      },
+      {
+        "feature": "openingRookie",
+        "weight": 5,
+        "advice": "Keep an opening hand with a rookie that can start your line."
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.2,
+        "advice": "When choosing targets for your own effect among opposing cards, favor the most valuable opposing Digimon (higher DP and level).",
+        "when": {
+          "kind": "chooseTargets",
+          "minimum": {
+            "sourceOpponent": 1
+          }
+        }
+      },
+      {
+        "feature": "block",
+        "weight": -0.5,
+        "advice": "When you still have 3 or more security cards, decline ordinary blocks and keep your Digimon; take the security check instead.",
+        "when": {
+          "kind": "block",
+          "minimum": {
+            "ownSecurity": 3
+          }
+        }
+      },
+      {
+        "feature": "sourceInHand",
+        "weight": 1,
+        "advice": "In a counter window, favor using a counter card from hand, such as Blast Digivolve, over declining.",
+        "when": {
+          "kind": "counter"
+        }
+      },
+      {
+        "feature": "accept",
+        "weight": -2,
+        "advice": "Decline a Barrier response when you have 1 or fewer security cards; keeping the last security card matters more than saving the Digimon.",
+        "when": {
+          "kind": "respondBarrier",
+          "maximum": {
+            "ownSecurity": 1
+          }
+        }
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.2,
+        "advice": "When a card selection picks among opposing cards on the battle area, favor the most valuable opposing Digimon (higher DP and level).",
+        "when": {
+          "kind": "selectCards",
+          "minimum": {
+            "sourceOpponent": 1,
+            "sourceOnBoard": 1
+          }
+        }
+      },
+      {
+        "feature": "finish",
+        "weight": -0.2,
+        "advice": "When choosing targets for your own effect, prefer picking a legal target over finishing the selection early.",
+        "when": {
+          "kind": "chooseTargets"
+        }
+      }
+    ]
+  },
+  "planner": {
+    "depth": 3,
+    "beam": 6,
+    "weights": {
+      "memoryGiven": -0.5,
+      "opponentSecurity": 0,
+      "ownHand": 0,
+      "ownBoardDp": 0.3,
+      "ownBoardLevels": 0,
+      "opponentBoardDp": -0.3,
+      "win": 20
+    }
+  }
+}

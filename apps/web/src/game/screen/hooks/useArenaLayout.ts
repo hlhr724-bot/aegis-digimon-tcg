@@ -1,3 +1,6 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
+import { getScaledArenaLayout } from "@/game/screen/hooks/getScaledArenaLayout";
 import { COARSE_POINTER_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
 import { FieldLayout, useFieldLayout } from "../../../design/fieldLayout";
 import { useFieldCardWidth } from "../layout/fieldCardWidth";
@@ -14,6 +17,7 @@ import {
 } from "../queries";
 
 const TALL_PHONE_RAISING_WIDTH = 52;
+const MIN_PILE_WIDTH = 44;
 
 /** Everything about the board that the viewport alone decides. */
 export type ArenaLayout = {
@@ -51,6 +55,8 @@ export type ArenaLayout = {
  * not have.
  */
 export function useArenaLayout(): ArenaLayout {
+  const { scale } = arenaAppearancePreference.useAppearance();
+  const factor = Object.values(ArenaUiScale).find((entry) => entry.value === scale)!.factor;
   const organized = useFieldLayout() === FieldLayout.Organized;
   const narrowGameLayout = useMediaQuery(NARROW_LAYOUT_QUERY);
   const compactPiles = useMediaQuery(COMPACT_PILES_QUERY);
@@ -117,17 +123,17 @@ export function useArenaLayout(): ArenaLayout {
                 ? 164
                 : 116;
   const sidelineArena = useMediaQuery(SIDELINE_ARENA_QUERY);
-  // Portrait battle lanes have their own height fitter. Auxiliary piles must not
-  // cap their artwork at 36px just because raising shares the compact utility strip.
-  const fieldWidthCeiling =
-    organized && !sidelineArena && !portraitArena ? Math.min(arenaPermanentWidth, arenaPileWidth) : arenaPermanentWidth;
   const fieldCardWidth = useFieldCardWidth();
   // Eggs and raising remain readable when a crowded battle row narrows its cards.
   // Its height-fitted width already accounts for the space in both battle lanes.
-  const sharedRaisingWidth = fieldCardWidth?.heightFitted ?? fieldWidthCeiling;
+  const heightFittedFieldWidth = fieldCardWidth?.heightFitted ?? arenaPermanentWidth;
+  const sharedPileWidth =
+    organized && !portraitArena && !landscapePhone && !shortNarrowDock
+      ? Math.max(MIN_PILE_WIDTH, heightFittedFieldWidth)
+      : arenaPileWidth;
   const coarsePointer = useMediaQuery(COARSE_POINTER_QUERY);
   const collapseNotices = narrowGameLayout && !landscapePhone;
-  return {
+  const layout: ArenaLayout = {
     narrowGameLayout,
     compactPiles,
     dockViewerPiles,
@@ -136,8 +142,8 @@ export function useArenaLayout(): ArenaLayout {
     landscapePhone,
     coarsePointer,
     collapseNotices,
-    arenaPileWidth,
-    arenaPermanentWidth: fieldWidthCeiling,
+    arenaPileWidth: sharedPileWidth,
+    arenaPermanentWidth,
     arenaRaisingWidth:
       organized && portraitArena
         ? tabletPortraitArena
@@ -147,9 +153,11 @@ export function useArenaLayout(): ArenaLayout {
             : mediumPortraitArena
               ? 48
               : TALL_PHONE_RAISING_WIDTH
-        : organized || sidelineArena
-          ? sharedRaisingWidth
-          : arenaPileWidth,
+        : sidelineArena
+          ? heightFittedFieldWidth
+          : organized
+            ? Math.max(MIN_PILE_WIDTH, heightFittedFieldWidth)
+            : arenaPileWidth,
     arenaSidelineBasisWidth: sidelineArena ? (fieldCardWidth?.heightFitted ?? arenaPermanentWidth) : arenaPileWidth,
     handCardWidth: portraitArena
       ? tabletPortraitArena
@@ -166,4 +174,5 @@ export function useArenaLayout(): ArenaLayout {
           : 112,
     handMinExposure: portraitArena || compactPiles ? HAND_MIN_EXPOSURE_TOUCH : undefined,
   };
+  return getScaledArenaLayout({ layout, factor });
 }

@@ -1,0 +1,1 @@
+export const PAIRED_ROOT_CANDIDATE_LIMIT = 8;

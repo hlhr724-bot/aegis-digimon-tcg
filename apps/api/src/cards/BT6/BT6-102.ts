@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            '[Main] 1 of your opponent\'s Digimon gains "[On Deletion] Lose 2 memory" until the end of their next turn.',
           kind: "GrantAuraToOpponents",
           target: {
             filter: {

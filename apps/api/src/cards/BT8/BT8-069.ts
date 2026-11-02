@@ -53,6 +53,7 @@ export const compiled: CompiledCard = {
             controller: "mine",
             kind: ["Digimon"],
             byEffect: true,
+            byOwnEffect: true,
           },
           triggerFilter: {
             controllerDefault: "mine",

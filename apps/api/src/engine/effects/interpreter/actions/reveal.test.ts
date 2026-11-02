@@ -1,3 +1,4 @@
+import "#api/cards/BT3/BT3-093";
 import { describe, expect, it } from "vitest";
 import { getCardDefinition, type Action, type CardInstance } from "@aegis/shared";
 import type { EffectContext } from "../../EffectContext.js";
@@ -150,4 +151,56 @@ it("uses successive selectCards for a sole Shoutmon/Blitz overlap without requir
   await settle(() => s.state.pendingDecision === undefined && s.state.players[0]!.hand.length === 1);
   expect(s.state.players[0]!.hand.map(({ cardId }) => cardId)).toEqual(["BT5-019"]);
   expect(s.state.players[0]!.deck.map(({ cardId }) => cardId)).toEqual(["BT5-086", "BT1-009"]);
+});
+
+it("broadcasts the actual public reveal selection added to hand and the ordered remainder", async () => {
+  const s = setupEngine(
+    {
+      0: {
+        hand: [{ card: "BT3-093", as: "searcher" }],
+        deck: [
+          { card: "BT1-027", as: "chosen" },
+          { card: "ST1-03", as: "first-rest" },
+          { card: "ST1-02", as: "second-rest" },
+          "ST1-04",
+        ],
+      },
+    },
+    { autoOrderCards: false },
+  );
+  s.state.memory = 10;
+  expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("searcher").instanceId })).toEqual({
+    ok: true,
+  });
+  await settle(() => s.state.pendingDecision?.kind === "selectCards");
+  const choice = s.decisions.at(-1)!.req;
+  expect(
+    s.engine.applyIntent(0, {
+      type: "respondDecision",
+      decisionId: choice.decisionId,
+      response: { kind: "selectCards", instanceIds: [s.inst("chosen").instanceId] },
+    }),
+  ).toEqual({ ok: true });
+  await settle(() => s.state.pendingDecision?.kind === "orderCards");
+  const order = s.decisions.at(-1)!.req;
+  expect(
+    s.engine.applyIntent(0, {
+      type: "respondDecision",
+      decisionId: order.decisionId,
+      response: { kind: "orderCards", order: [s.inst("second-rest").instanceId, s.inst("first-rest").instanceId] },
+    }),
+  ).toEqual({ ok: true });
+  await settle(() => s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "BT3-093"));
+  expect(s.events).toContainEqual(
+    expect.objectContaining({ kind: "cardsMoved", to: "hand", cardIds: ["BT1-027"], handAddition: "transfer" }),
+  );
+  expect(s.events).toContainEqual(
+    expect.objectContaining({
+      kind: "cardsMoved",
+      to: "deckBottom",
+      cardIds: ["ST1-02", "ST1-03"],
+      deckReturnOrder: true,
+    }),
+  );
+  expect(s.state.players[0]!.deck.slice(-2).map((card) => card.cardId)).toEqual(["ST1-02", "ST1-03"]);
 });

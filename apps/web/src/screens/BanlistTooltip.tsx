@@ -1,6 +1,7 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { useRef, useState } from "react";
 import { Tooltip } from "radix-ui";
-import { banlistAsOf, BANNED_PAIRS, bannedPairViolations, getCardDefinition } from "@aegis/shared";
+import { banlistAsOf, BANNED_PAIRS, bannedPairViolations } from "@aegis/shared";
 import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
 
@@ -9,6 +10,7 @@ const pairCardIds = BANNED_PAIRS.flatMap((pair) => [pair.cardId, ...pair.conflic
 
 /** The date shown by the selector is the same snapshot used by deck validation. */
 export function BanlistTooltip({ date, label }: { date: string; label: string }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -17,7 +19,7 @@ export function BanlistTooltip({ date, label }: { date: string; label: string })
     .filter((entry) => entry.status !== "banned_pair")
     .sort((a, b) => a.cardId.localeCompare(b.cardId, undefined, { numeric: true }));
   const pairs = bannedPairViolations(pairCardIds, date);
-  const cardName = (id: string) => `${id} · ${getCardDefinition(id)?.nameEn ?? id}`;
+  const cardName = (id: string) => `${id} · ${getCardName(id)}`;
   return (
     <Tooltip.Provider delayDuration={200}>
       <Tooltip.Root open={open} onOpenChange={setOpen}>

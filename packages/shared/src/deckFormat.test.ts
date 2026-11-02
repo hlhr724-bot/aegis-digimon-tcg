@@ -25,6 +25,32 @@ describe("deck formats", () => {
       expect(formatCardViolation(id, "BT13")).toBeUndefined();
     for (const id of ["BT14-033", "ST15-01", "P-123", "LM-051"]) expect(formatCardViolation(id, "BT13")).toBeDefined();
   });
+  it.each([
+    ["LM-001", "EX5", "BT15"],
+    ["LM-020", "EX5", "BT15"],
+    ["LM-021", "BT18", "EX8"],
+    ["LM-038", "BT18", "EX8"],
+    ["LM-039", "BT20", "BT21"],
+    ["LM-044", "BT20", "BT21"],
+    ["LM-045", "EX10", "BT23"],
+    ["LM-050", "EX10", "BT23"],
+    ["LM-051", "EX11", "AD1"],
+    ["LM-056", "EX11", "AD1"],
+    ["LM-057", "EX12", "BT26"],
+    ["LM-062", "EX12", "BT26"],
+  ] as const)("includes %s only after its own English product becomes available", (cardId, before, after) => {
+    expect(formatCardViolation(cardId, before)).toContain("card pool");
+    expect(formatCardViolation(cardId, after)).toBeUndefined();
+    expect(formatCardViolation(cardId, `${after}:unlimited`)).toBeUndefined();
+    expect(formatCardViolation(cardId, "EX13")).toBeUndefined();
+  });
+  it("keeps later LM products outside the EX13 pool", () => {
+    for (const cardId of ["LM-063", "LM-068"]) {
+      expect(formatCardViolation(cardId, "EX13")).toContain("EX13 card pool");
+      expect(formatCardViolation(cardId, "EX13:unlimited")).toContain("EX13 card pool");
+    }
+    expect(formatCardViolation("LM-051", "EX13:pauper")).toContain("C/U");
+  });
   it("uses the historical restrictions, including restrictions later lifted", () => {
     expect(formatCopyLimit("BT13-012", "BT13")).toBe(4);
     expect(formatCopyLimit("BT13-012", "standard")).toBe(1);

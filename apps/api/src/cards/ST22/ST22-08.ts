@@ -37,12 +37,17 @@ const compiled: CompiledCard = {
         },
         {
           effectTextPart: "Then, delete 1 of your opponent's Digimon with as much or less DP as 1 of your Digimon.",
+          kind: "SelectBind",
+          target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1, bindAs: "digimonDpReference" },
+        },
+        {
+          effectTextPart: "Then, delete 1 of your opponent's Digimon with as much or less DP as 1 of your Digimon.",
           kind: "Delete",
           target: {
             filter: {
               controller: "opponent",
               kind: ["Digimon"],
-              dp: { op: "lte", relativeToFilter: { controller: "mine", kind: ["Digimon"] } },
+              relativeTo: { attr: "dp", op: "lte", selectionRef: "digimonDpReference" },
             },
             count: 1,
           },

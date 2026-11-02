@@ -11,6 +11,7 @@ import {
   type DigiXrosNameOrTraitRef,
   type DigiXrosRequirement,
 } from "@aegis/shared";
+import { hasDistinctRepresentatives } from "@aegis/shared/effects/hasDistinctRepresentatives";
 
 function includesFolded(values: readonly string[] | undefined, wanted: string): boolean {
   return values?.some((value) => value.toLocaleLowerCase() === wanted.toLocaleLowerCase()) === true;
@@ -96,9 +97,12 @@ function selectionFits(requirement: DigiXrosRequirement, candidates: DigiXrosMat
       return new Set(candidates.map((candidate) => candidate.definition.cardId)).size === candidates.length;
     }
     if (slot.differentNames === true) {
-      return (
-        new Set(candidates.map((candidate) => candidate.definition.nameEn.toLocaleLowerCase())).size ===
-        candidates.length
+      return hasDistinctRepresentatives(
+        candidates.map((candidate) =>
+          [...effectiveExactNames(candidate.definition), ...(candidate.digiXrosNames ?? [])].map((name) =>
+            name.toLocaleLowerCase(),
+          ),
+        ),
       );
     }
     return true;

@@ -12,13 +12,14 @@ describe("Discord 1557652222744199228 Vademon memory and source presentation", (
       const opponent = turnSeat === 0 ? 1 : 0;
       // Public trace: payCost and digivolve describe the same 6 -> 5 mutation.
       const events: ServerEvent[] = [
+        { kind: "phaseChanged", phase: "Main", turnSeat, turnCount: 1 },
         { kind: "memoryChanged", from: 6, to: 5, reason: "payCost" },
         { kind: "memoryChanged", from: 6, to: 5, reason: "digivolve" },
         { kind: "memoryChanged", from: 5, to: 8, reason: "overflow" },
       ];
       expect(buildMatchLog(events, turnSeat, new Map(), translator("pt-BR")).map((line) => line.text)).toEqual([
-        "Memória alterada: 5 → 8",
-        "Memória alterada: 6 → 5",
+        "Memória de Você: 5 → 8",
+        "Memória de Você: 6 → 5",
       ]);
       expect([6, 5, 8].map((memory) => displayMemory({ turnSeat, memory }, turnSeat))).toEqual([6, 5, 8]);
       expect([6, 5, 8].map((memory) => displayMemory({ turnSeat, memory }, opponent))).toEqual([-6, -5, -8]);

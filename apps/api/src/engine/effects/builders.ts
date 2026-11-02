@@ -1,3 +1,5 @@
+import { createScopedEffectPrimitives } from "#api/engine/effects/scopes/createScopedEffectPrimitives";
+import { ScopedPrimitiveKind } from "#api/engine/effects/scopes/ScopedPrimitiveKind";
 import { peekCheckedCard } from "../security/checkedCard.js";
 import type { CardSource } from "./CardSource.js";
 import type { Effect } from "./Effect.js";
@@ -12,6 +14,8 @@ import type { EffectContext } from "./EffectContext.js";
  * Card modules import these (never construct an Effect by hand).
  */
 export interface BuilderOptions {
+  canCancelBeforeTargets?: boolean;
+  activationTextEmphasis?: string;
   source: CardSource;
   /** Original declarative trigger, when the effect came from the IR interpreter. */
   irTrigger?: string;
@@ -99,7 +103,9 @@ function build(opts: BuilderOptions, flags: BuilderFlags): Effect {
   return {
     ...(opts.irTrigger !== undefined ? { irTrigger: opts.irTrigger, activationDeferred: true } : {}),
     effectKey: opts.effectKey,
+    ...(opts.canCancelBeforeTargets === true ? { canCancelBeforeTargets: true } : {}),
     description: opts.description,
+    ...(opts.activationTextEmphasis === undefined ? {} : { activationTextEmphasis: opts.activationTextEmphasis }),
     ...(opts.timingOverride !== undefined ? { timingOverride: opts.timingOverride } : {}),
     optional: opts.optional ?? false,
     isInherited: opts.isInherited ?? false,
@@ -198,8 +204,9 @@ export const onDeletion = (opts: BuilderOptions): Effect =>
       if (
         deletedHost !== undefined &&
         !ctx.game.state.players.some((player) => player.trash.some((card) => card.instanceId === deletedHost))
-      )
+      ) {
         return false;
+      }
       // A non-inherited effect only exists while its card is the top card of a
       // Digimon. The deletion window carries the stack-card subset captured
       // before movement, so do not collect ordinary effects from cards that
@@ -393,63 +400,12 @@ export const staticModifier = (opts: BuilderOptions): Effect => {
   const key = `${opts.effectKey}`;
   const scopedResolve: BuilderOptions["resolve"] = (ctx) => {
     const autoKey = `${ctx.source.instanceId}/${key}`;
-    const scopedFx = {
-      ...ctx.fx,
-      // Static keyword grants belong to the continuously re-derived tier by construction.
-      // Mark them explicitly so an overlapping triggered resolution cannot toggle the engine's
-      // ambient continuous-mode flag and accidentally make the grant permanent or erase it.
-      grantKeyword: (...args: Parameters<EffectContext["fx"]["grantKeyword"]>) => {
-        const [permanentId, keyword, duration, amount, grantOpts] = args;
-        return ctx.fx.grantKeyword(permanentId, keyword, duration, amount, {
-          ...grantOpts,
-          continuous: true,
-        });
-      },
-      subscribeSubTrigger: (sub: Parameters<EffectContext["fx"]["subscribeSubTrigger"]>[0]) =>
-        ctx.fx.subscribeSubTrigger({
-          ...sub,
-          continuous: sub.continuous ?? true,
-          ...(opts.maxPerTurn !== undefined && opts.maxPerTurn >= 1
-            ? { oncePerTurnKey: sub.oncePerTurnKey ?? autoKey }
-            : {}),
-        }),
-      changeEvoCost: (
-        filter: Parameters<EffectContext["fx"]["changeEvoCost"]>[0],
-        delta: number,
-        changeOpts: Parameters<EffectContext["fx"]["changeEvoCost"]>[2],
-      ) =>
-        ctx.fx.changeEvoCost(filter, delta, {
-          ...changeOpts,
-          continuous: true,
-        }),
-      modifyDP: (
-        permanentId: Parameters<EffectContext["fx"]["modifyDP"]>[0],
-        delta: Parameters<EffectContext["fx"]["modifyDP"]>[1],
-        duration: Parameters<EffectContext["fx"]["modifyDP"]>[2],
-        modifyOpts: Parameters<EffectContext["fx"]["modifyDP"]>[3],
-      ) =>
-        ctx.fx.modifyDP(permanentId, delta, duration, {
-          ...modifyOpts,
-          continuous: true,
-        }),
-      subscribeReplacement: (replacement: Parameters<EffectContext["fx"]["subscribeReplacement"]>[0]) =>
-        ctx.fx.subscribeReplacement({
-          ...replacement,
-          ...(opts.maxPerTurn !== undefined && opts.maxPerTurn >= 1
-            ? { oncePerTurnKey: replacement.oncePerTurnKey ?? autoKey }
-            : {}),
-        }),
-      restrict: (
-        permanentId: Parameters<EffectContext["fx"]["restrict"]>[0],
-        restriction: Parameters<EffectContext["fx"]["restrict"]>[1],
-        duration: Parameters<EffectContext["fx"]["restrict"]>[2],
-        restrictOpts: Parameters<EffectContext["fx"]["restrict"]>[3],
-      ) =>
-        ctx.fx.restrict(permanentId, restriction, duration, {
-          ...restrictOpts,
-          continuous: true,
-        }),
-    };
+    const scopedFx = createScopedEffectPrimitives({
+      ctx,
+      kind: ScopedPrimitiveKind.STATIC.value,
+      autoKey,
+      maxPerTurn: opts.maxPerTurn,
+    });
     return opts.resolve({ ...ctx, fx: scopedFx });
   };
   return build({ ...opts, resolve: scopedResolve }, {});
@@ -457,17 +413,7 @@ export const staticModifier = (opts: BuilderOptions): Effect => {
 
 export const digivolveCostStatic = (opts: BuilderOptions): Effect => {
   const resolve = (ctx: EffectContext) =>
-    opts.resolve({
-      ...ctx,
-      fx: {
-        ...ctx.fx,
-        changeEvoCost: (filter, delta, changeOpts) =>
-          ctx.fx.changeEvoCost(filter, delta, {
-            ...changeOpts,
-            continuous: true,
-          }),
-      },
-    });
+    opts.resolve({ ...ctx, fx: createScopedEffectPrimitives({ ctx, kind: ScopedPrimitiveKind.EVOLUTION_COST.value }) });
   return build({ ...opts, resolve }, { baseGuard: () => true });
 };
 
@@ -522,19 +468,7 @@ export const securityStatic = (opts: BuilderOptions): Effect =>
       resolve: (ctx) =>
         opts.resolve({
           ...ctx,
-          fx: {
-            ...ctx.fx,
-            modifyDP: (
-              permanentId: Parameters<EffectContext["fx"]["modifyDP"]>[0],
-              delta: Parameters<EffectContext["fx"]["modifyDP"]>[1],
-              duration: Parameters<EffectContext["fx"]["modifyDP"]>[2],
-              modifyOpts: Parameters<EffectContext["fx"]["modifyDP"]>[3],
-            ) =>
-              ctx.fx.modifyDP(permanentId, delta, duration, {
-                ...modifyOpts,
-                continuous: true,
-              }),
-          },
+          fx: createScopedEffectPrimitives({ ctx, kind: ScopedPrimitiveKind.SECURITY.value }),
         }),
     },
     { isSecurity: true, baseGuard: isSecuritySource },

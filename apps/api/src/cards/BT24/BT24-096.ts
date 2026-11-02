@@ -47,6 +47,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete 1 of your opponent's level 6 or higher Digimon.",
           kind: "Delete",
           target: {
             filter: {
@@ -61,6 +62,7 @@ export const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart: "If this effect didn't delete, trash the top 3 cards of your opponent's deck.",
           kind: "TrashTopDeck",
           controller: "opponent",
           amount: 3,

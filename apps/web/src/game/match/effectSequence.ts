@@ -407,7 +407,9 @@ export function createEffectSequence(options: EffectSequenceOptions = {}): Effec
   return {
     observeBatch(batchId, stateVersion, events) {
       latestVersion = Math.max(latestVersion, stateVersion);
-      const carriedBy = open.at(-1);
+      const innermostOpen = open.at(-1);
+      const nestedStillPlaying = innermostOpen !== undefined && [...pending].some((unit) => unit.id > innermostOpen.id);
+      const carriedBy = nestedStillPlaying ? undefined : innermostOpen;
       const opened: { unit: EffectUnit; eventIndex: number }[] = [];
       const grouped: { unit: EffectUnit; eventIndex: number }[] = [];
       let closed: EffectUnit | undefined;

@@ -28,8 +28,19 @@ export const compiled: CompiledCard = {
           kind: "RevealAdd",
           revealCount: 3,
           add: [
-            { filter: leopardmonTextCard, count: 1, to: "hand" },
-            { filter: beastAnimalSovereignDigimon, count: 1, to: "hand" },
+            {
+              effectTextPart: "Add 1 card with [Leopardmon] in its text",
+              filter: leopardmonTextCard,
+              count: 1,
+              to: "hand",
+            },
+            {
+              effectTextPart:
+                "1 Digimon card with [Beast], [Animal] or [Sovereign], other than [Sea Animal], in any of its traits among them to the hand.",
+              filter: beastAnimalSovereignDigimon,
+              count: 1,
+              to: "hand",
+            },
           ],
           rest: "deckBottom",
           raw: "Reveal the top 3 cards of your deck. Add 1 card with [Leopardmon] in its text and 1 Digimon card with [Beast], [Animal] or [Sovereign], other than [Sea Animal], in any of its traits among them to the hand. Return the rest to the bottom of the deck.",

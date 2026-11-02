@@ -1,5 +1,6 @@
 import "#api/cards/index";
 import { describe, expect, it } from "vitest";
+import type { ServerEvent } from "@aegis/shared";
 import { Phase } from "@aegis/shared/schema/enums";
 import { advance } from "#api/engine/testkit/advance";
 import { settle } from "#api/engine/testkit/harness";
@@ -52,7 +53,8 @@ describe("Habakirimon's declined security trash still spends its shared [Once Pe
       expect(host.isSuspended).toBe(true);
       expect(s.state.players[0]!.security).toHaveLength(3);
       const habakirimonResolutions = s.events.filter(
-        (event) => event.kind === "effectResolved" && event.sourceCardId === "BT25-043",
+        (event): event is Extract<ServerEvent, { kind: "effectResolved" }> =>
+          event.kind === "effectResolved" && event.sourceCardId === "BT25-043",
       );
       expect(habakirimonResolutions.map((event) => event.timing)).toEqual(["WhenDigivolving"]);
     } finally {

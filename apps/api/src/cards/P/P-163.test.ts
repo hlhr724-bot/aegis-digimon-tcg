@@ -23,15 +23,16 @@ describe("P-163 Dokugumon", () => {
     assertNoLoudGap(s);
   });
 
-  it("encodes the matching When Digivolving effect and NSo requirement", () => {
+  it("encodes the printed On Play and On Deletion effects and NSo requirement", () => {
     const compiled = runtimeCompiledCard("P-163")!;
-    expect(compiled.effects.find((effect) => effect.trigger === "WhenDigivolving")).toMatchObject({
+    expect(compiled.effects.map((effect) => effect.trigger)).toEqual(["OnPlay", "OnDeletion"]);
+    expect(compiled.effects.find((effect) => effect.trigger === "OnDeletion")).toMatchObject({
       actions: [{ kind: "Suspend", target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 } }],
     });
     expect(compiled.digivolutionRequirement).toEqual([{ level: 3, traits: ["NSo"], cost: 2, isAlternate: true }]);
   });
 
-  it("uses the alternate NSo evolution path and suspends on When Digivolving", async () => {
+  it("uses the alternate NSo evolution path without a When Digivolving suspension", async () => {
     const s = setupEngine(
       {
         0: {
@@ -54,7 +55,7 @@ describe("P-163 Dokugumon", () => {
     ).toEqual({ ok: true });
     await settle(() => s.perm("nsoHost").topCard.cardId === "P-163");
     expect(s.perm("nsoHost").topCard.cardId).toBe("P-163");
-    expect(s.perm("target").isSuspended).toBe(true);
+    expect(s.perm("target").isSuspended).toBe(false);
     expect(s.state.memory).toBe(8);
     assertNoLoudGap(s);
   });

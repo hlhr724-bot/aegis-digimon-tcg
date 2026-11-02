@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 card with [Growlmon] or [Gallantmon] in its name",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Takato Matsuki] among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

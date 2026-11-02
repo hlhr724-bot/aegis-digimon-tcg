@@ -27,6 +27,8 @@ const compiled: CompiledCard = {
           optional: true,
         },
         {
+          effectTextPart:
+            "Then, choose 1 of each player's Digimon with the highest play cost and delete all other Digimon.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -36,10 +38,11 @@ const compiled: CompiledCard = {
             },
             count: 1,
             bindAs: "sparedMine",
-            upTo: true,
           },
         },
         {
+          effectTextPart:
+            "Then, choose 1 of each player's Digimon with the highest play cost and delete all other Digimon.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -49,7 +52,6 @@ const compiled: CompiledCard = {
             },
             count: 1,
             bindAs: "sparedOpponent",
-            upTo: true,
           },
         },
         {
@@ -82,6 +84,8 @@ const compiled: CompiledCard = {
           optional: true,
         },
         {
+          effectTextPart:
+            "Then, choose 1 of each player's Digimon with the highest play cost and delete all other Digimon.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -91,10 +95,11 @@ const compiled: CompiledCard = {
             },
             count: 1,
             bindAs: "sparedMine",
-            upTo: true,
           },
         },
         {
+          effectTextPart:
+            "Then, choose 1 of each player's Digimon with the highest play cost and delete all other Digimon.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -104,7 +109,6 @@ const compiled: CompiledCard = {
             },
             count: 1,
             bindAs: "sparedOpponent",
-            upTo: true,
           },
         },
         {

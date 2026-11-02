@@ -21,12 +21,14 @@ export class LocalLogWriter {
   private stream?: WriteStream;
   private date = "";
   private bytes = 0;
+  private dropped = 0;
   private readonly pending = new Set<Promise<void>>();
   private readonly timer: ReturnType<typeof setInterval>;
 
   constructor(
     private readonly directory: string,
     private readonly maxBytes = 64 * 1024 * 1024,
+    private readonly maxBufferedBytes = 32 * 1024 * 1024,
   ) {
     mkdirSync(directory, { recursive: true });
     this.prune();
@@ -72,6 +74,14 @@ export class LocalLogWriter {
         this.report(error);
         if (this.stream?.destroyed) this.stream = undefined;
       });
+    }
+    if (this.stream.writableLength >= this.maxBufferedBytes) {
+      this.dropped++;
+      return;
+    }
+    if (this.dropped > 0) {
+      this.report(`dropped ${this.dropped} lines while the disk was behind`);
+      this.dropped = 0;
     }
     this.bytes += Buffer.byteLength(line);
     this.stream.write(line);

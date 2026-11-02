@@ -92,6 +92,31 @@ describe("BT24-016 Lamiamon", () => {
     expect(s.state.memory).toBe(3);
   });
 
+  it("does not allow declining evolution after paying the Dimetromon placement cost", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [{ card: "BT24-016", as: "lamiamon" }],
+          trash: [{ card: "BT24-012", as: "dimetromon" }],
+          battleArea: [
+            { card: "BT23-005", as: "elizamon" },
+            { card: "BT24-082", as: "owen" },
+          ],
+        },
+      },
+      { autoAcceptOptional: true },
+    );
+    s.state.memory = 5;
+    await s.ready();
+    const effectKey = handMainEffectKey(s, s.inst("lamiamon").instanceId)!;
+    expect(
+      s.engine.applyIntent(0, { type: "activateEffect", sourceInstanceId: s.inst("lamiamon").instanceId, effectKey }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.perm("elizamon").topCard.instanceId).toBe(s.inst("lamiamon").instanceId);
+    expect(s.state.memory).toBe(3);
+  });
+
   it("cannot use the hand evolution without Owen Dreadnought", async () => {
     const s = setupEngine(
       {
@@ -164,7 +189,8 @@ describe("BT24-016 Lamiamon", () => {
     expect(s.events).toContainEqual({
       kind: "cardsMoved",
       instanceIds: [s.inst("placed").instanceId],
-      from: "various",
+      from: "hand",
+      fromSeat: 1,
       to: "security",
       seat: 1,
     });

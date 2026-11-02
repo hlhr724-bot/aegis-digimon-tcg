@@ -1,3 +1,11 @@
+import { printedSentence } from "#api/engine/decisions/printedSentence";
+import { OptionalActivationCancelled } from "#api/engine/effects/OptionalActivationCancelled";
+import { canCancelOptionalActivation } from "#api/engine/effects/interpreter/canCancelOptionalActivation";
+import { keepsFollowUpAfterDeclinedTarget } from "#api/engine/effects/interpreter/keepsFollowUpAfterDeclinedTarget";
+import { getSingleHandActionCostBenefit } from "#api/engine/effects/interpreter/getSingleHandActionCostBenefit";
+import { getSingleHandCostBenefit } from "#api/engine/effects/interpreter/getSingleHandCostBenefit";
+import { getDecisionActionSummary } from "#api/engine/effects/interpreter/getDecisionActionSummary";
+import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
 // Running one CardEffect, and deciding which timing window it belongs to.
 
 import type { Effect } from "../Effect.js";
@@ -32,6 +40,7 @@ import { isBlitzGrant } from "./actions/combat.js";
 import { canAttemptDnaDigivolve } from "./actions/dna.js";
 import { borrowedProcessingCost } from "./borrowedProcessingCost.js";
 import { canAttemptDigivolveBeforeCost } from "./actions/digivolve.js";
+import { canAttemptDigivolveViaPlacement } from "./actions/canAttemptDigivolveViaPlacement.js";
 import { isSecuritySearchDigivolvePair, runSecuritySearchDigivolve } from "./actions/securitySearchDigivolve.js";
 import { canAttemptPlaceUnder } from "./actions/placeUnder.js";
 import { canAttemptLink, canAttemptMindLink } from "./actions/link.js";
@@ -608,14 +617,25 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
     paysCostFirst ||
     action.kind === "CostGatedBlock" ||
     action.kind === "CostModifier";
+  const outerSingleHandCostBenefit = ctx.activeSingleHandCostBenefit;
+  ctx.activeSingleHandCostBenefit = getSingleHandActionCostBenefit({ action });
+  const outerDecisionSummary = ctx.activeDecisionSummary;
+  ctx.activeDecisionSummary = getDecisionActionSummary({ action });
   const outerEffectTextPart = ctx.activeEffectTextPart;
   const outerEffectTextEmphasis = ctx.activeEffectTextEmphasis;
   const outerPayingCostDepth = ctx.payingCostDepth;
   const outerTargetFate = ctx.activeTargetFate;
   if (action.effectTextPart !== undefined) ctx.activeEffectTextPart = action.effectTextPart;
+  const printedCostClause =
+    action.effectTextPart === undefined && effectiveCost.raw !== undefined && ctx.activeEffectText !== undefined
+      ? printedSentence(ctx.activeEffectText, effectiveCost.raw)
+      : undefined;
   if (costChoice && paysCostFirst && effectiveCost.raw !== undefined) {
     ctx.activeEffectTextPart = ctx.activeEffectText;
-    ctx.activeEffectTextEmphasis = effectiveCost.raw;
+    ctx.activeEffectTextEmphasis = action.costTextEmphasis ?? effectiveCost.raw;
+  } else if (printedCostClause !== undefined) {
+    ctx.activeEffectTextPart = ctx.activeEffectText;
+    ctx.activeEffectTextEmphasis = action.costTextEmphasis ?? printedCostClause;
   }
   let chosen: boolean;
   try {
@@ -648,6 +668,8 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
         ));
     }
   } finally {
+    ctx.activeSingleHandCostBenefit = outerSingleHandCostBenefit;
+    ctx.activeDecisionSummary = outerDecisionSummary;
     ctx.activeEffectTextPart = outerEffectTextPart;
     ctx.activeEffectTextEmphasis = outerEffectTextEmphasis;
     ctx.payingCostDepth = outerPayingCostDepth;
@@ -663,226 +685,279 @@ async function decideProcessingConditionAtClause(ctx: EffectContext, action: Act
 }
 
 export async function runEffect(ctx: EffectContext, effect: CardEffect): Promise<void> {
-  const declaredProcessingCondition = ctx.declaredProcessingCondition === true;
-  // Consume even if this resolution fizzles before any action can run.
-  ctx.declaredProcessingCondition = false;
-  if (effect.condition && !evaluateCondition(ctx, effect.condition)) return;
-  // Turn-condition gate for triggers that carry an explicit turnCondition field rather than
-  // encoding the turn direction in the trigger name (e.g. whenTrashedFromBattleArea, BT19-095).
-  if (effect.turnCondition !== undefined) {
-    const isOwnerTurn = ctx.game.state.turnSeat === ctx.source.ownerSeat;
-    if (effect.turnCondition === "yourTurn" && !isOwnerTurn) return;
-    if (effect.turnCondition === "opponentsTurn" && isOwnerTurn) return;
-  }
-  // Fresh selection-binding store for this resolution (SelectBind -> later relativeTo refs).
-  // A caller that already seeded `selections` is asking to be resolved ON ITS OWN context, because
-  // it reads back what the actions write there (GameEngine.fireBeforePayCost and its
-  // `playCostDelta`). Copying would strand every such write, so only an unseeded context is cloned.
-  // Nested effects receive their own choice; the declaration commits only this clause.
-  const ctxWithSelections: EffectContext = ctx.selections ? ctx : { ...ctx, selections: new Map() };
-  // Restrictions belong to this effect resolution only, so the inherited set is swapped for a clone
-  // and put back afterwards: a nested or subsequent effect must not retain this card's restriction.
-  const outerRestrictions = ctxWithSelections.effectRestrictions;
-  ctxWithSelections.effectRestrictions = new Set(ctx.effectRestrictions ?? []);
-  const sourceDefinition = ctx.source.definition ?? ctx.game.definitionOf({ cardId: ctx.source.cardId } as never);
-  ctxWithSelections.activeTiming =
-    effect.timingOverride ?? (ctx.activeTiming === "None" ? undefined : ctx.activeTiming) ?? effect.trigger;
-  ctxWithSelections.activeEffectIsInherited = effect.isInherited === true;
-  ctxWithSelections.activeEffectText =
-    effect.description ??
-    (effect.isInherited
-      ? sourceDefinition?.inheritedEffectText
-      : // Resident [Security][Your Turn] clauses are printed in the main text.
-        // Only the checked-card skill uses the separate security-effect text.
-        effect.trigger === "Security"
-        ? sourceDefinition?.securityEffectText
-        : // [When Linking] and every linked-card effect are printed only in the link box.
-          effect.trigger === "WhenLinking" || effect.isLinked === true
-          ? (sourceDefinition?.linkEffect ?? sourceDefinition?.effectText)
-          : sourceDefinition?.effectText);
-  // A whole-clause cost is an activation cost for every action below it (Comprehensive §5-3):
-  // preflight it before anything resolves and pay it once. An action inside the clause that
-  // aborts — an opponent declining an optional — does not refund it.
-  if (effect.cost !== undefined) {
-    // The selection this cost asks for is the clause's own question wherever the resolver
-    // skipped the separate optional prompt (see `costIsAskedAsSelection`).
-    ctxWithSelections.costIsTheQuestion = effect.optional === true && costIsAskedAsSelection(effect.cost);
-    if (
-      effect.cost.optional === true &&
-      canPayCost(ctxWithSelections, effect.cost) &&
-      !(await ctxWithSelections.ask.optional(ctxWithSelections, effect.cost.raw ?? "Pay processing condition?"))
-    ) {
-      if (ctx.oncePerTurnActivationChosen !== true) ctx.oncePerTurnActivationDeclined = true;
-      ctxWithSelections.effectRestrictions = outerRestrictions;
-      return;
-    }
-    const canPay = canPayCost(ctxWithSelections, effect.cost);
-    if (canPay && !costIsAskedAsSelection(effect.cost)) ctxWithSelections.onActivationChosen?.();
-    const paid = canPay && (await payCost(ctxWithSelections, effect.cost));
-    ctxWithSelections.costIsTheQuestion = undefined;
-    if (!paid) {
-      ctxWithSelections.effectRestrictions = outerRestrictions;
-      return;
-    }
-    ctxWithSelections.onActivationChosen?.();
-    ctxWithSelections.oncePerTurnActivationChosen = true;
-    ctxWithSelections.oncePerTurnActivationDeclined = false;
-  }
-  const actions = effect.actions ?? [];
-  // Each "by" processing condition is asked when its own clause is reached, in printed order:
-  // "Suspend 1 ... Then, by trashing ..., may digivolve" resolves the suspend first and only then
-  // offers the optional digivolve (see `decideProcessingConditionAtClause`).
-  const outerPredecidedOptionalActions = ctxWithSelections.predecidedOptionalActions;
-  const outerPredecidedOptionalCosts = ctxWithSelections.predecidedOptionalCosts;
-  const outerPredecidedCostSelections = ctxWithSelections.predecidedCostSelections;
-  const predecidedOptionalActions = new Map<Action, boolean>();
-  const predecidedOptionalCosts = new Map<Action, boolean>();
-  const predecidedCostSelections = new Map<Action, readonly string[]>();
-  ctxWithSelections.predecidedOptionalActions = predecidedOptionalActions;
-  ctxWithSelections.predecidedOptionalCosts = predecidedOptionalCosts;
-  ctxWithSelections.predecidedCostSelections = predecidedCostSelections;
-  if (actions.length === 0 && (effect.keywords?.length ?? 0) > 0) {
-    const durationStr =
-      effect.trigger === "Static" || effect.trigger === "Rule" || effect.trigger === "YourTurn"
-        ? "permanent"
-        : "forTheTurn";
-    for (const kw of effect.keywords ?? []) {
-      await runAction(ctxWithSelections, {
-        kind: "GainKeyword",
-        target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
-        keyword: {
-          keyword: kw.keyword,
-          ...(kw.amount !== undefined ? { amount: kw.amount } : {}),
-        },
-        duration: durationStr,
-      });
-    }
-    ctxWithSelections.predecidedOptionalActions = outerPredecidedOptionalActions;
-    ctxWithSelections.predecidedOptionalCosts = outerPredecidedOptionalCosts;
-    ctxWithSelections.predecidedCostSelections = outerPredecidedCostSelections;
-    return;
-  }
-  // A continuous record may carry both resident keywords and executable actions. Do not
-  // drop the keywords merely because the action list is non-empty (BT13-027 combines
-  // opponent-turn Blocker with a when-opponent-attacks subscription).
-  if (
-    effect.trigger === "Static" ||
-    effect.trigger === "Rule" ||
-    effect.trigger === "YourTurn" ||
-    effect.trigger === "OpponentsTurn" ||
-    effect.trigger === "AllTurns"
-  ) {
-    const duration =
-      effect.trigger === "Static" || effect.trigger === "Rule" || effect.trigger === "YourTurn"
-        ? "permanent"
-        : "forTheTurn";
-    for (const keyword of effect.keywords ?? []) {
-      // Delay on a continuous trigger is an activation marker whose trash cost is
-      // installed by `withIntrinsicDelayGate`; it is not a resident keyword grant.
-      if (keyword.keyword === "Reboot" || keyword.keyword === "Delay" || ACTION_TYPE_KEYWORDS.has(keyword.keyword))
-        continue;
-      await runAction(ctxWithSelections, {
-        kind: "GainKeyword",
-        target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
-        keyword: {
-          keyword: keyword.keyword,
-          ...(keyword.amount !== undefined ? { amount: keyword.amount } : {}),
-        },
-        duration,
-      });
-    }
-  }
-  const isRebootMarker =
-    effect.trigger === "Static" && (effect.keywords ?? []).some((keyword) => keyword.keyword === "Reboot");
-  if (isRebootMarker) {
-    const self = ctxWithSelections.source.permanent();
-    if (self !== undefined) {
-      ctxWithSelections.fx.grantKeyword(self.permanentId, "Reboot", EffectDuration.Permanent);
-    }
-  }
-  // `placedCards` is scoped to this CardEffect resolution, not to the lifetime of a reusable
-  // context. Most callers create a fresh context, but pay-time and nested effect paths may seed
-  // `selections` and intentionally reuse one; reset here so a prior PlaceUnder cannot inflate a
-  // later effect's count. Restore the caller's outer accumulator after nested resolution.
-  const outerPlacedUnderInstanceIds = ctxWithSelections.placedUnderInstanceIdsThisEffect;
-  ctxWithSelections.placedUnderInstanceIdsThisEffect = [];
+  const outerActivationCancellation = ctx.optionalActivationCancellation;
+  ctx.optionalActivationCancellation = undefined;
   try {
-    const runActionsFrom = async (startIndex: number): Promise<void> => {
-      for (let actionIndex = startIndex; actionIndex < actions.length; actionIndex += 1) {
-        const action = actions[actionIndex]!;
-        // Legacy compiled Reboot records carry a self-Unsuspend action beside the keyword
-        // marker. It describes what Reboot does during the opponent's unsuspend phase; it is
-        // not a continuously re-fired "unsuspend now" action. Executing it in the static pass
-        // makes a Reboot Digimon stand back up immediately after declaring an attack.
-        if (isRebootMarker && action.kind === "Unsuspend") continue;
-        const outerActionPath = ctxWithSelections.activeActionPath;
-        const outerChainsSameTarget = ctxWithSelections.nextActionChainsSameTarget;
-        const outerAttackContinuation = ctxWithSelections.continueEffectAfterAttackDeclaration;
-        const outerOptionalAnswer = ctxWithSelections.presetOptionalAnswer;
-        // An optional attack on the result of an earlier action is a separate
-        // decision: accepting DNA in the plan does not also accept its attack.
+    const declaredProcessingCondition = ctx.declaredProcessingCondition === true;
+    // Consume even if this resolution fizzles before any action can run.
+    ctx.declaredProcessingCondition = false;
+    if (effect.condition && !evaluateCondition(ctx, effect.condition)) return;
+    // Turn-condition gate for triggers that carry an explicit turnCondition field rather than
+    // encoding the turn direction in the trigger name (e.g. whenTrashedFromBattleArea, BT19-095).
+    if (effect.turnCondition !== undefined) {
+      const isOwnerTurn = ctx.game.state.turnSeat === ctx.source.ownerSeat;
+      if (effect.turnCondition === "yourTurn" && !isOwnerTurn) return;
+      if (effect.turnCondition === "opponentsTurn" && isOwnerTurn) return;
+    }
+    // Fresh selection-binding store for this resolution (SelectBind -> later relativeTo refs).
+    // A caller that already seeded `selections` is asking to be resolved ON ITS OWN context, because
+    // it reads back what the actions write there (GameEngine.fireBeforePayCost and its
+    // `playCostDelta`). Copying would strand every such write, so only an unseeded context is cloned.
+    // Nested effects receive their own choice; the declaration commits only this clause.
+    const ctxWithSelections: EffectContext = ctx.selections ? ctx : { ...ctx, selections: new Map() };
+    // Restrictions belong to this effect resolution only, so the inherited set is swapped for a clone
+    // and put back afterwards: a nested or subsequent effect must not retain this card's restriction.
+    const outerCancellation = ctxWithSelections.optionalActivationCancellation;
+    const activationIsTentative =
+      canCancelOptionalActivation({ effect }) &&
+      ctx.oncePerTurnActivationChosen !== true &&
+      ctx.isActivationPending?.() !== false;
+    const declinedTargetKeepsFollowUp =
+      activationIsTentative && keepsFollowUpAfterDeclinedTarget({ ctx: ctxWithSelections, effect });
+    ctxWithSelections.optionalActivationCancellation =
+      activationIsTentative && !declinedTargetKeepsFollowUp ? { available: true } : undefined;
+    if (declinedTargetKeepsFollowUp) {
+      ctxWithSelections.onActivationChosen?.();
+      ctxWithSelections.oncePerTurnActivationChosen = true;
+      ctxWithSelections.oncePerTurnActivationDeclined = false;
+    }
+    const outerRestrictions = ctxWithSelections.effectRestrictions;
+    ctxWithSelections.effectRestrictions = new Set(ctx.effectRestrictions ?? []);
+    const sourceDefinition = ctx.source.definition ?? ctx.game.definitionOf({ cardId: ctx.source.cardId } as never);
+    ctxWithSelections.activeTiming =
+      effect.timingOverride ?? (ctx.activeTiming === "None" ? undefined : ctx.activeTiming) ?? effect.trigger;
+    ctxWithSelections.activeEffectIsInherited = effect.isInherited === true;
+    ctxWithSelections.activeEffectText =
+      effect.description ??
+      (effect.isInherited
+        ? sourceDefinition?.inheritedEffectText
+        : // Resident [Security][Your Turn] clauses are printed in the main text.
+          // Only the checked-card skill uses the separate security-effect text.
+          effect.trigger === "Security"
+          ? sourceDefinition?.securityEffectText
+          : // [When Linking] and every linked-card effect are printed only in the link box.
+            effect.trigger === "WhenLinking" || effect.isLinked === true
+            ? (sourceDefinition?.linkEffect ?? sourceDefinition?.effectText)
+            : sourceDefinition?.effectText);
+    // A whole-clause cost is an activation cost for every action below it (Comprehensive §5-3):
+    // preflight it before anything resolves and pay it once. An action inside the clause that
+    // aborts — an opponent declining an optional — does not refund it.
+    if (effect.cost !== undefined) {
+      const outerSingleHandCostBenefit = ctxWithSelections.activeSingleHandCostBenefit;
+      ctxWithSelections.activeSingleHandCostBenefit = getSingleHandCostBenefit({
+        actions: effect.actions,
+        cost: effect.cost,
+      });
+      const outerDecisionSummary = ctxWithSelections.activeDecisionSummary;
+      ctxWithSelections.activeDecisionSummary = getDecisionEffectSummary({
+        actions: effect.actions,
+        cost: effect.cost,
+      });
+      try {
+        // The selection this cost asks for is the clause's own question wherever the resolver
+        // skipped the separate optional prompt (see `costIsAskedAsSelection`).
+        ctxWithSelections.costIsTheQuestion = effect.optional === true && costIsAskedAsSelection(effect.cost);
         if (
-          actionIndex > 0 &&
-          action.kind === "Attack" &&
-          action.optional === true &&
-          action.target.filter.boundRef !== undefined &&
-          outerOptionalAnswer === true
-        )
-          ctxWithSelections.presetOptionalAnswer = undefined;
-        ctxWithSelections.activeActionPath = `${actionIndex}`;
-        ctxWithSelections.nextActionChainsSameTarget =
-          (actions[actionIndex + 1] as { target?: { sameTarget?: boolean } } | undefined)?.target?.sameTarget === true;
-        let attackContinuationRan = false;
-        // A processed ＜Blitz＞ attacks like an Attack clause, so the rest of its effect also
-        // resolves right after the declaration, before When Attacking effects (Q777).
-        if ((mayDeclareAttack(action) || isBlitzGrant(action)) && actionIndex + 1 < actions.length) {
-          ctxWithSelections.continueEffectAfterAttackDeclaration = async () => {
-            attackContinuationRan = true;
-            await runActionsFrom(actionIndex + 1);
-          };
+          effect.cost.optional === true &&
+          canPayCost(ctxWithSelections, effect.cost) &&
+          !(await ctxWithSelections.ask.optional(ctxWithSelections, effect.cost.raw ?? "Pay processing condition?"))
+        ) {
+          if (ctx.oncePerTurnActivationChosen !== true) ctx.oncePerTurnActivationDeclined = true;
+          ctxWithSelections.effectRestrictions = outerRestrictions;
+          return;
         }
-        let abort: boolean;
-        try {
-          const resolvingAction =
-            declaredProcessingCondition && actionIndex === 0 && action.kind === "CostGatedBlock"
-              ? { ...action, optional: false, cost: { ...action.cost, optional: false } }
-              : action;
-          // Only awaited when there is a condition to decide: an extra tick before every action
-          // would let callers observe an action that has not started yet.
-          if (actionIndex > 0 && isPredecidableProcessingCost(resolvingAction))
-            await decideProcessingConditionAtClause(ctxWithSelections, resolvingAction, actionIndex);
-          const nextAction = actions[actionIndex + 1];
-          if (isSecuritySearchDigivolvePair(resolvingAction, nextAction)) {
-            abort = await runSecuritySearchDigivolve(
-              ctxWithSelections,
-              resolvingAction as Extract<Action, { kind: "Search" }>,
-              nextAction as Extract<Action, { kind: "Digivolve" }>,
-            );
-            actionIndex += 1;
-          } else {
-            abort = await runAction(ctxWithSelections, resolvingAction);
-          }
-        } finally {
-          ctxWithSelections.activeActionPath = outerActionPath;
-          ctxWithSelections.nextActionChainsSameTarget = outerChainsSameTarget;
-          ctxWithSelections.continueEffectAfterAttackDeclaration = outerAttackContinuation;
-          ctxWithSelections.presetOptionalAnswer = outerOptionalAnswer;
+        const canPay = canPayCost(ctxWithSelections, effect.cost);
+        if (canPay && !costIsAskedAsSelection(effect.cost)) ctxWithSelections.onActivationChosen?.();
+        const paid = canPay && (await payCost(ctxWithSelections, effect.cost));
+        ctxWithSelections.costIsTheQuestion = undefined;
+        if (!paid) {
+          ctxWithSelections.effectRestrictions = outerRestrictions;
+          return;
         }
-        if (abort || attackContinuationRan) return;
+        ctxWithSelections.onActivationChosen?.();
+        ctxWithSelections.oncePerTurnActivationChosen = true;
+        ctxWithSelections.oncePerTurnActivationDeclined = false;
+      } finally {
+        ctxWithSelections.activeSingleHandCostBenefit = outerSingleHandCostBenefit;
+        ctxWithSelections.activeDecisionSummary = outerDecisionSummary;
       }
-    };
-    await runActionsFrom(0);
+    }
+    const actions = effect.actions ?? [];
+    // Each "by" processing condition is asked when its own clause is reached, in printed order:
+    // "Suspend 1 ... Then, by trashing ..., may digivolve" resolves the suspend first and only then
+    // offers the optional digivolve (see `decideProcessingConditionAtClause`).
+    const outerPredecidedOptionalActions = ctxWithSelections.predecidedOptionalActions;
+    const outerPredecidedOptionalCosts = ctxWithSelections.predecidedOptionalCosts;
+    const outerPredecidedCostSelections = ctxWithSelections.predecidedCostSelections;
+    const predecidedOptionalActions = new Map<Action, boolean>();
+    const predecidedOptionalCosts = new Map<Action, boolean>();
+    const predecidedCostSelections = new Map<Action, readonly string[]>();
+    ctxWithSelections.predecidedOptionalActions = predecidedOptionalActions;
+    ctxWithSelections.predecidedOptionalCosts = predecidedOptionalCosts;
+    ctxWithSelections.predecidedCostSelections = predecidedCostSelections;
+    if (actions.length === 0 && (effect.keywords?.length ?? 0) > 0) {
+      const durationStr =
+        effect.trigger === "Static" || effect.trigger === "Rule" || effect.trigger === "YourTurn"
+          ? "permanent"
+          : "forTheTurn";
+      for (const kw of effect.keywords ?? []) {
+        await runAction(ctxWithSelections, {
+          kind: "GainKeyword",
+          target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
+          keyword: {
+            keyword: kw.keyword,
+            ...(kw.amount !== undefined ? { amount: kw.amount } : {}),
+          },
+          duration: durationStr,
+        });
+      }
+      ctxWithSelections.predecidedOptionalActions = outerPredecidedOptionalActions;
+      ctxWithSelections.predecidedOptionalCosts = outerPredecidedOptionalCosts;
+      ctxWithSelections.predecidedCostSelections = outerPredecidedCostSelections;
+      return;
+    }
+    // A continuous record may carry both resident keywords and executable actions. Do not
+    // drop the keywords merely because the action list is non-empty (BT13-027 combines
+    // opponent-turn Blocker with a when-opponent-attacks subscription).
+    if (
+      effect.trigger === "Static" ||
+      effect.trigger === "Rule" ||
+      effect.trigger === "YourTurn" ||
+      effect.trigger === "OpponentsTurn" ||
+      effect.trigger === "AllTurns"
+    ) {
+      const duration =
+        effect.trigger === "Static" || effect.trigger === "Rule" || effect.trigger === "YourTurn"
+          ? "permanent"
+          : "forTheTurn";
+      for (const keyword of effect.keywords ?? []) {
+        // Delay on a continuous trigger is an activation marker whose trash cost is
+        // installed by `withIntrinsicDelayGate`; it is not a resident keyword grant.
+        if (keyword.keyword === "Reboot" || keyword.keyword === "Delay" || ACTION_TYPE_KEYWORDS.has(keyword.keyword))
+          continue;
+        await runAction(ctxWithSelections, {
+          kind: "GainKeyword",
+          target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
+          keyword: {
+            keyword: keyword.keyword,
+            ...(keyword.amount !== undefined ? { amount: keyword.amount } : {}),
+          },
+          duration,
+        });
+      }
+    }
+    const isRebootMarker =
+      effect.trigger === "Static" && (effect.keywords ?? []).some((keyword) => keyword.keyword === "Reboot");
+    if (isRebootMarker) {
+      const self = ctxWithSelections.source.permanent();
+      if (self !== undefined) {
+        ctxWithSelections.fx.grantKeyword(self.permanentId, "Reboot", EffectDuration.Permanent);
+      }
+    }
+    // `placedCards` is scoped to this CardEffect resolution, not to the lifetime of a reusable
+    // context. Most callers create a fresh context, but pay-time and nested effect paths may seed
+    // `selections` and intentionally reuse one; reset here so a prior PlaceUnder cannot inflate a
+    // later effect's count. Restore the caller's outer accumulator after nested resolution.
+    const outerPlacedUnderInstanceIds = ctxWithSelections.placedUnderInstanceIdsThisEffect;
+    ctxWithSelections.placedUnderInstanceIdsThisEffect = [];
+    try {
+      const runActionsFrom = async (startIndex: number): Promise<void> => {
+        for (let actionIndex = startIndex; actionIndex < actions.length; actionIndex += 1) {
+          const action = actions[actionIndex]!;
+          if (actionIndex > 0 && ctxWithSelections.optionalActivationCancellation) {
+            ctxWithSelections.optionalActivationCancellation.available = false;
+          }
+          // Legacy compiled Reboot records carry a self-Unsuspend action beside the keyword
+          // marker. It describes what Reboot does during the opponent's unsuspend phase; it is
+          // not a continuously re-fired "unsuspend now" action. Executing it in the static pass
+          // makes a Reboot Digimon stand back up immediately after declaring an attack.
+          if (isRebootMarker && action.kind === "Unsuspend") continue;
+          const outerActionPath = ctxWithSelections.activeActionPath;
+          const outerChainsSameTarget = ctxWithSelections.nextActionChainsSameTarget;
+          const outerAttackContinuation = ctxWithSelections.continueEffectAfterAttackDeclaration;
+          const outerOptionalAnswer = ctxWithSelections.presetOptionalAnswer;
+          // An optional attack on the result of an earlier action is a separate
+          // decision: accepting DNA in the plan does not also accept its attack.
+          if (
+            actionIndex > 0 &&
+            action.kind === "Attack" &&
+            action.optional === true &&
+            action.target.filter.boundRef !== undefined &&
+            outerOptionalAnswer === true
+          )
+            ctxWithSelections.presetOptionalAnswer = undefined;
+          ctxWithSelections.activeActionPath = `${actionIndex}`;
+          ctxWithSelections.nextActionChainsSameTarget =
+            (actions[actionIndex + 1] as { target?: { sameTarget?: boolean } } | undefined)?.target?.sameTarget ===
+            true;
+          let attackContinuationRan = false;
+          // A processed ＜Blitz＞ attacks like an Attack clause, so the rest of its effect also
+          // resolves right after the declaration, before When Attacking effects (Q777).
+          if ((mayDeclareAttack(action) || isBlitzGrant(action)) && actionIndex + 1 < actions.length) {
+            ctxWithSelections.continueEffectAfterAttackDeclaration = async () => {
+              attackContinuationRan = true;
+              await runActionsFrom(actionIndex + 1);
+            };
+          }
+          let abort: boolean;
+          try {
+            const resolvingAction =
+              declaredProcessingCondition && actionIndex === 0 && action.kind === "CostGatedBlock"
+                ? { ...action, optional: false, cost: { ...action.cost, optional: false } }
+                : action;
+            // Only awaited when there is a condition to decide: an extra tick before every action
+            // would let callers observe an action that has not started yet.
+            if (actionIndex > 0 && isPredecidableProcessingCost(resolvingAction))
+              await decideProcessingConditionAtClause(ctxWithSelections, resolvingAction, actionIndex);
+            const nextAction = actions[actionIndex + 1];
+            if (isSecuritySearchDigivolvePair(resolvingAction, nextAction)) {
+              abort = await runSecuritySearchDigivolve(
+                ctxWithSelections,
+                resolvingAction as Extract<Action, { kind: "Search" }>,
+                nextAction as Extract<Action, { kind: "Digivolve" }>,
+              );
+              actionIndex += 1;
+            } else {
+              abort = await runAction(ctxWithSelections, resolvingAction);
+            }
+          } finally {
+            ctxWithSelections.activeActionPath = outerActionPath;
+            ctxWithSelections.nextActionChainsSameTarget = outerChainsSameTarget;
+            ctxWithSelections.continueEffectAfterAttackDeclaration = outerAttackContinuation;
+            ctxWithSelections.presetOptionalAnswer = outerOptionalAnswer;
+          }
+          if (abort || attackContinuationRan) return;
+        }
+      };
+      try {
+        await runActionsFrom(0);
+      } catch (error) {
+        if (
+          !(error instanceof OptionalActivationCancelled) ||
+          error.activation !== ctxWithSelections.optionalActivationCancellation
+        ) {
+          throw error;
+        }
+        ctxWithSelections.optionalActivationCancellation.available = false;
+        ctxWithSelections.oncePerTurnActivationChosen = false;
+        ctxWithSelections.oncePerTurnActivationDeclined = true;
+        ctxWithSelections.lastEffectActed = false;
+      }
+    } finally {
+      // `activeTiming` / `activeEffectText` deliberately survive: they are the provenance a decision
+      // raised by this resolution is stamped with, and it is read after the resolution returns.
+      ctxWithSelections.optionalActivationCancellation = outerCancellation;
+      ctxWithSelections.placedUnderInstanceIdsThisEffect = outerPlacedUnderInstanceIds;
+      ctxWithSelections.effectRestrictions = outerRestrictions;
+      ctxWithSelections.predecidedOptionalActions = outerPredecidedOptionalActions;
+      ctxWithSelections.predecidedOptionalCosts = outerPredecidedOptionalCosts;
+      ctxWithSelections.predecidedCostSelections = outerPredecidedCostSelections;
+      mirrorResultBindings(ctxWithSelections, ctx);
+      ctx.oncePerTurnActivationChosen = ctxWithSelections.oncePerTurnActivationChosen;
+      ctx.oncePerTurnActivationDeclined = ctxWithSelections.oncePerTurnActivationDeclined;
+    }
   } finally {
-    // `activeTiming` / `activeEffectText` deliberately survive: they are the provenance a decision
-    // raised by this resolution is stamped with, and it is read after the resolution returns.
-    ctxWithSelections.placedUnderInstanceIdsThisEffect = outerPlacedUnderInstanceIds;
-    ctxWithSelections.effectRestrictions = outerRestrictions;
-    ctxWithSelections.predecidedOptionalActions = outerPredecidedOptionalActions;
-    ctxWithSelections.predecidedOptionalCosts = outerPredecidedOptionalCosts;
-    ctxWithSelections.predecidedCostSelections = outerPredecidedCostSelections;
-    mirrorResultBindings(ctxWithSelections, ctx);
-    ctx.oncePerTurnActivationChosen = ctxWithSelections.oncePerTurnActivationChosen;
-    ctx.oncePerTurnActivationDeclined = ctxWithSelections.oncePerTurnActivationDeclined;
+    ctx.optionalActivationCancellation = outerActivationCancellation;
   }
 }
 
@@ -957,9 +1032,11 @@ export function canActivateEffect(
   );
   const isGated = (action: ParsedAction) =>
     action.kind === "Digivolve" ||
+    action.kind === "DigivolveViaPlacement" ||
     action.kind === "DnaDigivolve" ||
     action.kind === "PlaceUnder" ||
     action.kind === "MindLink" ||
+    (action.kind === "RedirectAttack" && action.mode !== "endAttack") ||
     isDetachTopAction(action) ||
     (action.kind !== "ConditionalBranch" && action.condition !== undefined) ||
     action.cost !== undefined ||
@@ -983,6 +1060,12 @@ export function canActivateEffect(
     // its subsequent content cannot execute. The cost/condition gates below
     // still apply; the nested resolver decides which payload actions can run.
     if (action.kind === "CostGatedBlock") return true;
+    if (action.kind === "RedirectAttack" && action.mode !== "endAttack") {
+      return (
+        allowsOptionalProcessingCostWithoutTarget(action) ||
+        ctx.fx.isAttackTargetLocked?.(ctx.trigger.attackerPermanentId) !== true
+      );
+    }
     if (action.kind === "Digivolve") {
       // A triggered evolution belongs in the simultaneous-effect choice even when
       // its destination is not in hand yet (CR 15-4-2 / 15-4-3). Another pending
@@ -997,11 +1080,12 @@ export function canActivateEffect(
     }
     if (action.kind === "PlaceUnder")
       return allowsOptionalProcessingCostWithoutTarget(action) || canAttemptPlaceUnder(ctx, action);
+    if (action.kind === "DigivolveViaPlacement") return canAttemptDigivolveViaPlacement(ctx, action);
     if (action.kind === "MindLink") return canAttemptMindLink(ctx, action);
     if (isDetachTopAction(action)) return canDetachPermanentTop(ctx, action);
-    return action.kind === "DnaDigivolve"
-      ? canAttemptDnaDigivolve(ctx, action)
-      : action.kind !== "Link" || canAttemptLink(ctx, action);
+    if (action.kind === "DnaDigivolve")
+      return allowsOptionalProcessingCostWithoutTarget(action) || canAttemptDnaDigivolve(ctx, action);
+    return action.kind !== "Link" || canAttemptLink(ctx, action);
   };
   // Board-targeted actions gate activation: an action that names live battle-area (or
   // breeding) permanents resolves to nothing when the board holds no candidate. An effect
@@ -1074,7 +1158,7 @@ export function canActivateEffect(
     bindAs !== undefined &&
     leadingBind.target.upTo !== true &&
     ctx.selections?.get(bindAs) === undefined &&
-    dependsOnSelection(relevantActions.slice(1), bindAs) &&
+    relevantActions.slice(1).every((action) => dependsOnSelection([action], bindAs)) &&
     candidatePermanents(ctx, leadingBind.target).length === 0
   ) {
     return false;

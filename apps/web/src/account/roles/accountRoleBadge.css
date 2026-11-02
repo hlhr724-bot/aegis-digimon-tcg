@@ -1,0 +1,76 @@
+.account-role-badge,
+.account-role-tooltip {
+  --account-role-color: #38bdf8;
+}
+
+.account-role-badge[data-role="admin"],
+.account-role-tooltip[data-role="admin"] {
+  --account-role-color: #fbbf24;
+}
+
+.account-role-badge[data-role="organizer"],
+.account-role-tooltip[data-role="organizer"] {
+  --account-role-color: #34d399;
+}
+
+.account-role-badge {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: var(--ds-radius-pill);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--account-role-color) 70%, white),
+    var(--account-role-color) 55%,
+    color-mix(in srgb, var(--account-role-color) 75%, black)
+  );
+  color: var(--ds-ink);
+  box-shadow:
+    0 0 0 2px var(--ds-ink),
+    0 2px 6px color-mix(in srgb, var(--account-role-color) 45%, transparent);
+  pointer-events: none;
+}
+
+.account-role-tooltip {
+  display: grid;
+  max-width: min(16rem, calc(100vw - 1.5rem));
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 1px solid color-mix(in srgb, var(--account-role-color) 35%, var(--ds-line));
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-sheet);
+  color: var(--ds-text);
+  box-shadow: var(--ds-shadow-overlay);
+  z-index: var(--ds-z-hint);
+  font: var(--ds-text-xs) / 1.45 var(--ds-font-body);
+}
+
+.account-role-tooltip__title {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-weight: 700;
+  font-size: var(--ds-text-sm);
+}
+
+.account-role-tooltip__icon {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: var(--ds-radius-pill);
+  background: var(--account-role-color);
+  color: var(--ds-ink);
+}
+
+.account-role-tooltip__description {
+  color: var(--ds-text-2);
+}
+
+.account-role-tooltip__arrow {
+  fill: var(--ds-sheet);
+}

@@ -1,3 +1,4 @@
+import { getLimitedCardAvailability } from "#shared/cards/getLimitedCardAvailability";
 import type { CardDefinition } from "./types.js";
 
 type ReleaseDate = `${number}-${number}-${number}`;
@@ -64,10 +65,6 @@ const PRODUCT_RELEASES: Readonly<Record<string, ProductRelease>> = {
   ST14: { date: "2023-03-24", label: "ST14" },
   BT12: { date: "2023-04-28", label: "BT12" },
   EX4: { date: "2023-06-23", label: "EX4" },
-  // Unverified: `LM` collapses the whole LIMITED CARD PACK line (Premium Bandai, LM-01
-  // onwards) into one id, so no single catalogue date is correct for it. Left at the
-  // imported date, which is late enough to keep every LM card out of the active pool.
-  LM: { date: "2023-06-23", label: "LM" },
   BT13: { date: "2023-07-21", label: "BT13" },
   RB1: { date: "2023-09-29", label: "RB1" },
   ST15: { date: "2023-10-13", label: "ST15" },
@@ -104,6 +101,8 @@ const PRODUCT_RELEASES: Readonly<Record<string, ProductRelease>> = {
   BT26: { date: "2026-09-04", label: "BT26" },
   // Announced, not yet in stores as of this table's last verification (2026-09-11).
   EX13: { date: "2026-10-02", label: "EX13" },
+  BT27: { date: "2026-12-11", label: "BT27" },
+  EX14: { date: "2027-01-22", label: "EX14" },
 };
 
 /**
@@ -187,6 +186,9 @@ export function releaseDateForSet(setId: string): ReleaseDate | undefined {
 
 /** The verified English release date for a card, if we have one. */
 export function releaseDateForCard(card: CardReference): ReleaseDate | undefined {
+  if (card.set === "LM") {
+    return getLimitedCardAvailability(card.cardId)?.releaseDate;
+  }
   if (card.set === "P") {
     return PROMO_RELEASE_DATES[card.cardId];
   }

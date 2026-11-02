@@ -1,5 +1,4 @@
 import releases from "./releases.json";
-import { GITHUB_REPO_URL } from "../community";
 
 export type ReleaseItem = { textKey: string; issue?: number };
 export type Release = {
@@ -86,8 +85,4 @@ export function currentRelease(): Release {
 
 export function displayVersion(version: string): string {
   return `v${version.replace(/-beta$/, "-BETA")}`;
-}
-
-export function issueUrl(issue: number): string {
-  return `${GITHUB_REPO_URL}/issues/${issue}`;
 }

@@ -20,6 +20,7 @@ import {
 } from "./battlefield";
 import { Icons } from "./icons";
 
+import { FieldLayout, setFieldLayout, useFieldLayout } from "@/design/fieldLayout";
 import { BattleLanes, setBattleLanes, useBattleLanePreference } from "./battleLanes";
 import { playSound } from "./sound";
 import { useTranslation, type TranslationKey } from "../i18n";
@@ -108,7 +109,9 @@ export function ArenaLookSettings({ deckColors }: { deckColors?: ArenaDeckColors
   const { t } = useTranslation();
   const groupName = useId();
   const palette = useArenaPalette(deckColors);
-  const battleLanes = useBattleLanePreference();
+  const lanePreference = useBattleLanePreference();
+  const fieldLayout = useFieldLayout();
+  const battleLanes = fieldLayout === FieldLayout.Classic ? BattleLanes.One : lanePreference;
   const battlefieldId = useBattlefieldId();
   const customSrc = useCustomBattlefieldSrc();
   const randomBattlefield = battlefieldId === RANDOM_BATTLEFIELD_ID;
@@ -176,6 +179,7 @@ export function ArenaLookSettings({ deckColors }: { deckColors?: ArenaDeckColors
                       value={option.lanes}
                       checked={chosen}
                       onChange={() => {
+                        setFieldLayout(FieldLayout.Organized);
                         setBattleLanes(option.lanes);
                         playSound("select");
                       }}

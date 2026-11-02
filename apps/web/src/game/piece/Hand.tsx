@@ -1,5 +1,5 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { Fragment, useLayoutEffect, useState, type HTMLAttributes } from "react";
-import { getCardDefinition } from "@aegis/shared";
 import { CardFull } from "../../design/cards";
 import { Icons } from "../../design/icons";
 import { TOUCH_LAYOUT_QUERY, useMediaQuery } from "../../design/useMediaQuery";
@@ -25,6 +25,9 @@ import { HandSourceFocus } from "./HandSourceFocus";
 import { HandHoverFace } from "./HandHoverFace";
 import { useHandArrivalArt } from "./useHandArrivalArt";
 import type { EffectActivation } from "../effectSource";
+import { motionPreference } from "@/design/motion/motionPreference";
+import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
+import { getEffectSourceMarkLabelKey } from "@/game/effectMarks/getEffectSourceMarkLabelKey";
 
 export function Hand({
   cards,
@@ -36,6 +39,7 @@ export function Hand({
   shakeInstanceId,
   effectSourceInstanceId,
   effectSource,
+  effectSourceMarks,
   onHoverChange,
   cardWidth = HAND_CARD_WIDTH,
   minExposure = HAND_MIN_EXPOSURE,
@@ -55,29 +59,32 @@ export function Hand({
   /** An Option activating out of the hand: it rises out of the fan with an orange outline. */
   effectSourceInstanceId?: string;
   effectSource?: EffectActivation;
+  effectSourceMarks?: ReadonlyMap<string, EffectSourceMark>;
   /** Which card the pointer is over, so the memory gauge can predict its play. */
   onHoverChange?: (instanceId: string | undefined) => void;
   cardWidth?: number;
   /** How much of a buried card stays tappable. */
   minExposure?: number;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const n = cards.length;
   // Large effect selections need whole hit targets: a tightly fanned neighbor
   // otherwise covers the card the player is trying to pick (GitHub #5058).
   const spreadSelection = selection !== undefined && n > 6;
   const [hoveredInstanceId, setHoveredInstanceId] = useState<string | null>(null);
+  const [cursorInstanceId, setCursorInstanceId] = useState<string | null>(null);
   const [coveredHoverKey, setCoveredHoverKey] = useState<string | null>(null);
   useLayoutEffect(() => {
-    if (hoveredInstanceId && !cards.some((entry) => entry.instanceId === hoveredInstanceId)) {
+    if (hoveredInstanceId && (draggingInstanceId || !cards.some((entry) => entry.instanceId === hoveredInstanceId))) {
       setHoveredInstanceId(null);
       setCoveredHoverKey(null);
     }
-  }, [cards, hoveredInstanceId]);
+  }, [cards, hoveredInstanceId, draggingInstanceId]);
   const [rowEl, setRowEl] = useState<HTMLDivElement | null>(null);
   const [coveredSourceKey, setCoveredSourceKey] = useState<number | null>(null);
   const [preparedSourceKey, setPreparedSourceKey] = useState<number | null>(null);
-  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const reducedMotion = motionPreference.useReduced();
   const sourceSite = effectSource?.site;
   const sourceEntry =
     sourceSite?.zone === "hand"
@@ -131,6 +138,8 @@ export function Hand({
           const dragging = draggingInstanceId === entry.instanceId;
           const hov = hoveredInstanceId === entry.instanceId;
           const hoverKey = `${entry.instanceId}/${entry.artId ?? ""}`;
+          const effectMark = effectSourceMarks?.get(entry.instanceId);
+          const effectMarkLabel = effectMark ? t(getEffectSourceMarkLabelKey(effectMark)) : undefined;
           const showHover =
             hov &&
             !touchLayout &&
@@ -142,6 +151,7 @@ export function Hand({
           const playable = selection
             ? pickable
             : entry.playableFromHand ||
+              !!entry.negamonPlayEffectKey ||
               entry.digivolveTargetPermanentIds.length > 0 ||
               (entry.dnaDigivolveRoutes?.length ?? 0) > 0;
           const style = computeHandCardLayout({
@@ -199,6 +209,22 @@ export function Hand({
               }
               if (event.detail === 0) selectCard?.(i);
             },
+            onFocus: (event) => {
+              if (event.target !== event.currentTarget || !event.currentTarget.dataset.arenaFocused) return;
+              setCursorInstanceId(entry.instanceId);
+              if (!sourcePreparing) {
+                setCoveredHoverKey(null);
+                setHoveredInstanceId(entry.instanceId);
+              }
+              onHoverChange?.(entry.instanceId);
+            },
+            onBlur: (event) => {
+              if (event.target !== event.currentTarget) return;
+              setCursorInstanceId((current) => (current === entry.instanceId ? null : current));
+              if (event.currentTarget.matches(":hover")) return;
+              if (!sourcePreparing) setHoveredInstanceId((current) => (current === entry.instanceId ? null : current));
+              onHoverChange?.(undefined);
+            },
             onPointerEnter: (event) => {
               if (event.pointerType === "touch" || touchLayout) return;
               if (!sourcePreparing && hoveredInstanceId !== entry.instanceId) {
@@ -233,8 +259,9 @@ export function Hand({
                 <button
                   type="button"
                   className="game-hand-card__inspect"
+                  data-arena-inspect
                   aria-label={t("game.inspectCard", {
-                    card: getCardDefinition(entry.cardId)?.nameEn ?? entry.cardId,
+                    card: getCardName(entry.cardId),
                   })}
                   tabIndex={-1}
                   onPointerDown={(event) => event.stopPropagation()}
@@ -246,6 +273,9 @@ export function Hand({
                 >
                   <Icons.Search size={14} />
                 </button>
+              ) : null}
+              {effectMark ? (
+                <span className="game-hand-card__effect-mark" data-effect-mark={effectMark} aria-hidden="true" />
               ) : null}
               {picked ? (
                 <span
@@ -264,6 +294,7 @@ export function Hand({
                 aria-keyshortcuts={!selection && onMoveCard ? "Alt+ArrowLeft Alt+ArrowRight" : undefined}
                 data-hand-card-id={entry.cardId}
                 data-hand-hovered={hov ? "true" : undefined}
+                data-effect-mark={effectMark}
                 data-hand-hover-covered={showHover && coveredHoverKey === hoverKey ? "true" : undefined}
                 data-effect-covered={
                   !reducedMotion && sourceEntry === entry && coveredSourceKey === effectSource?.key ? "true" : undefined
@@ -273,9 +304,10 @@ export function Hand({
                 tabIndex={0}
                 aria-label={
                   t(selection ? "game.pickCard" : "game.selectCard", {
-                    card: getCardDefinition(entry.cardId)?.nameEn ?? entry.cardId,
+                    card: getCardName(entry.cardId),
                   }) +
                   (copyLabels.has(entry.instanceId) ? `, ${copyLabels.get(entry.instanceId)}` : "") +
+                  (effectMarkLabel ? `, ${effectMarkLabel}` : "") +
                   (picked ? `${t("overlay.selected")}, ${t("game.pickPosition", { position: pickPosition + 1 })}` : "")
                 }
                 aria-disabled={selection && !pickable ? true : undefined}
@@ -328,6 +360,7 @@ export function Hand({
                     selection && !pickable && !picked ? "game-hand-card--unpickable" : "",
                     selection && pickable && !picked ? "game-hand-card--pickable" : "",
                     picked ? "game-hand-card--picked" : "",
+                    cursorInstanceId === entry.instanceId ? "game-hand-card--cursor" : "",
                   ]
                     .filter(Boolean)
                     .join(" ")}
@@ -335,10 +368,7 @@ export function Hand({
                   onReady={() => setCoveredHoverKey(hoverKey)}
                   onPress={(event, origin) => {
                     if (selection) beginPick(entry.instanceId, event);
-                    else {
-                      setHoveredInstanceId(null);
-                      startDrag(i, event, origin);
-                    }
+                    else startDrag(i, event, origin);
                   }}
                 >
                   {face}

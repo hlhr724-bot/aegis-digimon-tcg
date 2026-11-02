@@ -1,3 +1,4 @@
+import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 /* The viewer's own deck and trash.
 
    One pair of piles, two homes: the foot of the right rail, or — on a desktop too short
@@ -40,6 +41,7 @@ export function ViewerPiles({
   const topTrashCard = viewer.trash[viewer.trash.length - 1];
   return (
     <div
+      data-arena-region={ArenaInputRegion.PILES.value}
       className={docked ? "game-viewer-piles game-viewer-piles--docked" : "game-viewer-piles"}
       style={
         docked
@@ -55,6 +57,7 @@ export function ViewerPiles({
         label={t("game.pile.deck")}
         riffling={viewerDeckRiffling}
         onClick={onOpenViewerDeck}
+        onInspect={onOpenViewerDeck}
         refEl={(el) => {
           viewerDeckRef.current = el;
         }}
@@ -69,6 +72,7 @@ export function ViewerPiles({
         topArtId={topTrashCard?.artId}
         effectCard={viewerTrashEffectCard}
         onClick={onOpenViewerTrash}
+        onInspect={onOpenViewerTrash}
       />
     </div>
   );

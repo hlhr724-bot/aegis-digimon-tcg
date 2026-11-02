@@ -136,9 +136,48 @@ describe("BT15-102", () => {
     await s.ready();
     s.state.turnSeat = 0;
 
+    const onPlayTargetId = s.perm("onPlayTarget").permanentId;
     s.state.memory = 3;
     await advance(s.engine).runTurn(0);
 
+    const firstDecision = s.decisions.find(({ req }) => req.kind === "optional" && req.sourceCardId === "BT15-102");
+    expect(firstDecision?.req.options?.effectTextEmphasis).toBe(
+      "By placing 1 level 6 or lower card from your trash as this Digimon's bottom digivolution card, activate 1 [On Play] effect on that card as an effect of this Digimon.",
+    );
+    expect(firstDecision?.req.options?.effectText).not.toContain("When this card would be played");
+    expect(s.events.filter((event) => event.kind === "cardRevealed")).toHaveLength(0);
+    const placementIndex = s.events.findIndex(
+      (event) =>
+        event.kind === "cardsMoved" &&
+        event.from === "trash" &&
+        event.placedUnder?.permanentId === s.perm("apocalymon").permanentId,
+    );
+    expect(placementIndex).toBeGreaterThanOrEqual(0);
+    expect(s.events[placementIndex]).toMatchObject({ cardIds: ["BT15-031"], seat: 0 });
+    const millIndex = s.events.findIndex(
+      (event) => event.kind === "cardsMoved" && event.from === "deck" && event.to === "trash",
+    );
+    const copiedResultIndex = s.events.findIndex(
+      (event) =>
+        event.kind === "cardsMoved" &&
+        event.to === "hand" &&
+        event.instanceIds.includes(s.inst("onPlayTarget").instanceId),
+    );
+    expect(copiedResultIndex).toBeGreaterThan(placementIndex);
+    const targetIndex = s.events.findIndex(
+      (event) =>
+        event.kind === "effectTargetsSelected" &&
+        event.sourcePermanentId === s.perm("apocalymon").permanentId &&
+        event.targetPermanentIds.includes(onPlayTargetId),
+    );
+    expect(targetIndex).toBeGreaterThan(placementIndex);
+    expect(copiedResultIndex).toBeGreaterThan(targetIndex);
+    const thenIndex = s.events.findIndex(
+      (event) => event.kind === "effectTriggered" && event.effectTextPart?.startsWith("Then, trash") === true,
+    );
+    expect(thenIndex).toBeGreaterThan(copiedResultIndex);
+    expect(millIndex).toBeGreaterThan(thenIndex);
+    expect(s.events[millIndex]).toMatchObject({ cardIds: Array(4).fill("AD1-001"), seat: 1 });
     expect(s.perm("apocalymon").stack.map(({ cardId }) => cardId)).toEqual(["BT15-031", "BT15-066"]);
     expect(s.state.players[1]!.battleArea).toHaveLength(0);
     expect(s.state.players[1]!.hand.map(({ instanceId }) => instanceId)).toContain(s.inst("onPlayTarget").instanceId);

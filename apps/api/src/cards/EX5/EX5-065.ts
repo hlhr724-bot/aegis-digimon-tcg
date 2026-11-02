@@ -21,6 +21,7 @@ if (dnaDigivolve?.kind === "DnaDigivolve") {
     target: { filter: { kind: ["Digimon"] }, count: 1 },
     sameLevelAsHost: true,
     bindResultAs: "ex5-065-played",
+    raw: "By playing 1 card with the same level as one of your [Night Claw]/[Light Fang] trait Digimon from that Digimon's digivolution cards without paying the cost",
   };
 }
 if (startOfOpponentsTurn !== undefined) {

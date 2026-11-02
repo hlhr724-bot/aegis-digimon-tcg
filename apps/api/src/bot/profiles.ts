@@ -1,3 +1,6 @@
+import { BotStyle } from "@aegis/shared/bot/BotStyle";
+import { isBotStyle } from "@aegis/shared/bot/isBotStyle";
+
 /**
  * Bot personalities, expressed purely as data.
  *
@@ -83,7 +86,7 @@ export interface BotProfile {
   readonly weights: BotWeights;
 }
 
-export type BotProfileName = "balanced" | "aggressive" | "defensive";
+export type BotProfileName = BotStyle;
 
 const BALANCED_WEIGHTS: BotWeights = {
   securityAttack: 5,
@@ -153,23 +156,23 @@ const DEFENSIVE_WEIGHTS: BotWeights = {
   securityAttack: 3,
   securityRisk: 0.7,
   blockerRisk: 1,
-  retaliation: 0.6,
-  removal: 1.2,
+  retaliation: 0.3,
+  removal: 2.5,
   loss: 1.5,
 
-  dpGain: 1,
-  levelGain: 1.8,
-  playBody: 1,
-  memoryHandover: 1.6,
-  crossZero: 2.2,
-  crossZeroPerReadyAttacker: 3,
+  dpGain: 1.2,
+  levelGain: 2.2,
+  playBody: 1.2,
+  memoryHandover: 1.3,
+  crossZero: 1.8,
+  crossZeroPerReadyAttacker: 2.6,
 
   securityDefend: 7,
   criticalSecurityMultiplier: 3,
   blockThreshold: -4,
   barrierThreshold: 4,
 
-  deployLevel: 5,
+  deployLevel: 4,
 };
 
 export const BOT_PROFILES: Readonly<Record<BotProfileName, BotProfile>> = {
@@ -180,7 +183,7 @@ export const BOT_PROFILES: Readonly<Record<BotProfileName, BotProfile>> = {
 
 export const DEFAULT_BOT_PROFILE = BOT_PROFILES.balanced;
 
-export const BOT_PROFILE_NAMES: readonly BotProfileName[] = ["balanced", "aggressive", "defensive"];
+export const BOT_PROFILE_NAMES: readonly BotProfileName[] = Object.values(BotStyle).map((entry) => entry.value);
 
 /** Resolve a profile by name, or hand back an explicit profile unchanged. */
 export function resolveBotProfile(profile: BotProfileName | BotProfile | undefined): BotProfile {
@@ -190,5 +193,5 @@ export function resolveBotProfile(profile: BotProfileName | BotProfile | undefin
 }
 
 export function isBotProfileName(value: string): value is BotProfileName {
-  return value in BOT_PROFILES;
+  return isBotStyle(value);
 }

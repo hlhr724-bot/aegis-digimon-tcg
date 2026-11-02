@@ -1,12 +1,14 @@
-import { deckFormatLabel } from "./DeckFormatSelector";
+import { deckFormatLabel } from "@/screens/deckFormatLabel";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import type { CSSProperties, ReactNode } from "react";
-import { deckLegality, getCardDefinition, formatRestrictionLabel, deckFormat, type DeckFormat } from "@aegis/shared";
+import { deckLegality, formatRestrictionLabel, deckFormat, type DeckFormat } from "@aegis/shared";
 import { Badge } from "../design/primitives";
 import { CoverThumb } from "../design/cards";
 import { COLORS } from "../design/theme";
 import { Icons } from "../design/icons";
 import { displayCoverCard, displayCoverArt, type DeckListing } from "../game/decks";
 import { useTranslation } from "../i18n";
+import { deckHasBetaCards } from "@/screens/deckHasBetaCards";
 import "./deckListCard.css";
 
 export function DeckListCard({
@@ -26,6 +28,7 @@ export function DeckListCard({
   subtitle?: ReactNode;
   actions?: ReactNode;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const color = COLORS[deck.color];
   const format = deckFormat(selectedFormat ?? deck.format);
@@ -77,6 +80,11 @@ export function DeckListCard({
         {deck.format && deck.format !== "standard" ? (
           <Badge className="deck-list-card__format">{deckFormatLabel(deck.format, t)}</Badge>
         ) : null}
+        {deckHasBetaCards(deck) ? (
+          <Badge tone="primary" className="deck-list-card__format">
+            {t("beta.tag")}
+          </Badge>
+        ) : null}
         {formatViolations.length > 0 ? (
           <div className="deck-list-card__violation">
             {t("deckFormat.violations", { count: formatViolations.length })}
@@ -86,7 +94,7 @@ export function DeckListCard({
           <div className="deck-list-card__violation">
             {banViolations.map(([id]) => (
               <span key={id}>
-                {getCardDefinition(id)?.nameEn ?? id} ({formatRestrictionLabel(id, format)}){" "}
+                {getCardName(id)} ({formatRestrictionLabel(id, format)}){" "}
               </span>
             ))}
           </div>
@@ -95,9 +103,7 @@ export function DeckListCard({
           <div className="deck-list-card__pair-violation">
             <strong>{t("deck.pairTitle")}</strong>
             {pairViolations.map(([a, b]) => (
-              <div key={`${a}-${b}`}>
-                {t("deck.pairRow", { a: getCardDefinition(a)?.nameEn ?? a, b: getCardDefinition(b)?.nameEn ?? b })}
-              </div>
+              <div key={`${a}-${b}`}>{t("deck.pairRow", { a: getCardName(a), b: getCardName(b) })}</div>
             ))}
           </div>
         ) : null}

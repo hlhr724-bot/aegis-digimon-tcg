@@ -32,6 +32,29 @@ describe("BT10-068 Gankoomon (X Antibody)", () => {
     ).toEqual({ ok: true });
     await settle(() => observe(s.engine).isRestricted(s.perm("base"), "dpImmune"));
     expect(s.perm("base").currentDP).toBe(14000);
+    expect(JSON.parse(s.state.players[0]!.fieldEffectsJson)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "dp",
+          sourceCardId: "BT10-068",
+          effectText: "All of your Digimon get +2000 DP.",
+        }),
+        expect.objectContaining({
+          kind: "restriction",
+          value: "dpImmune",
+          sourceCardId: "BT10-068",
+          effectText: "Your opponent's effects can't return any of your Digimon to hands or decks or reduce their DP.",
+          byOpponentEffectsOnly: true,
+        }),
+        expect.objectContaining({
+          kind: "restriction",
+          value: "beReturned",
+          sourceCardId: "BT10-068",
+          effectText: "Your opponent's effects can't return any of your Digimon to hands or decks or reduce their DP.",
+          byOpponentEffectsOnly: true,
+        }),
+      ]),
+    );
     // CR 15-11-2-2: a Digimon that enters afterwards is affected too.
     const lateEntrant = s.putOnBoard(0, "BT1-010");
     await advance(s.engine).recompute();

@@ -1362,3 +1362,175 @@ it("settles parent result receipts before a nested replacement announcement", as
   await advance(4000);
   expect(view.result.current.decisionAnimationsPending).toBe(false);
 });
+
+it.each(["current", "sequential"] as const)(
+  "orders a same-batch discard continuation, flight and nested reaction with %s pacing",
+  async (presentationPacing) => {
+    const anchors = geometry();
+    const trash = document.createElement("div");
+    trash.className = "game-utility-slot--opp-trash";
+    vi.spyOn(trash, "getBoundingClientRect").mockReturnValue(new DOMRect(700, 100, 80, 100));
+    anchors.board.current!.append(trash);
+    const expiries: GateExpiry[] = [];
+    const stop = observeGateExpiry((expiry) => expiries.push(expiry));
+    const first = { ...triggered("EX14-054", "src-a", "barbamon/play"), timing: "OnPlay" };
+    const reaction = {
+      ...triggered("EX14-054", "src-a", "barbamon/discard"),
+      timing: "whenHandTrashed",
+      description:
+        "[All Turns] [Once Per Turn] When your opponent's hand is trashed from, you may delete all of their lowest level Digimon.",
+    };
+    const passage = "Then, your opponent trashes 1 card in their hand.";
+    const steps: { id: string; phase: string; at: number }[] = [];
+    const view = renderHook(
+      ({ fed }: ChainProps) =>
+        useMatchCues({
+          batches: fed,
+          state: BOARD,
+          viewerSeat: 0,
+          mulliganOpen: false,
+          anchors,
+          onActionRejected: () => {},
+          presentationPacing,
+          devProbe: {
+            onStep(event) {
+              steps.push({ id: event.step.id, phase: event.phase, at: Date.now() });
+            },
+          },
+        }),
+      { initialProps: { fed: [] as readonly ServerBatch[] } },
+    );
+    try {
+      await advance(0);
+      view.rerender({
+        fed: [
+          singleServerBatch(
+            [
+              first,
+              {
+                kind: "effectClauseAdvanced",
+                seat: 0,
+                sourceCardId: "EX14-054",
+                sourceInstanceId: "src-a",
+                timing: "OnPlay",
+                clause: passage,
+              },
+              {
+                kind: "cardsMoved",
+                from: "hand",
+                to: "trash",
+                seat: 1,
+                instanceIds: ["discard"],
+                cardIds: ["BT1-009"],
+              },
+              reaction,
+              { ...reaction, kind: "effectResolved" },
+              { ...first, kind: "effectResolved" },
+            ],
+            1,
+          ),
+        ],
+      });
+      const parentNoticeIds = new Set<string>();
+      let continuationAt: number | undefined;
+      let flightAt: number | undefined;
+      let flightDoneAt: number | undefined;
+      let reactionAt: number | undefined;
+      for (let elapsed = 0; elapsed < 12000; elapsed += 16) {
+        const notices = view.result.current.notices;
+        for (const notice of notices) {
+          if (notice.body.variant === "effect" && notice.body.effectKey !== reaction.effectKey) {
+            parentNoticeIds.add(notice.id);
+          }
+        }
+        if (notices.some(({ body }) => body.variant === "effect" && body.effectTextPart === passage)) {
+          continuationAt ??= elapsed;
+        }
+        if (view.result.current.drawFlights.some((flight) => flight.handTrash)) {
+          flightAt ??= elapsed;
+        } else if (flightAt !== undefined) {
+          flightDoneAt ??= elapsed;
+        }
+        if (notices.some(({ body }) => body.variant === "effect" && body.effectKey === reaction.effectKey)) {
+          reactionAt ??= elapsed;
+        }
+        await advance(16);
+      }
+      expect(parentNoticeIds.size).toBe(1);
+      expect(continuationAt).toBeDefined();
+      expect(flightAt).toBeGreaterThanOrEqual(continuationAt!);
+      expect(flightDoneAt).toBeDefined();
+      expect(reactionAt).toBeGreaterThanOrEqual(flightDoneAt!);
+      expect(expiries).toEqual([]);
+      expect(steps.some((step) => step.id.startsWith("hand-trash-") && step.phase === "finished")).toBe(true);
+      expect(view.result.current.decisionAnimationsPending).toBe(false);
+    } finally {
+      stop();
+    }
+  },
+);
+
+it.each(["dp", "restriction"] as const)(
+  "finishes a resumed effect's %s pulse when its state patch precedes target confirmation",
+  async (change) => {
+    setBasePacing(PACING_BY_STYLE.stacked);
+    const anchors = geometry();
+    const baseline = structuredClone(BOARD);
+    baseline.stateVersion = 0;
+    const unchanged = structuredClone(baseline);
+    unchanged.stateVersion = 1;
+    const changed = structuredClone(baseline);
+    changed.stateVersion = 2;
+    if (change === "dp") {
+      changed.players[0]!.battleArea[1]!.currentDP = 8000;
+    } else {
+      changed.players[0]!.battleArea[1]!.cannotAttack = true;
+    }
+    const expired: GateExpiry[] = [];
+    const stop = observeGateExpiry((expiry) => expired.push(expiry));
+    const steps: PresentationStepEvent[] = [];
+    const view = renderHook(
+      ({ state, fed, question }: { state: GameState; fed: readonly ServerBatch[]; question: boolean }) =>
+        useMatchCues({
+          batches: fed,
+          state,
+          viewerSeat: VIEWER,
+          mulliganOpen: false,
+          anchors,
+          onActionRejected: () => {},
+          presentationPacing: "sequential",
+          decisionPending: question,
+          decisionSourceCardId: question ? "AD1-002" : undefined,
+          devProbe: { onStep: (step) => steps.push(step) },
+        }),
+      { initialProps: { state: baseline, fed: [] as readonly ServerBatch[], question: false } },
+    );
+    try {
+      const first = singleServerBatch([triggered("AD1-002", "src-a", "targeted-effect")], 1);
+      view.rerender({ state: unchanged, fed: [first], question: true });
+      await advance(4000);
+      expect(view.result.current.decisionAnimationsPending).toBe(false);
+      view.rerender({ state: changed, fed: [first], question: false });
+      await advance(16);
+      const results = singleServerBatch(
+        [
+          { kind: "effectTargetsSelected", seat: 0, sourcePermanentId: "perm-a", targetPermanentIds: ["perm-b"] },
+          resolved("AD1-002", "src-a", "targeted-effect"),
+        ],
+        2,
+      );
+      view.rerender({ state: changed, fed: [first, results], question: false });
+      await advance(3000);
+      const prefix = change === "dp" ? "dp-pulse-" : "freeze-pulse-";
+      expect(steps.some((step) => step.step.id.startsWith(prefix) && step.phase === "finished")).toBe(true);
+      expect(steps.some((step) => step.step.id === "effect-unit-resettle-1" && step.phase === "finished")).toBe(true);
+      await advance(7000);
+      expect(expired).toEqual([]);
+      expect(view.result.current.dpPulses.size).toBe(0);
+      expect(view.result.current.freezePulses.size).toBe(0);
+      expect(view.result.current.decisionAnimationsPending).toBe(false);
+    } finally {
+      stop();
+    }
+  },
+);

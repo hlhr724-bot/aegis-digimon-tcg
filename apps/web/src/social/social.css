@@ -1,0 +1,36 @@
+.friend-presence {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-xs);
+}
+.friend-presence > span {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--ds-text-3);
+}
+.friend-presence[data-online="true"] > span {
+  background: var(--ds-success);
+}
+.friend-presence[data-status="in_match"] > span {
+  background: var(--ds-accent);
+}
+.social-invite.aegis-success-toast {
+  display: grid;
+  border-left: 1px solid color-mix(in srgb, var(--ds-ink-accent) 24%, transparent);
+  gap: 0.75rem;
+  width: min(28rem, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  padding: 1rem;
+  color: var(--ds-text);
+  background: var(--ds-sheet);
+}
+.social-invite p {
+  margin: 0.5rem 0 0;
+  color: var(--ds-text-2);
+}
+.social-invite .friends-actions {
+  width: auto;
+}

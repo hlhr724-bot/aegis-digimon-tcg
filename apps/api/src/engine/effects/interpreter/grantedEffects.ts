@@ -5,7 +5,7 @@ import type { Effect } from "../Effect.js";
 import { describeEffect } from "./describe.js";
 import { runEffect } from "./dispatch.js";
 import { builderForTrigger, canActivateEffect, timingsForTrigger, turnOwnerGuard } from "./effect.js";
-import { executeActivatedEffect, executeDeleteEffect } from "./registration/keywords.js";
+import { executeActivatedEffect } from "./registration/keywords.js";
 import { EffectTiming } from "@aegis/shared";
 import type { Action, CardEffect } from "@aegis/shared";
 
@@ -118,6 +118,15 @@ import type { Action, CardEffect } from "@aegis/shared";
  * at all.
  */
 export const GRANTED_EFFECT_LIBRARY: Record<string, CardEffect | readonly CardEffect[]> = {
+  "Execute deletion": {
+    trigger: "EndOfAttack",
+    description: "＜Execute＞: at the end of the attack, this Digimon is deleted.",
+    condition: {
+      kind: "allOf",
+      conditions: [{ kind: "triggerAttackBy", keyword: "Execute" }, { kind: "triggerAttackerIsSelf" }],
+    },
+    actions: [{ kind: "Delete", target: { filter: { isSelfRef: true }, count: 1, isSelf: true } }],
+  },
   Execute: [
     {
       ...executeActivatedEffect(),
@@ -126,7 +135,6 @@ export const GRANTED_EFFECT_LIBRARY: Record<string, CardEffect | readonly CardEf
         conditions: [{ kind: "selfHasKeyword", keyword: "Execute" }, { kind: "selfCanDeclareAttack" }],
       },
     },
-    executeDeleteEffect(),
   ],
   "[All Turns] When this Digimon becomes suspended, lose 1 memory.": {
     trigger: "AllTurns",

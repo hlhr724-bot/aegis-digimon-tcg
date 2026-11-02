@@ -1,3 +1,4 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import type { AddressInfo } from "node:net";
 import express from "express";
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -5,7 +6,7 @@ import type { Pool } from "pg";
 import { snapshotFixtures } from "../db/snapshotFixture.js";
 import { RED_DECK } from "../engine/testDecks.js";
 import { ParticipantStore } from "../tournaments/participants/index.js";
-import { BANDAI_GENERAL_PRESET, rulesSnapshot, TOURNAMENT_RULES_PRESETS } from "../tournaments/rules/index.js";
+
 import { SeriesStore } from "../tournaments/series/index.js";
 import { SwissProgram } from "../tournaments/swiss/index.js";
 import { AccountStore } from "./AccountStore.js";
@@ -82,8 +83,7 @@ async function seedSwissTournament(): Promise<string> {
     maxPlayers: 8,
     structure: "swiss",
     bestOf: 3,
-    rulesetPreset: BANDAI_GENERAL_PRESET.id,
-    rules: rulesSnapshot(BANDAI_GENERAL_PRESET, 3),
+    rules: buildTournamentRules({ bestOf: 3 }),
   });
   const participants = new ParticipantStore(harness.store);
   for (const name of ["Ann", "Ben", "Cid", "Dee"]) {
@@ -98,37 +98,6 @@ async function seedSwissTournament(): Promise<string> {
   }
   return tournament.id;
 }
-
-describe("GET /tournaments/presets", () => {
-  beforeEach(async () => {
-    harness = await startHarness();
-  });
-  afterEach(async () => harness.close());
-
-  it("lists every ruleset with the options and clocks the creation form needs", async () => {
-    const { status, body } = await get("/tournaments/presets");
-    expect(status).toBe(200);
-    expect(body).toHaveLength(TOURNAMENT_RULES_PRESETS.length);
-    const official = body.find((preset: ResponseBody) => preset.id === "bandai_general");
-    expect(official).toMatchObject({
-      name: BANDAI_GENERAL_PRESET.label,
-      origin: "bandai_general",
-      structures: ["swiss", "single_elimination"],
-      bestOfOptions: [3],
-      supportsTopCut: true,
-      supportsBots: false,
-      supportsUnrestrictedBanlist: false,
-    });
-    // Only the best-ofs the preset admits carry a clock, so a form cannot offer one it would reject.
-    expect(Object.keys(official.durations)).toEqual(["3"]);
-    expect(official.durations["3"].swissDurationMs).toBe(BANDAI_GENERAL_PRESET.clocks[3].swissDurationMs);
-    expect(official.attendance.joinGraceMs).toBe(BANDAI_GENERAL_PRESET.attendance.joinGraceMs);
-  });
-
-  it("is not shadowed by the tournament detail route", async () => {
-    expect((await get("/tournaments/presets")).status).toBe(200);
-  });
-});
 
 describe("POST /tournaments/:id/sweep", () => {
   beforeEach(async () => {

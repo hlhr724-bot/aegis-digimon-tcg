@@ -217,9 +217,18 @@ describe("BT18-069 Knightmon — KB Q&A rulings", () => {
     ).toEqual({ ok: true });
     await settle(() => attackDeclaredBy(s, cyberdramonPermanentId));
 
-    await acceptKnightmonAndChoose(s, chosenPermanentId);
+    await settle(() => s.decisions.some(({ req }) => req.kind === "optional" && req.sourceCardId === "BT18-069"));
+    const optional = s.decisions.find(({ req }) => req.kind === "optional" && req.sourceCardId === "BT18-069")!;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: optional.req.decisionId,
+        response: { kind: "optional", accept: true },
+      }),
+    ).toEqual({ ok: true });
 
     await settle(() => s.events.some((event) => event.kind === "blockWindowOpened"));
+    expect(s.decisions.some(({ req }) => req.kind === "chooseTargets")).toBe(false);
     expect(
       s.engine.applyIntent(0, { type: "declareBlock", blockerPermanentId: s.perm("knightmon").permanentId }),
     ).toEqual({ ok: true });

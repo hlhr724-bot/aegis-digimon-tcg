@@ -62,7 +62,7 @@ export function useBoardMeasurements({
       perm.topCard?.cardId ? [[perm.permanentId, perm.topCard.cardId] as const] : [],
     ),
   );
-  useEffect(() => {
+  function measurePermanents() {
     const board = boardRef.current;
     if (!board) return;
     const boardRect = board.getBoundingClientRect();
@@ -88,14 +88,14 @@ export function useBoardMeasurements({
         if (topInstanceId) permCardIdsRef.current[topInstanceId] = topCardId;
       }
     }
-  }, [battleAreaSignature]);
+  }
 
   const spotlightRequestRef = useRef<{ ids: readonly string[]; attacker?: string; security: boolean }>({
     ids: [],
     security: false,
   });
   const spotlightAppliedRef = useRef("");
-  useEffect(() => {
+  function measureSpotlight() {
     const board = fieldRef.current;
     const { ids, attacker, security } = spotlightRequestRef.current;
     if (!board || (ids.length === 0 && !attacker && !security)) {
@@ -134,6 +134,42 @@ export function useBoardMeasurements({
     spotlightAppliedRef.current = signature;
     setSpotlightSubjects(next);
     setBoardSize({ width: boardRect.width, height: boardRect.height });
+  }
+  const measureLatestRef = useRef<() => void>(() => undefined);
+  measureLatestRef.current = () => {
+    measurePermanents();
+    measureSpotlight();
+  };
+  useEffect(() => {
+    measureLatestRef.current();
   });
+  useEffect(() => {
+    let frame: number | undefined;
+    function scheduleMeasurement() {
+      if (frame !== undefined) {
+        return;
+      }
+      frame = requestAnimationFrame(() => {
+        frame = undefined;
+        measureLatestRef.current();
+      });
+    }
+    const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(scheduleMeasurement);
+    for (const element of [boardRef.current, fieldRef.current, ...Object.values(permRefs.current)]) {
+      if (element) {
+        observer?.observe(element);
+      }
+    }
+    window.addEventListener("resize", scheduleMeasurement);
+    document.addEventListener("scroll", scheduleMeasurement, true);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", scheduleMeasurement);
+      document.removeEventListener("scroll", scheduleMeasurement, true);
+      if (frame !== undefined) {
+        cancelAnimationFrame(frame);
+      }
+    };
+  }, [battleAreaSignature]);
   return { spotlightRequestRef, spotlightSubjects, boardSize };
 }

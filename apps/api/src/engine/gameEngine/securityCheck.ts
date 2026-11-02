@@ -16,9 +16,15 @@ import type { TriggerInfo, SubTriggerEventName } from "../effects/EffectContext.
 import { log } from "../../logger.js";
 import type { GameEngine } from "../GameEngine.js";
 import { resolutionDeps } from "./actionDeps.js";
-import { armedSubTriggers, nestedTriggerSourceStillResident, pendingWindowCollected } from "./subTriggers.js";
+import {
+  armedSubTriggers,
+  nestedTriggerSourceStillResident,
+  parkedEntryCollected,
+  pendingWindowCollected,
+} from "./subTriggers.js";
 import {
   beginResolvingWindow,
+  collectDeferredTimingPending,
   endResolvingWindow,
   flushDeferredSecurityRemovalTriggers,
   flushDeferredTimingWindows,
@@ -74,22 +80,18 @@ export async function engineRunSecurityCheck(
         removedFromSecuritySeat: info.removedFromSecuritySeat,
         subjectPermanentId: info.subjectPermanentId,
       }),
-    fireFaceUpSecurityAdded: async (info) =>
-      engine.fireSubTrigger("whenFaceUpCardsAddedToOpponentSecurity", {
-        addedToSecuritySeat: info.seat,
-        addedToSecurityInstanceIds: [info.instanceId],
-      }),
     prepareCheckTriggers: (info) => {
-      const event = info.wasAlreadyFaceUp ? "whenCheckedFaceUpSecurity" : "whenFaceUpCardsAddedToOpponentSecurity";
       const payload: TriggerInfo = {
+        securityRemovalEventId: ++engine.securityRemovalEventSeq,
         attackerPermanentId: info.attackerPermanentId,
         securityInstanceId: info.securityInstanceId,
         removedFromSecuritySeat: info.defenderSeat,
-        addedToSecuritySeat: info.defenderSeat,
-        addedToSecurityInstanceIds: [info.securityInstanceId],
       };
-      const armed = [event, "whenSecurityRemoved"].flatMap((name) =>
-        armedSubTriggers(engine, [...engine.subTriggers.subscriptionsFor(name as SubTriggerEventName)], payload),
+      const events: SubTriggerEventName[] = info.wasAlreadyFaceUp
+        ? ["whenCheckedFaceUpSecurity", "whenSecurityRemoved"]
+        : ["whenSecurityRemoved"];
+      const armed = events.flatMap((name) =>
+        armedSubTriggers(engine, [...engine.subTriggers.subscriptionsFor(name)], payload),
       );
       const framework = effectEnvironment(engine, payload);
       const initialEnv = buildResolutionEnv(framework, resolutionDeps(engine));
@@ -99,6 +101,7 @@ export async function engineRunSecurityCheck(
       ];
       // Effects parked while the [Security] effect resolves are derived from it.
       const parkedBeforeSecurityEffect = new Set(engine.pendingNestedTimingEffects);
+      const watchersParkedBeforeSecurityEffect = new Set(engine.parkedEntrySubTriggers);
       const securityRemovalsBeforeEffect = new Set(engine.deferredSecurityRemovalTriggers);
       const outermost = beginResolvingWindow(engine);
       return async () => {
@@ -110,7 +113,7 @@ export async function engineRunSecurityCheck(
           await withTriggeredMutations(engine, async () => {
             // This checkpoint snapshots its printed triggers below. Keep newly derived
             // rule/deletion reactions visible even when those collectors replace env.collect.
-            const reactionPending: CollectedEffect[] = [];
+            const reactionPending: CollectedEffect[] = collectDeferredTimingPending(engine);
             const env = buildResolutionEnv(
               framework,
               resolutionDeps(engine, () => [], { outermost, reactionPending }),
@@ -121,6 +124,7 @@ export async function engineRunSecurityCheck(
                 (pending) =>
                   !parkedBeforeSecurityEffect.has(pending) && nestedTriggerSourceStillResident(engine, pending),
               ),
+              ...parkedEntryCollected(engine, watchersParkedBeforeSecurityEffect),
             ];
             await withPendingPoolDrain(engine, outermost, async () => {
               // CR §15-4-5-2/3: the [Security] effect's derived triggers activate before the
@@ -293,7 +297,7 @@ export async function resolveSecurityEffect(
     });
     ctx.fx.enterEffectResolution?.(source.ownerSeat, securityEffectSourceKinds);
     try {
-      await effect.resolve(ctx);
+      await withPendingPoolDrain(engine, true, () => effect.resolve(ctx));
     } finally {
       ctx.fx.leaveEffectResolution?.();
       presentation.restore();

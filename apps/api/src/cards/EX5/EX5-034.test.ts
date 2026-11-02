@@ -154,62 +154,82 @@ describe("EX5-034 BanchoLeomon", () => {
   });
 });
 
-it("EX5-034 preserves its optional activation after declining an earlier suspension", async () => {
-  const s = setupEngine(
-    {
-      0: {
-        battleArea: [
-          { card: "EX5-034", as: "bancho" },
-          { card: "BT1-009", as: "first" },
-          { card: "BT1-009", as: "second" },
-          { card: "BT1-009", as: "third" },
-        ],
+it.each([false, true])(
+  "EX5-034 preserves its optional activation after declining an earlier suspension (after accepting=%s)",
+  async (declineAfterAccept) => {
+    const options = { autoAcceptOptional: false, autoSelectCards: !declineAfterAccept };
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "EX5-034", as: "bancho" },
+            { card: "BT1-009", as: "first" },
+            { card: "BT1-009", as: "second" },
+            { card: "BT1-009", as: "third" },
+          ],
+        },
+        1: {
+          battleArea: [
+            { card: "BT1-010", as: "target", dp: 9000, suspended: true },
+            { card: "BT1-010", as: "other", dp: 9000, suspended: true },
+          ],
+        },
       },
-      1: { battleArea: [{ card: "BT1-010", as: "target", dp: 9000, suspended: true }] },
-    },
-    { autoAcceptOptional: false, autoSelectCards: true },
-  );
-  s.state.memory = 10;
-  await s.ready();
-  const firstId = s.perm("first").permanentId;
-  const secondId = s.perm("second").permanentId;
-  const thirdId = s.perm("third").permanentId;
-  const attack = (as: string) =>
-    s.engine.applyIntent(0, {
-      type: "attack",
-      attackerPermanentId: s.perm(as).permanentId,
-      target: { kind: "permanent", permanentId: s.perm("target").permanentId },
-    });
-  expect(attack("first")).toEqual({ ok: true });
-  await settle(() => s.state.pendingDecision?.kind === "optional");
-  const first = s.state.pendingDecision!;
-  expect(
-    s.engine.applyIntent(0, {
-      type: "respondDecision",
-      decisionId: first.decisionId,
-      response: { kind: "optional", accept: false },
-    }),
-  ).toEqual({ ok: true });
-  await settle(() => !s.state.players[0]!.battleArea.some((p) => p.permanentId === firstId));
-  expect(s.perm("target").currentDP).toBe(9000);
-  expect(attack("second")).toEqual({ ok: true });
-  await settle(() => s.state.pendingDecision?.kind === "optional");
-  const second = s.state.pendingDecision!;
-  expect(second.decisionId).not.toBe(first.decisionId);
-  expect(
-    s.engine.applyIntent(0, {
-      type: "respondDecision",
-      decisionId: second.decisionId,
-      response: { kind: "optional", accept: true },
-    }),
-  ).toEqual({ ok: true });
-  await settle(() => s.perm("target").currentDP === 5000);
-  expect(observe(s.engine).keywordAmount(s.perm("target"), "SecurityAttack")).toBe(-1);
-  await settle(() => !s.state.players[0]!.battleArea.some((p) => p.permanentId === secondId));
-  expect(attack("third")).toEqual({ ok: true });
-  await settle(() => !s.state.players[0]!.battleArea.some((p) => p.permanentId === thirdId));
-  expect(s.decisions.filter(({ req }) => req.kind === "optional")).toHaveLength(2);
-});
+      options,
+    );
+    s.state.memory = 10;
+    await s.ready();
+    const firstId = s.perm("first").permanentId;
+    const secondId = s.perm("second").permanentId;
+    const thirdId = s.perm("third").permanentId;
+    const attack = (as: string) =>
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm(as).permanentId,
+        target: { kind: "permanent", permanentId: s.perm("target").permanentId },
+      });
+    expect(attack("first")).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "optional");
+    const first = s.state.pendingDecision!;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: first.decisionId,
+        response: { kind: "optional", accept: declineAfterAccept },
+      }),
+    ).toEqual({ ok: true });
+    let refusal: ReturnType<typeof s.engine.applyIntent> = { ok: true };
+    if (declineAfterAccept) {
+      await settle(() => s.state.pendingDecision?.kind === "chooseTargets");
+      refusal = s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "chooseTargets", instanceIds: [] },
+      });
+      options.autoSelectCards = true;
+    }
+    expect(refusal).toEqual({ ok: true });
+    await settle(() => !s.state.players[0]!.battleArea.some((p) => p.permanentId === firstId));
+    expect(s.perm("target").currentDP).toBe(9000);
+    expect(attack("second")).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "optional");
+    const second = s.state.pendingDecision!;
+    expect(second.decisionId).not.toBe(first.decisionId);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: second.decisionId,
+        response: { kind: "optional", accept: true },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("target").currentDP === 5000);
+    expect(observe(s.engine).keywordAmount(s.perm("target"), "SecurityAttack")).toBe(-1);
+    await settle(() => !s.state.players[0]!.battleArea.some((p) => p.permanentId === secondId));
+    expect(attack("third")).toEqual({ ok: true });
+    await settle(() => !s.state.players[0]!.battleArea.some((p) => p.permanentId === thirdId));
+    expect(s.decisions.filter(({ req }) => req.kind === "optional")).toHaveLength(2);
+  },
+);
 
 describe("EX5-034 BanchoLeomon — KB Q&A rulings", () => {
   it.each([

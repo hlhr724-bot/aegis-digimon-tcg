@@ -4,6 +4,10 @@ import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle, type EngineSetup } from "../../engine/testkit/harness.js";
 import { syntheticDefinitions } from "../../engine/testkit/syntheticDefinitions.js";
 import "./BT3-103.js";
+import "#api/cards/AD1/AD1-011";
+import "#api/cards/BT12/BT12-030";
+import "#api/cards/BT12/BT12-050";
+import "#api/cards/ST9/ST9-06";
 import "./BT3-044.js";
 import "./BT3-054.js";
 import "./BT3-055.js";
@@ -305,4 +309,45 @@ describe("BT3-103 Hidden Potential Discovered! — KB Q&A rulings", () => {
       syntheticDefinitions.delete(expensiveAvian);
     }
   });
+});
+
+describe("Hidden Potential battle-area suspension cost", () => {
+  it.each([false, true])(
+    "requires an unsuspended battle-area payer even with an active breeding Digimon (payer available: %s)",
+    async (payerAvailable) => {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [
+              { card: "AD1-011", as: "base", suspended: true },
+              { card: "ST9-06", as: "payer", suspended: !payerAvailable },
+            ],
+            breeding: { card: "BT12-050", as: "breeding" },
+            hand: [
+              { card: "BT3-103", as: "option" },
+              { card: "BT12-030", as: "evolving" },
+            ],
+            deck: ["BT1-009", "BT1-010"],
+          },
+        },
+        { autoAcceptOptional: true, autoSelectCards: true },
+      );
+      s.state.memory = 10;
+      await s.ready();
+      await useHiddenPotential(s);
+      expect(
+        s.engine.applyIntent(0, {
+          type: "digivolve",
+          permanentId: s.perm("base").permanentId,
+          instanceId: s.inst("evolving").instanceId,
+          useAlternateCost: true,
+          alternateRequirementIndex: 0,
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.perm("base").topCard.cardId === "BT12-030" && !s.state.pendingDecision);
+      expect(s.state.memory).toBe(payerAvailable ? 10 : 7);
+      expect(s.perm("breeding").isSuspended).toBe(false);
+      expect(s.perm("payer").isSuspended).toBe(true);
+    },
+  );
 });

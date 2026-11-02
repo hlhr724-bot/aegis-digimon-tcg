@@ -18,7 +18,7 @@ describe("BT1-008 Frimon", () => {
       forms: ["In-Training"],
       types: ["Lesser"],
       inheritedEffectText:
-        "[Your Turn] While your opponent has 2 or more suspended Digimon in play， this Digimon gets +2000 DP.",
+        "[Your Turn] While your opponent has 2 or more suspended Digimon in play, this Digimon gets +2000 DP.",
     });
     expect(getCardDefinition("BT1-008")?.effectText).toBeUndefined();
     expect(compiled.effects).toEqual([

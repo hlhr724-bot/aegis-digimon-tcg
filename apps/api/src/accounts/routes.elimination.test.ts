@@ -1,3 +1,4 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import type { AddressInfo } from "node:net";
 import express from "express";
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -7,7 +8,7 @@ import { RED_DECK } from "../engine/testDecks.js";
 import { BotSeatingStore } from "../tournaments/bots/index.js";
 import { EliminationStore } from "../tournaments/elimination/index.js";
 import { ParticipantStore } from "../tournaments/participants/index.js";
-import { AEGIS_LIGHTNING_PRESET, rulesSnapshot } from "../tournaments/rules/index.js";
+
 import { SeriesStore } from "../tournaments/series/index.js";
 import { SwissProgram } from "../tournaments/swiss/index.js";
 import { AccountStore } from "./AccountStore.js";
@@ -92,8 +93,7 @@ async function seedCup(checkedIn: number, allowBots = true): Promise<string> {
     structure: "single_elimination",
     bestOf: 1,
     allowBots,
-    rulesetPreset: AEGIS_LIGHTNING_PRESET.id,
-    rules: rulesSnapshot(AEGIS_LIGHTNING_PRESET, 1),
+    rules: buildTournamentRules({ bestOf: 1 }),
   });
   for (let index = 0; index < checkedIn; index += 1) {
     const name = `Player${index}`;

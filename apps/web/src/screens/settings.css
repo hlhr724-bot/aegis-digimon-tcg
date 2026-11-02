@@ -637,3 +637,35 @@
     transition-duration: 1ms;
   }
 }
+
+.settings-token-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+}
+
+.settings-token-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--ds-line);
+  border-radius: 0.75rem;
+  text-align: center;
+  min-width: 0;
+}
+
+.settings-token-upload {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--ds-line);
+  border-radius: 0.5rem;
+  background: var(--ds-fill);
+  color: var(--ds-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.settings-token-upload:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

@@ -49,6 +49,9 @@ export function StackViewerDialog({
     <Scrim onClick={onClose} className="game-modal">
       <div
         className="trash-viewer-dialog game-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
         onClick={(e) => e.stopPropagation()}
         style={{
           display: "flex",
@@ -176,7 +179,7 @@ export function StackViewerDialog({
                 {t("overlay.vortexAttack")}
               </Button>
             ) : null}
-            <Button size="md" variant="ghost" full onClick={onClose}>
+            <Button size="md" variant="ghost" full data-arena-cancel onClick={onClose}>
               {t("common.close")}
             </Button>
           </div>

@@ -66,6 +66,7 @@ function narratedEventKinds(relativePath: string, functionName: string): Set<str
  * the only difference between a deliberate silence and a forgotten event is this note.
  */
 const DELIBERATELY_SILENT: Partial<Record<ServerEventKind, string>> = {
+  phaseChanged: "rendered as turn and phase headings in the chronological match history",
   stackTopResolved: "supplies the resolved DP for the physical stack peel; cardsMoved narrates the removal",
   // Starts the physical clash before protection questions; it reports potential losses,
   // not deletions. combatResolved narrates the final result after those questions.
@@ -88,6 +89,7 @@ const DELIBERATELY_SILENT: Partial<Record<ServerEventKind, string>> = {
   dpModifierApplied: "played as the DP pulse; the causing effect carries the log line",
   effectTargetsSelected: "shown as target cues before the effect actions resolve",
   effectOptionChosen: "shown as the effect notice naming the chosen bullet; the log records effectResolved",
+  effectClauseAdvanced: "shown as the next printed passage; the log records effectResolved",
   // Every accepted effect is narrated when it resolves; the chosen order adds no separate notice.
   resolutionOrderChosen: "every effect it orders is narrated as it resolves",
   // Opens the centre-stage check: the shield breaks and the card is turned face up. The
@@ -98,6 +100,7 @@ const DELIBERATELY_SILENT: Partial<Record<ServerEventKind, string>> = {
   batchClosed: "the boundary the presentation groups by; it narrates nothing",
   // Arrives after gameOver and only feeds the board review's card viewers.
   finalReveal: "post-match data read by the board review, not a game event",
+  manualAction: "listed in the manual table's Operation history panel",
 };
 
 describe("server event coverage", () => {

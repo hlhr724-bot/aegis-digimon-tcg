@@ -24,6 +24,7 @@ export interface DelayedPrimitives {
     zones: ZoneRef[],
     duration: EffectDuration,
     pendingPlayInstanceId?: string,
+    materialLimits?: Partial<Record<ZoneRef, number>>,
   ): void;
   /**
    * Read the currently-expanded DigiXros material source zones for `seat`.

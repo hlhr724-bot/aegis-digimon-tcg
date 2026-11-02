@@ -2,8 +2,14 @@
 // Frozen before wave-1 fan-out; extend additively — parallel worktrees depend
 // on these shapes not changing underneath them.
 
+import type { TournamentRoundStartMode } from "#shared/tournaments/TournamentRoundStartMode";
+import type { BotStyle } from "#shared/bot/BotStyle";
+import type { TournamentCategory } from "#shared/tournaments/TournamentCategory";
+import type { DeckFormat } from "#shared/deckFormat";
+import type { TournamentClockSettings } from "#shared/tournaments/TournamentClockSettings";
+import type { TournamentSpectatorPolicy } from "#shared/tournaments/TournamentSpectatorPolicy";
+
 export type TournamentStructure = "swiss" | "single_elimination";
-export type RulesetOrigin = "bandai_general" | "bandai_event" | "aegis_custom";
 
 export type TournamentStatus = "draft" | "registration" | "check_in" | "running" | "finished" | "cancelled";
 export type PhaseKind = "swiss" | "top_cut" | "single_elimination";
@@ -34,14 +40,20 @@ export type TournamentBanlistCard = {
 };
 
 export type CreateTournamentInput = {
+  roundStartMode?: TournamentRoundStartMode;
+  category?: TournamentCategory;
+  format?: DeckFormat;
+  password?: string;
+  clocks?: TournamentClockSettings;
   name: string;
+  description?: string;
   structure: TournamentStructure;
   topCut: boolean;
   bestOf: 1 | 3;
   startsAt: number;
   maxPlayers: number;
   allowBots: boolean;
-  rulesetPreset: string;
+  randomBotStyles?: boolean;
   banlist: BanlistPolicy;
 };
 
@@ -49,8 +61,6 @@ export type SwissTimeoutPolicy = "draw" | "double_loss" | "extra_turns_then_draw
 export type EliminationTimeoutPolicy = "extra_turns_then_state_tiebreak";
 
 export type TournamentRules = {
-  version: string;
-  origin: RulesetOrigin;
   match: {
     winsRequired: 1 | 2;
     swissDurationMs: number | null;
@@ -145,26 +155,42 @@ export type ParticipantView = {
   // Null for bots. Lets the client join legacy bracket rows (keyed by
   // account id) to display names.
   accountId?: string | null;
+  botStyle?: BotStyle | null;
 };
 
 export type TournamentSummary = {
+  roundStartMode?: TournamentRoundStartMode;
+  category?: TournamentCategory;
+  myEntry?: {
+    status: RegistrationStatus;
+    checkInOpensAt: number | null;
+    checkInClosesAt: number | null;
+  };
+  format?: DeckFormat;
+  passwordProtected?: boolean;
+  discordAnnounce?: boolean;
+  discordUrl?: string | null;
+  spectatorPolicy?: TournamentSpectatorPolicy;
   id: string;
   name: string;
+  description?: string;
   status: TournamentStatus;
   structure: TournamentStructure;
   topCutEnabled: boolean;
   topCutSize: number | null;
   bestOf: 1 | 3;
   allowBots: boolean;
-  rulesetPreset: string;
-  rulesetVersion: string | null;
+  randomBotStyles?: boolean;
   startsAt: number;
   maxPlayers: number;
   registeredCount: number;
   banlistPolicy: BanlistPolicy;
+  circuitId?: string | null;
 };
 
 export type SeriesScoreView = {
+  participantIds?: readonly [string | null, string | null];
+  winnerSeat?: 0 | 1 | null;
   matchId: string;
   seriesId: string | null;
   status: MatchStatus;
@@ -211,4 +237,5 @@ export type TournamentView = TournamentSummary & {
   // as "cards banned/restricted in this event". Empty for mode "none".
   banlistCards: TournamentBanlistCard[];
   serverNow: number;
+  canSpectate?: boolean;
 };

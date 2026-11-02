@@ -5,6 +5,7 @@ import { extractReplay } from "./extract.js";
 import { runReplay } from "./run.js";
 import type { ReplayInput } from "./types.js";
 import { comparableState, recordRoomMatch, type RoomMatchOptions } from "./roomMatch.fixture.js";
+import { recordApplicationRandomCalls } from "#api/engine/testkit/recordApplicationRandomCalls";
 
 /**
  * The round trip of `roundTrip.test.ts`, with the room on Node's real timers instead of faked
@@ -92,7 +93,7 @@ const MATCHES: Match[] = [
   uninterrupted(7),
   dropAndReconnect(13, 3),
   dropAndReconnect(424242, 5),
-  combatWindowExpiry(13),
+  combatWindowExpiry(6),
   { ...uninterrupted(99), ...BLOCKER_DECKS, name: "a match whose effects shuffle security" },
   {
     ...combatWindowExpiry(6),
@@ -109,11 +110,11 @@ const MATCHES: Match[] = [
 describe("match replay round trip through a real room on real timers", () => {
   for (const { name, expects, ...match } of MATCHES) {
     it(`seed ${match.seed}: ${name}`, async () => {
-      const random = vi.spyOn(Math, "random");
+      const random = recordApplicationRandomCalls();
       let unseededDraws = 0;
       const recorded = await recordRoomMatch({ ...match, clock: "real" }).finally(() => {
-        unseededDraws = random.mock.calls.length;
-        random.mockRestore();
+        unseededDraws = random.stacks.length;
+        random.restore();
       });
       expect(recorded.gameOver).toBe(true);
       expect(unseededDraws, "the room drew unseeded randomness, which no replay can reproduce").toBe(0);
@@ -126,6 +127,8 @@ describe("match replay round trip through a real room on real timers", () => {
       // Through JSON, as a saved record would arrive.
       const replay = await runReplay(JSON.parse(JSON.stringify(record)));
       replay.engine.syncCounts();
+      replay.engine.projection.syncHandAffordances();
+      replay.engine.flushHandAffordances();
       expect(replay.divergences).toEqual([]);
       expect(replay.applied).toBe(record.inputs.length);
       expect(comparableState(replay.state)).toEqual(recorded.finalState);

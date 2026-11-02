@@ -37,8 +37,8 @@ it("shows revealed cards that are not eligible as disabled", () => {
     />,
   );
 
-  expect(screen.getByRole("button", { name: /angewomon/i })).toBeTruthy();
-  expect(screen.getByRole("button", { name: /darkness wave/i }).hasAttribute("disabled")).toBe(true);
+  expect(screen.getByRole("button", { name: /^angewomon/i })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /^darkness wave/i }).hasAttribute("disabled")).toBe(true);
 });
 
 const orderRequest: DecisionRequest = {

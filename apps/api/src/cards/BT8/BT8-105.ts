@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Choose any number of your opponent's Digimon whose play costs add up to 15 or less and delete them.",
           kind: "DeleteBudget",
           filter: {
             controller: "opponent",

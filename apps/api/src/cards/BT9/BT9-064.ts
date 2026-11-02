@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [Alphamon] in its name among them to your hand,",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,8 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart:
+                "place 1 card with [X Antibody] in its traits among them under this Digimon as its bottom digivolution card.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "add 1 card with [Monzaemon] in its name to your hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "play 1 Digimon card with [Numemon] in its name without paying the cost.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],

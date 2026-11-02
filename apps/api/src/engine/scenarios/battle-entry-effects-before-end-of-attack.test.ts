@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import type { ServerEvent } from "@aegis/shared/protocol/events";
+import type { DecisionRequest, ServerEvent } from "@aegis/shared/protocol/events";
 import { runReplay } from "#api/replays/inputs/run";
+import { translateLegacySubTriggerKeys } from "#api/replays/inputs/translateLegacySubTriggerKeys";
 import type { ReplayRecord } from "#api/replays/inputs/types";
 import { Phase } from "@aegis/shared/schema/enums";
 import { setupScenario } from "#api/engine/testkit/scenario";
@@ -61,14 +62,53 @@ describe("Battle entry effects resolve before End of Attack", () => {
 
   it("activates the Lunamon played from sources before Grademon's End of Attack in the recorded match", async () => {
     const events: ServerEvent[] = [];
-    const replay = await runReplay(record, { untilInput: 86, onBatch: (_state, batch) => events.push(...batch) });
+    let latestDecision: DecisionRequest | undefined;
+    const replay = await runReplay(record, {
+      untilInput: 27,
+      onBatch: (_state, batch) => events.push(...batch),
+      onDecision: (request) => {
+        latestDecision = request;
+      },
+    });
     try {
       expect(replay.divergences).toEqual([]);
-      const order = replay.pendingRequest;
+      expect(record.inputs[27]).toMatchObject({
+        kind: "intent",
+        seat: 1,
+        intent: { type: "respondDecision", response: { kind: "optional", accept: false } },
+      });
+      expect(replay.state).toMatchObject({ phase: Phase.Breeding, turnSeat: 0 });
+      expect(replay.state.pendingDecision).toBeUndefined();
+      expect([...replay.state.players[1]!.battleArea].map((permanent) => permanent.topCard.cardId).sort()).toEqual([
+        "BT24-035",
+        "BT25-022",
+        "BT26-092",
+      ]);
+      expect(replay.state.players[1]!.hand.some((card) => card.cardId === "BT24-037")).toBe(true);
+      for (const input of record.inputs.slice(28, 86)) {
+        if (input.kind !== "intent") {
+          throw new Error("Expected a recorded match intent");
+        }
+        const pending = replay.state.pendingDecision;
+        if (input.intent.type === "respondDecision" && pending === undefined) {
+          throw new Error("Expected a pending decision for the recorded response");
+        }
+        const intent =
+          input.intent.type === "respondDecision" ? { ...input.intent, decisionId: pending!.decisionId } : input.intent;
+        const compatible = translateLegacySubTriggerKeys(
+          intent,
+          pending === undefined
+            ? undefined
+            : { decisionId: pending.decisionId, triggerKeys: latestDecision?.options?.triggerKeys },
+        );
+        expect(await replay.applyIntent(input.seat, compatible)).toEqual({ ok: true });
+      }
+      const order = replay.state.pendingDecision;
       expect(order).toMatchObject({ kind: "orderTriggers", seat: 1 });
+      const ordering = JSON.parse(order!.payloadJson) as { triggerKeys: string[]; triggerDescriptions: string[] };
       const barrierKey =
-        order!.options!.triggerKeys![
-          order!.options!.triggerDescriptions!.findIndex((description) => description.startsWith("＜Barrier＞"))
+        ordering.triggerKeys[
+          ordering.triggerDescriptions.findIndex((description) => description.startsWith("＜Barrier＞"))
         ]!;
       expect(
         await replay.applyIntent(1, {

@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "add 1 card with the [DM] trait to the hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "place 1 card with the [Ver.4] trait face down as the bottom digivolution card",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

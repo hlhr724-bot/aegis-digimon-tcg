@@ -1,0 +1,181 @@
+export const storyCatalogCampaigns: readonly { id: string; title: string; medium: string; isHidden?: boolean }[] = [
+  { id: "digimon-seekers", title: "Digimon Seekers", medium: "Webnovel" },
+  {
+    id: "digimon-world-1",
+    title: "Digimon World 1",
+    medium: "Games",
+  },
+  {
+    id: "digimon-world-2",
+    title: "Digimon World 2",
+    medium: "Games",
+  },
+  {
+    id: "digimon-world-3",
+    title: "Digimon World 3 / 2003",
+    medium: "Games",
+  },
+  {
+    id: "digimon-adventure-1999",
+    title: "Digimon Adventure (1999)",
+    medium: "Anime",
+  },
+  {
+    id: "digimon-adventure-02",
+    title: "Digimon Adventure 02",
+    medium: "Anime",
+  },
+  {
+    id: "digimon-tamers",
+    title: "Digimon Tamers",
+    medium: "Anime",
+  },
+  {
+    id: "digimon-frontier",
+    title: "Digimon Frontier",
+    medium: "Anime",
+  },
+  {
+    id: "digimon-savers-data-squad",
+    title: "Digimon Savers / Data Squad",
+    medium: "Anime",
+  },
+  {
+    id: "digimon-xros-wars",
+    title: "Digimon Xros Wars",
+    medium: "Anime",
+  },
+  {
+    id: "digimon-xros-wars-hunters",
+    title: "Digimon Xros Wars: Hunters",
+    medium: "Anime",
+  },
+  {
+    id: "digimon-adventure-2020",
+    title: "Digimon Adventure: (2020)",
+    medium: "Anime",
+  },
+  {
+    id: "digimon-ghost-game",
+    title: "Digimon Ghost Game",
+    medium: "Anime",
+  },
+  {
+    id: "digimon-beatbreak",
+    title: "Digimon Beatbreak",
+    medium: "Anime",
+  },
+  {
+    id: "adventure-filme-de-1999",
+    title: "Adventure (1999 film)",
+    medium: "Films and specials",
+    isHidden: true,
+  },
+  {
+    id: "our-war-game",
+    title: "Our War Game",
+    medium: "Films and specials",
+    isHidden: true,
+  },
+  {
+    id: "hurricane-touchdown-golden-digimentals",
+    title: "Hurricane Touchdown / Golden Digimentals",
+    medium: "Films and specials",
+    isHidden: true,
+  },
+  {
+    id: "revenge-of-diaboromon",
+    title: "Revenge of Diaboromon",
+    medium: "Films and specials",
+    isHidden: true,
+  },
+  {
+    id: "tamers-battle-of-adventurers",
+    title: "Tamers: Battle of Adventurers",
+    medium: "Films and specials",
+    isHidden: true,
+  },
+  {
+    id: "tamers-runaway-locomon",
+    title: "Tamers: Runaway Locomon",
+    medium: "Films and specials",
+    isHidden: true,
+  },
+  {
+    id: "frontier-revival-of-the-ancient-digimon",
+    title: "Frontier: Revival of the Ancient Digimon",
+    medium: "Films and specials",
+    isHidden: true,
+  },
+  {
+    id: "digital-monster-x-evolution",
+    title: "Digital Monster X-evolution",
+    medium: "Films and specials",
+    isHidden: true,
+  },
+  {
+    id: "digimon-adventure-tri",
+    title: "Digimon Adventure tri.",
+    medium: "Films and specials",
+    isHidden: true,
+  },
+  {
+    id: "last-evolution-kizuna",
+    title: "Last Evolution Kizuna",
+    medium: "Films and specials",
+    isHidden: true,
+  },
+  {
+    id: "adventure-02-the-beginning",
+    title: "Adventure 02: The Beginning",
+    medium: "Films and specials",
+    isHidden: true,
+  },
+  {
+    id: "digimon-v-tamer-01-manga",
+    title: "Digimon V-Tamer 01 (manga)",
+    isHidden: true,
+    medium: "Manga",
+  },
+  {
+    id: "digimon-next-manga",
+    title: "Digimon Next (manga)",
+    isHidden: true,
+    medium: "Manga",
+  },
+  {
+    id: "digimon-xros-wars-manga",
+    title: "Digimon Xros Wars (manga)",
+    medium: "Manga",
+  },
+  {
+    id: "digimon-dawn-dusk",
+    title: "Digimon Dawn / Dusk",
+    medium: "Games",
+  },
+  {
+    id: "digimon-dawn",
+    title: "Digimon Dawn",
+    medium: "Games",
+  },
+  {
+    id: "digimon-dusk",
+    title: "Digimon Dusk",
+    medium: "Games",
+  },
+  {
+    id: "digimon-cyber-sleuth",
+    title: "Digimon Cyber Sleuth",
+    medium: "Games",
+  },
+  {
+    id: "digimon-hacker-s-memory",
+    title: "Digimon Hacker's Memory",
+    medium: "Games",
+  },
+  {
+    id: "digimon-survive",
+    title: "Digimon Survive",
+    medium: "Games",
+  },
+];

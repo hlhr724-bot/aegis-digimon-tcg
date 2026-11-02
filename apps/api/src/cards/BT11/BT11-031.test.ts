@@ -148,6 +148,134 @@ describe("BT11-031 ZeigGreymon", () => {
     expect(s.state.memory).toBe(3);
   });
 
+  it("places both cards under the same chosen General after declining Save", async () => {
+    const preferInstanceIds: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT11-031", as: "zeig" },
+            { card: "BT11-095", as: "otherGeneral" },
+            { card: "BT11-095", as: "general" },
+          ],
+          deck: ["BT1-009", "BT1-009", "BT1-009"],
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+          trash: [
+            { card: "BT10-024", as: "metalGreymon" },
+            { card: "BT10-019", as: "greymon" },
+            { card: "BT10-021", as: "mailBirdramon" },
+          ],
+        },
+        1: {
+          battleArea: [{ card: "BT1-084", as: "attacker", dp: 15000, suspended: true }],
+          deck: ["BT1-009", "BT1-009", "BT1-009"],
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true, preferInstanceIds },
+    );
+    preferInstanceIds.push(s.perm("general").permanentId);
+
+    s.state.turnSeat = 0;
+    s.state.memory = 3;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("zeig").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("attacker").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some(({ kind }) => kind === "attackEnded") && !s.state.pendingDecision);
+
+    expect(
+      s
+        .perm("general")
+        .stack.map(({ instanceId }) => instanceId)
+        .sort(),
+    ).toEqual([s.inst("greymon").instanceId, s.inst("mailBirdramon").instanceId].sort());
+    expect(s.perm("otherGeneral").stack).toHaveLength(0);
+    expect(s.state.players[0]!.trash.map(({ cardId }) => cardId).sort()).toEqual(["BT10-024", "BT11-031"]);
+    const generalChoices = s.decisions.filter(
+      ({ req }) =>
+        req.kind === "chooseTargets" &&
+        req.options?.candidateInstanceIds?.includes(s.perm("general").permanentId) &&
+        req.options.candidateInstanceIds.includes(s.perm("otherGeneral").permanentId) &&
+        req.options.candidateInstanceIds.length === 2,
+    );
+    expect(generalChoices).toHaveLength(1);
+  });
+
+  it("places only the blue MailBirdramon under a General when the trash has no blue Greymon", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT11-031", as: "zeig" },
+            { card: "BT11-095", as: "general" },
+          ],
+          deck: ["BT1-009", "BT1-009", "BT1-009"],
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+          trash: [{ card: "BT10-021", as: "mailBirdramon" }],
+        },
+        1: {
+          battleArea: [{ card: "BT1-084", as: "attacker", dp: 15000, suspended: true }],
+          deck: ["BT1-009", "BT1-009", "BT1-009"],
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+
+    s.state.turnSeat = 0;
+    s.state.memory = 3;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("zeig").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("attacker").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some(({ kind }) => kind === "attackEnded") && !s.state.pendingDecision);
+
+    expect(s.perm("general").stack.map(({ instanceId }) => instanceId)).toEqual([s.inst("mailBirdramon").instanceId]);
+    expect(s.state.players[0]!.trash.map(({ cardId }) => cardId)).toEqual(["BT11-031"]);
+  });
+
+  it("does not place MailBirdramon when there is no General Tamer", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT11-031", as: "zeig" }],
+          deck: ["BT1-009", "BT1-009", "BT1-009"],
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+          trash: [{ card: "BT10-021", as: "mailBirdramon" }],
+        },
+        1: {
+          battleArea: [{ card: "BT1-084", as: "attacker", dp: 15000, suspended: true }],
+          deck: ["BT1-009", "BT1-009", "BT1-009"],
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+
+    s.state.turnSeat = 0;
+    s.state.memory = 3;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("zeig").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("attacker").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some(({ kind }) => kind === "attackEnded") && !s.state.pendingDecision);
+
+    expect(s.state.players[0]!.trash.map(({ cardId }) => cardId).sort()).toEqual(["BT10-021", "BT11-031"]);
+  });
+
   it("inherited effect grants Blocker to a Blue Flare host on the opponent's turn", async () => {
     const s = setupEngine({
       0: {

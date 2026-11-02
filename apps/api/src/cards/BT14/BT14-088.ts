@@ -10,8 +10,14 @@ export const compiled: CompiledCard = {
           kind: "RevealAdd",
           revealCount: 5,
           add: [
-            { filter: { controllerDefault: "mine", kind: ["Digimon"], levels: [3] }, count: 1, to: "hand" },
             {
+              effectTextPart: "Add 1 level 3 Digimon card",
+              filter: { controllerDefault: "mine", kind: ["Digimon"], levels: [3] },
+              count: 1,
+              to: "hand",
+            },
+            {
+              effectTextPart: "1 non-white Tamer card among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Tamer"],

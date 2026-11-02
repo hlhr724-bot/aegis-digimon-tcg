@@ -25,6 +25,7 @@ export function SecurityShieldPile({
   landing,
   refEl,
   onClick,
+  onInspect,
   drop,
 }: {
   count: number;
@@ -53,6 +54,7 @@ export function SecurityShieldPile({
   landing?: number;
   refEl?: (el: HTMLDivElement | null) => void;
   onClick?: () => void;
+  onInspect?: () => void;
   drop?: DropAttrs;
 }) {
   const [reactionKey, setReactionKey] = useState(landing);
@@ -76,6 +78,16 @@ export function SecurityShieldPile({
         .join(" ")}
       ref={refEl}
       onClick={onClick}
+      data-inspectable={!!onInspect || undefined}
+      onContextMenu={
+        onInspect
+          ? (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onInspect();
+            }
+          : undefined
+      }
       onKeyDown={
         onClick
           ? (event) => {

@@ -1,19 +1,12 @@
-import type { CompiledCard } from "@aegis/shared";
-import { registerIrCard } from "../../engine/effects/interpreter.js";
+import type { CompiledCard } from "@aegis/shared/effects/ir/card";
+import { registerIrCard } from "#api/engine/effects/interpreter";
 
 const compiled: CompiledCard = {
   effects: [
     {
-      trigger: "YourTurn",
+      trigger: "WhenLinking",
       isLinked: true,
-      actions: [
-        {
-          kind: "SubTrigger",
-          event: "whenLinked",
-          on: { filter: { isSelfRef: true }, count: 1, isSelf: true },
-          actions: [{ kind: "Draw", controller: "mine", amount: 1 }],
-        },
-      ],
+      actions: [{ kind: "Draw", controller: "mine", amount: 1 }],
     },
     {
       trigger: "OnPlay",

@@ -23,7 +23,9 @@ export function pendingPlayTarget(instance: CardInstance, source: CardSource): P
   const target = new Permanent();
   target.permanentId = `pending-play-${instance.instanceId}`;
   target.controllerSeat = source.ownerSeat;
-  setTopCard(target, instance.clone());
+  const enteringCard = instance.clone();
+  enteringCard.faceUp = true;
+  setTopCard(target, enteringCard);
   target.inBreeding = false;
   target.baseDP = source.definition.dp ?? 0;
   target.currentDP = target.baseDP;

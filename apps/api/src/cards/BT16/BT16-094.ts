@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Reveal the top 4 cards of your deck. Add 1 [Four Great Dragons] trait or 1 yellow card among them to the hand. Return the rest to the bottom of the deck.",
           kind: "RevealAdd",
           revealCount: 4,
           add: [
@@ -27,15 +29,15 @@ export const compiled: CompiledCard = {
           ],
           rest: "deckBottom",
         },
-        {
-          kind: "PlaceInBattleAreaSelf",
-        },
+        { effectTextPart: "Then, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
       ],
     },
     {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "Place 1 [Trial of the Four Great Dragons] from your hand in the battle area, or you may trash 1 [Four Great Dragons] trait card in your hand.",
           kind: "Modal",
           choose: 1,
           options: [
@@ -102,6 +104,7 @@ export const compiled: CompiledCard = {
           raw: "Place 1 [Trial of the Four Great Dragons] from your hand in the battle area, or you may trash 1 [Four Great Dragons] trait card in your hand.",
         },
         {
+          effectTextPart: "If you did either, 1 of your opponent's Digimon gets -7000 DP for the turn.",
           kind: "ModifyDP",
           target: {
             filter: {

@@ -87,6 +87,7 @@ export const compiled: CompiledCard = {
           actions: [
             {
               kind: "Unsuspend",
+              optional: true,
               target: {
                 filter: {
                   isSelfRef: true,

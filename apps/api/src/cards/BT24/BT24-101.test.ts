@@ -343,6 +343,28 @@ describe("BT24-101 Jupitermon", () => {
     expect(s.state.players[1]!.security).toHaveLength(1);
   });
 
+  it("shows the leave-prevention clause when Jupitermon protects itself", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT24-101", as: "jupitermon" }],
+          security: ["BT4-022"],
+        },
+      },
+      { autoAcceptOptional: true },
+    );
+    await s.ready();
+
+    await advance(s.engine).verb.deletePermanent([s.perm("jupitermon").permanentId], "byEffect");
+
+    const decision = s.decisions.find(({ req }) => req.kind === "optional");
+    expect(decision?.req.options?.effectText).toBe(
+      "[All Turns] [Once Per Turn] When any of your [TS] trait Digimon or Tamers would leave the battle area, by trashing your top security card, they don't leave.",
+    );
+    expect(s.state.players[0]!.battleArea).toHaveLength(1);
+    expect(s.state.players[0]!.security).toHaveLength(0);
+  });
+
   it("naturally protects a TS Digimon from battle deletion by paying the top security", async () => {
     const s = setupEngine(
       {

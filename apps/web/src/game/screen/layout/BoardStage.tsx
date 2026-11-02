@@ -1,3 +1,21 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
+import { useArenaViewport } from "@/game/screen/hooks/useArenaViewport";
+import "@/design/arenaAppearance/arenaAppearance.css";
+import { getGamePhase } from "@/game/screen/model/getGamePhase";
+import { ManualBreedingChoice } from "@aegis/shared/manual/ManualBreedingChoice";
+import { snapshotGameState } from "@/net/presentedState";
+import { Phase } from "@aegis/shared/schema/enums";
+import { ManualAction } from "@aegis/shared/manual/ManualAction";
+import { GameMode } from "@aegis/shared/manual/GameMode";
+import { ManualCombatControls } from "@/game/manual/ManualCombatControls";
+import { ManualRevealGallery } from "@/game/manual/ManualRevealGallery";
+import { ManualCombatStage } from "@aegis/shared/manual/ManualCombatStage";
+import { ManualPermanentDialog } from "@/game/manual/ManualPermanentDialog";
+import { ManualControls } from "@/game/manual/ManualControls";
+import { sendManualCommand } from "@/game/manual/sendManualCommand";
+import { ArenaInput } from "@/game/input/ArenaInput";
+import { useArenaInputEnabled } from "@/game/input/useArenaInputEnabled";
 import type { LowTimeWarning } from "@/game/useLowTimeWarning";
 import { RollbackControls } from "@/game/RollbackControls";
 /* The arena itself: the opponent's bar, the narration and the ticker, the field's three
@@ -8,7 +26,7 @@ import { RollbackControls } from "@/game/RollbackControls";
    to the document body for the same reason. */
 
 import {
-  useState,
+  useMemo,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
@@ -17,14 +35,18 @@ import {
 import { ChatBubble } from "../../chat/ChatBubble";
 import { MatchChatWindow } from "../../chat/MatchChatWindow";
 import type { MatchChat } from "../../chat/useMatchChat";
-import { useUnreadChatCount } from "../../chat/useUnreadChatCount";
+import type { MatchChatWindow as MatchChatWindowState } from "../../chat/useMatchChatWindow";
 import type { ArenaBoardLook } from "../../arenaLook";
+import type { HandSortDirection } from "@/game/HandSortDirection";
 import type { HandSortMode } from "../../handSortMode";
 import { createPortal } from "react-dom";
 import type { GameState, Permanent, PlayerState, Seat } from "@aegis/shared";
 import type { RevealedZones } from "../model/gameOutcome";
 import { canAttackPlayerWith, canAttackWith, otherSeat } from "../../boardModel";
-import { type LogLine } from "../../matchLog";
+import type { LogEntry, LogLine } from "@/game/log/LogEntry";
+import { useUnreadLogCount } from "@/game/log/useUnreadLogCount";
+import type { SeatNames } from "@/game/log/SeatNames";
+import type { SeatAvatars } from "@/game/log/SeatAvatars";
 import { intents } from "../../../net/intents";
 import { EndTurnDialog } from "./EndTurnDialog";
 import { useEndTurnConfirmation } from "../hooks/useEndTurnConfirmation";
@@ -55,13 +77,16 @@ import type { boardActions } from "../boardActions";
 import type { matchIntents } from "../matchIntents";
 import type { actionGuards } from "../model/actionGuards";
 import { AttackArrowLayer } from "./AttackArrowLayer";
-import { FieldEffectsIndicator, readFieldEffects } from "./FieldEffectsIndicator";
+import { FieldEffectsIndicator } from "./FieldEffectsIndicator";
+import { readFieldEffects } from "@/game/readFieldEffects";
 import { BattleZones } from "./BattleZones";
 import { BoardBurstLayer } from "./BoardBurstLayer";
 import { DragGhost } from "./DragGhost";
 import { FieldClashGhosts } from "./FieldClashGhosts";
 import { LeftPileColumn } from "./LeftPileColumn";
 import { LogTicker } from "./LogTicker";
+import { FixedMatchLog } from "@/game/log/FixedMatchLog";
+import { useMatchLogDisplay } from "@/game/log/useMatchLogDisplay";
 import { DecisionMatchTimer, MatchTimer, SeriesBadge, viewerDecisionTimed } from "../../MatchTimer";
 import { MemoryBand } from "./MemoryBand";
 import { OpponentBar } from "./OpponentBar";
@@ -72,8 +97,13 @@ import { Sidebar } from "./Sidebar";
 import { TurnBanner } from "./TurnBanner";
 import { ViewerBattleRow } from "./ViewerBattleRow";
 import { ViewerPiles } from "./ViewerPiles";
+import { EffectConfirmButton } from "../../EffectConfirmButton";
 import { useBreedingTransferOrigins } from "../../breedingTransfer";
 import { useFieldShatterOrigins } from "../../fieldShatter";
+import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
+import type { NarrationItem } from "../../narration";
+
+const HIDDEN_NARRATION: ReadonlyMap<string, NarrationItem> = new Map();
 
 export interface BoardAnchors {
   board: RefObject<HTMLDivElement | null>;
@@ -109,6 +139,9 @@ export interface BoardReadouts {
   displayedTurnSeat: Seat;
   displayedTurnCount: number;
   log: LogLine[];
+  logEntries: readonly LogEntry[];
+  seatNames: SeatNames;
+  seatAvatars: SeatAvatars;
 }
 
 /** What the board lights, outlines or points at while a choice is open. */
@@ -141,9 +174,11 @@ export interface HandDockInputs {
   reorderDropBeforeInstanceId?: string | null;
   onMoveHandCard: (instanceId: string, direction: -1 | 1) => void;
   handSortMode: HandSortMode;
-  onSortHand: (mode: HandSortMode) => void;
+  handSortDirection: HandSortDirection;
+  onSortHand: (mode: HandSortMode, direction: HandSortDirection) => void;
   effectSourceInstanceId: string | undefined;
   effectSource?: EffectActivation;
+  effectSourceMarks?: ReadonlyMap<string, EffectSourceMark>;
   shakeInstanceId: string | undefined;
   selection:
     | {
@@ -169,6 +204,7 @@ export function BoardStage({
   viewerSeat,
   room,
   chat,
+  chatWindow,
   look,
   layout,
   anchors,
@@ -208,6 +244,7 @@ export function BoardStage({
   room: Parameters<typeof intents.surrender>[0] | undefined;
   /** Absent when there is no live room to talk through, as in a demo. */
   chat?: MatchChat;
+  chatWindow: MatchChatWindowState;
   look: ArenaBoardLook;
   layout: ReturnType<typeof useArenaLayout>;
   anchors: BoardAnchors;
@@ -242,35 +279,69 @@ export function BoardStage({
   timeWarning: LowTimeWarning;
 }) {
   const { t } = useTranslation();
+  const { scale } = arenaAppearancePreference.useAppearance();
+  const scaleFactor = Object.values(ArenaUiScale).find((entry) => entry.value === scale)!.factor;
+  const viewport = useArenaViewport({ factor: scaleFactor });
+  const manualRevision = state.manual?.revision ?? 0;
+  const manualState = useMemo(
+    () => (state.gameMode === GameMode.MANUAL.value ? snapshotGameState(state) : state),
+    [state, state.stateVersion, manualRevision],
+  );
+  const displayPhase = getGamePhase({ state: manualState });
+  const manualPlayer = manualState.players[viewerSeat];
+  const manualPermanent =
+    manualState.gameMode === GameMode.MANUAL.value && !spectating
+      ? [...(manualPlayer?.battleArea ?? []), ...(manualPlayer?.breeding ? [manualPlayer.breeding] : [])].find(
+          (permanent) => permanent.permanentId === selection.selPerm,
+        )
+      : undefined;
+  const arenaInputEnabled = useArenaInputEnabled();
   useBreedingTransferOrigins(anchors.board);
   useFieldShatterOrigins(anchors.board);
   const other = otherSeat(viewerSeat);
-  const [chatOpen, setChatOpen] = useState(false);
-  const chatUnread = useUnreadChatCount(chat?.entries, chatOpen);
+  const logUnread = useUnreadLogCount({ entries: readouts.logEntries, open: overlays.historyOpen });
+  const matchLogDisplay = useMatchLogDisplay();
+  const showsFixedLog = matchLogDisplay.showsPanel && !layout.narrowGameLayout;
+  const shownNarration = matchLogDisplay.showsPopups || layout.narrowGameLayout ? cues.narration : HIDDEN_NARRATION;
   const endTurnConfirmation = useEndTurnConfirmation({
-    phase: state.phase,
+    phase: displayPhase,
     turnCount: state.turnCount,
     blocked: guards.endPhaseBlocked || !room,
     onEndPhase: () => {
-      if (room) intents.endPhase(room);
+      if (room) {
+        if (state.gameMode === GameMode.MANUAL.value) {
+          if (manualState.manual.turnPhase === Phase.Breeding) {
+            sendManualCommand({
+              room,
+              command: { action: ManualAction.BREEDING.value, choice: ManualBreedingChoice.SKIP.value },
+            });
+          } else {
+            sendManualCommand({ room, command: { action: ManualAction.PASS.value } });
+          }
+        } else {
+          intents.endPhase(room);
+        }
+      }
     },
   });
   const endTurnDialog = endTurnConfirmation.open ? (
     <EndTurnDialog onConfirm={endTurnConfirmation.confirm} onClose={endTurnConfirmation.cancel} />
   ) : null;
-  const opponentName = opponent.displayName || t("game.opponent");
+  const opponentName =
+    opponent.displayName || (spectating ? t("log.player", { n: opponent.seat + 1 }) : t("game.opponent"));
   // A spectator watches from one player's seat but is not that player.
-  const viewerName = spectating ? viewer.displayName || t("game.you") : t("chat.you");
+  const viewerName = spectating ? viewer.displayName || t("log.player", { n: viewer.seat + 1 }) : t("chat.you");
   const { shownViewer, shownOpponent, breedingViewer, breedingOpponent } = seats;
-  const surrenderDialog = overlays.surrenderConfirmOpen ? (
-    <SurrenderDialog
-      onConfirm={() => {
-        overlays.setSurrenderConfirmOpen(false);
-        if (room) intents.surrender(room);
-      }}
-      onClose={() => overlays.setSurrenderConfirmOpen(false)}
-    />
-  ) : null;
+  const surrenderDialog =
+    !state.gameOver && !spectating && overlays.surrenderConfirmOpen ? (
+      <SurrenderDialog
+        onConfirm={() => {
+          overlays.setSurrenderConfirmOpen(false);
+          if (room && !state.gameOver) intents.surrender(room);
+        }}
+        onClose={() => overlays.setSurrenderConfirmOpen(false)}
+      />
+    ) : null;
   const viewerPiles = (
     <ViewerPiles
       viewer={shownViewer}
@@ -287,8 +358,17 @@ export function BoardStage({
       }
     />
   );
+  const opponentBreeding = opponent.breeding;
   const resultShown = state.gameOver && !cues.resultPending;
-  const opponentStatus = opponentStatusKey(state, viewerSeat);
+  let opponentStatus = opponentStatusKey(state, viewerSeat);
+  if (
+    manualState.gameMode === GameMode.MANUAL.value &&
+    manualState.manual.turnPhase === Phase.Breeding &&
+    (spectating || manualState.turnSeat !== viewerSeat) &&
+    !manualState.gameOver
+  ) {
+    opponentStatus = "manual.turn.waitingBreeding";
+  }
   // An open turn reads as thinking only once the board has caught up; while the
   // opponent's last action still plays, the board itself is the feedback.
   const actingPlateKeys = getActingPlateKeys({
@@ -304,6 +384,8 @@ export function BoardStage({
     // decision dialogs — opens it through this one blow-up.
     <CardOpenerProvider onOpenCard={onOpenCard}>
       <main
+        ref={viewport.ref}
+        data-arena-enlarged={scaleFactor > 1 || undefined}
         data-spectator={spectating || undefined}
         className="game-layout aegis-arena"
         data-viewer-seat={viewerSeat}
@@ -316,17 +398,98 @@ export function BoardStage({
           ...look.style,
         }}
       >
+        {manualPermanent && manualPlayer && manualState.players[1 - viewerSeat] ? (
+          <ManualPermanentDialog
+            combatActive={manualState.manual.combatStage !== ManualCombatStage.NONE.value}
+            canDeclareAttack={
+              !cues.presenting &&
+              !cues.decisionAnimationsPending &&
+              manualState.turnSeat === viewerSeat &&
+              manualState.manual.turnPhase === Phase.Main
+            }
+            permanent={manualPermanent}
+            deckCount={manualPlayer.deckCount}
+            viewerSeat={viewerSeat}
+            container={anchors.board.current}
+            returnFocusTo={anchors.permanents.current[manualPermanent.permanentId]}
+            opponent={manualState.players[1 - viewerSeat]!}
+            room={room}
+            disabled={
+              !room ||
+              manualState.gameOver ||
+              manualState.turnCount === 0 ||
+              manualState.manual.undoRequester !== -1 ||
+              manualState.manual.resultRequester !== -1 ||
+              manualState.manual.restartRequester !== -1
+            }
+            onClose={() => selection.setSelPerm(null)}
+          />
+        ) : null}
+        {manualState.gameMode === GameMode.MANUAL.value &&
+        (manualState.manual.revealedJson !== "[]" ||
+          manualState.manual.combatStage !== ManualCombatStage.NONE.value) ? (
+          <aside className="manual-public-status">
+            <ManualCombatControls
+              state={manualState}
+              seat={viewerSeat}
+              spectating={spectating}
+              compact
+              send={(command) => {
+                if (room) {
+                  sendManualCommand({ room, command });
+                }
+              }}
+            />
+            <ManualRevealGallery
+              state={manualState}
+              seat={viewerSeat}
+              disabled={
+                spectating ||
+                !room ||
+                manualState.gameOver ||
+                manualState.turnCount === 0 ||
+                manualState.manual.undoRequester !== -1 ||
+                manualState.manual.resultRequester !== -1 ||
+                manualState.manual.restartRequester !== -1
+              }
+              send={(command) => {
+                if (room) {
+                  sendManualCommand({ room, command });
+                }
+              }}
+            />
+          </aside>
+        ) : null}
+        <ManualControls
+          presenting={cues.presenting || cues.decisionAnimationsPending}
+          state={manualState}
+          room={room}
+          seat={viewerSeat}
+          spectating={spectating}
+          selectedHand={selection.handSel}
+        />
+        {arenaInputEnabled ? (
+          <ArenaInput
+            root={anchors.board}
+            cancelable={!!(selection.handSel || selection.handPreview || selection.selPerm || selection.linkSel)}
+            onCancel={selection.clearSel}
+          />
+        ) : null}
         <div
           className="game-board aegis-arena-surface"
           ref={anchors.board}
+          data-arena-enlarged={scaleFactor > 1 || undefined}
           data-art={look.hasArt || undefined}
           data-timer-decision={viewerDecisionTimed(state, viewerSeat) || undefined}
           style={{
             ...({
+              "--arena-scaled-hand-width": `${layout.handCardWidth}px`,
               "--arena-raising-width": `${layout.arenaRaisingWidth}px`,
+              "--arena-field-pile-width": `${layout.arenaPileWidth}px`,
               "--arena-sideline-basis-width": `${layout.arenaSidelineBasisWidth}px`,
             } as CSSProperties),
             flex: 1,
+            minHeight: viewport.minHeight,
             position: "relative",
             display: "flex",
             flexDirection: "column",
@@ -335,6 +498,8 @@ export function BoardStage({
           <OpponentBar
             spectating={spectating}
             spectatorCode={!state.gameOver ? state.spectatorCode : undefined}
+            spectatorNamesJson={!spectating ? state.players[viewerSeat]?.spectatorNamesJson : undefined}
+            anonymousSpectatorCount={state.players[viewerSeat]?.anonymousSpectatorCount}
             onResetScenario={onResetScenario}
             timer={
               (state.series?.bestOf ?? 1) > 1 ? (
@@ -347,13 +512,15 @@ export function BoardStage({
               ) : undefined
             }
             handStripRef={anchors.opponentHandStrip}
-            opponentName={opponent.displayName || t("game.opponent")}
+            opponentName={opponentName}
             opponentAvatarId={opponent.avatarId}
+            opponentEquippedRankedTier={opponent.equippedRankedTier}
+            opponentBotPersonaId={opponent.botPersonaId}
             viewerSeat={viewerSeat}
             displayedTurnSeat={readouts.displayedTurnSeat}
             displayedTurnCount={readouts.displayedTurnCount}
             actingLabel={actingPlateKeys.opponent ? t(actingPlateKeys.opponent) : undefined}
-            phase={shownState.phase}
+            phase={getGamePhase({ state: shownState })}
             memory={readouts.memory}
             eggDeckCount={breedingOpponent.eggDeckCount}
             handCount={seats.shownOpponentHandCount}
@@ -380,10 +547,14 @@ export function BoardStage({
             onOpenLog={() => overlays.setHistoryOpen(true)}
             onReportBug={() => overlays.setBugReportOpen(true)}
             onOpenArenaLook={() => overlays.setArenaLookOpen(true)}
-            onToggleChat={chat ? () => setChatOpen((open) => !open) : undefined}
-            chatOpen={chatOpen}
-            chatUnread={chatUnread}
-            onSurrender={spectating ? () => onLeaveSpectator?.() : () => overlays.setSurrenderConfirmOpen(true)}
+            onToggleChat={chat ? chatWindow.toggle : undefined}
+            chatOpen={chatWindow.open}
+            chatUnread={chatWindow.unread}
+            logUnread={logUnread}
+            gameOver={state.gameOver}
+            onSurrender={
+              spectating || state.gameOver ? () => onLeaveSpectator?.() : () => overlays.setSurrenderConfirmOpen(true)
+            }
             onSkipPresentation={() => cues.skipAnimations()}
           />
 
@@ -397,7 +568,7 @@ export function BoardStage({
             ) : null}
             {!resultShown ? (
               <NarrationStack
-                narration={cues.narration}
+                narration={shownNarration}
                 rejection={cues.rejection}
                 compact={layout.collapseNotices}
                 promptSourceCardId={promptSourceCardId}
@@ -406,6 +577,9 @@ export function BoardStage({
                 onDismissRejection={cues.dismissRejection}
                 timeWarning={timeWarning}
                 onHold={cues.holdNarration}
+                confirmation={
+                  cues.effectAwaitingConfirmation ? <EffectConfirmButton onConfirm={cues.confirmEffect} /> : undefined
+                }
               />
             ) : null}
           </div>
@@ -423,6 +597,17 @@ export function BoardStage({
               displayedTurnSeat={readouts.displayedTurnSeat}
               displayedTurnCount={readouts.displayedTurnCount}
               memory={readouts.memory}
+            />
+          ) : null}
+
+          {showsFixedLog ? (
+            <FixedMatchLog
+              entries={readouts.logEntries}
+              viewerSeat={spectating ? undefined : viewerSeat}
+              playerNames={readouts.seatNames}
+              playerAvatars={readouts.seatAvatars}
+              onExpand={() => overlays.setHistoryOpen(true)}
+              onOpenCard={overlays.setZoomCardId}
             />
           ) : null}
 
@@ -481,12 +666,18 @@ export function BoardStage({
             <FieldEffectsIndicator
               json={shownOpponent.fieldEffectsJson}
               ownField={false}
-              playerNames={[shownState.players[0]?.displayName ?? "", shownState.players[1]?.displayName ?? ""]}
+              playerNames={[
+                shownState.players[0]?.displayName || t("log.player", { n: 1 }),
+                shownState.players[1]?.displayName || t("log.player", { n: 2 }),
+              ]}
             />
             <FieldEffectsIndicator
               json={shownViewer.fieldEffectsJson}
               ownField
-              playerNames={[shownState.players[0]?.displayName ?? "", shownState.players[1]?.displayName ?? ""]}
+              playerNames={[
+                shownState.players[0]?.displayName || t("log.player", { n: 1 }),
+                shownState.players[1]?.displayName || t("log.player", { n: 2 }),
+              ]}
             />
             <BattleZones
               opponentFieldEffects={readFieldEffects(shownOpponent.fieldEffectsJson).length > 0}
@@ -510,10 +701,14 @@ export function BoardStage({
                 phaseBanner={cues.phaseBanner}
                 memory={readouts.memory}
                 compact={layout.compactPiles}
-                displayedPhase={cues.displayedPhase ?? shownState.phase}
+                displayedPhase={
+                  state.gameMode === GameMode.MANUAL.value
+                    ? displayPhase
+                    : (cues.displayedPhase ?? getGamePhase({ state: shownState }))
+                }
                 phaseSweeping={cues.unsuspendSweep !== null}
                 memoryPrediction={readouts.memoryPrediction}
-                turnControlState={turnControlState({ phase: state.phase, turnSeat: state.turnSeat, viewerSeat })}
+                turnControlState={turnControlState({ phase: displayPhase, turnSeat: state.turnSeat, viewerSeat })}
                 endPhaseBlocked={guards.endPhaseBlocked}
                 onEndPhase={endTurnConfirmation.request}
               />
@@ -580,9 +775,7 @@ export function BoardStage({
               }
               selected={targeting.securityDecision?.selected}
               onOpenOpponentBreeding={
-                opponent.breeding
-                  ? () => actions.showCardMenu(opponent.breeding!.permanentId, Side.Opponent)
-                  : undefined
+                opponentBreeding ? () => actions.showCardMenu(opponentBreeding.permanentId, Side.Opponent) : undefined
               }
               onAttackSecurity={
                 targeting.securityDecision
@@ -605,13 +798,16 @@ export function BoardStage({
           <PlayerDock
             spectating={spectating}
             handSortMode={handDock.handSortMode}
+            handSortDirection={handDock.handSortDirection}
             showRecordedHand={replayMode && seats.shownHandEntries.length > 0}
             onSortHand={handDock.onSortHand}
             onMoveHandCard={handDock.onMoveHandCard}
             reorderDropBeforeInstanceId={handDock.reorderDropBeforeInstanceId}
             timer={state.matchTimer ? <MatchTimer state={state} seat={viewerSeat} /> : undefined}
-            playerName={viewer.displayName || t("game.you")}
+            playerName={spectating ? viewerName : viewer.displayName || t("game.you")}
             playerAvatarId={viewer.avatarId}
+            playerEquippedRankedTier={viewer.equippedRankedTier}
+            playerBotPersonaId={viewer.botPersonaId}
             actingLabel={actingPlateKeys.viewer ? t(actingPlateKeys.viewer) : undefined}
             breedingDock={!layout.portraitArena ? breedingDock : null}
             pileDock={layout.dockViewerPiles ? viewerPiles : null}
@@ -622,10 +818,11 @@ export function BoardStage({
             selectedInstanceId={selection.handSel ?? undefined}
             effectSourceInstanceId={handDock.effectSourceInstanceId}
             effectSource={handDock.effectSource}
+            effectSourceMarks={handDock.effectSourceMarks}
             selection={handDock.selection}
             draggingInstanceId={drag.isPlay && drag.state?.kind === DragKind.Play ? drag.state.instanceId : undefined}
             shakeInstanceId={handDock.shakeInstanceId}
-            actionBar={handDock.actionBar}
+            actionBar={state.gameMode === GameMode.MANUAL.value ? undefined : handDock.actionBar}
             reserveActionBarSpace={handDock.reserveActionBarSpace}
             eggDeckCount={breedingViewer.eggDeckCount}
             handCount={spectating ? shownViewer.handCount : seats.shownHandCount}
@@ -664,7 +861,7 @@ export function BoardStage({
             The narrow layout keeps it: there it collapses into the touch strip. */}
         {layout.narrowGameLayout && !spectating ? (
           <Sidebar
-            phase={state.phase}
+            phase={displayPhase}
             turnCount={state.turnCount}
             memory={readouts.memory}
             isMyTurn={guards.isMyTurn}
@@ -674,7 +871,9 @@ export function BoardStage({
             narrow
             log={readouts.log}
             onHatchOrMove={actions.onBreeding}
-            onSurrender={spectating ? () => onLeaveSpectator?.() : () => overlays.setSurrenderConfirmOpen(true)}
+            onSurrender={
+              spectating || state.gameOver ? () => onLeaveSpectator?.() : () => overlays.setSurrenderConfirmOpen(true)
+            }
             onReportBug={() => overlays.setBugReportOpen(true)}
           />
         ) : null}
@@ -694,7 +893,7 @@ export function BoardStage({
               senderName={viewerName}
               boardRef={anchors.board}
             />
-            {chatOpen ? (
+            {chatWindow.open ? (
               <MatchChatWindow
                 chat={chat}
                 spectating={spectating}
@@ -704,7 +903,7 @@ export function BoardStage({
                     [other]: opponentName,
                   } as Record<Seat, string>
                 }
-                onClose={() => setChatOpen(false)}
+                onClose={chatWindow.close}
               />
             ) : null}
           </>

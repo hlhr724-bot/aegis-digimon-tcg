@@ -1,4 +1,4 @@
-import { newDb } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 import { describe, expect, it, vi } from "vitest";
 import { AccountStore } from "./AccountStore.js";
 import {
@@ -10,7 +10,7 @@ import {
 } from "./discordAvatars.js";
 
 function createStore(): AccountStore {
-  return new AccountStore(new (newDb().adapters.createPg().Pool)() as never);
+  return new AccountStore(new (createMemoryDatabase().adapters.createPg().Pool)() as never);
 }
 const noDelay = async () => undefined;
 

@@ -14,6 +14,8 @@ describe("BT1-103 Testament", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart:
+              "[Main] Until the end of your opponent's next turn, 1 of your Digimon gains ＜Blocker＞. (When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to attack it instead.)",
             kind: "GainKeyword",
             target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
             keyword: { keyword: "Blocker" },

@@ -36,5 +36,6 @@ describe("opponent hidden-card backs", () => {
     // figure while a scene is still showing a card leaving, so it is matched by its own
     // `shield={Side.Opponent}` marker instead.
     expect(gameScreenSource).toMatch(/shield=\{Side\.Opponent\}[\s\S]*?useSelectedSleeve=\{false\}/);
+    expect(gameScreenSource).toMatch(/"data-drop": "perm-opp"(?:(?!\/>)[\s\S])*?useSelectedSleeve=\{false\}/);
   });
 });

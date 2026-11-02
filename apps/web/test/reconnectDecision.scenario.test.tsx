@@ -128,7 +128,7 @@ scenario("reconnect-decision", () => {
     // "Reconnecting…" gate while it resumes the session with the server's token.
     await screen.findByText(/reconnecting/i, {}, { timeout: 10_000 });
 
-    // The server's 30s reconnect grace window (AegisRoom.RECONNECT_GRACE_SECONDS)
+    // The server's reconnect grace window (RECONNECT_GRACE_SECONDS)
     // resumes the same seat and re-sends the still-pending decision
     // (AegisRoom.onLeave's `allowReconnection` branch); the client re-renders it.
     await vi.waitFor(

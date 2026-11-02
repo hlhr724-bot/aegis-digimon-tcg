@@ -1076,16 +1076,7 @@ export function evaluateCondition(ctx: EffectContext, cond: Condition): boolean 
       return !(ctx.trigger.deletedPermanentIds ?? []).includes(attackerId);
     }
     case "selfHasNameContaining": {
-      // "This Digimon has [X] in its name" (BT20-080): true when the SOURCE permanent's
-      // current top-card name contains any of `cond.names` as a substring. Off-field source
-      // or absent names list => false (conservative). Uses case-insensitive substring match.
-      const selfTop = ctx.source.permanent()?.topCard;
-      const definition =
-        selfTop !== undefined
-          ? ctx.game.definitionOf(selfTop)
-          : ctx.trigger.deletedTopCardId !== undefined
-            ? ctx.game.definitionOf({ cardId: ctx.trigger.deletedTopCardId } as never)
-            : undefined;
+      const definition = sourceTopDefinition(ctx);
       if (definition === undefined) return false;
       const live = ctx.source.permanent();
       const currentNames =

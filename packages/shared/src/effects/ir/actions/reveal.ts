@@ -23,6 +23,7 @@ export interface RevealAddAction extends ActionBase {
    * the cards that remain, in printed order (EX9-007 Q4750).
    */
   reserveForLaterSlots?: boolean;
+  optionalAfterReveal?: true;
   /** Multiply the base reveal count by a live board-derived scale factor. */
   revealScaling?: Scaling;
   /**

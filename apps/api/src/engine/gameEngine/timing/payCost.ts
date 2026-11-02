@@ -1,6 +1,7 @@
 import { EffectTiming, type Permanent, type CardInstance, type Seat, type ZoneRef } from "@aegis/shared";
 import { canActivate, canTrigger } from "../../effects/kernel.js";
 import { effectsOf } from "../../effects/collect.js";
+import { createResidentCostSourceActive } from "#api/engine/gameEngine/timing/createResidentCostSourceActive";
 import {
   applyWouldBePlayedSelfReducer,
   canPayWouldBePlayedSelfReducer,
@@ -54,8 +55,27 @@ export async function fireBeforePayCost(
   originZone?: ZoneRef,
   projectOnly = false,
   simultaneousPlayCount = 1,
+  reservedInstanceIds: readonly string[] = [],
 ): Promise<number> {
   const source = cardSourceOf(engine, instance);
+  const reservedCostInstanceIds = new Set(reservedInstanceIds);
+  for (const [playedId, materialIds] of engine.pendingPlayReducerPlacements) {
+    if (playedId !== instance.instanceId) {
+      for (const materialId of materialIds) {
+        reservedCostInstanceIds.add(materialId);
+      }
+    }
+  }
+  for (const [playedId, relocations] of engine.pendingSelfReducerRelocations) {
+    if (playedId !== instance.instanceId) {
+      for (const { permanentId } of relocations) {
+        const material = engine.access.permanentById(permanentId)?.topCard;
+        if (material !== undefined) {
+          reservedCostInstanceIds.add(material.instanceId);
+        }
+      }
+    }
+  }
   const reductionBlocked = !useAsOption && engine.continuous.blocksCostReduction(source.ownerSeat, "play");
   // A prohibition prevents the reducer from activating, including its optional
   // processing cost (ST12-03 Q755). Projection stays read-only; an unaffordable
@@ -99,6 +119,7 @@ export async function fireBeforePayCost(
       wouldBePlayedAsOption: useAsOption,
     }),
     selections: new Map(),
+    reservedCostInstanceIds,
     playCostDelta: prepared?.delta ?? 0,
   };
   const playTarget = pendingPlayTarget(instance, source);
@@ -126,7 +147,7 @@ export async function fireBeforePayCost(
       if (effect.potentialPlayCostReduction === undefined) return total;
       if (
         effect.maxPerTurn > 0 &&
-        engine.tracker.count(`${residentSource.instanceId}/${effect.effectKey}`, "replacement") > 0
+        engine.tracker.count(`${residentSource.instanceId}/printed/${effect.effectKey}`, "replacement") > 0
       )
         return total;
       if (
@@ -146,6 +167,7 @@ export async function fireBeforePayCost(
           wouldBePlayedAsOption: useAsOption,
         }),
         selections: new Map(),
+        reservedCostInstanceIds,
       };
       if (!canTrigger(effect, residentCtx, engine.tracker) || !canActivate(effect, residentCtx, engine.tracker))
         return total;
@@ -180,11 +202,13 @@ export async function fireBeforePayCost(
           wouldBePlayedAsOption: useAsOption,
         }),
         selections: new Map(),
+        reservedCostInstanceIds,
         playCostDelta: ctx.playCostDelta,
         residentCostRegistration: true,
       };
       if (!canTrigger(effect, residentCtx, engine.tracker)) continue;
       if (!canActivate(effect, residentCtx, engine.tracker)) continue;
+      residentCtx.isResidentCostSourceActive = createResidentCostSourceActive({ engine, effect, ctx: residentCtx });
       const beforeDelta = residentCtx.playCostDelta ?? 0;
       await effect.resolve(residentCtx);
       ctx.playCostDelta = residentCtx.playCostDelta;
@@ -205,11 +229,13 @@ export async function fireBeforePayCost(
           wouldBePlayedAsOption: useAsOption,
         }),
         selections: new Map(),
+        reservedCostInstanceIds,
         playCostDelta: ctx.playCostDelta,
         residentCostRegistration: true,
       };
       if (!canTrigger(effect, residentCtx, engine.tracker)) continue;
       if (!canActivate(effect, residentCtx, engine.tracker)) continue;
+      residentCtx.isResidentCostSourceActive = createResidentCostSourceActive({ engine, effect, ctx: residentCtx });
       const beforeDelta = residentCtx.playCostDelta ?? 0;
       await effect.resolve(residentCtx);
       ctx.playCostDelta = residentCtx.playCostDelta;
@@ -236,15 +262,18 @@ export async function fireBeforePayCost(
                 : undefined);
             return resident?.topCard === undefined
               ? undefined
-              : buildEffectContext(
-                  engine,
-                  cardSourceOf(engine, findInstance(engine, sourceInstanceId ?? "")?.instance ?? resident.topCard),
-                  {
-                    wouldBePlayedInstanceId: instance.instanceId,
-                    wouldBePlayedCardId: instance.cardId,
-                    wouldBePlayedAsOption: useAsOption,
-                  },
-                );
+              : {
+                  ...buildEffectContext(
+                    engine,
+                    cardSourceOf(engine, findInstance(engine, sourceInstanceId ?? "")?.instance ?? resident.topCard),
+                    {
+                      wouldBePlayedInstanceId: instance.instanceId,
+                      wouldBePlayedCardId: instance.cardId,
+                      wouldBePlayedAsOption: useAsOption,
+                    },
+                  ),
+                  reservedCostInstanceIds,
+                };
           },
           {
             hasFired: (key) => engine.tracker.count(key, "replacement") > 0,

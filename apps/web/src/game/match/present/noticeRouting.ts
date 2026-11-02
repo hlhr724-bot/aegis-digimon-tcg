@@ -105,13 +105,21 @@ export function routeBatchNotices({
     playLeadInMs: 0,
   };
   if (securityReveal) {
+    const beforeCheck =
+      securityReveal.kind === "securityRevealed" ? Math.min(fresh.indexOf(securityReveal), firstArrivalIndex) : 0;
+    narrate(
+      raised.filter((_, index) => noticeAt[index]! < beforeCheck),
+      opened.filter((_, index) => panelAt[index]! < beforeCheck),
+      batchId,
+    );
     // Split at the play. What the revealed card itself did — its `[Security]` clause — reads
     // beside it as soon as it is on screen; what the card it PLAYED went on to do waits for
     // that card to be seen arriving on the field.
+    const heldFromCheck = (eventIndex: number) => eventIndex >= beforeCheck && eventIndex < firstArrivalIndex;
     return {
       deferredZoneChanges: zoneChanges,
-      heldNotices: raised.filter((_, index) => noticeAt[index]! < firstArrivalIndex),
-      heldPanels: opened.filter((_, index) => panelAt[index]! < firstArrivalIndex),
+      heldNotices: raised.filter((_, index) => heldFromCheck(noticeAt[index]!)),
+      heldPanels: opened.filter((_, index) => heldFromCheck(panelAt[index]!)),
       afterArrivalNotices: raised.filter((_, index) => noticeAt[index]! >= firstArrivalIndex),
       afterArrivalPanels: opened.filter((_, index) => panelAt[index]! >= firstArrivalIndex),
       playLeadInMs: 0,

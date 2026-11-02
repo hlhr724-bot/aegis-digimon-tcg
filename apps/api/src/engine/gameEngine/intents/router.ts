@@ -122,6 +122,9 @@ export function applyIntent(engine: GameEngine, seat: Seat, intent: Intent): Int
     return { ok: true };
   }
   switch (intent.type) {
+    case "manual":
+      return { ok: false, reason: "unknown-intent" };
+
     case "playCard":
       return handlePlayCard(engine, seat, intent);
 
@@ -246,6 +249,7 @@ export function continueMainVerb<T>(
         applyIntent(engine, passed, { type: "endPhase" });
       }
     }
+    if (engine.mainVerbContinuationsInFlight === 0) engine.projection.syncHandAffordances();
     checkTurnEndAfterVerb(engine);
   });
 }

@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { type MatchResult, runBotMatch } from "./matchHarness.js";
 import { createMatchups, runBattleFuzz, type FuzzDeck } from "./battleFuzzer.js";
+import { createEvaluationPolicy } from "#api/bot/policy";
+import type { GameEngine } from "#api/engine/GameEngine";
 
 const deck = { mainDeck: [], eggDeck: [] };
 const decks: FuzzDeck[] = [
@@ -21,6 +23,7 @@ function result(overrides: Partial<MatchResult> = {}): MatchResult {
       {
         label: "a",
         attacksDeclared: 0,
+        securityAttacksDeclared: 0,
         securityCardsTaken: 0,
         digimonPlayed: 0,
         digivolutions: 0,
@@ -31,6 +34,7 @@ function result(overrides: Partial<MatchResult> = {}): MatchResult {
       {
         label: "b",
         attacksDeclared: 0,
+        securityAttacksDeclared: 0,
         securityCardsTaken: 0,
         digimonPlayed: 0,
         digivolutions: 0,
@@ -130,6 +134,31 @@ describe("battle fuzzer", () => {
         ],
         presentationAnomalies: [expect.objectContaining({ kind: "effect-not-resolved" })],
       }),
+    ]);
+  });
+
+  it("builds every seat through an injected policy factory with a per-seat seed", async () => {
+    const runMatch = vi.fn<typeof runBotMatch>().mockResolvedValue(result());
+    const created: { seat: number; seed: number }[] = [];
+    const policy = createEvaluationPolicy();
+    await runBattleFuzz({
+      decks,
+      maximumMatchups: 1,
+      baseSeed: 40,
+      runMatch,
+      createSeatPolicy: ({ seat, seed }) => {
+        created.push({ seat, seed });
+        return policy;
+      },
+    });
+    const seats = runMatch.mock.calls[0]![0].seats;
+    expect(seats.map((seat) => seat.profile)).toEqual([undefined, undefined]);
+    expect(seats.map((seat) => seat.policyFactory?.({} as GameEngine, 0, undefined))).toEqual([policy, policy]);
+    expect(seats[1]!.policyFactory?.({} as GameEngine, 1, undefined)).toBe(policy);
+    expect(created).toEqual([
+      { seat: 0, seed: 40 },
+      { seat: 0, seed: 40 },
+      { seat: 1, seed: 7_959 },
     ]);
   });
 });

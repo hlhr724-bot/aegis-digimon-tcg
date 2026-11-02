@@ -61,10 +61,10 @@ describe("room format boundaries", () => {
     });
     const human = client("host");
     historical.clients.push(human);
-    historical.onJoin(human, { displayName: "Host", deck: playableBotDeck(undefined, false, format), format });
+    historical.onJoin(human, { displayName: "Host", deck: playableBotDeck(undefined, format), format });
     expect(historical.addBot()).toBe(true);
     expect(historical.state.players).toHaveLength(2);
-    expect(historical.privateRoomInfo()).toEqual({ format, unlimited: format === "BT13:unlimited" });
+    expect(historical.privateRoomInfo()).toMatchObject({ format, unlimited: format === "BT13:unlimited" });
   });
   it("validates a private guest against fixed host rules despite a forged format", () => {
     const historical = room("BT13", { private: true, betaBattleRoom: true });
@@ -76,12 +76,15 @@ describe("room format boundaries", () => {
     ).toThrow(/BT13 card pool/);
     expect(historical.state.players).toHaveLength(0);
   });
-  it.each([{ rankedRoom: true }, { tournamentRoom: true }, { betaBattleRoom: true }])(
+  it.each([{ rankedRoom: true }, { betaBattleRoom: true }])(
     "keeps competitive and beta queues on Standard (%j)",
     (options) => {
       expect(() => room("pauper", options)).toThrow(/requires Standard/);
     },
   );
+  it("takes a tournament room format only from its tournament game", () => {
+    expect(() => room("pauper", { tournamentRoom: true })).toThrow(/must come from its game/);
+  });
   it("freezes the format in a best-of-three and restores it in the next room", async () => {
     const directory = createSeriesDirectory(new LocalPresence());
     setSeriesDirectory(directory);
@@ -104,7 +107,7 @@ describe("room format boundaries", () => {
       setInterval: vi.fn(() => ({ clear() {} })),
       seatSnapshot: (seat: number) => ({
         displayName: `Tamer ${seat}`,
-        deck: playableBotDeck(undefined, false, "BT13:pauper"),
+        deck: playableBotDeck(undefined, "BT13:pauper"),
       }),
       sendToSeat: vi.fn(),
       createNextRoom: nextRoom,
@@ -128,7 +131,7 @@ describe("room format boundaries", () => {
     const pauper = room("pauper", { botRoom: true });
     const human = client("human");
     pauper.clients.push(human);
-    pauper.onJoin(human, { displayName: "Human", deck: playableBotDeck(undefined, false, "pauper"), format: "pauper" });
+    pauper.onJoin(human, { displayName: "Human", deck: playableBotDeck(undefined, "pauper"), format: "pauper" });
     expect(pauper.addBot()).toBe(true);
     expect(pauper.state.players).toHaveLength(2);
     expect(pauper.state.format).toBe("pauper");

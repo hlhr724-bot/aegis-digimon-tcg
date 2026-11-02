@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [Tyrannomon] in its name or the [Reptile]/[Dinosaur] trait",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -28,6 +29,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Ryutaro Williams] among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

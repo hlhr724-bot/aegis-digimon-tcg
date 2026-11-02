@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 2-color green card",
               filter: {
                 controllerDefault: "mine",
                 multicolor: true,
@@ -21,6 +22,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 Tamer card with [Shu-Chong Wong] in its name among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Tamer"],

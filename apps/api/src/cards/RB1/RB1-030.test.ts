@@ -321,3 +321,42 @@ describe("GitHub #5284 Regulusmon shared once-per-turn effect", () => {
     expect(s.state.players[0]!.hand.filter((card) => card.cardId === "BT10-094")).toHaveLength(1);
   });
 });
+
+describe("RB1-030 Regulusmon inherited copy of a GulusGammamon On Deletion", () => {
+  it("plays Gammamon from the trash when the blocking host is deleted in battle", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "P-240", as: "arcturusmon", under: ["EX12-007", "RB1-029", "RB1-030"] }],
+          trash: [{ card: "RB1-005", as: "gammamon" }],
+        },
+        1: { battleArea: [{ card: "BT1-020", as: "attacker", dp: 30000 }], security: ["BT1-010"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoOrderTriggers: true },
+    );
+    s.state.turnSeat = 1;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some((event) => event.kind === "blockWindowOpened"));
+    expect(
+      s.engine.applyIntent(0, { type: "declareBlock", blockerPermanentId: s.perm("arcturusmon").permanentId }),
+    ).toEqual({ ok: true });
+    await settle(() =>
+      s.state.players[0]!.battleArea.some(
+        (permanent) => permanent.topCard?.instanceId === s.inst("gammamon").instanceId,
+      ),
+    );
+
+    const gammamon = s.state.players[0]!.battleArea.find(
+      (permanent) => permanent.topCard?.instanceId === s.inst("gammamon").instanceId,
+    );
+    expect(gammamon?.isSuspended).toBe(true);
+  });
+});

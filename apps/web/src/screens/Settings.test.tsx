@@ -1,5 +1,8 @@
+import { SpectatorIdentitySetting } from "@/account/SpectatorIdentitySetting";
+import { ShareDeckAfterMatchSetting } from "@/account/ShareDeckAfterMatchSetting";
+import { accountApi } from "@/account/client";
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Settings } from "./Settings";
 import { I18nProvider } from "../i18n";
@@ -18,6 +21,7 @@ const account: RemoteAccount = {
   avatarId: null,
   avatarSource: "initials",
   isAdmin: false,
+  roles: [],
 };
 
 describe("settings layout", () => {
@@ -36,6 +40,7 @@ describe("settings layout", () => {
       "Appearance",
       "Language & text",
       "Card sleeves",
+      "Token art",
       "Sound & music",
       "Gameplay",
       "Arena",
@@ -103,14 +108,14 @@ describe("settings effect speed", () => {
 
   it("stays hidden while sequential pacing is off", async () => {
     vi.resetModules();
-    vi.doMock("../features", () => ({ RANKED_ENABLED: false, SEQUENTIAL_PACING_ENABLED: false }));
+    vi.doMock("../features", () => ({ SEQUENTIAL_PACING_ENABLED: false }));
     await renderSettings();
     expect(screen.queryByRole("group", { name: "Effect speed" })).toBeNull();
   });
 
   it("sets the effect speed when sequential pacing is on", async () => {
     vi.resetModules();
-    vi.doMock("../features", () => ({ RANKED_ENABLED: false, SEQUENTIAL_PACING_ENABLED: true }));
+    vi.doMock("../features", () => ({ SEQUENTIAL_PACING_ENABLED: true }));
     const pacing = await renderSettings();
     fireEvent.click(screen.getByRole("button", { name: "Fast" }));
     expect(pacing.getEffectSpeed()).toBe("fast");
@@ -173,7 +178,7 @@ describe("settings profile stats", () => {
     setProfileStatsShown(false);
   });
 
-  it("starts hidden and lets a signed-in player show the profile match stats", () => {
+  it("lets a signed-in player show hidden profile match stats", () => {
     setProfileStatsShown(false);
     render(
       <I18nProvider>
@@ -234,5 +239,83 @@ describe("settings chat sound", () => {
     fireEvent.click(screen.getByRole("switch", { name: /^Sound effects/ }));
 
     expect(toggle).toHaveProperty("disabled", true);
+  });
+});
+
+describe("account deck sharing", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("defaults to enabled and persists opting out", async () => {
+    vi.spyOn(accountApi, "preferences").mockResolvedValue({});
+    const save = vi.spyOn(accountApi, "updatePreferences").mockResolvedValue({ shareDeckAfterMatch: false });
+    render(
+      <I18nProvider>
+        <ShareDeckAfterMatchSetting />
+      </I18nProvider>,
+    );
+    const toggle = screen.getByRole("switch", { name: /Share my deck after the match/ });
+    await waitFor(() => expect(toggle.hasAttribute("disabled")).toBe(false));
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(toggle);
+    await waitFor(() => expect(toggle.getAttribute("aria-checked")).toBe("false"));
+    expect(save).toHaveBeenCalledWith({ shareDeckAfterMatch: false });
+  });
+
+  it("restores an opt-out and preserves it when saving fails", async () => {
+    vi.spyOn(accountApi, "preferences").mockResolvedValue({ shareDeckAfterMatch: false });
+    vi.spyOn(accountApi, "updatePreferences").mockRejectedValue(new Error("offline"));
+    render(
+      <I18nProvider>
+        <ShareDeckAfterMatchSetting />
+      </I18nProvider>,
+    );
+    const toggle = screen.getByRole("switch", { name: /Share my deck after the match/ });
+    await waitFor(() => expect(toggle.hasAttribute("disabled")).toBe(false));
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(toggle);
+    await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+  });
+});
+
+describe("spectator identity privacy", () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("defaults to public identity and persists hiding it", async () => {
+    vi.spyOn(accountApi, "preferences").mockResolvedValue({});
+    const save = vi.spyOn(accountApi, "updatePreferences").mockResolvedValue({ hideIdentityFromSpectators: true });
+    render(
+      <I18nProvider>
+        <SpectatorIdentitySetting />
+      </I18nProvider>,
+    );
+    const toggle = screen.getByRole("switch", { name: /Hide my identity from spectators/ });
+    await waitFor(() => expect(toggle.hasAttribute("disabled")).toBe(false));
+    expect(toggle.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(toggle);
+    await waitFor(() => expect(toggle.getAttribute("aria-checked")).toBe("true"));
+    expect(save).toHaveBeenCalledWith({ hideIdentityFromSpectators: true });
+  });
+
+  it("restores an opt-out and preserves it when saving fails", async () => {
+    vi.spyOn(accountApi, "preferences").mockResolvedValue({ hideIdentityFromSpectators: true });
+    vi.spyOn(accountApi, "updatePreferences").mockRejectedValue(new Error("offline"));
+    render(
+      <I18nProvider>
+        <SpectatorIdentitySetting />
+      </I18nProvider>,
+    );
+    const toggle = screen.getByRole("switch", { name: /Hide my identity from spectators/ });
+    await waitFor(() => expect(toggle.hasAttribute("disabled")).toBe(false));
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(toggle);
+    await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
+    expect(toggle.getAttribute("aria-checked")).toBe("true");
   });
 });

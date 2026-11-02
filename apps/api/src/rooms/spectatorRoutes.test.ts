@@ -59,6 +59,7 @@ describe("spectator admission", () => {
       const response = await request({
         roomCode: "abcdef",
         displayName: "Watcher",
+        authTicket: "account-ticket",
         spectator: false,
         ranked: true,
         deck: { mainDeck: ["forged"] },
@@ -70,6 +71,7 @@ describe("spectator admission", () => {
         spectator: true,
         roomCode: "ABCDEF",
         displayName: "Watcher",
+        authTicket: "account-ticket",
         deck: { mainDeck: [], eggDeck: [] },
       });
     });
@@ -91,5 +93,95 @@ describe("spectator admission", () => {
     available();
     vi.mocked(matchMaker.reserveSeatFor).mockRejectedValue(new Error("room disposed"));
     expect((await request({ roomCode: "ABCDEF" })).status).toBe(409);
+  });
+});
+
+async function withLiveServer(now: () => number, run: (list: (query?: string) => Promise<Response>) => Promise<void>) {
+  const app = express();
+  installSpectatorRoutes(app, { now });
+  const server = app.listen(0);
+  await new Promise((resolve) => server.once("listening", resolve));
+  try {
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/spectate/live`;
+    await run((query = "") => fetch(`${base}${query}`));
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+}
+
+async function codes(response: Response) {
+  const page = (await response.json()) as { matches: Array<{ spectatorCode: string }>; total: number };
+  return { codes: page.matches.map((match) => match.spectatorCode), total: page.total };
+}
+
+function liveListing(name: string, spectatorCode: string, spectators = 0, startedAt = 1) {
+  return {
+    name,
+    metadata: { live: { spectatorCode, players: ["A", "B"], format: "standard", startedAt, spectators } },
+  };
+}
+
+describe("live match list", () => {
+  it("lists only published casual matches below observer capacity, busiest first", async () => {
+    vi.mocked(matchMaker.query).mockResolvedValue([
+      liveListing("aegis", "QUIETX", 1),
+      { name: "aegis", metadata: { unlimited: false } },
+      liveListing("aegis_beta", "BUSYXX", 9),
+      liveListing("aegis_private", "PRIVAT", 5),
+      liveListing("aegis_ranked", "RANKED", 5),
+      liveListing("aegis_unlimited", "FULLXX", 20),
+    ] as never);
+    await withLiveServer(Date.now, async (list) => {
+      const response = await list();
+      expect(response.status).toBe(200);
+      expect(await codes(response)).toEqual({ codes: ["BUSYXX", "QUIETX"], total: 2 });
+    });
+    expect(matchMaker.query).toHaveBeenCalledTimes(1);
+  });
+
+  it("pages with offset and limit and rejects out-of-range values", async () => {
+    vi.mocked(matchMaker.query).mockResolvedValue(
+      Array.from({ length: 12 }, (_, index) =>
+        liveListing("aegis", `CODE${String(index).padStart(2, "0")}`, 12 - index),
+      ) as never,
+    );
+    await withLiveServer(Date.now, async (list) => {
+      expect(await codes(await list())).toMatchObject({ total: 12 });
+      expect((await codes(await list())).codes).toHaveLength(10);
+      expect(await codes(await list("?offset=10&limit=5"))).toEqual({ codes: ["CODE10", "CODE11"], total: 12 });
+      for (const query of ["?limit=0", "?limit=51", "?offset=-1", "?offset=abc", "?limit=2.5"]) {
+        expect((await list(query)).status).toBe(400);
+      }
+    });
+  });
+
+  it("reuses one room query for five seconds, then refreshes", async () => {
+    let now = 1_000;
+    vi.mocked(matchMaker.query).mockResolvedValue([liveListing("aegis", "FIRSTX")] as never);
+    await withLiveServer(
+      () => now,
+      async (list) => {
+        await Promise.all([list(), list(), list()]);
+        now += 4_999;
+        await list();
+        expect(matchMaker.query).toHaveBeenCalledTimes(1);
+        vi.mocked(matchMaker.query).mockResolvedValue([liveListing("aegis", "SECOND")] as never);
+        now += 1;
+        expect((await codes(await list())).codes).toEqual(["SECOND"]);
+        expect(matchMaker.query).toHaveBeenCalledTimes(2);
+      },
+    );
+  });
+
+  it("retries at once after a failed room query", async () => {
+    vi.mocked(matchMaker.query).mockRejectedValueOnce(new Error("redis down"));
+    vi.mocked(matchMaker.query).mockResolvedValueOnce([liveListing("aegis", "BACKUP")] as never);
+    await withLiveServer(
+      () => 1_000,
+      async (list) => {
+        expect((await list()).status).toBe(503);
+        expect((await codes(await list())).codes).toEqual(["BACKUP"]);
+      },
+    );
   });
 });

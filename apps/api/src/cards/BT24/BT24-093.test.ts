@@ -15,7 +15,7 @@ describe("BT24-093 [Main] on-play body fires on a real playCard (not dead)", () 
     ]);
   });
 
-  it("targets an exact named host's top stacked card for the Delay effect", () => {
+  it("targets a named host's top stacked card for the Delay effect", () => {
     const delay = compiled.effects.find((effect) => effect.trigger === "AllTurns");
     expect(delay).toMatchObject({ keywords: [{ keyword: "Delay" }] });
     expect(delay?.actions[0]).toMatchObject({
@@ -26,7 +26,7 @@ describe("BT24-093 [Main] on-play body fires on a real playCard (not dead)", () 
           kind: "SecurityManipulation",
           op: "addTop",
           detachPermanentTop: true,
-          source: { filter: { nameOrTrait: [{ tokens: ["Aegiochusmon", "Jupitermon"], match: "nameExact" }] } },
+          source: { filter: { nameOrTrait: [{ tokens: ["Aegiochusmon", "Jupitermon"], match: "name" }] } },
         },
       ],
     });
@@ -196,7 +196,7 @@ describe("BT24-093 [Main] on-play body fires on a real playCard (not dead)", () 
     expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toContain(s.inst("option").instanceId);
   });
 
-  it("does not use Delay when no named Aegiochusmon or Jupitermon stack exists", async () => {
+  it("does not use a fresh Delay option even with a named stack", async () => {
     const s = setup({
       0: {
         battleArea: [

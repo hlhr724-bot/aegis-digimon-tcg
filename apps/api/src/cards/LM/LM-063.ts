@@ -62,6 +62,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "1 of your Digimon may digivolve into a Red or Purple Digimon card in your hand for its digivolution cost. When it would digivolve by this effect, reduce the cost by 2.",
           kind: "Digivolve",
           target: {
             filter: {

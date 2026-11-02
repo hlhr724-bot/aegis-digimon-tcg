@@ -499,3 +499,19 @@ describe("Google Drive sharing and trash", () => {
     expect(provider.viewLink("file-1")).toBe(VIEW_LINK);
   });
 });
+
+it("persists consent-filtered cover IDs in Drive metadata and restores them without downloading the replay", async () => {
+  signIn();
+  const drive = stubDrive({
+    listed: [{ id: "icons", name: "replay", appProperties: { players: "Tai vs Matt", deckIcon0: "BT1-010" } }],
+  });
+  const provider = createGoogleDriveProvider("client-id");
+  const replay = readyReplay();
+  replay.summary.deckIcons = ["BT1-010", null];
+  await provider.upload(replay);
+  const metadata = await readText(drive.uploads()[0]!.body as Blob);
+  expect(metadata).toContain('"deckIcon0":"BT1-010"');
+  expect(metadata).not.toContain('"deckIcon1"');
+  expect(metadata).not.toContain('"mainDeck"');
+  expect((await provider.list())[0]?.deckIcons).toEqual(["BT1-010", null]);
+});

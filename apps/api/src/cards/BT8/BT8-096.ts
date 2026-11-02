@@ -23,11 +23,14 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "If you have a Digimon in play with 2 or more colors, or with 2 or more colors in one of its digivolution cards, delete 1 of your opponent's Digimon with 7000 DP or less instead.",
           kind: "Delete",
           target: { filter: { controller: "opponent", kind: ["Digimon"], dp: { op: "lte", value: 7000 } }, count: 1 },
           condition: highCap,
         },
         {
+          effectTextPart: "[Main] Delete 1 of your opponent's Digimon with 4000 DP or less.",
           kind: "Delete",
           target: { filter: { controller: "opponent", kind: ["Digimon"], dp: { op: "lte", value: 4000 } }, count: 1 },
           condition: { kind: "not", condition: highCap },

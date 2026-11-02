@@ -11,11 +11,17 @@ import {
   PendingDecision,
   Phase,
   type DecisionResponse,
+  type DecisionRequest,
   type Seat,
 } from "@aegis/shared";
 import { checkStateInvariants } from "./testkit/stateInvariants.js";
 import { minimizeSequence } from "./testkit/minimizeSequence.js";
 import { GameEngine } from "./GameEngine.js";
+import { advance } from "./testkit/advance.js";
+import { snapshotGameEngine } from "./snapshot/snapshotGameEngine.js";
+import { restoreGameEngine } from "./snapshot/restoreGameEngine.js";
+import { SeededRandom } from "./random/SeededRandom.js";
+import { setupEngine as setupScenarioEngine } from "./testkit/harness.js";
 import "../cards/index.js";
 
 // ── Card pool ────────────────────────────────────────────────────────────────
@@ -100,6 +106,7 @@ function digimon(seat: Seat, dp: number, random: Random, cardId?: string): Perma
 
 function setupEngine(seed: number, trace: string[] = []) {
   const state = new GameState();
+  const events: import("@aegis/shared").ServerEvent[] = [];
   const decisionErrors: string[] = [];
   let queuedResponses = 0;
   let engineRef: GameEngine | undefined;
@@ -145,7 +152,7 @@ function setupEngine(seed: number, trace: string[] = []) {
         decisionErrors.push(`unsupported decision:${req.decisionId}:${req.kind}`);
       }
     },
-    emit: () => {},
+    emit: (event) => events.push(event),
   });
   engineRef = engine;
   engine.seatPlayer(0, "sa", { displayName: "A", deck: { mainDeck: [], eggDeck: [] } });
@@ -155,12 +162,97 @@ function setupEngine(seed: number, trace: string[] = []) {
   return {
     engine,
     state,
+    events,
     decisionErrors,
     queueResponse,
     get queuedResponses() {
       return queuedResponses;
     },
   };
+}
+
+function responseForDecision(request: DecisionRequest): DecisionResponse | undefined {
+  if (request.kind === "optional") return { kind: "optional", accept: true };
+  if (request.kind === "selectCards" || request.kind === "chooseTargets") {
+    const candidates = request.options?.candidateInstanceIds ?? [];
+    return { kind: request.kind, instanceIds: candidates.slice(0, request.options?.min ?? 0) };
+  }
+  if (request.kind === "chooseOption") return { kind: "chooseOption", optionIndex: 0 };
+  if (request.kind === "orderCards") {
+    return { kind: "orderCards", order: request.options?.candidateInstanceIds ?? [] };
+  }
+  if (request.kind === "orderTriggers") {
+    return { kind: "orderTriggers", order: (request.options?.triggerKeys ?? []).slice(0, 1) };
+  }
+  return undefined;
+}
+
+async function assertFuzzerSnapshotContinuation(seed: number): Promise<void> {
+  seq = 0;
+  const setup = setupScenarioEngine({ autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true });
+  setup.engine.randomStreams = [new SeededRandom({ seed }), new SeededRandom({ seed: seed ^ 0x9e3779b9 })];
+  const random = seededRandom(seed);
+  for (const seat of [0, 1] as const) {
+    for (let index = 0; index < 10; index++) {
+      setup.state.players[seat]!.deck.push(instance("BT1-009", seat, false));
+    }
+  }
+  setup.state.memory = 10;
+  const prefixInstances = [instance("BT1-009", 0, false), instance("BT1-009", 0, false)];
+  setup.state.players[0]!.battleArea.push(digimon(0, 5000, random, "BT1-009"));
+  setup.state.players[0]!.hand.push(...prefixInstances);
+  setup.state.isFirstPlayersFirstTurn = true;
+  await setup.ready();
+  const originalTurn = setup.engine.turnMachine.runTurn();
+  await advance(setup.engine).waitForMainPhase(0);
+  buildRandomBoard(setup.state, random);
+  setup.state.memory = 10;
+  await setup.ready();
+  const prefixLength = Math.floor(random() * (prefixInstances.length + 1));
+  for (const card of prefixInstances.slice(0, prefixLength)) {
+    expect(setup.engine.applyIntent(0, { type: "playCard", instanceId: card.instanceId })).toEqual({ ok: true });
+    await advance(setup.engine).waitForMainPhase(0);
+  }
+  const eventOffset = setup.events.length;
+  const snapshot = JSON.parse(JSON.stringify(snapshotGameEngine({ engine: setup.engine })));
+  const restoredEvents: import("@aegis/shared").ServerEvent[] = [];
+  const restoredErrors: string[] = [];
+  let restoredEngine: GameEngine | undefined;
+  const restored = restoreGameEngine({
+    snapshot,
+    hooks: {
+      seed,
+      emit: (event) => restoredEvents.push(event),
+      requestDecision: (seat, request) => {
+        const response = responseForDecision(request);
+        if (response === undefined) {
+          restoredErrors.push(`unsupported decision:${request.decisionId}:${request.kind}`);
+          return;
+        }
+        queueMicrotask(() => {
+          if (restoredEngine === undefined) {
+            restoredErrors.push("engine unavailable for restored decision response");
+            return;
+          }
+          const result = restoredEngine.applyIntent(seat, {
+            type: "respondDecision",
+            decisionId: request.decisionId,
+            response,
+          });
+          if (!result.ok) restoredErrors.push(`${request.decisionId}: ${JSON.stringify(result)}`);
+        });
+      },
+    },
+  });
+  restoredEngine = restored.engine;
+  const originalResult = setup.engine.applyIntent(0, { type: "endPhase" });
+  const restoredResult = restored.engine.applyIntent(0, { type: "endPhase" });
+  expect(originalResult).toEqual({ ok: true });
+  expect(restoredResult).toEqual(originalResult);
+  await Promise.all([originalTurn, restored.completion]);
+  expect(restoredErrors).toEqual([]);
+  expect(restoredEvents).toEqual(setup.events.slice(eventOffset));
+  expect(restored.engine.state.toJSON()).toEqual(setup.state.toJSON());
 }
 
 async function settleDecisions(
@@ -435,6 +527,16 @@ function caseCountFromEnvironment(): number {
 }
 
 describe("Engine fuzzer", () => {
+  it("restores random fuzzer Main positions and matches every following event", async () => {
+    const replaySeed = seedFromEnvironment();
+    const baseSeed = replaySeed ?? DEFAULT_BASE_SEED;
+    const count = replaySeed === undefined ? caseCountFromEnvironment() : 1;
+    for (let caseIndex = 0; caseIndex < count; caseIndex++) {
+      await assertFuzzerSnapshotContinuation((baseSeed + caseIndex) >>> 0);
+    }
+    expect(count).toBeGreaterThan(0);
+  }, 300_000);
+
   it("checks sequential actions on reproducible seeded boards", async () => {
     const replaySeed = seedFromEnvironment();
     const baseSeed = replaySeed ?? DEFAULT_BASE_SEED;

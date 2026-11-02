@@ -126,6 +126,7 @@ export const compiled: CompiledCard = {
       actions: [
         {
           kind: "Replacement",
+          raw: "[All Turns] [Once Per Turn] When any of your [TS] trait Digimon or Tamers would leave the battle area, by trashing your top security card, they don't leave.",
           event: "wouldLeavePlay",
           affectsAll: true,
           sourceFilter: {

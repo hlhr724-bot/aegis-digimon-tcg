@@ -1,13 +1,16 @@
+import { SPECTATOR_REPLAY_SEAT } from "@aegis/shared/replays/spectatorReplaySeat";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
 import { DECKS, copyDeckPreset, type DeckListing } from "@/game/decks";
 import { saveDecks, loadDecks } from "@/identity";
 import type { UsedDeck } from "@aegis/shared/decks/UsedDeck";
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { I18nProvider } from "../../../i18n";
 import { GameOverOverlay } from "./GameOverOverlay";
 import type { SeriesView } from "../../seriesModel";
+import type { RematchStage } from "@/game/getRematchView";
+import { RematchMode } from "@aegis/shared/protocol/RematchMode";
 
 afterEach(cleanup);
 
@@ -25,6 +28,35 @@ function renderOverlay(cardsRevealed = false) {
     </I18nProvider>,
   );
 }
+
+describe("chatting from the result", () => {
+  it("toggles the match chat and shows how many messages are unread", () => {
+    const onToggle = vi.fn<() => void>();
+    render(
+      <I18nProvider>
+        <GameOverOverlay
+          result="loss"
+          reason="surrender"
+          stats={[]}
+          onMenu={() => {}}
+          onRematch={() => {}}
+          chat={{ open: false, unread: 2, onToggle }}
+        />
+      </I18nProvider>,
+    );
+
+    const chatButton = screen.getByRole("button", { name: "Chat, 2 unread" });
+    expect(chatButton.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(chatButton);
+    expect(onToggle).toHaveBeenCalledOnce();
+  });
+
+  it("offers no chat when the match has no live chat", () => {
+    renderOverlay();
+
+    expect(screen.queryByTestId("game-result-chat")).toBeNull();
+  });
+});
 
 describe("reviewing the board after the match", () => {
   it("folds the result into a bar and brings it back", () => {
@@ -62,7 +94,7 @@ describe("viewing the used deck from the result", () => {
       </I18nProvider>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "View used deck" }));
+    fireEvent.click(screen.getByRole("button", { name: "Your deck" }));
     expect(screen.getAllByRole("dialog").map((dialog) => dialog.getAttribute("aria-label"))).toEqual(["Used deck"]);
     expect(screen.queryByRole("status")).toBeNull();
 
@@ -94,6 +126,9 @@ describe("best-of-three result", () => {
     viewerChooses: true,
     choiceSecondsLeft: 18,
     viewerGoesFirst: undefined,
+    viewerDeckReady: false,
+    opponentDeckReady: false,
+    opponentDeckChanged: false,
     outcome: undefined,
     endReason: "",
     ...fields,
@@ -165,6 +200,153 @@ describe("best-of-three result", () => {
   });
 });
 
+describe("rematch after a best-of-one", () => {
+  function renderRematch(
+    stage: RematchStage,
+    series?: SeriesView,
+    mode: RematchMode = RematchMode.NEW_SERIES.value,
+    modes: RematchMode[] = [RematchMode.FINISH_SERIES.value, RematchMode.NEW_SERIES.value],
+  ) {
+    const calls: string[] = [];
+    render(
+      <I18nProvider>
+        <GameOverOverlay
+          result="loss"
+          reason="security"
+          stats={[]}
+          onMenu={() => calls.push("menu")}
+          onRematch={() => calls.push("queue")}
+          rematch={{
+            view: { stage, mode, modes, series },
+            opponentName: "Nova",
+            onOffer: (offered) => calls.push(`offer:${offered}`),
+            onAnswer: (accept) => calls.push(accept ? "accept" : "decline"),
+            onChooseTurnOrder: (goFirst) => calls.push(goFirst ? "first" : "second"),
+            onKeepDeck: () => calls.push("keep"),
+            deckPicker: (onClose) => (
+              <div role="dialog" aria-label="Deck picker">
+                <button type="button" onClick={onClose}>
+                  Close picker
+                </button>
+              </div>
+            ),
+          }}
+        />
+      </I18nProvider>,
+    );
+    return calls;
+  }
+
+  it("offers to finish or restart a best-of-three beside the usual actions", () => {
+    const calls = renderRematch("open");
+    expect(screen.getByText("Play Nova again?")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Finish this Best of 3" }));
+    fireEvent.click(screen.getByRole("button", { name: "Start new Best of 3" }));
+    fireEvent.click(screen.getByRole("button", { name: "Find rematch" }));
+    expect(calls).toEqual(["offer:finish", "offer:new", "queue"]);
+    expect(screen.getByRole("button", { name: "Start new Best of 3" }).getAttribute("aria-describedby")).toBeTruthy();
+    expect(screen.getByText("0–0 · switch decks · random first player")).toBeTruthy();
+  });
+
+  it("tells the invited player that the finished game counts toward the offered series", () => {
+    renderRematch("offeredToYou", undefined, RematchMode.FINISH_SERIES.value);
+    expect(screen.getByText("Nova wants to finish this Best of 3")).toBeTruthy();
+    expect(screen.getByText("Counts as game 1 · same decks")).toBeTruthy();
+  });
+
+  it("lets the invited player accept or decline", () => {
+    const calls = renderRematch("offeredToYou");
+    expect(screen.getByText("Nova wants to start a new Best of 3")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Decline" }));
+    fireEvent.click(screen.getByRole("button", { name: "Accept" }));
+    expect(calls).toEqual(["decline", "accept"]);
+  });
+
+  it("tells the offering player who they are waiting for", () => {
+    renderRematch("offeredByYou");
+    expect(screen.getByText("Waiting for Nova to answer…")).toBeTruthy();
+  });
+
+  it("runs the turn-order choice for game 1 without the leave actions", () => {
+    const calls = renderRematch("accepted", {
+      bestOf: 3,
+      gameNumber: 0,
+      viewerWins: 0,
+      opponentWins: 0,
+      pips: ["pending", "pending", "pending"],
+      stage: "choosing",
+      viewerChooses: true,
+      choiceSecondsLeft: 20,
+      viewerGoesFirst: undefined,
+      viewerDeckReady: false,
+      opponentDeckReady: false,
+      opponentDeckChanged: false,
+      outcome: undefined,
+      endReason: "",
+    });
+    expect(screen.getByText("You choose for game 1")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Find rematch" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Go first" }));
+    expect(calls).toEqual(["first"]);
+  });
+
+  const deckSelection = (fields: Partial<SeriesView>): SeriesView => ({
+    bestOf: 3,
+    gameNumber: 0,
+    viewerWins: 0,
+    opponentWins: 0,
+    pips: ["pending", "pending", "pending"],
+    stage: "deckSelection",
+    viewerChooses: false,
+    choiceSecondsLeft: 90,
+    viewerGoesFirst: undefined,
+    viewerDeckReady: false,
+    opponentDeckReady: false,
+    opponentDeckChanged: false,
+    outcome: undefined,
+    endReason: "",
+    ...fields,
+  });
+
+  it("offers only a new best-of-three once a best-of-three is over", () => {
+    renderRematch("open", undefined, RematchMode.NEW_SERIES.value, [RematchMode.NEW_SERIES.value]);
+    expect(screen.getByRole("button", { name: "Start new Best of 3" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Finish this Best of 3" })).toBeNull();
+  });
+
+  it("lets each player keep or change their deck before a new best-of-three", () => {
+    const calls = renderRematch("accepted", deckSelection({}));
+    expect(screen.getByText("Choose your deck for game 1")).toBeTruthy();
+    expect(screen.getByText("Nova is choosing a deck…")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Change deck" }));
+    expect(screen.getByRole("dialog", { name: "Deck picker" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Close picker" }));
+    fireEvent.click(screen.getByRole("button", { name: "Keep current deck" }));
+    expect(calls).toEqual(["keep"]);
+  });
+
+  it("tells a ready player that the opponent switched decks without naming the deck", () => {
+    renderRematch(
+      "accepted",
+      deckSelection({ viewerDeckReady: true, opponentDeckReady: true, opponentDeckChanged: true }),
+    );
+    expect(screen.getByText("Your deck is locked in.")).toBeTruthy();
+    expect(screen.getByText("Nova switched decks.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Keep current deck" })).toBeNull();
+  });
+
+  it("announces a randomly drawn first player for a new best-of-three", () => {
+    renderRematch("accepted", deckSelection({ stage: "starting" }));
+    expect(screen.getByText("Game 1 · First player drawn at random")).toBeTruthy();
+    expect(screen.queryByText("Nova switched decks.")).toBeNull();
+  });
+
+  it("still tells a player who locked in first that the opponent switched decks", () => {
+    renderRematch("accepted", deckSelection({ stage: "starting", opponentDeckReady: true, opponentDeckChanged: true }));
+    expect(screen.getByText("Nova switched decks.")).toBeTruthy();
+  });
+});
+
 it("opens the exact used deck after a duel and saves an independent personal copy with attribution and artwork", () => {
   const original = DECKS[0]!;
   const snapshot: UsedDeck = {
@@ -190,7 +372,7 @@ it("opens the exact used deck after a duel and saves an independent personal cop
       />
     </I18nProvider>,
   );
-  fireEvent.click(screen.getByRole("button", { name: "View used deck" }));
+  fireEvent.click(screen.getByRole("button", { name: "Your deck" }));
   expect(screen.getByRole("heading", { name: /Deck at match start/ })).toBeTruthy();
   expect(screen.getByText("Original Author")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Use deck" })).toBeNull();
@@ -210,4 +392,153 @@ it("opens the exact used deck after a duel and saves an independent personal cop
   expect(loadDecks()[0]!.mainDeck).toEqual(original.mainDeck);
   expect(loadDecks()[0]!.community!.author.displayName).toBe("Original Author");
   localStorage.removeItem("aegis:decks");
+});
+
+it("opens the shared opponent deck and returns to the result", () => {
+  render(
+    <I18nProvider>
+      <GameOverOverlay
+        result="win"
+        reason="security"
+        stats={[]}
+        onMenu={() => {}}
+        onRematch={() => {}}
+        opponentDeckDialog={(onClose) => (
+          <div role="dialog" aria-label="Opponent deck">
+            <button onClick={onClose}>Close opponent deck</button>
+          </div>
+        )}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Opponent’s deck" }));
+  expect(screen.getByRole("dialog", { name: "Opponent deck" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Close opponent deck" }));
+  expect(screen.getByRole("button", { name: "Opponent’s deck" })).toBeTruthy();
+});
+
+it("does not offer an unavailable opponent deck", () => {
+  renderOverlay();
+  expect(screen.queryByRole("button", { name: "Opponent’s deck" })).toBeNull();
+});
+
+it("keeps the board-review result bar clear of the portrait match menu", () => {
+  const header = document.createElement("header");
+  header.className = "game-opponent-bar";
+  const hand = document.createElement("div");
+  hand.className = "game-opponent-hand";
+  const menu = document.createElement("details");
+  menu.className = "game-mobile-menu";
+  header.append(hand, menu);
+  document.body.append(header);
+  vi.spyOn(document.body, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 390, 844));
+  vi.spyOn(header, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 390, 44));
+  vi.spyOn(hand, "getBoundingClientRect").mockReturnValue(new DOMRect(100, 0, 80, 44));
+  vi.spyOn(menu, "getBoundingClientRect").mockReturnValue(new DOMRect(338, 4, 36, 36));
+  vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
+    if (this.classList.contains("game-result-bar--compact")) {
+      return 40;
+    }
+    return this.classList.contains("game-result-bar--brief") ? 180 : 300;
+  });
+  try {
+    renderOverlay();
+    fireEvent.click(screen.getByRole("button", { name: "View board" }));
+    const bar = screen.getByRole("status");
+    expect(bar.classList.contains("game-result-bar--compact")).toBe(true);
+    expect(bar.style.right).toBe("64px");
+    expect(bar.style.translate).toBe("none");
+  } finally {
+    header.remove();
+    vi.restoreAllMocks();
+  }
+});
+
+describe("adding the opponent after a match", () => {
+  it("sends the authorized match reference even when a replay is unavailable", async () => {
+    const fetcher = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ accepted: false }));
+    try {
+      render(
+        <I18nProvider>
+          <GameOverOverlay
+            result="win"
+            reason="security"
+            stats={[]}
+            signedIn
+            friendMatchId="finished-room"
+            replayStatus="unavailable"
+            onMenu={() => {}}
+            onRematch={() => {}}
+          />
+        </I18nProvider>,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Add friend" }));
+      await waitFor(() => expect(screen.getByRole("button", { name: "Request sent" })).toBeTruthy());
+      expect(fetcher).toHaveBeenCalledWith(
+        expect.stringContaining("/friends/requests"),
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ matchId: "finished-room" }),
+          credentials: "include",
+        }),
+      );
+    } finally {
+      fetcher.mockRestore();
+    }
+  });
+});
+
+it("identifies both deck names on the result screen", () => {
+  render(
+    <I18nProvider>
+      <GameOverOverlay
+        result="win"
+        reason="security"
+        stats={[]}
+        onMenu={() => {}}
+        onRematch={() => {}}
+        usedDeckName="Competitive Blue"
+        opponentDeckName="Xros Heart"
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByText("Competitive Blue")).toBeTruthy();
+  expect(screen.getByText("Xros Heart")).toBeTruthy();
+});
+
+it.each([false, true])("offers a finished spectator replay download with signedIn=%s", (signedIn) => {
+  const download = vi.fn<() => void>();
+  render(
+    <I18nProvider>
+      <GameOverOverlay
+        result="win"
+        reason="security"
+        spectatorResult="Nova wins"
+        stats={[]}
+        signedIn={signedIn}
+        onMenu={() => {}}
+        onRematch={() => {}}
+        onDownloadReplay={download}
+        replayFile={{
+          kind: "ready",
+          summary: {
+            id: "spectated-match",
+            players: ["Nova", "Tai"],
+            mode: "casual",
+            startedAt: 0,
+            finishedAt: 1,
+            winnerSeat: 0,
+            frameCount: 1,
+          },
+          viewerSeat: SPECTATOR_REPLAY_SEAT,
+          data: btoa("replay"),
+        }}
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByRole("heading", { name: "Match complete" })).toBeTruthy();
+  expect(screen.getByText("Nova wins")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Download file" }));
+  expect(download).toHaveBeenCalledOnce();
+  expect(screen.queryByRole("button", { name: "Add friend" })).toBeNull();
 });

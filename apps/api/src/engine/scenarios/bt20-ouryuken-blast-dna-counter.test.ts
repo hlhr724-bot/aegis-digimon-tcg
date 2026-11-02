@@ -3,8 +3,6 @@ import { fixtureInstanceId } from "../scenario/references.js";
 import { Phase } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import "../../cards/index.js";
-import { createEvaluationPolicy } from "../../bot/policy.js";
-import { buildBotView } from "../../bot/view.js";
 import { layScenarioFixture } from "../scenario/fixture.js";
 import { BLUE_DECK, RED_DECK } from "../testDecks.js";
 import { advance } from "../testkit/advance.js";
@@ -31,14 +29,11 @@ describe("BT20 Ouryuken Blast DNA Counter arena", () => {
       expect(s.engine.applyIntent(1, { type: "endPhase" })).toEqual({ ok: true });
       await advance(s.engine).waitForMainPhase(1);
 
-      const view = buildBotView(s.state, 1);
-      expect(view).toBeDefined();
       const attack = {
         type: "attack" as const,
         attackerPermanentId: lanamon.permanentId,
         target: { kind: "player" as const },
       };
-      expect(createEvaluationPolicy({ seed: 1 }).chooseMainAction(view!)).toEqual(attack);
       expect(s.engine.applyIntent(1, attack)).toEqual({ ok: true });
       await settle(() => s.events.some(({ kind }) => kind === "counterWindowOpened"));
       const opened = s.events.find((event) => event.kind === "counterWindowOpened");

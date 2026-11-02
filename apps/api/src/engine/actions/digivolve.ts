@@ -353,6 +353,7 @@ export interface DigivolveDeps {
     permanent: Permanent,
     previousLevel?: number,
     baseWasDigimon?: boolean,
+    isDnaDigivolve?: boolean,
   ): Promise<void>;
   /** Optional narration hook (server -> client event log). */
   emit?: (event: DigivolveEvent) => void;

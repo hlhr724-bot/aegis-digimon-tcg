@@ -15,22 +15,55 @@ describe("BT15-098", () => {
       ],
     });
   });
-  it("places itself when Myotismon is deleted, has Delay, and plays VenomMyotismon from trash", () => {
+  it("triggers Delay when Myotismon is deleted and plays VenomMyotismon from trash", () => {
     expect(compiled.effects?.[1]).toMatchObject({
       trigger: "AllTurns",
-      actions: [{ kind: "SubTrigger", event: "onDeletionOf", actions: [{ kind: "PlaceInBattleAreaSelf" }] }],
+      keywords: [{ keyword: "Delay" }],
+      actions: [{ kind: "SubTrigger", event: "onDeletionOf", actions: [{ kind: "PlayWithoutCost", from: ["trash"] }] }],
     });
     expect(compiled.effects?.[2]).toMatchObject({
-      trigger: "Main",
-      keywords: [{ keyword: "Delay" }],
-      actions: [{ kind: "PlayWithoutCost", requiresDelayArmed: true }],
-    });
-    expect(compiled.effects?.[3]).toMatchObject({
       trigger: "Security",
       isSecurity: true,
       actions: [{ kind: "PlaceInBattleAreaSelf" }],
     });
   });
+
+  it.each([
+    [false, true, true],
+    [true, true, false],
+    [false, false, false],
+  ])(
+    "respects Mist Barrier entry timing and optional refusal: enteredThisTurn=%s accept=%s",
+    async (enteredThisTurn, accept, played) => {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [
+              { card: "BT15-076", as: "myotismon" },
+              { card: "BT15-098", as: "barrier", enteredThisTurn },
+            ],
+            trash: [{ card: "BT15-080", as: "venom" }],
+          },
+          1: { battleArea: [{ card: "BT1-084", as: "defender", suspended: true }] },
+        },
+        { autoAcceptOptional: accept, autoDeclineOptional: !accept, autoSelectCards: true },
+      );
+      await s.ready();
+      expect(
+        s.engine.applyIntent(0, {
+          type: "attack",
+          attackerPermanentId: s.perm("myotismon").permanentId,
+          target: { kind: "permanent", permanentId: s.perm("defender").permanentId },
+        }),
+      ).toEqual({ ok: true });
+      await settle(
+        () =>
+          s.state.players[0]!.trash.some((card) => card.cardId === "BT15-076") && s.state.pendingDecision === undefined,
+      );
+      expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT15-080")).toBe(played);
+      expect(s.state.players[0]!.trash.some((card) => card.cardId === "BT15-098")).toBe(played);
+    },
+  );
 
   it("naturally deletes an own Digimon, optionally plays Myotismon from trash, and places itself", async () => {
     const preferred: string[] = [];

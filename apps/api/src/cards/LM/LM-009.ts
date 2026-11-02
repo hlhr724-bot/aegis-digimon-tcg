@@ -67,7 +67,7 @@ const compiled: CompiledCard = {
     {
       trigger: "YourTurn",
       description:
-        "[Your Turn] When this Digimon becomes suspended, 1 of your Digimon with [Angoramon]&#160;in its text gains ＜Rush＞ (This Digimon can attack the turn it comes into play) for the turn.",
+        "[Your Turn] When this Digimon becomes suspended, 1 of your Digimon with [Angoramon] in its text gains ＜Rush＞ (This Digimon can attack the turn it comes into play) for the turn.",
       actions: [
         {
           kind: "SubTrigger",

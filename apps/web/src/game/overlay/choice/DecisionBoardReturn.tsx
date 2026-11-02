@@ -1,9 +1,13 @@
-import { useLayoutEffect, useState, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
+import { useDraggableWindow, type WindowPosition } from "../../chat/useDraggableWindow";
 import { takeViewBoardOrigin } from "@/game/overlay/choice/takeViewBoardOrigin";
+import { readDecisionReturnPosition } from "@/game/overlay/choice/readDecisionReturnPosition";
+import { saveDecisionReturnPosition } from "@/game/overlay/choice/saveDecisionReturnPosition";
+import { PromptMoveHandle } from "./PromptMoveHandle";
 
 const VIEWPORT_MARGIN_PX = 16;
 
@@ -14,10 +18,6 @@ const clamp = (value: number, low: number, high: number) => Math.min(Math.max(va
  * overlays normally live inside #aegis-stage, which is itself a fixed, overflow-clipped
  * viewport. Mobile browsers can therefore clip a fixed descendant after the board fills
  * 100dvh. Keep the only route back to the pending decision in the document viewport.
- *
- * Where it appears: centred on the View board button that opened the board, so going
- * back is one click in the same spot. Without that origin it sits below the opponent
- * bar, and phones always use that full-width strip.
  */
 export type DecisionBoardReturnSelection = {
   status: string;
@@ -37,39 +37,77 @@ export function DecisionBoardReturn({
 }) {
   const { t } = useTranslation();
   const [origin] = useState(takeViewBoardOrigin);
+  const [saved, setSaved] = useState(readDecisionReturnPosition);
+  const [dock, setDock] = useState<WindowPosition>();
+  const drag = useDraggableWindow(returnControlRef, { viewportGutter: VIEWPORT_MARGIN_PX });
+  const previousDragPosition = useRef(drag.position);
+
+  useEffect(() => {
+    if (drag.position) saveDecisionReturnPosition(drag.position);
+    else if (previousDragPosition.current) {
+      saveDecisionReturnPosition(undefined);
+      setSaved(undefined);
+    }
+    previousDragPosition.current = drag.position;
+  }, [drag.position]);
 
   useLayoutEffect(() => {
     const control = returnControlRef.current;
-    if (!origin || !control) return;
+    if (!control) return;
     const { width, height } = control.getBoundingClientRect();
-    const left = clamp(origin.x - width / 2, VIEWPORT_MARGIN_PX, window.innerWidth - width - VIEWPORT_MARGIN_PX);
-    const top = clamp(origin.y - height / 2, VIEWPORT_MARGIN_PX, window.innerHeight - height - VIEWPORT_MARGIN_PX);
-    control.style.setProperty("--decision-return-left", `${left}px`);
-    control.style.setProperty("--decision-return-top", `${top}px`);
-  }, [origin, returnControlRef]);
+    const preferred = saved ?? (origin ? { left: VIEWPORT_MARGIN_PX, top: origin.y - height / 2 } : undefined);
+    setDock(
+      preferred && {
+        left: clamp(preferred.left, VIEWPORT_MARGIN_PX, window.innerWidth - width - VIEWPORT_MARGIN_PX),
+        top: clamp(preferred.top, VIEWPORT_MARGIN_PX, window.innerHeight - height - VIEWPORT_MARGIN_PX),
+      },
+    );
+  }, [origin, saved, returnControlRef]);
 
   const returnControl = (
     <div
       ref={returnControlRef}
       className={`decision-board-return${selection ? " decision-board-return--selection" : ""}`}
-      data-anchored={origin ? "" : undefined}
-      style={{
-        position: "fixed",
-        zIndex: "calc(var(--ds-z-toast, 110) - 1)",
-        ...(origin ? {} : { right: 16, top: "calc(env(safe-area-inset-top, 0px) + 64px)", bottom: "auto" }),
-      }}
+      data-docked={dock ? "" : undefined}
+      data-dragged={drag.position ? "" : undefined}
+      style={
+        {
+          position: "fixed",
+          zIndex: "calc(var(--ds-z-toast, 110) - 1)",
+          ...(dock
+            ? { "--decision-return-left": `${dock.left}px`, "--decision-return-top": `${dock.top}px` }
+            : { right: 16, top: "calc(env(safe-area-inset-top, 0px) + 64px)", bottom: "auto" }),
+          ...(drag.position
+            ? {
+                "--decision-return-drag-left": `${drag.position.left}px`,
+                "--decision-return-drag-top": `${drag.position.top}px`,
+              }
+            : {}),
+        } as CSSProperties
+      }
     >
       <span className="decision-board-return__status" aria-live="polite">
         {selection?.status ?? t("overlay.decisionPending")}
       </span>
-      <Button variant={selection ? "secondary" : undefined} icon={Icons.ArrowLeft} onClick={onReturn}>
-        {t("overlay.returnToDecision")}
+      <Button
+        variant={selection ? "secondary" : undefined}
+        icon={Icons.ArrowLeft}
+        aria-label={t("overlay.returnToDecision")}
+        data-arena-cancel
+        onClick={onReturn}
+      >
+        <span className="decision-board-return__label">{t("overlay.returnToDecision")}</span>
       </Button>
       {selection ? (
         <Button icon={Icons.Check} disabled={!selection.canConfirm} onClick={selection.onConfirm}>
           {selection.confirmLabel}
         </Button>
       ) : null}
+      <PromptMoveHandle
+        drag={drag}
+        className="decision-board-return__move-handle"
+        label={t("overlay.moveReturnToDecision")}
+      />
     </div>
   );
   return typeof document === "undefined" ? returnControl : createPortal(returnControl, document.body);

@@ -1,3 +1,11 @@
+import type { RuntimeCallbackRegistry } from "#api/engine/snapshot/RuntimeCallbackRegistry";
+import { EngineRuntimeCallbackKind } from "#api/engine/snapshot/context/EngineRuntimeCallbackKind";
+import { TimingWindowState } from "#api/engine/effects/resolution/TimingWindowState";
+import type { TimingWindowResume } from "#api/engine/effects/resolution/TimingWindowResume";
+import type { TimingWindowRuntime } from "#api/engine/effects/resolution/TimingWindowRuntime";
+import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
+import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
+import { trashArrivalOf } from "#api/engine/state/access";
 import { EffectTiming } from "@aegis/shared";
 import type { Seat } from "@aegis/shared";
 import type { CardSource } from "./CardSource.js";
@@ -59,6 +67,10 @@ export function orderingSeatOf(collected: CollectedEffect): Seat {
  * `gatherTriggeredEffects` + `createEffectContext`), and tests supply fakes.
  */
 export interface ResolutionEnv {
+  runtimeCallbacks?: RuntimeCallbackRegistry;
+  runtimeObjects?: RuntimeObjectRegistry;
+  onTimingWindowCreated?: (window: TimingWindowRuntime) => void;
+  registerPendingEffects?: (read: () => readonly CollectedEffect[]) => () => void;
   /** The active player; used for turn-player-first ordering. */
   readonly turnSeat: Seat;
   /** Per-turn use ledger (maxPerTurn accounting). Engine-owned; reset each turn. */
@@ -216,19 +228,31 @@ export function permanentIdentityOf(source: CardSource): string | undefined {
  * not missed: every pass re-derives the full activatable set, re-orders it, and
  * resolves the frontmost effect.
  */
-export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): Promise<void> {
+export async function resolveTiming(
+  timing: EffectTiming,
+  env: ResolutionEnv,
+  resume?: TimingWindowResume,
+): Promise<void> {
   // Up-front rule sweep mirrors AutoProcessCheck running RuleProcess before
   // TriggeredSkillProcess.
-  await env.ruleProcess();
+  if (resume === undefined) {
+    await env.ruleProcess();
+  }
   if (env.isGameOver()) return;
+  const state = resume?.state ?? new TimingWindowState({ timing, passBudget: MAX_RESOLUTION_PASSES });
+  if (state.timing !== timing || state.scopeOpen || state.activeDrains > 0 || state.inProgress.size > 0) {
+    throw new Error("Cannot resume an active or mismatched timing window");
+  }
+  env.runtimeObjects?.track({ value: state, key: EngineRuntimeObjectKind.TIMING_WINDOW.value });
+  env.runtimeObjects?.track({ value: state.plan, key: EngineRuntimeObjectKind.RESOLUTION_PLAN.value });
 
   // Optionals the controller has declined THIS window. We re-collect every pass, so
   // without this a declined optional would be re-collected and re-offered forever.
   // Watcher occurrences have independent identities even when their source/effect match.
   // Per-turn use accounting remains shared in the tracker; declining or resolving one
   // occurrence only retires that occurrence from this window.
-  const declined = new Set<string>();
-  const plan = new ResolutionPlan();
+  const declined = state.declined;
+  const plan = state.plan;
   // An effect printed under two timings ("[When Digivolving] [When Attacking]") keeps one
   // effectKey. When an effect-driven attack parks its [When Attacking] trigger in this
   // [When Digivolving] window, that trigger is a separate pending activation: it must not
@@ -244,7 +268,7 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
   // replayed, recreated, or a new copy), so an instance-keyed latch would not stop anything.
   // Retiring the effect key is §18-3-3-3's "it will not be possible to perform the actions
   // for the same infinite loop again", scoped to this window.
-  const loopStopped = new Set<string>();
+  const loopStopped = state.loopStopped;
 
   // Effects already RESOLVED this window. A triggered effect activates once per
   // trigger (Comprehensive Rules §15-4-4-2) — the source `StackSkillInfos` removes
@@ -255,19 +279,18 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
   // stop it). Tracking resolved (instanceId, effectKey) here drops each one out after
   // it resolves, exactly as the source does, while still admitting genuinely
   // newly-triggered effects (a distinct source, effect, or captured occurrence).
-  const resolved = new Set<string>();
+  const resolved = state.resolved;
   // The currently executing effect remains collectable until its body returns and
   // is registered as resolved. A re-entrant drain must exclude it while still
   // allowing every other pending effect in this same window to proceed.
-  const inProgress = new Set<string>();
+  const inProgress = state.inProgress;
 
   // Preserve the activation tier assigned when an effect first becomes active.
   // Every derived batch must finish before returning to older pending effects
   // (§15-4-5-2/3, EX9-069 Q4830), not only its first chosen member. New effects
   // interrupt the current tier; remaining members retain their tier on re-collection.
   // Turn-player priority applies only within the newest active tier.
-  const activationTiers = new Map<string, number>();
-  let newestTier = 0;
+  const activationTiers = state.activationTiers;
 
   // Effects seen in SOME earlier collection pass this window (before the canActivate filter),
   // and the subset of those that have since stopped being collected at all.
@@ -284,8 +307,8 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
   // `inProgress` is excluded: the effect currently executing routinely removes its own source
   // (a "by trashing this card" cost) and must not mark itself departed mid-body — it is dropped
   // by `resolved` when it finishes instead.
-  const everCollected = new Set<string>();
-  const departed = new Set<string>();
+  const everCollected = state.everCollected;
+  const departed = state.departed;
 
   // The permanent identity each effect's source card had when the effect was FIRST collected
   // this window (see `permanentIdentityOf`). The presence diff above cannot see a card that
@@ -299,7 +322,7 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
   // resolver as collected effects through `collectPending` rather than through a timing builder.
   // The presence diff is the one place both kinds already pass through once per pass, and it
   // already owns the one-way "departed" semantics this needs.
-  const identityAtFirstCollect = new Map<string, string>();
+  const identityAtFirstCollect = state.identityAtFirstCollect;
 
   // Defensive bound. The source loop relies entirely on canActivate / maxPerTurn /
   // declines to terminate; a mis-implemented card with an unlimited, always-activatable
@@ -307,14 +330,48 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
   // silently stopping) surfaces the bug as a turn-loop error the engine reports. It is
   // also the loop DETECTOR the §18-3 handling below hangs off: a window that is still
   // producing activatable effects after this many passes is an infinite loop (§18-3-1).
-  let passes = 0;
-  let passBudget = MAX_RESOLUTION_PASSES;
-  let stopAttempts = 0;
+
+  const sourceArrivals = state.sourceArrivals;
+  const hasCurrentTrashSource = (collected: CollectedEffect, ctx: EffectContext): boolean => {
+    const proof = sourceArrivals.get(declineKey(collected));
+    const hostId = ctx.trigger?.deletedHostInstanceByInstanceId?.[collected.source.instanceId];
+    const pendsForDeletedHost = hostId !== undefined && hostId !== collected.source.instanceId;
+    if (
+      !pendsForDeletedHost &&
+      proof?.source !== undefined &&
+      trashArrivalOf(ctx.game.state, collected.source.instanceId) !== proof.source
+    ) {
+      return false;
+    }
+    if (hostId !== undefined && proof?.host !== undefined && trashArrivalOf(ctx.game.state, hostId) !== proof.host) {
+      return false;
+    }
+    return true;
+  };
+  const readPendingEffects = (): CollectedEffect[] =>
+    state.lastCollected.flatMap((collected) => {
+      const key = declineKey(collected);
+      if (
+        declined.has(key) ||
+        resolved.has(key) ||
+        inProgress.has(key) ||
+        departed.has(key) ||
+        loopStopped.has(collected.effect.effectKey)
+      ) {
+        return [];
+      }
+      const ctx = env.makeContext(collected);
+      if (!hasCurrentTrashSource(collected, ctx)) {
+        return [];
+      }
+      return canActivate(collected.effect, ctx, env.tracker) ? [{ ...collected, triggerInfo: ctx.trigger }] : [];
+    });
+  const unregisterPending = resume === undefined ? env.registerPendingEffects?.(readPendingEffects) : undefined;
 
   // A re-entrant drain runs inside an effect whose derived processing can still enable a
   // pending effect (CR 15-4-3-4, 15-4-5-2/3), so
   // only the outermost drain, with nothing in progress, reports what stayed without one.
-  const reportedWithoutLegalOutcome = new Set<string>();
+  const reportedWithoutLegalOutcome = state.reportedWithoutLegalOutcome;
   const reportWithoutLegalOutcome = (collectedThisPass: readonly CollectedEffect[]): void => {
     for (const c of collectedThisPass) {
       const key = declineKey(c);
@@ -333,183 +390,233 @@ export async function resolveTiming(timing: EffectTiming, env: ResolutionEnv): P
   };
 
   const drainCurrentTimingWindow = async (options?: { retireUnactivatable?: boolean }): Promise<void> => {
-    while (true) {
-      if (env.isGameOver()) return;
+    state.activeDrains++;
+    try {
+      while (true) {
+        if (env.isGameOver()) return;
 
-      // Re-collect every pass: this is the TriggeredSkillProcess re-entry.
-      const collectedThisPass = env.collect(timing);
-
-      // Retire anything that was collectable earlier this window and is not any more (§15-4-4-3
-      // / §15-4-4-5, see `departed` above). Recorded before the activatable filter so a card
-      // that leaves and returns cannot come back with its pending trigger intact.
-      const presentKeys = new Set(collectedThisPass.map(declineKey));
-      for (const key of everCollected) {
-        if (!presentKeys.has(key) && !inProgress.has(key)) departed.add(key);
-      }
-      for (const key of presentKeys) everCollected.add(key);
-
-      // ...and anything still collectable whose source card is no longer the same thing on the
-      // same permanent it was when the effect was first collected (§15-4-4-3, see
-      // `permanentIdentityOf`). Same exclusions as the presence diff: the effect currently
-      // executing may legitimately move its own source card as part of its body.
-      for (const c of collectedThisPass) {
-        if (c.effect.isActivatedConsequence === true) continue;
-        const identity = permanentIdentityOf(c.source);
-        if (identity === undefined) continue;
-        const key = declineKey(c);
-        const first = identityAtFirstCollect.get(key);
-        if (first === undefined) identityAtFirstCollect.set(key, identity);
-        else if (first !== identity && !inProgress.has(key)) departed.add(key);
-      }
-
-      // One pending activation per key. Two collection paths can hand in the same effect for
-      // the same trigger (an inherited [On Deletion] reached both from the deleted stack and
-      // from the window parked for it), and `resolved` retires the key after the first one
-      // runs, so the copy could only ever sit in the order prompt as a choice that never runs
-      // (Discord 1555741214014447737: BT26-005 Pinamon listed twice under Ravemon).
-      const activeKeys = new Set<string>();
-      const active = collectedThisPass.filter((c) => {
-        const key = declineKey(c);
-        if (activeKeys.has(key)) return false;
-        const activatable =
-          !declined.has(key) &&
-          !resolved.has(key) &&
-          !inProgress.has(key) &&
-          !departed.has(key) &&
-          !loopStopped.has(c.effect.effectKey) &&
-          canActivate(c.effect, env.makeContext(c), env.tracker);
-        if (activatable) activeKeys.add(key);
-        return activatable;
-      });
-      if (active.length === 0) {
-        // At the completed pre-Counter boundary the parent window is exhausted. A cost
-        // that becomes payable during security cannot revive this occurrence. Ordinary
-        // re-entrant drains leave it pending: an unfinished effect may still enable it.
-        if (options?.retireUnactivatable) {
-          for (const c of collectedThisPass) {
-            const key = declineKey(c);
-            if (!inProgress.has(key)) departed.add(key);
+        // Re-collect every pass: this is the TriggeredSkillProcess re-entry.
+        const collectedThisPass = env.collect(timing);
+        state.lastCollected = collectedThisPass;
+        for (const collected of collectedThisPass) {
+          const key = declineKey(collected);
+          if (!sourceArrivals.has(key)) {
+            const ctx = env.makeContext(collected);
+            const hostId = ctx.trigger?.deletedHostInstanceByInstanceId?.[collected.source.instanceId];
+            sourceArrivals.set(key, {
+              source:
+                ctx.game?.state === undefined ? undefined : trashArrivalOf(ctx.game.state, collected.source.instanceId),
+              host:
+                hostId === undefined || ctx.game?.state === undefined
+                  ? undefined
+                  : trashArrivalOf(ctx.game.state, hostId),
+            });
           }
         }
-        if (inProgress.size === 0) reportWithoutLegalOutcome(collectedThisPass);
-        return;
-      }
 
-      // §18-3 Infinite Loops. The window is still handing out activatable effects after
-      // `passBudget` passes, which no legitimate chain reaches — so this is §18-3-1's
-      // "set of processing [that] will continue infinitely".
-      //
-      // §18-3-3 applies when one of the players HAS the ability to stop the loop; §18-3-2
-      // (draw) applies only when NEITHER does. The stop ability the resolver can see is an
-      // optional link in the cycle: an effect the controller may decline. So an optional
-      // effect among the still-active set means the loop is stoppable.
-      //
-      // What §18-3-3 prescribes is: each player declares a repeat count (turn player first,
-      // §18-3-3-1/-2), the processing runs at least that many times, and then "the player
-      // stops the processing when possible" (§18-3-3-3), after which the same loop may not
-      // be performed again. The declared repeat count only chooses HOW MANY redundant
-      // iterations happen before the stop; the terminal state it reaches is identical either
-      // way — the loop stops, with the optional link declined and unable to re-enter. This
-      // resolver therefore implements the end state directly: retire the optional link through
-      // `loopStopped` (see above), which both declines it now and forbids the same processing
-      // from being performed again in this window — §18-3-3-3 exactly.
-      //
-      // The declaration prompt itself is the piece deliberately not built: it is a
-      // player-facing count with no observable consequence here, and the protocol has no
-      // decision kind for it (see conformance/ch18-other-information.test.ts).
-      //
-      // If retiring the optional links does not converge (a cycle threading several distinct
-      // optional effects, each only revealed once the previous is gone), the attempt budget is
-      // finite and the §18-3-2 draw below is still reached.
-      //
-      // Reachability: no card in the current corpus can build a stoppable loop — every
-      // candidate cycle (self-replay from trash, the AD1-001/AD1-010 free-digivolve mirror,
-      // memory-gain engines) consumes memory, hand, trash, security, or deck, or is capped by
-      // [Once Per Turn]. This branch is therefore a correctness floor for future card sets, not
-      // live behavior; it is covered by synthetic effects in the conformance test.
-      if (++passes > passBudget) {
-        const stoppable = active.filter((c) => c.effect.optional);
-        if (stoppable.length > 0 && stopAttempts < MAX_LOOP_STOP_ATTEMPTS) {
-          stopAttempts += 1;
-          passBudget = passes + MAX_RESOLUTION_PASSES;
-          for (const c of stoppable) loopStopped.add(c.effect.effectKey);
-          continue;
+        // Retire anything that was collectable earlier this window and is not any more (§15-4-4-3
+        // / §15-4-4-5, see `departed` above). Recorded before the activatable filter so a card
+        // that leaves and returns cannot come back with its pending trigger intact.
+        const presentKeys = new Set(collectedThisPass.map(declineKey));
+        for (const key of everCollected) {
+          if (!presentKeys.has(key) && !inProgress.has(key)) departed.add(key);
         }
-        // §18-3-2: neither player can stop it — the game ends in a draw.
-        if (env.declareDraw !== undefined) {
-          await env.declareDraw();
+        for (const key of presentKeys) everCollected.add(key);
+
+        // ...and anything still collectable whose source card is no longer the same thing on the
+        // same permanent it was when the effect was first collected (§15-4-4-3, see
+        // `permanentIdentityOf`). Same exclusions as the presence diff: the effect currently
+        // executing may legitimately move its own source card as part of its body.
+        for (const c of collectedThisPass) {
+          if (c.effect.isActivatedConsequence === true) continue;
+          const identity = permanentIdentityOf(c.source);
+          if (identity === undefined) continue;
+          const key = declineKey(c);
+          const first = identityAtFirstCollect.get(key);
+          if (first === undefined) identityAtFirstCollect.set(key, identity);
+          else if (first !== identity && !inProgress.has(key)) departed.add(key);
+        }
+
+        // One pending activation per key. Two collection paths can hand in the same effect for
+        // the same trigger (an inherited [On Deletion] reached both from the deleted stack and
+        // from the window parked for it), and `resolved` retires the key after the first one
+        // runs, so the copy could only ever sit in the order prompt as a choice that never runs
+        // (Discord 1555741214014447737: BT26-005 Pinamon listed twice under Ravemon).
+        const activeKeys = new Set<string>();
+        const pending = collectedThisPass.filter((c) => {
+          const key = declineKey(c);
+          if (activeKeys.has(key)) return false;
+          const activatable =
+            !declined.has(key) &&
+            !resolved.has(key) &&
+            !inProgress.has(key) &&
+            !departed.has(key) &&
+            !loopStopped.has(c.effect.effectKey);
+          if (activatable) activeKeys.add(key);
+          return activatable;
+        });
+        const newlyPending = pending.filter((c) => !activationTiers.has(declineKey(c)));
+        if (newlyPending.length > 0) {
+          state.newestTier += 1;
+          for (const c of newlyPending) {
+            activationTiers.set(declineKey(c), state.newestTier);
+          }
+        }
+        const active = pending.filter((c) => {
+          const ctx = env.makeContext(c);
+          return hasCurrentTrashSource(c, ctx) && canActivate(c.effect, ctx, env.tracker);
+        });
+        const highestActiveTier = Math.max(0, ...active.map((c) => activationTiers.get(declineKey(c))!));
+        const highestUnfinishedTier = Math.max(
+          highestActiveTier,
+          ...[...inProgress].map((key) => activationTiers.get(key) ?? 0),
+        );
+        const exhausted = pending.filter((c) => activationTiers.get(declineKey(c))! > highestUnfinishedTier);
+        if (inProgress.size === 0 && options?.retireUnactivatable !== true) {
+          reportWithoutLegalOutcome(exhausted);
+        }
+        for (const c of exhausted) {
+          departed.add(declineKey(c));
+        }
+        if (active.length === 0) {
+          // At the completed pre-Counter boundary the parent window is exhausted. A cost
+          // that becomes payable during security cannot revive this occurrence. Ordinary
+          // re-entrant drains leave it pending: an unfinished effect may still enable it.
+          if (options?.retireUnactivatable) {
+            for (const c of collectedThisPass) {
+              const key = declineKey(c);
+              if (!inProgress.has(key)) departed.add(key);
+            }
+          }
+          if (inProgress.size === 0) reportWithoutLegalOutcome(collectedThisPass);
           return;
         }
-        throw new Error(
-          `resolveTiming(${String(timing)}): exceeded ${MAX_RESOLUTION_PASSES} resolution passes — ` +
-            "likely a card effect that never clears its trigger/activation guard.",
+
+        // §18-3 Infinite Loops. The window is still handing out activatable effects after
+        // `passBudget` passes, which no legitimate chain reaches — so this is §18-3-1's
+        // "set of processing [that] will continue infinitely".
+        //
+        // §18-3-3 applies when one of the players HAS the ability to stop the loop; §18-3-2
+        // (draw) applies only when NEITHER does. The stop ability the resolver can see is an
+        // optional link in the cycle: an effect the controller may decline. So an optional
+        // effect among the still-active set means the loop is stoppable.
+        //
+        // What §18-3-3 prescribes is: each player declares a repeat count (turn player first,
+        // §18-3-3-1/-2), the processing runs at least that many times, and then "the player
+        // stops the processing when possible" (§18-3-3-3), after which the same loop may not
+        // be performed again. The declared repeat count only chooses HOW MANY redundant
+        // iterations happen before the stop; the terminal state it reaches is identical either
+        // way — the loop stops, with the optional link declined and unable to re-enter. This
+        // resolver therefore implements the end state directly: retire the optional link through
+        // `loopStopped` (see above), which both declines it now and forbids the same processing
+        // from being performed again in this window — §18-3-3-3 exactly.
+        //
+        // The declaration prompt itself is the piece deliberately not built: it is a
+        // player-facing count with no observable consequence here, and the protocol has no
+        // decision kind for it (see conformance/ch18-other-information.test.ts).
+        //
+        // If retiring the optional links does not converge (a cycle threading several distinct
+        // optional effects, each only revealed once the previous is gone), the attempt budget is
+        // finite and the §18-3-2 draw below is still reached.
+        //
+        // Reachability: no card in the current corpus can build a stoppable loop — every
+        // candidate cycle (self-replay from trash, the AD1-001/AD1-010 free-digivolve mirror,
+        // memory-gain engines) consumes memory, hand, trash, security, or deck, or is capped by
+        // [Once Per Turn]. This branch is therefore a correctness floor for future card sets, not
+        // live behavior; it is covered by synthetic effects in the conformance test.
+        if (++state.passes > state.passBudget) {
+          const stoppable = active.filter((c) => c.effect.optional);
+          if (stoppable.length > 0 && state.stopAttempts < MAX_LOOP_STOP_ATTEMPTS) {
+            state.stopAttempts += 1;
+            state.passBudget = state.passes + MAX_RESOLUTION_PASSES;
+            for (const c of stoppable) loopStopped.add(c.effect.effectKey);
+            continue;
+          }
+          // §18-3-2: neither player can stop it — the game ends in a draw.
+          if (env.declareDraw !== undefined) {
+            await env.declareDraw();
+            return;
+          }
+          throw new Error(
+            `resolveTiming(${String(timing)}): exceeded ${MAX_RESOLUTION_PASSES} resolution passes — ` +
+              "likely a card effect that never clears its trigger/activation guard.",
+          );
+        }
+
+        const activeTier = Math.max(...active.map((c) => activationTiers.get(declineKey(c))!));
+        const ordered = orderTurnPlayerFirst(
+          active.filter((c) => activationTiers.get(declineKey(c)) === activeTier),
+          env.turnSeat,
         );
+
+        // The frontmost contiguous group sharing the frontmost controller is the set of
+        // that player's simultaneous triggers they may order among (rulebook: the turn
+        // player orders all their own simultaneous triggers first, then the opponent
+        // theirs). Cross-player ordering is fixed by orderTurnPlayerFirst, so we only ever
+        // prompt within one controller's group.
+        const frontSeat = orderingSeatOf(ordered[0]!);
+        const group = ordered.filter((c) => orderingSeatOf(c) === frontSeat);
+        const waiting = active.filter((c) => !group.includes(c) && orderingSeatOf(c) === frontSeat);
+
+        const choice = await pickNext(frontSeat, group, timing, env, plan, waiting);
+        if (choice === null) {
+          // Decline is only returned when every effect in the group is optional. Mark them
+          // declined so the loop can progress to the other player's effects (or finish).
+          for (const c of group) declined.add(declineKey(c));
+          continue;
+        }
+
+        const chosen = group[choice];
+        if (chosen === undefined) return; // defensive: out-of-range index
+
+        const chosenKey = declineKey(chosen);
+        env.onResolving?.(timing, chosen);
+        inProgress.add(chosenKey);
+        let wasResolved: boolean;
+        try {
+          wasResolved = await resolveOne(
+            chosen,
+            env,
+            timing,
+            plan,
+            () => declined.add(chosenKey),
+            drainCurrentTimingWindow,
+          );
+        } finally {
+          inProgress.delete(chosenKey);
+        }
+        // A resolved (non-declined) triggered effect leaves the pending list for this
+        // window so the next re-collection does not re-offer it (single-trigger rule).
+        if (wasResolved) {
+          resolved.add(declineKey(chosen));
+          env.onResolved?.(timing, chosen);
+        }
+
+        // State-based actions between effects (RuleProcess). The next loop iteration
+        // re-collects, surfacing anything triggered during this resolution.
+        await env.ruleProcess();
+        // ...and the queues the engine parked while that effect was resolving, so a derived
+        // trigger activates before the effects already pending in this window (§15-4-5-2/3).
+        await env.betweenEffects?.();
       }
-
-      const newlyActive = active.filter((c) => !activationTiers.has(declineKey(c)));
-      if (newlyActive.length > 0) {
-        newestTier += 1;
-        for (const c of newlyActive) activationTiers.set(declineKey(c), newestTier);
-      }
-      const activeTier = Math.max(...active.map((c) => activationTiers.get(declineKey(c))!));
-      const ordered = orderTurnPlayerFirst(
-        active.filter((c) => activationTiers.get(declineKey(c)) === activeTier),
-        env.turnSeat,
-      );
-
-      // The frontmost contiguous group sharing the frontmost controller is the set of
-      // that player's simultaneous triggers they may order among (rulebook: the turn
-      // player orders all their own simultaneous triggers first, then the opponent
-      // theirs). Cross-player ordering is fixed by orderTurnPlayerFirst, so we only ever
-      // prompt within one controller's group.
-      const frontSeat = orderingSeatOf(ordered[0]!);
-      const group = ordered.filter((c) => orderingSeatOf(c) === frontSeat);
-      const waiting = active.filter((c) => !group.includes(c) && orderingSeatOf(c) === frontSeat);
-
-      const choice = await pickNext(frontSeat, group, timing, env, plan, waiting);
-      if (choice === null) {
-        // Decline is only returned when every effect in the group is optional. Mark them
-        // declined so the loop can progress to the other player's effects (or finish).
-        for (const c of group) declined.add(declineKey(c));
-        continue;
-      }
-
-      const chosen = group[choice];
-      if (chosen === undefined) return; // defensive: out-of-range index
-
-      const chosenKey = declineKey(chosen);
-      env.onResolving?.(timing, chosen);
-      inProgress.add(chosenKey);
-      let wasResolved: boolean;
-      try {
-        wasResolved = await resolveOne(
-          chosen,
-          env,
-          timing,
-          plan,
-          () => declined.add(chosenKey),
-          drainCurrentTimingWindow,
-        );
-      } finally {
-        inProgress.delete(chosenKey);
-      }
-      // A resolved (non-declined) triggered effect leaves the pending list for this
-      // window so the next re-collection does not re-offer it (single-trigger rule).
-      if (wasResolved) {
-        resolved.add(declineKey(chosen));
-        env.onResolved?.(timing, chosen);
-      }
-
-      // State-based actions between effects (RuleProcess). The next loop iteration
-      // re-collects, surfacing anything triggered during this resolution.
-      await env.ruleProcess();
-      // ...and the queues the engine parked while that effect was resolving, so a derived
-      // trigger activates before the effects already pending in this window (§15-4-5-2/3).
-      await env.betweenEffects?.();
+    } finally {
+      state.activeDrains--;
     }
   };
 
-  await drainCurrentTimingWindow();
+  env.runtimeCallbacks?.track({
+    callback: drainCurrentTimingWindow,
+    key: EngineRuntimeCallbackKind.TIMING_DRAIN.value,
+    payload: { timing, state, environment: env },
+  });
+  state.scopeOpen = true;
+  try {
+    env.onTimingWindowCreated?.({ state, drain: drainCurrentTimingWindow });
+    await drainCurrentTimingWindow(resume?.options);
+  } finally {
+    state.scopeOpen = false;
+    unregisterPending?.();
+  }
 }
 
 /**
@@ -573,11 +680,15 @@ async function resolveOne(
       onDeclined();
       return false;
     }
-    ctx.oncePerTurnActivationChosen = true;
+    if (effect.canCancelBeforeTargets !== true) {
+      ctx.oncePerTurnActivationChosen = true;
+    }
   }
 
-  const presentation = observeEffectActivation(ctx, effect.activationDeferred === true && !effect.optional, () =>
-    env.onActivating?.(timing, collected),
+  const presentation = observeEffectActivation(
+    ctx,
+    effect.activationDeferred === true && (!effect.optional || effect.canCancelBeforeTargets === true),
+    () => env.onActivating?.(timing, collected),
   );
   const sourceKinds = effectProvenanceKinds(ctx, { isLinked: effect.isLinked });
   ctx.effectSourceKinds = sourceKinds;

@@ -63,6 +63,9 @@
 	handle /account/* {
 		import api_upstreams
 	}
+	handle /story/* {
+		import api_upstreams
+	}
 	handle /bug-reports* {
 		reverse_proxy api:2567
 	}
@@ -89,6 +92,20 @@
 		not header Accept *text/html*
 	}
 	handle @roadmap_api {
+		import api_upstreams
+	}
+
+	@ranked_api {
+		path /ranked/*
+		not header Accept *text/html*
+	}
+	handle @ranked_api {
+		import api_upstreams
+	}
+	handle /achievements/* {
+		import api_upstreams
+	}
+	handle /tournament-circuits* {
 		import api_upstreams
 	}
 

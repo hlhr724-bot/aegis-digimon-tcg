@@ -30,6 +30,7 @@ describe("BT21-033 compiled implementation", () => {
         revealCount: 3,
         add: [
           {
+            effectTextPart: "Add 1 card with [Avian]/[Bird] in any of its traits",
             filter: {
               controllerDefault: "mine",
               nameOrTrait: [{ tokens: ["Avian", "Bird"], match: "traitContains" }],
@@ -38,6 +39,7 @@ describe("BT21-033 compiled implementation", () => {
             to: "hand",
           },
           {
+            effectTextPart: "1 card with the [WG] trait among them to the hand.",
             filter: {
               controllerDefault: "mine",
               nameOrTrait: [{ tokens: ["WG"], match: "trait" }],

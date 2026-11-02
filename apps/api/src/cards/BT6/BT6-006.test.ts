@@ -3,6 +3,8 @@ import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import "./BT6-006.js";
 import "../BT13/BT13-080.js";
+import "../BT16/BT16-076.js";
+import "./BT6-069.js";
 
 describe("BT6-006 Tsunomon", () => {
   it("draws once when one of your effects trashes a card in your hand", async () => {
@@ -17,6 +19,39 @@ describe("BT6-006 Tsunomon", () => {
     await advance(s.engine).verb.trash([s.inst("discard").instanceId]);
     await settle(() => s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("drawn").instanceId));
     expect(s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("drawn").instanceId)).toBe(true);
+  });
+
+  it("triggers once when one effect trashes several cards in your hand (CR 15-5-2)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT3-083", under: ["BT6-006", "BT6-069"], as: "host" }],
+          hand: [
+            { card: "BT16-076", as: "soloogarmon" },
+            { card: "BT1-010", as: "firstDiscard" },
+            { card: "BT1-010", as: "secondDiscard" },
+          ],
+          deck: ["BT1-011", "BT1-012"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 5;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        instanceId: s.inst("soloogarmon").instanceId,
+        permanentId: s.perm("host").permanentId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.trash.length === 2 && !s.state.pendingDecision);
+
+    const orders = s.decisions.filter(({ req }) => req.kind === "orderTriggers");
+    expect(orders.map(({ req }) => req.options?.triggerCardIds)).toEqual([["BT6-006", "BT6-069"]]);
+    expect(
+      s.events.filter((event) => event.kind === "cardsMoved" && event.handAddition === "draw").map(({ kind }) => kind),
+    ).toEqual(["cardsMoved"]);
   });
 });
 

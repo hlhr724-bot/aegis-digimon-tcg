@@ -74,12 +74,7 @@ export const compiled: CompiledCard = {
     },
     {
       trigger: "Main",
-      actions: [
-        {
-          kind: "GainMemory",
-          amount: 2,
-        },
-      ],
+      actions: [{ effectTextPart: "Gain 2 memory.", kind: "GainMemory", amount: 2 }],
       keywords: [
         {
           keyword: "Delay",

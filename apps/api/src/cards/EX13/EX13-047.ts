@@ -26,8 +26,18 @@ export const compiled: CompiledCard = {
           kind: "RevealAdd",
           revealCount: 3,
           add: [
-            { filter: royalKnightCard, count: 1, to: "hand" },
-            { filter: blockerCard, count: 1, to: "hand" },
+            {
+              effectTextPart: "Add 1 card with the [Royal Knight] trait",
+              filter: royalKnightCard,
+              count: 1,
+              to: "hand",
+            },
+            {
+              effectTextPart: "1 card with ＜Blocker＞ among them to the hand.",
+              filter: blockerCard,
+              count: 1,
+              to: "hand",
+            },
           ],
           rest: "deckBottom",
           raw: "Reveal the top 3 cards of your deck. Add 1 card with the [Royal Knight] trait and 1 card with ＜Blocker＞ among them to the hand. Return the rest to the bottom of the deck",

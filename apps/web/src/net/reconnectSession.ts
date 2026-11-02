@@ -23,9 +23,11 @@ export interface ReconnectSession {
   spectator?: boolean;
 }
 
+export const RECONNECT_SESSION_MAX_AGE_MS = 2 * 60 * 60_000;
+
 export function isReconnectSessionFresh(session: ReconnectSession, now: number): boolean {
   const age = now - session.savedAt;
-  return age >= 0 && age < RECONNECT_GRACE_MS;
+  return age >= 0 && age < RECONNECT_SESSION_MAX_AGE_MS;
 }
 
 function storage(): Storage | undefined {

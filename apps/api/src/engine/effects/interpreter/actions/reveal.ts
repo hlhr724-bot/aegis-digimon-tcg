@@ -1,3 +1,4 @@
+import { getDecisionSelectionGoal } from "#api/engine/effects/interpreter/getDecisionSelectionGoal";
 // Revealing cards and dispatching what the controller takes from them.
 
 import { matchingAlternateDigivolutionRequirement, matchingEvoCost } from "../../../cards/cardData.js";
@@ -13,6 +14,7 @@ import type { Action, Filter, Target } from "@aegis/shared";
 import { playEffectInstances, prepareEffectPlayAssembly } from "./effectPlayAssembly.js";
 import { prepareEffectPlayDigiXros } from "./effectPlayDigiXros.js";
 import { playableCandidates } from "./play.js";
+import { liveDigivolutionBase } from "./liveDigivolutionBase.js";
 
 /** Cards whose rule text changes a static fact only while they are revealed from deck. */
 export function revealedDefinition(
@@ -260,8 +262,8 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
       const into = ctx.game.definitionOf(card);
       if (!definitionMatches(option.into, into)) return false;
       return hosts.some((host) => {
-        if (host.topCard === undefined) return false;
-        const base = ctx.game.definitionOf(host.topCard);
+        const base = liveDigivolutionBase(ctx, host);
+        if (base === undefined) return false;
         return (
           matchingEvoCost(into, base) !== undefined ||
           matchingAlternateDigivolutionRequirement(into, base, {
@@ -377,8 +379,8 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
       matches = matches.filter((card) => {
         const into = ctx.game.definitionOf(card);
         return hosts.some((host) => {
-          if (host.topCard === undefined) return false;
-          const base = ctx.game.definitionOf(host.topCard);
+          const base = liveDigivolutionBase(ctx, host);
+          if (base === undefined) return false;
           return (
             matchingEvoCost(into, base) !== undefined ||
             matchingAlternateDigivolutionRequirement(into, base, {
@@ -410,7 +412,12 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
           };
     return { spec, eligible: matches, requireDifferentColors, costBudget, capacity, allocation };
   };
-  const slotPlans = action.add.map(planSlot);
+  const plannedSlots = action.add.map(planSlot);
+  const declinedAfterReveal =
+    action.optionalAfterReveal === true &&
+    plannedSlots.some((plan) => plan !== undefined && plan.eligible.length > 0) &&
+    !(await ctx.ask.optional(ctx, "Resolve this effect with the revealed cards?"));
+  const slotPlans = plannedSlots.map((plan) => (declinedAfterReveal ? undefined : plan));
   // Same-destination categories may assign their shared card to either slot (Q1050/Q1985).
   // Reuse ordinary selectCards decisions: skipping a sole overlap reserves it for slot two.
   const canDeferToSecond =
@@ -431,6 +438,7 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
     // the full reveal when the remaining cards are ordered or later actions resolve.
     const selectionCtx =
       spec.effectTextPart === undefined ? ctx : { ...ctx, activeEffectTextPart: spec.effectTextPart };
+    const selectionGoal = getDecisionSelectionGoal({ action: { ...action, add: [spec] } });
     let matches = plan.eligible.filter((card) => !taken.has(card.instanceId));
     let minimum: number | undefined;
     // By default each slot chooses freely from the cards that remain, and a later slot takes
@@ -472,6 +480,7 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
       const affordable = matches.filter((c) => playCostOf(c) <= budget);
       if (affordable.length > 0) {
         const ids = await ctx.ask.selectCards(selectionCtx, {
+          ...(selectionGoal === undefined ? {} : { selectionGoal }),
           candidates: affordable.map((c) => c.instanceId),
           visible: revealed.map((c) => c.instanceId),
           visibleCards: revealed.map((c) => ({
@@ -508,6 +517,7 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
     // that take every matching card remain forced; optional/up-to slots still allow 0.
     if (matches.length > 0 && (spec.optional || spec.upTo || spec.count !== "all")) {
       const ids = await ctx.ask.selectCards(selectionCtx, {
+        ...(selectionGoal === undefined ? {} : { selectionGoal }),
         candidates: matches.map((c) => c.instanceId),
         visible: revealed.map((c) => c.instanceId),
         visibleCards: revealed.map((c) => ({
@@ -556,6 +566,7 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
           if (choice.to === "play") {
             return (
               (definition.kinds.includes(CardKind.Digimon) || definition.kinds.includes(CardKind.Tamer)) &&
+              !definition.kinds.includes(CardKind.Option) &&
               !playProhibited(c)
             );
           }
@@ -864,8 +875,9 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
     const targets = await resolvePermanentTargets(ctx, target, {
       eligible: (permanentId) => {
         const permanent = ctx.game.permanentById(permanentId);
-        if (permanent?.topCard === undefined) return false;
-        const base = ctx.game.definitionOf(permanent.topCard);
+        if (permanent === undefined) return false;
+        const base = liveDigivolutionBase(ctx, permanent);
+        if (base === undefined) return false;
         return (
           matchingEvoCost(into, base) !== undefined ||
           matchingAlternateDigivolutionRequirement(into, base, {

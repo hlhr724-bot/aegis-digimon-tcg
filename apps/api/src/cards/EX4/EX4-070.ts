@@ -32,6 +32,7 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Delete 1 of your opponent's level 3 Digimon.",
           kind: "Delete",
           target: {
             filter: {
@@ -42,9 +43,7 @@ export const compiled: CompiledCard = {
             count: 1,
           },
         },
-        {
-          kind: "PlaceInBattleAreaSelf",
-        },
+        { effectTextPart: "Then place this card in your battle area.", kind: "PlaceInBattleAreaSelf" },
       ],
     },
     {
@@ -57,6 +56,7 @@ export const compiled: CompiledCard = {
       ],
       actions: [
         {
+          effectTextPart: "Your opponent may trash 1 Option card in their hand.",
           kind: "Trash",
           target: {
             filter: {
@@ -71,6 +71,7 @@ export const compiled: CompiledCard = {
           controller: "opponent",
         },
         {
+          effectTextPart: "If they do not trash a card, gain 2 memory.",
           kind: "GainMemory",
           amount: 2,
           condition: {

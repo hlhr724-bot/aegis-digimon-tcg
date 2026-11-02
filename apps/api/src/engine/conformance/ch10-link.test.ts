@@ -561,7 +561,7 @@ describe("§4-9-5 / §17-1-3-2-5 Link limit — a link at the limit lands and th
     // --- Path 2: a card effect's Link action (runLink, interpreter.ts) — AD1-005's [On Play]
     // links up to 2 [Social]/[Navi]/[Tool] cards to ITSELF. Cancel its printed <Link +1>
     // grant so this path, like the player-facing fixture above, isolates base link limit 1.
-    const effectGame = setup();
+    const effectGame = setup({ autoAcceptOptional: false });
     const effectPlayer = effectGame.state.players[0] as PlayerState;
     const effectSource = looseCard("AD1-005", 0);
     effectPlayer.hand.push(effectSource);
@@ -573,13 +573,20 @@ describe("§4-9-5 / §17-1-3-2-5 Link limit — a link at the limit lands and th
     expect(effectGame.engine.applyIntent(0, { type: "playCard", instanceId: effectSource.instanceId })).toEqual({
       ok: true,
     });
-    await settle(() => findPermanent(effectGame, 0, "AD1-005") !== undefined);
+    await settle(() => effectGame.state.pendingDecision?.kind === "optional");
     const effectHost = findPermanent(effectGame, 0, "AD1-005")!;
     (
       effectGame.engine as unknown as {
         continuous: { addLinkMaxGrant(id: string, delta: number, duration: unknown): void };
       }
     ).continuous.addLinkMaxGrant(effectHost.permanentId, -1, EffectDuration.UntilEachTurnEnd);
+    expect(
+      effectGame.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: effectGame.state.pendingDecision!.decisionId,
+        response: { kind: "optional", accept: true },
+      }),
+    ).toEqual({ ok: true });
     await settle(() => effectHost.linked.length === 1);
 
     // Both paths offered 2 cards onto a base-limit-1 recipient. Neither refused the link at

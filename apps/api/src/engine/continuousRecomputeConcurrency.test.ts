@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { setupEngine } from "./testkit/harness.js";
 
 describe("continuous recompute concurrency", () => {
@@ -46,6 +46,38 @@ describe("continuous recompute concurrency", () => {
       releaseFirstPass();
       await Promise.allSettled([first, second]);
       internals.runContinuousPass = runContinuousPass;
+    }
+  });
+
+  it("drains a rebuild queued while publishing play affordances", async () => {
+    const s = setupEngine();
+    await s.ready();
+    let releasePublication: () => void = () => undefined;
+    let markPublicationEntered: () => void = () => undefined;
+    const publicationEntered = new Promise<void>((resolve) => {
+      markPublicationEntered = resolve;
+    });
+    const publicationBlocked = new Promise<void>((resolve) => {
+      releasePublication = resolve;
+    });
+    const pass = vi.spyOn(s.engine, "runContinuousPass");
+    const publish = vi.spyOn(s.engine.projection, "syncNegamonPlayEffects").mockImplementationOnce(async () => {
+      markPublicationEntered();
+      await publicationBlocked;
+    });
+    const first = s.engine.recomputeContinuousEffects();
+    await publicationEntered;
+    const second = s.engine.recomputeContinuousEffects();
+    try {
+      expect(pass).toHaveBeenCalledTimes(1);
+      releasePublication();
+      await Promise.all([first, second]);
+      expect(pass).toHaveBeenCalledTimes(2);
+    } finally {
+      releasePublication();
+      await Promise.allSettled([first, second]);
+      pass.mockRestore();
+      publish.mockRestore();
     }
   });
 });

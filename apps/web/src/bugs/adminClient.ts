@@ -16,6 +16,7 @@ export type FeedbackRecord = {
     userAgent?: string;
     serverRevision?: string;
     publicVersion?: string;
+    tournamentId?: string;
   };
   createdAt: number;
   githubStatus: "pending" | "sent" | "failed" | "disabled";

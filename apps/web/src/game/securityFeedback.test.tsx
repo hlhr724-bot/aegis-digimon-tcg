@@ -284,7 +284,7 @@ describe("opponent permanent inspection", () => {
       </I18nProvider>,
     );
 
-    const target = screen.getByRole("button", { name: "Agumon" });
+    const target = screen.getByRole("button", { name: /^Agumon, \(BT1-010\), Field reference #/ });
     expect(target.style.cursor).toBe("pointer");
     fireEvent.mouseEnter(target);
     fireEvent.focus(target);

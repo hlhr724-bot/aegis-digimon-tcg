@@ -64,8 +64,14 @@ export const compiled: CompiledCard = {
     {
       trigger: "Main",
       actions: [
-        { kind: "Unsuspend", target: anyDigimon, optional: true },
         {
+          effectTextPart: "[Main] You may unsuspend 1 Digimon.",
+          kind: "Unsuspend",
+          target: anyDigimon,
+          optional: true,
+        },
+        {
+          effectTextPart: "Then, delete all of your opponent's unsuspended Digimon with the lowest DP.",
           kind: "Delete",
           target: {
             filter: { controller: "opponent", kind: ["Digimon"], suspended: false, superlative: "lowestDP" },

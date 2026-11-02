@@ -40,6 +40,11 @@ export function liveProjectionFields({ player, live }: { player: PlayerState; li
   return changed ? ({ ...player, battleArea } as PlayerState) : player;
 }
 
+/** A seat the board can always read: a state that left the trash list out still gets one. */
+export function withTrashList(player: PlayerState): PlayerState {
+  return player.trash ? player : ({ ...player, trash: [] } as unknown as PlayerState);
+}
+
 export function phaseField(input: { player: PlayerState; held: PlayerState | undefined }): PlayerState {
   const { player, held } = input;
   if (!held) return player;

@@ -20,7 +20,7 @@ describe("BT1-042 LoaderLeomon", () => {
       types: ["Machine"],
       rarity: "U",
       maxCountInDeck: 4,
-      imageId: "BT1-042",
+      imageId: "BT1-042-Errata",
       nameJp: "ローダーレオモン",
     });
     expect(getCardDefinition("BT1-042")?.effectText).toBeUndefined();

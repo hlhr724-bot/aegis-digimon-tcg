@@ -31,6 +31,9 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] The next time one of your Digimon digivolves this turn, you may trash 1 Digimon card in your hand of the same color as the digivolving Digimon to reduce the memory cost of the digivolution by 4.",
+          payCostBeforeOptional: false,
           kind: "CostModifier",
           mode: "reduce",
           costType: "digivolve",

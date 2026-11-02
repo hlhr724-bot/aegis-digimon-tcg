@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Choose 1 of your level 4 or higher Digimon with [Shoutmon] in its name.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -28,6 +29,7 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart: "Delete 1 of your opponent's Digimon with DP less than or equal to the chosen Digimon.",
           kind: "Delete",
           target: {
             filter: {
@@ -52,6 +54,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "You may add 1 Digimon card with [Xros Heart] in its traits among them to your hand",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -66,6 +69,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "play 1 [Taiki Kudo] among them without paying its memory cost.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -80,7 +84,7 @@ const compiled: CompiledCard = {
             },
           ],
           rest: "deckBottom",
-          optional: true,
+          optionalAfterReveal: true,
         },
       ],
       isSecurity: true,

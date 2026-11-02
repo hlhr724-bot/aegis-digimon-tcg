@@ -1,4 +1,6 @@
 import type { EffectContext } from "./effectContext.js";
+import type { DecisionEffectSummary } from "@aegis/shared/protocol/DecisionEffectSummary";
+import type { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 
 /**
  * Extra context a binary/modal choice can carry.
@@ -9,6 +11,7 @@ import type { EffectContext } from "./effectContext.js";
  * the revealed cards instead of blind (P-097 Zubamon).
  */
 export type ChooseOptionExtras = {
+  choiceSummaries?: (DecisionEffectSummary | null)[];
   choiceEffects?: { cardId: string; timing?: string; isInherited?: boolean }[];
   /** The printed bullet of each choice; see `DecisionRequest.options.choiceClauses`. */
   choiceClauses?: string[];
@@ -16,6 +19,7 @@ export type ChooseOptionExtras = {
   visibleCards?: { instanceId: string; cardId: string; artId?: string }[];
   /** Index into `choices` of the entry that declines an optional effect (see `DecisionRequest.options.declineIndex`). */
   declineIndex?: number;
+  activation?: { index: number; total: number };
   /** See `DecisionRequest.options.topBottomZone`. */
   topBottomZone?: "digivolutionCards" | "security" | "deck";
   /** See `DecisionRequest.options.digivolveCostChoice`. */
@@ -60,6 +64,7 @@ export interface SeatScopedDecisionApi {
       max: number;
       visible?: string[];
       maxTotalPlayCost?: number;
+      allowedTargetCombinations?: string[][];
       maxTotalDP?: number;
       promptKey?: "digivolveHost";
     },
@@ -67,6 +72,7 @@ export interface SeatScopedDecisionApi {
   selectCards(
     ctx: EffectContext,
     opts: {
+      selectionGoal?: DecisionSelectionGoal;
       candidates: string[];
       min: number;
       max: number;
@@ -78,6 +84,7 @@ export interface SeatScopedDecisionApi {
       distinctNames?: boolean;
       assemblyCardId?: string;
       digiXrosCardId?: string;
+      digiXrosMaterialLimits?: { candidateInstanceIds: string[]; max: number }[];
       /** Paid source cards that will enter trash before this DigiXros is placed. */
       digiXrosRuleTrashInstanceIds?: string[];
     },

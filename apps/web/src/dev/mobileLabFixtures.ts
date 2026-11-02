@@ -1,3 +1,5 @@
+import { Phase } from "@aegis/shared/schema/enums";
+import type { LogTurnGroup } from "@/game/log/LogEntry";
 /* Fixtures for the mobile components lab (/dev/mobile). Server-originated text — prompt
    sentences, choice labels, effect clauses — is not translated by the client, but the lab
    still offers pt-BR and es variants of each so the longest realistic strings can be tried on
@@ -5,7 +7,7 @@
 
 import { getCardDefinition, splitPrintedClauses, type DecisionRequest } from "@aegis/shared";
 import type { Locale } from "../i18n";
-import type { LogLine } from "../game/matchLog";
+import type { LogLine } from "@/game/log/LogEntry";
 import type { NarrationItem } from "../game/narration";
 import type { MatchNotice } from "../game/notices";
 import type { TriggerDetail } from "../game/overlay";
@@ -195,9 +197,13 @@ export function orderTriggersDecision(): DecisionRequest {
 }
 
 export const TRIGGER_DETAILS: readonly TriggerDetail[] = [
-  { sourceLabel: "Field: 1", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
-  { sourceLabel: "Field: 2", summary: "Draw 1 card, then trash 1 card in your hand." },
-  { sourceLabel: "Field: 3", summary: "Return 1 of your opponent's Digimon with 5000 DP or less to the hand." },
+  { sourceLabel: "Field", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
+  {
+    sourceLabel: "Inherited by Omnimon",
+    hostCardId: "BT1-084",
+    summary: "Draw 1 card, then trash 1 card in your hand.",
+  },
+  { sourceLabel: "Field (copy 2)", summary: "Return 1 of your opponent's Digimon with 5000 DP or less to the hand." },
 ];
 
 /** UlforceVeedramon's [When Digivolving] clauses, the choice Rina Shinomiya activates one of. */
@@ -439,4 +445,19 @@ export const LAB_LOG: LogLine[] = [
     cardIds: ["BT26-067"],
   },
   { text: `Security check revealed ${cardName(CARDS.rookie)}.`, kind: "sys", cardIds: [CARDS.rookie] },
+];
+
+export const LAB_LOG_TURNS: readonly LogTurnGroup[] = [
+  {
+    turnCount: 1,
+    turnSeat: 0,
+    phases: [
+      {
+        phase: Phase.Main,
+        entries: [...LAB_LOG]
+          .reverse()
+          .map((line, index) => ({ ...line, id: `fixture-${index}`, turnCount: 1, turnSeat: 0, phase: Phase.Main })),
+      },
+    ],
+  },
 ];

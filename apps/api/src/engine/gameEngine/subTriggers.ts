@@ -1,3 +1,4 @@
+import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
 import { resolveDerivedDuringAttackStep } from "#api/engine/gameEngine/resolveDerivedDuringAttackStep";
 import { buildSubTriggerEffectKey } from "#api/engine/gameEngine/buildSubTriggerEffectKey";
 import { observeEffectActivation } from "../effects/activationPresentation.js";
@@ -33,6 +34,7 @@ import { shouldDeferNestedTiming, withTriggeredMutations } from "./windows.js";
 import { buildEffectContext, cardSourceOf } from "./effectContext.js";
 import { drainPendingAttackTriggers, runPendingTimingWindow } from "#api/engine/gameEngine/timing/fire";
 import { ResolutionPlan } from "../decisions/resolutionPlan.js";
+import { applyEntryGrants } from "#api/engine/gameEngine/applyEntryGrants";
 
 /**
  * @param sourceScope Restricts the fire to the event subject's own "when this Digimon is
@@ -45,6 +47,9 @@ export async function fireSubTrigger(
   payload: TriggerInfo = {},
   sourceScope?: SubTriggerSourceScope,
 ): Promise<void> {
+  if (event === "whenSecurityRemoved" && payload.securityRemovalEventId === undefined) {
+    payload = { ...payload, securityRemovalEventId: ++engine.securityRemovalEventSeq };
+  }
   const scopedOut = (sub: SubTriggerSubscription): boolean => {
     if (sourceScope === undefined) return false;
     // A class watcher that merely includes its own host ("one of your [Chessmon]") is not a
@@ -52,6 +57,9 @@ export async function fireSubTrigger(
     const isSelfSource = sub.watchesSelf === true && sub.sourcePermanentId === payload.deletedPermanentId;
     return sourceScope === "selfSourceOnly" ? !isSelfSource : isSelfSource;
   };
+  if (event === "onEnterFieldAnyone" && payload.subjectPermanentId !== undefined) {
+    await applyEntryGrants(engine, [payload.subjectPermanentId]);
+  }
   const subscriptionsFor = (): SubTriggerSubscription[] =>
     engine.subTriggers.subscriptionsFor(event).filter((sub) => !scopedOut(sub));
   const deletedPermanent =
@@ -112,6 +120,33 @@ export async function fireSubTrigger(
     engine.pendingDeletionSubTriggers.push(...armedSubTriggers(engine, subscriptions, payload, contexts));
     return;
   }
+  // The event subject can leave the board before a pending watcher activates. Bind each
+  // context now, at trigger time, so the pending activation keeps the subject snapshot
+  // required by CR §15-4-4 instead of re-running its filter against an already-moved card.
+  const armWithTriggerTimeContexts = (): ArmedSubTrigger[] => {
+    const subscriptions = subscriptionsFor();
+    const contexts = new Map<number, EffectContext>();
+    for (const sub of subscriptions) {
+      const ctx = buildSubTriggerContext(engine, sub, payload);
+      if (ctx !== undefined) contexts.set(sub.id, ctx);
+    }
+    return armedSubTriggers(engine, subscriptions, payload, contexts);
+  };
+  if (engine.digivolveCostSubTriggers !== undefined && event !== "wouldBeReturned" && event !== "onDeletionOf") {
+    engine.digivolveCostSubTriggers.push(...armWithTriggerTimeContexts());
+    return;
+  }
+  if (
+    event === "whenSecurityRemoved" &&
+    engine.mainVerbContinuationsInFlight > 0 &&
+    engine.activeWindowToken === undefined &&
+    engine.effectResolutionDepth === 0 &&
+    !engine.resolvingBarrierSecurityCost &&
+    !engine.flushingDeferredSecurityRemovalTriggers
+  ) {
+    engine.pendingWindowSubTriggers.push(...armWithTriggerTimeContexts());
+    return;
+  }
   // A security card removed while another effect is resolving creates a pending trigger;
   // it does not interrupt that effect. Dynasmon BT6-044 must finish revealing its 6 cards
   // before its Recovery reaction can consume the next deck card (KB Q1430/Q1432).
@@ -135,22 +170,6 @@ export async function fireSubTrigger(
       subscriptions: pending,
       contexts,
     });
-    return;
-  }
-  // The event subject can leave the board before a pending watcher activates. Bind each
-  // context now, at trigger time, so the pending activation keeps the subject snapshot
-  // required by CR §15-4-4 instead of re-running its filter against an already-moved card.
-  const armWithTriggerTimeContexts = (): ArmedSubTrigger[] => {
-    const subscriptions = subscriptionsFor();
-    const contexts = new Map<number, EffectContext>();
-    for (const sub of subscriptions) {
-      const ctx = buildSubTriggerContext(engine, sub, payload);
-      if (ctx !== undefined) contexts.set(sub.id, ctx);
-    }
-    return armedSubTriggers(engine, subscriptions, payload, contexts);
-  };
-  if (engine.digivolveCostSubTriggers !== undefined && event !== "wouldBeReturned" && event !== "onDeletionOf") {
-    engine.digivolveCostSubTriggers.push(...armWithTriggerTimeContexts());
     return;
   }
   // A would-be-returned reaction interrupts the causing effect before its target moves
@@ -618,7 +637,7 @@ export function nestedTriggerSourceStillResident(engine: GameEngine, pending: Co
     rootZoneOfLooseInstance(engine.state, pending.source.instanceId) === "trash" &&
     rootZoneOfLooseInstance(engine.state, deletedHostId) === "trash";
   if (inheritedDeletedSource) return true;
-  const identityAtDefer = engine.nestedTriggerSourceIdentity.get(pending);
+  const identityAtDefer = pending.sourceIdentityAtDefer;
   if (identityAtDefer === undefined || identityAtDefer === null) return true;
   return permanentIdentityOf(pending.source) === identityAtDefer;
 }
@@ -697,6 +716,8 @@ function selfTrashedSourceInstanceId(sub: SubTriggerSubscription, payload: Trigg
   const sourceInstanceId = sub.sourceInstanceId;
   if (sourceInstanceId === undefined) return undefined;
   switch (sub.event) {
+    case "whenTrashedFromDeck":
+      return payload.trashedFromDeckInstanceId === sourceInstanceId ? sourceInstanceId : undefined;
     case "whenTrashedFromHand":
       return payload.trashedFromHandInstanceId === sourceInstanceId ? sourceInstanceId : undefined;
     case "onDigivolutionCardDiscarded":
@@ -716,11 +737,15 @@ function selfTrashedSourceInstanceId(sub: SubTriggerSubscription, payload: Trigg
  * always the outermost one (a replacement play's loop, EX11-058). A parked watcher already
  * claimed its identity, so the consumed-key filter would hide it and is not applied here.
  */
-export function parkedEntryCollected(engine: GameEngine): CollectedEffect[] {
+export function parkedEntryCollected(
+  engine: GameEngine,
+  excluded: ReadonlySet<ArmedSubTrigger> = new Set(),
+): CollectedEffect[] {
   return armedAsPendingCollected(
     engine,
     engine.parkedEntrySubTriggers.filter(
       (item) =>
+        !excluded.has(item) &&
         // Entry-event watchers have only triggered; they have not activated yet. If an
         // earlier simultaneous effect removes their field source, they must leave the pool.
         // Keep this residency rule scoped to parked entry watchers: frozen deletion watchers
@@ -752,12 +777,16 @@ export function pendingWindowCollected(engine: GameEngine): CollectedEffect[] {
 }
 
 /** The enclosing window's own armed watchers, without the parked or printed pending halves. */
-export function pendingWindowWatchersCollected(engine: GameEngine): CollectedEffect[] {
+export function pendingWindowWatchersCollected(
+  engine: GameEngine,
+  excluded: ReadonlySet<ArmedSubTrigger> = new Set(),
+): CollectedEffect[] {
   return armedAsPendingCollected(
     engine,
     uniqueOncePerTurnWatcherOccurrences(
       engine.pendingWindowSubTriggers.filter(
         (item) =>
+          !excluded.has(item) &&
           !engine.consumedSubTriggerKeys.has(subTriggerIdentity(item.sub, item.ctx.trigger)) &&
           subTriggerStillPending(engine, item),
       ),
@@ -1020,7 +1049,11 @@ export function playerFacingWatcherClause(sub: SubTriggerSubscription, ctx: Effe
     const clause = soleLinkingClause(box);
     if (clause !== undefined) return clause;
   }
-  return soleWatcherLine(box) ?? `${triggerLabel(sub.event)}: ${definition.nameEn}`;
+  const optionSideLine =
+    sub.isLinkedSource === true || sub.isInheritedSource === true
+      ? undefined
+      : soleWatcherLine(definition.optionEffect);
+  return soleWatcherLine(box) ?? optionSideLine ?? `${triggerLabel(sub.event)}: ${definition.nameEn}`;
 }
 
 /** Present a watcher to the ordering prompt as an ordinary collected effect. */
@@ -1047,6 +1080,7 @@ export function subTriggerAsCollected(engine: GameEngine, { sub, ctx, occurrence
     ...triggerReasonOf(sub),
     effect: {
       effectKey: buildSubTriggerEffectKey(sub),
+      decisionSummary: sub.decisionSummary,
       activationDeferred: sub.activationDeferred,
       ...(sub.activationContext !== undefined &&
       sub.sourcePermanentId === undefined &&
@@ -1222,6 +1256,9 @@ export function buildSubTriggerContext(
 ): EffectContext | undefined {
   const context = buildSubTriggerSourceContext(engine, sub, payload);
   if (context === undefined) return undefined;
+  context.activeSingleHandCostBenefit = undefined;
+  context.activeDecisionSummary = sub.decisionSummary;
+  context.activeDecisionSelectionGoal = undefined;
   return breedingHidesSubjectFrom(engine, sub.event, payload, context.source) ? undefined : context;
 }
 
@@ -1247,7 +1284,14 @@ export function discardedStackSourceContextPayload(
   )
     return undefined;
   if (payload.subjectPermanentId === undefined) return undefined;
-  if (engine.access.permanentById(payload.subjectPermanentId) === undefined) return undefined;
+  const activatesFromDiscardedCard =
+    sub.watchesSelf === true &&
+    sub.sourcePermanentId === undefined &&
+    payload.trashedDigivolutionHost?.permanentId === payload.subjectPermanentId &&
+    payload.trashedDigivolutionHost.stack.some((card) => card.instanceId === sourceInstanceId);
+  if (!activatesFromDiscardedCard && engine.access.permanentById(payload.subjectPermanentId) === undefined) {
+    return undefined;
+  }
   if (sub.sourcePermanentId !== undefined && payload.subjectPermanentId !== sub.sourcePermanentId) return undefined;
   const listed =
     sub.event === "onDigivolutionCardDiscarded"
@@ -1256,7 +1300,7 @@ export function discardedStackSourceContextPayload(
   if (!listed || rootZoneOfLooseInstance(engine.state, sourceInstanceId) !== "trash") return undefined;
   return {
     payload,
-    proof: { sourceInstanceId, hostPermanentId: payload.subjectPermanentId },
+    proof: { sourceInstanceId, hostPermanentId: payload.subjectPermanentId, activatesFromDiscardedCard },
   };
 }
 
@@ -1306,11 +1350,13 @@ export function buildSubTriggerSourceContext(
     return context;
   }
   if (sub.activationContext !== undefined) {
-    return {
+    const context = {
       ...sub.activationContext,
       trigger: payload,
       selections: new Map(),
     };
+    engine.runtimeObjects.track({ value: context, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
+    return context;
   }
   return undefined;
 }

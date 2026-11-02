@@ -10,6 +10,7 @@ import "../BT24/index.js";
 import "../BT26/index.js";
 import "../BT12/BT12-024.js";
 import "../EX13/EX13-060.js";
+import "#api/cards/BT22/BT22-042";
 import "./index.js";
 import "../ST21/ST21-11.js";
 
@@ -493,6 +494,50 @@ describe("BT20-060 Alphamon: Ouryuken — KB Q&A rulings", () => {
     expect(observe(s.engine).hasKeyword(s.perm("omnimon"), "Rush")).toBe(false);
     expect(s.engine.applyIntent(1, { type: "surrender" })).toEqual({ ok: true });
     await loop;
+  });
+});
+
+describe("Alphamon Ouryuken DNA clears the materials' pending DP reductions", () => {
+  it("ends Nyabootmon's reduction when Alphamon becomes a DNA material", async () => {
+    const preferred: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT22-042", as: "nyabootmon" }, "BT22-032"],
+          security: ["BT1-009"],
+          deck: ["BT1-009"],
+        },
+        1: {
+          battleArea: [
+            { card: "EX13-060", as: "alphamon" },
+            { card: "BT20-018", as: "ouryumon" },
+          ],
+          hand: [{ card: "BT20-060", as: "ace" }],
+          deck: ["BT1-009", "BT1-009"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },
+    );
+    await s.ready();
+    const alphamonId = s.perm("alphamon").permanentId;
+    preferred.push(alphamonId);
+    await advance(s.engine).fire(EffectTiming.WhenDigivolving, s.perm("nyabootmon"));
+    await settle();
+    expect(s.perm("alphamon").currentDP).toBe(7000);
+    s.state.turnSeat = 1;
+    s.state.memory = 3;
+    expect(
+      s.engine.applyIntent(1, {
+        type: "dnaDigivolve",
+        instanceId: s.inst("ace").instanceId,
+        materialPermanentIds: [alphamonId, s.perm("ouryumon").permanentId],
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.engine.mainVerbContinuationsInFlight === 0 && s.state.pendingDecision === undefined);
+    const result = s.state.players[1]!.battleArea[0]!;
+    expect(result.permanentId).not.toBe(alphamonId);
+    expect(result.topCard.cardId).toBe("BT20-060");
+    expect(result.currentDP).toBe(16000);
   });
 });
 

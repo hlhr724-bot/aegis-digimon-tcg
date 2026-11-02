@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon gains ＜Reboot＞ (Unsuspend this Digimon during your opponent's unsuspend phase) and \"This Digimon can't have its DP reduced or be returned to its owner's hand or deck\" until the end of your opponent's next turn.",
           kind: "GainKeyword",
           target: {
             filter: {
@@ -23,12 +25,16 @@ const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon gains ＜Reboot＞ (Unsuspend this Digimon during your opponent's unsuspend phase) and \"This Digimon can't have its DP reduced or be returned to its owner's hand or deck\" until the end of your opponent's next turn.",
           kind: "Restrict",
           target: { filter: {}, count: 1, fromSelectionRef: "breathTarget" },
           restriction: "dpImmune",
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon gains ＜Reboot＞ (Unsuspend this Digimon during your opponent's unsuspend phase) and \"This Digimon can't have its DP reduced or be returned to its owner's hand or deck\" until the end of your opponent's next turn.",
           kind: "Restrict",
           target: { filter: {}, count: 1, fromSelectionRef: "breathTarget" },
           restriction: "beReturned",

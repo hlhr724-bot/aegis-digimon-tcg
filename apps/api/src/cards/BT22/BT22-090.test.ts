@@ -196,6 +196,7 @@ describe("GitHub #5290 / #5398: Rie Kishibe end-of-turn digivolution through pub
     { into: "EX13-064", security: 3, sacrifice: "BT22-083", accept: true, evolves: true, deletes: true },
     { into: "EX13-064", security: 0, sacrifice: "BT22-083", accept: true, evolves: true, deletes: true },
     { into: "BT22-067", security: 4, sacrifice: "BT22-083", accept: true, evolves: false, deletes: true },
+    { into: "BT22-067", security: 5, sacrifice: "BT7-063", accept: true, evolves: false, deletes: true },
     { into: "EX13-064", security: 4, sacrifice: "BT22-083", accept: true, evolves: false, deletes: true },
     { into: "BT19-073", security: 3, sacrifice: "BT22-083", accept: true, evolves: false, deletes: true },
     { into: "EX13-064", security: 3, sacrifice: "BT1-009", accept: true, evolves: false, deletes: false },

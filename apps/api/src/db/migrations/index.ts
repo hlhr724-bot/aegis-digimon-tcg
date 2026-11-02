@@ -1,3 +1,18 @@
+import { tournamentDiscordGuild } from "#api/db/migrations/048-tournament-discord-guild";
+import { slimDeckMatchLedger } from "#api/db/migrations/049-slim-deck-match-ledger";
+import { accountRoles } from "#api/db/migrations/050-account-roles";
+import { tournamentDiscordChannels } from "#api/db/migrations/047-tournament-discord-channels";
+import { removeTournamentPresets } from "#api/db/migrations/046-remove-tournament-presets";
+import { communityTournaments } from "#api/db/migrations/044-community-tournaments";
+import { tournamentSpectators } from "#api/db/migrations/045-tournament-spectators";
+import { deckCompositionMatchups } from "#api/db/migrations/043-deck-composition-matchups";
+import { deckHistory } from "#api/db/migrations/042-deck-history";
+import { friendsSystem } from "#api/db/migrations/041-friends-system";
+import { deckProviders } from "#api/db/migrations/037-deck-providers";
+import { storyGuestProgress } from "#api/db/migrations/039-story-guest-progress";
+import { communityDeckModeration } from "#api/db/migrations/040-community-deck-moderation";
+import { accountAvatarImage } from "#api/db/migrations/051-account-avatar-image";
+import { storyProgress } from "#api/db/migrations/038-story-progress";
 import type { Migration } from "../migrator.js";
 import { initialSchema } from "./001-initial-schema.js";
 import { tournamentProgramColumns } from "./002-tournament-program-columns.js";
@@ -37,6 +52,11 @@ import { connectionDrops } from "#api/db/migrations/033-connection-drops";
 import { communityRoadmap } from "#api/db/migrations/034-community-roadmap";
 import { playtestGroup } from "#api/db/migrations/035-playtest-group";
 
+import { publicDeckGuide } from "#api/db/migrations/036-public-deck-guide";
+
+import { tournamentRoundStartMode } from "#api/db/migrations/052-tournament-round-start-mode";
+import { publicReplayListing } from "#api/db/migrations/053-public-replay-listing";
+
 export const migrations: readonly Migration[] = [
   initialSchema,
   tournamentProgramColumns,
@@ -73,4 +93,22 @@ export const migrations: readonly Migration[] = [
   connectionDrops,
   communityRoadmap,
   playtestGroup,
+  publicDeckGuide,
+  deckProviders,
+  storyProgress,
+  storyGuestProgress,
+  communityDeckModeration,
+  friendsSystem,
+  deckHistory,
+  deckCompositionMatchups,
+  communityTournaments,
+  tournamentSpectators,
+  removeTournamentPresets,
+  tournamentDiscordChannels,
+  tournamentDiscordGuild,
+  slimDeckMatchLedger,
+  accountRoles,
+  accountAvatarImage,
+  tournamentRoundStartMode,
+  publicReplayListing,
 ];

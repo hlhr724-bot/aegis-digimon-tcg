@@ -555,3 +555,41 @@ it("Discord 1557034399055216700: the activating player orders all distinct level
   expect(s.state.players[1]!.deck.map((c) => c.instanceId)).toEqual([...order, s.inst("originalTop").instanceId]);
   expect(s.state.memory).toBe(3);
 });
+
+it("returns the reported Machinedramon and Kimeramon to the deck instead of stacking the revival cost", async () => {
+  const s = setupEngine(
+    {
+      0: {
+        deck: ["BT1-009", "BT1-009"],
+        battleArea: [{ card: "BT18-019", as: "millennium", under: ["BT18-073", "BT19-070"] }],
+      },
+      1: { battleArea: [{ card: "BT1-030", dp: 15000, suspended: true, as: "defender" }] },
+    },
+    { autoAcceptOptional: true, autoSelectCards: true },
+  );
+  await s.ready();
+  expect(
+    s.engine.applyIntent(0, {
+      type: "attack",
+      attackerPermanentId: s.perm("millennium").permanentId,
+      target: { kind: "permanent", permanentId: s.perm("defender").permanentId },
+    }),
+  ).toEqual({ ok: true });
+  await settle(
+    () =>
+      s.events.some(
+        (e) =>
+          e.kind === "effectResolved" &&
+          e.sourceCardId === "BT18-019" &&
+          (e.timing === "OnDeletion" || e.timing === "OnDestroyedAnyone"),
+      ) && !s.state.pendingDecision,
+  );
+  const revived = s.state.players[0]!.battleArea.find(({ topCard }) => topCard.cardId === "BT18-019");
+  expect(revived).toBeDefined();
+  expect(revived!.stack).toHaveLength(0);
+  expect(
+    s.state.players[0]!.deck.slice(-2)
+      .map(({ cardId }) => cardId)
+      .sort(),
+  ).toEqual(["BT18-073", "BT19-070"]);
+});

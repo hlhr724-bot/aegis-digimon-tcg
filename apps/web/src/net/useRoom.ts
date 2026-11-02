@@ -1,7 +1,16 @@
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
+import { SPECTATOR_ACCESS_REVOKED_CLOSE_CODE } from "@aegis/shared/protocol/spectatorAccessRevokedCloseCode";
+import { GUEST_DECLINED_CLOSE_CODE, HOST_LEFT_CLOSE_CODE } from "@aegis/shared/protocol/closeCodes";
+import { SEAT_TRANSFERRED_CLOSE_CODE } from "@aegis/shared/protocol/seatTransferredCloseCode";
+import { ClientErrorKind } from "@aegis/shared/clientErrors/ClientErrorKind";
+import { ConnectionErrorCode } from "@aegis/shared/protocol/ConnectionErrorCode";
+import { getConnectionErrorCode } from "@aegis/shared/protocol/getConnectionErrorCode";
+import { watchRoomMessageErrors } from "@/net/watchRoomMessageErrors";
 import { resetRoomState } from "@/net/resetRoomState";
 import { ROLLBACK_RESET_CHANNEL } from "@aegis/shared/protocol/RollbackKind";
 import { CONNECTION_REPORT_CHANNEL, type ConnectionReport } from "@aegis/shared/protocol/ConnectionReport";
 
+import { OPPONENT_DECK_CHANNEL } from "@aegis/shared/decks/OPPONENT_DECK_CHANNEL";
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { spectate } from "./client";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -41,7 +50,7 @@ import {
   saveReconnectSession,
   type ReconnectSession,
 } from "./reconnectSession";
-import { ResumeCancelledError, resumeSeat } from "./resumeSeat";
+import { ResumeCancelledError, SeatLostError, resumeSeat } from "./resumeSeat";
 import { watchRoomLiveness } from "@/net/watchRoomLiveness";
 import type { AegisJoinOptions } from "./types";
 import { keepLocalReplay } from "../replays/local";
@@ -54,7 +63,15 @@ type ConnectionDrop = Pick<ConnectionReport, "closeCode" | "hiddenAtDrop" | "onl
 export type ConnectionStatus = "connecting" | "connected" | "reconnecting" | "error" | "closed";
 
 const WS_NORMAL_CLOSURE = 1000;
-const FINAL_CLOSE_CODES = new Set([WS_NORMAL_CLOSURE, MATCH_EXPIRED_CLOSE_CODE, MESSAGE_FLOOD_CLOSE_CODE]);
+const FINAL_CLOSE_CODES = new Set([
+  WS_NORMAL_CLOSURE,
+  MATCH_EXPIRED_CLOSE_CODE,
+  MESSAGE_FLOOD_CLOSE_CODE,
+  SPECTATOR_ACCESS_REVOKED_CLOSE_CODE,
+  GUEST_DECLINED_CLOSE_CODE,
+  HOST_LEFT_CLOSE_CODE,
+  SEAT_TRANSFERRED_CLOSE_CODE,
+]);
 /** Grace runs from the drop, not the join, so a live seat keeps its saved session fresh. */
 const SESSION_HEARTBEAT_MS = 5_000;
 
@@ -76,6 +93,8 @@ export interface DecisionSyncState {
   decision: DecisionRequest | undefined;
   confirmedDecisionId: string | undefined;
 }
+
+const emptyDecisionSync: DecisionSyncState = { decision: undefined, confirmedDecisionId: undefined };
 
 export function acknowledgeDecisionResponse({
   current,
@@ -113,6 +132,7 @@ export function reconcileDecisionPatch({
 }
 
 export interface UseRoomResult {
+  rollbackCount: number;
   room: AegisRoom | undefined;
   status: ConnectionStatus;
   state: GameState | undefined;
@@ -136,6 +156,7 @@ export interface UseRoomResult {
   seriesSeat: Omit<SeriesGameTicket, "roomId"> | undefined;
   replayDownload?: ReplayDownloadMessage;
   usedDeck?: UsedDeck;
+  opponentDeck?: UsedDeck;
 }
 
 /** Where the next game of a series is and how this player takes their seat in it. */
@@ -149,12 +170,14 @@ export type MatchMode = "casual" | "bot" | "private_host" | "private_guest" | "s
 
 export interface MatchConfig {
   mode: MatchMode;
+  spectatorFriendId?: string;
   /** The code to join as a guest, or to reopen as the host after a finished private game. */
   roomCode?: string;
   /** A guest back in a private room waits here until the host has reopened it. */
   waitForHost?: boolean;
   /** The `series` mode's seat in a later game of a best-of-three. */
   seriesGame?: SeriesGameTicket;
+  tournamentMatch?: TournamentSpectateTarget;
 }
 
 const HOST_REOPEN_POLL_MS = 2000;
@@ -184,11 +207,19 @@ function connectRoom(
   options: AegisJoinOptions,
   match: MatchConfig | undefined,
   isCancelled: () => boolean,
+  signal?: AbortSignal,
 ): Promise<AegisRoom> {
   switch (match?.mode) {
     case "spectator":
+      if (match.tournamentMatch) {
+        return spectate(match.tournamentMatch);
+      }
       if (!match.roomCode) throw new Error("roomCode required for spectator");
-      return spectate({ roomCode: match.roomCode, displayName: options.displayName });
+      return spectate({
+        roomCode: match.roomCode,
+        displayName: options.displayName,
+        accountId: match.spectatorFriendId,
+      });
     case "bot":
       return createBot(options);
     case "private_host":
@@ -204,7 +235,7 @@ function connectRoom(
       if (match.waitForHost) return joinWhenHostReopens(match.roomCode, options, isCancelled);
       return joinPrivateByCode(match.roomCode, options);
     default:
-      return joinOrCreate(options);
+      return joinOrCreate(options, signal);
   }
 }
 
@@ -220,11 +251,12 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
   const [snapshots, setSnapshots] = useState<readonly StateSnapshot[]>([]);
   const snapshotsRef = useRef<readonly StateSnapshot[]>([]);
   const [events, setEvents] = useState<SequencedServerEvent[]>([]);
+  const [rollbackCount, setRollbackCount] = useState(0);
   const [inbox, setInbox] = useState<BatchInbox>(emptyBatchInbox);
-  const [decision, setDecision] = useState<DecisionRequest>();
-  const confirmedDecisionIdRef = useRef<string | undefined>(undefined);
+  const [decisionSync, setDecisionSync] = useState<DecisionSyncState>(emptyDecisionSync);
   const answeredDecisionsRef = useRef(new Map<string, DecisionRequest>());
   const [error, setError] = useState<string>();
+  const [opponentDeck, setOpponentDeck] = useState<UsedDeck>();
   const [usedDeck, setUsedDeck] = useState<UsedDeck>();
   const [replayDownload, setReplayDownload] = useState<ReplayDownloadMessage>();
   const [sessionId, setSessionId] = useState<string>();
@@ -238,15 +270,18 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
   useEffect(() => {
     if (disabled) return;
     let cancelled = false;
-    confirmedDecisionIdRef.current = undefined;
     answeredDecisionsRef.current.clear();
-    setDecision(undefined);
+    setDecisionSync(emptyDecisionSync);
     setUsedDeck(undefined);
+    setOpponentDeck(undefined);
 
+    const queueAbort = new AbortController();
     let stopHeartbeat = () => {};
     let stopLiveness = () => {};
+    let stopMessageRecovery = () => {};
 
     const bindRoom = (room: AegisRoom) => {
+      setError(undefined);
       // attemptReconnect owns recovery; the SDK's own reconnection would race it for the seat.
       room.reconnection.enabled = false;
       answeredDecisionsRef.current.clear();
@@ -273,7 +308,13 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       stopHeartbeat = () => clearInterval(heartbeat);
       stopLiveness();
       stopLiveness = watchRoomLiveness({ room });
+      stopMessageRecovery();
+      stopMessageRecovery = watchRoomMessageErrors({
+        room,
+        report: (error) => clientErrorReporter.capture({ kind: ClientErrorKind.ERROR.value, error }),
+      });
 
+      room.onMessage<UsedDeck>(OPPONENT_DECK_CHANNEL, (message) => setOpponentDeck(structuredClone(message)));
       room.onMessage<UsedDeck>(USED_DECK_CHANNEL, (message) => setUsedDeck(structuredClone(message)));
       if (!options.spectator) room.send(USED_DECK_CHANNEL, {});
       room.onMessage<ReplayDownloadMessage>(REPLAY_CHANNEL, (message) => {
@@ -284,9 +325,12 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       const acceptState = (next: GameState) => {
         stateRef.current = next;
         if (next.gameOver) {
-          if (!options.spectator && !replayRequested) {
+          if (!replayRequested) {
             replayRequested = true;
             room.send(REPLAY_CHANNEL, {});
+            if (!options.spectator) {
+              room.send(OPPONENT_DECK_CHANNEL, {});
+            }
           }
           gameOver = true;
           stopHeartbeat();
@@ -299,32 +343,26 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         }
         if (next.roomCode) setRoomCode(next.roomCode);
         const pending = next.pendingDecision;
-        setDecision((current) => {
-          const reconciled = reconcileDecisionPatch({
-            current: {
-              decision: current,
-              confirmedDecisionId: confirmedDecisionIdRef.current,
-            },
-            pendingDecisionId: pending?.decisionId,
-          });
-          confirmedDecisionIdRef.current = reconciled.confirmedDecisionId;
+        const pendingMulligan =
+          pending?.kind === "mulligan" && next.players[pending.seat]?.sessionId === room.sessionId
+            ? { decisionId: pending.decisionId, seat: pending.seat, promptText: pending.promptText }
+            : undefined;
+        const pendingDecisionId = pending?.decisionId;
+        setDecisionSync((current) => {
+          const reconciled = reconcileDecisionPatch({ current, pendingDecisionId });
           // A later series game can already be waiting for mulligan before this socket
           // binds its message handler. The synchronized request contains all its inputs.
           if (
             !reconciled.decision &&
-            pending?.kind === "mulligan" &&
-            next.players[pending.seat]?.sessionId === room.sessionId &&
-            !answeredDecisionsRef.current.has(pending.decisionId)
+            pendingMulligan &&
+            !answeredDecisionsRef.current.has(pendingMulligan.decisionId)
           ) {
-            confirmedDecisionIdRef.current = pending.decisionId;
             return {
-              decisionId: pending.decisionId,
-              seat: pending.seat,
-              kind: "mulligan",
-              promptText: pending.promptText,
+              decision: { ...pendingMulligan, kind: "mulligan" },
+              confirmedDecisionId: pendingMulligan.decisionId,
             };
           }
-          return reconciled.decision;
+          return reconciled;
         });
         setVersion((v) => v + 1);
         // Copied here, once per patch: `next` is the one live schema object, so an updater
@@ -341,9 +379,9 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         resetRoomState(room);
         clearPendingIntents();
         answeredDecisionsRef.current.clear();
-        confirmedDecisionIdRef.current = undefined;
-        setDecision(undefined);
+        setDecisionSync(emptyDecisionSync);
         setEvents([]);
+        setRollbackCount((count) => count + 1);
         setInbox(emptyBatchInbox);
         snapshotsRef.current = [];
         setSnapshots([]);
@@ -353,10 +391,11 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
           const rejected = answeredDecisionsRef.current.get(event.decisionId);
           answeredDecisionsRef.current.delete(event.decisionId);
           if (rejected && stateRef.current?.pendingDecision?.decisionId === rejected.decisionId) {
-            setDecision((current) => {
-              if (current && current.decisionId !== rejected.decisionId) return current;
-              confirmedDecisionIdRef.current = rejected.decisionId;
-              return rejected;
+            setDecisionSync((current) => {
+              if (current.decision && current.decision.decisionId !== rejected.decisionId) {
+                return current;
+              }
+              return { decision: rejected, confirmedDecisionId: rejected.decisionId };
             });
           }
         }
@@ -369,18 +408,22 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       });
       room.onMessage<DecisionRequest>(DECISION_CHANNEL, (req) => {
         if (answeredDecisionsRef.current.has(req.decisionId)) return;
-        confirmedDecisionIdRef.current =
-          stateRef.current?.pendingDecision?.decisionId === req.decisionId ? req.decisionId : undefined;
-        setDecision(req);
+        const synchronized = stateRef.current?.pendingDecision?.decisionId === req.decisionId;
+        setDecisionSync({ decision: req, confirmedDecisionId: synchronized ? req.decisionId : undefined });
       });
-      room.onError((code, message) => {
+      room.onError((code) => {
         setStatus("error");
-        setError(`${code}: ${message ?? "room error"}`);
+        setError(getConnectionErrorCode({ code }) ?? ConnectionErrorCode.SERVER_UNAVAILABLE.value);
       });
       room.onLeave((code) => {
         stopHeartbeat();
         stopLiveness();
         if (cancelled) return;
+        const connectionError = getConnectionErrorCode({ code });
+        if (connectionError === ConnectionErrorCode.MESSAGE_TOO_LARGE.value) {
+          clearPendingIntents();
+        }
+        setError(connectionError ?? ConnectionErrorCode.CONNECTION_LOST.value);
         if (FINAL_CLOSE_CODES.has(code)) {
           clearReconnectSession();
           setStatus("closed");
@@ -427,7 +470,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         clearPendingIntents();
         clearReconnectSession();
         setStatus("closed");
-        setError(error instanceof Error ? error.message : String(error));
+        setError(ConnectionErrorCode.RECONNECT_FAILED.value);
         return;
       }
       if (cancelled) {
@@ -458,7 +501,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
         try {
           return await resumeSeat({
             resume: () => resumeReconnectSession(saved),
-            deadline: saved.savedAt + RECONNECT_GRACE_MS,
+            deadline: Date.now() + RECONNECT_GRACE_MS,
             isCancelled: () => cancelled,
             waitUntilVisible,
           });
@@ -469,7 +512,7 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       }
       if (cancelled) throw new Error("cancelled");
       setStatus("connecting");
-      return connectRoom(options, match, () => cancelled);
+      return connectRoom(options, match, () => cancelled, queueAbort.signal);
     };
 
     resumeOrConnect()
@@ -484,11 +527,18 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
       .catch((err: unknown) => {
         if (cancelled) return;
         setStatus("error");
-        setError(err instanceof Error ? err.message : String(err));
+        const code = typeof err === "object" && err !== null && "code" in err ? err.code : undefined;
+        if (err instanceof SeatLostError) {
+          setError(ConnectionErrorCode.RECONNECT_FAILED.value);
+        } else {
+          setError(getConnectionErrorCode({ code }) ?? (err instanceof Error ? err.message : String(err)));
+        }
       });
 
     return () => {
       cancelled = true;
+      queueAbort.abort();
+      stopMessageRecovery();
       stopHeartbeat();
       stopLiveness();
       clientErrorReporter.setMatchContext(undefined);
@@ -507,14 +557,11 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
   }, [disabled]);
 
   const acknowledgeDecision = useCallback((decisionId: string) => {
-    setDecision((current) => {
-      if (current?.decisionId === decisionId) answeredDecisionsRef.current.set(decisionId, current);
-      const acknowledged = acknowledgeDecisionResponse({
-        current: { decision: current, confirmedDecisionId: confirmedDecisionIdRef.current },
-        decisionId,
-      });
-      confirmedDecisionIdRef.current = acknowledged.confirmedDecisionId;
-      return acknowledged.decision;
+    setDecisionSync((current) => {
+      if (current.decision?.decisionId === decisionId) {
+        answeredDecisionsRef.current.set(decisionId, current.decision);
+      }
+      return acknowledgeDecisionResponse({ current, decisionId });
     });
   }, []);
 
@@ -524,7 +571,8 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     state: stateRef.current,
     events,
     batches: inbox.batches,
-    decision,
+    rollbackCount,
+    decision: decisionSync.decision,
     acknowledgeDecision,
     error,
     sessionId,
@@ -534,5 +582,6 @@ export function useRoom(options: AegisJoinOptions, match?: MatchConfig, disabled
     seriesSeat,
     replayDownload,
     usedDeck,
+    opponentDeck,
   };
 }

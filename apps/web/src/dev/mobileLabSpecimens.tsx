@@ -41,7 +41,7 @@ import {
 } from "../game/BoardDecisionRail";
 import { NarrationStack } from "../game/NarrationStack";
 import { AttackAnnouncementBanner, SidePanelStack } from "../game/SidePanelStack";
-import { PlayLogSidebar } from "../game/PlayLogSidebar";
+import { PlayLogSidebar } from "@/game/log/PlayLogSidebar";
 import { SecurityClash } from "../game/SecurityClashView";
 import { ZoneShowcase } from "../game/ZoneShowcase";
 import { HandCardPreview } from "../game/screen/layout/HandCardPreview";
@@ -60,7 +60,7 @@ import { createArenaDemoState } from "./ArenaDemo";
 import { BATTLE_CLASH, CARDS, noop } from "./boardShowcaseFixtures";
 import {
   FULL_HAND,
-  LAB_LOG,
+  LAB_LOG_TURNS,
   NOTICE_SAMPLES,
   ORDER_CANDIDATES,
   PHONE_HAND,
@@ -832,7 +832,15 @@ export const SPECIMENS: readonly Specimen[] = [
     group: "Overlays",
     title: "Play log drawer",
     surface: "board",
-    render: () => <PlayLogSidebar log={LAB_LOG} onClose={noop} onOpenCard={noop} />,
+    render: () => (
+      <PlayLogSidebar
+        turns={LAB_LOG_TURNS}
+        playerNames={{ 0: "Alice", 1: "Bob" }}
+        viewerSeat={0}
+        onClose={noop}
+        onOpenCard={noop}
+      />
+    ),
   },
   {
     id: "mulligan",

@@ -1,3 +1,4 @@
+import { HandTrashFlight } from "@/game/HandTrashFlight";
 /* The free-floating cues the board plays over itself: a deleted card breaking apart
    where it stood, the small burst a drawn card lands with, and the cards flying
    from a deck to a hand. All three are positioned in board coordinates, which is why
@@ -85,7 +86,9 @@ export function BoardBurstLayer({
       ))}
 
       {drawFlights.map((flight) =>
-        flight.handReturn ? (
+        flight.handTrash ? (
+          <HandTrashFlight key={flight.key} flight={flight} />
+        ) : flight.handReturn ? (
           <HandReturnFlight key={flight.key} flight={flight} />
         ) : flight.deckReturn ? (
           <DeckReturnFlight key={flight.key} flight={flight} />

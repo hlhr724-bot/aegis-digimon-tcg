@@ -36,8 +36,7 @@ const compiled: CompiledCard = {
           optional: true,
         },
         {
-          effectTextPart:
-            "Then, if [Gankoomon] is in this Digimon's digivolution cards or you have a Digimon with [Sistermon] in its name in play, until the end of your opponent's turn, all of your Digimon get +2000 DP and your opponent's effects can't return them to hands or decks or reduce their DP.",
+          effectTextPart: "All of your Digimon get +2000 DP.",
           kind: "ModifyDP",
           target: {
             filter: {
@@ -85,6 +84,8 @@ const compiled: CompiledCard = {
         },
         {
           kind: "GrantStatic",
+          effectTextPart:
+            "Your opponent's effects can't return any of your Digimon to hands or decks or reduce their DP.",
           target: {
             filter: {
               controller: "mine",

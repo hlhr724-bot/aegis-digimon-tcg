@@ -5,11 +5,11 @@ import type { ClientErrorAlerts } from "#api/clientErrors/createClientErrorAlert
 import { parseClientErrorReport } from "#api/clientErrors/parseClientErrorReport";
 import { tokenBucketLimiter, type TokenBucketOptions } from "#api/http/rateLimit";
 import { log } from "#api/logger";
+import { GAME_MESSAGE_LIMITS } from "@aegis/shared/protocol/gameMessageLimits";
 
 export const CLIENT_ERROR_EVENT = "client_error";
 
 const CLIENT_ERROR_RATE_LIMIT: TokenBucketOptions = { capacity: 20, refillMs: 3000 };
-const MAX_CLIENT_ERROR_BODY = "32kb";
 
 export type ClientErrorLogRecord = ClientErrorReport & {
   accountId?: string;
@@ -68,7 +68,7 @@ export function installClientErrorRoutes({
 
   app.post(
     "/bug-reports/client-errors",
-    express.text({ type: "text/plain", limit: MAX_CLIENT_ERROR_BODY }),
+    express.text({ type: "text/plain", limit: GAME_MESSAGE_LIMITS.maxMessageBytes }),
     (req, res, next) => {
       accept(req, res).catch(next);
     },

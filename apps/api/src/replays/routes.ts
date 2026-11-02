@@ -1,3 +1,7 @@
+import express from "express";
+import { MAX_REPLAY_BYTES } from "@aegis/shared/replays";
+import { ReplayVisibility } from "@aegis/shared/replays/ReplayVisibility";
+import { isDeckFormat } from "@aegis/shared/deckFormat";
 import type { Express, Request, Response, NextFunction } from "express";
 import type { AuthSession } from "../accounts/AccountStore.js";
 import { tokenBucketLimiter } from "../http/rateLimit.js";
@@ -9,6 +13,10 @@ const FAILURE_STATUS: Record<ReplayLibraryError["code"], number> = {
   drive_unavailable: 502,
   too_large: 502,
 };
+
+function getQueryText(value: unknown): string | undefined {
+  return typeof value === "string" && value ? value : undefined;
+}
 
 function fail(error: unknown, res: Response, next: NextFunction): void {
   if (error instanceof ReplayLibraryError) res.status(FAILURE_STATUS[error.code]).json({ error: error.code });
@@ -24,6 +32,7 @@ export function installReplayRoutes({
   library: ReplayLibrary;
   session: (req: Request) => Promise<AuthSession | undefined>;
 }): void {
+  const friendFiles = library.friendFiles;
   const limit = tokenBucketLimiter({ capacity: 30, refillMs: 2000 });
   const route =
     (work: (req: Request, res: Response, owner: string, id: string) => Promise<void>, withId = true) =>
@@ -77,7 +86,7 @@ export function installReplayRoutes({
     "/account/replays/:id/visibility",
     route(async (req, res, owner, id) => {
       const visibility = req.body?.visibility;
-      if (visibility !== "private" && visibility !== "public") {
+      if (!Object.values(ReplayVisibility).some((entry) => entry.value === visibility)) {
         res.status(400).json({ error: "invalid_visibility" });
         return;
       }
@@ -85,12 +94,37 @@ export function installReplayRoutes({
         res.status(503).json({ error: "sharing_disabled" });
         return;
       }
-      const replay = await library.setVisibility(owner, id, visibility);
+      const replay = await library.setVisibility(
+        owner,
+        id,
+        visibility as import("@aegis/shared/replays/ReplayVisibility").ReplayVisibility,
+      );
       if (!replay) {
         res.sendStatus(404);
         return;
       }
       res.json(replay);
+    }),
+  );
+  app.put(
+    "/account/replays/:id/friends-file",
+    async (req, res, next) => {
+      if (!(await session(req))) {
+        res.status(401).json({ error: "authentication_required" });
+        return;
+      }
+      next();
+    },
+    express.raw({ type: "application/octet-stream", limit: MAX_REPLAY_BYTES }),
+    route(async (req, res, owner, id) => {
+      if (
+        !Buffer.isBuffer(req.body) ||
+        !(await friendFiles.save({ accountId: owner, replayId: id, archive: req.body }))
+      ) {
+        res.status(400).json({ error: "invalid_archive_or_limit" });
+        return;
+      }
+      res.json(await library.accessible(owner, id));
     }),
   );
   app.delete(
@@ -102,7 +136,7 @@ export function installReplayRoutes({
   );
   const publicLimit = tokenBucketLimiter({ capacity: 30, refillMs: 2000 });
   const publicRoute =
-    (work: (req: Request, res: Response, id: string) => Promise<void>) =>
+    (work: (req: Request, res: Response, id: string) => Promise<void>, withId = true) =>
     async (req: Request, res: Response, next: NextFunction) => {
       res.setHeader("Cache-Control", "private, no-store");
       res.setHeader("X-Robots-Tag", "noindex, nofollow");
@@ -113,7 +147,7 @@ export function installReplayRoutes({
           return;
         }
         const id = String(req.params.id ?? "");
-        if (!UUID.test(id)) {
+        if (withId && !UUID.test(id)) {
           res.sendStatus(404);
           return;
         }
@@ -122,6 +156,25 @@ export function installReplayRoutes({
         fail(error, res, next);
       }
     };
+  app.get(
+    "/replays/public",
+    publicRoute(async (req, res) => {
+      const format = getQueryText(req.query.format);
+      if (format !== undefined && !isDeckFormat(format)) {
+        res.status(400).json({ error: "invalid_format" });
+        return;
+      }
+      const requested = Number(getQueryText(req.query.limit));
+      res.json(
+        await library.listPublic({
+          viewerId: (await session(req))?.account.id,
+          cursor: getQueryText(req.query.cursor),
+          limit: Number.isFinite(requested) ? requested : undefined,
+          format,
+        }),
+      );
+    }, false),
+  );
   app.get(
     "/replays/:id",
     publicRoute(async (req, res, id) => {
@@ -135,8 +188,17 @@ export function installReplayRoutes({
   );
   app.get(
     "/replays/:id/file",
-    publicRoute(async (_req, res, id) => {
-      const bytes = await library.publicFile(id);
+    publicRoute(async (req, res, id) => {
+      const viewerId = (await session(req))?.account.id;
+      const replay = await library.accessible(viewerId, id);
+      if (!replay) {
+        res.sendStatus(404);
+        return;
+      }
+      const bytes =
+        replay.visibility === ReplayVisibility.FRIENDS.value
+          ? await friendFiles.read(id)
+          : await library.publicFile(id);
       if (!bytes) {
         res.sendStatus(404);
         return;

@@ -38,6 +38,38 @@ describe("training combat context", () => {
 });
 
 describe("asynchronous training choices", () => {
+  it("skips activations that return to the same visible main state and retries after progress", async () => {
+    const setup = setupEngine({});
+    await setup.ready();
+    const policy = createAsyncTrainingPolicy(
+      setup.engine,
+      0,
+      async () => 0,
+      undefined,
+      () => [
+        {
+          intent: { type: "activateEffect", sourceInstanceId: "source", effectKey: "optional-play" },
+          label: "Optional play",
+        },
+        { intent: { type: "endPhase" }, label: "Pass" },
+      ],
+    );
+    const view = buildBotView(setup.state, 0)!;
+    expect((await policy.chooseMainAction(view)).type).toBe("activateEffect");
+    await policy.answerDecision(view, {
+      decisionId: "optional-play",
+      seat: 0,
+      kind: "selectCards",
+      promptText: "Choose",
+      options: { candidateInstanceIds: [], min: 0, max: 1 },
+    });
+    expect((await policy.chooseMainAction(view)).type).toBe("endPhase");
+    setup.state.memory++;
+    expect((await policy.chooseMainAction(buildBotView(setup.state, 0)!)).type).toBe("activateEffect");
+    setup.state.turnCount++;
+    expect((await policy.chooseMainAction(buildBotView(setup.state, 0)!)).type).toBe("activateEffect");
+  });
+
   it.each([
     "mulligan",
     "optional",

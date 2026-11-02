@@ -45,6 +45,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Delete 1 of your opponent's Digimon with a level as high or higher as the number of cards in your hand.",
           kind: "Delete",
           target: {
             filter: {

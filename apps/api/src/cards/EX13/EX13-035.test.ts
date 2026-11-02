@@ -105,7 +105,6 @@ describe("EX13-035 KingEtemon", () => {
             filter: {
               zone: "trash",
               controller: "mine",
-              kind: ["Digimon"],
               nameOrTrait: nameUnion(["Chuumon", "Sukamon", "Etemon"]),
             },
             count: 10,
@@ -209,40 +208,45 @@ describe("EX13-035 KingEtemon", () => {
     assertNoLoudGap(s);
   });
 
-  it("Q7315: chooses and pays the ten-card return before playing with the raised maximum", async () => {
-    const s = setupEngine(
-      {
-        0: {
-          hand: [
-            { card: cardId, as: "king" },
-            { card: ETEMON_7, as: "overBaseCost" },
-          ],
-          trash: Array.from({ length: 10 }, (_, n) => ({ card: CHUUMON_3, as: `fodder${n}` })),
-          deck: [{ card: SENTINEL, as: "deckTop" }],
-          security: [SENTINEL],
+  it.each([CHUUMON_3, "BT14-097"])(
+    "returns ten named cards including %s before playing with the raised maximum",
+    async (lastFodder) => {
+      const s = setupEngine(
+        {
+          0: {
+            hand: [
+              { card: cardId, as: "king" },
+              { card: ETEMON_7, as: "overBaseCost" },
+            ],
+            trash: Array.from({ length: 10 }, (_, n) => ({ card: n === 9 ? lastFodder : CHUUMON_3, as: `fodder${n}` })),
+            deck: [{ card: SENTINEL, as: "deckTop" }],
+            security: [SENTINEL],
+          },
+          1: { deck: [SENTINEL, SENTINEL], security: [SENTINEL] },
         },
-        1: { deck: [SENTINEL, SENTINEL], security: [SENTINEL] },
-      },
-      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true, preferOptionIndex: 1 },
-    );
-    s.state.memory = 10;
-    await s.ready();
-    const fodderIds = Array.from({ length: 10 }, (_, n) => s.inst(`fodder${n}`).instanceId);
+        { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true, preferOptionIndex: 1 },
+      );
+      s.state.memory = 10;
+      await s.ready();
+      const fodderIds = Array.from({ length: 10 }, (_, n) => s.inst(`fodder${n}`).instanceId);
 
-    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("king").instanceId })).toEqual({ ok: true });
-    await settle(() => s.state.players[0]!.battleArea.length === 2);
-    await settle(() => s.state.pendingDecision === undefined);
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("king").instanceId })).toEqual({
+        ok: true,
+      });
+      await settle(() => s.state.players[0]!.battleArea.length === 2);
+      await settle(() => s.state.pendingDecision === undefined);
 
-    expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId).sort()).toEqual(
-      [cardId, ETEMON_7].sort(),
-    );
-    expect(s.state.memory).toBe(-3);
-    expect(s.state.players[0]!.trash).toHaveLength(0);
-    const deck = s.state.players[0]!.deck.map(({ instanceId }) => instanceId);
-    expect(deck[0]).toBe(s.inst("deckTop").instanceId);
-    expect(deck.slice(1).sort()).toEqual([...fodderIds].sort());
-    assertNoLoudGap(s);
-  });
+      expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId).sort()).toEqual(
+        [cardId, ETEMON_7].sort(),
+      );
+      expect(s.state.memory).toBe(-3);
+      expect(s.state.players[0]!.trash).toHaveLength(0);
+      const deck = s.state.players[0]!.deck.map(({ instanceId }) => instanceId);
+      expect(deck[0]).toBe(s.inst("deckTop").instanceId);
+      expect(deck.slice(1).sort()).toEqual([...fodderIds].sort());
+      assertNoLoudGap(s);
+    },
+  );
 
   it("Q7316: never offers the raised maximum with only nine such cards in the trash", async () => {
     const s = setupEngine(

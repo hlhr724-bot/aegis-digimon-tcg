@@ -34,6 +34,7 @@ export type DecisionView = {
   decisionDifferentColors: boolean;
   decisionDistinctCardIds: boolean;
   decisionDistinctNames: boolean;
+  decisionAllowedTargetCombinations: readonly (readonly string[])[] | undefined;
   /** The combined printed play-cost cap sent by the engine. */
   decisionMaxTotalPlayCost: number | undefined;
   /** The summed-DP cap the engine enforces on this selection, if any. */
@@ -130,6 +131,7 @@ export function decisionViewFor({
     decisionDifferentColors: viewerDecision?.options?.differentColors === true,
     decisionDistinctCardIds: viewerDecision?.options?.distinctCardIds === true,
     decisionDistinctNames: viewerDecision?.options?.distinctNames === true,
+    decisionAllowedTargetCombinations: viewerDecision?.options?.allowedTargetCombinations,
     decisionMaxTotalPlayCost: viewerDecision?.options?.maxTotalPlayCost,
     decisionMaxTotalDP: viewerDecision?.options?.maxTotalDP,
     decisionCandidateDP: new Map(

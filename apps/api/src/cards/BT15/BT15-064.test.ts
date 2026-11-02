@@ -1,11 +1,34 @@
 import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
-import { settle, setupEngine } from "../../engine/testkit/harness.js";
+import { drainMicrotasks, settle, setupEngine } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
 import "../index.js";
 import { compiled } from "./BT15-064.js";
 
 describe("BT15-064", () => {
+  it.each([
+    ["BT14-074", false],
+    ["BT14-087", true],
+  ])("requires a SoC Tamer rather than a SoC Digimon for attack deletion: %s", async (source, allowed) => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "BT15-064", as: "host", under: [{ card: source, faceUp: true }] }] },
+        1: { battleArea: [{ card: "BT1-009", as: "target" }], security: ["BT1-009", "BT1-009"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("host").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await drainMicrotasks();
+    expect(s.state.players[1]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT1-009")).toBe(!allowed);
+  });
+
   it("reveals three to place one Machine/Cyborg/SoC under itself and add another to hand", () => {
     expect(compiled.effects?.[0]).toMatchObject({
       trigger: "OnPlay",

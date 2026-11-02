@@ -117,6 +117,14 @@ export interface PermanentChrome {
 
 /** A play the viewer asked to confirm before it is sent, and what it would send. */
 export type PendingActionConfirmation =
+  | {
+      kind: "negamon";
+      instanceId: string;
+      cardId: string;
+      sourceInstanceId: string;
+      effectKey: string;
+      confirmDrop: boolean;
+    }
   | { kind: DragKind.Play; instanceId: string; cardId: string }
   | { kind: "digivolve"; instanceId: string; cardId: string; permanentId: string; baseCardId: string }
   | {

@@ -38,9 +38,9 @@ scenario("assembly", () => {
   });
 
   it("cancels without consuming trash then assembles the exact material for the reduced cost", async () => {
-    // Seed 22: Yuuki, Musyamon, two Darumamon and Biyomon. Yuuki puts the
+    // Seed 260: Yuuki, Musyamon, two Darumamon and Biyomon. Yuuki puts the
     // material in trash through an ordinary paid effect before Assembly is offered.
-    const { owner, opponent } = await connectScenario(server, DECK, 22);
+    const { owner, opponent } = await connectScenario(server, DECK, 260);
     await enterMain(opponent);
     const player = owner.state.players[0]!;
     const materialId = player.hand.find((card) => card.cardId === "BT26-013")!.instanceId;
@@ -105,7 +105,11 @@ scenario("assembly", () => {
       .closest('[data-drop="perm-you"]') as HTMLElement;
     expect(within(result).getByText("×1")).toBeTruthy();
     tap(result);
-    expect(await screen.findByRole("button", { name: /^open musyamon$/i })).toBeTruthy();
+    expect(
+      within(await screen.findByRole("group", { name: /^\d+ sources?$/i })).getByRole("button", {
+        name: /^musyamon$/i,
+      }),
+    ).toBeTruthy();
     await opponent.leave();
   }, 60_000);
 });

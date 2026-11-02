@@ -23,7 +23,7 @@ const fixture: ScenarioFixture = {
           top: { card: "BT26-033", as: "kotemon-piercing-0-field-0-card" },
           dp: 13000,
           enterFieldTurnCount: -1,
-          placedByEffect: true,
+          placedByEffect: false,
         },
       ],
       breeding: {

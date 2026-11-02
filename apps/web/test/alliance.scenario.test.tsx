@@ -149,7 +149,9 @@ scenario("alliance", () => {
     await screen.findByRole("button", { name: /^pass$/i }, { timeout: 10_000 });
     const alliancePrompt = screen.getByRole("region", { name: "Alliance window" });
     expect(alliancePrompt.getAttribute("data-prompt-surface")).toBe("left");
-    const agumonAlly = within(yourBattleArea()).getByRole("button", { name: /^agumon$/i });
+    const agumonAlly = within(yourBattleArea()).getByRole("button", {
+      name: /^agumon, \(BT1-010\), Field reference #/i,
+    });
     expect(agumonAlly.classList.contains("game-permanent--candidate")).toBe(true);
     tap(agumonAlly);
     const allianceConfirmation = await screen.findByRole("dialog", { name: "Confirm Alliance" });

@@ -1,3 +1,5 @@
+import { runtimeCompiledNodeRegistry } from "#api/engine/effects/interpreter/snapshot/runtimeCompiledNodeRegistry";
+import { CompiledRootKind } from "#api/engine/effects/interpreter/snapshot/CompiledRootKind";
 // The runtime registry of compiled card records.
 
 import type { EffectModule } from "../EffectModule.js";
@@ -7,12 +9,45 @@ import type { CompiledCard } from "@aegis/shared";
 // Per-card modules are the runtime source of truth. Hand-written overrides can intentionally
 // differ from the generated shared aggregate, so nested actions (for example ActivateMain)
 // must resolve the same CompiledCard that was used to register the module's effects.
-export const registeredCompiledCards = new Map<string, CompiledCard>();
+class CompiledCardRegistry extends Map<string, CompiledCard> {
+  #revision = 0;
+
+  get revision(): number {
+    return this.#revision;
+  }
+
+  override set(key: string, value: CompiledCard): this {
+    this.#revision++;
+    return super.set(key, value);
+  }
+
+  override delete(key: string): boolean {
+    const deleted = super.delete(key);
+    if (deleted) this.#revision++;
+    return deleted;
+  }
+
+  override clear(): void {
+    if (this.size > 0) this.#revision++;
+    super.clear();
+  }
+}
+
+export const registeredCompiledCards = new CompiledCardRegistry();
 
 export const registeredIrModules = new Map<string, EffectModule>();
 
 export function runtimeCompiledCard(cardId: string): CompiledCard | undefined {
-  return registeredCompiledCards.get(cardId) ?? getCompiledCard(cardId);
+  const compiled = registeredCompiledCards.get(cardId) ?? getCompiledCard(cardId);
+  if (compiled !== undefined) {
+    runtimeCompiledNodeRegistry.registerRoot({
+      cardId,
+      rootKey: CompiledRootKind.CATALOG.value,
+      root: compiled,
+      index: true,
+    });
+  }
+  return compiled;
 }
 
 /** Whether the runtime card module owns an inline compiled IR record. */

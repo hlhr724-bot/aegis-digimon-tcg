@@ -1,3 +1,7 @@
+import { getSingleHandActionCostBenefit } from "#api/engine/effects/interpreter/getSingleHandActionCostBenefit";
+import { getDecisionActionSummary } from "#api/engine/effects/interpreter/getDecisionActionSummary";
+import { getDecisionSelectionGoal } from "#api/engine/effects/interpreter/getDecisionSelectionGoal";
+import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
 // The per-kind dispatch for every IR action.
 
 import type { EffectContext } from "../../EffectContext.js";
@@ -21,9 +25,11 @@ import { canAttemptAttack, runCombatAction } from "./combat.js";
 import { runControlFlowAction } from "./controlFlow.js";
 import { runDigivolutionAction } from "./digivolution.js";
 import { canAttemptDigivolve, canAttemptDigivolveBeforeCost } from "./digivolve.js";
+import { canAttemptDnaDigivolve } from "#api/engine/effects/interpreter/actions/dna";
 import { runGrantStaticAction } from "./grantStatic.js";
 import { canReactivateOwnEffect, runMetaAction } from "./meta.js";
 import { DECLINE_MODAL_CHOICE_LABEL, declinableModalChoices, modalHasAvailableOption } from "./modal.js";
+import { canAttemptLink } from "./link.js";
 import { canAttemptPlaceUnder } from "./placeUnder.js";
 import { allowsOptionalProcessingCostWithoutTarget } from "../processingCondition.js";
 import { paysProcessingCostBeforeOptional } from "../paysProcessingCostBeforeOptional.js";
@@ -48,6 +54,8 @@ import { runStaticAction } from "./statics.js";
 import { CardKind, digiXrosRequirementFor } from "@aegis/shared";
 import type { Action, Cost, Target, ZoneRef } from "@aegis/shared";
 import { canDetachPermanentTop, isDetachTopAction } from "../targeting/detachTop.js";
+import { printedPassage } from "#api/engine/decisions/printedPassage";
+import type { DecisionApi } from "#api/engine/effects/context/decisions";
 
 function clearDeleteOutcome(ctx: EffectContext, action: Extract<Action, { kind: "Delete" }>): void {
   ctx.lastDeleteCount = 0;
@@ -208,6 +216,12 @@ function looseCostCanProduceDeleteTarget(
  * `abortOnDecline` is set — the caller should stop processing further actions.
  */
 export async function runAction(ctx: EffectContext, action: Action): Promise<boolean> {
+  const outerSingleHandCostBenefit = ctx.activeSingleHandCostBenefit;
+  ctx.activeSingleHandCostBenefit = getSingleHandActionCostBenefit({ action });
+  const outerDecisionSummary = ctx.activeDecisionSummary;
+  const outerDecisionSelectionGoal = ctx.activeDecisionSelectionGoal;
+  ctx.activeDecisionSummary = getDecisionActionSummary({ action });
+  ctx.activeDecisionSelectionGoal = getDecisionSelectionGoal({ action });
   // Display-only provenance: every decision this action raises carries what the
   // action is about to do to the permanents it offers, so the client badges a
   // picked target instead of reading its fate out of printed English. Restored
@@ -255,6 +269,9 @@ export async function runAction(ctx: EffectContext, action: Action): Promise<boo
   try {
     return await runActionInner(ctx, action);
   } finally {
+    ctx.activeSingleHandCostBenefit = outerSingleHandCostBenefit;
+    ctx.activeDecisionSummary = outerDecisionSummary;
+    ctx.activeDecisionSelectionGoal = outerDecisionSelectionGoal;
     ctx.pickingAcceptedOptional = outerPickingAcceptedOptional;
     ctx.selectingOptionalTarget = outerSelectingOptionalTarget;
     ctx.activeTargetFate = outerFate;
@@ -272,12 +289,6 @@ export async function runAction(ctx: EffectContext, action: Action): Promise<boo
   }
 }
 
-/**
- * Kinds whose single-card pick stays declinable after the player accepts their "you may".
- * Left out on purpose: Attack and RedirectAttack (the attack proceeds once accepted, BT11-092),
- * SelectBind (its pick can precede the yes/no), and kinds that ask their own question
- * (Replacement, UseOptionWithoutCost).
- */
 const PICK_DECLINABLE_AFTER_YES: ReadonlySet<Action["kind"]> = new Set([
   "PlayWithoutCost",
   "PlayFromZone",
@@ -295,6 +306,7 @@ const PICK_DECLINABLE_AFTER_YES: ReadonlySet<Action["kind"]> = new Set([
   "PlaceUnder",
   "Digivolve",
   "Link",
+  "SelectBind",
 ]);
 
 /**
@@ -309,6 +321,25 @@ function targetsOneCard(action: Action): boolean {
 
 /** A costless, independent one-card choice can ask its own "you may". */
 function optionalTargetAsksAction(ctx: EffectContext, action: Action): boolean {
+  if (action.kind === "Digivolve") {
+    return (
+      action.preserveOncePerTurnOnDecline === true &&
+      ctx.oncePerTurnActivationChosen !== true &&
+      action.optional === true &&
+      action.cost === undefined &&
+      action.additionalCost === undefined &&
+      !action.additionalCosts?.length &&
+      !action.costOptions?.length &&
+      action.abortOnDecline !== true &&
+      action.scaling === undefined &&
+      ctx.presetOptionalAnswer === undefined &&
+      !ctx.predecidedOptionalActions?.has(action) &&
+      action.target.count === 1 &&
+      action.target.countModifier === undefined &&
+      (action.target.isSelf === true || action.target.filter.isSelfRef === true) &&
+      action.target.targetBreeding !== true
+    );
+  }
   if (
     action.kind !== "Suspend" &&
     action.kind !== "Unsuspend" &&
@@ -362,6 +393,9 @@ function optionalTargetAsksAction(ctx: EffectContext, action: Action): boolean {
 }
 
 function markActivationChosen(ctx: EffectContext): void {
+  if (ctx.optionalActivationCancellation?.available === true) {
+    return;
+  }
   ctx.onActivationChosen?.();
   ctx.oncePerTurnActivationChosen = true;
   ctx.oncePerTurnActivationDeclined = false;
@@ -609,7 +643,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   if (
     action.kind === "Delete" &&
     looseCostDefinesDeleteTarget &&
-    action.allowCostWithoutTarget !== true &&
+    !allowsOptionalProcessingCostWithoutTarget(action) &&
     typeof payableActionCost !== "number" &&
     !looseCostCanProduceDeleteTarget(ctx, action, payableActionCost)
   ) {
@@ -726,6 +760,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   if (
     action.kind === "CostModifier" &&
     action.existingPermanent === true &&
+    !allowsOptionalProcessingCostWithoutTarget(action) &&
     (action.target === undefined || candidatePermanents(ctx, action.target).length === 0)
   ) {
     return unavailableAction(ctx, action, action.abortOnDecline === true);
@@ -734,6 +769,14 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   // activation cost is payable only when the attack can actually be redirected. Preflight
   // candidates before the optional prompt and generic cost path; otherwise a card such as
   // BT26-092 can return its Tamer even though no eligible TS Digimon exists to receive the attack.
+  if (
+    action.kind === "RedirectAttack" &&
+    action.mode !== "endAttack" &&
+    !allowsOptionalProcessingCostWithoutTarget(action) &&
+    ctx.fx.isAttackTargetLocked?.() === true
+  ) {
+    return unavailableAction(ctx, action, action.abortOnDecline === true);
+  }
   if (
     action.kind === "RedirectAttack" &&
     action.mode !== "endAttack" &&
@@ -907,6 +950,16 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       action.additionalCost === undefined &&
       !action.additionalCosts?.length &&
       !canAttemptAttack(ctx, action)
+    ) {
+      return unavailableAction(ctx, action, action.abortOnDecline === true);
+    }
+    if (
+      action.kind === "Link" &&
+      ctx.isActivationPending?.() !== true &&
+      payableActionCost === undefined &&
+      action.additionalCost === undefined &&
+      !action.additionalCosts?.length &&
+      !canAttemptLink(ctx, action)
     ) {
       return unavailableAction(ctx, action, action.abortOnDecline === true);
     }
@@ -1108,6 +1161,15 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       !allowsOptionalProcessingCostWithoutTarget(action) &&
       !canAttemptDigivolveBeforeCost(ctx, action)
     ) {
+      ctx.lastDigivolveResult = false;
+      return unavailableAction(ctx, action, action.abortOnDecline === true);
+    }
+    if (
+      action.kind === "DnaDigivolve" &&
+      !allowsOptionalProcessingCostWithoutTarget(action) &&
+      !canAttemptDnaDigivolve(ctx, action)
+    ) {
+      ctx.lastDigivolveResult = false;
       return unavailableAction(ctx, action);
     }
     const costUnpayable = payableActionCost !== undefined && !canPayCost(ctx, payableActionCost as Cost);
@@ -1122,12 +1184,21 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
         predecided === undefined && action.kind === "Modal" ? declinableModalChoices(ctx, action) : undefined;
       let yes: boolean;
       if (modalChoices === undefined) {
-        yes = predecided ?? (await chooser.optional(ctx, describeAction(action)));
+        yes = predecided ?? (await askOptionalWithPrintedCost({ ctx, chooser, action, cost: payableActionCost }));
       } else {
         // An optional modal with a real choice asks it once: the options plus a decline entry.
         const declineIndex = modalChoices.labels.length;
         const pick = await chooser.chooseOption(ctx, [...modalChoices.labels, DECLINE_MODAL_CHOICE_LABEL], {
           declineIndex,
+          choiceSummaries:
+            action.kind === "Modal"
+              ? [
+                  ...modalChoices.optionIndices.map((index) =>
+                    getDecisionEffectSummary({ actions: action.options[index]! }),
+                  ),
+                  null,
+                ]
+              : undefined,
           ...(modalChoices.choiceClauses ? { choiceClauses: [...modalChoices.choiceClauses, ""] } : {}),
         });
         yes = pick !== declineIndex;
@@ -1149,7 +1220,9 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
         payableActionCost === undefined &&
         additionalCost === undefined &&
         additionalCosts.length === 0;
-      markActivationChosen(ctx);
+      if (action.kind !== "SelectBind" || action.preserveOncePerTurnOnDecline !== true) {
+        markActivationChosen(ctx);
+      }
     }
   }
   // Pay a per-action cost first; abort the action if it cannot be paid. An OPTIONAL
@@ -1197,24 +1270,33 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       // makes the player answer the same thing twice, which is not how the printed card
       // reads ("By trashing 1 card …, Draw 1" is one decision, not two).
       const costAsksItself = costIsAskedAsSelection(payableActionCost);
+      const declinesAtSelection = ctx.costDeclinedAtSelection?.has(action) === true;
       const willPay =
         costAsksItself ||
+        declinesAtSelection ||
         (ctx.predecidedOptionalCosts?.get(action) ??
           (await ctx.ask.optional(
             paysCostFirst && payableActionCost.raw !== undefined
-              ? { ...ctx, activeEffectTextPart: ctx.activeEffectText, activeEffectTextEmphasis: payableActionCost.raw }
+              ? {
+                  ...ctx,
+                  activeEffectTextPart: ctx.activeEffectText,
+                  activeEffectTextEmphasis: action.costTextEmphasis ?? payableActionCost.raw,
+                }
               : ctx,
             `Pay cost: ${describeCost(payableActionCost)}?`,
           )));
       if (willPay) {
-        if (!costAsksItself) markActivationChosen(ctx);
+        if (!costAsksItself && !declinesAtSelection) markActivationChosen(ctx);
         const outerCostIsTheQuestion = ctx.costIsTheQuestion;
+        const outerPayingDeclinableCost = ctx.payingDeclinableCost;
         ctx.costIsTheQuestion = costAsksItself;
+        ctx.payingDeclinableCost = declinesAtSelection;
         const paid = await payCost(ctx, payableActionCost, costPayment);
         ctx.costIsTheQuestion = outerCostIsTheQuestion;
+        ctx.payingDeclinableCost = outerPayingDeclinableCost;
         if (paid) markActivationChosen(ctx);
         if (!paid) {
-          if (costAsksItself) {
+          if (costAsksItself || declinesAtSelection) {
             markActivationDeclined(ctx);
           }
           return action.abortOnDecline === true;
@@ -1306,7 +1388,11 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
     const yes =
       ctx.predecidedOptionalActions?.get(action) ??
       (await ctx.ask.optional(
-        { ...ctx, activeEffectTextPart: ctx.activeEffectText, activeEffectTextEmphasis: action.effectTextPart },
+        {
+          ...ctx,
+          activeEffectTextPart: ctx.activeEffectText,
+          activeEffectTextEmphasis: action.optionalTextEmphasis ?? action.effectTextPart,
+        },
         describeAction(action),
       ));
     if (!yes) {
@@ -1368,6 +1454,7 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
   // BT17-051) raises a BASE budget the action carries on its own. Zero units means no bonus,
   // never "the action does nothing" — the base budget still deletes.
   const isBudgetScaling = action.kind !== "RawUnparsed" && action.scaling?.budgetAdd !== undefined;
+  const isBonusScaling = action.kind !== "RawUnparsed" && action.scaling?.bonus !== undefined;
   // targetColors is resolved after the action's permanent target is selected; it intentionally
   // has no board-wide scaleFactor. Do not let the generic zero guard abort it before dispatch.
   const isPerTargetScaling =
@@ -1378,7 +1465,8 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
     !isPerTargetScaling &&
     !isSetCostModifier &&
     !isLevelCeilingScaling &&
-    !isBudgetScaling
+    !isBudgetScaling &&
+    !isBonusScaling
   ) {
     return false;
   }
@@ -1578,6 +1666,71 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
       unsupported(ctx, action as Action, `unknown action kind "${String((action as { kind?: unknown }).kind)}"`);
       return false;
     }
+  }
+}
+
+function isTrashCostPaidWithoutSelection(ctx: EffectContext, cost: Cost): boolean {
+  const target = cost.target;
+  if (
+    cost.kind !== "trash" ||
+    target === undefined ||
+    typeof target.count !== "number" ||
+    target.upTo === true ||
+    target.forceSelection === true ||
+    target.filter.differentColors === true ||
+    target.totalPlayCostBudget !== undefined
+  ) {
+    return false;
+  }
+  const zones = zoneList((target.from ?? target.filter.zone) as ZoneRef | ZoneRef[] | undefined);
+  if (zones.length === 0) {
+    return false;
+  }
+  return candidateLooseInstances(ctx, target, zones).length === target.count;
+}
+
+function asksIndependentlyOfYesPreset(ctx: EffectContext, action: Action): boolean {
+  return (
+    action.kind === "CostGatedBlock" && ctx.presetOptionalAnswer === true && ctx.oncePerTurnActivationChosen === true
+  );
+}
+
+type AskOptionalWithPrintedCostParams = {
+  ctx: EffectContext;
+  chooser: DecisionApi;
+  action: Action;
+  cost: Cost | number | undefined;
+};
+
+async function askOptionalWithPrintedCost({
+  ctx,
+  chooser,
+  action,
+  cost,
+}: AskOptionalWithPrintedCostParams): Promise<boolean> {
+  const outerEffectTextPart = ctx.activeEffectTextPart;
+  const outerEffectTextEmphasis = ctx.activeEffectTextEmphasis;
+  const printedCost =
+    action.kind !== "RawUnparsed" &&
+    action.effectTextPart === undefined &&
+    typeof cost === "object" &&
+    cost.raw !== undefined &&
+    ctx.activeEffectText !== undefined &&
+    isTrashCostPaidWithoutSelection(ctx, cost)
+      ? printedPassage(ctx.activeEffectText, cost.raw)
+      : undefined;
+  if (printedCost !== undefined) {
+    ctx.activeEffectTextPart = ctx.activeEffectText;
+    ctx.activeEffectTextEmphasis = printedCost;
+  }
+  const outerPresetOptionalAnswer = ctx.presetOptionalAnswer;
+  if (asksIndependentlyOfYesPreset(ctx, action)) ctx.presetOptionalAnswer = undefined;
+  try {
+    return await chooser.optional(ctx, describeAction(action));
+  } finally {
+    ctx.presetOptionalAnswer = outerPresetOptionalAnswer;
+    ctx.activeEffectTextPart = outerEffectTextPart;
+    ctx.activeEffectTextEmphasis = outerEffectTextEmphasis;
   }
 }
 

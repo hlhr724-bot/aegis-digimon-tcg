@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { getCardDefinition } from "@aegis/shared";
 import { useTranslation } from "../../../i18n";
 import { Button } from "../../../design/primitives";
@@ -15,6 +16,7 @@ export function ActionBar({
   linkingCardId?: string;
   onCancel: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const linkingDef = linkingCardId ? getCardDefinition(linkingCardId) : undefined;
   if (linkingDef) {
@@ -24,7 +26,7 @@ export function ActionBar({
         style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10, padding: "4px 0 9px" }}
       >
         <span style={{ fontSize: 13, color: "var(--ds-text-3)" }}>
-          <strong style={{ color: "var(--ds-text)" }}>{linkingDef.nameEn}</strong>
+          <strong style={{ color: "var(--ds-text)" }}>{getCardName(linkingDef.cardId)}</strong>
         </span>
         <span
           style={{ fontSize: 12.5, color: "var(--ds-accent)", display: "inline-flex", alignItems: "center", gap: 5 }}
@@ -32,7 +34,7 @@ export function ActionBar({
           <Icons.Link2 size={14} />
           {t("game.clickToLink")}
         </span>
-        <Button size="sm" variant="ghost" onClick={onCancel}>
+        <Button size="sm" variant="ghost" data-arena-cancel onClick={onCancel}>
           {t("common.cancel")}
         </Button>
       </div>

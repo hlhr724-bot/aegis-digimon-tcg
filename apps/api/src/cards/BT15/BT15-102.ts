@@ -59,6 +59,8 @@ const compiled: CompiledCard = {
       actions: [
         {
           kind: "ActivateEffect",
+          effectTextPart:
+            "By placing 1 level 6 or lower card from your trash as this Digimon's bottom digivolution card, activate 1 [On Play] effect on that card as an effect of this Digimon.",
           target: {
             filter: {
               controller: "mine",
@@ -95,6 +97,8 @@ const compiled: CompiledCard = {
         },
         {
           kind: "TrashTopDeck",
+          effectTextPart:
+            "Then, trash the top 2 cards of your opponent's deck for each of this Digimon's level 6 digivolution cards.",
           controller: "opponent",
           amount: 2,
           optional: false,

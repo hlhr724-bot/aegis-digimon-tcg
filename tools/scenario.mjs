@@ -19,7 +19,18 @@ if (process.env.NODE_ENV === "production") {
 // Rebuild the real room runtime: fixture runs must not silently use stale API code.
 for (const command of [
   ["--filter", "@aegis/shared", "build"],
-  ["--filter", "@aegis/api", "exec", "tsc", "-p", "tsconfig.dev.json", "--noCheck"],
+  [
+    "--filter",
+    "@aegis/api",
+    "exec",
+    "node",
+    "../../tools/typescript/runTsc.mjs",
+    "1536",
+    "-p",
+    "tsconfig.dev.json",
+    "--noCheck",
+    "--singleThreaded",
+  ],
   [
     "--filter",
     "@aegis/api",
@@ -32,7 +43,12 @@ for (const command of [
   ],
 ]) {
   const grouped = process.platform !== "win32";
-  const child = spawn("pnpm", command, { cwd: root, stdio: "inherit", detached: grouped });
+  const child = spawn("pnpm", command, {
+    cwd: root,
+    stdio: "inherit",
+    detached: grouped,
+    env: { ...process.env, GOMEMLIMIT: "512MiB", GOGC: "50" },
+  });
   const forward = (signal) => {
     if (!child.pid || child.exitCode !== null) return;
     try {

@@ -1,3 +1,5 @@
+import { Zone } from "@aegis/shared/schema/enums";
+import type { FlyPublicPileCard } from "@/game/match/present/enqueuePublicPileMoves";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { Seat } from "@aegis/shared";
 import type { AnimationQueue, AnimationStepContext } from "../animationQueue";
@@ -467,7 +469,116 @@ export function cueFlights(deps: CueFlightsDeps) {
     return true;
   }
 
+  async function flyPublicPileCard({ event, index, context }: Parameters<FlyPublicPileCard>[0]): Promise<void> {
+    const board = anchors.board.current;
+    const seat = event.fromSeat ?? event.seat;
+    if (!board || seat === undefined || context.mode !== "live" || context.cancelled || context.skipping) {
+      return;
+    }
+    const trash = board.querySelector(
+      seat === viewerSeat ? ".game-utility-slot--you-trash" : ".game-utility-slot--opp-trash",
+    );
+    const deck = seat === viewerSeat ? anchors.yourDeck.current : anchors.oppDeck.current;
+    const source = event.from === Zone.Deck ? deck : trash;
+    const destination = event.placedUnder ? anchors.permanentCenter?.(event.placedUnder.permanentId) : undefined;
+    if (!source || (event.placedUnder && !destination) || (!destination && !trash)) {
+      return;
+    }
+    const boardRect = board.getBoundingClientRect();
+    const sourceRect = source.getBoundingClientRect();
+    const targetRect = trash?.getBoundingClientRect();
+    if (!sourceRect.width || (!destination && !targetRect?.width)) {
+      return;
+    }
+    const x = sourceRect.left + sourceRect.width / 2 - boardRect.left;
+    const y = sourceRect.top + sourceRect.height / 2 - boardRect.top;
+    const target = destination ?? {
+      x: targetRect!.left + targetRect!.width / 2 - boardRect.left,
+      y: targetRect!.top + targetRect!.height / 2 - boardRect.top,
+    };
+    const key = ++drawFlightKeyRef.current;
+    const duration = isTouchLayout() ? TIMINGS.drawFlightTouch : TIMINGS.drawFlight;
+    const cardId = event.cardIds?.[index];
+    const artId = event.artIds?.[index];
+    setDrawFlights((flights) => [
+      ...flights,
+      {
+        key,
+        x,
+        y,
+        dx: target.x - x,
+        dy: target.y - y,
+        duration,
+        ...(cardId ? { card: { cardId, ...(artId ? { artId } : {}) } } : {}),
+      },
+    ]);
+    try {
+      await context.wait(duration);
+    } finally {
+      setDrawFlights((flights) => flights.filter((flight) => flight.key !== key));
+    }
+  }
+
+  function launchHandTrashFlight(seat: Seat, card: DrawFlightCard) {
+    const key = ++drawFlightKeyRef.current;
+    const causingEffectGate = causingEffectGateRef.current;
+    queue.enqueue({
+      id: `hand-trash-${key}`,
+      ...(presentationBatchRef?.current ? { origin: { ...presentationBatchRef.current } } : {}),
+      track: "handTrash",
+      holdsBoard: true,
+      async run(context) {
+        try {
+          await waitForGate(causingEffectGate, context, CONSEQUENCE_GATE_MAX_MS, "handTrash/causingEffect");
+          if (context.mode !== "live" || context.cancelled || context.skipping) {
+            return;
+          }
+          const board = anchors.board.current;
+          const hand = seat === viewerSeat ? anchors.yourHandDock.current : anchors.oppHandStrip.current;
+          const trash = board?.querySelector<HTMLElement>(
+            seat === viewerSeat ? ".game-utility-slot--you-trash" : ".game-utility-slot--opp-trash",
+          );
+          if (!board || !hand || !trash) {
+            return;
+          }
+          const boardRect = board.getBoundingClientRect();
+          const handRect = hand.getBoundingClientRect();
+          const trashRect = trash.getBoundingClientRect();
+          if (!handRect.width || !trashRect.width) {
+            return;
+          }
+          const x = handRect.left + handRect.width / 2 - boardRect.left;
+          const y = handRect.top + handRect.height / 2 - boardRect.top;
+          setDrawFlights((flights) => [
+            ...flights,
+            {
+              key,
+              x,
+              y,
+              dx: trashRect.left + trashRect.width / 2 - boardRect.left - x,
+              dy: trashRect.top + trashRect.height / 2 - boardRect.top - y,
+              duration: TIMINGS.handReturn,
+              card,
+              handTrash: true,
+            },
+          ]);
+          await context.wait(TIMINGS.handReturn);
+          await waitForPaintedAnimation(
+            () => board.querySelector<HTMLElement>(`[data-hand-trash="${key}"]`),
+            "battle-hand-trash",
+            TIMINGS.handReturn,
+            context,
+          );
+        } finally {
+          setDrawFlights((flights) => flights.filter((flight) => flight.key !== key));
+        }
+      },
+    });
+  }
+
   return {
+    flyPublicPileCard,
+    launchHandTrashFlight,
     flyCardUnder,
     flyCardToDeck,
     flyCardToHand,

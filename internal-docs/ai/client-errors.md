@@ -48,7 +48,8 @@ to the web image build. Local builds report `development`. The API adds its own
 
 `POST /bug-reports/client-errors` (`apps/api/src/clientErrors/installClientErrorRoutes.ts`):
 
-- accepts a JSON or plain-text body up to 32 KB;
+- accepts a JSON or plain-text body up to the shared 1 MiB message limit in
+  `packages/shared/src/protocol/gameMessageLimits.json`;
 - validates every field against the shared limits, and answers `400` with a reason;
 - rate-limits each address to 20 reports, refilling one every 3 seconds (`429`). Each API
   process has its own bucket;

@@ -1,3 +1,8 @@
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
+import { connectRankedMatch } from "@/ranked/connectRankedMatch";
+import type { BotSettings } from "@aegis/shared/bot/BotSettings";
+import { GameMode } from "@aegis/shared/manual/GameMode";
+import { ROOM_TYPE_MANUAL, ROOM_TYPE_MANUAL_PRIVATE, ROOM_TYPE_TOURNAMENT } from "@aegis/shared/protocol/messages";
 import { Client, type Room } from "@colyseus/sdk";
 import {
   GameState,
@@ -7,7 +12,6 @@ import {
   ROOM_TYPE_PRIVATE,
   ROOM_TYPE_RANKED,
   ROOM_TYPE_BETA,
-  ROOM_TYPE_BETA_BOT,
   type Intent,
   type DeckFormat,
   deckFormat,
@@ -21,8 +25,21 @@ import {
   usesSlotDeploymentRouter,
 } from "./deployment";
 import type { AegisJoinOptions } from "./types";
+import type { LiveMatchPage } from "@aegis/shared/protocol/LiveMatch";
+import {
+  MATCH_QUEUE_COUNTS_PATH,
+  type MatchQueueCount,
+  type MatchQueueCounts,
+} from "@aegis/shared/matchmaking/MatchQueueCounts";
+import { getMatchQueueKey } from "@aegis/shared/matchmaking/getMatchQueueKey";
+import { MATCH_QUEUE_WAITING_LIMIT } from "@aegis/shared/matchmaking/MatchQueueWaitingPlayer";
+import { sortLiveMatches } from "@aegis/shared/protocol/sortLiveMatches";
 import type { ReconnectSession } from "./reconnectSession";
 import { hasRoomTicketAccount } from "./roomAccount";
+import type { ActiveMatchClaim } from "@aegis/shared/protocol/ActiveMatchClaim";
+import type { ResumableMatch } from "@/net/activeMatch/ResumableMatch";
+import { requestActiveMatch } from "@/net/activeMatch/requestActiveMatch";
+import { requestActiveMatchClaim } from "@/net/activeMatch/requestActiveMatchClaim";
 
 export type AegisRoom = Room<GameState>;
 export type RoomSlot = DeploymentSlot | "legacy";
@@ -52,6 +69,12 @@ function withDeckRules(options: AegisJoinOptions): AegisJoinOptions {
 }
 
 function publicRoomType(options: AegisJoinOptions): string {
+  if (options.tournamentGameId && options.tournamentGameToken) {
+    return ROOM_TYPE_TOURNAMENT;
+  }
+  if (options.gameMode === GameMode.MANUAL.value) {
+    return ROOM_TYPE_MANUAL;
+  }
   const unlimited = formatIsUnlimited(deckFormat(options.format, options.unlimited));
   if (unlimited && (options.ranked || options.betaBattleMode))
     throw new Error("Unlimited battles cannot be ranked or beta battles");
@@ -84,7 +107,27 @@ export class AegisConnectionRouter {
 
   constructor(private readonly dependencies: RouterDependencies) {}
 
-  async joinOrCreate(options: AegisJoinOptions): Promise<AegisRoom> {
+  async joinOrCreate(options: AegisJoinOptions, signal?: AbortSignal): Promise<AegisRoom> {
+    if (options.ranked) {
+      publicRoomType(options);
+      const manifest = await this.dependencies.loadManifest();
+      const slot = manifest.active.slot;
+      const { http } = this.dependencies.endpointForSlot(slot);
+      return connectRankedMatch({
+        http,
+        options,
+        signal,
+        fetcher: this.dependencies.fetcher,
+        joinRoom: async (reservation) => {
+          const joined = await this.client(slot).joinById(reservation.roomId!, {
+            ...(await this.withRoomTicket(options, slot)),
+            rankedPairId: reservation.pairId,
+            rankedToken: reservation.token,
+          });
+          return this.remember(joined, slot);
+        },
+      });
+    }
     return this.joinOrCreateWithFreshManifest(withQueueFilters(options), false);
   }
 
@@ -120,10 +163,13 @@ export class AegisConnectionRouter {
 
   async createPrivate(options: AegisJoinOptions): Promise<AegisRoom> {
     const manifest = await this.dependencies.loadManifest();
-    const created = await this.client(manifest.active.slot).create(ROOM_TYPE_PRIVATE, {
-      ...(await this.withRoomTicket(withDeckRules(options), manifest.active.slot)),
-      private: true,
-    });
+    const created = await this.client(manifest.active.slot).create(
+      options.gameMode === GameMode.MANUAL.value ? ROOM_TYPE_MANUAL_PRIVATE : ROOM_TYPE_PRIVATE,
+      {
+        ...(await this.withRoomTicket(withDeckRules(options), manifest.active.slot)),
+        private: true,
+      },
+    );
     return this.remember(created, manifest.active.slot);
   }
 
@@ -134,9 +180,8 @@ export class AegisConnectionRouter {
   private async createBotWithFreshManifest(options: AegisJoinOptions, retriedAfterDrain: boolean): Promise<AegisRoom> {
     const manifest = await this.dependencies.loadManifest();
     try {
-      const roomType = options.betaBattleMode ? ROOM_TYPE_BETA_BOT : ROOM_TYPE_BOT;
       const created = await this.client(manifest.active.slot).create(
-        roomType,
+        ROOM_TYPE_BOT,
         await this.withRoomTicket(options, manifest.active.slot),
       );
       return this.remember(created, manifest.active.slot);
@@ -159,6 +204,7 @@ export class AegisConnectionRouter {
         roomCode: code.toUpperCase(),
         unlimited: rules.unlimited,
         format: rules.format,
+        ...(rules.gameMode === GameMode.MANUAL.value ? { gameMode: rules.gameMode } : {}),
       });
       return this.remember(joined, slot);
     }
@@ -170,12 +216,18 @@ export class AegisConnectionRouter {
     return this.remember(await this.client(slot).joinById(roomId, options), slot);
   }
 
-  async spectate(target: SpectateTarget): Promise<AegisRoom> {
+  async spectate(target: SpectateTarget | TournamentSpectateTarget): Promise<AegisRoom> {
     const manifest = await this.dependencies.loadManifest();
     const deployments = [manifest.active, ...manifest.draining];
     for (const { slot } of deployments) {
       const { http } = this.dependencies.endpointForSlot(slot);
-      const response = await this.fetch(`${http}/spectate/join`, spectatorJoinRequest(target));
+      const response = await this.fetch(
+        `${http}${spectatePath(target)}`,
+        spectatorJoinRequest(
+          target,
+          (await this.withRoomTicket({ displayName: "", deck: { mainDeck: [], eggDeck: [] } }, slot)).authTicket,
+        ),
+      );
       if (response.status === 404) continue;
       if (!response.ok) throw new Error("Match is not available to spectators");
       const reservation = await response.json();
@@ -184,12 +236,56 @@ export class AegisConnectionRouter {
     throw new Error("Match is not available to spectators");
   }
 
+  async liveMatches(limit: number): Promise<LiveMatchPage> {
+    const manifest = await this.dependencies.loadManifest();
+    const deployments = [manifest.active, ...manifest.draining];
+    const pages = await Promise.allSettled(
+      deployments.map(({ slot }) =>
+        fetchLiveMatches(this.dependencies.endpointForSlot(slot).http, limit, this.dependencies.fetcher),
+      ),
+    );
+    const loaded = pages.flatMap((page) => (page.status === "fulfilled" ? [page.value] : []));
+    if (loaded.length === 0) throw new Error("Live matches are unavailable");
+    return {
+      matches: sortLiveMatches(loaded.flatMap((page) => page.matches)).slice(0, limit),
+      total: loaded.reduce((total, page) => total + page.total, 0),
+    };
+  }
+
+  async matchQueueCounts(): Promise<MatchQueueCounts> {
+    const manifest = await this.dependencies.loadManifest();
+    const deployments = [manifest.active, ...manifest.draining];
+    const results = await Promise.allSettled(
+      deployments.map(({ slot }) =>
+        fetchMatchQueueCounts(this.dependencies.endpointForSlot(slot).http, this.dependencies.fetcher),
+      ),
+    );
+    const loaded = results.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
+    if (loaded.length === 0) throw new Error("Queue counts are unavailable");
+    return sumMatchQueueCounts(loaded);
+  }
+
   async reconnect(reconnectionToken: string, slot: DeploymentSlot): Promise<AegisRoom> {
     const reconnected = await this.client(slot).reconnect(reconnectionToken);
     return this.remember(reconnected, slot);
   }
 
-  async joinWithBot(roomId: string, botDeckId?: string): Promise<void> {
+  async findActiveMatch(): Promise<ResumableMatch | undefined> {
+    const manifest = await this.dependencies.loadManifest();
+    for (const { slot } of [manifest.active, ...manifest.draining]) {
+      const { http } = this.dependencies.endpointForSlot(slot);
+      const match = await requestActiveMatch({ http, fetcher: this.dependencies.fetcher });
+      if (match) return { ...match, slot };
+    }
+    return undefined;
+  }
+
+  async claimActiveMatch(roomId: string, slot: DeploymentSlot): Promise<ActiveMatchClaim | undefined> {
+    const { http } = this.dependencies.endpointForSlot(slot);
+    return requestActiveMatchClaim({ http, fetcher: this.dependencies.fetcher, roomId });
+  }
+
+  async joinWithBot(roomId: string, botDeckId?: string, botSettings?: BotSettings): Promise<void> {
     const room = this.roomsById.get(roomId)?.deref();
     if (!room) throw new Error("Bot join requires a connected room");
     const knownSlot = this.slotByRoomId.get(roomId);
@@ -199,7 +295,7 @@ export class AegisConnectionRouter {
     const response = await this.fetch(`${http}/bot/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ roomId, botDeckId, reconnectionToken: room.reconnectionToken }),
+      body: JSON.stringify({ roomId, botDeckId, ...botSettings, reconnectionToken: room.reconnectionToken }),
     });
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
@@ -231,6 +327,9 @@ export class AegisConnectionRouter {
 
   /** Every seat a signed-in player takes carries their account, so the match joins their history. */
   private async withRoomTicket(options: AegisJoinOptions, slot: DeploymentSlot): Promise<AegisJoinOptions> {
+    if (options.tournamentGameId && options.tournamentGameToken) {
+      return { ...options, authTicket: undefined };
+    }
     if (!options.ranked && !hasRoomTicketAccount()) return options;
     try {
       const { http } = this.dependencies.endpointForSlot(slot);
@@ -325,8 +424,25 @@ function rememberLegacy(room: AegisRoom): AegisRoom {
 }
 
 /** Join an existing public/ranked match or create one on the active deployment. */
-export async function joinOrCreate(options: AegisJoinOptions): Promise<AegisRoom> {
-  if (useProductionRouter()) return getProductionRouter().joinOrCreate(options);
+export async function joinOrCreate(options: AegisJoinOptions, signal?: AbortSignal): Promise<AegisRoom> {
+  if (useProductionRouter()) return getProductionRouter().joinOrCreate(options, signal);
+  if (options.ranked) {
+    publicRoomType(options);
+    const http = legacyEndpoint().replace(/^ws/, "http");
+    return connectRankedMatch({
+      http,
+      options,
+      signal,
+      joinRoom: async (reservation) => {
+        const joined = await getLegacyClient().joinById<GameState>(reservation.roomId!, {
+          ...(await withLegacyRoomTicket(options)),
+          rankedPairId: reservation.pairId,
+          rankedToken: reservation.token,
+        });
+        return rememberLegacy(joined);
+      },
+    });
+  }
   const authenticatedOptions = await withLegacyRoomTicket(withQueueFilters(options));
   const joined = await getLegacyClient().joinOrCreate<GameState>(publicRoomType(options), authenticatedOptions);
   return rememberLegacy(joined);
@@ -352,15 +468,34 @@ export async function resumeReconnectSession(session: ReconnectSession): Promise
   return getProductionRouter().reconnect(session.reconnectionToken, session.slot);
 }
 
+export async function findActiveMatch(): Promise<ResumableMatch | undefined> {
+  if (useProductionRouter()) return getProductionRouter().findActiveMatch();
+  const match = await requestActiveMatch({ http: legacyEndpoint().replace(/^ws/, "http"), fetcher: fetch });
+  return match && { ...match, slot: "legacy" };
+}
+
+export async function claimActiveMatch(match: ResumableMatch): Promise<ReconnectSession | undefined> {
+  const claim =
+    match.slot === "legacy"
+      ? await requestActiveMatchClaim({
+          http: legacyEndpoint().replace(/^ws/, "http"),
+          fetcher: fetch,
+          roomId: match.roomId,
+        })
+      : await getProductionRouter().claimActiveMatch(match.roomId, match.slot);
+  if (!claim) return undefined;
+  return { reconnectionToken: claim.reconnectionToken, roomId: claim.roomId, slot: match.slot, savedAt: Date.now() };
+}
+
 /** Ask the owning server to seat a bot as the second player. */
-export async function joinWithBot(roomId: string, botDeckId?: string): Promise<void> {
-  if (useProductionRouter()) return getProductionRouter().joinWithBot(roomId, botDeckId);
+export async function joinWithBot(roomId: string, botDeckId?: string, botSettings?: BotSettings): Promise<void> {
+  if (useProductionRouter()) return getProductionRouter().joinWithBot(roomId, botDeckId, botSettings);
   const room = legacyRoomsById.get(roomId)?.deref();
   if (!room) throw new Error("Bot join requires a connected room");
   const response = await fetch(`${legacyEndpoint().replace(/^ws/, "http")}/bot/join`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ roomId, botDeckId, reconnectionToken: room.reconnectionToken }),
+    body: JSON.stringify({ roomId, botDeckId, ...botSettings, reconnectionToken: room.reconnectionToken }),
   });
   if (!response.ok) throw new Error(`Bot join failed (${response.status})`);
 }
@@ -368,9 +503,8 @@ export async function joinWithBot(roomId: string, botDeckId?: string): Promise<v
 /** Create an isolated one-human room for a match against the server bot. */
 export async function createBot(options: AegisJoinOptions): Promise<AegisRoom> {
   if (useProductionRouter()) return getProductionRouter().createBot(options);
-  const roomType = options.betaBattleMode ? ROOM_TYPE_BETA_BOT : ROOM_TYPE_BOT;
   const created = await getLegacyClient().create<GameState>(
-    roomType,
+    ROOM_TYPE_BOT,
     await withLegacyRoomTicket(withDeckRules(options)),
   );
   return rememberLegacy(created);
@@ -379,22 +513,32 @@ export async function createBot(options: AegisJoinOptions): Promise<AegisRoom> {
 /** Create a private room on the active deployment. */
 export async function createPrivate(options: AegisJoinOptions): Promise<AegisRoom> {
   if (useProductionRouter()) return getProductionRouter().createPrivate(options);
-  const created = await getLegacyClient().create<GameState>(ROOM_TYPE_PRIVATE, {
-    ...(await withLegacyRoomTicket(withDeckRules(options))),
-    private: true,
-  });
+  const created = await getLegacyClient().create<GameState>(
+    options.gameMode === GameMode.MANUAL.value ? ROOM_TYPE_MANUAL_PRIVATE : ROOM_TYPE_PRIVATE,
+    {
+      ...(await withLegacyRoomTicket(withDeckRules(options))),
+      private: true,
+    },
+  );
   return rememberLegacy(created);
 }
 
 export interface PrivateRoomRules {
+  gameMode?: GameMode;
   roomId: string;
   unlimited: boolean;
   format: DeckFormat;
 }
 
-function privateRoomRules(value: { roomId: string; unlimited?: boolean; format?: DeckFormat }): PrivateRoomRules {
+function privateRoomRules(value: {
+  roomId: string;
+  unlimited?: boolean;
+  format?: DeckFormat;
+  gameMode?: GameMode;
+}): PrivateRoomRules {
   return {
     roomId: value.roomId,
+    ...(value.gameMode === GameMode.MANUAL.value ? { gameMode: GameMode.MANUAL.value } : {}),
     unlimited: value.unlimited === true,
     format: deckFormat(value.format, value.unlimited),
   };
@@ -432,11 +576,15 @@ export async function joinPrivateByCode(code: string, options: AegisJoinOptions)
     roomCode: code.toUpperCase(),
     unlimited: rules.unlimited,
     format: rules.format,
+    ...(rules.gameMode === GameMode.MANUAL.value ? { gameMode: rules.gameMode } : {}),
   });
   return rememberLegacy(joined);
 }
 
 async function withLegacyRoomTicket(options: AegisJoinOptions): Promise<AegisJoinOptions> {
+  if (options.tournamentGameId && options.tournamentGameToken) {
+    return { ...options, authTicket: undefined };
+  }
   if (!options.ranked && !hasRoomTicketAccount()) return options;
   try {
     const response = await fetch(`${legacyEndpoint().replace(/^ws/, "http")}/auth/room-ticket`, {
@@ -476,19 +624,70 @@ export function clearPendingIntents(): void {
 
 /** `displayName` only labels the spectator's chat messages; the server cleans it up. */
 export interface SpectateTarget {
+  accountId?: string;
   roomCode: string;
   displayName?: string;
 }
 
-function spectatorJoinRequest(target: SpectateTarget): RequestInit {
-  return { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(target) };
+function spectatePath(target: SpectateTarget | TournamentSpectateTarget): string {
+  if ("tournamentId" in target) return "/spectate/tournament";
+  return target.accountId ? "/spectate/friend" : "/spectate/join";
 }
 
-export async function spectate(target: SpectateTarget): Promise<AegisRoom> {
+function spectatorJoinRequest(target: SpectateTarget | TournamentSpectateTarget, authTicket?: string): RequestInit {
+  return {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...target, ...(authTicket ? { authTicket } : {}) }),
+  };
+}
+
+async function fetchLiveMatches(http: string, limit: number, fetcher: typeof fetch): Promise<LiveMatchPage> {
+  const response = await fetcher(`${http}/spectate/live?limit=${limit}`);
+  if (!response.ok) throw new Error("Live matches are unavailable");
+  return (await response.json()) as LiveMatchPage;
+}
+
+async function fetchMatchQueueCounts(http: string, fetcher: typeof fetch): Promise<MatchQueueCounts> {
+  const response = await fetcher(`${http}${MATCH_QUEUE_COUNTS_PATH}`);
+  if (!response.ok) throw new Error("Queue counts are unavailable");
+  const counts = (await response.json()) as Partial<MatchQueueCounts>;
+  return { buckets: counts.buckets ?? [], waiting: counts.waiting ?? [] };
+}
+
+function sumMatchQueueCounts(slots: MatchQueueCounts[]): MatchQueueCounts {
+  const buckets = new Map<string, MatchQueueCount>();
+  for (const bucket of slots.flatMap((slot) => slot.buckets)) {
+    const key = getMatchQueueKey(bucket);
+    const existing = buckets.get(key);
+    buckets.set(key, existing ? { ...existing, searching: existing.searching + bucket.searching } : bucket);
+  }
+  const waiting = slots
+    .flatMap((slot) => slot.waiting)
+    .sort((first, second) => second.waitingSeconds - first.waitingSeconds)
+    .slice(0, MATCH_QUEUE_WAITING_LIMIT);
+  return { buckets: [...buckets.values()], waiting };
+}
+
+export async function matchQueueCounts(): Promise<MatchQueueCounts> {
+  if (useProductionRouter()) return getProductionRouter().matchQueueCounts();
+  return fetchMatchQueueCounts(legacyEndpoint().replace(/^ws/, "http"), fetch);
+}
+
+export async function liveMatches(limit: number): Promise<LiveMatchPage> {
+  if (useProductionRouter()) return getProductionRouter().liveMatches(limit);
+  return fetchLiveMatches(legacyEndpoint().replace(/^ws/, "http"), limit, fetch);
+}
+
+export async function spectate(target: SpectateTarget | TournamentSpectateTarget): Promise<AegisRoom> {
   if (useProductionRouter()) return getProductionRouter().spectate(target);
   const response = await fetch(
-    `${legacyEndpoint().replace(/^ws/, "http")}/spectate/join`,
-    spectatorJoinRequest(target),
+    `${legacyEndpoint().replace(/^ws/, "http")}${spectatePath(target)}`,
+    spectatorJoinRequest(
+      target,
+      (await withLegacyRoomTicket({ displayName: "", deck: { mainDeck: [], eggDeck: [] } })).authTicket,
+    ),
   );
   if (!response.ok) throw new Error("Match is not available to spectators");
   return rememberLegacy(await getLegacyClient().consumeSeatReservation<GameState>(await response.json(), GameState));

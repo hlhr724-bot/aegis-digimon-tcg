@@ -572,3 +572,24 @@ describe("modal effect notices", () => {
     expect(noticeEffectClause({ ...body, timing: body.timing, description: body.description })).toBe(deleteBullet);
   });
 });
+
+it("carries the authored continuation passage in its own viewer-side effect notice", () => {
+  const clause =
+    "Then, trash the top 2 cards of your opponent's deck for each of this Digimon's level 6 digivolution cards.";
+  const continuationNotice = effectNoticeFromEvent(
+    {
+      kind: "effectTriggered",
+      seat: 0,
+      sourceCardId: "BT15-102",
+      sourcePermanentId: "apocalymon",
+      effectKey: "apocalymon/processing/TrashTopDeck",
+      description: clause,
+      effectTextPart: clause,
+      timing: "EndOfYourTurn",
+    },
+    0,
+    "continuation",
+    0,
+  );
+  expect(continuationNotice).toMatchObject({ side: "you", body: { cardId: "BT15-102", effectTextPart: clause } });
+});

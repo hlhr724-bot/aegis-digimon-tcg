@@ -1,0 +1,58 @@
+.account-roles {
+  display: grid;
+  gap: var(--ds-space-3);
+}
+
+.account-roles__header h2,
+.account-roles__header p {
+  margin: 0;
+}
+
+.account-roles__header p,
+.account-roles__empty {
+  color: var(--ds-text-2);
+}
+
+.account-roles__list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-sheet);
+}
+
+.account-roles__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+}
+
+.account-roles__row + .account-roles__row {
+  border-top: 1px solid var(--ds-line);
+}
+
+.account-roles__name {
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.account-roles__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-4);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.account-roles__option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}

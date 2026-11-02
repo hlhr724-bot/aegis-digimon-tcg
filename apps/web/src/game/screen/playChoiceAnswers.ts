@@ -43,6 +43,7 @@ export function playChoiceAnswers({
   dispatchPlayCard,
   digivolveWithChoice,
   findPermanent,
+  playNormally,
 }: {
   room: Room | undefined;
   viewer: PlayerState;
@@ -79,6 +80,7 @@ export function playChoiceAnswers({
     base: Permanent,
     confirmDrop?: boolean,
   ) => void;
+  playNormally?: (instanceId: string, confirmDrop: boolean) => void;
   findPermanent: (permanentId: string) => Permanent | undefined;
 }) {
   const close = (dismiss: () => void) => {
@@ -106,7 +108,15 @@ export function playChoiceAnswers({
         if (actionConfirm.kind === DragKind.Play) dispatchPlayCard(room, actionConfirm.instanceId);
         else if (actionConfirm.kind === "digivolve")
           intents.digivolve(room, actionConfirm.permanentId, actionConfirm.instanceId);
-        else {
+        else if (actionConfirm.kind === "negamon") {
+          const entry = handEntries.find((candidate) => candidate.instanceId === actionConfirm.instanceId);
+          if (
+            entry?.negamonPlayEffectKey === actionConfirm.effectKey &&
+            viewer.breeding?.topCard?.instanceId === actionConfirm.sourceInstanceId
+          ) {
+            intents.activateEffect(room, actionConfirm.sourceInstanceId, actionConfirm.effectKey);
+          }
+        } else {
           const entry = handEntries.find((candidate) => candidate.instanceId === actionConfirm.instanceId);
           const selected = dnaMaterialPermanentIds;
           const route = entry?.dnaDigivolveRoutes?.find(
@@ -130,6 +140,23 @@ export function playChoiceAnswers({
             if (base) digivolveWithChoice(pending.normalPermanentId!, pending.instanceId, pending.cardId, base);
           }
         : undefined,
+    canPlayNormally: handEntries.some(
+      (entry) => entry.instanceId === actionConfirm?.instanceId && entry.playableFromHand,
+    ),
+    onPlayNormally: () => {
+      if (!actionConfirm || !["dna", "negamon"].includes(actionConfirm.kind) || mainActionBlocked || !room) {
+        return;
+      }
+      const entry = handEntries.find((candidate) => candidate.instanceId === actionConfirm.instanceId);
+      close(() => overlays.setActionConfirm(null));
+      if (entry?.playableFromHand) {
+        if (actionConfirm.kind === "dna") {
+          dispatchPlayCard(room, entry.instanceId);
+        } else if (actionConfirm.kind === "negamon") {
+          playNormally?.(entry.instanceId, actionConfirm.confirmDrop);
+        }
+      }
+    },
     onConfirmCancel: () => close(() => overlays.setActionConfirm(null)),
 
     onAppFusion: (linkedInstanceId: string) => {

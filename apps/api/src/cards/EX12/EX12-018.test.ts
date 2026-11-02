@@ -650,8 +650,10 @@ describe("EX12-018 Siriusmon", () => {
       ).toEqual([trashId, handId]);
       expect(s.perm("base").stack.map((card) => card.cardId)).toEqual(["EX12-013", "EX12-007", "BT1-009", "EX12-014"]);
       const moves = placementMoves(s, [handId, trashId]);
-      expect(moves).toHaveLength(1);
-      expect(moves[0]!.kind === "cardsMoved" && [...moves[0]!.instanceIds].sort()).toEqual([handId, trashId].sort());
+      expect(moves).toHaveLength(2);
+      expect(moves.flatMap((event) => (event.kind === "cardsMoved" ? event.instanceIds : [])).sort()).toEqual(
+        [handId, trashId].sort(),
+      );
       expect(s.perm("opponent").currentDP).toBe(2000);
     });
 
@@ -668,7 +670,7 @@ describe("EX12-018 Siriusmon", () => {
           .slice(2),
       ).toEqual([trashId, handId]);
       expect(s.perm("base").stack.map((card) => card.cardId)).toEqual(["BT1-009", "EX12-014", "EX12-013", "EX12-007"]);
-      expect(placementMoves(s, [handId, trashId])).toHaveLength(1);
+      expect(placementMoves(s, [handId, trashId])).toHaveLength(2);
       expect(s.perm("opponent").currentDP).toBe(2000);
     });
   });

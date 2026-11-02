@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { buildTriggerKey, getCardDefinition, type DecisionRequest, type DecisionResponse } from "@aegis/shared";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { I18nContext } from "@/i18n/I18nContext";
+import { TOUCH_LAYOUT_QUERY } from "@/design/useMediaQuery";
 import { I18nProvider, translator } from "../i18n";
 import {
   BlockOverlay,
@@ -16,10 +18,181 @@ import {
 import type { EvoCostOption } from "./digivolveModel";
 import { CardOpenerProvider } from "./cardLinks";
 import { choiceLabel } from "./overlay/choice/decisionChoiceLabels";
+import { printedModalBullets } from "@aegis/shared/effects/printedClauses";
 
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+});
+
+it("shows a complete authored Chinese step while preserving the optional response", async () => {
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <DecisionOverlay
+        request={{
+          decisionId: "authored-short-step",
+          seat: 0,
+          kind: "optional",
+          promptText: "Use this effect?",
+          sourceCardId: "BT10-008",
+          options: { timing: "OnPlay", effectTextPart: "Add 1 Digimon card" },
+        }}
+        sourceCardId="BT10-008"
+        candidates={[]}
+        picks={[]}
+        onTogglePick={vi.fn<() => void>()}
+        onRespond={onRespond}
+      />
+    </I18nContext.Provider>,
+  );
+  const text = () => document.querySelector(".decision-overlay__effect-text")?.textContent;
+  await waitFor(() => expect(text()).toContain("3张卡牌"));
+  expect(text()).toContain("驯兽师");
+  expect(text()).not.toContain("Add 1 Digimon card");
+  fireEvent.click(screen.getByRole("button", { name: translator("zh-CN")("overlay.activate") }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
+});
+
+it("uses source card translations for printed modal option buttons and submits the original index", async () => {
+  const cardId = "BT22-013";
+  const clause = cardEffectClauseForTiming(cardId, "WhenDigivolving")!;
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <DecisionOverlay
+        request={{
+          decisionId: "translated-modal-bullets",
+          seat: 0,
+          kind: "chooseOption",
+          promptText: "WarGreymon",
+          options: {
+            choices: ["Digivolve", "Delete 1 target(s)"],
+            choiceClauses: printedModalBullets(clause),
+            timing: "WhenDigivolving",
+          },
+        }}
+        sourceCardId={cardId}
+        candidates={[]}
+        picks={[]}
+        onTogglePick={vi.fn<() => void>()}
+        onRespond={onRespond}
+      />
+    </I18nContext.Provider>,
+  );
+  const deletion = await screen.findByRole("button", { name: /消灭.*DP最低/ });
+  expect(screen.getByRole("button", { name: /加布兽.*钢铁加鲁鲁兽/ })).toBeTruthy();
+  fireEvent.click(deletion);
+  expect(onRespond).toHaveBeenCalledWith({ kind: "chooseOption", optionIndex: 1 });
+});
+
+it.each([
+  {
+    timing: "WhenDigivolving",
+    emphasis:
+      "[When Digivolving] [When Attacking] [Once Per Turn] You may return 1 of your opponent's level 5 or lower Digimon to the hand.",
+  },
+  {
+    timing: "WhenAttacking",
+    emphasis:
+      "[When Digivolving] [When Attacking] [Once Per Turn] You may return 1 of your opponent's level 5 or lower Digimon to the hand.",
+  },
+  {
+    timing: "WhenDigivolving",
+    emphasis:
+      "Then, by trashing the bottom face-down card under any of your Tamers, return 1 of your opponent's lowest level Digimon to the hand.",
+  },
+])("highlights MirageGaogamon's current activation clause at $timing: $emphasis", ({ timing, emphasis }) => {
+  const effectText = cardEffectClauseForTiming("BT25-029", timing)!;
+  renderDecision({
+    decisionId: "optional-return-current-clause",
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "BT25-029",
+    promptText: "Use this effect?",
+    options: { timing, effectText, effectTextEmphasis: emphasis },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(effectText);
+  expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(emphasis);
+});
+
+it.each([
+  {
+    cardId: "EX13-032",
+    choices: ["Trash your top security card", "Trash the bottom face-down card from under 1 of your Tamers"],
+    labels: ["丢弃我方最上方的1张安防卡牌", "丢弃我方1只驯兽师下方最下方的1张背面表示卡牌"],
+  },
+  {
+    cardId: "BT26-026",
+    choices: ["Trash the bottom face-down card from under 1 of your Tamers", "Trash your top security card"],
+    labels: ["丢弃我方1只驯兽师下方最下方的1张背面表示卡牌", "丢弃我方最上方的1张安防卡牌"],
+  },
+])(
+  "localizes alternative payment buttons without changing their response order for $cardId",
+  ({ cardId, choices, labels }) => {
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
+    render(
+      <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+        <DecisionOverlay
+          request={{
+            decisionId: "alternative-payment",
+            seat: 0,
+            kind: "chooseOption",
+            promptText: "Choose a cost to pay",
+            sourceCardId: cardId,
+            options: { choices: [...choices, "Don't use"], declineIndex: 2, timing: "WhenDigivolving" },
+          }}
+          sourceCardId={cardId}
+          candidates={[]}
+          picks={[]}
+          onTogglePick={vi.fn<() => void>()}
+          onRespond={onRespond}
+        />
+      </I18nContext.Provider>,
+    );
+    const buttons = document.querySelectorAll(".decision-overlay__choices button");
+    expect(buttons[0]?.textContent).toBe(labels[0]);
+    expect(buttons[1]?.textContent).toBe(labels[1]);
+    fireEvent.click(screen.getByRole("button", { name: labels[0] }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 0 });
+    fireEvent.click(screen.getByRole("button", { name: labels[1] }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 1 });
+    fireEvent.click(screen.getByRole("button", { name: "不使用" }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "chooseOption", optionIndex: 2 });
+  },
+);
+
+it("translates Davis and Ken's delayed play effect in the activation dialog", async () => {
+  const effectTextPart =
+    "[Start of Your Main Phase] You may play 1 [Veemon] or [Wormmon] from your hand without paying the cost. At the next end of your opponent’s turn, return it to the hand.";
+  render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <DecisionOverlay
+        request={{
+          decisionId: "davis-ken-activation",
+          seat: 0,
+          kind: "optional",
+          promptText: "Use this effect?",
+          sourceCardId: "BT16-085",
+          options: {
+            timing: "StartOfYourMainPhase",
+            effectText: getCardDefinition("BT16-085")!.effectText,
+            effectTextPart,
+          },
+        }}
+        sourceCardId="BT16-085"
+        candidates={[]}
+        picks={[]}
+        onTogglePick={vi.fn<() => void>()}
+        onRespond={vi.fn<() => void>()}
+      />
+    </I18nContext.Provider>,
+  );
+  const getText = () => document.querySelector(".decision-overlay__effect-text")?.textContent;
+  await waitFor(() => expect(getText()).toContain("“V仔兽”/“虫虫兽”"));
+  expect(getText()).toContain("当下个对方的回合结束时，将该数码宝贝放回到手牌中。");
+  expect(getText()).not.toContain("You may play");
+  expect(screen.getByRole("heading", { name: "使用这个效果？" })).toBeTruthy();
 });
 
 it("feedback #51: copied donor text is shown while Jesmon GX remains the effect source", () => {
@@ -258,6 +431,26 @@ function renderDecision(request: DecisionRequest = optionalDecision) {
   return { ...result, onRespond };
 }
 
+it.each([true, false])("offers Ascension on the left without card selection and accepts: %s", (accept) => {
+  const { onRespond } = renderDecision({
+    decisionId: "ascension-activation",
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "BT25-040",
+    promptText: "Activate ＜Ascension＞?",
+    options: {
+      timing: "Ascension",
+      effectText: "＜Ascension＞: When this card is deleted, you may place it at the top of your security stack.",
+    },
+  });
+  expect(screen.getByRole("dialog").getAttribute("data-prompt-surface")).toBe("left");
+  expect(screen.queryByRole("checkbox")).toBeNull();
+  expect(screen.getByRole("button", { name: "Yes, activate" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "No, decline" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: accept ? "Yes, activate" : "No, decline" }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept });
+});
+
 it("shows Genshi's activating effect instead of its Use Requirement", () => {
   renderDecision({
     decisionId: "genshi-main",
@@ -312,7 +505,15 @@ it("drops the effect text and offers another Digimon when a source pick is narro
           },
         }}
         sourceCardId="EX12-077"
-        candidates={[{ instanceId: "siriusmon", cardId: "EX12-018", selectable: true }]}
+        candidates={[
+          {
+            instanceId: "siriusmon",
+            cardId: "EX12-018",
+            hostCardId: "ST4-13",
+            hostPermanentId: "host",
+            selectable: true,
+          },
+        ]}
         picks={[]}
         onTogglePick={vi.fn()}
         onRespond={vi.fn()}
@@ -320,7 +521,9 @@ it("drops the effect text and offers another Digimon when a source pick is narro
       />
     </I18nProvider>,
   );
-  expect(screen.queryByText(/digivolution cards/)).toBeNull();
+  expect(screen.queryByText(/You may play or use/)).toBeNull();
+  expect(screen.getByRole("heading", { name: "HerculesKabuterimon" })).toBeTruthy();
+  expect(screen.getByText("Digivolution cards")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Choose another Digimon" }));
   expect(onChangeSourceHost).toHaveBeenCalled();
 });
@@ -356,19 +559,19 @@ describe("digivolution requirement choice", () => {
     expect(onRespond).toHaveBeenCalledWith({ kind: "chooseOption", optionIndex: 1 });
   });
 
-  it("opens Return to decision centred on its View board button", () => {
+  it("opens Return to decision on the left edge, level with View board", () => {
     renderDecision(request);
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
-      return this.classList.contains("decision-board-return")
-        ? new DOMRect(0, 0, 320, 56)
-        : new DOMRect(300, 540, 200, 40);
+      if (this.classList.contains("decision-board-return")) return new DOMRect(0, 0, 320, 56);
+      if (this.classList.contains("game-modal__panel")) return new DOMRect(300, 200, 400, 360);
+      return new DOMRect(300, 540, 200, 40);
     });
 
     fireEvent.click(screen.getByRole("button", { name: "View board" }));
 
     const control = screen.getByRole("button", { name: "Return to decision" }).parentElement!;
-    expect(control.hasAttribute("data-anchored")).toBe(true);
-    expect(control.style.getPropertyValue("--decision-return-left")).toBe("240px");
+    expect(control.hasAttribute("data-docked")).toBe(true);
+    expect(control.style.getPropertyValue("--decision-return-left")).toBe("16px");
     expect(control.style.getPropertyValue("--decision-return-top")).toBe("532px");
   });
 });
@@ -416,18 +619,38 @@ describe("resolution plan chooser", () => {
     expect(screen.queryByRole("group", { name: /Creepymon/ })).toBeNull();
     expect(screen.getByText("Mandatory")).toBeTruthy();
 
+    fireEvent.click(screen.getByRole("button", { name: /Sukamon/ }));
+    expect(screen.getByText("1 of 3 ordered")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Yes to all" }));
     const sukamonPreset = screen.getByRole("group", { name: /Sukamon/ });
     fireEvent.click(within(sukamonPreset).getByRole("button", { name: "No" }));
-    fireEvent.click(screen.getByRole("button", { name: /Sukamon/ }));
-    expect(screen.getByText("1 of 3 ordered")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Add the rest in shown order" }));
+    expect(screen.getByText("3 of 3 ordered")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Resolve in this order" }));
 
     expect(onRespond).toHaveBeenCalledWith({
       kind: "orderTriggers",
       order: [keys.sukamon, keys.beelzemon, keys.creepymon],
       optionalAnswers: { [keys.beelzemon]: true, [keys.sukamon]: false },
+    });
+  });
+
+  it.each([
+    ["Yes to all", true],
+    ["No to all", false],
+  ] as const)("%s selects every effect and presets only optional effects", (label, answer) => {
+    const { onRespond } = renderDecision(planRequest);
+
+    fireEvent.click(screen.getByRole("button", { name: label }));
+
+    expect(screen.getByText("3 of 3 ordered")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Select all, top to bottom" })).toBeNull();
+    expect(onRespond).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Resolve in this order" }));
+
+    expect(onRespond).toHaveBeenCalledWith({
+      kind: "orderTriggers",
+      order: [keys.beelzemon, keys.creepymon, keys.sukamon],
+      optionalAnswers: { [keys.beelzemon]: answer, [keys.sukamon]: answer },
     });
   });
 
@@ -773,8 +996,8 @@ describe("order-trigger chooser identity", () => {
           candidates={[]}
           picks={[]}
           triggerDetails={[
-            { sourceLabel: "Field: 1", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
-            { sourceLabel: "Field: 1", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
+            { sourceLabel: "Field", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
+            { sourceLabel: "Field", summary: "Delete 1 of your opponent's level 4 or lower Digimon…" },
           ]}
           onTogglePick={vi.fn()}
           onRespond={vi.fn()}
@@ -783,7 +1006,41 @@ describe("order-trigger chooser identity", () => {
     );
 
     expect(screen.getAllByText(/Delete 1 of your opponent/)).toHaveLength(2);
-    expect(screen.getAllByText("Field: 1")).toHaveLength(2);
+    expect(screen.getAllByText("Field")).toHaveLength(2);
+  });
+
+  it("shows the Digimon carrying an inherited effect beside the effect's own card", () => {
+    const { container } = render(
+      <I18nProvider>
+        <DecisionOverlay
+          request={{
+            decisionId: "inherited-host",
+            seat: 0,
+            kind: "orderTriggers",
+            promptText: "Choose the next pending effect to resolve.",
+            options: {
+              triggerKeys: [
+                buildTriggerKey("agumon-source", "BT1-010/inherited"),
+                buildTriggerKey("megadramon-permanent", "EX12-064/on-play"),
+              ],
+              triggerCardIds: ["BT1-010", "EX12-064"],
+              triggerIsInherited: [true, false],
+            },
+          }}
+          candidates={[]}
+          picks={[]}
+          triggerDetails={[{ sourceLabel: "Inherited by Omnimon", hostCardId: "BT1-084" }, { sourceLabel: "Field" }]}
+          onTogglePick={vi.fn()}
+          onRespond={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    const hosts = container.querySelectorAll(".trigger-chooser__host");
+    expect(hosts).toHaveLength(1);
+    expect(hosts[0]!.textContent).toContain("Inherited by Omnimon");
+    expect(hosts[0]!.querySelector(".trigger-chooser__host-art")).toBeTruthy();
+    expect(screen.getByText("Field")).toBeTruthy();
   });
 
   it("uses full catalog text instead of shortened summaries", () => {
@@ -882,14 +1139,14 @@ it("lets the viewer leave while the opponent is disconnected", () => {
   expect(onLeave).toHaveBeenCalledOnce();
 });
 
-it("Discord suggestion 1557418616729768076: counts down from a 30 second grace", () => {
+it("Discord suggestion 1557418616729768076: counts down from the 60 second grace", () => {
   render(
     <I18nProvider>
       <OpponentDroppedOverlay onLeave={vi.fn<() => void>()} />
     </I18nProvider>,
   );
 
-  expect(screen.getByText(/0:30/)).toBeTruthy();
+  expect(screen.getByText(/1:00/)).toBeTruthy();
 });
 
 describe("generic engine selection prompts", () => {
@@ -1153,7 +1410,7 @@ describe("phone target grid", () => {
   });
 
   it("keeps the compact size on a phone wide enough for it", () => {
-    stubViewportWidth("(width < 600px)");
+    stubViewportWidth(TOUCH_LAYOUT_QUERY);
     const cards = renderTargets().querySelectorAll<HTMLElement>("button > div");
     expect([...cards].map((card) => card.style.width)).toEqual(["110px", "110px", "110px"]);
   });
@@ -1219,7 +1476,7 @@ describe("EX3-061 Dinobeemon decisions", () => {
       </I18nProvider>,
     );
 
-    expect(screen.getAllByRole("button", { name: /Paildramon/ })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /^(?!Open ).*Paildramon/ })).toHaveLength(2);
     const confirm = screen.getByRole("button", { name: "Confirm targets" });
     fireEvent.click(confirm);
     expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: ["ex3-paildramon"] });
@@ -1256,7 +1513,7 @@ describe("EX3-061 Dinobeemon decisions", () => {
       </I18nProvider>,
     );
 
-    expect(screen.getAllByRole("button", { name: /Wormmon/ })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /^(?!Open ).*Wormmon/ })).toHaveLength(2);
     fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
     expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: ["stack-wormmon"] });
   });
@@ -1293,8 +1550,8 @@ describe("mixed-zone card selection", () => {
 
     expect(screen.getByText("Your hand")).toBeTruthy();
     expect(screen.getByText("Digivolution cards")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Unleash the Dragon Gene/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Dracomon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Unleash the Dragon Gene/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Dracomon/ })).toBeTruthy();
   });
 });
 
@@ -2054,7 +2311,7 @@ describe("EX3-040 Parasaurmon decisions", () => {
     );
 
     expect(screen.getByText(cardEffectClauseForTiming("EX3-040", "YourTurn", true)!)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Elecmon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Elecmon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Confirm targets" })).toBeTruthy();
   });
 });
@@ -2170,10 +2427,10 @@ describe("EX3-055 Wormmon errata decisions", () => {
     );
 
     expect(screen.getByText(cardEffectClauseForTiming("EX3-055", "OnPlay")!)).toBeTruthy();
-    expect((screen.getByRole("button", { name: /Dinobeemon/ }) as HTMLButtonElement).disabled).toBe(false);
-    expect((screen.getByRole("button", { name: /Imperialdramon: Dragon Mode/ }) as HTMLButtonElement).disabled).toBe(
-      false,
-    );
+    expect((screen.getByRole("button", { name: /^(?!Open ).*Dinobeemon/ }) as HTMLButtonElement).disabled).toBe(false);
+    expect(
+      (screen.getByRole("button", { name: /^(?!Open ).*Imperialdramon: Dragon Mode/ }) as HTMLButtonElement).disabled,
+    ).toBe(false);
     expect((screen.getByRole("button", { name: "Agumon" }) as HTMLButtonElement).disabled).toBe(true);
     expect((screen.getByRole("button", { name: "Confirm targets" }) as HTMLButtonElement).disabled).toBe(false);
   });
@@ -2243,7 +2500,7 @@ describe("EX3-056 Guilmon On Deletion decision", () => {
     );
 
     expect(screen.getByText(effectText)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Agumon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Agumon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Guilmon.*1 source/ })).toBeTruthy();
     const confirm = screen.getByRole("button", { name: "Confirm targets" });
     expect((confirm as HTMLButtonElement).disabled).toBe(false);
@@ -2316,7 +2573,7 @@ describe("EX3-057 Growlmon decisions", () => {
       </I18nProvider>,
     );
 
-    expect(screen.getByRole("button", { name: /Guilmon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Guilmon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Gazimon.*1 source/ })).toBeTruthy();
     const confirm = screen.getByRole("button", { name: "Confirm targets" });
     expect((confirm as HTMLButtonElement).disabled).toBe(false);
@@ -2375,7 +2632,7 @@ describe("EX3-042 Toropiamon decisions", () => {
     );
 
     expect(screen.getByText(effectText)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Elecmon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Elecmon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Confirm targets" })).toBeTruthy();
   });
 
@@ -2450,7 +2707,7 @@ describe("EX3-043 Entmon decisions", () => {
     expect(
       screen.getByText(getCardDefinition("EX3-043")!.effectText!.match(/＜Digisorption[^＞]*＞/)![0]),
     ).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Pomumon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Pomumon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Confirm targets" })).toBeTruthy();
   });
 });
@@ -2488,7 +2745,7 @@ describe("EX3-044 Breakdramon decisions", () => {
 
     expect(screen.getByText(cardEffectClauseForTiming("EX3-044", "AllTurns")!)).toBeTruthy();
     expect(screen.queryByText(/deletes an opponent's Digimon in battle/)).toBeNull();
-    expect(screen.getByRole("button", { name: /Elecmon/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Elecmon/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Confirm targets" })).toBeTruthy();
   });
 });
@@ -2673,12 +2930,12 @@ describe("EX3-051 Tankdramon decisions", () => {
     expect(screen.getByText(/Reveal the top 2 cards of your deck/i)).toBeTruthy();
     expect(screen.getByText(/play 1 \[Commandramon\].*without paying the cost/i)).toBeTruthy();
     expect(screen.getByText(/Trash the rest/i)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Commandramon/ }).hasAttribute("disabled")).toBe(false);
-    expect(screen.getByRole("button", { name: /Tankdramon/ }).hasAttribute("disabled")).toBe(true);
-    expect(screen.getByRole("button", { name: /Hina Kurihara/ }).hasAttribute("disabled")).toBe(true);
-    expect(screen.getByRole("button", { name: "None" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Commandramon/ }).hasAttribute("disabled")).toBe(false);
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Tankdramon/ }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Hina Kurihara/ }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("button", { name: "Confirm targets" }).hasAttribute("disabled")).toBe(true);
 
-    fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
+    fireEvent.click(screen.getByRole("button", { name: "None" }));
     expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: [] });
   });
 });
@@ -2791,7 +3048,7 @@ describe("EX3-053 Metallicdramon decisions", () => {
     expect(screen.getByText(/delete 1.*play cost of 5 or less/i)).toBeTruthy();
     expect(screen.getByText(/If no Digimon is deleted.*unsuspended Digimon can digivolve/i)).toBeTruthy();
     expect(screen.queryByText("[On Play] Delete")).toBeNull();
-    expect(screen.getAllByRole("button", { name: /Sealsdramon/ })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /^(?!Open ).*Sealsdramon/ })).toHaveLength(2);
 
     fireEvent.click(screen.getByRole("button", { name: "Confirm targets" }));
     expect(onRespond).toHaveBeenCalledWith({ kind: "chooseTargets", instanceIds: ["second-target"] });
@@ -3536,7 +3793,7 @@ describe("decision board preview", () => {
 
     expect(screen.getByText(getCardDefinition("ST12-08")!.inheritedEffectText!)).toBeTruthy();
     expect(screen.queryByText(/\[When Digivolving\].*unsuspended Digimon/)).toBeNull();
-    expect(screen.getByRole("button", { name: /Sistermon Blanc/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^(?!Open ).*Sistermon Blanc/ })).toBeTruthy();
   });
 
   it("does not guess a main card effect for legacy optional decisions without provenance", () => {
@@ -3870,7 +4127,6 @@ describe("decision board preview", () => {
     expect(returnButton.closest("#aegis-stage")).toBeNull();
     expect(returnButton.parentElement?.parentElement).toBe(document.body);
     expect(returnButton.parentElement?.style.position).toBe("fixed");
-    expect(returnButton.parentElement?.hasAttribute("data-anchored")).toBe(true);
   });
 
   it("returns to the same decision without submitting a response", () => {
@@ -4274,11 +4530,15 @@ it("shows the revealed cards in Zubamon's top-or-bottom choice so the player doe
   );
 
   expect(screen.getByText("Revealed cards")).toBeTruthy();
-  // The card art names each card; the strip no longer repeats the name as text below it.
   for (const cardId of ["BT1-009", "BT1-010", "BT1-011"]) {
     const name = getCardDefinition(cardId)!.nameEn;
     expect(screen.getAllByAltText(name).length).toBeGreaterThan(0);
-    expect(screen.queryByText(name)).toBeNull();
+    expect(screen.getByText(name).className).toBe("decision-overlay__candidate-name");
+    expect(
+      screen
+        .getAllByRole("button", { name: new RegExp(`^Open ${name}$`, "i") })
+        .every((button) => button.textContent?.trim() === ""),
+    ).toBe(true);
   }
 });
 
@@ -4436,6 +4696,105 @@ it("keeps the decline entry apart from the printed bullets", () => {
   expect(onRespond).toHaveBeenCalledWith({ kind: "chooseOption", optionIndex: 2 });
 });
 
+describe("a color-scaled choice whose bullet has an optional By cost", () => {
+  const colorClause = "Then, for every 2 of your Digimon and Tamers' colors, activate 1 effect below:";
+  const battleBullet = "This Digimon may battle 1 of your opponent's Digimon.";
+  const recoveryBullet = "By returning 5 cards from your opponent's trash to the bottom of the deck, ＜Recovery +1＞";
+  const effectText = `[On Play] [When Digivolving] 1 of your Digimon may attack without suspending. ${colorClause}\n・${battleBullet}\n・${recoveryBullet}`;
+  const renderMerciful = () =>
+    renderDecision({
+      decisionId: "merciful-color-activation",
+      seat: 0,
+      kind: "chooseOption",
+      promptText: "Omnimon: Merciful Mode",
+      sourceCardId: "EX13-077",
+      options: {
+        choices: ["Battle", "Recovery +1"],
+        choiceClauses: [battleBullet, recoveryBullet],
+        timing: "OnPlay",
+        effectText,
+        effectTextPart: effectText,
+        effectTextEmphasis: colorClause,
+      },
+    });
+  const trashCards = ["t1", "t2", "t3", "t4", "t5"];
+  const renderRecoveryCost = (declinesCost: boolean) => {
+    const onRespond = vi.fn<(response: unknown) => void>();
+    render(
+      <I18nProvider>
+        <DecisionOverlay
+          request={{
+            decisionId: "merciful-recovery-cost",
+            seat: 0,
+            kind: "selectCards",
+            promptText: "Omnimon: Merciful Mode",
+            sourceCardId: "EX13-077",
+            options: {
+              candidateInstanceIds: trashCards,
+              min: 5,
+              max: 5,
+              purpose: "cost",
+              ...(declinesCost ? { declinesCost } : {}),
+              timing: "OnPlay",
+              effectText,
+            },
+          }}
+          sourceCardId="EX13-077"
+          candidates={trashCards.map((instanceId) => ({ instanceId, cardId: "BT1-009", sourceCount: 0 }))}
+          picks={[]}
+          onTogglePick={vi.fn<(instanceId: string) => void>()}
+          onRespond={onRespond}
+        />
+      </I18nProvider>,
+    );
+    return { onRespond };
+  };
+
+  it("emphasizes the color clause and offers no Don't use on the option chooser", () => {
+    renderMerciful();
+    expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(colorClause);
+    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: /^Don't use/ })).toBeNull();
+  });
+
+  it("declines the Recovery cost from its selection footer while the pick stays exact", () => {
+    const { onRespond } = renderRecoveryCost(true);
+    expect(screen.queryByRole("button", { name: "None" })).toBeNull();
+    expect((screen.getByRole("button", { name: "Confirm targets" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Don't use" }));
+    expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: [] });
+  });
+
+  it("offers no Don't use on a mandatory cost selection", () => {
+    renderRecoveryCost(false);
+    expect(screen.queryByRole("button", { name: "Don't use" })).toBeNull();
+  });
+
+  it("shows which scaled activation is being chosen", () => {
+    renderDecision({
+      decisionId: "merciful-second-activation",
+      seat: 0,
+      kind: "chooseOption",
+      promptText: "Omnimon: Merciful Mode",
+      sourceCardId: "EX13-077",
+      options: {
+        choices: ["Recovery +1"],
+        choiceClauses: [recoveryBullet],
+        activation: { index: 2, total: 2 },
+        effectText,
+        effectTextPart: effectText,
+        effectTextEmphasis: colorClause,
+      },
+    });
+    expect(screen.getByText("Activation 2 of 2")).toBeTruthy();
+  });
+
+  it("omits the activation counter without a scaled activation", () => {
+    renderMerciful();
+    expect(screen.queryByText(/^Activation \d+ of \d+$/)).toBeNull();
+  });
+});
+
 it.each(["Add 1 yellow card with the [Data] trait", "1 card with the [Witchelny] trait among them to the hand."])(
   "Discord 1556041043550408755: identifies the Candlemon selection category: %s",
   (effectTextPart) => {
@@ -4560,3 +4919,162 @@ it.each(["before", "after"] as const)("shows the full staged Ryutaro effect with
   fireEvent.click(screen.getByRole("button", { name: "No, decline" }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: false });
 });
+
+it.each([
+  {
+    kind: "chooseTargets" as const,
+    effectTextEmphasis: "[When Digivolving] Delete up to 10000 DP total worth of your opponent's Digimon.",
+    candidate: "target",
+  },
+  { kind: "selectCards" as const, effectTextEmphasis: "Then, this Digimon may attack.", candidate: "player" },
+])("keeps Gallantmon's full effect and emphasizes its $kind step", ({ kind, effectTextEmphasis, candidate }) => {
+  const effectText =
+    "[When Digivolving] Delete up to 10000 DP total worth of your opponent's Digimon. Then, this Digimon may attack.";
+  renderDecision({
+    decisionId: "gallantmon-current-step",
+    seat: 0,
+    kind,
+    sourceCardId: "AD1-008",
+    promptText: "Gallantmon",
+    options: {
+      timing: "WhenDigivolving",
+      effectText,
+      effectTextPart: effectTextEmphasis,
+      effectTextEmphasis,
+      candidateInstanceIds: [candidate],
+      min: 1,
+      max: 1,
+    },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(effectText);
+  expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(effectTextEmphasis);
+});
+
+it.each([
+  {
+    timing: "WhenDigivolving",
+    passage:
+      "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may suspend 1 of your opponent's Digimon or Tamers.",
+  },
+  {
+    timing: "WhenDigivolving",
+    passage: "Then, 1 of their Digimon or Tamers can't unsuspend until their turn ends.",
+  },
+  {
+    timing: "AllTurns",
+    passage:
+      "[All Turns] [Once Per Turn] When effects play or digivolve any Digimon, ＜De-Digivolve 1＞ 1 of your opponent's Digimon.",
+  },
+  {
+    timing: "AllTurns",
+    passage: "Then, this Digimon may battle 1 of your opponent's Digimon.",
+  },
+])("highlights Callismon's current effect passage: $passage", ({ timing, passage }) => {
+  const effectText = cardEffectClauseForTiming("BT25-058", timing)!;
+  renderDecision({
+    decisionId: "callismon-current-step",
+    seat: 0,
+    kind: "chooseTargets",
+    sourceCardId: "BT25-058",
+    promptText: "Callismon",
+    options: {
+      timing,
+      effectText,
+      effectTextPart: passage,
+      effectTextEmphasis: passage,
+      candidateInstanceIds: ["target"],
+      min: 1,
+      max: 1,
+    },
+  });
+  expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(passage);
+});
+
+it.each([
+  "by suspending this Tamer",
+  "you may play 1 [Gabumon] if that Digimon has [Greymon] in its name or 1 [Agumon] if it has [Garurumon] in its name from your hand or trash without paying the cost.",
+])("distinguishes Nokia's optional stages with the current printed passage: %s", (effectTextEmphasis) => {
+  const clause = cardEffectClauseForTiming("EX13-067", "YourTurn")!;
+  const { onRespond } = renderDecision({
+    decisionId: "nokia-optional-stage",
+    seat: 0,
+    kind: "optional",
+    sourceCardId: "EX13-067",
+    promptText: "Use this effect?",
+    options: {
+      timing: "YourTurn",
+      effectText: clause,
+      effectTextPart: effectTextEmphasis,
+      effectTextEmphasis,
+    },
+  });
+  expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(clause);
+  expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(effectTextEmphasis);
+  fireEvent.click(screen.getByRole("button", { name: "Yes, activate" }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
+});
+
+it.each(["Then, by trashing your top security card", "1 of your Digimon may attack"])(
+  "emphasizes Mistymon's current optional step: %s",
+  (effectTextEmphasis) => {
+    const clause =
+      "[On Play] [When Digivolving] You may place 1 [Witchelny] text card from your hand as the bottom security card. Then, by trashing your top security card, 1 of your Digimon may attack.";
+    renderDecision({
+      decisionId: "mistymon-step",
+      seat: 0,
+      kind: "optional",
+      sourceCardId: "EX13-033",
+      promptText: "Use this effect?",
+      options: { timing: "OnPlay", effectText: clause, effectTextPart: clause, effectTextEmphasis },
+    });
+    expect(document.querySelector(".decision-overlay__effect-text")?.textContent).toBe(clause);
+    expect(document.querySelector(".decision-overlay__effect-text strong")?.textContent).toBe(effectTextEmphasis);
+  },
+);
+
+it.each([true, false])(
+  "Material Save explicitly activates or declines without a target selection, accepted=%s",
+  (accepted) => {
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
+    render(
+      <I18nProvider>
+        <DecisionOverlay
+          request={{
+            decisionId: "material-save-activation",
+            seat: 0,
+            kind: "selectCards",
+            promptText: "＜Material Save 4＞: place the specified digivolution cards under one of your Tamers?",
+            sourceCardId: "BT11-019",
+            options: {
+              candidateInstanceIds: ["starmons"],
+              visibleInstanceIds: ["starmons", "ballistamon", "zeiggreymon", "omnishoutmon"],
+              min: 0,
+              max: 1,
+              selectionContext: "materialSaveActivation",
+            },
+          }}
+          sourceCardId="BT11-019"
+          candidates={[
+            { instanceId: "starmons", cardId: "BT10-029", selectable: true },
+            { instanceId: "ballistamon", cardId: "BT19-047", selectable: false },
+            { instanceId: "zeiggreymon", cardId: "AD1-013", selectable: false },
+            { instanceId: "omnishoutmon", cardId: "BT11-015", selectable: false },
+          ]}
+          picks={[]}
+          onTogglePick={vi.fn<(instanceId: string) => void>()}
+          onRespond={onRespond}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.queryByRole("button", { name: "Confirm targets" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "None" })).toBeNull();
+    expect(screen.getByRole("img", { name: "Ballistamon" })).toBeTruthy();
+    expect(screen.getByRole("img", { name: "ZeigGreymon" })).toBeTruthy();
+    expect(onRespond).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: accepted ? "Yes, activate" : "No, decline" }));
+    expect(onRespond).toHaveBeenCalledExactlyOnceWith({
+      kind: "selectCards",
+      instanceIds: accepted ? ["starmons"] : [],
+    });
+  },
+);

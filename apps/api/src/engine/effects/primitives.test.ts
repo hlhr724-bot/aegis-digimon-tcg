@@ -15,6 +15,7 @@ import {
   PRIVATE_VIEW_TAG,
 } from "@aegis/shared";
 import { setBreeding } from "../state/access.js";
+import { setResolvingOption } from "#api/engine/state/access";
 import { MemoryGauge } from "../MemoryGauge.js";
 import { ModifierLedger } from "./modifiers.js";
 import { SubTriggerRegistry } from "./subtriggers.js";
@@ -76,6 +77,7 @@ function harness(opts?: {
   combat?: CombatPort;
   rngForSeat?: PrimitivesEngine["rngForSeat"];
   onConsultLeave?: () => void;
+  onFireSubTrigger?: PrimitivesEngine["fireSubTrigger"];
 }): Harness {
   const s = setupEngine(opts?.board);
   const state = s.state;
@@ -122,6 +124,7 @@ function harness(opts?: {
     },
     fireSubTrigger: async (event, payload) => {
       subTriggerFires.push({ event, payload });
+      await opts?.onFireSubTrigger?.(event, payload);
     },
     consultLeavePrevention: async (permanentIds, cause, _resolvingSeat, callOpts) => {
       leavePreventionCalls.push({ permanentIds, cause, opts: callOpts });
@@ -642,6 +645,71 @@ describe("primitives: trash / delete / suspend", () => {
     expect(h.state.players[0]!.hand).toHaveLength(0);
   });
 
+  it("publishes hand origins and public identities grouped by seat while preserving other zones", async () => {
+    const h = harness({
+      board: {
+        0: {
+          hand: [{ card: OPTION, as: "ownHand", artId: "alternate-option-art", faceUp: false }],
+          deck: [{ card: DIGIMON, as: "deckCard" }],
+          trash: [{ card: TAMER, as: "alreadyTrashed" }],
+        },
+        1: {
+          hand: [
+            { card: TAMER, as: "opponentFirst", faceUp: false },
+            { card: OPTION, as: "opponentSecond", faceUp: false },
+          ],
+        },
+      },
+    });
+    const names = ["ownHand", "deckCard", "opponentFirst", "opponentSecond", "alreadyTrashed"];
+    const moved = await h.fx.trash([...names.map((name) => h.s.inst(name).instanceId), "missing-card"]);
+    expect(h.events.filter(({ kind }) => kind === "cardsMoved")).toEqual([
+      {
+        kind: "cardsMoved",
+        instanceIds: [h.s.inst("ownHand").instanceId],
+        cardIds: [OPTION],
+        artIds: ["alternate-option-art"],
+        seat: 0,
+        from: "hand",
+        fromSeat: 0,
+        to: "trash",
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [h.s.inst("deckCard").instanceId],
+        cardIds: [DIGIMON],
+        artIds: [DIGIMON],
+        from: "deck",
+        fromSeat: 0,
+        seat: 0,
+        to: "trash",
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [h.s.inst("opponentFirst").instanceId, h.s.inst("opponentSecond").instanceId],
+        cardIds: [TAMER, OPTION],
+        artIds: [TAMER, OPTION],
+        seat: 1,
+        fromSeat: 1,
+        from: "hand",
+        to: "trash",
+      },
+    ]);
+    expect(moved).toHaveLength(4);
+    expect(moved.every((card) => card.faceUp)).toBe(true);
+    expect(h.state.players[0]!.hand).toHaveLength(0);
+    expect(h.state.players[1]!.hand).toHaveLength(0);
+    expect(h.state.players[0]!.trash).toHaveLength(3);
+    expect(h.state.players[1]!.trash).toHaveLength(2);
+    expect(h.subTriggerFires.filter(({ event }) => event === "whenHandTrashed")).toHaveLength(2);
+  });
+
+  it("does not publish hand movement for a card already trashed or a missing instance", async () => {
+    const h = harness({ board: { 0: { trash: [{ card: OPTION, as: "alreadyTrashed" }] } } });
+    expect(await h.fx.trash([h.s.inst("alreadyTrashed").instanceId, "missing-card"])).toEqual([]);
+    expect(h.events.filter(({ kind }) => kind === "cardsMoved")).toEqual([]);
+  });
+
   it("attributes hand-trash triggers to the effect controller", async () => {
     const h = harness({
       board: { 0: { hand: [{ card: OPTION, as: "discarded" }] } },
@@ -659,6 +727,7 @@ describe("primitives: trash / delete / suspend", () => {
       event: "whenTrashedFromHand",
       payload: {
         handTrashedSeat: 0,
+        handTrashedInstanceIds: [h.s.inst("discarded").instanceId],
         trashedFromHandCardId: OPTION,
         trashedFromHandInstanceId: h.s.inst("discarded").instanceId,
         byEffectSeat: 1,
@@ -926,7 +995,8 @@ describe("primitives: return to hand / deck", () => {
     expect(h.events).toContainEqual({
       kind: "cardsMoved",
       instanceIds: moved.map((card) => card.instanceId),
-      from: "various",
+      from: "battleArea",
+      fromSeat: 0,
       to: "hand",
       seat: 0,
       handAddition: "transfer",
@@ -943,6 +1013,7 @@ describe("primitives: return to hand / deck", () => {
       {
         kind: "cardsMoved",
         from: "deck",
+        fromSeat: 0,
         to: "hand",
         seat: 0,
         handAddition: "transfer",
@@ -967,9 +1038,33 @@ describe("primitives: return to hand / deck", () => {
     const ids = ["first", "second", "third"].map((alias) => h.s.inst(alias).instanceId);
     await h.fx.returnToHand(ids);
     expect(h.events.filter((event) => event.kind === "cardsMoved")).toEqual([
-      { kind: "cardsMoved", from: "deck", to: "hand", seat: 0, handAddition: "transfer", instanceIds: [ids[0]] },
-      { kind: "cardsMoved", from: "various", to: "hand", seat: 1, handAddition: "transfer", instanceIds: [ids[1]] },
-      { kind: "cardsMoved", from: "deck", to: "hand", seat: 0, handAddition: "transfer", instanceIds: [ids[2]] },
+      {
+        kind: "cardsMoved",
+        from: "deck",
+        fromSeat: 0,
+        to: "hand",
+        seat: 0,
+        handAddition: "transfer",
+        instanceIds: [ids[0]],
+      },
+      {
+        kind: "cardsMoved",
+        from: "trash",
+        fromSeat: 1,
+        to: "hand",
+        seat: 1,
+        handAddition: "transfer",
+        instanceIds: [ids[1]],
+      },
+      {
+        kind: "cardsMoved",
+        from: "deck",
+        fromSeat: 0,
+        to: "hand",
+        seat: 0,
+        handAddition: "transfer",
+        instanceIds: [ids[2]],
+      },
     ]);
   });
 
@@ -978,7 +1073,15 @@ describe("primitives: return to hand / deck", () => {
     const id = h.s.inst("staged").instanceId;
     await h.fx.returnToHand([id], { silent: true });
     expect(h.events.filter((event) => event.kind === "cardsMoved")).toEqual([
-      { kind: "cardsMoved", from: "deck", to: "hand", seat: 1, handAddition: "staging", instanceIds: [id] },
+      {
+        kind: "cardsMoved",
+        from: "deck",
+        fromSeat: 1,
+        to: "hand",
+        seat: 1,
+        handAddition: "staging",
+        instanceIds: [id],
+      },
     ]);
     expect(h.subTriggerFires.some((entry) => entry.event === "whenEffectAddsToHand")).toBe(false);
   });
@@ -1038,18 +1141,36 @@ describe("primitives: return to hand / deck", () => {
     await h.fx.returnToDeck(returned, { toTop: false });
 
     expect(h.events.filter((event) => event.kind === "cardsMoved")).toEqual([
-      expect.objectContaining({
-        instanceIds: [h.s.inst("mineOne").instanceId, h.s.inst("mineTwo").instanceId],
+      {
+        kind: "cardsMoved",
+        instanceIds: [returned[0]],
+        from: "trash",
+        fromSeat: 0,
         to: DECK_BOTTOM,
+        deckReturnOrder: true,
         seat: 0,
-        cardIds: [DIGIMON, TAMER],
-      }),
-      expect.objectContaining({
-        instanceIds: [h.s.inst("theirs").instanceId],
+        cardIds: [DIGIMON],
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [returned[1]],
+        from: "trash",
+        fromSeat: 1,
         to: DECK_BOTTOM,
+        deckReturnOrder: true,
         seat: 1,
         cardIds: [OPTION],
-      }),
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [returned[2]],
+        from: "trash",
+        fromSeat: 0,
+        to: DECK_BOTTOM,
+        deckReturnOrder: true,
+        seat: 0,
+        cardIds: [TAMER],
+      },
     ]);
   });
 
@@ -1930,7 +2051,16 @@ describe("primitives: placeUnder / link", () => {
     expect(h.state.players[0]!.trash.map(({ instanceId }) => instanceId)).toEqual(
       expect.arrayContaining(selections.map(({ instanceId }) => instanceId)),
     );
-    expect(h.events.filter(({ kind }) => kind === "cardsMoved")).toHaveLength(1);
+    expect(h.events.filter(({ kind }) => kind === "cardsMoved")).toEqual(
+      selections.map(({ hostPermanentId, instanceId }) => ({
+        kind: "cardsMoved",
+        instanceIds: [instanceId],
+        from: "digivolutionCards",
+        fromSeat: 0,
+        fromHost: { permanentId: hostPermanentId, hostCardId: DIGIMON },
+        to: "trash",
+      })),
+    );
     expect(h.subTriggerFires[0]?.event).toBe("onDigivolutionCardsDiscardedBatch");
   });
 
@@ -2220,13 +2350,26 @@ describe("primitives: placeUnder / link", () => {
       const attachedIds = withAttached ? [h.s.inst("attached").instanceId] : [];
       const expectedAdded = [ids[0]!, ...attachedIds, ids[1]!];
       const existingId = h.s.inst("existing").instanceId;
+      const materialHostId = h.s.perm("tamer").permanentId;
       expect(
         (await h.fx.placeMixedMaterialsUnder?.(h.s.perm("dest").permanentId, ids))?.map((card) => card.instanceId),
       ).toEqual(ids);
       expect(h.s.perm("dest").stack.map((card) => card.instanceId)).toEqual([...expectedAdded, existingId]);
       expect(h.state.players[0]!.battleArea).toHaveLength(1);
       expect(h.state.players[0]!.trash).toHaveLength(0);
-      expect(h.events).toEqual([{ kind: "cardsMoved", instanceIds: expectedAdded, from: "various", to: "battleArea" }]);
+      const placement = { to: "battleArea", placedUnder: { permanentId: h.s.perm("dest").permanentId } };
+      expect(h.events).toEqual([
+        { kind: "cardsMoved", instanceIds: [ids[0]], from: "trash", fromSeat: 0, ...placement },
+        ...attachedIds.map((instanceId) => ({
+          kind: "cardsMoved",
+          instanceIds: [instanceId],
+          from: "digivolutionCards",
+          fromSeat: 0,
+          fromHost: { permanentId: materialHostId, hostCardId: TAMER },
+          ...placement,
+        })),
+        { kind: "cardsMoved", instanceIds: [ids[1]], from: "battleArea", fromSeat: 0, ...placement },
+      ]);
       expect(h.subTriggerFires).toHaveLength(1);
       expect(h.subTriggerFires[0]?.payload).toMatchObject({
         addedDigivolutionCardInstanceIds: expectedAdded,
@@ -2692,7 +2835,12 @@ describe("primitives: changeEvoCost / grantPierce record into the ledger", () =>
 describe("primitives: redirectAttack (chooser / optional)", () => {
   // A harness with a combat-port fake recording redirectTarget calls and a scripted prompt.
   // The board comes from the Test Seam; the combat port is the fake under observation.
-  function combatHarness(opts: { isAttacking: boolean; attackerId?: string; board?: BoardSpec }) {
+  function combatHarness(opts: {
+    isAttacking: boolean;
+    attackerId?: string;
+    board?: BoardSpec;
+    rejectRedirect?: boolean;
+  }) {
     const s = setupEngine(opts.board);
     const state = s.state;
     state.turnSeat = 0;
@@ -2717,6 +2865,7 @@ describe("primitives: redirectAttack (chooser / optional)", () => {
         resolvedAttacks.push(attacker.permanentId);
       },
       redirectTarget: (t: { kind: string; permanentId?: string }) => {
+        if (opts.rejectRedirect) return false;
         if (t.kind === "permanent" && t.permanentId) redirects.push({ permanentId: t.permanentId });
         if (t.kind === "player") redirectedToPlayer = true;
         return true;
@@ -2829,6 +2978,18 @@ describe("primitives: redirectAttack (chooser / optional)", () => {
         payload: { subjectPermanentId: "ATK1", attackerPermanentId: "ATK1" },
       },
     ]);
+  });
+
+  it("does not announce a target switch when combat rejects the redirect", async () => {
+    const h = combatHarness({
+      isAttacking: true,
+      attackerId: "ATK1",
+      rejectRedirect: true,
+      board: { 1: { battleArea: [battleDigimon("DEF1", 5000)] } },
+    });
+    await h.fx.redirectAttack([h.s.perm("DEF1").permanentId], { chooserSeat: 1 as Seat });
+    expect(h.redirects).toEqual([]);
+    expect(h.fires).toEqual([]);
   });
 
   it("does NOT fire whenAttackTargetSwitched when the (optional) redirect is declined", async () => {
@@ -3470,6 +3631,7 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
     hatch: true,
     inHandCost: true,
     isAttackResolving: true,
+    isAttackTargetLocked: true,
     isBeAffectedBySourceKind: true,
     isDigivolutionRequirementIgnoreBlocked: true,
     isEffectDigivolveBlocked: true,
@@ -3480,6 +3642,7 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
     leaveEffectResolution: true,
     announceEffect: true,
     announceEffectOption: true,
+    announceEffectClauseAdvanced: true,
     link: true,
     linkCostReductionUsed: true,
     materialSave: true,
@@ -3490,6 +3653,7 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
     modifyPlayerDP: true,
     modifySecurityDp: true,
     movePermanentZone: true,
+    orderDnaMaterials: true,
     payActivationCost: true,
     placeAsTopFromEggDeck: true,
     placeOptionAsPermanent: true,
@@ -3532,6 +3696,7 @@ describe("Primitives completeness guard (no declared-but-unassigned methods)", (
     revealCard: true,
     revokeKeyword: true,
     searchDeck: true,
+    seatStackTrashLock: true,
     securityAttackInvert: true,
     securityToHand: true,
     setBaseDP: true,
@@ -3729,5 +3894,172 @@ describe("primitives: resolveCardEffect / useOptionFromHand (BT26 gap fix)", () 
     } finally {
       unregisterCard(FAKE_CARD_ID);
     }
+  });
+
+  it.each(["self-placement", "throwing effect"] as const)(
+    "restores the parent Option after a nested Option with %s and before use notifications",
+    async (outcome) => {
+      const parent = makeInstance(OPTION, 0, true);
+      const notificationParents: string[] = [];
+      const resolvingChildren: string[] = [];
+      const h: Harness = harness({
+        onFireSubTrigger: async (event) => {
+          if (event === "whenOptionUsed") {
+            notificationParents.push(h.state.players[0]!.resolvingOption?.instanceId ?? "");
+          }
+        },
+      });
+      const used = makeInstance(OPTION, 0, true);
+      h.state.players[0]!.hand.push(used);
+      setResolvingOption(h.state.players[0]!, parent);
+      const module: EffectModule = {
+        cardId: OPTION,
+        effectsForTiming: (timing) =>
+          timing === EffectTiming.OnUseOption
+            ? [
+                {
+                  effectKey: `${OPTION}/nested-lifecycle`,
+                  description: "Resolve a nested Option.",
+                  optional: false,
+                  isInherited: false,
+                  isSecurity: false,
+                  isLinked: false,
+                  maxPerTurn: -1,
+                  canTrigger: () => true,
+                  canActivate: () => true,
+                  resolve: async (subCtx) => {
+                    resolvingChildren.push(h.state.players[0]!.resolvingOption?.instanceId ?? "");
+                    if (outcome === "throwing effect") {
+                      throw new Error("nested-option-resolution-failure");
+                    }
+                    await subCtx.fx.placeOptionAsPermanent?.(used.instanceId);
+                  },
+                },
+              ]
+            : [],
+      };
+      const previousModule = unregisterCard(OPTION);
+      registerCard(module);
+      try {
+        const ctx = {
+          source: { ownerSeat: 0, instanceId: parent.instanceId, cardId: OPTION },
+          fx: h.fx,
+        } as unknown as EffectContext;
+        const resolution = await h.fx.useOptionFromHand(ctx, used.instanceId, 8).then(
+          (moved) => ({ moved, error: undefined }),
+          (error: unknown) => ({ moved: undefined, error: error instanceof Error ? error.message : String(error) }),
+        );
+        const player = h.state.players[0]!;
+        expect(resolution.error).toBe(outcome === "throwing effect" ? "nested-option-resolution-failure" : undefined);
+        expect(resolution.moved ?? []).toEqual([]);
+        expect(resolvingChildren).toEqual([used.instanceId]);
+        expect(notificationParents).toEqual([parent.instanceId]);
+        expect(player.resolvingOption?.instanceId).toBe(parent.instanceId);
+        expect(player.hand).toHaveLength(0);
+        expect(player.trash.filter((card) => card.instanceId === used.instanceId)).toHaveLength(
+          outcome === "throwing effect" ? 1 : 0,
+        );
+        expect(player.battleArea.filter((permanent) => permanent.topCard.instanceId === used.instanceId)).toHaveLength(
+          outcome === "self-placement" ? 1 : 0,
+        );
+        expect(
+          [
+            ...player.hand,
+            ...player.trash,
+            ...player.security,
+            ...Array.from(player.battleArea).flatMap((permanent) => [permanent.topCard, ...permanent.stack]),
+          ].filter((card) => card.instanceId === parent.instanceId),
+        ).toHaveLength(0);
+      } finally {
+        unregisterCard(OPTION);
+        if (previousModule !== undefined) {
+          registerCard(previousModule);
+        }
+      }
+    },
+  );
+
+  it("refuses to use the already-resolving physical Option again", async () => {
+    const h = harness();
+    const parent = makeInstance(OPTION, 0, true);
+    setResolvingOption(h.state.players[0]!, parent);
+    const ctx = {
+      source: { ownerSeat: 0, instanceId: parent.instanceId, cardId: OPTION },
+      fx: h.fx,
+    } as unknown as EffectContext;
+    expect(await h.fx.useOptionFromHand(ctx, parent.instanceId, 8)).toEqual([]);
+    expect(h.state.players[0]!.resolvingOption?.instanceId).toBe(parent.instanceId);
+    expect(h.state.players[0]!.trash).toHaveLength(0);
+    expect(h.subTriggerFires).toHaveLength(0);
+  });
+});
+
+describe("movement origin narration", () => {
+  it("groups discards by hand owner while preserving the requested order", async () => {
+    const h = harness({
+      board: {
+        0: {
+          hand: [
+            { card: DIGIMON, as: "first" },
+            { card: TAMER, as: "last" },
+          ],
+        },
+        1: { hand: [{ card: OPTION, as: "middle" }] },
+      },
+    });
+    const ids = ["first", "middle", "last"].map((alias) => h.s.inst(alias).instanceId);
+    await h.fx.trash(ids);
+    expect(h.events.filter((event) => event.kind === "cardsMoved")).toEqual([
+      {
+        kind: "cardsMoved",
+        instanceIds: [ids[0]],
+        cardIds: [DIGIMON],
+        artIds: [DIGIMON],
+        seat: 0,
+        from: "hand",
+        fromSeat: 0,
+        to: "trash",
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [ids[1]],
+        cardIds: [OPTION],
+        artIds: [OPTION],
+        seat: 1,
+        from: "hand",
+        fromSeat: 1,
+        to: "trash",
+      },
+      {
+        kind: "cardsMoved",
+        instanceIds: [ids[2]],
+        cardIds: [TAMER],
+        artIds: [TAMER],
+        seat: 0,
+        from: "hand",
+        fromSeat: 0,
+        to: "trash",
+      },
+    ]);
+    expect(h.state.players[0]!.trash.map((card) => card.instanceId)).toEqual([ids[0], ids[2]]);
+    expect(h.state.players[1]!.trash.map((card) => card.instanceId)).toEqual([ids[1]]);
+  });
+
+  it("returns an ordinary security card without marking a security check or exposing its identity", async () => {
+    const h = harness({ board: { 1: { security: [{ card: DIGIMON, as: "hidden" }] } } });
+    const id = h.s.inst("hidden").instanceId;
+    await h.fx.returnToHand([id]);
+    expect(h.events.filter((event) => event.kind === "cardsMoved")).toEqual([
+      {
+        kind: "cardsMoved",
+        instanceIds: [id],
+        from: "security",
+        fromSeat: 1,
+        to: "hand",
+        seat: 1,
+        handAddition: "transfer",
+      },
+    ]);
+    expect(h.state.players[1]!.hand.map((card) => card.instanceId)).toEqual([id]);
   });
 });

@@ -270,6 +270,10 @@ describe("BT25-058 Callismon", () => {
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "chooseTargets");
     const suspendDecision = s.state.pendingDecision!;
+    expect(JSON.parse(suspendDecision.payloadJson)).toMatchObject({
+      effectTextPart:
+        "[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may suspend 1 of your opponent's Digimon or Tamers.",
+    });
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
@@ -283,6 +287,9 @@ describe("BT25-058 Callismon", () => {
         s.state.pendingDecision.decisionId !== suspendDecision.decisionId,
     );
     const restrictDecision = s.state.pendingDecision!;
+    expect(JSON.parse(restrictDecision.payloadJson)).toMatchObject({
+      effectTextPart: "Then, 1 of their Digimon or Tamers can't unsuspend until their turn ends.",
+    });
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
@@ -633,6 +640,9 @@ describe("BT25-058 Callismon — KB Q&A rulings", () => {
       ({ req }) => req.kind === "optional" && req.sourceCardId === "BT25-058",
     );
     expect(callismonOptionals.map(({ req }) => req.promptText)).toEqual(["Battle"]);
+    expect(callismonOptionals[0]!.req.options).toMatchObject({
+      effectTextPart: "Then, this Digimon may battle 1 of your opponent's Digimon.",
+    });
     expect(s.perm("opponent").topCard.cardId).toBe("BT1-020");
     expect(s.state.players[1]!.battleArea).toHaveLength(1);
   });

@@ -1,3 +1,5 @@
+import { ReplayVisibility } from "@aegis/shared/replays/ReplayVisibility";
+import { uploadFriendReplay } from "@/replays/uploadFriendReplay";
 import "./sharing.css";
 import { useId, useState } from "react";
 import type { SavedReplay } from "@aegis/shared";
@@ -13,7 +15,15 @@ class DriveStillPublicError extends Error {}
  * Public replays are served by our API from the owner's Drive, so going public first lets
  * anyone with the link read the Drive file, then tells the API. Going private does the reverse.
  */
-export function ReplaySharing({ replay, onChange }: { replay: SavedReplay; onChange?: (replay: SavedReplay) => void }) {
+export function ReplaySharing({
+  replay,
+  onChange,
+  publicSharing = true,
+}: {
+  replay: SavedReplay;
+  onChange?: (replay: SavedReplay) => void;
+  publicSharing?: boolean;
+}) {
   const { t } = useTranslation();
   const { provider } = useCloudReplays();
   const title = useId();
@@ -46,6 +56,12 @@ export function ReplaySharing({ replay, onChange }: { replay: SavedReplay; onCha
     return updated;
   }
 
+  async function shareWithFriends(): Promise<SavedReplay> {
+    await unpublish();
+    const archive = await drive.download({ id: replay.driveFileId, bytes: replay.bytes });
+    return uploadFriendReplay({ replayId: replay.id, archive });
+  }
+
   async function save() {
     if (visibility === replay.visibility) {
       setOpen(false);
@@ -55,7 +71,14 @@ export function ReplaySharing({ replay, onChange }: { replay: SavedReplay; onCha
     setError(undefined);
     try {
       // The session check runs inside the click, so a sign-in pop-up is allowed to open.
-      const updated = await withCloudSession(drive, visibility === "public" ? publish : unpublish);
+      let operation = unpublish;
+      if (visibility === ReplayVisibility.PUBLIC.value) {
+        operation = publish;
+      }
+      if (visibility === ReplayVisibility.FRIENDS.value) {
+        operation = shareWithFriends;
+      }
+      const updated = await withCloudSession(drive, operation);
       onChange?.(updated);
       setOpen(false);
     } catch (cause) {
@@ -84,19 +107,25 @@ export function ReplaySharing({ replay, onChange }: { replay: SavedReplay; onCha
           void drive.prepare().catch(() => undefined);
         }}
       >
-        {t(replay.visibility === "public" ? "replay.public" : "replay.private")} · {t("replay.share")}
+        {t(getVisibilityLabel(replay.visibility))} · {t("replay.share")}
       </Button>
       {open ? (
         <Dialog className="replay-sharing" labelledBy={title} onClose={busy ? undefined : () => setOpen(false)}>
           <h2 id={title}>{t("replay.share")}</h2>
           <fieldset disabled={busy}>
             <legend className="aegis-sr-only">{t("replay.share")}</legend>
-            {(["private", "public"] as const).map((value) => (
+            {Object.values(ReplayVisibility).map(({ value }) => (
               <label key={value} className="replay-sharing__choice">
-                <input type="radio" name={title} checked={visibility === value} onChange={() => setVisibility(value)} />
+                <input
+                  type="radio"
+                  disabled={value === ReplayVisibility.PUBLIC.value && !publicSharing}
+                  name={title}
+                  checked={visibility === value}
+                  onChange={() => setVisibility(value)}
+                />
                 <span>
-                  <strong>{t(`replay.${value}`)}</strong>
-                  <small>{t(value === "private" ? "replay.privateHint" : "replay.publicHint")}</small>
+                  <strong>{t(getVisibilityLabel(value))}</strong>
+                  <small>{t(getVisibilityHint(value))}</small>
                 </span>
               </label>
             ))}
@@ -131,4 +160,18 @@ export function ReplaySharing({ replay, onChange }: { replay: SavedReplay; onCha
       ) : null}
     </>
   );
+}
+
+function getVisibilityLabel(value: SavedReplay["visibility"]): TranslationKey {
+  if (value === ReplayVisibility.FRIENDS.value) {
+    return "friends.replayVisibility";
+  }
+  return value === ReplayVisibility.PUBLIC.value ? "replay.public" : "replay.private";
+}
+
+function getVisibilityHint(value: SavedReplay["visibility"]): TranslationKey {
+  if (value === ReplayVisibility.FRIENDS.value) {
+    return "friends.replayVisibilityHint";
+  }
+  return value === ReplayVisibility.PUBLIC.value ? "replay.publicHint" : "replay.privateHint";
 }

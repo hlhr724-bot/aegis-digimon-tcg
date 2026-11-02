@@ -4,17 +4,24 @@
 
 import type { ReactNode } from "react";
 import { BugReportDialog } from "../../../bugs/BugReportDialog";
-import { PlayLogSidebar } from "../../PlayLogSidebar";
+import { PlayLogSidebar } from "@/game/log/PlayLogSidebar";
 import { CardZoomOverlay, GameOverOverlay, OpponentDroppedOverlay } from "../../overlay";
-import type { SeriesResultProps } from "../../overlay/match/GameOverOverlay";
-import type { LogLine } from "../../matchLog";
+import type { PostGameChat, SeriesResultProps } from "../../overlay/match/GameOverOverlay";
+import type { RematchProps } from "@/game/overlay/match/RematchPanel";
+import type { LogTurnGroup } from "@/game/log/LogEntry";
+import type { SeatNames } from "@/game/log/SeatNames";
+import type { SeatAvatars } from "@/game/log/SeatAvatars";
+import type { Seat } from "@aegis/shared/schema/enums";
 import type { GameOverOutcome } from "../../gameOverSplash";
 import type { ArenaDeckColors } from "../../../design/arenaPalette";
 import { ArenaLookDialog } from "./ArenaLookDialog";
 import type { ReplaySaveProps } from "../../../replays/ReplaySavePrompt";
 
 export function MatchStatusOverlays({
-  log,
+  turns,
+  playerNames,
+  playerAvatars,
+  viewerSeat,
   historyOpen,
   zoomCardId,
   zoomArtId,
@@ -33,13 +40,16 @@ export function MatchStatusOverlays({
   onLeaveDropped,
   returnsToRoom,
 }: {
-  log: readonly LogLine[];
+  turns: readonly LogTurnGroup[];
+  playerNames: SeatNames;
+  playerAvatars?: SeatAvatars;
+  viewerSeat?: Seat;
   historyOpen: boolean;
   zoomCardId: string | null;
   zoomArtId: string | undefined;
   bugReportOpen: boolean;
   /** The board look settings, while the viewer has them open. */
-  arenaLook?: { deckColors: ArenaDeckColors; onClose: () => void };
+  arenaLook?: { deckColors: ArenaDeckColors; onClose: () => void; handoffUrl?: string };
   matchLogId: string;
   /** Only shapes what the report dialog says about follow-up questions. */
   signedIn: boolean;
@@ -50,13 +60,19 @@ export function MatchStatusOverlays({
     | (ReplaySaveProps & {
         spectatorResult?: string;
         onDownloadReplay?: () => void;
+        opponentDeckDialog?: (onClose: () => void) => ReactNode;
         usedDeckDialog?: (onClose: () => void) => ReactNode;
+        usedDeckName?: string;
+        opponentDeckName?: string;
         replayStatus?: "preparing" | "unavailable";
         result: GameOverOutcome;
         reason: string;
         stats: { value: number; label: string }[];
         cardsRevealed: boolean;
         series?: SeriesResultProps;
+        rematch?: RematchProps;
+        friendMatchId?: string;
+        chat?: PostGameChat;
       })
     | undefined;
   onCloseHistory: () => void;
@@ -71,7 +87,16 @@ export function MatchStatusOverlays({
 }) {
   return (
     <>
-      {historyOpen ? <PlayLogSidebar log={log} onClose={onCloseHistory} onOpenCard={onOpenCard} /> : null}
+      {historyOpen ? (
+        <PlayLogSidebar
+          turns={turns}
+          playerNames={playerNames}
+          playerAvatars={playerAvatars}
+          viewerSeat={viewerSeat}
+          onClose={onCloseHistory}
+          onOpenCard={onOpenCard}
+        />
+      ) : null}
 
       {zoomCardId ? <CardZoomOverlay cardId={zoomCardId} artId={zoomArtId} onClose={onCloseZoom} /> : null}
 
@@ -79,14 +104,23 @@ export function MatchStatusOverlays({
         <BugReportDialog signedIn={signedIn} matchLogId={matchLogId} onClose={onCloseBugReport} />
       ) : null}
 
-      {arenaLook ? <ArenaLookDialog deckColors={arenaLook.deckColors} onClose={arenaLook.onClose} /> : null}
+      {arenaLook ? (
+        <ArenaLookDialog
+          deckColors={arenaLook.deckColors}
+          onClose={arenaLook.onClose}
+          handoffUrl={arenaLook.handoffUrl}
+        />
+      ) : null}
 
       {opponentDropped ? <OpponentDroppedOverlay onLeave={onLeaveDropped} /> : null}
 
       {gameOver ? (
         <GameOverOverlay
           spectatorResult={gameOver.spectatorResult}
+          usedDeckName={gameOver.usedDeckName}
+          opponentDeckName={gameOver.opponentDeckName}
           usedDeckDialog={gameOver.usedDeckDialog}
+          opponentDeckDialog={gameOver.opponentDeckDialog}
           onDownloadReplay={gameOver.onDownloadReplay}
           replayFile={gameOver.replayFile}
           replayStatus={gameOver.replayStatus}
@@ -99,6 +133,9 @@ export function MatchStatusOverlays({
           onRematch={onRematch}
           returnsToRoom={returnsToRoom}
           series={gameOver.series}
+          rematch={gameOver.rematch}
+          friendMatchId={gameOver.friendMatchId}
+          chat={gameOver.chat}
         />
       ) : null}
     </>

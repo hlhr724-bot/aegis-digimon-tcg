@@ -1,3 +1,4 @@
+import { printedPassage } from "#api/engine/decisions/printedPassage";
 import type { EffectContext } from "../../EffectContext.js";
 import { canPayCost, costIsAskedAsSelection } from "./canPay.js";
 import { payCompoundCost } from "./compound.js";
@@ -73,12 +74,27 @@ export async function payCost(
   // card to trash as the effect" for a seat answering without the printed text. Restored
   // in a `finally` so a throwing cost cannot leave the flag raised on a shared context.
   ctx.payingCostDepth = (ctx.payingCostDepth ?? 0) + 1;
+  const outerEffectTextPart = ctx.activeEffectTextPart;
+  const outerEffectTextEmphasis = ctx.activeEffectTextEmphasis;
+  const outerTargetFate = ctx.activeTargetFate;
+  ctx.activeTargetFate = cost.kind === "deleteOwn" ? "delete" : undefined;
+  const printedCost =
+    cost.raw !== undefined && ctx.activeEffectText !== undefined
+      ? printedPassage(ctx.activeEffectText, cost.raw)
+      : undefined;
+  if (printedCost !== undefined) {
+    ctx.activeEffectTextPart = ctx.activeEffectText;
+    ctx.activeEffectTextEmphasis = printedCost;
+  }
   try {
     const payer = PAYERS[cost.kind];
     if (payer !== undefined && !costIsAskedAsSelection(cost) && canPayCost(ctx, cost)) ctx.onActivationChosen?.();
     return payer === undefined ? false : await payer(ctx, cost, out, opts);
   } finally {
     ctx.payingCostDepth -= 1;
+    ctx.activeEffectTextPart = outerEffectTextPart;
+    ctx.activeEffectTextEmphasis = outerEffectTextEmphasis;
+    ctx.activeTargetFate = outerTargetFate;
   }
 }
 

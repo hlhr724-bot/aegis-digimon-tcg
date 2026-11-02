@@ -8,6 +8,7 @@ import { candidatePermanents, resolvePermanentTargets } from "../targeting/perma
 import type { Action } from "@aegis/shared";
 import type { ForceAttackOptions } from "../../context/primitives/index.js";
 import { subscribeLaterEntrants } from "./laterEntrants.js";
+import { getEffectDecisionText } from "#api/engine/decisions/getEffectDecisionText";
 import { getAttackActionTargetScope } from "#api/engine/effects/interpreter/actions/getAttackActionTargetScope";
 
 /**
@@ -31,9 +32,8 @@ async function withEffectAttackOptions(
       sourceInstanceId: ctx.source.instanceId,
       sourcePermanentId: ctx.source.permanent()?.permanentId ?? ctx.sourcePermanentIdAtCreation,
       timing: ctx.activeTiming,
-      effectText: ctx.activeEffectText,
+      ...getEffectDecisionText(ctx),
       effectTextCardId: ctx.activeEffectTextCardId,
-      effectTextPart: ctx.activeEffectTextPart,
       isInherited: ctx.activeEffectIsInherited,
     },
     ...overrides,
@@ -90,6 +90,7 @@ function attackActionOptions(action: AttackAction): ForceAttackOptions {
     vortex: action.vortex,
     attackTargetScope: getAttackActionTargetScope(action),
     attackMechanic: action.attackMechanic,
+    deleteAtEndOfAttack: action.deleteAtEndOfAttack,
   };
 }
 
@@ -136,7 +137,7 @@ export async function runCombatAction(ctx: EffectContext, action: Action, scope:
           byEffectCardId: ctx.source.cardId,
         });
       };
-      if (action.drainTimingWindowDuringAttack && ctx.fx.isAttackResolving?.()) {
+      if (ctx.fx.isAttackResolving?.() === true) {
         await fireDeferredSuspensionTriggers();
         return false;
       }
@@ -196,6 +197,9 @@ export async function runCombatAction(ctx: EffectContext, action: Action, scope:
       // dispatch; once accepted, this is the same primitive as the canonical EndAttack.
       if (action.mode === "endAttack") {
         ctx.fx.endAttack();
+        return false;
+      }
+      if (ctx.fx.isAttackTargetLocked?.() === true) {
         return false;
       }
       // "Change the target of the attack to 1 of your Digimon": resolve the candidate
@@ -264,7 +268,17 @@ export async function runCombatAction(ctx: EffectContext, action: Action, scope:
           });
         }
       }
-      return false;
+      if (action.optional === true && action.preserveOncePerTurnOnDecline === true) {
+        if (ids.length > 0) {
+          ctx.onActivationChosen?.();
+          ctx.oncePerTurnActivationChosen = true;
+          ctx.oncePerTurnActivationDeclined = false;
+        } else if (ctx.oncePerTurnActivationChosen !== true) {
+          ctx.oncePerTurnActivationDeclined = true;
+        }
+      }
+      ctx.lastEffectActed = ids.length > 0;
+      return ids.length === 0 && action.abortOnDecline === true;
     }
     case "EndAttack": {
       // "End that attack" (BT23-069): terminate the in-flight attack (transition to

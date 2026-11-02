@@ -10,7 +10,7 @@ export function trapDialogFocus({
 }): void {
   if (event.key !== "Tab") return;
   const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
-    'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+    'button:not(:disabled):not([tabindex="-1"]), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
   );
   if (!focusable?.length) {
     event.preventDefault();

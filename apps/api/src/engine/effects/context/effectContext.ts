@@ -1,15 +1,21 @@
+import type { SingleHandCostBenefit } from "@aegis/shared/protocol/SingleHandCostBenefit";
 import type { Action, ActivateForeignEffectOverrides, CardInstance, Seat, TargetFate } from "@aegis/shared";
 import type { CardSource } from "../CardSource.js";
 import type { DecisionApi } from "./decisions.js";
 import type { GameAccess } from "./gameAccess.js";
 import type { Primitives } from "./primitives/index.js";
 import type { DiscardedStackSourceProof, TriggerInfo } from "./triggers.js";
+import type { DecisionEffectSummary } from "@aegis/shared/protocol/DecisionEffectSummary";
+import type { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 
 /**
  * What canTrigger / canActivate / resolve receive at runtime
  * (card-module contract).
  */
 export interface EffectContext {
+  activeSingleHandCostBenefit?: SingleHandCostBenefit;
+  activeDecisionSummary?: DecisionEffectSummary;
+  activeDecisionSelectionGoal?: DecisionSelectionGoal;
   /** Exact permanent rotated by a compound cost still resolving. */
   pendingRotationHostPermanentId?: string;
   source: CardSource;
@@ -44,6 +50,7 @@ export interface EffectContext {
   continuousPass?: boolean;
   /** Registering a resident clause at a payment window; cleared for future triggered bodies. */
   residentCostRegistration?: boolean;
+  isResidentCostSourceActive?: () => boolean;
   /** Exact rules clause currently resolving, including inherited/security provenance. Display-only. */
   activeEffectText?: string;
   /** Catalog provenance for a copied clause, independent of its activating rules source. */
@@ -64,6 +71,8 @@ export interface EffectContext {
   predecidedOptionalActions?: Map<Action, boolean>;
   /** Optional cost choices made before the first action; payment still occurs in order. */
   predecidedOptionalCosts?: Map<Action, boolean>;
+  costDeclinedAtSelection?: Set<Action>;
+  payingDeclinableCost?: boolean;
   /**
    * The option an optional Modal's combined "which option, or don't use?" prompt already chose
    * (see `declinableModalChoices`). `runModal` consumes it instead of asking again.
@@ -99,6 +108,7 @@ export interface EffectContext {
    * `purpose: "acceptedOptional"`.
    */
   pickingAcceptedOptional?: boolean;
+  optionalActivationCancellation?: { available: boolean };
   /** This target selection is the optional action's activation choice. */
   selectingOptionalTarget?: boolean;
   /** Temporary restrictions installed by a RestrictEffect action in this resolution. */

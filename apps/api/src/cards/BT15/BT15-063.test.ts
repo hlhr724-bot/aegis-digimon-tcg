@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
-import { settle, setupEngine } from "../../engine/testkit/harness.js";
+import { drainMicrotasks, settle, setupEngine } from "../../engine/testkit/harness.js";
 import "../index.js";
 import { compiled } from "./BT15-063.js";
 
@@ -41,6 +41,44 @@ describe("BT15-063", () => {
         },
       ],
     }));
+
+  it.each([
+    ["BT15-058", false],
+    ["BT15-087", true],
+    ["BT1-087", false],
+  ])(
+    "requires a DigiPolice Tamer among its sources rather than just a DigiPolice card: %s",
+    async (source, allowed) => {
+      const preferred: string[] = [];
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [{ card: "BT15-063", as: "host", under: [{ card: source, faceUp: true }] }],
+            hand: [
+              { card: "BT15-067", as: "evolution" },
+              { card: "BT15-094", as: "suspension" },
+            ],
+            deck: ["BT1-009", "BT1-009"],
+          },
+          1: { battleArea: [{ card: "BT1-009", as: "target" }] },
+        },
+        { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },
+      );
+      preferred.push(s.perm("target").permanentId);
+      await s.ready();
+      s.state.memory = 10;
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("suspension").instanceId })).toEqual({
+        ok: true,
+      });
+      await settle(
+        () =>
+          s.state.players[0]!.trash.some((card) => card.cardId === "BT15-094") && s.state.pendingDecision === undefined,
+      );
+      await drainMicrotasks();
+      expect(s.perm("host").topCard.cardId).toBe(allowed ? "BT15-067" : "BT15-063");
+      expect(s.state.memory).toBe(8);
+    },
+  );
 
   it("reacts to a natural effect suspension of another permanent", async () => {
     const preferred: string[] = [];

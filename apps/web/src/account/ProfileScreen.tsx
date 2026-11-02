@@ -1,3 +1,6 @@
+import { useProfileTrophiesShown } from "@/achievements/useProfileTrophiesShown";
+import { TrophyCabinet } from "@/achievements/TrophyCabinet";
+import type { DeckListing } from "@/game/decks";
 import { useCallback, useEffect, useState } from "react";
 import type { MatchHistorySummary, MatchWinRate } from "@aegis/shared";
 import type { PlayerIdentity } from "../design/primitives";
@@ -21,7 +24,10 @@ export function ProfileScreen({
   onGuestChange,
   onRefreshDiscordAvatar,
   onViewingChange,
+  onCopyDeck,
+  avatarMenuRequest,
 }: {
+  onCopyDeck?: (deck: DeckListing) => void;
   account: RemoteAccount | null | undefined;
   onAccountChange?: (account: RemoteAccount) => void;
   player: PlayerIdentity;
@@ -29,8 +35,10 @@ export function ProfileScreen({
   onRefreshDiscordAvatar?: () => Promise<void>;
   /** Playback covers the whole screen, so the app hides its navigation meanwhile. */
   onViewingChange?: (viewing: boolean) => void;
+  avatarMenuRequest?: number;
 }) {
   const { t } = useTranslation();
+  const trophiesShown = useProfileTrophiesShown();
   const file = useReplayFile(onViewingChange);
   const [summary, setSummary] = useState<MatchHistorySummary>();
   const [rate, setRate] = useState<{ accountId: string; counts: MatchWinRate | undefined }>();
@@ -76,21 +84,24 @@ export function ProfileScreen({
         onAccountChange={onAccountChange}
         onGuestChange={onGuestChange}
         onRefreshDiscordAvatar={onRefreshDiscordAvatar}
+        avatarMenuRequest={avatarMenuRequest}
       />
       {account === undefined ? (
         <p role="status">{t("account.loading")}</p>
       ) : account ? (
         <>
+          {trophiesShown ? <TrophyCabinet accountId={account.id} /> : null}
           <DriveConnectCard signedIn />
-          <PlaytestPanel />
           <MatchHistory
             key={account.id}
+            onCopyDeck={onCopyDeck}
             onWinRateChange={updateRate}
             onOpenFile={(blob) => void file.open(blob)}
             opening={file.loading}
             openError={openError}
             onReplaysChange={refreshSummary}
           />
+          <PlaytestPanel />
         </>
       ) : (
         <>

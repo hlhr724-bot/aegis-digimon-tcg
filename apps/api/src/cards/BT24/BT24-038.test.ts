@@ -7,6 +7,34 @@ import { compiled as BT24_038 } from "./BT24-038.js";
 import "../index.js";
 
 describe("BT24-038 Biomon", () => {
+  it("does not trigger when Pipomon links to a different Appmon", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT24-038", as: "biomon" },
+            { card: "BT21-009", as: "hackmon" },
+          ],
+          hand: [{ card: "BT24-032", as: "pipomon" }],
+        },
+        1: { battleArea: [{ card: "BT1-010", as: "target", dp: 15000 }] },
+      },
+      { autoSelectCards: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "linkCard",
+        instanceId: s.inst("pipomon").instanceId,
+        targetPermanentId: s.perm("hackmon").permanentId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("hackmon").linked.length === 1 && s.state.pendingDecision === undefined);
+    expect(s.perm("target").currentDP).toBe(13000);
+    expect(s.events.some((event) => event.kind === "effectTriggered" && event.sourceCardId === "BT24-038")).toBe(false);
+  });
+
   it("links a level-4-or-lower Digimon from hand or this stack to itself", () => {
     for (const trigger of ["OnPlay", "WhenDigivolving"]) {
       const action = BT24_038.effects?.find((entry) => entry.trigger === trigger)?.actions?.[0] as unknown as {

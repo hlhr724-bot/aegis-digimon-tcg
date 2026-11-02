@@ -2,6 +2,7 @@ import { Phase, EffectTiming, type Seat } from "@aegis/shared";
 import type { Primitives } from "../EffectContext.js";
 
 import type { PrimitivesContext } from "./context.js";
+import { emitEffectTargetsSelected } from "./emitEffectTargetsSelected.js";
 
 /**
  * Suspending and unsuspending permanents.
@@ -85,9 +86,12 @@ export function createSuspendVerbs(pc: PrimitivesContext) {
   ): Promise<string[]> {
     const suspendedPermanentIds: string[] = [];
     for (const permanentId of permanentIds) {
-      if (!canSuspend(permanentId)) continue;
-      access.suspend(access.permanentById(permanentId)!);
+      if (!canSuspend(permanentId, opts?.byEffectSeat)) continue;
       suspendedPermanentIds.push(permanentId);
+    }
+    emitEffectTargetsSelected({ pc, permanentIds: suspendedPermanentIds });
+    for (const permanentId of suspendedPermanentIds) {
+      access.suspend(access.permanentById(permanentId)!);
     }
     emitSuspensionMoves(suspendedPermanentIds);
     if (opts?.deferTriggers !== true) await fireSuspensionTriggers(suspendedPermanentIds, opts);
@@ -166,6 +170,7 @@ export function createSuspendVerbs(pc: PrimitivesContext) {
         // this Digimon's controller, so the payment is that player's own effect trashing.
         await trash(chosen, { byEffectSeat: permanent.controllerSeat });
       }
+      emitEffectTargetsSelected({ pc, permanentIds: [permanentId] });
       access.unsuspend(permanent);
       engine.emit?.({ kind: "cardsMoved", instanceIds: [permanentId], from: "suspended", to: "unsuspended" });
       engine.combat?.resetAttackEligibility?.(permanentId);

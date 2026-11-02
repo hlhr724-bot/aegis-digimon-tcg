@@ -231,6 +231,9 @@ describe("once-per-turn activation receipt boundaries", () => {
         await fire.fire(EffectTiming.OnPlay, s.perm("source"));
 
         expect(s.decisions.filter(({ req }) => req.kind === "selectCards")).toHaveLength(2);
+        expect(s.events.filter((event) => event.kind === "effectTriggered" || event.kind === "effectResolved")).toEqual(
+          [],
+        );
         expect(s.perm("source").currentDP).toBe(3000);
         expect(s.state.players[0]!.hand.some(({ instanceId }) => instanceId === s.inst("payment").instanceId)).toBe(
           true,
@@ -428,6 +431,9 @@ describe("once-per-turn activation receipt boundaries", () => {
 
       expect(s.perm("source").currentDP).toBe(3000);
       expect(optionalActionRequests(s)).toHaveLength(1);
+      expect(
+        s.events.filter((event) => event.kind === "effectResolved" && event.sourceCardId === CARD_ID),
+      ).toHaveLength(1);
     });
   });
 

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, type MutableRefObject } from "react";
-import type { GameState, PlayerState, Seat } from "@aegis/shared";
+import { Phase, type GameState, type PlayerState, type Seat } from "@aegis/shared";
 import { snapshotGameState, type StateSnapshot } from "../../../net/presentedState";
 import type { PhaseBanner } from "../../phaseBanner";
 import { Side } from "../../side";
@@ -86,8 +86,26 @@ export function useDrawWatcher({
     // An evicted/coalesced revision presents the live board immediately. Do not
     // invent a turn draw from later effect cards when its own snapshot is missing.
     const canPresentTurnDraw = phaseBanner?.stateVersion === undefined || snapshots === undefined || !!drawState;
-    const drawnOpponent = turnStart.opp ? (drawState?.players[viewerSeat === 0 ? 1 : 0] ?? opponent) : opponent;
+    const opponentSeat: Seat = viewerSeat === 0 ? 1 : 0;
+    const drawnOpponent = turnStart.opp ? (drawState?.players[opponentSeat] ?? opponent) : opponent;
     const drawnViewer = turnStart.you ? (drawState?.players[viewerSeat] ?? viewer) : viewer;
+    // The hold keeps the count from before the Active phase. A start-of-turn effect draw
+    // (EX2-059) was already presented by its own event, so it is not part of the turn draw.
+    const turnDrawFrom = (seat: Seat, held: number) => {
+      if (drawState === undefined) return held;
+      const activeEnd = snapshots
+        ?.filter(
+          (snapshot) =>
+            snapshot.stateVersion < drawState.stateVersion &&
+            snapshot.state.phase === Phase.Active &&
+            snapshot.state.turnSeat === seat &&
+            snapshot.state.turnCount === drawState.turnCount,
+        )
+        .at(-1);
+      return activeEnd?.state.players[seat]?.handCount ?? held;
+    };
+    const opponentFrom = turnStart.opp ? turnDrawFrom(opponentSeat, previous.opp) : previous.opp;
+    const viewerFrom = turnStart.you ? turnDrawFrom(viewerSeat, previous.you) : previous.you;
     turnStartDrawRef.current = {
       you: heldSide === Side.Viewer && turnStart.you,
       opp: heldSide === Side.Opponent && turnStart.opp,
@@ -95,10 +113,10 @@ export function useDrawWatcher({
     if (
       heldSide !== Side.Opponent &&
       (!turnStart.opp || canPresentTurnDraw) &&
-      drawnOpponent.handCount > previous.opp &&
+      drawnOpponent.handCount > opponentFrom &&
       ((turnStart.opp && drawState !== undefined) || eventDrawCountsRef.current.opp !== drawnOpponent.handCount)
     )
-      for (let index = previous.opp; index < drawnOpponent.handCount; index++)
+      for (let index = opponentFrom; index < drawnOpponent.handCount; index++)
         launchDrawFlight(Side.Opponent, turnStart.opp, 0, undefined, undefined, {
           stateVersion: (turnStart.opp ? drawState?.stateVersion : undefined) ?? state?.stateVersion ?? 0,
           handCountAfter: drawnOpponent.handCount,
@@ -107,10 +125,10 @@ export function useDrawWatcher({
     if (
       heldSide !== Side.Viewer &&
       (!turnStart.you || canPresentTurnDraw) &&
-      drawnViewer.handCount > previous.you &&
+      drawnViewer.handCount > viewerFrom &&
       ((turnStart.you && drawState !== undefined) || eventDrawCountsRef.current.you !== drawnViewer.handCount)
     )
-      for (let index = previous.you; index < drawnViewer.handCount; index++) {
+      for (let index = viewerFrom; index < drawnViewer.handCount; index++) {
         const card = drawnViewer.hand[drawnViewer.hand.length - (drawnViewer.handCount - index)];
         launchDrawFlight(
           Side.Viewer,

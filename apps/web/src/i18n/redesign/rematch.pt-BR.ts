@@ -1,0 +1,26 @@
+import type { rematchEn } from "@/i18n/redesign/rematch.en";
+
+export const rematchPtBR: Record<keyof typeof rematchEn, string> = {
+  "overlay.rematch.title": "Jogar de novo com {name}?",
+  "overlay.rematch.finish": "Terminar esta Melhor de 3",
+  "overlay.rematch.finishHint": "Conta como partida 1 · mesmos decks",
+  "overlay.rematch.new": "Começar nova Melhor de 3",
+  "overlay.rematch.newHint": "0–0 · troca de deck · início sorteado",
+  "overlay.rematch.incomingFinish": "{name} quer terminar esta Melhor de 3",
+  "overlay.rematch.incomingNew": "{name} quer começar uma nova Melhor de 3",
+  "overlay.rematch.accept": "Aceitar",
+  "overlay.rematch.decline": "Recusar",
+  "overlay.rematch.waiting": "Aguardando a resposta de {name}…",
+  "overlay.rematch.declined": "A revanche foi recusada.",
+  "overlay.rematch.closed": "A revanche não está mais disponível.",
+  "overlay.rematch.deckTitle": "Escolha seu deck para a partida 1",
+  "overlay.rematch.keepDeck": "Manter deck atual",
+  "overlay.rematch.changeDeck": "Trocar deck",
+  "overlay.rematch.deckReady": "Seu deck está confirmado.",
+  "overlay.rematch.opponentPicking": "{name} está escolhendo um deck…",
+  "overlay.rematch.opponentReady": "{name} está pronto.",
+  "overlay.rematch.opponentChanged": "{name} trocou de deck.",
+  "overlay.rematch.deckAutoKeep": "Deck atual mantido em {time}",
+  "overlay.rematch.pickDeckTitle": "Escolha um deck para o novo Melhor de 3",
+  "overlay.rematch.illegalDeck": "Esse deck não pode ser usado nesta sala.",
+};

@@ -1,4 +1,9 @@
-import type { ServerEvent } from "@aegis/shared";
+import { Phase, type ServerEvent } from "@aegis/shared";
+import "#api/cards/AD1/AD1-004";
+import "#api/cards/AD1/AD1-019";
+import "#api/cards/AD1/AD1-022";
+import "#api/cards/EX13/EX13-073";
+import "#api/cards/ST20/ST20-10";
 import "../BT1/BT1-087.js";
 import "./BT13-060.js";
 import "./BT13-097.js";
@@ -104,6 +109,70 @@ describe("BT13-106 Odin's Breath", () => {
     expect(s.state.players[0]!.security.some((card) => card.instanceId === optionId)).toBe(false);
     expect(s.state.players[0]!.trash.some((card) => card.instanceId === optionId)).toBe(true);
     expect(observe(s.engine).keywordAmount(s.perm("target"), "SecurityAttack")).toBe(-1);
+  });
+
+  it("affects a later breeding stack while WarGreymon's six Tamer colors offset its reduction", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT13-036", as: "yellow" }],
+          eggDeck: ["BT1-001"],
+          hand: [{ card: "BT13-106", as: "option" }],
+          deck: Array<string>(10).fill("BT1-009"),
+          security: ["BT1-009", "BT1-009"],
+        },
+        1: {
+          breeding: { card: "ST20-10", as: "agumon", under: ["ST21-01"] },
+          battleArea: [
+            { card: "AD1-019", as: "blueYellow" },
+            { card: "AD1-022", as: "greenRed" },
+            { card: "EX13-073", as: "blackPurple" },
+          ],
+          hand: [{ card: "AD1-004", as: "wargreymon" }],
+          deck: Array<string>(10).fill("BT1-009"),
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 10;
+    const loop = s.engine.startTurnLoop();
+    await settle(() => s.state.phase === Phase.Breeding);
+    expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+    await advance(s.engine).waitForMainPhase(0);
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.players[0]!.trash.some(({ cardId }) => cardId === "BT13-106"));
+    expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+    await settle(() => s.state.turnSeat === 1 && s.state.phase === Phase.Breeding);
+    expect(s.engine.applyIntent(1, { type: "moveFromBreeding", permanentId: s.perm("agumon").permanentId })).toEqual({
+      ok: true,
+    });
+    await advance(s.engine).waitForMainPhase(1);
+    expect(observe(s.engine).keywordAmount(s.perm("agumon"), "SecurityAttack")).toBe(-1);
+    s.state.memory = 10;
+    expect(
+      s.engine.applyIntent(1, {
+        type: "digivolve",
+        permanentId: s.perm("agumon").permanentId,
+        instanceId: s.inst("wargreymon").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("agumon").topCard.cardId === "AD1-004" && s.state.pendingDecision === undefined);
+    expect(s.perm("agumon").stack.map(({ cardId }) => cardId)).toEqual(["ST21-01", "ST20-10"]);
+    expect(observe(s.engine).keywordAmount(s.perm("agumon"), "SecurityAttack")).toBe(1);
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("agumon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.security.length === 0 && s.state.pendingDecision === undefined);
+    expect(s.events.filter(({ kind }) => kind === "securityChecked")).toHaveLength(2);
+    expect(s.engine.applyIntent(1, { type: "surrender" })).toEqual({ ok: true });
+    await loop;
   });
 
   it("keeps the DP reduction but withholds Security Attack -1 above six total security cards", async () => {

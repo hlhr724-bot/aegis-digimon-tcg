@@ -11,7 +11,6 @@ export type { ArrowPoint, DropAttrs, HandEntry, HandSelection, ScrollOverflow } 
 
 export { buildShieldShards } from "./shieldShards";
 export { handOverlap } from "./handLayout";
-export { formatDpDelta } from "./formatDpDelta";
 export { MEMORY_SWEEP_CHIP_MS, MEMORY_SWEEP_MS, traversedChips } from "./memoryChips";
 export { useElementWidth } from "./useElementWidth";
 export { useScrollOverflow } from "./useScrollOverflow";

@@ -16,11 +16,13 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 blue",
               filter: { controllerDefault: "mine", kind: ["Digimon"], colors: ["Blue"] },
               count: 1,
               to: "hand",
             },
             {
+              effectTextPart: "1 green Digimon card among them to your hand.",
               filter: { controllerDefault: "mine", kind: ["Digimon"], colors: ["Green"] },
               count: 1,
               to: "hand",

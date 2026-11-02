@@ -1,0 +1,1 @@
+export const CHECK_IN_OPENS_BEFORE_START_MS = 60 * 60_000;

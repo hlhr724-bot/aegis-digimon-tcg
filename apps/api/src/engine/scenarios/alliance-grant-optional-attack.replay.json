@@ -828,12 +828,12 @@
           "order": [
             "s0-5::ST21-07/ir-6-0",
             "s0-28::subtrigger/opt/s0-28/printed/BT21-078/ir-35-0/s0-28/BT21-078/ir-35-0/0",
-            "s0-44::subtrigger/507/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, \uff1cDraw 1\uff1e and trash 1 card in your hand.",
+            "s0-44::subtrigger/507/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, ＜Draw 1＞ and trash 1 card in your hand.",
             "s0-41::subtrigger/508/whenPlayed"
           ],
           "optionalAnswers": {
             "s0-5::ST21-07/ir-6-0": true,
-            "s0-44::subtrigger/507/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, \uff1cDraw 1\uff1e and trash 1 card in your hand.": true,
+            "s0-44::subtrigger/507/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, ＜Draw 1＞ and trash 1 card in your hand.": true,
             "s0-41::subtrigger/508/whenPlayed": true,
             "s0-28::subtrigger/opt/s0-28/printed/BT21-078/ir-35-0/s0-28/BT21-078/ir-35-0/0": true
           }
@@ -1354,12 +1354,15 @@
         "response": {
           "kind": "orderTriggers",
           "order": [
-            "s0-44::subtrigger/1835/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, \uff1cDraw 1\uff1e and trash 1 card in your hand.",
-            "s0-0::ST20-02/ir-6-0"
+            "s0-44::subtrigger/1835/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, ＜Draw 1＞ and trash 1 card in your hand.",
+            "s0-45::subtrigger/1842/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, ＜Draw 1＞ and trash 1 card in your hand.",
+            "s0-24::subtrigger/opt/s0-24/printed/ST21-09/ir-35-0/s0-24/ST21-09/ir-35-0/0",
+            "s0-0::ST20-02/ir-6-0",
+            "s0-41::subtrigger/1836/whenPlayed"
           ],
           "optionalAnswers": {
-            "s0-44::subtrigger/1835/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, \uff1cDraw 1\uff1e and trash 1 card in your hand.": true,
-            "s0-45::subtrigger/1842/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, \uff1cDraw 1\uff1e and trash 1 card in your hand.": true,
+            "s0-44::subtrigger/1835/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, ＜Draw 1＞ and trash 1 card in your hand.": true,
+            "s0-45::subtrigger/1842/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, ＜Draw 1＞ and trash 1 card in your hand.": true,
             "s0-24::subtrigger/opt/s0-24/printed/ST21-09/ir-35-0/s0-24/ST21-09/ir-35-0/0": true
           }
         }
@@ -1382,30 +1385,6 @@
       "ok": true,
       "stateVersion": 226,
       "engineEvents": 314
-    },
-    {
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "decisionId": "dec-39",
-        "response": {
-          "kind": "orderTriggers",
-          "order": [
-            "s0-45::subtrigger/1842/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, \uff1cDraw 1\uff1e and trash 1 card in your hand.",
-            "s0-24::subtrigger/opt/s0-24/printed/ST21-09/ir-35-0/s0-24/ST21-09/ir-35-0/0",
-            "s0-0::ST20-02/ir-6-0",
-            "s0-41::subtrigger/1836/whenPlayed"
-          ],
-          "optionalAnswers": {
-            "s0-45::subtrigger/1842/[Your Turn] When your [ADVENTURE] trait Digimon or Tamers are played, by suspending this Tamer, \uff1cDraw 1\uff1e and trash 1 card in your hand.": true,
-            "s0-24::subtrigger/opt/s0-24/printed/ST21-09/ir-35-0/s0-24/ST21-09/ir-35-0/0": true
-          }
-        }
-      },
-      "ok": true,
-      "stateVersion": 228,
-      "engineEvents": 316
     },
     {
       "kind": "intent",

@@ -1,3 +1,4 @@
+import { ReplayDeckIcons } from "@/replays/ReplayDeckIcons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../../design/primitives";
 import { Icons } from "../../design/icons";
@@ -99,6 +100,7 @@ export function CloudReplayLibrary({ onOpen }: { onOpen: (file: Blob) => Promise
           {files.map((file) => (
             <li key={file.id}>
               <div className="replay-library__match">
+                <ReplayDeckIcons summary={{ deckIcons: file.deckIcons, players: [file.players ?? file.name, ""] }} />
                 <strong>{file.players ?? file.name}</strong>
                 <small>
                   {new Date(file.createdAt).toLocaleDateString(locale)}

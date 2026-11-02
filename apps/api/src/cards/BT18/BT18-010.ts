@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with the [Hybrid]/[Ten Warriors] trait",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [{ tokens: ["Hybrid", "Ten Warriors"], match: "trait" }],
@@ -19,6 +20,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 red Tamer card with inherited effects among them to the hand.",
               filter: { hasInheritedEffects: true, controllerDefault: "mine", kind: ["Tamer"], colors: ["Red"] },
               count: 1,
               to: "hand",

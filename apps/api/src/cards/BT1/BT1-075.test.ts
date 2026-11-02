@@ -26,7 +26,7 @@ describe("BT1-075 Digitamamon", () => {
       nameJp: "デジタマモン",
     });
     expect(getCardDefinition("BT1-075")?.effectText).toBe(
-      "[When Attacking] Gain 3 memory. At end of turn， lose 3 memory.",
+      "[When Attacking] Gain 3 memory. At end of turn, lose 3 memory.",
     );
     expect(getCardDefinition("BT1-075")?.inheritedEffectText).toBeUndefined();
     expect(getCardDefinition("BT1-075")?.securityEffectText).toBeUndefined();

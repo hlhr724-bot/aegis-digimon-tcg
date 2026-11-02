@@ -26,6 +26,17 @@ describe("authoritative format validation", () => {
       reason: expect.stringContaining("BT13 card pool"),
     });
   });
+  it("accepts released limited cards in historical decks while rejecting later products", () => {
+    expect(validateDecklist(deckFor("EX13", "LM-051"), { format: "EX13" })).toEqual({ ok: true });
+    expect(validateDecklist(deckFor("EX13", "LM-063"), { format: "EX13", betaBattleMode: true })).toMatchObject({
+      ok: false,
+      reason: expect.stringContaining("EX13 card pool"),
+    });
+    expect(validateDecklist(deckFor("BT13", "LM-051"), { format: "BT13", betaBattleMode: true })).toMatchObject({
+      ok: false,
+      reason: expect.stringContaining("BT13 card pool"),
+    });
+  });
   it("Pauper checks main and egg rarities", () => {
     const deck = deckFor("pauper");
     expect(validateDecklist(deck, { format: "pauper" })).toEqual({ ok: true });
@@ -44,7 +55,7 @@ describe("authoritative format validation", () => {
   it.each(["BT13", "pauper", "unlimited", "BT13:pauper", "BT13:unlimited"] as const)(
     "selects a legal bot deck for %s even when the requested preset is incompatible",
     (format) => {
-      expect(validateDecklist(playableBotDeck("missing-preset", false, format), { format })).toEqual({ ok: true });
+      expect(validateDecklist(playableBotDeck("missing-preset", format), { format })).toEqual({ ok: true });
     },
   );
   it("set Unlimited accepts historical banned cards but never later cards", () => {

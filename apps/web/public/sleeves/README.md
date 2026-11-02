@@ -31,6 +31,12 @@ catalog and are used as cosmetic card backs in Aegis.
   [Official Card Sleeves 02](https://world.digimoncard.com/products/goods/sleeve_12.php).
 - `official-03-*.webp`: cropped from the four-design product sheet for
   [Official Card Sleeves 03](https://world.digimoncard.com/products/goods/sleeve_13.php).
+  The four designs are two Digimon Story Time Stranger designs, Digimon Data
+  Squad, and Digimon Beatbreak. Their sleeve ids
+  (`official-03-adventure`, `official-03-chronicle`,
+  `official-03-generations`, and `official-03-ghost-game`) predate the
+  correct names. They stay unchanged because players' saved settings and decks
+  store them.
 - `official-04-*.webp`: cropped from the four-design product sheet for
   [Official Card Sleeves 04](https://world.digimoncard.com/products/goods/sleeve-official04.php).
 - `alphamon.webp`: [Official Card Sleeves Ver. Alphamon](https://world.digimoncard.com/products/goods/official_sleeve_alphamon.php).

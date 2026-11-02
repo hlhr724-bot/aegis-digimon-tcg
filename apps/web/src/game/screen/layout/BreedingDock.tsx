@@ -1,3 +1,4 @@
+import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 /* The raising area: the egg deck, the slot the hatched Digimon stands in, and the one
    line of hint that replaced the breeding dialog.
 
@@ -30,6 +31,7 @@ export function BreedingDock({
   onHatch,
   onOpenEggDeck,
   onSlotClick,
+  onInspect,
 }: {
   eggDeckCount: number;
   breeding: Permanent | undefined;
@@ -52,11 +54,13 @@ export function BreedingDock({
   /** Opens the revealed egg deck once the match is over. */
   onOpenEggDeck?: () => void;
   onSlotClick: (() => void) | undefined;
+  onInspect?: () => void;
 }) {
   const { t } = useTranslation();
   return (
     <div
       className="game-breeding-dock"
+      data-arena-region={ArenaInputRegion.BREEDING.value}
       style={{
         width: 228,
         flexShrink: 0,
@@ -107,6 +111,8 @@ export function BreedingDock({
             focused={actionsOpen}
             drop={slotDrop}
             onClick={onSlotClick}
+            onInspect={onInspect}
+            suggested={actionsOpen && canMoveOut && !canHatchEgg}
           />
         </div>
       </div>

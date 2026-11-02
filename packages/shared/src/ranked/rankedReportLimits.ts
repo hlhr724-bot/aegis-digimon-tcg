@@ -1,0 +1,4 @@
+export const RANKED_REPORTS_PER_SEASON = 5;
+export const RANKED_REPORT_WINDOW_MS = 24 * 60 * 60 * 1000;
+export const MAX_RANKED_REPORT_DESCRIPTION = 2000;
+export const MAX_RANKED_REPORT_TURN = 999;

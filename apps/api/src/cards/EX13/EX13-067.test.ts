@@ -103,7 +103,7 @@ describe("EX13-067 Nokia Shiramine", () => {
             { card: "BT1-010", as: "agumon" },
           ],
           hand: [{ card: "BT1-015", as: "greymon" }],
-          trash: [{ card: "BT1-029", as: "gabumon" }],
+          trash: [{ card: "BT1-029", as: "gabumon" }, "BT1-029"],
           deck: Array(8).fill("BT1-009"),
           security: ["BT1-011"],
         },
@@ -128,8 +128,18 @@ describe("EX13-067 Nokia Shiramine", () => {
     expect(s.perm("agumon").stack.map(({ cardId }) => cardId)).toEqual(["BT1-010"]);
     expect(s.perm("nokia").isSuspended).toBe(true);
     expect(s.state.players[0]!.battleArea.some(({ topCard }) => topCard.cardId === "BT1-029")).toBe(true);
-    expect(s.state.players[0]!.trash.some(({ cardId }) => cardId === "BT1-029")).toBe(false);
+    expect(s.state.players[0]!.trash.filter(({ cardId }) => cardId === "BT1-029")).toHaveLength(1);
     expect(s.state.memory).toBe(4);
+    const prompts = s.decisions
+      .map(({ req }) => req)
+      .filter((req) => req.sourceCardId === "EX13-067" && req.options?.timing === "YourTurn");
+    expect(prompts.map((req) => req.kind)).toEqual(["optional", "optional", "selectCards"]);
+    expect(prompts.map((req) => req.options?.effectTextEmphasis)).toEqual([
+      "by suspending this Tamer",
+      "you may play 1 [Gabumon] if that Digimon has [Greymon] in its name or 1 [Agumon] if it has [Garurumon] in its name from your hand or trash without paying the cost.",
+      "you may play 1 [Gabumon] if that Digimon has [Greymon] in its name or 1 [Agumon] if it has [Garurumon] in its name from your hand or trash without paying the cost.",
+    ]);
+    expect(prompts.every((req) => req.options?.effectText?.includes("by suspending this Tamer"))).toBe(true);
   });
 
   it("plays Agumon from hand after a legal Garurumon digivolution", async () => {

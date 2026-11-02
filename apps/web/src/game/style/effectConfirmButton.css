@@ -1,0 +1,52 @@
+.effect-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 12px 12px;
+  pointer-events: auto;
+}
+
+.effect-confirm .aegis-button {
+  flex: 1 1 auto;
+  max-width: 16rem;
+  min-height: 3rem;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  border: 2px solid var(--ds-accent-strong, var(--ds-accent));
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--ds-accent) 35%, transparent),
+    0 0 18px color-mix(in srgb, var(--ds-accent) 65%, transparent);
+  animation: effect-confirm-pulse 1.6s ease-in-out infinite;
+}
+
+.effect-confirm kbd {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgb(0 0 0 / 60%);
+  color: #fff;
+  font: inherit;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+@keyframes effect-confirm-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--ds-accent) 35%, transparent),
+      0 0 14px color-mix(in srgb, var(--ds-accent) 55%, transparent);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 6px color-mix(in srgb, var(--ds-accent) 20%, transparent),
+      0 0 26px color-mix(in srgb, var(--ds-accent) 85%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .effect-confirm .aegis-button {
+    animation: none;
+  }
+}

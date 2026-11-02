@@ -88,6 +88,26 @@ describe("BT8-069 Ouryumon", () => {
     expect(s.perm("alphamon").isSuspended).toBe(false);
   });
 
+  it("reacts only when one of your effects places the digivolution card, not an opponent's effect", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT8-069", as: "ouryumon" }], hand: [{ card: "BT8-060", as: "placed" }] },
+    });
+    await s.ready();
+    const ouryumon = s.perm("ouryumon");
+    const baseDP = ouryumon.baseDP;
+    const payload = (byEffectSeat: 0 | 1) => ({
+      subjectPermanentId: ouryumon.permanentId,
+      addedDigivolutionCardInstanceIds: [s.inst("placed").instanceId],
+      byEffectSeat,
+    });
+
+    await advance(s.engine).fireSubTrigger("onAddDigivolutionCards", payload(1));
+    expect(s.perm("ouryumon").currentDP).toBe(baseDP);
+
+    await advance(s.engine).fireSubTrigger("onAddDigivolutionCards", payload(0));
+    await settle(() => s.perm("ouryumon").currentDP === baseDP + 2000);
+  });
+
   it("gains +2000 DP and opponent-effect deletion protection after an effect adds a source", async () => {
     const s = setupEngine(
       {

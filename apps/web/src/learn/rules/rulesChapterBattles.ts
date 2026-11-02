@@ -1,0 +1,30 @@
+import type { RulesChapterId } from "@/learn/rules/rulesChapters";
+
+export const rulesChapterBattles: Readonly<Record<RulesChapterId, readonly string[]>> = {
+  goal: ["practice-attack-security", "practice-game-preparation"],
+  deck: ["practice-game-preparation"],
+  cardTypes: ["practice-tamers", "drill-use-req"],
+  areas: ["practice-hatch", "drill-mind-link"],
+  terminology: ["practice-digivolve", "drill-iceclad"],
+  setup: ["practice-game-preparation"],
+  turn: ["practice-memory", "drill-reboot", "drill-engage"],
+  breeding: ["practice-hatch", "drill-training"],
+  memory: ["practice-memory", "drill-digisorption", "drill-delay"],
+  playing: ["drill-rush", "drill-material-save"],
+  digivolve: ["practice-digivolve", "drill-blast-dna-digivolve"],
+  using: ["drill-use-req", "practice-rule-checks"],
+  link: ["drill-link", "drill-detach"],
+  attack: ["practice-attack-security", "drill-raid"],
+  blocking: ["practice-block", "drill-collision"],
+  security: ["drill-security-attack", "drill-jamming", "drill-recovery"],
+  battles: ["drill-retaliation", "drill-iceclad"],
+  effects: [
+    "practice-derived-trash-triggers",
+    "practice-order-before-digivolving",
+    "practice-inherited-sacrifice-recruit",
+    "practice-inherited-unsuspend-engage",
+  ],
+  keywords: ["drill-blocker"],
+  checks: ["practice-rule-checks", "drill-de-digivolve"],
+  other: ["drill-execute", "drill-blitz"],
+};

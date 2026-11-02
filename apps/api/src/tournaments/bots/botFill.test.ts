@@ -10,7 +10,6 @@ const DECKS = [
 function input(overrides: Partial<BotFillInput> = {}): BotFillInput {
   return {
     allowBots: true,
-    presetSupportsBots: true,
     confirmedHumans: 5,
     maxPlayers: 8,
     decks: DECKS,
@@ -33,10 +32,6 @@ describe("deciding whether to fill", () => {
 
   it("refuses to fill when the tournament forbids bots", () => {
     expect(planBotFill(input({ allowBots: false }))).toEqual({ kind: "none", reason: "bots_not_allowed" });
-  });
-
-  it("refuses to fill an official ruleset even when the flag is somehow set", () => {
-    expect(planBotFill(input({ presetSupportsBots: false }))).toEqual({ kind: "none", reason: "bots_not_allowed" });
   });
 
   it("cancels rather than running an event below the minimum", () => {
@@ -96,5 +91,23 @@ describe("who gets seated", () => {
     if (plan.kind !== "fill") throw new Error("expected a fill");
     expect(plan.bots).toHaveLength(3);
     expect(new Set(plan.bots.map((bot) => bot.profile)).size).toBe(3);
+  });
+});
+
+describe("random bot styles", () => {
+  it("draws each bot's style from the random source when the event asks for it", () => {
+    const draws = [0.99, 0, 0.5];
+    const plan = planBotFill(input({ randomStyles: true, drawStyle: () => draws.shift() ?? 0 }));
+    const lastIndex = BOT_PROFILE_NAMES.length - 1;
+    expect(plan.kind === "fill" && plan.bots.map((bot) => bot.profile)).toEqual([
+      BOT_PROFILE_NAMES[lastIndex],
+      BOT_PROFILE_NAMES[0],
+      BOT_PROFILE_NAMES[Math.floor(0.5 * BOT_PROFILE_NAMES.length)],
+    ]);
+  });
+
+  it("keeps the reproducible rotation when random styles are off", () => {
+    const plan = planBotFill(input({ randomStyles: false, drawStyle: () => 0 }));
+    expect(plan).toEqual(planBotFill(input()));
   });
 });

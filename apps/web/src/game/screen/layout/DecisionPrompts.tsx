@@ -1,3 +1,5 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
 /* The viewer's open decision, in whichever surface answers it.
 
    Field targets use the physical cards and a confirmation rail. Selections from other
@@ -12,7 +14,7 @@ import {
 } from "@aegis/shared";
 import { useTranslation } from "../../../i18n";
 import { BoardOptionalPrompt, BoardSelectionRail, BoardSourceHostPrompt } from "../../BoardDecisionRail";
-import { cardDisplayName } from "../../cardLinks";
+
 import { decisionPermanentDetails, decisionSourceCounts, type CandidateZone } from "../../decisionModel";
 import { attackTargetPrompt } from "../model/attackTargetPrompt";
 import {
@@ -84,20 +86,23 @@ export function DecisionPrompts({
   /** A source pick that first asks which Digimon to look under. */
   sourceHost?: SourceHostStep;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const clause = sourceCardId
     ? playerFacingEffectClause({
         cardId: decision?.options?.effectTextCardId ?? sourceCardId,
         timing: decision?.options?.timing,
         description: decision?.options?.effectText,
-        effectTextPart: decision?.options?.effectTextPart,
+        effectTextPart: decision?.options?.effectTextEmphasis
+          ? (decision.options.effectText ?? decision.options.effectTextPart)
+          : decision?.options?.effectTextPart,
         isInherited: decision?.options?.isInherited,
       })
     : undefined;
   const attack = attackTargetPrompt(decision, permanents);
   const attackClause = (() => {
     if (attack?.attackerCardId === undefined) return undefined;
-    const card = cardDisplayName(attack.attackerCardId, t);
+    const card = getCardName(attack.attackerCardId);
     const only = attack.onlyTarget;
     if (only === undefined) return t("overlay.attackChooseTarget", { card });
     const target =
@@ -105,7 +110,7 @@ export function DecisionPrompts({
         ? t(opponentSecurityCount > 0 ? "overlay.attackTargetSecurity" : "overlay.attackTargetPlayer")
         : only.cardId === undefined
           ? undefined
-          : cardDisplayName(only.cardId, t);
+          : getCardName(only.cardId);
     return target === undefined
       ? t("overlay.attackChooseTarget", { card })
       : t("overlay.attackOnlyTarget", { card, target });
@@ -141,8 +146,12 @@ export function DecisionPrompts({
         <BoardSourceHostPrompt
           sourceCardId={sourceCardId}
           clause={clause}
-          onNoSelection={
-            min === 0 && boardSelectionKind ? () => onRespond({ kind: boardSelectionKind, instanceIds: [] }) : undefined
+          clauseEmphasis={decision.options?.effectTextEmphasis}
+          onCancel={
+            boardSelectionKind &&
+            (min === 0 || decision.options?.declinesCost === true || decision.options?.canCancelActivation === true)
+              ? () => onRespond({ kind: boardSelectionKind, instanceIds: [] })
+              : undefined
           }
         />
       ) : null}
@@ -156,7 +165,7 @@ export function DecisionPrompts({
                 request={decision}
                 sourceCardId={sourceCardId}
                 confirmLabel={attackConfirmLabel}
-                contextText={attackClause}
+                contextText={decision.options?.effectTextEmphasis ? undefined : attackClause}
                 candidates={candidates
                   .filter((card) => sourceHost?.cardIds === undefined || sourceHost.cardIds.has(card.instanceId))
                   .map((card) => {
@@ -179,6 +188,10 @@ export function DecisionPrompts({
                       isSuspended: details?.isSuspended,
                       zone: card.zone,
                       pendingEffect: card.pendingEffect,
+                      oncePerTurnUsed:
+                        host?.stack.some(
+                          (source) => source.instanceId === card.instanceId && source.oncePerTurnUsed,
+                        ) === true,
                       trashOriginCardId: card.trashOriginCardId,
                     };
                   })}
@@ -186,7 +199,10 @@ export function DecisionPrompts({
                 triggerDetails={triggerDetails}
                 onTogglePick={onTogglePick}
                 onRespond={onRespond}
-                {...(sourceHost?.cardIds ? { onChangeSourceHost: sourceHost.onChangeHost } : {})}
+                sourcePicker={sourceHost !== undefined}
+                {...(sourceHost?.cardIds && sourceHost.hostPermanentIds.length > 1
+                  ? { onChangeSourceHost: sourceHost.onChangeHost }
+                  : {})}
               />
             );
           })()
@@ -207,11 +223,18 @@ export function DecisionPrompts({
               ? t("overlay.selectCardsSubtitle", { count: max })
               : t("overlay.selectCardsRangeSubtitle", { range: `${min}–${max}` }))
           }
-          clause={attackClause ?? clause}
+          clause={decision.options?.effectTextEmphasis ? (clause ?? attackClause) : (attackClause ?? clause)}
+          clauseEmphasis={decision.options?.effectTextEmphasis}
           min={min}
           max={max}
           pickCount={picks.length}
           canConfirm={
+            ((picks.length === 0 && min === 0) ||
+              isAllowedTargetSelection({
+                allowedTargetCombinations: decision.options?.allowedTargetCombinations,
+                picks,
+                complete: true,
+              })) &&
             picks.length >= min &&
             picks.length <= max &&
             picks.every((id) => allowsPick(id)) &&
@@ -222,6 +245,11 @@ export function DecisionPrompts({
           confirmLabel={attackConfirmLabel}
           onConfirm={() => onRespond({ kind: boardSelectionKind, instanceIds: picks })}
           onNoSelection={() => onRespond({ kind: boardSelectionKind, instanceIds: [] })}
+          onCancelActivation={
+            decision.options?.canCancelActivation === true
+              ? () => onRespond({ kind: boardSelectionKind, instanceIds: [] })
+              : undefined
+          }
           onOpenDialog={onOpenDialog}
         />
       ) : null}
@@ -246,6 +274,7 @@ export function DecisionPrompts({
           key={decision.decisionId}
           playingCardId={digiXrosCardId}
           requirements={digiXrosRequirements}
+          materialLimits={decision.options?.digiXrosMaterialLimits}
           playCostReductionBlocked={decision.options?.playCostReductionBlocked}
           candidates={candidates.flatMap<DigiXrosCandidate>((candidate) => {
             if (!candidate.cardId || (candidate.zone !== "hand" && candidate.zone !== "battle")) return [];
@@ -303,6 +332,7 @@ export function DecisionPrompts({
           }
           sourcePermanentId={decision.sourcePermanentId}
           clause={clause}
+          clauseEmphasis={decision.options?.effectTextEmphasis}
           onUse={() => onRespond({ kind: "optional", accept: true })}
           onDecline={() => onRespond({ kind: "optional", accept: false })}
           onOpenDialog={onOpenDialog}

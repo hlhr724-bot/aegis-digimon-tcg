@@ -10,6 +10,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 [Keenan Crier] or card with the [DATA SQUAD] trait",
               filter: {
                 nameOrTrait: [
                   { tokens: ["Keenan Crier"], match: "nameExact" },
@@ -20,6 +21,8 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart:
+                "1 purple card with [Ravemon] in its name or [Avian] or [Bird] in any of its traits among them to the hand.",
               filter: {
                 colors: ["Purple"],
                 nameOrTrait: [

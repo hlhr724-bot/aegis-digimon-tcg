@@ -10,7 +10,7 @@ import { DigiXrosCandidateGrid } from "./DigiXrosCandidateGrid";
 import { DigiXrosExpanderPrompt } from "./DigiXrosExpanderPrompt";
 import { DigiXrosLockedZone } from "./DigiXrosLockedZone";
 import { digiXrosMaterialPool } from "./digiXrosMaterialPool";
-import { pruneDigiXrosPicksForZoneLimits, toggleDigiXrosPick } from "./digiXrosPicks";
+import { pruneDigiXrosMaterialLimits, pruneDigiXrosPicksForZoneLimits, toggleDigiXrosPick } from "./digiXrosPicks";
 import { digiXrosSlotLabel } from "./digiXrosSlotLabel";
 import { CardArt } from "../CardArt";
 import { useEffectPromptFocus } from "./useEffectPromptFocus";
@@ -24,10 +24,13 @@ import "../effectPromptFamily.css";
  * Skipping sends an empty material list (plain play at full cost — server validates).
  * The server is the sole authority on legality; this is best-effort client-side filtering.
  */
+const NO_MATERIAL_LIMITS: { candidateInstanceIds: string[]; max: number }[] = [];
+
 export function DigiXrosMaterialOverlay({
   playingCardId,
   playCostReductionBlocked = false,
   requirements,
+  materialLimits = NO_MATERIAL_LIMITS,
   candidates,
   lockedCandidates,
   eligibleExpanders,
@@ -42,6 +45,8 @@ export function DigiXrosMaterialOverlay({
   playCostReductionBlocked?: boolean;
   /** DigiXros requirements for the card (at least one entry). */
   requirements: DigiXrosRequirement[];
+  /** Per-cohort limits authorized by a resolving effect. */
+  materialLimits?: { candidateInstanceIds: string[]; max: number }[];
   /** Eligible material candidates (hand + battle area top cards). */
   candidates: DigiXrosCandidate[];
   /** Material candidates in zones locked behind selected expander Tamers. */
@@ -98,14 +103,25 @@ export function DigiXrosMaterialOverlay({
     intrinsicTrashMax,
     intrinsicUnderTamerMax,
     picks,
+    materialLimits,
   });
 
   useEffect(() => {
-    setPicks((prev) => pruneDigiXrosPicksForZoneLimits({ picks: prev, lockedCandidates, trashMax, underTamerMax }));
-  }, [lockedCandidates, trashMax, underTamerMax]);
+    setPicks((prev) =>
+      pruneDigiXrosMaterialLimits(
+        pruneDigiXrosPicksForZoneLimits({ picks: prev, lockedCandidates, trashMax, underTamerMax }),
+        materialLimits,
+      ),
+    );
+  }, [lockedCandidates, trashMax, underTamerMax, materialLimits]);
 
   const toggle = (candidate: DigiXrosCandidate) => {
-    setPicks((prev) => toggleDigiXrosPick({ picks: prev, candidate, candidateById, trashMax, underTamerMax }));
+    setPicks((prev) =>
+      pruneDigiXrosMaterialLimits(
+        toggleDigiXrosPick({ picks: prev, candidate, candidateById, trashMax, underTamerMax }),
+        materialLimits,
+      ),
+    );
   };
 
   const gridProps = {
@@ -217,7 +233,7 @@ export function DigiXrosMaterialOverlay({
               {t("overlay.xrosPlayWithout")}
             </Button>
             {onCancel ? (
-              <Button full variant="ghost" onClick={onCancel}>
+              <Button full variant="ghost" data-arena-cancel onClick={onCancel}>
                 {t("common.cancel")}
               </Button>
             ) : null}

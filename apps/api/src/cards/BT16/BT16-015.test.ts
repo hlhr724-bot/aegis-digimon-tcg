@@ -191,7 +191,7 @@ describe("BT16-015", () => {
         },
         1: {
           hand: [{ card: "BT16-062", as: "zanmetsumon" }],
-          battleArea: [{ card: "BT1-010", as: "prey", dp: 6000 }],
+          battleArea: [{ card: "BT1-020", as: "prey", dp: 6000 }],
           deck: ["BT1-090", "BT1-090"],
           security: ["BT1-090"],
         },
@@ -210,7 +210,7 @@ describe("BT16-015", () => {
     await settle(() => s.perm("phoenixmonX").stack.every((card) => card.cardId !== "BT2-019"));
     expect(s.perm("phoenixmonX").stack).toHaveLength(1);
 
-    expect(s.engine.applyIntent(1, { type: "endPhase" })).toEqual({ ok: true });
+    advance(s.engine).endMainPhaseIfOpen(1);
     await opponentTurn;
 
     s.state.turnSeat = 0;

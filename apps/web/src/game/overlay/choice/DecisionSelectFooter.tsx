@@ -9,6 +9,9 @@ export function DecisionSelectFooter({
   onConfirm,
   min,
   onNone,
+  onDeclineCost,
+  onCancelActivation,
+  cancelLabel,
   onOpenBoard,
 }: {
   canConfirm: boolean;
@@ -16,12 +19,23 @@ export function DecisionSelectFooter({
   onConfirm: () => void;
   min: number;
   onNone: () => void;
+  onDeclineCost?: () => void;
+  onCancelActivation?: () => void;
+  cancelLabel?: string;
   onOpenBoard: () => void;
 }) {
   const { t } = useTranslation();
   return (
     <div className="game-actions-row decision-overlay__footer decision-overlay__footer--selection">
-      {min === 0 ? (
+      {onCancelActivation ? (
+        <Button full size="lg" variant="ghost" onClick={onCancelActivation}>
+          {cancelLabel ?? t("overlay.cancelActivation")}
+        </Button>
+      ) : onDeclineCost ? (
+        <Button full size="lg" variant="ghost" onClick={onDeclineCost}>
+          {t("overlay.notUse")}
+        </Button>
+      ) : min === 0 ? (
         <Button full size="lg" variant="ghost" onClick={onNone}>
           {t("common.none")}
         </Button>

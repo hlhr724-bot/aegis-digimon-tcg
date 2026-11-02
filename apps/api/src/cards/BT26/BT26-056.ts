@@ -60,8 +60,17 @@ export const compiled: CompiledCard = {
     {
       trigger: "Main",
       actions: [
-        { kind: "Trash", target: { filter: { controller: "mine", zone: "hand" }, count: 1 } },
-        { kind: "DeDigivolve", target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 }, amount: 3 },
+        {
+          effectTextPart: "[Main] Trash 1 card in your hand.",
+          kind: "Trash",
+          target: { filter: { controller: "mine", zone: "hand" }, count: 1 },
+        },
+        {
+          effectTextPart: "Then, ＜De-Digivolve 3＞ 1 of your opponent's Digimon.",
+          kind: "DeDigivolve",
+          target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
+          amount: 3,
+        },
       ],
     },
   ],

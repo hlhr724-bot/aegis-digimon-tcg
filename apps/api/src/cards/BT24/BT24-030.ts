@@ -121,9 +121,7 @@ export const compiled: CompiledCard = {
           leaveCause: "byOpponentEffect",
           actions: [
             {
-              kind: "Replacement",
-              event: "wouldLeavePlay",
-              mode: "prevent",
+              kind: "Prevent",
               raw: "they don't leave",
             },
           ],

@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "add 1 [Glowing Dawn] trait card to the hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "place 1 such card face down under any of your [Glowing Dawn] trait Tamers.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -60,6 +62,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "add 1 [Glowing Dawn] trait card to the hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -73,6 +76,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "place 1 such card face down under any of your [Glowing Dawn] trait Tamers.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

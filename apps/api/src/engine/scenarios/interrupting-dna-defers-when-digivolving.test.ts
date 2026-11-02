@@ -22,6 +22,18 @@ describe("Interrupting DNA digivolution during a removal effect", () => {
     const replay = await runReplay(record, { untilInput: 43, onBatch: (_state, batch) => events.push(...batch) });
     try {
       expect(replay.divergences).toEqual([]);
+      const materials = replay.state.pendingDecision!;
+      expect(materials).toMatchObject({ seat: 1, kind: "chooseTargets" });
+      expect(
+        await replay.applyIntent(1, {
+          type: "respondDecision",
+          decisionId: materials.decisionId,
+          response: {
+            kind: "chooseTargets",
+            instanceIds: (JSON.parse(materials.payloadJson) as { candidateInstanceIds: string[] }).candidateInstanceIds,
+          },
+        }),
+      ).toEqual({ ok: true });
       expect(eventIndex(events, "effectTriggered", outerEffectKey)).toBeGreaterThanOrEqual(0);
       events.length = 0;
 

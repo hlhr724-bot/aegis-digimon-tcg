@@ -4,13 +4,15 @@
    The private host gets an invite panel beside the wait: a copyable link, the native
    share sheet where the browser offers one, and the room code as letter tiles. */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
 import { roomInviteUrl } from "../../../roomInvite";
 import { WaitingOverlay } from "../../overlay";
 import { BoardShell } from "./BoardShell";
+import { GuestApprovalPanel } from "@/game/screen/layout/GuestApprovalPanel";
+import type { GuestApprovalRequest } from "@/game/screen/model/getGuestApprovalView";
 
 export function PendingMatchBoard({
   title,
@@ -18,6 +20,9 @@ export function PendingMatchBoard({
   spinner = true,
   actionLabel,
   roomCode,
+  guestRequest,
+  onAnswerGuest,
+  status,
   onAction,
   onCancel,
 }: {
@@ -28,11 +33,15 @@ export function PendingMatchBoard({
   actionLabel?: string;
   /** The code a guest joins this private room with, when there is one to share. */
   roomCode?: string;
+  guestRequest?: GuestApprovalRequest;
+  onAnswerGuest?: (accept: boolean) => void;
+  status?: ReactNode;
   onAction?: () => void;
   /** Leaves the wait without an opponent, offered while the private host is inviting. */
   onCancel?: () => void;
 }) {
   const { t } = useTranslation();
+  const cancellable = Boolean(roomCode || guestRequest);
   return (
     <BoardShell>
       <WaitingOverlay
@@ -41,12 +50,29 @@ export function PendingMatchBoard({
         detail={detail}
         actionLabel={actionLabel}
         onAction={onAction}
-        aside={roomCode ? <RoomInvitePanel roomCode={roomCode} /> : undefined}
-        cancelLabel={roomCode && onCancel ? t("game.cancelInvite") : undefined}
-        onCancel={roomCode ? onCancel : undefined}
+        status={status}
+        aside={getAside({ roomCode, guestRequest, onAnswerGuest })}
+        cancelLabel={cancellable && onCancel ? t("game.cancelInvite") : undefined}
+        onCancel={cancellable ? onCancel : undefined}
       />
     </BoardShell>
   );
+}
+
+type GetAsideParams = {
+  roomCode?: string;
+  guestRequest?: GuestApprovalRequest;
+  onAnswerGuest?: (accept: boolean) => void;
+};
+
+function getAside({ roomCode, guestRequest, onAnswerGuest }: GetAsideParams) {
+  if (guestRequest && onAnswerGuest) {
+    return <GuestApprovalPanel guest={guestRequest} onAnswer={onAnswerGuest} />;
+  }
+  if (roomCode) {
+    return <RoomInvitePanel roomCode={roomCode} />;
+  }
+  return undefined;
 }
 
 function RoomInvitePanel({ roomCode }: { roomCode: string }) {

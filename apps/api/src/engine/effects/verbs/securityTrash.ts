@@ -1,6 +1,5 @@
 import { Zone, CardInstance, type Seat } from "@aegis/shared";
-import { insertCard, takeBottom, takeTop } from "../../state/access.js";
-import { spliceById } from "../verbs/looseInstances.js";
+import { insertCard, spliceById, takeBottom, takeTop } from "../../state/access.js";
 
 import type { PrimitivesContext } from "./context.js";
 import { fireSecurityTrashedEvents } from "./securityTrashedEvents.js";

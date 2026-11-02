@@ -1,3 +1,6 @@
+import { isBetaOnlyCard } from "@aegis/shared/cards/cardPool";
+import { sharedCardNumberGroups } from "@aegis/shared/cards/sharedCardNumbers";
+import { formatCardViolation, type DeckFormat } from "@aegis/shared/deckFormat";
 import { getCardDefinition, isDigiEgg, type TournamentBanlistCard } from "@aegis/shared";
 
 /**
@@ -16,6 +19,7 @@ export const EGG_DECK_MAX = 5;
 export type CompetitiveDeck = { mainDeck: readonly string[]; eggDeck: readonly string[] };
 
 export type DeckViolation =
+  | { kind: "outside_format"; cardId: string }
   | { kind: "unknown_card"; cardId: string }
   | { kind: "main_deck_size"; size: number; required: number }
   | { kind: "egg_deck_size"; size: number; max: number }
@@ -29,6 +33,7 @@ export type DeckLegality = { legal: boolean; violations: DeckViolation[] };
 export function validateCompetitiveDeck(
   deck: CompetitiveDeck,
   banlistCards: readonly TournamentBanlistCard[] = [],
+  format: DeckFormat = "standard",
 ): DeckLegality {
   const restrictions = new Map(banlistCards.map((card) => [card.cardId, card]));
   const violations: DeckViolation[] = [
@@ -36,6 +41,12 @@ export function validateCompetitiveDeck(
     ...placementViolations(deck),
     ...copyViolations(deck, restrictions),
     ...pairViolations(deck, restrictions),
+    ...[...new Set([...deck.mainDeck, ...deck.eggDeck])]
+      .filter((cardId) => {
+        const card = getCardDefinition(cardId);
+        return card && (isBetaOnlyCard(card) || formatCardViolation(cardId, format));
+      })
+      .map((cardId): DeckViolation => ({ kind: "outside_format", cardId })),
   ];
   return { legal: violations.length === 0, violations };
 }
@@ -87,6 +98,18 @@ function copyViolations(
     if (count <= allowed) continue;
     if (allowed === 0) violations.push({ kind: "banned", cardId });
     else violations.push({ kind: "over_copy_limit", cardId, copies: count, allowed });
+  }
+  for (const [, members] of sharedCardNumberGroups([...copies.keys()])) {
+    if (members.length < 2) continue;
+    const count = members.reduce((total, cardId) => total + (copies.get(cardId) ?? 0), 0);
+    const allowed = Math.min(
+      ...members.map((cardId) =>
+        Math.min(getCardDefinition(cardId)?.maxCountInDeck ?? 4, snapshotCopyLimit(restrictions.get(cardId))),
+      ),
+    );
+    if (count > allowed) {
+      violations.push({ kind: "over_copy_limit", cardId: members[0]!, copies: count, allowed });
+    }
   }
   return violations;
 }

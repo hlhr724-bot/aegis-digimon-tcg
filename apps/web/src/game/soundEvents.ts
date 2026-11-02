@@ -1,3 +1,4 @@
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 /* Maps observed match events to audio cues. Pure so the mapping and the
    repeat-suppression rule stay testable without Web Audio. */
 
@@ -44,7 +45,15 @@ export function soundForEvent(event: ServerEvent, viewerSeat: Seat): SoundKind |
       return "shuffle";
     case "cardsMoved":
       if (event.strippedStackTops) return "deDigivolve";
-      if (event.trashedSources) return "sourceTrash";
+      if (
+        event.trashedSources ||
+        (event.to === "trash" &&
+          (event.from === CardMovePosition.DIGIVOLUTION_CARDS.value ||
+            event.from === CardMovePosition.LINKED_CARDS.value ||
+            event.from === CardMovePosition.UNDER_TAMER.value))
+      ) {
+        return "sourceTrash";
+      }
       if (event.to === "trash") return event.from === "hand" ? "handTrash" : "delete";
       return "move";
     case "gameOver":

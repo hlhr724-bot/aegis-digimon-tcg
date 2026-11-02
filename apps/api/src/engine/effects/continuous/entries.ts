@@ -297,6 +297,12 @@ export interface StackTrashLock {
   continuous?: boolean;
 }
 
+export interface SeatStackTrashLock {
+  ownerSeat: Seat;
+  duration: EffectDuration;
+  continuous?: boolean;
+}
+
 /** One specific digivolution card that effects cannot trash (BT9-109 X Antibody). */
 export interface StackCardTrashLock {
   instanceId: string;

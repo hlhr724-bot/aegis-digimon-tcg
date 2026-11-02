@@ -27,6 +27,7 @@ export const seriesEn = {
   "overlay.series.opponentChoosing": "{name} is choosing who goes first",
   "overlay.series.startingYou": "Game {game} · You go first",
   "overlay.series.startingOpponent": "Game {game} · {name} goes first",
+  "overlay.series.startingDrawn": "Game {game} · First player drawn at random",
   "overlay.series.joining": "Starting the next game…",
   "overlay.series.leave": "Leave series",
   "overlay.series.won": "Series won",

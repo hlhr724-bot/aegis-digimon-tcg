@@ -5,7 +5,13 @@ export const compiled: CompiledCard = {
   effects: [
     {
       trigger: "Main",
-      actions: [{ kind: "Delete", target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 } }],
+      actions: [
+        {
+          effectTextPart: "[Main] Delete 1 of your opponent's Digimon.",
+          kind: "Delete",
+          target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
+        },
+      ],
     },
     { trigger: "Security", actions: [{ kind: "ActivateMain" }], isSecurity: true },
   ],

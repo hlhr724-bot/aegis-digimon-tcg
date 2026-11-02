@@ -11,7 +11,8 @@ import {
 } from "@aegis/shared";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { setActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { CardConfirmationMode } from "@/game/cardConfirmation/CardConfirmationMode";
+import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
 import { I18nProvider } from "../i18n";
 import type { AegisRoom } from "../net/client";
 import type { ActivatableEntry } from "./boardModel";
@@ -21,11 +22,11 @@ import { Side } from "./side";
 
 beforeEach(() => {
   localStorage.clear();
-  setActionConfirmationsEnabled(false);
+  cardConfirmationPreference.setMode(CardConfirmationMode.NEVER.value);
 });
 afterEach(() => {
   cleanup();
-  setActionConfirmationsEnabled(true);
+  cardConfirmationPreference.setMode(CardConfirmationMode.ALWAYS.value);
 });
 
 function arena(decision?: DecisionRequest) {

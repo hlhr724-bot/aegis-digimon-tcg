@@ -1,6 +1,7 @@
 import type { ReadyReplay } from "../files";
 
 export interface CloudReplayFile {
+  deckIcons?: [string | null, string | null];
   id: string;
   name: string;
   createdAt: number;

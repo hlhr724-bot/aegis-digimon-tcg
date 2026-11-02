@@ -10,6 +10,7 @@ const one: Action = { kind: "Suspend", target: { filter: { controller: "opponent
 const twoLow: Action = { kind: "Suspend", target: { filter: lowDp, count: 2 } };
 const modal: Action = { kind: "Modal", choose: 1, options: [[one], [twoLow]] };
 const mode: Action = {
+  effectTextPart: "[Main] Suspend 1 of your opponent's Digimon, or 2 of your opponent's Digimon with 5000 DP or less.",
   kind: "ConditionalBranch",
   condition: {
     kind: "opponentHas",

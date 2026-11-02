@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 level 5 or lower Digimon card",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -23,6 +24,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 green Tamer card among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Tamer"],

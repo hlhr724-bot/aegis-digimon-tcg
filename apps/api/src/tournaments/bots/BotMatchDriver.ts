@@ -1,3 +1,5 @@
+import { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
+import { BotStyle } from "@aegis/shared/bot/BotStyle";
 import type { AccountStore } from "../../accounts/AccountStore.js";
 import type { BotOptions } from "../../bot/BotPlayer.js";
 import { isBotProfileName, type BotProfileName } from "../../bot/profiles.js";
@@ -120,7 +122,7 @@ export class BotMatchDriver {
       seats.push({
         seat: index as 0 | 1,
         participantId,
-        profile: profile && isBotProfileName(profile) ? profile : "balanced",
+        profile: profile && isBotProfileName(profile) ? profile : BotStyle.BALANCED.value,
       });
     }
     return seats;
@@ -256,7 +258,11 @@ export class BotMatchDriver {
       await room.seatTournamentBot({
         gameId: authorization.gameId,
         authorizationToken: authorization.token,
-        botOptions: { ...this.options.botOptions, profile: authorization.seat.profile },
+        botOptions: {
+          ...this.options.botOptions,
+          profile: authorization.seat.profile,
+          difficulty: BotDifficulty.STANDARD.value,
+        },
       });
     return "seated";
   }

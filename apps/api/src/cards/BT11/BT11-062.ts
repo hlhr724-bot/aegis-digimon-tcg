@@ -6,6 +6,7 @@ const reveal: Extract<Action, { kind: "RevealAdd" }> = {
   revealCount: 3,
   add: [
     {
+      effectTextPart: "Add 1 card with [Greymon] or [X Antibody] in its name",
       filter: {
         controllerDefault: "mine",
         nameOrTrait: [{ tokens: ["Greymon", "X Antibody"], match: "name" }],
@@ -14,6 +15,7 @@ const reveal: Extract<Action, { kind: "RevealAdd" }> = {
       to: "hand",
     },
     {
+      effectTextPart: "1 black Tamer card among them to your hand.",
       filter: { controllerDefault: "mine", kind: ["Tamer"], colors: ["Black"] },
       count: 1,
       to: "hand",

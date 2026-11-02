@@ -6,6 +6,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Choose 1 of your opponent's Digimon with no digivolution cards. That Digimon can't attack or block until the end of your opponent's next turn.",
           kind: "Restrict",
           target: {
             filter: { controllerDefault: "opponent", kind: ["Digimon"], digivolutionCards: "hasNone" },

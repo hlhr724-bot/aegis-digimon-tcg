@@ -190,3 +190,103 @@ describe("BT4-098 Atomic Inferno — KB Q&A rulings", () => {
     await loop;
   });
 });
+
+describe("BT4-098 Atomic Inferno — granted memory gain scope", () => {
+  const filler = ["BT1-009", "BT1-009", "BT1-009", "BT1-009", "BT1-009", "BT1-009"];
+
+  it("gains no memory when a different Digimon of yours is blocked", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT4-016", as: "hybrid" },
+            { card: "BT1-010", as: "otherAttacker" },
+          ],
+          hand: [{ card: "BT4-098", as: "option" }],
+        },
+        1: {
+          battleArea: [
+            { card: "BT1-010", as: "attackTarget", suspended: true },
+            { card: "BT5-062", as: "blocker" },
+          ],
+        },
+      },
+      { autoSelectCards: true },
+    );
+    s.state.memory = 3;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.perm("hybrid").currentDP === s.perm("hybrid").baseDP + 3000);
+    expect(s.state.memory).toBe(2);
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("otherAttacker").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("attackTarget").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some((event) => event.kind === "blockWindowOpened"));
+    expect(
+      s.engine.applyIntent(1, { type: "declareBlock", blockerPermanentId: s.perm("blocker").permanentId }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.battleArea.length === 1 && s.state.pendingDecision === undefined);
+
+    expect(s.state.memory).toBe(2);
+  });
+
+  it("ends the granted memory gain with the turn it was used", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT4-016", as: "hybrid" }],
+          hand: [{ card: "BT4-098", as: "option" }],
+          deck: [...filler],
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+        },
+        1: {
+          battleArea: [{ card: "BT5-062", as: "blocker" }],
+          deck: [...filler],
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 3;
+    const loop = s.engine.startTurnLoop();
+    await advance(s.engine).waitForMainPhase(0);
+    await s.ready();
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.perm("hybrid").currentDP === s.perm("hybrid").baseDP + 3000);
+    expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+
+    await advance(s.engine).waitForMainPhase(1);
+    await s.ready();
+    expect(s.engine.applyIntent(1, { type: "endPhase" })).toEqual({ ok: true });
+
+    await advance(s.engine).waitForMainPhase(0);
+    await s.ready();
+    const memoryBeforeAttack = s.state.memory;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("hybrid").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some((event) => event.kind === "blockWindowOpened"));
+    expect(
+      s.engine.applyIntent(1, { type: "declareBlock", blockerPermanentId: s.perm("blocker").permanentId }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[1]!.battleArea.length === 0 && s.state.pendingDecision === undefined);
+
+    expect(s.state.memory).toBe(memoryBeforeAttack);
+
+    expect(s.engine.applyIntent(0, { type: "surrender" })).toEqual({ ok: true });
+    await loop;
+  });
+});

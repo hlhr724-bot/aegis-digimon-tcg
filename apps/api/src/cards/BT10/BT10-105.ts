@@ -31,6 +31,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 1 of your Digimon gains ＜Blocker＞ (When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to attack it instead), and ＜Reboot＞ (Unsuspend this Digimon during your opponent's unsuspend phase), and can't be deleted by your opponent's effects.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -42,6 +44,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 1 of your Digimon gains ＜Blocker＞ (When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to attack it instead), and ＜Reboot＞ (Unsuspend this Digimon during your opponent's unsuspend phase), and can't be deleted by your opponent's effects.",
           kind: "GainKeyword",
           target: {
             fromSelectionRef: "protectedDigimon",
@@ -55,6 +59,8 @@ const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 1 of your Digimon gains ＜Blocker＞ (When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to attack it instead), and ＜Reboot＞ (Unsuspend this Digimon during your opponent's unsuspend phase), and can't be deleted by your opponent's effects.",
           kind: "Restrict",
           target: {
             fromSelectionRef: "protectedDigimon",
@@ -66,6 +72,8 @@ const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 1 of your Digimon gains ＜Blocker＞ (When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to attack it instead), and ＜Reboot＞ (Unsuspend this Digimon during your opponent's unsuspend phase), and can't be deleted by your opponent's effects.",
           kind: "GainKeyword",
           target: {
             fromSelectionRef: "protectedDigimon",

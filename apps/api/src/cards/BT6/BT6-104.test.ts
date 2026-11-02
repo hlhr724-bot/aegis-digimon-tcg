@@ -30,6 +30,26 @@ describe("BT6-104 Parabolic Junk", () => {
     expect(s.state.memory).toBe(expectedMemory);
   });
 
+  it("grants a Diaboromon token memory without deleting it on use", async () => {
+    const s = setupEngine(
+      { 0: { breeding: { card: "BT2-005", as: "egg" }, hand: [{ card: "BT6-104", as: "option" }] } },
+      { autoSelectCards: true },
+    );
+    s.state.memory = 1;
+    await advance(s.engine).verb.playTwoTokensInOneWindow(0, "Diaboromon Token");
+    const token = s.state.players[0]!.battleArea[0]!;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle();
+    expect(s.state.players[0]!.battleArea).toHaveLength(2);
+    expect(s.state.memory).toBe(1);
+    await advance(s.engine).verb.deletePermanent([token.permanentId], "byEffect");
+    await settle();
+    expect(s.state.memory).toBe(3);
+    expect(s.state.players[0]!.battleArea).toHaveLength(1);
+  });
+
   it("adds itself to hand from security", async () => {
     const s = setupEngine({ 0: { security: [{ card: "BT6-104", as: "securityOption", faceUp: true }] } });
     const instanceId = s.inst("securityOption").instanceId;

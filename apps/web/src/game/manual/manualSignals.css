@@ -1,0 +1,46 @@
+.manual-signals {
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding-block: 0.75rem;
+}
+
+.manual-signals__current {
+  padding: 0.75rem;
+  border-radius: 0.625rem;
+  background: var(--ds-fill);
+  overflow-wrap: anywhere;
+}
+
+.manual-signals__current > span {
+  display: block;
+  margin-block-end: 0.25rem;
+  color: var(--ds-text-3);
+  font-size: 0.75rem;
+}
+
+.manual-signals__current > strong {
+  font-size: 0.875rem;
+}
+
+.manual-signals__current p {
+  margin-block: 0.375rem;
+  font-size: 0.8125rem;
+}
+
+.manual-signals__form,
+.manual-restart__actions {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.manual-signals__form {
+  margin-block-start: 0.75rem;
+}
+
+.manual-restart__actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.manual-restart__actions > button + button {
+  margin-inline-start: 0;
+}

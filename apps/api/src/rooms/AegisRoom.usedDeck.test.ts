@@ -1,3 +1,4 @@
+import { OPPONENT_DECK_CHANNEL } from "@aegis/shared/decks/OPPONENT_DECK_CHANNEL";
 import { describe, expect, it, vi } from "vitest";
 import type { Client } from "colyseus";
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
@@ -17,7 +18,11 @@ function makeRoom() {
     channel: string,
     payload: unknown,
   ) => void;
-  return { room, request: (recipient: Client) => handler(recipient, USED_DECK_CHANNEL, {}) };
+  return {
+    room,
+    request: (recipient: Client) => handler(recipient, USED_DECK_CHANNEL, {}),
+    requestOpponent: (recipient: Client) => handler(recipient, OPPONENT_DECK_CHANNEL, {}),
+  };
 }
 
 function client(sessionId: string): Client {
@@ -103,6 +108,67 @@ describe("authoritative used deck", () => {
         deckName: "Original Deck",
         community,
       });
+    } finally {
+      room.onDispose();
+    }
+  });
+});
+
+describe("post-match opponent deck sharing", () => {
+  it.each([undefined, true, false])("honors the owner's preference %s after completion", async (sharing) => {
+    const { room, requestOpponent } = makeRoom();
+    const preferences = vi
+      .fn<(accountId: string) => Promise<{ shareDeckAfterMatch?: boolean }>>()
+      .mockResolvedValue({ shareDeckAfterMatch: sharing });
+    Object.assign(room, { accounts: () => ({ preferences }) });
+    try {
+      const viewer = client("viewer");
+      const owner = client("owner");
+      room.clients.push(viewer, owner);
+      Object.assign(room, { accountByClient: new Map([["owner", "owner-account"]]) });
+      room.onJoin(viewer, { displayName: "Viewer", deck: structuredClone(RED_DECK) });
+      const deck = structuredClone(RED_DECK);
+      room.onJoin(owner, { displayName: "Owner", deck, deckName: "Starting deck" });
+      deck.mainDeck[0] = "BT1-010";
+      room.state.gameOver = true;
+      requestOpponent(viewer);
+      await vi.waitFor(() => expect(preferences).toHaveBeenCalledWith("owner-account"));
+      await Promise.resolve();
+      const sent = vi.mocked(viewer.send).mock.calls.filter(([channel]) => channel === OPPONENT_DECK_CHANNEL);
+      expect(sent).toHaveLength(sharing === false ? 0 : 1);
+      expect(sent.map(([, message]) => message)).toEqual(
+        sharing === false
+          ? []
+          : [expect.objectContaining({ deckId: null, deckName: "Starting deck", mainDeck: RED_DECK.mainDeck })],
+      );
+    } finally {
+      room.onDispose();
+    }
+  });
+
+  it("rejects in-progress requests and unseated viewers, and defaults guests to sharing", async () => {
+    const { room, requestOpponent } = makeRoom();
+    try {
+      const viewer = client("viewer");
+      const owner = client("owner");
+      const outsider = client("outsider");
+      room.clients.push(viewer, owner, outsider);
+      room.onJoin(viewer, { displayName: "Viewer", deck: structuredClone(RED_DECK) });
+      room.onJoin(owner, { displayName: "Owner", deck: structuredClone(RED_DECK) });
+      requestOpponent(viewer);
+      expect(vi.mocked(viewer.send).mock.calls.filter(([channel]) => channel === OPPONENT_DECK_CHANNEL)).toHaveLength(
+        0,
+      );
+      room.state.gameOver = true;
+      requestOpponent(outsider);
+      expect(outsider.send).not.toHaveBeenCalled();
+      requestOpponent(owner);
+      await vi.waitFor(() =>
+        expect(owner.send).toHaveBeenCalledWith(
+          OPPONENT_DECK_CHANNEL,
+          expect.objectContaining({ mainDeck: RED_DECK.mainDeck }),
+        ),
+      );
     } finally {
       room.onDispose();
     }

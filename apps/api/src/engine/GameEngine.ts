@@ -1,3 +1,14 @@
+import { createInterpreterRuntimeReferences } from "#api/engine/effects/interpreter/snapshot/createInterpreterRuntimeReferences";
+import { createEngineRuntimeObjects } from "#api/engine/snapshot/context/createEngineRuntimeObjects";
+import { SnapshotContinuationRecorder } from "#api/engine/snapshot/SnapshotContinuationRecorder";
+import { SnapshotContinuationInputKind } from "#api/engine/snapshot/SnapshotContinuationInputKind";
+import { createInterpreterRuntimeCallbacks } from "#api/engine/effects/interpreter/snapshot/createInterpreterRuntimeCallbacks";
+import type { SeededRandom } from "#api/engine/random/SeededRandom";
+import { restartManualMatch } from "#api/manual/restartManualMatch";
+import { logError } from "#api/logger";
+import { ManualController } from "#api/manual/ManualController";
+import { GameMode } from "@aegis/shared/manual/GameMode";
+import { getAttackRedirection } from "#api/engine/gameEngine/getAttackRedirection";
 import { ContinuousEffectScope } from "./effects/ContinuousEffectScope.js";
 import { CardKind, EffectTiming, GameState, type CardInstance, type Seat } from "@aegis/shared";
 import { buildCombatHooks } from "./gameEngine/combatHooks.js";
@@ -118,7 +129,10 @@ export type { GameEngineHooks, SeatJoinOptions };
  * anything else from outside `engine/` and you are reaching into the engine's own wiring.
  */
 
+type ReplaceSnapshotSetParams<T> = { target: Set<T>; values: T[] };
+
 export class GameEngine {
+  readonly manual?: ManualController;
   readonly memory: MemoryGauge;
   readonly turnMachine: TurnStateMachine;
   readonly access: GameStateAccess;
@@ -132,6 +146,10 @@ export class GameEngine {
   readonly breeding: BreedingPhaseController;
   /** Per-turn use ledger for maxPerTurn accounting (shared with the effect stack). */
   readonly tracker: UseTracker;
+  readonly runtimeCallbacks = createInterpreterRuntimeCallbacks();
+  readonly runtimeReferences = createInterpreterRuntimeReferences();
+  readonly runtimeObjects = createEngineRuntimeObjects({ engine: this });
+  readonly snapshotContinuation = new SnapshotContinuationRecorder();
   /** Duration-scoped modifier store backing the effect primitives. */
   readonly modifiers: ModifierLedger;
   /**
@@ -149,6 +167,7 @@ export class GameEngine {
    * (KB Q2814 / BT2-053). A timing window can resolve several separate bodies.
    */
   windowTokenSeq = 0;
+  securityRemovalEventSeq = 0;
   /** One identity per resolving body, preserving its parent's identity across nested effects. */
   readonly effectBodyTokens: number[] = [];
   /**
@@ -230,14 +249,6 @@ export class GameEngine {
   /** Printed timing effects triggered inside the currently resolving effect body. */
   pendingNestedTimingEffects: CollectedEffect[] = [];
   /**
-   * What each parked nested trigger's source card WAS when the trigger was collected (see
-   * `permanentIdentityOf`), or `null` when it was not on a permanent at all. CR §15-4-4-3/-5
-   * retire a pending trigger whose source left its area before activation; the resolver already
-   * enforces that inside the window it is draining, but a trigger parked BETWEEN windows is
-   * replayed from a captured list, so the residency check has to happen again at flush time.
-   */
-  readonly nestedTriggerSourceIdentity = new WeakMap<CollectedEffect, string | null>();
-  /**
    * True while a play's pay-time window is running its reducers' costs. A Digimon deleted to
    * pay a "when this card would be played, by deleting 1 of your Digimon, reduce the cost"
    * clause is deleted as part of the play, so its [On Deletion] triggers SIMULTANEOUSLY with
@@ -280,8 +291,11 @@ export class GameEngine {
     contexts: Map<number, EffectContext>;
   }> = [];
   flushingDeferredSecurityRemovalTriggers = false;
+  readonly pendingEffectReaders = new Set<() => readonly CollectedEffect[]>();
+
   /** Trigger windows created inside a resolving effect and activated only after that effect ends. */
   readonly deferredTimingWindows: Array<{
+    readPendingEffects?: () => readonly CollectedEffect[];
     timing: EffectTiming;
     trigger: TriggerInfo;
     transientCandidates: readonly CardInstance[];
@@ -336,6 +350,7 @@ export class GameEngine {
   readonly stagedDecks: (Decklist | undefined)[] = [undefined, undefined];
   /** Per-seat shuffle PRNG produced by setup (so a mulligan reshuffles deterministically). */
   rngForSeat: ((seat: Seat) => Rng) | undefined;
+  randomStreams: readonly [SeededRandom, SeededRandom] | undefined;
   /** Monotonic source of permanentIds unique within the match. */
   permanentSeq = 0;
   /** Shared completion barrier for the current continuous recompute batch. */
@@ -390,11 +405,26 @@ export class GameEngine {
     readonly state: GameState,
     readonly hooks: GameEngineHooks,
   ) {
+    if (state.gameMode === GameMode.MANUAL.value) {
+      this.manual = new ManualController({
+        state,
+        seed: hooks.seed,
+        randomKey: hooks.randomKey,
+        emit: hooks.emit,
+        declareDeckOutLoss: (seat) => this.win.declareLoss(seat, "deckOut"),
+        restart: (firstSeat) => {
+          void restartManualMatch({ engine: this, firstSeat }).catch((error: unknown) =>
+            logError("manual.restart", error),
+          );
+        },
+      });
+    }
     // Every zone move is narrated through `hooks.emit`: the one place that sees a card leave
     // the field. Wrapped before the collaborators below capture `this.hooks.emit` by value.
     this.hooks = {
       ...hooks,
       emit: (event) => {
+        this.snapshotContinuation.noteEvent();
         forgetUsesOfCardsLeavingField(this, event);
         trackGrantsOfCardsCrossingField(this, event);
         // The same seam marks the movement that routes a used Option out of its no-area slot,
@@ -410,7 +440,12 @@ export class GameEngine {
           const permanent = player.battleArea.find((candidate) => candidate.permanentId === permanentId);
           if (permanent !== undefined) {
             const definition = lookupDefinition(permanent.topCard.cardId);
-            if (definition !== undefined && isDigimon(definition)) return permanent.controllerSeat;
+            if (
+              (definition !== undefined && isDigimon(definition)) ||
+              this.continuous.grantedKinds(permanentId).includes(CardKind.Digimon)
+            ) {
+              return permanent.controllerSeat;
+            }
           }
         }
         return undefined;
@@ -498,6 +533,7 @@ export class GameEngine {
       recomputeContinuousEffects: () => this.recomputeContinuousEffects(),
     });
     this.projection = new BoardProjection({
+      omitHandAffordances: hooks.omitHandAffordances,
       state: this.state,
       access: this.access,
       continuous: this.continuous,
@@ -508,11 +544,14 @@ export class GameEngine {
       continuousDpSeedState: this.continuousDpSeedState,
       pendingBlitzAttack: () => this.pendingBlitzAttack,
       hasMainPhaseEnded: () => this.mainPhase.hasEnded,
+      deferHandAffordances: this.hooks.deferHandAffordances === true,
       effectEnvironment: (trigger) => effectEnvironment(this, trigger),
       buildEffectContext: (source, trigger) => buildEffectContext(this, source, trigger),
       isNewlyPlayedRushAttacker: (permanentId) => isNewlyPlayedRushAttacker(this, permanentId),
       listCandidateInstances: () => listCandidateInstances(this),
       validateAppFusion: (seat, intent) => validateAppFusion(this, seat, intent),
+      attackRedirectTargetIds: (attacker, targetPermanentId) =>
+        getAttackRedirection({ engine: this, attacker, targetPermanentId }),
       attackDeps: () => attackDeps(this),
       digivolveDeps: () => digivolveDeps(this),
       dnaDigivolveDeps: () => dnaDigivolveDeps(this),
@@ -687,6 +726,52 @@ export class GameEngine {
    * Validate and apply one player intent. The engine's main entry point from the room;
    * {@link applyIntent} holds the router and the per-verb handlers.
    */
+  getSnapshotCoreState() {
+    return {
+      windowTokenSeq: this.windowTokenSeq,
+      permanentSeq: this.permanentSeq,
+      instanceSeq: this.instanceSeq,
+      battleScopeSequence: this.battleScopeSequence,
+      securityRemovalEventSeq: this.securityRemovalEventSeq,
+      matchSetupStarted: this.matchSetupStarted,
+      bothReadyFired: this.bothReadyFired,
+      readySeats: [...this.readySeats],
+      stagedDecks: this.stagedDecks,
+      crossedMemoryRushAttackers: [...this.crossedMemoryRushAttackers],
+      justLinked: [...this.justLinked],
+      continuousDpSeedState: [...this.continuousDpSeedState],
+      declinedAttackArts: [...this.declinedAttackArts],
+      announcedSubTriggerEffectKeys: [...this.announcedSubTriggerEffectKeys],
+    };
+  }
+
+  restoreSnapshotCoreState(snapshot: ReturnType<GameEngine["getSnapshotCoreState"]>): void {
+    this.windowTokenSeq = snapshot.windowTokenSeq;
+    this.permanentSeq = snapshot.permanentSeq;
+    this.instanceSeq = snapshot.instanceSeq;
+    this.battleScopeSequence = snapshot.battleScopeSequence;
+    this.securityRemovalEventSeq = snapshot.securityRemovalEventSeq;
+    this.matchSetupStarted = snapshot.matchSetupStarted;
+    this.bothReadyFired = snapshot.bothReadyFired;
+    this.stagedDecks.length = 0;
+    this.stagedDecks.push(...snapshot.stagedDecks);
+    replaceSet({ target: this.readySeats, values: snapshot.readySeats });
+    replaceSet({ target: this.crossedMemoryRushAttackers, values: snapshot.crossedMemoryRushAttackers });
+    replaceSet({ target: this.justLinked, values: snapshot.justLinked });
+    replaceSet({ target: this.declinedAttackArts, values: snapshot.declinedAttackArts });
+    replaceSet({ target: this.announcedSubTriggerEffectKeys, values: snapshot.announcedSubTriggerEffectKeys });
+    function replaceSet<T>({ target, values }: ReplaceSnapshotSetParams<T>): void {
+      target.clear();
+      for (const value of values) {
+        target.add(value);
+      }
+    }
+    this.continuousDpSeedState.clear();
+    for (const [id, value] of snapshot.continuousDpSeedState) {
+      this.continuousDpSeedState.set(id, value);
+    }
+  }
+
   /** The player the engine can accept input from, independent of presentation. */
   get inputSeat(): Seat | undefined {
     if (this.state.gameOver) return undefined;
@@ -709,6 +794,10 @@ export class GameEngine {
 
   /** A room clock expires through the same terminal pipeline as other losses. */
   expireMatchTimer(seat: Seat): void {
+    this.snapshotContinuation.recordInput({
+      engine: this,
+      input: { kind: SnapshotContinuationInputKind.EXPIRE_MATCH_TIMER.value, seat },
+    });
     this.win.declareLoss(seat, "timeout");
     this.mulligan.cancel();
     this.decisions.cancel();
@@ -719,6 +808,23 @@ export class GameEngine {
   }
 
   applyIntent(seat: Seat, intent: Intent): IntentResult {
+    this.snapshotContinuation.recordInput({
+      engine: this,
+      input: { kind: SnapshotContinuationInputKind.INTENT.value, seat, intent },
+    });
+    if (this.manual) {
+      if (intent.type === "manual") {
+        return this.manual.apply(seat, intent);
+      }
+      if (
+        intent.type !== "ready" &&
+        intent.type !== "mulligan" &&
+        intent.type !== "surrender" &&
+        !(intent.type === "respondDecision" && this.state.turnCount === 0)
+      ) {
+        return { ok: false, reason: "unknown-intent" };
+      }
+    }
     return applyIntent(this, seat, intent);
   }
 
@@ -755,6 +861,7 @@ export class GameEngine {
       playerAction?: boolean;
       isDigiXros?: boolean;
       keywordPreventions?: { interruptsEffect: boolean };
+      holdTriggered?: boolean;
     },
   ): Promise<Set<string>> {
     return engineConsultLeavePrevention(this, permanentIds, cause, resolvingSeat, opts);
@@ -869,15 +976,35 @@ export class GameEngine {
     return syncCounts(this);
   }
 
+  flushHandAffordances(): void {
+    this.projection.flushHandAffordances();
+  }
+
+  refreshHandAffordances(): void {
+    this.projection.refreshHandAffordances();
+  }
+
   handleReconnect(seat: Seat): void {
+    this.snapshotContinuation.recordInput({
+      engine: this,
+      input: { kind: SnapshotContinuationInputKind.RECONNECT.value, seat },
+    });
     return handleReconnect(this, seat);
   }
 
   handleDisconnect(seat: Seat, consented: boolean): void {
+    this.snapshotContinuation.recordInput({
+      engine: this,
+      input: { kind: SnapshotContinuationInputKind.DISCONNECT.value, seat, consented },
+    });
     return handleDisconnect(this, seat, consented);
   }
 
   expireCombatWindow(): boolean {
+    this.snapshotContinuation.recordInput({
+      engine: this,
+      input: { kind: SnapshotContinuationInputKind.EXPIRE_COMBAT_WINDOW.value },
+    });
     return expireCombatWindow(this);
   }
 

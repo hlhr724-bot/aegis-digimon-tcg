@@ -1,3 +1,4 @@
+import { effectEnvironmentSnapshots } from "#api/engine/effects/resolution/effectEnvironmentSnapshots";
 import { resolveDerivedDuringAttackStep } from "#api/engine/gameEngine/resolveDerivedDuringAttackStep";
 import type { ArmedSubTrigger } from "#api/engine/gameEngine/subTriggerIdentity";
 import type { CollectedEffect } from "#api/engine/effects/collect";
@@ -16,6 +17,8 @@ import {
   type ServerEvent,
   type ZoneRef,
 } from "@aegis/shared";
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
+import { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 import { canAttackerDeclare } from "../combat/legality.js";
 import { resolveKeywords } from "../combat/keywords.js";
 import { effectiveKinds, effectiveNames, effectiveTraits } from "../effects/continuous.js";
@@ -121,6 +124,8 @@ export function effectAccess(engine: GameEngine): GameAccess {
     (permanent, printedName) => effectiveNames(engine.continuous, permanent, printedName),
     (id) => engine.combat.battleOpponentOf(id),
   );
+  engine.gameAccess.runtimeCallbacks = engine.runtimeCallbacks;
+  engine.gameAccess.runtimeObjects = engine.runtimeObjects;
   return engine.gameAccess;
 }
 
@@ -142,7 +147,7 @@ export function buildEffectContext(
   trigger: TriggerInfo,
   askOverride?: DecisionApi,
 ): EffectContext {
-  return createEffectContext({
+  const context = createEffectContext({
     source,
     trigger,
     game: effectAccess(engine),
@@ -150,6 +155,7 @@ export function buildEffectContext(
     ask: askOverride ?? engine.decisionApi,
     usage: engine.tracker,
   });
+  return context;
 }
 
 /** Find a card instance that is loose or anywhere in a battle-area permanent. */
@@ -197,6 +203,7 @@ export function cardSourceOf(engine: GameEngine, instance: CardInstance): CardSo
   const cached = engine.cardSourceByInstance.get(instance);
   if (cached !== undefined) return cached;
   engine.cardStateLookup ??= createCardStateLookup(engine.state);
+  engine.cardStateLookup.runtimeObjects = engine.runtimeObjects;
   const source = createCardSource(instance, engine.cardStateLookup);
   engine.cardSourceByInstance.set(instance, source);
   return source;
@@ -208,7 +215,9 @@ export function cardSourceOf(engine: GameEngine, instance: CardInstance): CardSo
  * (shared with activateEffect so maxPerTurn accounting is unified).
  */
 export function effectEnvironment(engine: GameEngine, trigger: TriggerInfo): EffectEnvironment {
-  return {
+  const environment: EffectEnvironment = {
+    runtimeObjects: engine.runtimeObjects,
+    runtimeCallbacks: engine.runtimeCallbacks,
     state: engine.state,
     fx: engine.primitives,
     fxForSource: (source) => effectPrimitives(engine, source.ownerSeat),
@@ -229,6 +238,8 @@ export function effectEnvironment(engine: GameEngine, trigger: TriggerInfo): Eff
       engine.digivolveSupport.matchBaseGrantedDigivolve(seat, base, evolving, sourceZone),
     triggerInfo: trigger,
   };
+  effectEnvironmentSnapshots.set(environment, new Map(Object.entries(environment)));
+  return environment;
 }
 
 /**
@@ -240,7 +251,11 @@ export function effectEnvironment(engine: GameEngine, trigger: TriggerInfo): Eff
 export function forgetUsesOfCardsLeavingField(engine: GameEngine, event: ServerEvent): void {
   if (event.kind !== "cardsMoved") return;
   const onField = (zone: string): boolean => zone === Zone.BattleArea || zone === Zone.Breeding;
-  if (!onField(event.from) || onField(event.to)) return;
+  const fromField =
+    onField(event.from) ||
+    event.from === CardMovePosition.DIGIVOLUTION_CARDS.value ||
+    event.from === CardMovePosition.LINKED_CARDS.value;
+  if (!fromField || onField(event.to)) return;
   for (const instanceId of event.instanceIds) engine.tracker.forgetInstance(instanceId);
 }
 
@@ -289,11 +304,13 @@ export async function engineConsultLeavePrevention(
     playerAction?: boolean;
     isDigiXros?: boolean;
     keywordPreventions?: { interruptsEffect: boolean };
+    holdTriggered?: boolean;
   },
 ): Promise<Set<string>> {
   // Immediate reactions must observe the rebuilt continuous registry, never its
   // clear-before-refill interval during an overlapping effect-resolution flow.
   await engine.recomputeContinuousEffects();
+  const pendingBefore = new Set(engine.pendingNestedTimingEffects);
   const prevented = await consultLeavePrevention(
     {
       subTriggers: engine.subTriggers,
@@ -320,6 +337,7 @@ export async function engineConsultLeavePrevention(
           engine.hooks.emit({ kind: "effectResolved", ...announced });
         }
       },
+      resolvePreventBody: (body) => resolveLeaveReplacementBody(engine, body, { asEffectBody: true }),
       keywordReplacements: (ids) => [
         ...partitionLeaveReplacements(ids, {
           permanentById: (id) => engine.access.permanentById(id),
@@ -404,7 +422,15 @@ export async function engineConsultLeavePrevention(
             return fragmentCountOf(permanent.topCard.cardId, engine.continuous.grantedKeywords(id));
           },
           select: (seat, candidateInstanceIds, { min, max }, promptText, source) =>
-            requestCardSelection(engine, { seat, candidateInstanceIds, min, max, promptText, source }),
+            requestCardSelection(engine, {
+              seat,
+              candidateInstanceIds,
+              min,
+              max,
+              promptText,
+              source,
+              selectionGoal: DecisionSelectionGoal.PROTECT.value,
+            }),
           trash: (hostPermanentId, instanceIds, provenance) =>
             engine.primitives.trashDigivolutionCards(hostPermanentId, instanceIds, provenance),
           announce: (saved) => emitKeywordDeletionPrevented(engine, { keyword: "Fragment", saved }),
@@ -422,7 +448,17 @@ export async function engineConsultLeavePrevention(
                   engine.access.isBattleAreaDigimon(permanent, engine.continuous),
               ),
           select: async (seat, candidateInstanceIds, min, promptText, source) =>
-            (await requestCardSelection(engine, { seat, candidateInstanceIds, min, max: 1, promptText, source }))[0],
+            (
+              await requestCardSelection(engine, {
+                seat,
+                candidateInstanceIds,
+                min,
+                max: 1,
+                promptText,
+                source,
+                selectionGoal: DecisionSelectionGoal.PROTECT.value,
+              })
+            )[0],
           announce: (saved, sacrifice) =>
             emitKeywordDeletionPrevented(engine, { keyword: "Scapegoat", saved, paid: sacrifice }),
         }),
@@ -542,6 +578,7 @@ export async function engineConsultLeavePrevention(
             triggerDescriptions: keyed.map(({ replacement }) => replacement.description),
             triggerIsInherited: keyed.map(({ isInherited }) => isInherited),
             acceptsResolutionPlan: true,
+            acceptsIndexedResolutionPlan: true,
             triggerIsOptional: keyed.map(({ replacement }) => effectTextMayAskYesNo(replacement.description)),
           },
         });
@@ -570,6 +607,8 @@ export async function engineConsultLeavePrevention(
       isDigiXros: opts?.isDigiXros,
       insteadOnly: opts?.insteadOnly,
       keywordPreventions: opts?.keywordPreventions,
+      holdTriggered: opts?.holdTriggered,
+      holdCardTriggered: cause === "byBattle",
       reentryGuard: engine.preventReentryGuard,
     },
   );
@@ -577,9 +616,20 @@ export async function engineConsultLeavePrevention(
   // triggered activates now instead of waiting for one. A DigiXros material interrupt is the
   // exception: it happens inside the play procedure, so its caller hands what it triggered to
   // the played Digimon's [On Play] window (CR §15-4-3-2, §15-8-3-2).
+  if (cause === "byBattle") {
+    const triggered = engine.pendingNestedTimingEffects.filter(
+      (pending) => !pendingBefore.has(pending) && pending.timing === EffectTiming.WhenDigivolving,
+    );
+    const transferred = new Set(triggered);
+    engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter(
+      (pending) => !transferred.has(pending),
+    );
+    engine.pendingLeaveReplacementEffects.push(...triggered);
+  }
   const averted =
     opts?.isBounce === true || opts?.insteadOnly === true || permanentIds.every((id) => prevented.has(id));
-  if (averted && opts?.isDigiXros !== true) await runPendingTimingWindow(engine, takeLeaveReplacementPending(engine));
+  if (averted && opts?.isDigiXros !== true && opts?.holdTriggered !== true && !engine.ruleProcessing)
+    await runPendingTimingWindow(engine, takeLeaveReplacementPending(engine));
   return prevented;
 }
 
@@ -617,10 +667,15 @@ export function buildPrimitives(engine: GameEngine): Primitives {
   // attack verbs only dereference it at call time, by which point it is set.
   const getCombat = () => engine.combat;
   return createPrimitives({
+    runtimeCallbacks: engine.runtimeCallbacks,
     state: engine.state,
-    // Effects that shuffle (security) draw from the seat's match-seeded stream, so a match stays
-    // reproducible from its seed. Read lazily: the streams exist only once the match is set up.
-    rngForSeat: (seat) => engine.rngForSeat?.(seat) ?? Math.random,
+    // Match setup installs the streams after this adapter is constructed.
+    // Resolve them at effect execution so security shuffles replay the match seed.
+    rngForSeat: (seat) => {
+      const random = engine.rngForSeat?.(seat);
+      if (!random) throw new Error("Security shuffle requires an initialized match random stream");
+      return random;
+    },
     artsDigivolve: (seat, instance, definition, duringAttack) =>
       engine.digivolveSupport.resolveArtsDigivolve(seat, instance, definition, duringAttack),
     beginEffectBody: () => {
@@ -646,24 +701,32 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       try {
         parkDeferredSecurityRemovalTriggers(engine);
         parkDeferredTimingWindowsForAttack(engine);
-        engine.pendingNestedTimingEffects.push(...(await collectRuleProcessPending(engine)));
+        const initialRulePending = await collectRuleProcessPending(engine);
+        engine.pendingNestedTimingEffects.push(...initialRulePending);
         // Settle the already-armed watcher tier before exposing the Option's older
         // printed entry/attack effects. Then settle the interrupted Option's rule
         // check in that same parent pool before Counter Timing/security can proceed.
         await drain();
         engine.optionResolutionDepth = 0;
-        engine.pendingNestedTimingEffects.push(...(await collectRuleProcessPending(engine)));
+        const remainingRulePending = await collectRuleProcessPending(engine);
+        engine.pendingNestedTimingEffects.push(...remainingRulePending);
         await drain();
         // The ordering effect's own drain only sees its window's timing. An Option used inside
         // another effect (Planet Punch through EX12-077) can Arts Digivolve the attacker, and
         // that [When Digivolving] is parked in the nested pool; it still resolves before
         // Counter Timing and security.
+        const offeredBeforeCounter = new Set(engine.pendingNestedTimingEffects);
         await drainPendingAttackTriggers(engine);
         // No declaration effect may become legal later during a block or battle.
         retirePendingAttackWatchers(engine);
         // Retire the exhausted parent remainder only after rule processing and every
         // declaration pool have finished; intermediate drains may enable its costs.
-        if (options?.retireUnactivatable) await drain(options);
+        if (options?.retireUnactivatable) {
+          await drain(options);
+          engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter(
+            (pending) => !offeredBeforeCounter.has(pending),
+          );
+        }
       } finally {
         engine.effectResolutionDepth = pausedDepth;
         engine.optionResolutionDepth = pausedOptionDepth;
@@ -732,7 +795,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
         trigger,
         candidates,
         (deletionTrigger, simultaneousPending = []) =>
-          simultaneousPending.length > 0
+          simultaneousPending.length > 0 || candidates.length > 0
             ? runTimingWindow(
                 engine,
                 EffectTiming.OnDestroyedAnyone,
@@ -756,7 +819,6 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       if (engine.ruleProcessing || engine.ruleTriggerPool !== undefined) {
         // A trash replacement is entered from the active rule pass. Run only the DP
         // movement processes: the outer pass owns the pooled reactions and its latch.
-        await engine.ruleChecks.trashNoDpPermanents();
         await engine.ruleChecks.deleteZeroDpDigimon();
       } else {
         const pool = await collectRuleProcessMovements(engine);
@@ -770,6 +832,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       originZone,
       projectOnly,
       simultaneousPlayCount,
+      reservedInstanceIds,
     ) => {
       // A selected security card can still be face down in its origin zone.
       // Locate only engine instance; do not expose hidden security to timing scans.
@@ -781,7 +844,16 @@ export function buildPrimitives(engine: GameEngine): Primitives {
           : findLooseInstance(engine, instanceId);
       return instance === undefined
         ? baseCost
-        : fireBeforePayCost(engine, instance, baseCost, useAsOption, originZone, projectOnly, simultaneousPlayCount);
+        : fireBeforePayCost(
+            engine,
+            instance,
+            baseCost,
+            useAsOption,
+            originZone,
+            projectOnly,
+            simultaneousPlayCount,
+            reservedInstanceIds,
+          );
     },
     clearPreparedDigiXrosPlay: (instanceId) => clearPreparedDigiXrosPlay(engine, instanceId),
     placePendingPlayCosts: (instanceId, permanentId) =>
@@ -842,6 +914,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
       await resolveSelfWhenTrashedFromDeck(
         buildEffectContext(engine, cardSourceOf(engine, instance), {
           trashedFromDeckCardId: instance.cardId,
+          trashedFromDeckInstanceId: instanceId,
           ...(byEffectCardId === undefined ? {} : { trashedFromDeckByEffectCardId: byEffectCardId }),
         }),
       );
@@ -856,8 +929,15 @@ export function buildPrimitives(engine: GameEngine): Primitives {
     reactivateOnPlay: (permanentId, opts) => reactivateOnPlay(engine, permanentId, opts),
     fireEnteredByEffect: (timing, instanceId, ownerSeat, opts) =>
       fireEnteredByEffectTiming(engine, timing, instanceId, ownerSeat, opts),
-    fireWhenDigivolving: (seat, permanent, previousLevel) =>
-      digivolveDeps(engine).fireWhenDigivolving!(engine.state, seat, permanent, previousLevel),
+    fireWhenDigivolving: (seat, permanent, previousLevel, isDnaDigivolve) =>
+      digivolveDeps(engine).fireWhenDigivolving!(
+        engine.state,
+        seat,
+        permanent,
+        previousLevel,
+        undefined,
+        isDnaDigivolve,
+      ),
     prepareAppFusion: async (seat, target, result, into) => {
       const deps = digivolveDeps(engine);
       await deps.prepareDigivolveCost?.(engine.state, seat, target, result, into);
@@ -901,9 +981,11 @@ export function buildPrimitives(engine: GameEngine): Primitives {
             timing: provenance?.timing,
             effectText: provenance?.effectText,
             effectTextPart: provenance?.effectTextPart,
+            effectTextEmphasis: provenance?.effectTextEmphasis,
             isInherited: provenance?.isInherited,
             selectionContext: provenance?.selectionContext,
             visibleInstanceIds: provenance?.visibleInstanceIds,
+            ...(provenance?.selectionGoal === undefined ? {} : { selectionGoal: provenance.selectionGoal }),
           },
         });
         return response.kind === "selectCards" ? response.instanceIds : [];

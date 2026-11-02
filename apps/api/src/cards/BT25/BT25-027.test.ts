@@ -2,6 +2,7 @@ import { digivolutionRequirementsFor, getCardDefinition } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
 import { settle, setupEngine } from "../../engine/testkit/harness.js";
+import { internalsOf } from "../../engine/testkit/internals.js";
 import { compiled as BT25_027 } from "./BT25-027.js";
 import "../index.js";
 
@@ -331,6 +332,7 @@ describe("BT25-027 MachGaogamon", () => {
     expect(s.state.players[0]!.trash).toContainEqual(
       expect.objectContaining({ instanceId: s.inst("cost").instanceId }),
     );
+    expect(internalsOf(s.engine).tracker.count(s.inst("mach").instanceId, "BT25-027/ir-shared-0")).toBe(1);
   });
 
   it("declining the whole When Digivolving effect preserves the same-turn When Attacking opportunity", async () => {

@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with the [SoC]/[SEEKERS] trait",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Eiji Nagasumi] among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

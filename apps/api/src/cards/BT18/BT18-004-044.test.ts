@@ -22,10 +22,17 @@ describe("BT18 targeted fidelity checks", () => {
     });
   });
 
-  it("lets Agunimon recover either a Hybrid Digimon or an inherited-effect Tamer", () => {
+  it("lets Agunimon recover either a Hybrid or Ten Warriors card or an inherited-effect Tamer", () => {
     expect(agunimon.effects?.[0]?.actions?.[0]).toMatchObject({
       kind: "Return",
-      target: { filter: { or: [{ kind: ["Digimon"] }, { kind: ["Tamer"], hasInheritedEffects: true }] } },
+      target: {
+        filter: {
+          or: [
+            { nameOrTrait: [{ tokens: ["Hybrid", "Ten Warriors"], match: "trait" }] },
+            { kind: ["Tamer"], hasInheritedEffects: true },
+          ],
+        },
+      },
       to: "hand",
     });
   });

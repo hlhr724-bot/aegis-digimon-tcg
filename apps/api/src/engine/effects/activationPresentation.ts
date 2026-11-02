@@ -1,3 +1,4 @@
+import { EffectActivationCallbackKind } from "#api/engine/effects/EffectActivationCallbackKind";
 import type { EffectContext } from "./EffectContext.js";
 
 /**
@@ -9,13 +10,26 @@ export function observeEffectActivation(ctx: EffectContext, deferred: boolean, a
   const outer = ctx.onActivationChosen;
   const outerPending = ctx.isActivationPending;
   let accepted = false;
+  const isPending = () => !accepted;
   const accept = () => {
-    if (accepted) return;
+    if (accepted) {
+      return;
+    }
     accepted = true;
+    ctx.game?.runtimeCallbacks?.track({
+      callback: accept,
+      key: EffectActivationCallbackKind.ACCEPTED.value,
+      payload: null,
+    });
+    ctx.game?.runtimeCallbacks?.track({
+      callback: isPending,
+      key: EffectActivationCallbackKind.NOT_PENDING.value,
+      payload: null,
+    });
     announce();
   };
   ctx.onActivationChosen = accept;
-  ctx.isActivationPending = () => !accepted;
+  ctx.isActivationPending = isPending;
   if (!deferred) accept();
   return {
     accept,

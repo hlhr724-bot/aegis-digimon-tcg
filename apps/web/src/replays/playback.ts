@@ -1,4 +1,4 @@
-import type { MatchReplay, Seat } from "@aegis/shared";
+import { getCardDefinition, isOption, type MatchReplay, type Seat } from "@aegis/shared";
 
 export function turnPositions(replay: MatchReplay): { index: number; turn: number; seat: Seat }[] {
   return replay.frames.flatMap((frame, index) =>
@@ -11,9 +11,9 @@ export function turnPositions(replay: MatchReplay): { index: number; turn: numbe
 }
 
 /** Skips thinking time, while giving each animation room to finish at the selected speed. */
-export function frameDelay(replay: MatchReplay, index: number, speed: number): number {
+export function frameDelay(replay: MatchReplay, index: number, speed: number, skipThinking = true): number {
   const gap = (replay.frames[index + 1]?.atMs ?? replay.frames[index]!.atMs) - replay.frames[index]!.atMs;
-  return Math.min(2500, Math.max(1000, gap)) / speed;
+  return (skipThinking ? Math.min(2500, Math.max(1000, gap)) : Math.max(0, gap)) / speed;
 }
 
 export function playbackState(replay: MatchReplay, index: number, showHand: boolean) {
@@ -32,8 +32,15 @@ export function presentationEnd(replay: MatchReplay, start: number): number {
   const attacks = new Set<string>();
   const checks = new Map<number, number>();
   const tops = new Set<string>();
+  const options = new Set<string>();
   for (let index = start; index < replay.frames.length; index++) {
     for (const event of replay.frames[index]!.events) {
+      if (event.kind === "cardPlayed" && event.permanentId === undefined && event.instanceId !== undefined) {
+        const definition = getCardDefinition(event.cardId);
+        if (definition !== undefined && isOption(definition)) options.add(event.instanceId);
+      } else if (event.kind === "cardsMoved" && event.optionUsed === true) {
+        for (const id of event.instanceIds) options.delete(id);
+      } else if (event.kind === "turnEnded") options.clear();
       if (event.kind === "cardsMoved" && event.strippedStackTops?.sequenceId) {
         for (const id of event.instanceIds) tops.add(`${event.strippedStackTops.sequenceId}:${id}`);
       } else if (event.kind === "stackTopResolved") tops.delete(`${event.sequenceId}:${event.strippedInstanceId}`);
@@ -54,7 +61,10 @@ export function presentationEnd(replay: MatchReplay, start: number): number {
         else checks.delete(event.seat);
       }
     }
-    if ((!effects.size && !attacks.size && !checks.size && !tops.size) || replay.frames[index]!.state.gameOver)
+    if (
+      (!effects.size && !attacks.size && !checks.size && !tops.size && !options.size) ||
+      replay.frames[index]!.state.gameOver
+    )
       return index;
   }
   return replay.frames.length - 1;

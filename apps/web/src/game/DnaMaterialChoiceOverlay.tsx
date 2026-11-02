@@ -16,6 +16,7 @@ export function DnaMaterialChoiceOverlay({
   disabled = false,
   onConfirm,
   onNormalEvolution,
+  onNormalPlay,
   onCancel,
 }: {
   routes: readonly ProjectedDnaDigivolveRoute[];
@@ -24,6 +25,7 @@ export function DnaMaterialChoiceOverlay({
   disabled?: boolean;
   onConfirm: (materialPermanentIds: string[]) => void;
   onNormalEvolution?: () => void;
+  onNormalPlay?: () => void;
   onCancel: () => void;
 }) {
   const { t } = useTranslation();
@@ -54,8 +56,13 @@ export function DnaMaterialChoiceOverlay({
           {t("overlay.digivolveNormally")}
         </Button>
       ) : null}
+      {onNormalPlay ? (
+        <Button variant="secondary" disabled={disabled} onClick={onNormalPlay}>
+          {t("overlay.playNormally")}
+        </Button>
+      ) : null}
       <div className="dna-material-choice__actions">
-        <Button variant="secondary" onClick={onCancel}>
+        <Button variant="secondary" data-arena-cancel onClick={onCancel}>
           {t("common.cancel")}
         </Button>
         <Button

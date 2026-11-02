@@ -1,3 +1,8 @@
+import type { CounterChoice } from "#shared/protocol/CounterChoice";
+import type { SingleHandCostBenefit } from "#shared/protocol/SingleHandCostBenefit";
+import { CardMovePosition } from "#shared/protocol/CardMovePosition";
+import type { DecisionEffectSummary } from "#shared/protocol/DecisionEffectSummary";
+import type { DecisionSelectionGoal } from "#shared/protocol/DecisionSelectionGoal";
 import type { Seat } from "../schema/enums.js";
 import type { AttackTarget } from "./intents.js";
 
@@ -90,6 +95,7 @@ export interface EffectBattleParticipants {
 }
 
 export type ServerEvent =
+  | { kind: "manualAction"; seat: Seat; action: string }
   | { kind: "matchStarted"; firstSeat: Seat }
   | { kind: "phaseChanged"; phase: string; turnSeat: Seat; turnCount: number }
   | {
@@ -170,7 +176,7 @@ export type ServerEvent =
       kind: "counterWindowOpened";
       attackerPermanentId: string;
       defendingSeat: Seat;
-      eligibleCounters: { instanceId: string; effectKey: string; description: string }[];
+      eligibleCounters: CounterChoice[];
     }
   | { kind: "counterResolved"; attackerPermanentId: string; activated: boolean }
   // ＜Alliance＞ (Comprehensive Rules §16-24) is attack-only; there is no block-time variant.
@@ -302,6 +308,7 @@ export type ServerEvent =
       sourcePermanentId?: string;
       effectKey: string;
       description: string;
+      effectTextPart?: string;
       timing?: string;
       /** Printed clause timing, separate from the watcher event that fired. */
       printedTiming?: string;
@@ -341,6 +348,17 @@ export type ServerEvent =
       timing?: string;
       isInherited?: boolean;
       /** The chosen option's printed bullet, without the leading "・". */
+      clause: string;
+    }
+  | {
+      kind: "effectClauseAdvanced";
+      effectKey?: string;
+      seat: Seat;
+      sourceCardId: string;
+      sourceInstanceId?: string;
+      sourcePermanentId?: string;
+      timing?: string;
+      isInherited?: boolean;
       clause: string;
     }
   | {
@@ -457,6 +475,7 @@ export type ServerEvent =
       /** A draw, another hand addition, or an internal bridge to an immediate play/use.
        * Carries no card identity. A staging move is not a visible hand arrival. */
       handAddition?: "draw" | "transfer" | "staging";
+      deckReturnOrder?: true;
       /** These cards were the security card being checked, so they left security at its reveal. */
       fromSecurityCheck?: true;
       /** Automatic bonus draw from digivolution, rather than a card effect. */
@@ -465,6 +484,8 @@ export type ServerEvent =
       optionUsed?: true;
       instanceIds: string[];
       from: string;
+      fromSeat?: Seat;
+      fromHost?: { permanentId: string; hostCardId: string };
       to: string;
       /**
        * Card identities, in `instanceIds` order — present only when the movement
@@ -558,6 +579,7 @@ export type SequencedServerEvent = ServerEvent & {
  * kind could ship narrating nothing and no test would notice.
  */
 export const SERVER_EVENT_KINDS = [
+  "manualAction",
   "matchStarted",
   "phaseChanged",
   "cardPlayed",
@@ -591,6 +613,7 @@ export const SERVER_EVENT_KINDS = [
   "effectTriggered",
   "resolutionOrderChosen",
   "effectOptionChosen",
+  "effectClauseAdvanced",
   "effectResolved",
   "effectHadNoEffect",
   "dpModifierApplied",
@@ -629,7 +652,7 @@ export interface FinalRevealPlayer {
  * would push a non-array through every one of those switches. `cardsMoved.to` is a free-form
  * display label that no rules code branches on, which is why the position is safe to name here.
  */
-export const DECK_BOTTOM = "deckBottom";
+export const DECK_BOTTOM = CardMovePosition.DECK_BOTTOM.value;
 
 /**
  * The ServerEvent kinds answered by a dedicated intent (declareBlock/
@@ -688,6 +711,13 @@ export interface DecisionRequest {
   sourcePermanentId?: string;
   // kind-specific options the UI needs to render the prompt and constrain input:
   options?: {
+    selectionGoal?: DecisionSelectionGoal;
+    effectControllerSeat?: Seat;
+    singleHandCostBenefit?: SingleHandCostBenefit;
+    effectSummary?: DecisionEffectSummary;
+    choiceSummaries?: (DecisionEffectSummary | null)[];
+    triggerSummaries?: (DecisionEffectSummary | null)[];
+    triggerControllerSeats?: Seat[];
     candidateInstanceIds?: string[]; // selectable cards/permanents
     visibleInstanceIds?: string[]; // full display set (e.g. all revealed cards); ids absent from candidateInstanceIds render disabled
     /** Authoritative identities for temporarily revealed cards that may not yet exist in the client's zone index. */
@@ -697,12 +727,13 @@ export interface DecisionRequest {
     min?: number;
     max?: number; // selection count bounds
     maxTotalPlayCost?: number; // summed printed play-cost budget for multi-card selections
+    allowedTargetCombinations?: string[][];
     maxTotalDP?: number; // summed live-DP budget for aggregate permanent selections
     differentColors?: boolean; // prevent selecting cards that share a color with an already-picked card
     distinctCardIds?: boolean; // prevent selecting multiple instances with the same card number
     distinctNames?: boolean; // prevent selecting cards sharing a name, including exact-name aliases
     /** Lets the client present a dedicated interaction without inferring semantics from prompt text. */
-    selectionContext?: "attackSource" | "attackTarget" | "partitionActivation";
+    selectionContext?: "attackSource" | "attackTarget" | "partitionActivation" | "materialSaveActivation";
     orderDestination?: "deckTop" | "deckBottom" | "stackTop" | "stackBottom"; // explains how ordered positions map to the destination
     choices?: string[]; // modal labels for chooseOption
     /** `chooseOption` only: the zone whose ends the "top" and "bottom" choices name. */
@@ -726,6 +757,7 @@ export interface DecisionRequest {
      * every choice is a real option.
      */
     declineIndex?: number;
+    activation?: { index: number; total: number };
     /** Aligned to `choices` when each choice is a printed effect of a card: the client shows the card and its clause. */
     choiceEffects?: { cardId: string; timing?: string; isInherited?: boolean }[];
     /**
@@ -772,6 +804,7 @@ export interface DecisionRequest {
      * prompts that only read the first key (simultaneous would-leave replacements).
      */
     acceptsResolutionPlan?: boolean;
+    acceptsIndexedResolutionPlan?: boolean;
     timing?: string; // printed timing label of the resolving effect (e.g. "On Play"), for the overlay to show only that clause
     /** Exact clause that raised this decision, preserving main/inherited provenance without client-side guessing. */
     effectText?: string;
@@ -805,12 +838,16 @@ export interface DecisionRequest {
      * `"optionalTarget"` asks the activation choice itself through a zero-to-one target pick.
      */
     purpose?: "cost" | "acceptedOptional" | "optionalTarget";
+    declinesCost?: boolean;
+    canCancelActivation?: boolean;
     /** Effect-driven play awaiting the existing Assembly material picker for this card. */
     assemblyCardId?: string;
     /** Authoritative prohibition applied to this effect-driven material declaration. */
     playCostReductionBlocked?: boolean;
     /** Effect-driven play awaiting the existing DigiXros material picker for this card. */
     digiXrosCardId?: string;
+    /** Already-authorized material groups and quotas for an effect-driven DigiXros picker. */
+    digiXrosMaterialLimits?: { candidateInstanceIds: string[]; max: number }[];
     /** Paid source cards that will enter trash before this DigiXros is placed. */
     digiXrosRuleTrashInstanceIds?: string[];
   };

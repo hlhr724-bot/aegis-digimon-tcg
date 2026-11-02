@@ -31,6 +31,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 1 of your Digimon with [Numemon], [Sukamon], [Nanimon], or [Etemon] in its name can't be blocked and gains \"[On Deletion] Gain 3 memory.\"",
           kind: "GrantAuraToOpponents",
           target: {
             filter: {
@@ -47,6 +49,8 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 1 of your Digimon with [Numemon], [Sukamon], [Nanimon], or [Etemon] in its name can't be blocked and gains \"[On Deletion] Gain 3 memory.\"",
           kind: "Restrict",
           target: {
             filter: {

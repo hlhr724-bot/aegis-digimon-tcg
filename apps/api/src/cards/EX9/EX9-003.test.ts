@@ -72,6 +72,49 @@ describe("EX9-003", () => {
     expect(s.state.memory).toBe(0);
   });
 
+  it("reserves its reduction for its own host when another face-down stack digivolves first", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "EX9-023", as: "host", under: [{ card: "BT1-009", faceUp: false }, "EX9-003"] },
+            { card: "EX9-023", as: "peer", under: [{ card: "BT1-010", faceUp: false }] },
+          ],
+          hand: [
+            { card: "EX9-029", as: "peerEvolution" },
+            { card: "EX9-029", as: "hostEvolution" },
+          ],
+          deck: Array.from({ length: 10 }, () => "BT1-048"),
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true, autoOrderTriggers: true },
+    );
+    s.state.memory = 3;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("peer").permanentId,
+        instanceId: s.inst("peerEvolution").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("peer").topCard.cardId === "EX9-029");
+    expect(s.state.pendingDecision).toBeUndefined();
+    expect(s.state.memory).toBe(1);
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("host").permanentId,
+        instanceId: s.inst("hostEvolution").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("host").topCard.cardId === "EX9-029");
+    expect(s.state.pendingDecision).toBeUndefined();
+    expect(s.state.memory).toBe(0);
+  });
+
   it("does not reduce a digivolution into a non-Ver.3 Digimon", async () => {
     const s = setupEngine(
       {

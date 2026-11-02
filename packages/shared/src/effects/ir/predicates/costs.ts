@@ -126,6 +126,7 @@ export interface Cost {
    * Security placement is face down unless this is explicitly `false` ("face up", BT18-004).
    */
   faceDown?: boolean;
+  faceDownUnderTamer?: boolean;
   /** The place cost relocates a battle-area permanent rather than a loose card. */
   targetIsPermanent?: boolean;
   /**

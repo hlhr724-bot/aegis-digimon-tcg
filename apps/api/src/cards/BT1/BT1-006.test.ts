@@ -18,7 +18,7 @@ describe("BT1-006 Cupimon", () => {
       forms: ["In-Training"],
       types: ["Mini Angel"],
       inheritedEffectText:
-        "[When Attacking] If you have 5 or more security cards， trigger ＜Draw 1＞ (Draw 1 card from your deck).",
+        "[When Attacking] If you have 5 or more security cards, trigger ＜Draw 1＞ (Draw 1 card from your deck).",
     });
     expect(getCardDefinition("BT1-006")?.effectText).toBeUndefined();
     expect(compiled.effects).toEqual([

@@ -124,6 +124,9 @@ class RoadmapPage {
       if (path === "/account/admin/playtest/members") return route.fulfill({ json: { members: [] } });
       if (path === "/account/admin/playtest/studies") return route.fulfill({ json: { open: [], past: [] } });
       if (path === "/account/decks") return route.fulfill({ json: [] });
+      if (path === "/friends") return route.fulfill({ json: { friends: [] } });
+      if (path === "/friends/requests") return route.fulfill({ json: { requests: [] } });
+      if (path === "/account/blocks") return route.fulfill({ json: { blocks: [] } });
       return route.fulfill({ json: {} });
     });
     await this.page.goto(path);
@@ -131,6 +134,13 @@ class RoadmapPage {
 
   column(name: string) {
     return this.page.getByRole("region", { name, exact: true });
+  }
+
+  async showColumn(name: string) {
+    const lane = this.page.getByRole("group", { name: "Roadmap columns" }).getByRole("button", { name, exact: true });
+    if (await lane.isVisible()) {
+      await lane.click();
+    }
   }
 }
 
@@ -146,10 +156,12 @@ for (const width of [320, 1440]) {
       await expect(page.getByRole("heading", { name: "Community roadmap", exact: true })).toBeVisible();
       const columns = page.locator(".roadmap-column h2");
       await expect(columns).toHaveText(["Planned", "In development", "Under review", "Completed"]);
+      await roadmap.showColumn("Planned");
       await expect(roadmap.column("Planned").getByRole("link", { name: "Ranked / Leaderboard" })).toHaveAttribute(
         "href",
         "/roadmap/1",
       );
+      await roadmap.showColumn("Under review");
       const support = roadmap.column("Under review").getByRole("button", { name: /Support Friends and match/ });
       await expect(support).toHaveText("2");
       await support.click();
@@ -172,15 +184,15 @@ test("guests are sent to sign in before supporting", async ({ page }) => {
   expect(roadmap.requests.some((request) => request.path.endsWith("/support"))).toBe(false);
 });
 
-test("the community hub links decks and the roadmap", async ({ page }) => {
+test("the community header tabs link decks and the roadmap", async ({ page }) => {
   const roadmap = new RoadmapPage(page);
   await roadmap.open({ path: "/community" });
-  const hub = page.getByRole("navigation", { name: "Community sections" });
-  await expect(hub.getByRole("button", { name: "Decks" })).toHaveAttribute("aria-current", "page");
-  await hub.getByRole("button", { name: "Roadmap" }).click();
+  const tabs = page.getByRole("tablist", { name: "Community sections" });
+  await expect(tabs.getByRole("tab", { name: "Decks" })).toHaveAttribute("aria-selected", "true");
+  await tabs.getByRole("tab", { name: "Roadmap" }).click();
   await expect(page).toHaveURL(/\/roadmap$/);
   await expect(page.getByRole("heading", { name: "Community roadmap", exact: true })).toBeVisible();
-  await page.getByRole("navigation", { name: "Community sections" }).getByRole("button", { name: "Decks" }).click();
+  await page.getByRole("tablist", { name: "Community sections" }).getByRole("tab", { name: "Decks" }).click();
   await expect(page).toHaveURL(/\/community$/);
 });
 

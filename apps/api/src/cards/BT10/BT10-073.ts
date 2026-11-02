@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 Digimon card with [Bagra Army] in its traits",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -25,6 +26,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Yuu Amano] among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

@@ -53,6 +53,7 @@
       .game-utility-slot--opp-eggs,
       .game-utility-slot--opp-raising
     ) {
-    width: 4.5rem;
+    width: auto;
+    min-width: calc(var(--arena-raising-width, 3.75rem) + 0.75rem);
   }
 }

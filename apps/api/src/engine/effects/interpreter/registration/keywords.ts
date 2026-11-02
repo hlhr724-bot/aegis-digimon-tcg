@@ -172,9 +172,6 @@ export function overclockActivatedEffect(trait: string): CardEffect {
  *   2. An optional self-attack tagged with the Execute mechanic. Declining means no attack and
  *      therefore no end-of-attack deletion.
  *
- * The deletion is a separate EndOfAttack effect (`executeDeleteEffect`) because it shares that
- * timing with printed/inherited EndOfAttack effects and must be orderable with them (EX12-004
- * Q6728). Keeping Delete after the Attack action incorrectly resolved it after that timing closed.
  */
 export function executeActivatedEffect(): CardEffect {
   return {
@@ -197,24 +194,6 @@ export function executeActivatedEffect(): CardEffect {
         drainTimingWindowDuringAttack: true,
         optional: true,
         abortOnDecline: true,
-      } as Action,
-    ],
-  };
-}
-
-/** The pending Execute deletion that enters the attack's normal EndOfAttack timing window. */
-export function executeDeleteEffect(): CardEffect {
-  return {
-    trigger: "EndOfAttack",
-    description: "＜Execute＞: at the end of the attack, this Digimon is deleted.",
-    condition: {
-      kind: "allOf",
-      conditions: [{ kind: "triggerAttackBy", keyword: "Execute" }, { kind: "triggerAttackerIsSelf" }],
-    },
-    actions: [
-      {
-        kind: "Delete",
-        target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
       } as Action,
     ],
   };

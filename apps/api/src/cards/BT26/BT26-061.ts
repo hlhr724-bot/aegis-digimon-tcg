@@ -9,8 +9,14 @@ export const compiled: CompiledCard = {
           kind: "RevealAdd",
           revealCount: 3,
           add: [
-            { filter: { nameOrTrait: [{ tokens: ["Glowing Dawn"], match: "trait" }] }, count: 1, to: "hand" },
             {
+              effectTextPart: "Add 1 [Glowing Dawn] trait card",
+              filter: { nameOrTrait: [{ tokens: ["Glowing Dawn"], match: "trait" }] },
+              count: 1,
+              to: "hand",
+            },
+            {
+              effectTextPart: "1 purple [BEATBREAK] trait card among them to the hand.",
               filter: { colors: ["Purple"], nameOrTrait: [{ tokens: ["BEATBREAK"], match: "trait" }] },
               count: 1,
               to: "hand",

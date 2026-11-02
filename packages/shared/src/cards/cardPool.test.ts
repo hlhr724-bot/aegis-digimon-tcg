@@ -1,3 +1,4 @@
+import { getLimitedCardAvailability } from "#shared/cards/getLimitedCardAvailability";
 import { describe, expect, it } from "vitest";
 import { allCards, getCardDefinition } from "./registry.js";
 import { isBetaOnlyCard, promoProductCardIds, releaseDateForCard, releaseDateForSet } from "./cardPool.js";
@@ -33,6 +34,33 @@ describe("release dates", () => {
     expect(isBetaOnlyCard(card("P-245"), "2026-10-01")).toBe(false);
     expect(isBetaOnlyCard(card("BT10-001"), "2022-10-14")).toBe(false);
     expect(isBetaOnlyCard(card("BT10-001"), "2026-09-11")).toBe(false);
+  });
+
+  it.each(["EX14-012", "EX14-054"])("keeps %s in beta until the EX14 release", (cardId) => {
+    expect(releaseDateForCard(card(cardId))).toBe("2027-01-22");
+    expect(isBetaOnlyCard(card(cardId), "2026-10-15")).toBe(true);
+    expect(isBetaOnlyCard(card(cardId), "2027-01-21")).toBe(true);
+    expect(isBetaOnlyCard(card(cardId), "2027-01-22")).toBe(false);
+  });
+
+  it("keeps each limited product behind its own release date", () => {
+    expect(releaseDateForSet("LM")).toBeUndefined();
+    expect(releaseDateForCard(card("LM-001"))).toBe("2024-02-16");
+    expect(releaseDateForCard(card("LM-020"))).toBe("2024-02-16");
+    expect(isBetaOnlyCard(card("LM-057"), "2026-08-27")).toBe(true);
+    expect(isBetaOnlyCard(card("LM-057"), "2026-08-28")).toBe(false);
+    expect(isBetaOnlyCard(card("LM-063"), "2026-10-14")).toBe(true);
+    expect(isBetaOnlyCard(card("LM-068"), "2026-11-27")).toBe(false);
+    expect(releaseDateForCard({ cardId: "LM-999", set: "LM" })).toBeUndefined();
+  });
+
+  it.each([
+    ["LM-057", "2026-08-28", "2026-09-04"],
+    ["LM-063", "2026-11-27", "2026-12-11"],
+  ])("separates %s retail availability from its later tournament eligibility", (cardId, retailDate, legalDate) => {
+    expect(isBetaOnlyCard(card(cardId), retailDate)).toBe(false);
+    expect(getLimitedCardAvailability(cardId)?.legalDate).toBe(legalDate);
+    expect(getLimitedCardAvailability(cardId)?.legalDate).not.toBe(releaseDateForCard(card(cardId)));
   });
 
   it("has release metadata for every non-token card in the registry", () => {

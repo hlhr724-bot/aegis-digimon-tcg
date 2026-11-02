@@ -1,4 +1,6 @@
+import type { AttackRedirection } from "@aegis/shared/schema/AttackRedirection";
 import { CardKind, Phase, getCardDefinition, type CardDefinition, type GameState, type Seat } from "@aegis/shared";
+import { digivolveValidatorByState } from "#api/engine/gameEngine/digivolveValidatorByState";
 
 /**
  * A flat, allocation-cheap snapshot of everything the bot's policy is allowed to see,
@@ -19,6 +21,7 @@ const GAUGE_RANGE = 10;
 const FULL_SECURITY_STACK = 5;
 
 export interface BotUnit {
+  attackRedirectTargets?: Readonly<Record<string, AttackRedirection>>;
   permanentId: string;
   /**
    * The top card's instance id. Decision candidates are permanent ids when an effect targets
@@ -33,7 +36,10 @@ export interface BotUnit {
   suspended: boolean;
   inBreeding: boolean;
   cannotDigivolve: boolean;
+  cannotSuspend?: boolean;
   keywords: readonly string[];
+  /** Engine-projected check count, including Security Attack grants. */
+  securityAttack?: number;
   /** Engine-projected: may this Digimon attack the opponent right now? */
   canAttackPlayer: boolean;
   /** Engine-projected: opposing permanents this Digimon may legally attack right now. */
@@ -52,6 +58,7 @@ export interface BotHandCard {
   cardId: string;
   definition?: CardDefinition;
   activatableEffects: readonly ActivatableEffect[];
+  digivolveCosts?: Readonly<Record<string, number>>;
 }
 
 export interface BotView {
@@ -75,6 +82,7 @@ export interface BotView {
   deckCount: number;
   eggDeckCount: number;
   trashCount: number;
+  opponentTrashCardIds?: readonly string[];
   /** Own Digimon that could still declare an attack this turn. */
   readyAttackers: readonly BotUnit[];
   /** Opposing colors present on the board — used for Option color requirements. */
@@ -106,11 +114,26 @@ function parseActivatable(json: string | undefined): ActivatableEffect[] {
   }
 }
 
+function legalDigivolveCosts(
+  validator: NonNullable<ReturnType<typeof digivolveValidatorByState.get>>,
+  seat: Seat,
+  instanceId: string,
+  bases: readonly BotUnit[],
+): Record<string, number> {
+  const costs: Record<string, number> = {};
+  for (const base of bases) {
+    const check = validator(seat, { type: "digivolve", instanceId, permanentId: base.permanentId });
+    if (check.ok) costs[base.permanentId] = check.cost;
+  }
+  return costs;
+}
+
 function toUnit(permanent: PermanentLike): BotUnit {
   const cardId = permanent.topCard?.cardId;
   const definition = cardId === undefined ? undefined : getCardDefinition(cardId);
   return {
     permanentId: permanent.permanentId,
+    attackRedirectTargets: { ...permanent.attackRedirectTargets },
     topCardInstanceId: permanent.topCard?.instanceId,
     cardId,
     definition,
@@ -119,7 +142,9 @@ function toUnit(permanent: PermanentLike): BotUnit {
     suspended: permanent.isSuspended === true,
     inBreeding: permanent.inBreeding === true,
     cannotDigivolve: permanent.cannotDigivolve === true,
+    cannotSuspend: permanent.cannotSuspend === true,
     keywords: toArray(permanent.keywords),
+    securityAttack: permanent.securityAttack ?? 1,
     canAttackPlayer: permanent.canAttackPlayer === true,
     attackablePermanentIds: toArray(permanent.attackablePermanentIds),
     activatableEffects: parseActivatable(permanent.activatableEffectsJson),
@@ -160,12 +185,20 @@ export function buildBotView(state: GameState, seat: Seat): BotView | undefined 
     for (const color of unit.definition?.colors ?? []) ownFieldColors.add(color);
   }
 
-  const hand = toArray(me.hand).map((card) => ({
-    instanceId: card.instanceId,
-    cardId: card.cardId,
-    definition: getCardDefinition(card.cardId),
-    activatableEffects: parseActivatable(card.activatableEffectsJson),
-  }));
+  const validator = isMyTurn && state.phase === Phase.Main ? digivolveValidatorByState.get(state) : undefined;
+  const bases = breeding === undefined ? board : [...board, breeding];
+  const hand = toArray(me.hand).map((card) => {
+    const definition = getCardDefinition(card.cardId);
+    return {
+      instanceId: card.instanceId,
+      cardId: card.cardId,
+      definition,
+      activatableEffects: parseActivatable(card.activatableEffectsJson),
+      ...(validator === undefined || !isDigimonCard(definition)
+        ? {}
+        : { digivolveCosts: legalDigivolveCosts(validator, seat, card.instanceId, bases) }),
+    };
+  });
 
   return {
     seat,
@@ -189,6 +222,7 @@ export function buildBotView(state: GameState, seat: Seat): BotView | undefined 
     deckCount: zoneSize(me.deck, me.deckCount),
     eggDeckCount: zoneSize(me.eggDeck, me.eggDeckCount),
     trashCount: toArray(me.trash).length,
+    opponentTrashCardIds: toArray(opponent?.trash).map((card) => card.cardId),
     readyAttackers: board.filter(
       (unit) => !unit.suspended && (unit.canAttackPlayer || unit.attackablePermanentIds.length > 0),
     ),
@@ -215,13 +249,16 @@ export function isDigiEggCard(definition: CardDefinition | undefined): boolean {
 
 /** Structural shapes the view reads. Kept local so tests can hand in plain objects. */
 interface PermanentLike {
+  attackRedirectTargets?: Readonly<Record<string, AttackRedirection>>;
   permanentId: string;
   topCard?: { cardId: string; instanceId?: string };
   currentDP?: number;
   isSuspended?: boolean;
   inBreeding?: boolean;
   cannotDigivolve?: boolean;
+  cannotSuspend?: boolean;
   keywords?: ArrayLike<string>;
+  securityAttack?: number;
   canAttackPlayer?: boolean;
   attackablePermanentIds?: ArrayLike<string>;
   activatableEffectsJson?: string;
@@ -238,7 +275,7 @@ interface PlayerLike {
   deck?: ArrayLike<unknown>;
   eggDeck?: ArrayLike<unknown>;
   security?: ArrayLike<unknown>;
-  trash?: ArrayLike<unknown>;
+  trash?: ArrayLike<{ cardId: string }>;
   battleArea?: ArrayLike<PermanentLike>;
   breeding?: PermanentLike;
   eggDeckCount?: number;

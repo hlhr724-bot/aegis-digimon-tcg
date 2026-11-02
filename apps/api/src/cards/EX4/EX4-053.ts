@@ -11,6 +11,8 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart:
+                "Add 1 purple Digimon card with [Ravemon] in its name or [Bird] or [Avian] in one of its traits",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -30,6 +32,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Keenan Crier] among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

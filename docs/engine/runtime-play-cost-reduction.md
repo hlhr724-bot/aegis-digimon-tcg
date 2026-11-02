@@ -1,5 +1,15 @@
 # Runtime play-cost reduction
 
+## DigiXros material providers and ordinary play affordability
+
+Legacy `PlaceUnder` replacements marked `asDigiXrosMaterial` on registered zone expanders are handled by the DigiXros picker. The replacement interpreter already skips those bodies. Their presence must not make an otherwise unaffordable ordinary play appear payable.
+
+The interpreter and effect registration share `isDigiXrosPickerReplacement`. A cost-free effect containing only that skipped replacement exposes `canAttemptPlayCostReduction: () => false`. Mixed effects and effects with their own payment remain conservative. Actual material selection, Tamer suspension and DigiXros discounts retain their existing resolution path.
+
+The GEPA diagnostic reproduced an ordinary BT5-112 play at memory 1 while BT10-087 was in play: its cost 15 exceeded the payable 11, but the inactive replacement caused affordability to remain unknown. The rejected play invalidated the MCTS rollout. The minimized regression in `bot/training/affordability.test.ts` checks the same boundary with BT10-087, BT10-088 and BT11-095, including synchronous rejection without state changes or decisions. Their card suites cover valid material use under Tamers; `digiXrosPreparation.test.ts` covers optional payment processing.
+
+This correction does not relax rollout validity or certify a stronger learned policy. Existing campaign outcomes remain tied to their original engine fingerprint.
+
 ## Status
 
 Bounded EX6-006 correction at baseline `b88aeb69f22995641622ab4388086ff771b23dc0`, 2026-09-13. Focused EX6-006, subtrigger and primitive controls pass **3 files / 211 tests**. The subsequent collection/mechanism/layout gate passes **271 files / 2893 tests**. Final shared/API/web typecheck and 86-file changed-TypeScript style checks pass. Structured review is closed with no accepted/actionable EX6 finding; final helper reports a rejected pre-existing cross-collection expansion rather than a zero-finding result. Delivery remains pending; this evidence does not certify every reducer consumer.
@@ -35,3 +45,13 @@ The final review proposes adding prospective projection for mode-less nested/fix
 ### EX6 closing gate, 2026-09-13
 
 The corrected EX6 collection and included shared controls pass **271 files / 2893 tests** with one worker and a 3 GB test heap. Shared/API/web typecheck and 86-file changed-TypeScript style checks pass. Atomic implementation commits are pushed in [PR #4773](https://github.com/vinicius3333/aegis-digimon-tcg/pull/4773); final delivery supersedes the earlier pending checkpoints. This bounded gate does not certify all other card collections.
+
+## Printed replacement budget identity
+
+Breeding affordability projection must read the same key as `runReplacement`:
+`<source instance>/printed/<effect key>`. Omitting `printed` made an exhausted
+Gate or King Drasil look available again after its subscription was consumed.
+The prospective cold-registration path now checks the real replacement ledger.
+The Gate affordability test and the Cool Boy/King Drasil scenario prove that
+projection offers the first payable play and excludes a second play that would
+require reusing the spent reduction.

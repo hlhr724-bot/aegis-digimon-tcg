@@ -98,11 +98,12 @@ export function hasAnyMainPhaseAction(engine: GameEngine, seat: Seat): boolean {
   //    an available action through the same material-route escape the hand affordances use
   //    (§7-2 / §7-3) — otherwise the turn auto-ends on a player who can still play it.
   const playDeps = playCardDeps(engine);
+  const playCostReductionBlocked = engine.continuous.blocksCostReduction(seat, "play");
   for (const card of player.hand) {
     const def = lookupDefinition(card.cardId);
     if (!def || def.kinds.includes(CardKind.DigiEgg)) continue;
     const check = validatePlayCard(engine.state, seat, { type: "playCard", instanceId: card.instanceId }, playDeps);
-    if (playableFromHand(check, card.cardId)) return true;
+    if (playableFromHand(check, card.cardId, playCostReductionBlocked)) return true;
   }
 
   // 3. App Fusion from hand using an explicitly linked physical material.

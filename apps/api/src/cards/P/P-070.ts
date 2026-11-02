@@ -20,6 +20,8 @@ const compiled: CompiledCard = {
               revealCount: 1,
               add: [
                 {
+                  effectTextPart:
+                    "a black Digimon card with a play cost of 4 or less, you may play it without paying its memory cost.",
                   filter: {
                     controllerDefault: "mine",
                     kind: ["Digimon"],
@@ -31,6 +33,7 @@ const compiled: CompiledCard = {
                   optional: true,
                 },
                 {
+                  effectTextPart: "Add the remaining cards to your hand.",
                   filter: { controllerDefault: "mine" },
                   count: "all",
                   to: "hand",

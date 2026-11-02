@@ -1,3 +1,5 @@
+import { getCardTextField } from "@/i18n/getCardTextField";
+import type { CardTextField } from "@/i18n/CardTextField";
 /* Recent effects and card movements share two bounded columns, split by what a moment is
    rather than by whose moment it is: the clause to read on the left, the cards the moment
    moved on the right. Both players' moments use both columns, so the eye always looks in
@@ -6,9 +8,11 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { CardMini } from "../design/cards";
+import { EffectText } from "@/game/EffectText";
 import { Icons } from "../design/icons";
 import { useTranslation, type Translate } from "../i18n";
 import { cardDisplayName } from "./cardLinks";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { TIMING_LABELS, noticeEffectClause } from "./overlay";
 import { NoticeStack } from "./NoticeStack";
 import { useSwipeToDismiss } from "./useSwipeToDismiss";
@@ -23,6 +27,7 @@ import {
 } from "./narration";
 import { noticeRemaining, type MatchNotice } from "./notices";
 import type { LowTimeWarning } from "@/game/useLowTimeWarning";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 /** The art on the folded band: enough to recognise the card, not enough to read it. */
 const PEEK_ART_WIDTH = 34;
@@ -184,7 +189,7 @@ function Slot({
     leavingBottom.current = direction === -1;
     element.scrollBy({
       top: direction * Math.max(48, element.clientHeight * 0.8),
-      behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      behavior: motionPreference.isReduced() ? "auto" : "smooth",
     });
   }
   return (
@@ -264,21 +269,43 @@ type PeekTone = "effect" | "deletion" | "keyword" | "gain" | "rejection";
 function peekSummary(
   item: NarrationItem,
   t: Translate,
-): { label: string; name: string; tone: PeekTone; cardId?: string; artId?: string; clause?: string } {
+): {
+  label: string;
+  name: string;
+  tone: PeekTone;
+  cardId?: string;
+  artId?: string;
+  clause?: string;
+  field?: CardTextField;
+  timing?: string;
+} {
   const body = item.notice?.body;
   if (body?.variant === "effect") {
-    const clause = noticeEffectClause({
-      cardId: body.cardId,
-      timing: body.timing,
-      description: body.description,
-      effectTextPart: body.effectTextPart,
-      ...(body.isInherited ? { isInherited: body.isInherited } : {}),
-    });
+    const clause =
+      body.manualSignalText ??
+      noticeEffectClause({
+        cardId: body.cardId,
+        timing: body.timing,
+        description: body.description,
+        effectTextPart: body.effectTextPart,
+        ...(body.isInherited ? { isInherited: body.isInherited } : {}),
+      });
+    let label = (body.timing ? TIMING_LABELS[body.timing] : undefined) ?? t("overlay.effect");
+    if (body.manualSignalText) {
+      label = t("manual.signal.title");
+    }
     return {
-      label: (body.timing ? TIMING_LABELS[body.timing] : undefined) ?? t("overlay.effect"),
+      label,
       name: `${cardDisplayName(body.cardId, t)}${body.count !== undefined && body.count > 1 ? ` ×${body.count}` : ""}`,
       tone: "effect",
       cardId: body.cardId,
+      timing: body.timing,
+      field: getCardTextField({
+        cardId: body.cardId,
+        timing: body.timing,
+        isInherited: body.isInherited,
+        text: clause,
+      }),
       ...(body.artId ? { artId: body.artId } : {}),
       ...(clause ? { clause } : {}),
     };
@@ -364,7 +391,11 @@ function PeekLine({
   const swipe = useSwipeToDismiss(onDismiss);
   const newest = items.at(-1);
   const summary = newest ? peekSummary(newest, t) : undefined;
+  const getCardName = useTranslatedCardName();
   if (!summary) return null;
+  const summaryName = summary.cardId
+    ? summary.name.replace(cardDisplayName(summary.cardId, t), () => getCardName(summary.cardId!))
+    : summary.name;
   // The band already names one of them, so the badge counts the rest.
   const queued = toastCount(items) - 1;
   return (
@@ -388,11 +419,24 @@ function PeekLine({
       ) : null}
       <span className="narration-peek__copy">
         <span className="narration-peek__head">
-          <span className="narration-peek__label">{summary.label}</span>
-          {summary.name ? <span className="narration-peek__name">{summary.name}</span> : null}
+          <span className="narration-peek__label">
+            <EffectText text={summary.label} />
+          </span>
+          {summary.name ? <span className="narration-peek__name">{summaryName}</span> : null}
         </span>
         {/* One line of the clause: enough to know whether this is worth opening. */}
-        {summary.clause ? <span className="narration-peek__clause">{summary.clause}</span> : null}
+        {summary.clause ? (
+          <span className="narration-peek__clause">
+            <EffectText
+              text={summary.clause}
+              cardId={summary.cardId}
+              field={summary.field}
+              timing={summary.timing}
+              surface="narration-peek"
+              allowContext
+            />
+          </span>
+        ) : null}
       </span>
       {/* Keyed on the count so the badge replays its pop when a moment queues behind this
           one without replacing it: the band would otherwise change a digit in silence. */}
@@ -438,6 +482,7 @@ export function NarrationStack({
   onDismissRejection,
   timeWarning,
   onHold,
+  confirmation,
 }: {
   /** Recent items keyed by occurrence ID. */
   narration: ReadonlyMap<string, NarrationItem>;
@@ -459,6 +504,7 @@ export function NarrationStack({
   timeWarning?: LowTimeWarning;
   /** Stop or restart the reading clocks while the viewer reads a column. */
   onHold?: (held: boolean) => void;
+  confirmation?: ReactNode;
 }) {
   const { t } = useTranslation();
   const now = nowMs ?? Date.now();
@@ -543,6 +589,7 @@ export function NarrationStack({
             onOpen={() => setExpanded(true)}
             onDismiss={() => textItems.forEach((item) => onAdvance(item.id))}
           />
+          {confirmation}
         </Slot>
       ) : textItems.length > 0 || immediateCount > 0 ? (
         <Slot
@@ -566,6 +613,11 @@ export function NarrationStack({
               onDismiss={timeWarning.dismiss}
             />
           ) : null}
+          {confirmation}
+        </Slot>
+      ) : confirmation ? (
+        <Slot slot={textSlot} count={0} securityDockActive={securityDockActive}>
+          {confirmation}
         </Slot>
       ) : null}
     </>

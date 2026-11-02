@@ -1,4 +1,5 @@
 import { Button } from "../../../design/primitives";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
 import { ArenaPermanentInspector, type ArenaInspectionOptions } from "../../ArenaPermanentInspector";
@@ -42,6 +43,7 @@ export function ArenaCardActions({
   promote?: CardActionPromote;
 }) {
   const { t } = useTranslation();
+  const translateCardText = useTranslatedCardText();
   return (
     <>
       <ArenaPermanentInspector
@@ -77,8 +79,8 @@ export function ArenaCardActions({
                   icon={Icons.Sparkles}
                   className="arena-permanent-inspector__activate"
                   onClick={effect.onActivate}
-                  aria-label={`${t("game.activateEffect")}: ${effect.label}`}
-                  title={effect.label}
+                  aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId: detail.cardId })}`}
+                  title={translateCardText({ text: effect.label, cardId: detail.cardId })}
                 >
                   {t("game.activateMainEffect")}
                   {(effects?.length ?? 0) > 1 ? ` ${index + 1}` : ""}

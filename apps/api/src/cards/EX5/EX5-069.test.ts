@@ -76,7 +76,7 @@ describe("EX5-069 Biting Crush", () => {
         condition: {
           kind: "bindingContains",
           ref: "trashedCard",
-          filter: { kind: ["Digimon"], nameOrTrait: [{ match: "trait", tokens: ["Seven Great Demon Lords"] }] },
+          filter: { nameOrTrait: [{ match: "trait", tokens: ["Seven Great Demon Lords"] }] },
         },
       },
     ]);

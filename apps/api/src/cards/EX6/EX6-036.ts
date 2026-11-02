@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 Tamer or Option card with [Diaboromon] in its text",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Tamer", "Option"],
@@ -25,6 +26,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 card with the [Unidentified] trait among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

@@ -11,6 +11,7 @@ import {
   getCardDefinition,
   isTokenDefinition,
 } from "@aegis/shared";
+import { fieldRevision } from "#api/engine/state/fieldRevision";
 
 /**
  * The slice of `MemoryGauge` `<Overflow>` needs (mirrors `effects/primitives.ts`'s
@@ -92,6 +93,8 @@ export function isPermanentZone(zone: VisibilityZone): boolean {
 /** Install the visibility port for one seat. Call once per player when the match is wired up. */
 export function installVisibilityPort(player: PlayerState, port: VisibilityPort): void {
   (player as PortHost)[VISIBILITY_PORT] = port;
+  for (const permanent of player.battleArea) (permanent as PortHost)[VISIBILITY_PORT] = port;
+  if (player.breeding !== undefined) (player.breeding as PortHost)[VISIBILITY_PORT] = port;
 }
 
 /** Notify the installed port, if any, that `card` just landed in `zone`. */
@@ -289,9 +292,21 @@ export function fillZone(player: PlayerState, zone: CardZone, instances: CardIns
   for (const instance of instances) notifyCardEntered(player, zone, instance);
 }
 
+/** Splice the first element with `instanceId` out of an array-like, returning it. */
+export function spliceById(
+  list: { findIndex(p: (c: CardInstance) => boolean): number; splice(i: number, n: number): CardInstance[] },
+  instanceId: string,
+): CardInstance | undefined {
+  const index = list.findIndex((c) => c.instanceId === instanceId);
+  if (index < 0) return undefined;
+  fieldRevision.bump();
+  return list.splice(index, 1)[0];
+}
+
 /** Add a permanent to a seat's battle area. */
 export function placePermanent(player: PlayerState, permanent: Permanent): void {
   player.battleArea.push(permanent);
+  fieldRevision.bump();
   adoptPermanent(player, permanent);
 }
 
@@ -302,6 +317,7 @@ export function placePermanent(player: PlayerState, permanent: Permanent): void 
 export function placePermanentAt(player: PlayerState, permanent: Permanent, index: number): void {
   const ordered = Array.from(player.battleArea).toSpliced(index, 0, permanent);
   player.battleArea.clear();
+  fieldRevision.bump();
   for (const entry of ordered) {
     player.battleArea.push(entry);
     adoptPermanent(player, entry);
@@ -315,6 +331,7 @@ export function placePermanentAt(player: PlayerState, permanent: Permanent, inde
  */
 export function setBreeding(player: PlayerState, permanent: Permanent | undefined): void {
   player.breeding = permanent;
+  fieldRevision.bump();
   if (permanent !== undefined) adoptPermanent(player, permanent);
 }
 
@@ -337,6 +354,7 @@ function recordSourceFacing(card: CardInstance): void {
 export function setTopCard(permanent: Permanent, card: CardInstance): void {
   faceDownSources.delete(card);
   permanent.topCard = card;
+  fieldRevision.bump();
   notifyPermanentCard(permanent, card);
 }
 
@@ -344,23 +362,27 @@ export function setTopCard(permanent: Permanent, card: CardInstance): void {
 export function pushOnStack(permanent: Permanent, card: CardInstance): void {
   recordSourceFacing(card);
   permanent.stack.push(card);
+  fieldRevision.bump();
   notifyPermanentCard(permanent, card);
 }
 
 /** Add a card to the BOTTOM of the digivolution stack. */
 export function unshiftOnStack(permanent: Permanent, card: CardInstance): void {
   recordSourceFacing(card);
+  fieldRevision.bump();
   insertIntoSyncedArray(permanent.stack, card, 0, (inserted) => notifyPermanentCard(permanent, inserted));
 }
 
 /** Take the card directly beneath the top card off the stack; undefined when the stack is empty. */
 export function popFromStack(permanent: Permanent): CardInstance | undefined {
+  fieldRevision.bump();
   return permanent.stack.pop();
 }
 
 /** Remove the stack card at `index`; undefined when out of range. */
 export function removeFromStackAt(permanent: Permanent, index: number): CardInstance | undefined {
   if (index < 0) return undefined;
+  fieldRevision.bump();
   return permanent.stack.splice(index, 1)[0];
 }
 
@@ -373,6 +395,7 @@ export function removeFromStackAt(permanent: Permanent, index: number): CardInst
  */
 export function replaceStack(permanent: Permanent, cards: readonly CardInstance[]): void {
   permanent.stack.splice(0, permanent.stack.length);
+  fieldRevision.bump();
   for (const card of cards) {
     recordSourceFacing(card);
     permanent.stack.push(card);
@@ -387,6 +410,7 @@ export function replaceStack(permanent: Permanent, cards: readonly CardInstance[
  */
 export function linkCard(permanent: Permanent, card: CardInstance, position: ZonePosition = "top"): void {
   recordSourceFacing(card);
+  fieldRevision.bump();
   if (position === "top") {
     insertIntoSyncedArray(permanent.linked, card, 0, (inserted) => notifyPermanentCard(permanent, inserted));
     return;
@@ -402,6 +426,7 @@ export function linkCard(permanent: Permanent, card: CardInstance, position: Zon
 export function extractLinkedById(permanent: Permanent, instanceId: string): CardInstance | undefined {
   const index = permanent.linked.findIndex((card) => card.instanceId === instanceId);
   if (index === -1) return undefined;
+  fieldRevision.bump();
   return permanent.linked.splice(index, 1)[0];
 }
 
@@ -448,11 +473,13 @@ export function markRoutedUsedOption(state: GameState, event: ServerEvent): Serv
 /** Remove the permanent at `index` from a seat's battle area; undefined when out of range. */
 export function extractPermanentAt(player: PlayerState, index: number): Permanent | undefined {
   if (index < 0) return undefined;
+  fieldRevision.bump();
   return player.battleArea.splice(index, 1)[0];
 }
 
 /** Empty a seat's battle area, returning the removed permanents in order. */
 export function clearBattleArea(player: PlayerState): Permanent[] {
+  fieldRevision.bump();
   return player.battleArea.splice(0, player.battleArea.length);
 }
 
@@ -673,6 +700,7 @@ export class GameStateAccess {
       }
       if (inBreeding) {
         player.breeding = undefined;
+        fieldRevision.bump();
       } else {
         extractPermanentAt(player, index);
       }

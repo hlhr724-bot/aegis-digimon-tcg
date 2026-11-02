@@ -1,5 +1,10 @@
+import { resumeMainPhaseInput } from "#api/engine/gameEngine/resumeMainPhaseInput";
+import { createResolutionCandidateReader } from "#api/engine/effects/resolution/createResolutionCandidateReader";
+import { trackResolutionDependencies } from "#api/engine/effects/resolution/trackResolutionDependencies";
+import type { ResolutionDependencySnapshot } from "#api/engine/effects/resolution/ResolutionDependencySnapshot";
 import {
   conditionalDigiXrosTrashAllowed,
+  hasOtherDigiXrosPlayCosts,
   pendingDigiXrosSelfReduction,
   preparedDigiXrosMaterials,
 } from "./timing/payCost.js";
@@ -41,7 +46,7 @@ import {
   type RespondCounterDeps,
 } from "../actions/index.js";
 import { linkHostOf, linkRequirementSatisfied } from "./boardQueries.js";
-import { type ArmedSubTrigger, digivolvedFromTamerBase } from "./subTriggerIdentity.js";
+import { digivolvedFromTamerBase } from "./subTriggerIdentity.js";
 import type { GameEngine } from "../GameEngine.js";
 import { applyIntent, checkTurnEndAfterVerb, findInstance, findLooseInstance } from "./intents.js";
 import {
@@ -65,7 +70,7 @@ import {
   pendingWindowWatchersCollected,
   withPendingSubTriggers,
 } from "./subTriggers.js";
-import { collectRuleProcessPending, listCandidateInstances, nextPermanentId, ruleProcess } from "./ruleProcess.js";
+import { collectRuleProcessPending, hasRuleProcessPending, nextPermanentId, ruleProcess } from "./ruleProcess.js";
 import {
   beginResolvingWindow,
   collectDeferredTimingPending,
@@ -77,6 +82,7 @@ import { buildEffectContext, cardSourceOf } from "./effectContext.js";
 import { drawCards, runBreedingPhase, sweepDurations } from "./turnFlow.js";
 import { effectiveColorsOf } from "./matchLifecycle.js";
 import { minimumDeferredPlayCost } from "./timing/playAffordability.js";
+import { holdCostTriggers } from "#api/engine/gameEngine/holdCostTriggers";
 import { looseZoneOfInstance } from "../effects/verbs/looseInstances.js";
 
 /**
@@ -87,17 +93,29 @@ import { looseZoneOfInstance } from "../effects/verbs/looseInstances.js";
  */
 export function resolutionDeps(
   engine: GameEngine,
-  listCandidate: () => readonly CardInstance[] = () => listCandidateInstances(engine),
+  listCandidate: () => readonly CardInstance[] = createResolutionCandidateReader({ engine }),
   opts: {
     outermost?: boolean;
     extraPending?: readonly CollectedEffect[];
     excludeNestedPending?: ReadonlySet<CollectedEffect>;
     /** Shared with specialized checkpoints that replace the ordinary collector. */
     reactionPending?: CollectedEffect[];
+    runtimeState?: ResolutionDependencySnapshot;
   } = {},
 ): ResolutionDeps {
-  const excludeNestedPending = opts.excludeNestedPending;
-  const derivedPending = opts.reactionPending ?? [];
+  const runtimeState: ResolutionDependencySnapshot = opts.runtimeState ?? {
+    turnSeat: engine.state.turnSeat,
+    listCandidate,
+    outermost: opts.outermost,
+    extraPending: opts.extraPending,
+    excludeNestedPending: opts.excludeNestedPending,
+    excludedWindowWatchers: new Set(engine.pendingWindowSubTriggers),
+    derivedPending: opts.reactionPending ?? [],
+    announced: new Set(),
+  };
+  const excludeNestedPending = runtimeState.excludeNestedPending;
+  const excludedWindowWatchers = runtimeState.excludedWindowWatchers;
+  const derivedPending = runtimeState.derivedPending;
   // A single OPT watcher can be published through both the event bus and deletion pool.
   // Preserve distinct non-OPT occurrences; only duplicate OPT identities are collapsed.
   const uniquePending = (items: readonly CollectedEffect[]): CollectedEffect[] => {
@@ -115,18 +133,24 @@ export function resolutionDeps(
   // turn player resolves first; without Arts they drain when the Option finishes.
   const pendingWhileOptionResolves = (): CollectedEffect[] =>
     engine.optionMainDepth > 0 ? [] : pendingWindowWatchersCollected(engine);
-  const announced = new Set<CollectedEffect>();
-  return {
+  const announced = runtimeState.announced;
+  const dependencies: ResolutionDeps = {
+    registerPendingEffects: (read) => {
+      engine.pendingEffectReaders.add(read);
+      return () => {
+        engine.pendingEffectReaders.delete(read);
+      };
+    },
     // The outermost loop settles deferred queues between effects. A nested resolver normally
     // cannot reach into the enclosing pool while its card body is still running; a settlement
     // window that starts at effect depth zero may opt into only entries added after its opening
     // snapshot, leaving the parent's older pending group to the outermost resolver.
-    ...(opts.outermost === true
+    ...(runtimeState.outermost === true
       ? {
           collectPending: () =>
             uniquePending([
               ...(engine.optionResolutionDepth > 0 ? pendingWhileOptionResolves() : pendingWindowCollected(engine)),
-              ...(opts.extraPending ?? []),
+              ...(runtimeState.extraPending ?? []),
               ...derivedPending,
             ]),
         }
@@ -141,8 +165,11 @@ export function resolutionDeps(
                       (pending) =>
                         !excludeNestedPending.has(pending) && nestedTriggerSourceStillResident(engine, pending),
                     )),
+              ...(excludeNestedPending !== undefined && engine.optionResolutionDepth === 0
+                ? pendingWindowWatchersCollected(engine, excludedWindowWatchers)
+                : []),
               ...(engine.optionResolutionDepth > 0 ? [] : parkedEntryCollected(engine)),
-              ...(opts.extraPending ?? []),
+              ...(runtimeState.extraPending ?? []),
               ...derivedPending,
             ]),
         }),
@@ -152,10 +179,13 @@ export function resolutionDeps(
       // changed (memory for BT17-016's immunity, Q2746) must be current for the next one.
       await engine.recomputeContinuousEffects();
     },
-    turnSeat: engine.state.turnSeat,
-    listCandidateInstances: listCandidate,
+    turnSeat: runtimeState.turnSeat,
+    listCandidateInstances: runtimeState.listCandidate,
     ruleProcess: async () => {
       if (engine.optionMainDepth > 0 || engine.effectResolutionDepth > 0) return;
+      if (engine.ruleChecks.anyZeroDpDigimon()) {
+        await engine.recomputeContinuousEffects();
+      }
       derivedPending.push(...(await collectRuleProcessPending(engine)));
     },
     isGameOver: () => engine.state.gameOver,
@@ -222,6 +252,8 @@ export function resolutionDeps(
       });
     },
   };
+  trackResolutionDependencies({ engine, dependencies, state: runtimeState });
+  return dependencies;
 }
 
 /** Dependencies the breeding verbs need (subsystem: deck-and-setup / breeding). */
@@ -284,28 +316,7 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
       return false;
     },
     prepareDigivolveCost: (_state, _seat, target, evolving) => fireBeforeDigivolveCost(engine, evolving, target),
-    holdCostTriggers: () => {
-      const enclosing = engine.digivolveCostSubTriggers;
-      const held: ArmedSubTrigger[] = [];
-      engine.digivolveCostSubTriggers = held;
-      let holding = true;
-      let activated = false;
-      return {
-        stopHolding: () => {
-          if (!holding) return;
-          holding = false;
-          engine.digivolveCostSubTriggers = enclosing;
-        },
-        activate: async (window) => {
-          if (activated) return window?.();
-          activated = true;
-          await withPendingSubTriggers(engine, [], undefined, window ?? (async () => {}), {
-            onlyInitiallyArmed: true,
-            alsoArmed: held,
-          });
-        },
-      };
-    },
+    holdCostTriggers: () => holdCostTriggers(engine),
     potentialInteractiveDigivolveReduction: (state, seat, target, into, baseAsDigimon) => {
       if (engine.continuous.blocksCostReduction(seat, "digivolve")) return 0;
       const liveReduction = engine.subTriggers.potentialInteractiveReductionFor(
@@ -501,7 +512,7 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
         engine.drawingDigivolutionBonus = false;
       }
     },
-    fireWhenDigivolving: async (_state, seat, permanent, previousLevel, baseWasDigimon) => {
+    fireWhenDigivolving: async (_state, seat, permanent, previousLevel, baseWasDigimon, isDnaDigivolve) => {
       // Turn-scoped fact consumed by inherited effects such as BT1-007. Register before
       // firing When Digivolving so effects in that window can observe the completed evolution.
       // Effects do not inspect the breeding area unless their text explicitly says so (BT1-007
@@ -532,6 +543,7 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
         subjectPermanentId: permanent.permanentId,
         digivolvedInstanceId: permanent.topCard.instanceId,
         previousDigivolutionLevel: previousLevel,
+        ...(isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
         ...(fromTamer ? { digivolvedFromTamer: true } : {}),
         ...(tamerDigivolved ? { tamerDigivolved: true } : {}),
       };
@@ -542,7 +554,7 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
       await withPendingSubTriggers(
         engine,
         ["whenOneOfYoursDigivolves", "whenAnyDigivolves"],
-        digivolveTrigger,
+        { ...digivolveTrigger, digivolvedSubject: permanent.clone() },
         async () => {
           // Scope [When Digivolving] to the permanent that just digivolved (its top card
           // plus inherited stack effects). A global fire would also collect and resolve
@@ -631,6 +643,7 @@ export function playCardDeps(engine: GameEngine): PlayCardDeps {
       fireBeforePayCost(engine, instance, baseCost, mode === "option", "hand"),
     // Synchronous fast-path gate: only cards with a BeforePayCost effect take the async
     // finalization path. Every other card keeps same-microtask placement (no timing change).
+    holdCostTriggers: () => holdCostTriggers(engine),
     hasBeforePayCost: (instance) =>
       effectsOf(EffectTiming.BeforePayCost, cardSourceOf(engine, instance)).some(
         (effect) => effect.costWindow !== "digivolve",
@@ -677,9 +690,11 @@ export function playCardDeps(engine: GameEngine): PlayCardDeps {
       if (engine.optionResolutionDepth === 1) {
         // The completed Option creates one pending group: entry effects and the
         // rule-check reactions must compete under turn-player priority.
+        const rulesChangedBoard = hasRuleProcessPending(engine);
         const rulePending = await collectRuleProcessPending(engine);
         engine.optionResolutionDepth = 0;
         await drainPendingOptionEntryTriggers(engine, [...rulePending, ...collectDeferredTimingPending(engine)]);
+        if (rulesChangedBoard) await engine.recomputeContinuousEffects();
       } else {
         engine.optionResolutionDepth = Math.max(0, engine.optionResolutionDepth - 1);
       }
@@ -865,6 +880,8 @@ export function digiXrosDeps(engine: GameEngine): DigiXrosDeps {
       preparedDigiXrosMaterials(engine, instance.instanceId).reservedInstanceIds,
     conditionalTrashAllowed: (instance) => conditionalDigiXrosTrashAllowed(engine, instance),
     pendingSelfReduction: (instance) => pendingDigiXrosSelfReduction(engine, instance),
+    hasBeforePayCost: (instance) => hasOtherDigiXrosPlayCosts(engine, instance),
+    minimumDeferredPlayCost: (instance, baseCost) => minimumDeferredPlayCost(engine, instance, baseCost),
     ruleTrashMaterialCandidates: (playedInstance) => wouldBePlayedRuleTrashMaterials(engine, playedInstance),
     digiXrosExpandedZones: (seat, playedInstanceId) =>
       engine.primitives.digiXrosExpandedZones?.(seat, playedInstanceId) ?? [],
@@ -1098,6 +1115,9 @@ export function buildTurnFlowHooks(engine: GameEngine): TurnFlowHooks {
         engine.projection.syncMainPhaseAffordances();
       }
     },
+    resumeMainPhase: (seat) => resumeMainPhaseInput({ engine, seat }),
+    isMainPhaseOpen: () =>
+      engine.mainPhase.isOpen && engine.mainPhase.seat === engine.state.turnSeat && !engine.mainEntryPending,
     finalizeMainPhaseEntry: () => {
       engine.mainEntryPending = false;
       const passed = engine.deferredEndPhaseSeat;

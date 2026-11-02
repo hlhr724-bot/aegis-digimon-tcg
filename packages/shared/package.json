@@ -1,6 +1,6 @@
 {
   "name": "@aegis/shared",
-  "version": "1.26.0-beta",
+  "version": "1.46.0-beta",
   "private": true,
   "description": "Aegis contract layer: shared TS types, card-data types, Colyseus state schema, and the client/server protocol.",
   "type": "module",
@@ -36,10 +36,10 @@
     }
   },
   "scripts": {
-    "dev": "GOMEMLIMIT=512MiB tsc -w -p tsconfig.json --singleThreaded",
-    "build": "GOMEMLIMIT=512MiB tsc -p tsconfig.build.json --singleThreaded && pnpm run copy:data",
+    "dev": "node ../../tools/typescript/tsc.mjs small -w -p tsconfig.json --singleThreaded",
+    "build": "node ../../tools/typescript/tsc.mjs small -p tsconfig.build.json --singleThreaded && pnpm run copy:data",
     "copy:data": "node scripts/copy-data.mjs",
-    "typecheck": "GOMEMLIMIT=512MiB tsc --noEmit -p tsconfig.json --singleThreaded",
+    "typecheck": "node ../../tools/typescript/tsc.mjs small --noEmit -p tsconfig.json --singleThreaded",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

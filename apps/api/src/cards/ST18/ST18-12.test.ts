@@ -67,6 +67,31 @@ describe("ST18-12 Zephagamon", () => {
     expect(observe(s.engine).hasRestriction(s.perm("zephagamon"), "beAffected", "Digimon")).toBe(true);
   });
 
+  it.each(["ownTamer", "opponentTamer"])(
+    "ignores %s unsuspension without consuming its Digimon trigger",
+    async (tamer) => {
+      const s = setupEngine({
+        0: {
+          battleArea: [
+            { card: "ST18-12", as: "zephagamon", under: ["ST18-10"] },
+            { card: "ST18-03", as: "digimon", suspended: true },
+            { card: "BT1-087", as: "ownTamer", suspended: true },
+          ],
+        },
+        1: { battleArea: [{ card: "BT1-087", as: "opponentTamer", suspended: true }] },
+      });
+
+      await advance(s.engine).verb.unsuspend([s.perm(tamer).permanentId]);
+      expect(s.perm(tamer).isSuspended).toBe(false);
+      expect(s.perm("zephagamon").currentDP).toBe(11000);
+      expect(observe(s.engine).hasRestriction(s.perm("zephagamon"), "beAffected", "Digimon")).toBe(false);
+
+      await advance(s.engine).verb.unsuspend([s.perm("digimon").permanentId]);
+      expect(s.perm("zephagamon").currentDP).toBe(14000);
+      expect(observe(s.engine).hasRestriction(s.perm("zephagamon"), "beAffected", "Digimon")).toBe(true);
+    },
+  );
+
   it("rejects a forged Main-phase Vortex intent", async () => {
     const s = setupEngine({
       0: { battleArea: [{ card: "ST18-12", as: "zephagamon", dp: 11000 }] },
@@ -193,6 +218,60 @@ describe("ST18-12 Zephagamon — KB Q&A rulings", () => {
     expect(s.perm("opponentDigimon").isSuspended).toBe(false);
   });
 
+  it("lets the unsuspend choose an active Digimon so the opponent's suspended Digimon stays suspended (Q845, Q993)", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "ST18-10", as: "base" }],
+          hand: [{ card: "ST18-12", as: "zephagamon" }],
+        },
+        1: { battleArea: [{ card: "ST18-03", as: "opponentDigimon" }] },
+      },
+      { autoSelectCards: false },
+    );
+    s.state.memory = 3;
+    const baseId = s.perm("base").permanentId;
+    const opponentDigimonId = s.perm("opponentDigimon").permanentId;
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: baseId,
+        instanceId: s.inst("zephagamon").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "chooseTargets");
+    const suspendDecision = s.decisions.at(-1)!.req;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: suspendDecision.decisionId,
+        response: { kind: "chooseTargets", instanceIds: [opponentDigimonId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.state.pendingDecision?.kind === "chooseTargets" &&
+        s.state.pendingDecision.decisionId !== suspendDecision.decisionId,
+    );
+    const unsuspendDecision = s.decisions.at(-1)!.req;
+    expect(unsuspendDecision.options?.candidateInstanceIds).toEqual(
+      expect.arrayContaining([baseId, opponentDigimonId]),
+    );
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: unsuspendDecision.decisionId,
+        response: { kind: "chooseTargets", instanceIds: [baseId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision === undefined);
+
+    expect(s.perm("opponentDigimon").isSuspended).toBe(true);
+    expect(s.perm("base").isSuspended).toBe(false);
+    expect(s.perm("base").currentDP).toBe(11000);
+  });
+
   it("triggers its [All Turns] effect when an opponent's Digimon unsuspends (Q849)", async () => {
     const s = setupEngine({
       0: { battleArea: [{ card: "ST18-12", as: "zephagamon", under: ["ST18-10"] }] },
@@ -210,15 +289,22 @@ describe("ST18-12 Zephagamon — KB Q&A rulings", () => {
     await turn;
   });
 
-  it("does not gain its [All Turns] boost when no Digimon unsuspends (Q849)", async () => {
+  it("does not gain its [All Turns] boost when only a Tamer unsuspends at turn start", async () => {
     const s = setupEngine({
       0: { battleArea: [{ card: "ST18-12", as: "zephagamon", under: ["ST18-10"] }] },
-      1: { battleArea: [{ card: "ST18-03", as: "opponentDigimon" }], deck: ["BT1-009", "BT1-009"] },
+      1: {
+        battleArea: [
+          { card: "ST18-03", as: "opponentDigimon" },
+          { card: "BT1-087", as: "tamer", suspended: true },
+        ],
+        deck: ["BT1-009", "BT1-009"],
+      },
     });
     s.state.turnSeat = 1;
     const turn = s.engine.runOneTurn();
     await advance(s.engine).waitForMainPhase(1);
 
+    expect(s.perm("tamer").isSuspended).toBe(false);
     expect(s.perm("zephagamon").currentDP).toBe(11000);
     expect(observe(s.engine).hasRestriction(s.perm("zephagamon"), "beAffected", "Digimon")).toBe(false);
 

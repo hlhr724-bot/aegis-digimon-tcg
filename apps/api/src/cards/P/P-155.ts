@@ -34,20 +34,15 @@ const compiled: CompiledCard = {
     {
       trigger: "Main",
       actions: [
-        {
-          kind: "Draw",
-          controller: "mine",
-          amount: 1,
-        },
-        {
-          kind: "PlaceInBattleAreaSelf",
-        },
+        { effectTextPart: "[Main] ＜Draw 1＞.", kind: "Draw", controller: "mine", amount: 1 },
+        { effectTextPart: "Then, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
       ],
     },
     {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "By trashing 1 of your non-red option cards in your battle area, gain 1 memory.",
           kind: "GainMemory",
           amount: 1,
           cost: {

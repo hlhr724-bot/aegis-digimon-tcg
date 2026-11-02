@@ -1,13 +1,14 @@
 import type { CompiledCard } from "@aegis/shared";
 import { registerIrCard } from "../../engine/effects/interpreter.js";
 
-const compiled: CompiledCard = {
+export const compiled: CompiledCard = {
   effects: [
     {
       trigger: "StartOfYourMainPhase",
       actions: [
         {
-          kind: "GainMemory",
+          kind: "Draw",
+          controller: "mine",
           amount: 1,
           cost: {
             kind: "place",
@@ -31,10 +32,8 @@ const compiled: CompiledCard = {
           abortOnDecline: true,
         },
         {
-          kind: "Draw",
-          controller: "mine",
+          kind: "GainMemory",
           amount: 1,
-          optional: false,
         },
       ],
     },

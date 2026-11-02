@@ -1,180 +1,173 @@
-/* The tournaments area: catalog, creation and detail. The app shell can control the view so each
-   page has a stable URL; local state remains available for isolated component tests. */
+import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
+import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
+import { useEffect, useState } from "react";
+import { accountApi } from "@/account/client";
+import { Alert } from "@/design/primitives";
+import type { DeckListing } from "@/game/decks";
+import { useTranslation } from "@/i18n/useTranslation";
+import type { TournamentRoute } from "@/routes";
+import { CreateTournamentForm } from "@/tournaments/CreateTournamentForm";
+import { TournamentCatalog } from "@/tournaments/TournamentCatalog";
+import { TournamentCatalogTab } from "@/tournaments/TournamentCatalogTab";
+import { TournamentCrumb } from "@/tournaments/TournamentCrumb";
+import { TournamentDetail } from "@/tournaments/TournamentDetail";
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
+import { CircuitDetail } from "@/tournaments/circuits/CircuitDetail";
+import { CreateCircuitForm } from "@/tournaments/circuits/CreateCircuitForm";
+import "@/tournaments/tournaments.css";
 
-import { useCallback, useEffect, useState } from "react";
-import { Alert, Badge, Button, Panel } from "../design/primitives";
-import { Icons } from "../design/icons";
-import type { DeckListing } from "../game/decks";
-import { useTranslation } from "../i18n";
-import { accountApi } from "../account/client";
-import { tournamentApi, type ApiError } from "./client";
-import { CreateTournamentForm } from "./CreateTournamentForm";
-import { usePolledRequest } from "./hooks";
-import { banlistModeKey, reasonKey, statusKey, structureKey } from "./labels";
-import { TournamentDetail } from "./TournamentDetail";
-import type { TournamentListing } from "./types";
-import type { TournamentRoute } from "../routes";
-import "./tournaments.css";
+type TournamentsScreenParams = {
+  decks: readonly DeckListing[];
+  onDecks?: () => void;
+  onJoinGame?: (ticket: TournamentGameTicket) => void;
+  onWatchMatch?: (target: TournamentSpectateTarget) => void;
+  view?: TournamentRoute;
+  onViewChange?: (view: TournamentRoute) => void;
+};
 
-const CATALOG_POLL_MS = 15_000;
+type TournamentAccount = {
+  id: string;
+  displayName: string;
+  isAdmin: boolean;
+  canCreateOfficial: boolean;
+};
 
 export function TournamentsScreen({
   decks,
   view,
   onViewChange,
-}: {
-  decks: readonly DeckListing[];
-  view?: TournamentRoute;
-  onViewChange?: (view: TournamentRoute) => void;
-}) {
+  onJoinGame,
+  onWatchMatch,
+  onDecks = () => undefined,
+}: TournamentsScreenParams) {
   const { t } = useTranslation();
   const [localView, setLocalView] = useState<TournamentRoute>({ kind: "catalog" });
-  const [account, setAccount] = useState<{ id: string; displayName: string; isAdmin: boolean } | null>();
+  const [catalogTab, setCatalogTab] = useState<TournamentCatalogTab>(TournamentCatalogTab.EXPLORE.value);
+  const [account, setAccount] = useState<TournamentAccount | null>();
   const activeView = view ?? localView;
   const setView = onViewChange ?? setLocalView;
+  const canCreateCircuit = account?.isAdmin === true || account?.canCreateOfficial === true;
 
   useEffect(() => {
     let cancelled = false;
     void accountApi
       .me()
       .then((value) => {
-        if (!cancelled) setAccount(value && { id: value.id, displayName: value.displayName, isAdmin: value.isAdmin });
+        if (!cancelled) {
+          setAccount(
+            value && {
+              id: value.id,
+              displayName: value.displayName,
+              isAdmin: value.isAdmin,
+              canCreateOfficial: hasAccountCapability({
+                roles: value.roles,
+                capability: "canOrganizeOfficialTournaments",
+              }),
+            },
+          );
+        }
       })
       .catch(() => {
-        if (!cancelled) setAccount(null);
+        if (!cancelled) {
+          setAccount(null);
+        }
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
+  if (activeView.kind === "catalog") {
+    return (
+      <TournamentCatalog
+        accountId={account?.id}
+        canCreateCircuit={canCreateCircuit}
+        tab={catalogTab}
+        onTabChange={setCatalogTab}
+        onOpen={(id) => setView({ kind: "detail", id })}
+        onCreate={() => setView({ kind: "create" })}
+        onOpenCircuit={(id) => setView({ kind: "circuit", id })}
+        onCreateCircuit={() => setView({ kind: "createCircuit" })}
+      />
+    );
+  }
+
+  const backToCatalog = () => setView({ kind: "catalog" });
+
   return (
-    <div className="tournaments-page">
-      <div className="tournaments-page__sheet aegis-page-sheet aegis-page-sheet--padded">
-        <header className="tournaments-page__head">
-          <h1>{t("tournaments.title")}</h1>
-          <p>{t("tournaments.subtitle")}</p>
-        </header>
-
-        {activeView.kind === "catalog" ? (
-          <Catalog
-            canCreate={account?.isAdmin === true}
-            onOpen={(id) => setView({ kind: "detail", id })}
-            onCreate={() => setView({ kind: "create" })}
-          />
-        ) : null}
-
-        {activeView.kind === "create" && account?.isAdmin ? (
+    <main className="aegis-page tournaments-screen">
+      <div className="aegis-page__wrap tournaments-flow">
+        {activeView.kind === "create" && account ? (
           <CreateTournamentForm
+            canCreateOfficial={account.canCreateOfficial}
             onCreated={(tournament) => setView({ kind: "detail", id: tournament.id })}
-            onCancel={() => setView({ kind: "catalog" })}
+            onCancel={backToCatalog}
           />
         ) : null}
 
-        {activeView.kind === "create" && account !== undefined && !account?.isAdmin ? (
-          <Alert tone="warning" title={t("tournaments.create.adminOnly")}>
-            {t("tournaments.create.adminOnlyDescription")}
+        {activeView.kind === "create" && account === null ? (
+          <>
+            <TournamentCrumb onBack={backToCatalog} />
+            <Alert tone="warning" title={t("account.signInTitle")}>
+              {t("tournaments.detail.signInRequired")}
+            </Alert>
+          </>
+        ) : null}
+
+        {activeView.kind === "createCircuit" && account && canCreateCircuit ? (
+          <CreateCircuitForm
+            onCreated={(circuit) => setView({ kind: "circuit", id: circuit.id })}
+            onCancel={() => {
+              setCatalogTab(TournamentCatalogTab.CIRCUITS.value);
+              backToCatalog();
+            }}
+          />
+        ) : null}
+
+        {activeView.kind === "createCircuit" && account && !canCreateCircuit ? (
+          <Alert tone="warning" title={t("tournaments.circuits.organizerOnlyTitle")}>
+            {t("tournaments.circuits.organizerOnly")}
           </Alert>
+        ) : null}
+
+        {activeView.kind === "createCircuit" && account === null ? (
+          <Alert tone="warning" title={t("account.signInTitle")}>
+            {t("tournaments.detail.signInRequired")}
+          </Alert>
+        ) : null}
+
+        {activeView.kind === "circuit" ? (
+          <CircuitDetail
+            id={activeView.id}
+            accountIsAdmin={account?.isAdmin === true}
+            onBack={() => {
+              setCatalogTab(TournamentCatalogTab.CIRCUITS.value);
+              backToCatalog();
+            }}
+            onOpenTournament={(id) => setView({ kind: "detail", id })}
+          />
         ) : null}
 
         {activeView.kind === "detail" ? (
           <TournamentDetail
             id={activeView.id}
+            onDecks={onDecks}
+            onJoinGame={onJoinGame}
+            onWatchMatch={onWatchMatch}
             accountId={account?.id}
             accountDisplayName={account?.displayName}
             accountIsAdmin={account?.isAdmin === true}
             decks={decks}
-            onBack={() => setView({ kind: "catalog" })}
+            tab={activeView.tab}
+            onTabChange={(tab) => setView({ kind: "detail", id: activeView.id, tab })}
+            onBack={backToCatalog}
+            onMyTournaments={() => {
+              setCatalogTab(TournamentCatalogTab.MINE.value);
+              backToCatalog();
+            }}
           />
         ) : null}
       </div>
-    </div>
-  );
-}
-
-function Catalog({
-  canCreate,
-  onOpen,
-  onCreate,
-}: {
-  canCreate: boolean;
-  onOpen: (id: string) => void;
-  onCreate: () => void;
-}) {
-  const { t } = useTranslation();
-  const [tournaments, setTournaments] = useState<TournamentListing[]>();
-  const [error, setError] = useState<ApiError>();
-
-  const load = useCallback((signal: AbortSignal) => tournamentApi.list(signal), []);
-  const apply = useCallback((result: Awaited<ReturnType<typeof tournamentApi.list>>) => {
-    if (result.ok) {
-      setTournaments(result.value);
-      setError(undefined);
-    } else setError(result.error);
-  }, []);
-  usePolledRequest(load, apply, CATALOG_POLL_MS);
-
-  return (
-    <section aria-label={t("tournaments.catalog.title")}>
-      <div className="tournaments-page__actions">
-        {canCreate && tournaments?.length !== 0 ? (
-          <Button onClick={onCreate}>{t("tournaments.catalog.create")}</Button>
-        ) : null}
-      </div>
-      {error ? (
-        <Alert tone="danger" title={t("tournaments.error.load")}>
-          {reasonKey(error.code) ? t(reasonKey(error.code)!) : t("tournaments.reason.unknown", { code: error.code })}
-        </Alert>
-      ) : null}
-      {tournaments === undefined && !error ? <p role="status">{t("common.loading")}</p> : null}
-      {tournaments?.length === 0 ? (
-        <div className="tournaments-empty">
-          <span className="tournaments-empty__icon">
-            <Icons.Calendar size={26} />
-          </span>
-          <strong className="tournaments-empty__title">{t("tournaments.catalog.emptyTitle")}</strong>
-          <p className="tournaments-empty__copy">
-            {t(canCreate ? "tournaments.catalog.empty" : "tournaments.catalog.emptyReadOnly")}
-          </p>
-          {canCreate ? (
-            <Button icon={Icons.Plus} onClick={onCreate}>
-              {t("tournaments.catalog.create")}
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
-      <ul className="tournaments-catalog">
-        {tournaments?.map((tournament) => (
-          <li key={tournament.id}>
-            <Panel className="tournaments-card">
-              <div className="tournaments-card__head">
-                <h2>{tournament.name}</h2>
-                <Badge tone="primary">{t(statusKey(tournament.status))}</Badge>
-              </div>
-              <p className="tournaments-card__meta">
-                <span>{new Date(tournament.startsAt).toLocaleString()}</span>
-                <span>
-                  {t("tournaments.slots", { registered: tournament.registeredCount, max: tournament.maxPlayers })}
-                </span>
-              </p>
-              <div className="tournaments-badges">
-                <Badge>{t(structureKey(tournament.structure))}</Badge>
-                <Badge>{t("tournaments.bestOf", { count: tournament.bestOf })}</Badge>
-                {tournament.topCutEnabled ? <Badge tone="success">{t("tournaments.badge.topCut")}</Badge> : null}
-                {tournament.allowBots ? <Badge tone="warning">{t("tournaments.badge.bots")}</Badge> : null}
-                <Badge>
-                  {tournament.banlistPolicy.mode === "as_of_set"
-                    ? t("tournaments.banlist.asOfSet", { set: tournament.banlistPolicy.setId })
-                    : t(banlistModeKey(tournament.banlistPolicy))}
-                </Badge>
-              </div>
-              <Button size="sm" variant="secondary" onClick={() => onOpen(tournament.id)}>
-                {t("tournaments.catalog.open")}
-              </Button>
-            </Panel>
-          </li>
-        ))}
-      </ul>
-    </section>
+    </main>
   );
 }

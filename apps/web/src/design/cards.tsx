@@ -1,51 +1,15 @@
-import { cardImageUrls, getCardDefinition, type CardColor, type CardDefinition } from "@aegis/shared";
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
+import { CardZoomPreview } from "@/design/CardZoomPreview";
+import { useHoverZoomEnabled } from "@/design/useHoverZoomEnabled";
+import { Sigil } from "@/design/Sigil";
+import { formatDp } from "@/design/formatDp";
+import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
+import { getCardDefinition, type CardColor, type CardDefinition } from "@aegis/shared";
+import { useEffect, useState, type ReactNode } from "react";
 import { DEFAULT_CARD_SLEEVE, DEFAULT_EGG_SLEEVE, useCardSleeve, useEggSleeve } from "./sleeve";
-import { COLORS, colorKey, emblemFor, paletteFor, palettePairFor, sigilPaths } from "./theme";
+import { COLORS, colorKey, paletteFor, palettePairFor } from "./theme";
 import { CARD_SUSPEND_MOTION } from "./cardMotion";
-
-/** True on hover-capable (desktop) pointers; false on touch/responsive devices. */
-function useHoverZoomEnabled(): boolean {
-  const [enabled, setEnabled] = useState(() =>
-    typeof window === "undefined" ? true : window.matchMedia("(hover: hover) and (pointer: fine)").matches,
-  );
-  useEffect(() => {
-    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const update = () => setEnabled(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
-  return enabled;
-}
-
-/** Inline geometric sigil (emblem derived from the card id unless given). */
-export function Sigil({
-  cardId,
-  emblem,
-  color = "Neutral",
-  size = 84,
-  faded = false,
-}: {
-  cardId?: string;
-  emblem?: string;
-  color?: string;
-  size?: number;
-  faded?: boolean;
-}) {
-  const c = COLORS[colorKey(color)];
-  const body = sigilPaths(emblem ?? (cardId ? emblemFor(cardId) : "sigil"));
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      style={{ color: c.base, opacity: faded ? 0.5 : 1, flexShrink: 0 }}
-      dangerouslySetInnerHTML={{ __html: body }}
-    />
-  );
-}
 
 /** Level pips — filled dots up to level, hollow remainder (max 6). */
 export function LevelPips({ level, color }: { level?: number; color: string }) {
@@ -75,11 +39,13 @@ export function CardBack({
   label,
   useSelectedSleeve = true,
   egg = false,
+  selected = false,
 }: {
   width?: number;
   label?: number | string;
   useSelectedSleeve?: boolean;
   egg?: boolean;
+  selected?: boolean;
 }) {
   const h = Math.round(width * 1.4);
   const selectedSleeve = useCardSleeve();
@@ -99,6 +65,10 @@ export function CardBack({
         borderRadius: Math.max(6, width * 0.07),
         background: sleeve.src ? "#0b1020" : "linear-gradient(150deg, var(--ds-fill), var(--ds-sheet))",
         border: "1px solid var(--ds-line-strong)",
+        boxShadow: selected
+          ? "0 0 0 2px var(--card-highlight-rim, var(--ds-rim-attention)), 0 0 18px var(--card-highlight-glow, color-mix(in srgb, var(--ds-rim-attention) 40%, transparent)), var(--ds-shadow-raise)"
+          : undefined,
+        transition: "box-shadow 150ms",
         display: "grid",
         placeItems: "center",
         position: "relative",
@@ -151,78 +121,6 @@ export function CardBack({
   );
 }
 
-const ZOOM_W = 380;
-const ZOOM_H = Math.round(ZOOM_W * 1.4);
-const ZOOM_GAP = 14;
-
-/** Fixed-position large card image rendered into document.body via portal. */
-function CardZoomPreview({
-  cardId,
-  artId,
-  x,
-  y,
-  fallbackIndex,
-}: {
-  cardId: string;
-  artId?: string;
-  x: number;
-  y: number;
-  fallbackIndex: number;
-}) {
-  const def = getCardDefinition(cardId);
-  const urls = cardImageUrls(cardId, artId);
-  const [extra, setExtra] = useState(0);
-  useEffect(() => setExtra(0), [cardId, artId]);
-  const idx = fallbackIndex + extra;
-
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const left = x + ZOOM_GAP + ZOOM_W > vw ? x - ZOOM_GAP - ZOOM_W : x + ZOOM_GAP;
-  const top = Math.max(ZOOM_GAP, Math.min(y - ZOOM_H / 2, vh - ZOOM_H - ZOOM_GAP));
-
-  return createPortal(
-    <div
-      style={{
-        position: "fixed",
-        left,
-        top,
-        width: ZOOM_W,
-        height: ZOOM_H,
-        borderRadius: 14,
-        overflow: "hidden",
-        boxShadow: "0 30px 70px rgba(15,23,42,0.6), 0 0 0 1px rgba(255,255,255,0.08)",
-        zIndex: 9999,
-        pointerEvents: "none",
-        animation: "aegis-pop 120ms ease-out",
-      }}
-    >
-      {idx >= urls.length ? (
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            background: "var(--ds-fill)",
-            display: "grid",
-            placeItems: "center",
-          }}
-        >
-          <Sigil cardId={cardId} color={colorKey(def?.colors[0])} size={ZOOM_W * 0.5} />
-        </div>
-      ) : (
-        <img
-          draggable={false}
-          src={urls[idx]}
-          decoding="async"
-          alt={def?.nameEn}
-          onError={() => setExtra((e) => e + 1)}
-          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-        />
-      )}
-    </div>,
-    document.body,
-  );
-}
-
 /** Full card (≈200×280 baseline; scale via `width`). For grids and detail. */
 export function CardFull({
   cardId,
@@ -247,13 +145,14 @@ export function CardFull({
    */
   zoomOnHover?: boolean;
 }) {
+  const translations = useCardTranslations();
   const def = getCardDefinition(cardId);
-  const urls = cardImageUrls(cardId, artId);
+  const urls = useCardImageUrls({ cardId, artId });
   const [urlIndex, setUrlIndex] = useState(0);
-  useEffect(() => setUrlIndex(0), [artId, cardId]);
+  useEffect(() => setUrlIndex(0), [artId, cardId, urls]);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const zoomEnabled = useHoverZoomEnabled();
-  if (!def) return <CardBack width={width} label={cardId} />;
+  if (!def) return <CardBack width={width} label={cardId} selected={selected} />;
   const c = paletteFor(def.colors);
   const key = colorKey(def.colors[0]);
   const h = Math.round(width * 1.4);
@@ -300,14 +199,14 @@ export function CardFull({
           }}
         >
           <Sigil cardId={cardId} color={key} size={Math.round(h * 0.32)} />
-          <span>{def.nameEn}</span>
+          <span>{getTranslatedCardName({ name: def.nameEn, translations })}</span>
           <span style={{ fontFamily: "var(--ds-font-mono)", color: "var(--ds-text-3)" }}>{cardId}</span>
         </div>
       ) : (
         <img
           draggable={false}
           src={urls[urlIndex]}
-          alt={def.nameEn}
+          alt={getTranslatedCardName({ name: def.nameEn, translations })}
           loading="lazy"
           decoding="async"
           onError={() => setUrlIndex((i) => i + 1)}
@@ -350,16 +249,18 @@ export function CoverThumb({
   artId,
   sigilColor = "Neutral",
   sigilSize = 64,
+  objectPosition = "top",
 }: {
   coverCardId?: string;
   artId?: string;
   sigilColor?: string;
   sigilSize?: number;
+  objectPosition?: string;
 }) {
+  const urls = useCardImageUrls({ cardId: coverCardId, artId });
   const [urlIndex, setUrlIndex] = useState(0);
-  useEffect(() => setUrlIndex(0), [artId, coverCardId]);
+  useEffect(() => setUrlIndex(0), [artId, coverCardId, urls]);
   if (!coverCardId) return <Sigil emblem="crest" color={sigilColor} size={sigilSize} />;
-  const urls = cardImageUrls(coverCardId, artId);
   if (urlIndex >= urls.length) return <Sigil emblem="crest" color={sigilColor} size={sigilSize} />;
   return (
     <img
@@ -367,35 +268,121 @@ export function CoverThumb({
       src={urls[urlIndex]}
       decoding="async"
       onError={() => setUrlIndex((i) => i + 1)}
-      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
+      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition }}
     />
   );
 }
 
-/** DP in compact k-notation (9000 → "9K"), full digits for non-round values. */
-function formatDp(dp: number): string {
-  return dp % 1000 === 0 ? `${dp / 1000}K` : `${dp}`;
-}
-
-/** Metadata scrim for a board token: play cost, level, name, traits, DP.
+/** Metadata scrim for a board token: play cost, level, name, DP.
  *  Rendered over the art; scales with the token width and drops the least
  *  essential fields first as space shrinks. `dp` overrides the printed value
  *  so buffs/de-buffs show the live figure. */
-function TokenInfo({ def, width, dp }: { def: CardDefinition; width: number; dp?: number }) {
+type TokenInfoParams = {
+  def: CardDefinition;
+  width: number;
+  dp?: number;
+  dpDelta?: number;
+  renderDpDelta?: (node: ReactNode) => ReactNode;
+  reference?: string;
+};
+
+function TokenInfo({ def, width, dp, dpDelta, renderDpDelta, reference }: TokenInfoParams) {
+  const translations = useCardTranslations();
   const scale = width / 92;
   const px = (n: number) => Math.round(n * scale);
   const c = paletteFor(def.colors);
   const dpChip = palettePairFor(def.colors);
   const cost = def.playCost;
   const dpValue = dp ?? def.dp;
-  const traits = [def.forms?.[0], def.attributes?.[0], def.types?.[0]].filter((t) => t && t !== "-") as string[];
-  const showTraits = width >= 84 && traits.length > 0;
   const showLevel = def.level != null && width >= 66;
 
+  const hasDelta = typeof dpDelta === "number" && dpDelta !== 0;
+  const stacked = hasDelta || (dp !== undefined && width < 92);
+  const dpBoost = "calc(1 + (var(--ds-text-scale, 1) - 1) * 2)";
+  const deltaNode = hasDelta ? (
+    <span
+      data-dp={dpDelta < 0 ? "down" : "up"}
+      style={{
+        fontSize: "0.62em",
+        fontWeight: 900,
+        lineHeight: 1.25,
+        padding: `${px(1)}px ${px(2)}px`,
+        borderRadius: px(3),
+        color: "var(--ds-ink)",
+        boxShadow: "inset 0 0 0 1px rgb(255 255 255 / 55%)",
+        background:
+          dpDelta < 0
+            ? "color-mix(in srgb, var(--ds-danger) 40%, white)"
+            : "color-mix(in srgb, var(--ds-success) 35%, white)",
+      }}
+    >
+      {dpDelta < 0 ? "−" : "+"}
+      {formatDp(Math.abs(dpDelta))}
+    </span>
+  ) : null;
+  const dpFontSize = `calc(${px(13)}px * ${dpBoost})`;
+  const hasNonRoundDp = dpValue % 1000 !== 0 || (hasDelta && dpDelta % 1000 !== 0);
+  const totalCharacterWidth = formatDp(dpValue).length * 0.65;
+  const deltaCharacterWidth = hasDelta ? (formatDp(Math.abs(dpDelta)).length + 1) * 0.62 * 0.65 : 0;
+  const dpContentWidth = width - px(18) - 4 - (hasDelta ? px(6) : 0);
+  const dpFontLimit = dpContentWidth / (totalCharacterWidth + deltaCharacterWidth);
+  const dpReadout =
+    dpValue > 0 ? (
+      <span
+        style={{
+          flexShrink: 0,
+          fontFamily: "var(--ds-font-mono)",
+          fontSize: hasNonRoundDp ? `min(${dpFontSize}, ${dpFontLimit}px)` : dpFontSize,
+          fontWeight: 800,
+          color: "#fff",
+          background: dpChip.split
+            ? `linear-gradient(90deg, ${dpChip.from.base} 0 50%, ${dpChip.to.base} 50% 100%)`
+            : "rgba(255,255,255,0.14)",
+          border: `1px solid ${dpChip.split ? dpChip.to.edge : c.edge}`,
+          borderRadius: px(5),
+          padding: `${px(1)}px ${px(4)}px`,
+          lineHeight: 1.2,
+          fontVariantNumeric: "tabular-nums",
+          display: "inline-flex",
+          alignItems: "baseline",
+          gap: px(2),
+          maxWidth: "100%",
+          overflow: "hidden",
+        }}
+      >
+        {formatDp(dpValue)}
+        {deltaNode && (renderDpDelta ? renderDpDelta(deltaNode) : deltaNode)}
+      </span>
+    ) : null;
   return (
     <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-      {cost >= 0 ? (
+      {def.isDualCard ? (
         <span
+          data-card-kind="dual"
+          style={{
+            position: "absolute",
+            top: px(4),
+            left: px(4),
+            height: px(16),
+            padding: `0 ${px(5)}px`,
+            borderRadius: px(4),
+            background: "rgba(11,13,20,0.9)",
+            color: "#fff",
+            border: "1px solid rgba(255,255,255,0.4)",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.45)",
+            fontSize: px(8.5),
+            fontWeight: 800,
+            letterSpacing: "0.1em",
+            lineHeight: 1,
+            display: "grid",
+            placeItems: "center",
+          }}
+        >
+          DUAL
+        </span>
+      ) : cost >= 0 ? (
+        <span
+          data-cost="play"
           style={{
             position: "absolute",
             top: px(4),
@@ -439,6 +426,7 @@ function TokenInfo({ def, width, dp }: { def: CardDefinition; width: number; dp?
         </span>
       ) : null}
       <div
+        data-dp-layout={stacked ? "stacked" : undefined}
         style={{
           position: "absolute",
           left: 0,
@@ -448,23 +436,7 @@ function TokenInfo({ def, width, dp }: { def: CardDefinition; width: number; dp?
           background: "linear-gradient(to top, rgba(8,10,16,0.92) 28%, rgba(8,10,16,0.55) 64%, transparent)",
         }}
       >
-        {showTraits ? (
-          <div
-            style={{
-              color: "rgba(226,232,240,0.82)",
-              fontSize: px(7),
-              fontWeight: 600,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              marginBottom: px(1),
-            }}
-          >
-            {traits.join(" · ")}
-          </div>
-        ) : null}
+        {stacked ? <div style={{ display: "flex", justifyContent: "flex-end" }}>{dpReadout}</div> : null}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: px(3) }}>
           <span
             style={{
@@ -478,31 +450,23 @@ function TokenInfo({ def, width, dp }: { def: CardDefinition; width: number; dp?
               textShadow: "0 1px 2px rgba(0,0,0,0.6)",
             }}
           >
-            {def.nameEn}
+            {reference ? (
+              <span
+                data-field-reference
+                style={{
+                  fontFamily: "var(--ds-font-mono)",
+                  fontSize: "0.92em",
+                  fontWeight: 700,
+                  opacity: 0.8,
+                  marginInlineEnd: px(3),
+                }}
+              >
+                {reference}
+              </span>
+            ) : null}
+            {getTranslatedCardName({ name: def.nameEn, translations })}
           </span>
-          {dpValue > 0 ? (
-            <span
-              style={{
-                flexShrink: 0,
-                fontFamily: "var(--ds-font-mono)",
-                fontSize: `calc(${px(10)}px * var(--ds-text-scale, 1))`,
-                fontWeight: 700,
-                color: "#fff",
-                // A dual-colour Digimon carries both of its colours on the chip,
-                // which is the fastest read of "this counts as red AND blue" the
-                // board can give without a second badge.
-                background: dpChip.split
-                  ? `linear-gradient(90deg, ${dpChip.from.base} 0 50%, ${dpChip.to.base} 50% 100%)`
-                  : "rgba(255,255,255,0.14)",
-                border: `1px solid ${dpChip.split ? dpChip.to.edge : c.edge}`,
-                borderRadius: px(5),
-                padding: `${px(1)}px ${px(4)}px`,
-                lineHeight: 1.25,
-              }}
-            >
-              {formatDp(dpValue)}
-            </span>
-          ) : null}
+          {!stacked ? dpReadout : null}
         </div>
       </div>
     </div>
@@ -510,7 +474,7 @@ function TokenInfo({ def, width, dp }: { def: CardDefinition; width: number; dp?
 }
 
 /** Compact board card (top of a permanent, or a hand card on the board).
- *  Pass `info` to overlay the token's name, play cost, level, traits and DP. */
+ *  Pass `info` to overlay the token's name, play cost, level and DP. */
 export function CardMini({
   cardId,
   artId,
@@ -523,8 +487,12 @@ export function CardMini({
   faceDown = false,
   info = false,
   dp,
+  dpDelta,
+  renderDpDelta,
   identity,
+  reference,
   zoomOnHover = true,
+  useSelectedSleeve = true,
 }: {
   cardId?: string;
   artId?: string;
@@ -538,11 +506,16 @@ export function CardMini({
   faceDown?: boolean;
   info?: boolean;
   dp?: number;
+  dpDelta?: number;
+  renderDpDelta?: (node: ReactNode) => ReactNode;
   /** Original name and colors an effect imposed (KingSukamon), shown instead of the printed ones. */
   identity?: { name: string; colors: readonly CardColor[] };
+  reference?: string;
   /** Show the floating full-card preview on hover. */
   zoomOnHover?: boolean;
+  useSelectedSleeve?: boolean;
 }) {
+  const translations = useCardTranslations();
   const printed = cardId ? getCardDefinition(cardId) : undefined;
   const def =
     printed && identity
@@ -552,12 +525,12 @@ export function CardMini({
           colors: identity.colors.length > 0 ? [...identity.colors] : printed.colors,
         }
       : printed;
-  const urls = cardImageUrls(cardId, artId);
+  const urls = useCardImageUrls({ cardId, artId });
   const [urlIndex, setUrlIndex] = useState(0);
-  useEffect(() => setUrlIndex(0), [artId, cardId]);
+  useEffect(() => setUrlIndex(0), [artId, cardId, urls]);
   const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null);
   const zoomEnabled = useHoverZoomEnabled();
-  if (faceDown || !def) return <CardBack width={width} />;
+  if (faceDown || !def) return <CardBack width={width} selected={selected} useSelectedSleeve={useSelectedSleeve} />;
   const c = paletteFor(def.colors);
   const key = colorKey(def.colors[0]);
   const h = Math.round(width * 1.4);
@@ -567,7 +540,7 @@ export function CardMini({
       onClick={onClick}
       onMouseMove={zoomEnabled && zoomOnHover ? (e) => setMousePos({ x: e.clientX, y: e.clientY }) : undefined}
       onMouseLeave={zoomEnabled && zoomOnHover ? () => setMousePos(null) : undefined}
-      title={def.nameEn}
+      title={getTranslatedCardName({ name: def.nameEn, translations })}
       style={{
         width,
         height: h,
@@ -608,14 +581,23 @@ export function CardMini({
         <img
           draggable={false}
           src={urls[urlIndex]}
-          alt={def.nameEn}
+          alt={getTranslatedCardName({ name: def.nameEn, translations })}
           decoding="async"
           onError={() => setUrlIndex((i) => i + 1)}
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
         />
       )}
 
-      {info ? <TokenInfo def={def} width={width} dp={dp} /> : null}
+      {info ? (
+        <TokenInfo
+          def={def}
+          width={width}
+          dp={dp}
+          dpDelta={dpDelta}
+          renderDpDelta={renderDpDelta}
+          reference={reference}
+        />
+      ) : null}
 
       {zoomEnabled && zoomOnHover && mousePos ? (
         <CardZoomPreview cardId={def.cardId} artId={artId} x={mousePos.x} y={mousePos.y} fallbackIndex={urlIndex} />

@@ -5,8 +5,6 @@ import { Button } from "../design/primitives";
 import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
 import type { DeckListing } from "../game/decks";
-import { DeckImageButton } from "./DeckImageButton";
-import { useDeckImagePreview } from "./useDeckImagePreview";
 import "./deckExportModal.css";
 
 /* ---------------- import / export modals ---------------- */
@@ -41,112 +39,6 @@ export function DeckImportModal({ onImport, onClose }: { onImport: (text: string
           </Button>
         </div>
       </div>
-    </div>
-  );
-}
-
-type ExportTab = "text" | "image";
-
-export function DeckExportModal({
-  text: deckText,
-  deck,
-  onClose,
-}: {
-  text: string;
-  deck?: DeckListing;
-  onClose: () => void;
-}) {
-  const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
-  const [tab, setTab] = useState<ExportTab>("text");
-  const copy = () => {
-    navigator.clipboard
-      .writeText(deckText)
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      })
-      // Denied permission or an insecure origin: the text stays selectable in the field.
-      .catch(() => setCopied(false));
-  };
-  return (
-    <div className="deck-modal-layer" role="dialog" aria-modal="true" aria-labelledby="deck-export-title">
-      <div className="deck-modal deck-export-modal">
-        <h2 id="deck-export-title" className="deck-modal__title">
-          {t("deck.exportTitle")}
-        </h2>
-        {deck ? (
-          <div className="deck-export-modal__tabs" role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === "text"}
-              className="deck-export-modal__tab"
-              onClick={() => setTab("text")}
-            >
-              <Icons.FileText size={15} />
-              {t("deck.exportTabText")}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === "image"}
-              className="deck-export-modal__tab"
-              onClick={() => setTab("image")}
-            >
-              <Icons.Download size={15} />
-              {t("deck.exportTabImage")}
-            </button>
-          </div>
-        ) : null}
-        {tab === "image" && deck ? (
-          <DeckImagePreview deck={deck} />
-        ) : (
-          <textarea
-            className="deck-modal__textarea"
-            readOnly
-            value={deckText}
-            onClick={(e) => (e.target as HTMLTextAreaElement).select()}
-          />
-        )}
-        <div className="deck-export-modal__actions">
-          <Button variant="secondary" size="sm" onClick={onClose}>
-            {t("common.close")}
-          </Button>
-          <span className="deck-export-modal__spacer" />
-          {tab === "image" && deck ? (
-            <DeckImageButton deck={deck} size="sm" variant="primary" label={t("deck.exportDownloadPng")} />
-          ) : (
-            <Button size="sm" icon={copied ? Icons.Check : Icons.Copy} onClick={copy}>
-              {copied ? t("common.copied") : t("common.copy")}
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DeckImagePreview({ deck }: { deck: DeckListing }) {
-  const { t } = useTranslation();
-  const preview = useDeckImagePreview(deck);
-  return (
-    <div className="deck-export-modal__preview" aria-busy={preview.status === "loading"}>
-      {preview.status === "ready" ? (
-        <img src={preview.url} alt={t("deck.exportPreviewAlt", { name: deck.name })} />
-      ) : (
-        <span className="deck-export-modal__preview-status">
-          {preview.status === "failed" ? t("deck.exportImageFailed") : t("deck.exportImageRendering")}
-        </span>
-      )}
-      {preview.status === "ready" ? (
-        <span className="deck-export-modal__preview-meta">
-          {t("deck.exportPreviewMeta", {
-            width: preview.width,
-            height: preview.height,
-          })}
-        </span>
-      ) : null}
     </div>
   );
 }

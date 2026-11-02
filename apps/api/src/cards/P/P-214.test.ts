@@ -95,7 +95,8 @@ describe("P-214 [On Play] tuck under a friendly [Seadramon], return a level-boun
             event.kind === "cardsMoved" &&
             evolutionBaseId !== undefined &&
             event.instanceIds?.includes(evolutionBaseId) &&
-            event.from === "various" &&
+            event.from === "digivolutionCards" &&
+            event.fromSeat === 0 &&
             event.to === "battleArea",
         ),
       ).toBe(isEvolution);

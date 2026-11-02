@@ -34,7 +34,7 @@ scenario("attack-permanent", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 19648: seat 0 (protagonist, RED_DECK) goes first and its dealt opening
+    // Seed 162: seat 0 (protagonist, RED_DECK) goes first and its dealt opening
     // hand includes BT1-013 "Muchomon" (Lv.3, cost 3, 5000 DP). The headless
     // opponent's (BLUE_DECK) opening hand includes BT1-032 "Frigimon" (Lv.4, cost 4,
     // 4000 DP) — found by exhaustively searching seeds, mirroring
@@ -47,7 +47,7 @@ scenario("attack-permanent", () => {
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: RED_DECK.mainDeck, eggDeck: RED_DECK.eggDeck },
-      seed: 19648,
+      seed: 162,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Red" startMode="casual" onExit={() => {}} />);

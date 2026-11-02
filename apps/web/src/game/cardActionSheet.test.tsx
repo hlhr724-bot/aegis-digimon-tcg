@@ -457,6 +457,7 @@ describe("stack viewer bottom sheet", () => {
     grantedEffectTexts: [],
     forcedAttackGrants: [],
     restrictions: [],
+    heldDpEffects: [],
     suspended: true,
     summoningSick: false,
     inBreeding: false,

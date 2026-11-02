@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { cueKey, type SoundKind, type SoundDetails } from "./audioRecipes";
-import { AUDIO_BANK_URL, AUDIO_CUES } from "./audioBank";
+import { AUDIO_BANK_URL, AUDIO_CUES, PCM_AUDIO_BANK_URL } from "./audioBank";
+import { encodePcmWav } from "./encodePcmWav";
 import { DEFAULT_MUSIC_TRACK, isMusicTrack, MUSIC_TRACK_URLS, type MusicTrack } from "./musicTracks";
 import { MediaAudio, needsMediaAudio, splitCueWav } from "./mediaAudio";
 export type { SoundKind, SoundDetails } from "./audioRecipes";
@@ -135,7 +136,7 @@ function getMediaAudio(): MediaAudio | null {
 /** Network starts at app mount; each buffer decodes independently only in a gesture-created context. */
 export async function prepareAudio(): Promise<void> {
   const media = getMediaAudio();
-  const urls = media ? [AUDIO_BANK_URL] : [AUDIO_BANK_URL, musicUrl()];
+  const urls = media ? [PCM_AUDIO_BANK_URL] : [AUDIO_BANK_URL, musicUrl()];
   await Promise.all(
     urls.map(async (url) => {
       let request = assets.get(url);
@@ -406,6 +407,11 @@ export function playSound(kind: SoundKind, details?: SoundDetails): void {
   node.start(now, cue.offset, cue.duration);
 }
 let attentionClips: Promise<Map<string, string>> | null = null;
+function attentionBank(): Promise<ArrayBuffer> | undefined {
+  if (mediaAudio) return assets.get(PCM_AUDIO_BANK_URL);
+  const buffer = cueBuffer;
+  return buffer ? Promise.resolve(buffer).then(encodePcmWav) : undefined;
+}
 function attentionClipUrls(bytes: ArrayBuffer): Map<string, string> {
   const urls = new Map<string, string>();
   for (const [key, clip] of splitCueWav(bytes))
@@ -422,9 +428,12 @@ export function playAttentionSound(kind: SoundKind): void {
     playSound(document.hasFocus() ? kind : "attention");
     return;
   }
-  const bank = assets.get(AUDIO_BANK_URL);
-  if (!enabled || volume <= 0 || !(unlocked || mediaAudio) || !bank) return;
-  attentionClips ??= bank.then(attentionClipUrls);
+  if (!enabled || volume <= 0 || !(unlocked || mediaAudio)) return;
+  if (!attentionClips) {
+    const bank = attentionBank();
+    if (!bank) return;
+    attentionClips = bank.then(attentionClipUrls);
+  }
   void attentionClips
     .then((urls) => {
       const url = urls.get(cueKey("attention"));

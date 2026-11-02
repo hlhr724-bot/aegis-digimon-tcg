@@ -300,7 +300,7 @@ it("asks for a source host on the board, filters its cards, and returns without 
   fireEvent.click(screen.getByRole("button", { name: "View board" }));
   expect(screen.queryByRole("region", { name: "Choose a Digimon" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Return to decision" }));
-  fireEvent.click(screen.getByRole("button", { name: "No Selection" }));
+  fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
   expect(onRespond).toHaveBeenCalledExactlyOnceWith({ kind: "selectCards", instanceIds: [] });
   expect(onChooseHost).not.toHaveBeenCalled();
   onRespond.mockClear();
@@ -354,3 +354,186 @@ it("retains pending physical-source provenance through the shared gallery adapte
   fireEvent.click(screen.getByRole("button", { name: /Hurricane Screw Shot, Pending effect, copy 2 of 2/ }));
   expect(onTogglePick).toHaveBeenCalledWith("pending");
 });
+
+const stagedClause =
+  "[On Play] You may return 1 [TS] trait Option card from your trash to the hand. If this effect didn't return, ＜Draw 1＞.";
+const activePassage = "You may return 1 [TS] trait Option card from your trash to the hand.";
+
+it.each(["chooseTargets", "selectCards", "optional"] as const)(
+  "preserves the full printed effect and highlights its active step on the board: %s",
+  (kind) => {
+    const { container } = render(
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "staged-effect",
+            promptText: "Resolve this effect",
+            seat: 0,
+            kind,
+            sourceCardId: "BT25-091",
+            options: {
+              timing: "OnPlay",
+              effectText: stagedClause,
+              effectTextPart: activePassage,
+              effectTextEmphasis: activePassage,
+            },
+          }}
+          answerOnBoard
+          permanents={[]}
+          sourceCardId="BT25-091"
+          candidates={[]}
+          allowsPick={() => true}
+          picks={[]}
+          min={0}
+          max={1}
+          triggerDetails={[]}
+          opponentSecurityCount={5}
+          onTogglePick={() => {}}
+          onRespond={() => {}}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>,
+    );
+    expect(container.querySelector(".board-prompt__clause")?.textContent).toBe(stagedClause);
+    expect(container.querySelector("strong.decision-overlay__effect-step")?.textContent).toBe(activePassage);
+  },
+);
+
+it.each([true, false])("confirms both DNA materials together on board/dialog (%s)", (answerOnBoard) => {
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  function renderPair(picks: string[]) {
+    return (
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "dna-pair",
+            seat: 0,
+            kind: "chooseTargets",
+            promptText: "Choose DNA materials",
+            options: {
+              min: 2,
+              max: 2,
+              candidateInstanceIds: ["alpha-one", "alpha-two", "ouryu"],
+              allowedTargetCombinations: [
+                ["alpha-one", "ouryu"],
+                ["alpha-two", "ouryu"],
+              ],
+            },
+          }}
+          answerOnBoard={answerOnBoard}
+          permanents={[]}
+          sourceCardId="BT27-103"
+          candidates={[
+            { instanceId: "alpha-one", cardId: "BT6-111", zone: "battle" },
+            { instanceId: "alpha-two", cardId: "BT13-075", zone: "battle" },
+            { instanceId: "ouryu", cardId: "BT8-069", zone: "battle" },
+          ]}
+          allowsPick={() => true}
+          picks={picks}
+          min={2}
+          max={2}
+          triggerDetails={[]}
+          opponentSecurityCount={5}
+          onTogglePick={() => {}}
+          onRespond={onRespond}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>
+    );
+  }
+  const view = render(renderPair(["alpha-one"]));
+  function getConfirm() {
+    return screen.getByRole("button", { name: /confirm targets/i }) as HTMLButtonElement;
+  }
+  expect(getConfirm().disabled).toBe(true);
+  view.rerender(renderPair(["alpha-one", "alpha-two"]));
+  expect(getConfirm().disabled).toBe(true);
+  view.rerender(renderPair(["ouryu", "alpha-two"]));
+  expect(getConfirm().disabled).toBe(false);
+  fireEvent.click(getConfirm());
+  expect(onRespond).toHaveBeenCalledExactlyOnceWith({ kind: "chooseTargets", instanceIds: ["ouryu", "alpha-two"] });
+});
+
+it.each([
+  [true, 0],
+  [true, 2],
+  [false, 0],
+  [false, 2],
+] as const)(
+  "routes server-authorized activation cancellation through the board and dialog (%s, min %s)",
+  (answerOnBoard, min) => {
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
+    render(
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "tentative-field-targets",
+            seat: 0,
+            kind: "chooseTargets",
+            promptText: "Choose two targets",
+            options: {
+              min,
+              max: 2,
+              candidateInstanceIds: ["first", "second"],
+              canCancelActivation: true,
+              allowedTargetCombinations: [["second", "first"]],
+            },
+          }}
+          answerOnBoard={answerOnBoard}
+          permanents={[]}
+          sourceCardId="BT25-029"
+          candidates={[
+            { instanceId: "first", cardId: "ST1-03", zone: "opponentBattle" },
+            { instanceId: "second", cardId: "ST1-03", zone: "opponentBattle" },
+          ]}
+          allowsPick={() => true}
+          picks={["first"]}
+          min={min}
+          max={2}
+          triggerDetails={[]}
+          opponentSecurityCount={1}
+          onTogglePick={() => {}}
+          onRespond={onRespond}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>,
+    );
+    expect((screen.getByRole("button", { name: "Confirm targets" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Cancel effect" }));
+    expect(onRespond).toHaveBeenCalledExactlyOnceWith({ kind: "chooseTargets", instanceIds: [] });
+  },
+);
+
+it.each([false, undefined])(
+  "keeps a mandatory field selection uncancellable without the server capability (%s)",
+  (canCancelActivation) => {
+    render(
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "mandatory-field-targets",
+            seat: 0,
+            kind: "chooseTargets",
+            promptText: "Choose one target",
+            options: { min: 1, max: 1, candidateInstanceIds: ["first"], canCancelActivation },
+          }}
+          answerOnBoard
+          permanents={[]}
+          sourceCardId="BT25-029"
+          candidates={[{ instanceId: "first", cardId: "ST1-03", zone: "opponentBattle" }]}
+          allowsPick={() => true}
+          picks={[]}
+          min={1}
+          max={1}
+          triggerDetails={[]}
+          opponentSecurityCount={1}
+          onTogglePick={() => {}}
+          onRespond={() => {}}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.queryByRole("button", { name: "Cancel effect" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /pass|no selection/i })).toBeNull();
+  },
+);

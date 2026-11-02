@@ -1,17 +1,3 @@
-.my-feedback-page {
-  position: relative;
-  height: calc(100% - var(--ds-nav-height-wide));
-  overflow-y: auto;
-}
-
-.my-feedback-column {
-  display: grid;
-  width: min(100%, 960px);
-  margin-inline: auto;
-  padding: var(--ds-space-8) var(--ds-space-4) var(--ds-space-12);
-  gap: var(--ds-space-5);
-}
-
 .my-feedback-header {
   display: flex;
   flex-wrap: wrap;
@@ -20,7 +6,16 @@
   gap: var(--ds-space-4);
 }
 
-.my-feedback-header h1 {
+.my-feedback-panel {
+  display: grid;
+  gap: var(--ds-space-5);
+}
+
+.my-feedback-panel .my-feedback-header {
+  align-items: center;
+}
+
+.my-feedback-panel .my-feedback-header p {
   margin: 0;
 }
 
@@ -221,22 +216,6 @@
   padding-inline-start: var(--ds-space-5);
   gap: var(--ds-space-1);
   font-size: var(--ds-text-sm);
-}
-
-@media (min-width: 768px) {
-  .my-feedback-column {
-    padding-inline: var(--ds-gutter-desktop);
-  }
-}
-
-@media (width < 960px) {
-  .my-feedback-page {
-    height: 100%;
-  }
-
-  .my-feedback-column {
-    padding-bottom: calc(var(--ds-nav-height-narrow) + env(safe-area-inset-bottom) + var(--ds-space-6));
-  }
 }
 
 @media (width < 520px) {

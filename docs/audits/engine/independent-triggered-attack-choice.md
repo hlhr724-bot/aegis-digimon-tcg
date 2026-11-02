@@ -1,9 +1,0 @@
-# Independent attack choices in triggered effects
-
-A positive answer in a simultaneous-effect resolution plan must not commit the player to a later optional attack after another action resolves. ST21-09 Q4479 requires the Alliance grant; Q4481 explicitly permits refusing the subsequent attack. The same boundary already protected optional attacks by a bound DNA evolution result.
-
-The SubTrigger action runner now clears a positive preset around every later optional Attack action, then restores the outer context. The first action's preset and negative answers retain their existing behavior. No card IR or serialized contract changes are needed.
-
-`alliance-grant-optional-attack.test.ts` covers ordinary resolution, simultaneous ordering, and positive presets while retaining Alliance and refusing attacks. Its original production replay reproduces without divergence before the fix. After the fix, the exact prefix reaches the earlier affected Mimi BT21-078 attack; the test explicitly accepts that newly restored choice, preserves the remaining recorded intents with current decision IDs, and refuses Lillymon's later attack. The original sanitized replay data remains unchanged. The E2E spec selects Yes for Lillymon in the real effect-ordering dialog before refusing the separate attack.
-
-The IR sweep finds 28 paths across 17 cards. Fifteen cards share the newly protected boundary: BT20-017, BT20-035, BT20-080, BT21-061, BT21-078, BT23-078, BT24-060, BT24-082, EX11-036, ST20-04, ST20-06, ST20-09, ST21-04, ST21-06, and ST21-09. EX8-027 and EX8-060 already had the bound-result protection and remain regression peers. Their direct card suites and the effect-costs-and-targeting, reveal-and-security-interactions, and resolution-plan suites pass alongside the behavior regression. This sweep does not claim to audit every optional action kind or every historical match for those cards.

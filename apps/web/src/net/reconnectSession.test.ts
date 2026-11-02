@@ -4,7 +4,7 @@ import {
   clearReconnectSession,
   isReconnectSessionFresh,
   loadReconnectSession,
-  RECONNECT_GRACE_MS,
+  RECONNECT_SESSION_MAX_AGE_MS,
   saveReconnectSession,
   type ReconnectSession,
 } from "./reconnectSession";
@@ -21,10 +21,15 @@ describe("reconnect session storage", () => {
     sessionStorage.clear();
   });
 
-  it("#5257 expires a reload token at the same 30-second deadline as the server", () => {
+  it("keeps a reload token whose heartbeat froze while the tab sat in the background", () => {
     saveReconnectSession(session);
-    expect(loadReconnectSession(session.savedAt + 29_999)).toEqual(session);
-    expect(loadReconnectSession(session.savedAt + 30_000)).toBeUndefined();
+    expect(loadReconnectSession(session.savedAt + 10 * 60_000)).toEqual(session);
+  });
+
+  it("expires a reload token only once no match could still hold its seat", () => {
+    saveReconnectSession(session);
+    expect(loadReconnectSession(session.savedAt + RECONNECT_SESSION_MAX_AGE_MS - 1)).toEqual(session);
+    expect(loadReconnectSession(session.savedAt + RECONNECT_SESSION_MAX_AGE_MS)).toBeUndefined();
   });
 
   it("round-trips a saved session within the server grace window", () => {
@@ -52,9 +57,9 @@ describe("reconnect session storage", () => {
     expect(localStorage.getItem("aegis:matchSession")).toBeNull();
   });
 
-  it("drops a session older than the grace window", () => {
+  it("drops a session older than the maximum age", () => {
     saveReconnectSession(session);
-    expect(loadReconnectSession(session.savedAt + RECONNECT_GRACE_MS)).toBeUndefined();
+    expect(loadReconnectSession(session.savedAt + RECONNECT_SESSION_MAX_AGE_MS)).toBeUndefined();
     expect(sessionStorage.getItem("aegis:matchSession")).toBeNull();
   });
 

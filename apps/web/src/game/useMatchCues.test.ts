@@ -1,3 +1,6 @@
+import { GameState as ManualGameState } from "@aegis/shared/schema/GameState";
+import { PlayerState } from "@aegis/shared/schema/PlayerState";
+import { GameMode } from "@aegis/shared/manual/GameMode";
 // @vitest-environment jsdom
 
 import { act, cleanup, renderHook } from "@testing-library/react";
@@ -1065,53 +1068,56 @@ describe("match cues", () => {
 
   // ST21-01 [On Deletion] returned a card on the opponent's last attack, and the same patch
   // flipped the turn: the card waited behind the whole turn change for the Draw banner.
-  it("shows a card returned to hand before the turn began through the pre-draw hold", async () => {
-    const returned = { instanceId: "s0-39", cardId: "EX13-077" };
-    const before = {
-      players: [0, 1].map((seat) => ({
-        hand: [],
-        handCount: 0,
-        deckCount: 40,
-        battleArea: [],
-        trash: seat === 0 ? [returned] : [],
-      })),
-    } as unknown as GameState;
-    const after = {
-      ...before,
-      players: before.players.map((player, seat) =>
-        seat === 0 ? { ...player, hand: [returned], handCount: 2, deckCount: 39, trash: [] } : player,
-      ),
-    } as unknown as GameState;
-    const feed = batchFeed();
-    const { result, rerender } = renderHook(
-      ({ state, events }: { state: GameState; events: readonly ServerEvent[] }) =>
-        useMatchCues({
-          narrationLimit: 3,
-          batches: feed(events),
-          state,
-          viewerSeat: VIEWER,
-          mulliganOpen: false,
-          anchors,
-          onActionRejected: vi.fn<(reason: string) => void>(),
-        }),
-      { initialProps: { state: before, events: [] as readonly ServerEvent[] } },
-    );
-    await advance(0);
-    rerender({
-      state: after,
-      events: [
-        { kind: "cardsMoved", instanceIds: [returned.instanceId], from: "various", to: "hand" },
-        UNSUSPEND_PHASE,
-        { ...UNSUSPEND_PHASE, phase: "Draw" },
-      ],
-    });
-    await advance(0);
-    const held = result.current.heldDrawState?.state.players[0];
-    expect(held?.hand.map((card) => card.instanceId)).toEqual([returned.instanceId]);
-    // The turn's own draw is still hidden until its banner.
-    expect(held?.handCount).toBe(1);
-    expect(held?.deckCount).toBe(40);
-  });
+  it.each(["various", "trash"])(
+    "shows a card returned from %s before the turn began through the pre-draw hold",
+    async (from) => {
+      const returned = { instanceId: "s0-39", cardId: "EX13-077" };
+      const before = {
+        players: [0, 1].map((seat) => ({
+          hand: [],
+          handCount: 0,
+          deckCount: 40,
+          battleArea: [],
+          trash: seat === 0 ? [returned] : [],
+        })),
+      } as unknown as GameState;
+      const after = {
+        ...before,
+        players: before.players.map((player, seat) =>
+          seat === 0 ? { ...player, hand: [returned], handCount: 2, deckCount: 39, trash: [] } : player,
+        ),
+      } as unknown as GameState;
+      const feed = batchFeed();
+      const { result, rerender } = renderHook(
+        ({ state, events }: { state: GameState; events: readonly ServerEvent[] }) =>
+          useMatchCues({
+            narrationLimit: 3,
+            batches: feed(events),
+            state,
+            viewerSeat: VIEWER,
+            mulliganOpen: false,
+            anchors,
+            onActionRejected: vi.fn<(reason: string) => void>(),
+          }),
+        { initialProps: { state: before, events: [] as readonly ServerEvent[] } },
+      );
+      await advance(0);
+      rerender({
+        state: after,
+        events: [
+          { kind: "cardsMoved", instanceIds: [returned.instanceId], from, fromSeat: 0, seat: 0, to: "hand" },
+          UNSUSPEND_PHASE,
+          { ...UNSUSPEND_PHASE, phase: "Draw" },
+        ],
+      });
+      await advance(0);
+      const held = result.current.heldDrawState?.state.players[0];
+      expect(held?.hand.map((card) => card.instanceId)).toEqual([returned.instanceId]);
+      // The turn's own draw is still hidden until its banner.
+      expect(held?.handCount).toBe(1);
+      expect(held?.deckCount).toBe(40);
+    },
+  );
 
   it("holds the pre-draw hand through unsuspend and locks actions through breeding's announcement", async () => {
     const anchor = document.createElement("div");
@@ -6527,3 +6533,72 @@ it.each([false, true])(
     expect(drawFinished).toBe(true);
   },
 );
+
+describe("manual effect signal narration", () => {
+  function createManualSignalState(signalSeat: 0 | 1) {
+    const state = new ManualGameState();
+    state.gameMode = GameMode.MANUAL.value;
+    state.matchId = "manual-effect-notice";
+    state.phase = Phase.Main;
+    state.turnCount = 1;
+    state.players.push(
+      Object.assign(new PlayerState(), { seat: 0, displayName: "First" }),
+      Object.assign(new PlayerState(), { seat: 1, displayName: "Second" }),
+    );
+    state.manual.signalSeat = signalSeat;
+    state.manual.signalRevision = 1;
+    state.manual.signalCardId = "BT1-010";
+    state.manual.signalTargetSeat = 1 - signalSeat;
+    return state;
+  }
+
+  for (const signalSeat of [0, 1] as const) {
+    it(`shows the current signal as a native ${signalSeat === 0 ? "own" : "opponent"} effect notice for a late reader`, () => {
+      const state = createManualSignalState(signalSeat);
+      const { result } = renderHook(() =>
+        useMatchCues({ batches: [], state, viewerSeat: 0, mulliganOpen: false, anchors, onActionRejected() {} }),
+      );
+      const item = [...result.current.narration.values()][0]!;
+      expect(item.side).toBe(signalSeat === 0 ? "you" : "opp");
+      expect(item.notice?.body).toMatchObject({
+        variant: "effect",
+        cardId: "BT1-010",
+        manualSignalText: expect.stringContaining("Effect target"),
+      });
+      expect(item.notice?.body).toMatchObject({
+        manualSignalText: expect.stringContaining(signalSeat === 0 ? "First signals" : "Second signals"),
+      });
+    });
+  }
+
+  it("keeps local dismissal independent of the server signal and raises a new repeated signal only once", () => {
+    const state = createManualSignalState(0);
+    const { result, rerender } = renderHook(() =>
+      useMatchCues({ batches: [], state, viewerSeat: 0, mulliganOpen: false, anchors, onActionRejected() {} }),
+    );
+    const id = [...result.current.narration.keys()][0]!;
+    act(() => result.current.advanceNarration(id));
+    expect(result.current.narration.size).toBe(0);
+    expect(state.manual.signalSeat).toBe(0);
+    state.manual.revision += 1;
+    rerender();
+    expect(result.current.narration.size).toBe(0);
+    state.manual.signalRevision += 1;
+    rerender();
+    expect(result.current.narration.size).toBe(1);
+    expect([...result.current.narration.keys()][0]).not.toBe(id);
+    rerender();
+    expect(result.current.narration.size).toBe(1);
+  });
+
+  it("expires a manual signal using the normal narration reading lifetime", async () => {
+    const state = createManualSignalState(0);
+    const { result } = renderHook(() =>
+      useMatchCues({ batches: [], state, viewerSeat: 0, mulliganOpen: false, anchors, onActionRejected() {} }),
+    );
+    expect(result.current.narration.size).toBe(1);
+    await advance(NOTICE_ITEM_MS);
+    expect(result.current.narration.size).toBe(0);
+    expect(state.manual.signalSeat).toBe(0);
+  });
+});

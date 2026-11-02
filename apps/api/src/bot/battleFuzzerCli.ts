@@ -4,6 +4,11 @@ import { ALL_FAMOUS_DECKS, VALIDATED_FAMOUS_DECKS, isFamousDeckAvailable, type F
 import { assertLegalDeck, type Decklist } from "../engine/testDecks.js";
 import { runBattleFuzz, type FuzzDeck } from "./battleFuzzer.js";
 import { newestDeckSources, parseDeckCorpus } from "./deckCorpus.js";
+import { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
+import { BotStyle } from "@aegis/shared/bot/BotStyle";
+import { isBotDifficulty } from "@aegis/shared/bot/isBotDifficulty";
+import { isBotStyle } from "@aegis/shared/bot/isBotStyle";
+import { runFixedDefaultAudit } from "#api/bot/decisionAudit/runFixedDefaultAudit";
 
 function integerFlag(name: string, fallback: number | undefined): number | undefined {
   const index = process.argv.indexOf(name);
@@ -16,6 +21,27 @@ function integerFlag(name: string, fallback: number | undefined): number | undef
 function stringFlag(name: string): string | undefined {
   const index = process.argv.indexOf(name);
   return index < 0 ? undefined : process.argv[index + 1];
+}
+
+function listFlag<Value extends string>(
+  name: string,
+  allowed: readonly Value[],
+  isAllowed: (value: unknown) => value is Value,
+): Value[] {
+  const raw = stringFlag(name);
+  if (raw === undefined) return [...allowed];
+  const values = raw.split(",").map((value) => value.trim());
+  const invalid = values.filter((value) => !isAllowed(value));
+  if (invalid.length > 0) throw new Error(`${name} has unknown values: ${invalid.join(", ")}`);
+  return values.filter(isAllowed);
+}
+
+async function writeReceipt(receipt: unknown): Promise<void> {
+  const output = stringFlag("--output");
+  if (!output) return;
+  const outputPath = invocationPath(output);
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, `${JSON.stringify(receipt, null, 2)}\n`, "utf8");
 }
 
 function invocationPath(value: string): string {
@@ -58,7 +84,7 @@ async function main(): Promise<void> {
   const decks = [...unique.values()].slice(0, deckLimit);
   const maximumMatchups = exhaustive ? undefined : integerFlag("--matchups", decks.length);
   const started = Date.now();
-  const report = await runBattleFuzz({
+  const fuzzOptions = {
     decks,
     baseSeed: integerFlag("--seed", 20_260_914),
     seedsPerMatchup: integerFlag("--seeds", 1),
@@ -66,14 +92,30 @@ async function main(): Promise<void> {
     maximumMatchups,
     turnLimit: integerFlag("--turn-limit", 60),
     maximumPresentationBurst: integerFlag("--maximum-burst", 40),
-  });
-  const receipt = { ...report, durationMs: Date.now() - started };
-  const output = stringFlag("--output");
-  if (output) {
-    const outputPath = invocationPath(output);
-    await mkdir(dirname(outputPath), { recursive: true });
-    await writeFile(outputPath, `${JSON.stringify(receipt, null, 2)}\n`, "utf8");
+  };
+  if (process.argv.includes("--report-fixed-defaults")) {
+    const audit = await runFixedDefaultAudit({
+      ...fuzzOptions,
+      difficulties: listFlag(
+        "--levels",
+        Object.values(BotDifficulty).map((entry) => entry.value),
+        isBotDifficulty,
+      ),
+      styles: listFlag(
+        "--styles",
+        Object.values(BotStyle).map((entry) => entry.value),
+        isBotStyle,
+      ),
+    });
+    const receipt = { ...audit, durationMs: Date.now() - started };
+    await writeReceipt(receipt);
+    console.log(JSON.stringify(receipt, null, 2));
+    if (audit.fixedDefaults > 0) process.exitCode = 1;
+    return;
   }
+  const report = await runBattleFuzz(fuzzOptions);
+  const receipt = { ...report, durationMs: Date.now() - started };
+  await writeReceipt(receipt);
   console.log(JSON.stringify(receipt, null, 2));
   if (report.failures.length > 0) process.exitCode = 1;
 }

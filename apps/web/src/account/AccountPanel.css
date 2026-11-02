@@ -64,19 +64,21 @@
 }
 
 .account-panel__magic-link {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
   gap: var(--ds-space-2);
 }
 
 .account-panel__magic-link .aegis-field {
+  flex: 1 1 14rem;
   min-width: 0;
 }
 
-@media (width < 560px) {
-  .account-panel__magic-link {
-    grid-template-columns: 1fr;
-    align-items: stretch;
-  }
+.account-panel__magic-link > .aegis-button {
+  flex: 1 0 auto;
+}
+
+.account-panel__magic-link > .turnstile-widget {
+  flex-basis: 100%;
 }

@@ -19,7 +19,7 @@ const compiled: CompiledCard = {
       sharedUseKey: "delay-gain-2-memory",
       actions: [
         { kind: "Delete", target: { filter: { isSelfRef: true }, count: 1 } },
-        { kind: "GainMemory", amount: 2 },
+        { effectTextPart: "Gain 2 memory.", kind: "GainMemory", amount: 2 },
       ],
       keywords: [{ keyword: "Delay", raw: "＜Delay＞" }],
     },

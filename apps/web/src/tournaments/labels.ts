@@ -110,15 +110,29 @@ const REASON_KEYS = new Set<string>([
   ...TOURNAMENT_VALIDATION_CODES,
   "network_error",
   "tournament_already_started",
+  "tournament_limit_reached",
+  "check_in_window_inverted",
+  "window_timestamp_invalid",
 ]);
+
+const HTTP_STATUS_REASON_KEYS: Readonly<Record<string, TranslationKey>> = {
+  "401": "tournaments.reason.signedOut",
+  "403": "tournaments.reason.forbidden",
+  "404": "tournaments.reason.notFound",
+  "429": "tournaments.reason.tooManyRequests",
+};
 
 /** The key for a reason code, or undefined when the server sent one this build does not know. */
 export function reasonKey(code: string): TranslationKey | undefined {
-  return REASON_KEYS.has(code) ? (`tournaments.reason.${camelCase(code)}` as TranslationKey) : undefined;
+  if (REASON_KEYS.has(code)) return `tournaments.reason.${camelCase(code)}` as TranslationKey;
+  return HTTP_STATUS_REASON_KEYS[code];
 }
 
 /** The key and interpolation params for one deck-legality violation. */
-export function violationMessage(violation: DeckViolation): { key: TranslationKey; params: TranslationParams } {
+export function violationMessage(
+  violation: DeckViolation,
+  getCardName: (cardId: string) => string = cardName,
+): { key: TranslationKey; params: TranslationParams } {
   const key = `tournaments.violation.${camelCase(violation.kind)}` as TranslationKey;
   switch (violation.kind) {
     case "main_deck_size":
@@ -128,14 +142,14 @@ export function violationMessage(violation: DeckViolation): { key: TranslationKe
     case "over_copy_limit":
       return {
         key,
-        params: { card: cardName(violation.cardId), copies: violation.copies, allowed: violation.allowed },
+        params: { card: getCardName(violation.cardId), copies: violation.copies, allowed: violation.allowed },
       };
     case "banned_pair":
-      return { key, params: { card: cardName(violation.cardId), other: cardName(violation.conflictsWith) } };
+      return { key, params: { card: getCardName(violation.cardId), other: getCardName(violation.conflictsWith) } };
     case "wrong_deck":
-      return { key, params: { card: cardName(violation.cardId), deck: violation.belongsIn } };
+      return { key, params: { card: getCardName(violation.cardId), deck: violation.belongsIn } };
     default:
-      return { key, params: { card: cardName(violation.cardId) } };
+      return { key, params: { card: getCardName(violation.cardId) } };
   }
 }
 

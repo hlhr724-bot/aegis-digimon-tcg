@@ -506,6 +506,9 @@ function matchGatedRequirement(
     }
 
     // Base play-cost gate: distinguishes same-name reprints ("Play cost 12 [Ceresmon]").
+    if (req.baseWithoutPlayCost === true && hasPlayCost(baseDef)) {
+      continue;
+    }
     if (req.basePlayCost !== undefined && baseDef.playCost !== req.basePlayCost) continue;
     if (req.basePlayCostMin !== undefined && baseDef.playCost < req.basePlayCostMin) continue;
     if (req.basePlayCostMax !== undefined && baseDef.playCost > req.basePlayCostMax) continue;

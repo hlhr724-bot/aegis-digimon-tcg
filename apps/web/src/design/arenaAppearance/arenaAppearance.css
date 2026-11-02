@@ -1,0 +1,110 @@
+.arena-appearance-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(6rem, auto);
+  gap: var(--ds-space-2);
+  align-items: center;
+  min-width: 0;
+  padding-block: var(--ds-space-3);
+}
+.arena-appearance-controls label {
+  font-weight: 700;
+}
+.arena-appearance-controls small {
+  grid-column: 1 / -1;
+  color: var(--ds-text-2);
+  margin-bottom: var(--ds-space-3);
+}
+.arena-appearance-controls select,
+.arena-appearance-controls button {
+  min-height: 44px;
+  max-width: 100%;
+  padding: var(--ds-space-2);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text-1, var(--ds-text));
+  background: var(--ds-sheet);
+  font: inherit;
+}
+.arena-appearance-controls button {
+  grid-column: 1 / -1;
+  cursor: pointer;
+}
+.arena-appearance-controls :is(button, select):focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
+}
+.game-layout[data-arena-enlarged] {
+  overflow: auto !important;
+  align-items: flex-start;
+  overscroll-behavior: contain;
+}
+.game-layout[data-arena-enlarged] > .game-board {
+  flex-shrink: 0 !important;
+  min-width: 0;
+}
+.game-board[data-arena-enlarged] {
+  --arena-hand-width: var(--arena-scaled-hand-width) !important;
+  --arena-hand-height: calc(var(--arena-scaled-hand-width) * 1.4 + 70px) !important;
+  --arena-header-height: auto !important;
+  --arena-utility-height: calc(80px * var(--arena-ui-scale)) !important;
+}
+.game-board[data-arena-enlarged] .game-opponent-bar {
+  height: auto !important;
+  min-height: calc(52px * var(--arena-ui-scale));
+  flex-wrap: wrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.game-board[data-arena-enlarged] :is(.game-opponent-bar, .game-player-dock, .game-memory-band) button {
+  min-height: calc(44px * var(--arena-ui-scale));
+  min-width: calc(44px * var(--arena-ui-scale));
+  font-size: calc(var(--ds-text-sm) * var(--arena-ui-scale));
+}
+.game-board[data-arena-enlarged]
+  :is(.game-mobile-turn, .game-player-line, .game-arena-counters, .game-log-ticker__status) {
+  font-size: calc(var(--ds-text-sm) * var(--arena-ui-scale));
+}
+.game-board[data-arena-enlarged] .game-memory-band {
+  min-height: calc(44px * var(--arena-ui-scale));
+}
+.game-board[data-arena-enlarged] .game-battle-zones > .game-battle-row {
+  min-height: calc(140px * var(--arena-ui-scale)) !important;
+}
+:root:not([data-effect-transparency="opaque"])[data-effect-transparency]
+  :is(.effect-prompt-family[data-prompt-surface], .board-prompt[data-prompt-surface]) {
+  background: color-mix(in srgb, var(--ds-sheet) var(--arena-prompt-opacity), transparent) !important;
+}
+:root:not([data-effect-transparency="opaque"])[data-effect-transparency]
+  :is(.decision-overlay-backdrop, .board-prompt-scrim) {
+  background: rgb(0 0 0 / var(--arena-prompt-scrim)) !important;
+  backdrop-filter: none !important;
+}
+:root:not([data-effect-transparency="opaque"])[data-effect-transparency]
+  :is(.effect-prompt-family, .board-prompt)
+  :is(
+    .decision-overlay__header,
+    .decision-overlay__footer,
+    .decision-overlay__selection,
+    .decision-overlay__choice-layout,
+    .material-prompt__body,
+    .counter-overlay__header,
+    .counter-overlay__board-action,
+    .board-prompt__heading,
+    .board-prompt__body,
+    .board-prompt__detail,
+    .board-prompt__actions,
+    .action-confirmation__header,
+    .material-prompt__header,
+    .material-prompt__footer
+  ) {
+  background: var(--ds-sheet);
+  border-radius: var(--ds-radius-sm);
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-effect-transparency] :is(.effect-prompt-family[data-prompt-surface], .board-prompt[data-prompt-surface]) {
+    background: var(--ds-sheet) !important;
+  }
+  :root[data-effect-transparency] :is(.decision-overlay-backdrop, .board-prompt-scrim) {
+    background: rgb(0 0 0 / 50%) !important;
+  }
+}

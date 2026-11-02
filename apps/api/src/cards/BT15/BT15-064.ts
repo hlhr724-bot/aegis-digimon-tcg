@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "place 1 [Machine]/[Cyborg]/[SoC] trait card as this Digimon's bottom digivolution card",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -27,6 +28,7 @@ const compiled: CompiledCard = {
               },
             },
             {
+              effectTextPart: "add 1 such card to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -52,6 +54,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "place 1 [Machine]/[Cyborg]/[SoC] trait card as this Digimon's bottom digivolution card",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -68,6 +71,7 @@ const compiled: CompiledCard = {
               },
             },
             {
+              effectTextPart: "add 1 such card to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -101,6 +105,7 @@ const compiled: CompiledCard = {
           condition: {
             kind: "selfDigivolutionStackHasTrait",
             filter: {
+              kind: ["Tamer"],
               nameOrTrait: [
                 {
                   tokens: ["SoC"],

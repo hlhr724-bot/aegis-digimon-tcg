@@ -1,4 +1,13 @@
-import { canAssignDistinctColors, type DecisionRequest, type Intent } from "@aegis/shared";
+import {
+  canAssignDistinctColors,
+  digiXrosRequirementFor,
+  getCardDefinition,
+  type DecisionRequest,
+  type Intent,
+} from "@aegis/shared";
+import { materialsSatisfyRecipe } from "../../engine/actions/digiXros.js";
+import { assemblyMaterialSteps } from "./assembly.js";
+import { isTrainingMaterialSelectionComplete } from "#api/bot/training/isTrainingMaterialSelectionComplete";
 
 /** Public metadata only: never resolve a blind choice from the engine's hidden zones. */
 export interface SelectionCard {
@@ -111,9 +120,20 @@ export function* decisionSteps(
     }
     case "selectCards":
     case "chooseTargets": {
-      if (options.assemblyCardId || options.digiXrosCardId) {
-        throw new Error("Training material recipes require a specialized selection validator");
+      if (options.assemblyCardId) {
+        const offered = (options.candidateInstanceIds ?? []).map((instanceId) => {
+          const cardId = cards.get(instanceId)?.cardId;
+          if (cardId === undefined)
+            throw new Error(`Missing visible card identity for Assembly material ${instanceId}`);
+          return { instanceId, cardId };
+        });
+        const steps = assemblyMaterialSteps(options.assemblyCardId, offered, (options.min ?? 0) === 0);
+        let step = steps.next();
+        while (!step.done) step = steps.next(yield { request, ...step.value });
+        return respond({ kind: request.kind, instanceIds: step.value });
       }
+      const isComplete = (selected: readonly string[]): boolean =>
+        isTrainingMaterialSelectionComplete({ options, cards, selected });
       const offered = [...new Set(options.candidateInstanceIds ?? [])];
       // An accepted "you may" pick already answered its yes/no; its floor of zero is a human
       // back-out, not a second decline the policy should learn.
@@ -122,6 +142,24 @@ export function* decisionSteps(
       const maximum = Math.min(options.max ?? offered.length, offered.length);
       const valid = (ids: readonly string[]): boolean => {
         if (ids.length > maximum) return false;
+        if (options.digiXrosCardId !== undefined && ids.length > 0) {
+          const recipe = digiXrosRequirementFor(options.digiXrosCardId)?.[0];
+          if (recipe === undefined) throw new Error(`Missing DigiXros recipe for ${options.digiXrosCardId}`);
+          const definitions = ids.map((id) => {
+            const cardId = cards.get(id)?.cardId;
+            const definition = cardId === undefined ? undefined : getCardDefinition(cardId);
+            if (definition === undefined) throw new Error(`Missing visible DigiXros material identity ${id}`);
+            return definition;
+          });
+          if (!materialsSatisfyRecipe(definitions, recipe.materials)) return false;
+          if (recipe.maxMaterials !== undefined && ids.length > recipe.maxMaterials) return false;
+          if (
+            options.digiXrosMaterialLimits?.some(
+              ({ candidateInstanceIds, max }) => ids.filter((id) => candidateInstanceIds.includes(id)).length > max,
+            )
+          )
+            return false;
+        }
         let cost = 0;
         let dp = 0;
         const cardIds = new Set<string>();
@@ -158,7 +196,7 @@ export function* decisionSteps(
       };
       const canFinish = (ids: readonly string[], remaining: readonly string[]): boolean => {
         if (!valid(ids)) return false;
-        if (ids.length >= minimum) return true;
+        if (ids.length >= minimum && isComplete(ids)) return true;
         if (ids.length + remaining.length < minimum || ids.length >= maximum) return false;
         return remaining.some((id, index) => canFinish([...ids, id], remaining.slice(index + 1)));
       };
@@ -173,7 +211,8 @@ export function* decisionSteps(
             ),
           )
           .map((id) => ({ key: id, label: "Select", referenceId: id }));
-        if (selected.length >= minimum && valid(selected)) choices.push({ key: "finish", label: "Finish selection" });
+        if (selected.length >= minimum && valid(selected) && isComplete(selected))
+          choices.push({ key: "finish", label: "Finish selection" });
         const choice = yield* selectedIndex({ request, selected: [...selected], choices });
         if (choice.referenceId === undefined) return respond({ kind: request.kind, instanceIds: selected });
         selected.push(choice.referenceId);

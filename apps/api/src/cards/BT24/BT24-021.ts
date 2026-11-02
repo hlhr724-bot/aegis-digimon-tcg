@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 Digimon card with the [Demon] or [Shaman] trait",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -25,6 +26,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 card with the [Titan] trait among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

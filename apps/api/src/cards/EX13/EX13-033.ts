@@ -28,6 +28,8 @@ const placeWitchelnyTextCardAsBottomSecurity: Action = {
 };
 
 const attackByTrashingTopSecurity: Action = {
+  costTextEmphasis: "Then, by trashing your top security card",
+  optionalTextEmphasis: "1 of your Digimon may attack",
   effectTextPart: "Then, by trashing your top security card, 1 of your Digimon may attack.",
   kind: "Attack",
   target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },

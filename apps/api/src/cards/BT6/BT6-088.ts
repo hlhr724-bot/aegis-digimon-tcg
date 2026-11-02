@@ -95,6 +95,7 @@ const compiled: CompiledCard = {
           effectTextPart: "Then, if you have 1 or more security cards, delete that Digimon at the end of the turn.",
           kind: "SubTrigger",
           event: "endOfTurn",
+          printedClause: "[Pending] At the end of the turn, delete that Digimon.",
           once: true,
           playerScoped: true,
           duration: "untilYourTurnEnd",

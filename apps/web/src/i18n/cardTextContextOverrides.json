@@ -1,0 +1,42 @@
+{
+  "BT18-030": {
+    "cardId": "BT18-030",
+    "field": "effectText",
+    "source": "[On Play] Reveal the top 3 cards of your deck. Add 1 yellow card with the [Data] trait and 1 card with the [Witchelny] trait among them to the hand. Return the rest to the bottom of the deck.",
+    "fragment": "Add 1 yellow card with the [Data] trait",
+    "context": "[On Play] Reveal the top 3 cards of your deck. Add 1 yellow card with the [Data] trait and 1 card with the [Witchelny] trait among them to the hand. Return the rest to the bottom of the deck.",
+    "timings": ["OnPlay"]
+  },
+  "EX8-018": {
+    "cardId": "EX8-018",
+    "field": "effectText",
+    "source": "[Digivolve]Lv.2 w/[DS] trait: Cost 0 \n\n[On Play] Reveal the top 3 cards of your deck. Add 1 card with the [DS] trait and 1 card with the [Sea Beast]/[Plesiosaur] trait among them to the hand. Return the rest to the bottom of the deck.",
+    "fragment": "Add 1 card with the [DS] trait",
+    "context": "[On Play] Reveal the top 3 cards of your deck. Add 1 card with the [DS] trait and 1 card with the [Sea Beast]/[Plesiosaur] trait among them to the hand. Return the rest to the bottom of the deck.",
+    "timings": ["OnPlay"]
+  },
+  "EX11-012": {
+    "cardId": "EX11-012",
+    "field": "effectText",
+    "source": "＜Rush＞ \n＜Progress＞ \n[When Digivolving] [End of Attack] You may delete 1 of your opponent's Digimon with as much or less DP as this Digimon. Then, by returning 1 card from your opponent's trash to the bottom of the deck, they play 1 [Petrification] Token. (Digimon/White/3000 DP/[Your Turn] This Digimon can't suspend.\n[On Deletion] Trash your top security card.)\n[All Turns] When this Digimon would leave the battle area, by deleting 1 Token, it doesn't leave.",
+    "fragment": "Then, by returning 1 card from your opponent's trash to the bottom of the deck, they play 1 [Petrification] Token. (Digimon/White/3000 DP/",
+    "context": "[When Digivolving] [End of Attack] You may delete 1 of your opponent's Digimon with as much or less DP as this Digimon. Then, by returning 1 card from your opponent's trash to the bottom of the deck, they play 1 [Petrification] Token. (Digimon/White/3000 DP/[Your Turn] This Digimon can't suspend.\n[On Deletion] Trash your top security card.)",
+    "timings": ["WhenDigivolving", "EndOfAttack"]
+  },
+  "P-187": {
+    "cardId": "P-187",
+    "field": "effectText",
+    "source": "[When Digivolving] ＜Recovery +1 (Deck)＞. Then, if DNA digivolving, by placing 1 other Digimon or Tamer as the top or bottom security card, trash your opponent's top security card.\n[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
+    "fragment": "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
+    "context": "[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
+    "timings": ["WhenDigivolving", "WhenAttacking"]
+  },
+  "BT3-093": {
+    "cardId": "BT3-093",
+    "field": "effectText",
+    "source": "[Start of Your Turn] If you have 2 memory or less, set your memory to 3.\n[On Play] Reveal the top 3 cards of your deck. Add 1 blue and 1 green Digimon card among them to your hand. Place the remaining cards at the bottom of your deck in any order.",
+    "fragment": "Add 1 blue",
+    "context": "[On Play] Reveal the top 3 cards of your deck. Add 1 blue and 1 green Digimon card among them to your hand. Place the remaining cards at the bottom of your deck in any order.",
+    "timings": ["OnPlay"]
+  }
+}

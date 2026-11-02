@@ -29,6 +29,8 @@ describe("BT1-098 V-Nova Blast", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart:
+              "[Main] 1 of your Digimon gains ＜Jamming＞ (This Digimon can't be deleted in battles against Security Digimon) for the turn.",
             kind: "GainKeyword",
             target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
             keyword: { keyword: "Jamming" },

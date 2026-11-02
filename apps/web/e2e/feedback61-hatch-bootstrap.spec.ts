@@ -57,6 +57,19 @@ for (const kingSeat of [1, 0]) {
       await expect(eggs).toHaveClass(/game-egg-deck--hatchable/, { timeout: 15_000 });
       await king.idle();
       await opponent.idle();
+      for (const view of views) {
+        const snapshot = await view.snapshot();
+        const seat = snapshot.players.findIndex((player) => Array.isArray(player.hand));
+        const expectedIds = snapshot.players[seat]!.hand.map((card) => card.instanceId).sort();
+        await expect
+          .poll(() =>
+            view.page
+              .getByTestId("hand")
+              .locator("[data-hand-instance-id]")
+              .evaluateAll((cards) => cards.map((card) => (card as HTMLElement).dataset.handInstanceId).sort()),
+          )
+          .toEqual(expectedIds);
+      }
       await eggs.click();
       await king.resolveUntil((s) => s.phase === "Main" && !s.pendingDecision);
       const after = await king.snapshot();

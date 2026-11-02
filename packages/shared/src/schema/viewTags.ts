@@ -6,3 +6,5 @@
  * unlocked by a view holding tag 1 or tag 2.
  */
 export const PRIVATE_VIEW_TAG = 1;
+
+export const PLAYER_IDENTITY_VIEW_TAG = 16;

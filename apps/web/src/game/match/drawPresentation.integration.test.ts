@@ -623,3 +623,58 @@ it("keeps a staged-then-played opponent card out of hand presentation even while
   expect(shown.shownOpponent.handCount).toBe(before.players[1]!.handCount);
   act(() => queue!.clear());
 });
+
+it("holds an incoming private hand card when its membership patches before the deck count and batch close", async () => {
+  const before = initial();
+  const incoming = snapshotGameState(before);
+  incoming.players[0]!.hand.push(card("incoming"));
+  let snapshots = [{ stateVersion: before.stateVersion, state: before }];
+  let batches: readonly ServerBatch[] = [];
+  const layout = anchors();
+  const { result, rerender } = renderHook(
+    ({ state }: { state: GameState }) =>
+      useMatchCues({
+        state,
+        snapshots,
+        batches,
+        phaseEvents: batches.flatMap((batch) => batch.events),
+        viewerSeat: 0,
+        mulliganOpen: false,
+        anchors: layout,
+        onActionRejected() {},
+      }),
+    { initialProps: { state: before } },
+  );
+  await advance(0);
+  rerender({ state: incoming });
+  let closed = incoming;
+  const shown = () =>
+    presentedSeats({
+      shownState: closed,
+      viewer: closed.players[0]!,
+      opponent: closed.players[1]!,
+      viewerSeat: 0,
+      heldPhaseState: undefined,
+      heldBlowState: undefined,
+      heldSecurityEffectState: undefined,
+      heldDrawState: undefined,
+      heldBreedingState: undefined,
+      heldDeletions: new Map(),
+      heldTrashArrivals: new Map(),
+      heldHandArrivals: result.current.heldHandArrivals,
+      optimisticPlayedInstanceId: undefined,
+    });
+  expect(shown().shownHand!.map((entry) => entry.instanceId)).toEqual(["kept"]);
+  closed = snapshotGameState(incoming);
+  closed.stateVersion = 2;
+  closed.players[0]!.handCount = 2;
+  closed.players[0]!.deckCount = 29;
+  snapshots = [...snapshots, { stateVersion: 2, state: closed }];
+  batches = [
+    singleServerBatch([{ kind: "cardsMoved", from: "deck", to: "hand", seat: 0, instanceIds: ["incoming"] }], 2),
+  ];
+  rerender({ state: closed });
+  await advance(8_000);
+  expect(result.current.heldHandArrivals.size).toBe(0);
+  expect(shown().shownHand!.map((entry) => entry.instanceId)).toEqual(["kept", "incoming"]);
+});

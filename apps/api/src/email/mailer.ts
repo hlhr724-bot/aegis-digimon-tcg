@@ -1,4 +1,5 @@
 import { ociSmtpProvider } from "#api/email/ociSmtpProvider";
+import { createDevelopmentMailer } from "#api/email/createDevelopmentMailer";
 
 const OCI_TENANCY_DAILY_LIMIT = 50_000;
 
@@ -132,6 +133,10 @@ function parseDailyLimit(value: string | undefined, fallback: number): number {
 
 // Resend's free plan allows 100 emails a day and Brevo's allows 300. Resend goes first.
 export function mailerFromEnv(quota: EmailQuota, env: NodeJS.ProcessEnv = process.env): Mailer | undefined {
+  const developmentMailer = createDevelopmentMailer({ env });
+  if (developmentMailer) {
+    return developmentMailer;
+  }
   const providers: EmailProvider[] = [];
   if (env.RESEND_API_KEY && env.AEGIS_EMAIL_FROM)
     providers.push(

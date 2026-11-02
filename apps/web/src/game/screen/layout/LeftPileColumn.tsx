@@ -1,3 +1,4 @@
+import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 /* The left edge of the field: the opponent's deck and trash at the top, the viewer's
    own security stack at the bottom — the two players' piles on the side each of them
    sits on. */
@@ -56,6 +57,7 @@ export function LeftPileColumn({
   return (
     <aside
       className="game-pile-column game-pile-column--left"
+      data-arena-region={ArenaInputRegion.PILES.value}
       style={{
         width: 130,
         flexShrink: 0,
@@ -83,6 +85,7 @@ export function LeftPileColumn({
             label={t("game.pile.deck")}
             riffling={opponentDeckRiffling}
             onClick={onOpenOpponentDeck}
+            onInspect={onOpenOpponentDeck}
             useSelectedSleeve={false}
           />
         </div>
@@ -96,6 +99,7 @@ export function LeftPileColumn({
           topArtId={opponent.trash[opponent.trash.length - 1]?.artId}
           effectCard={opponentTrashEffectCard}
           onClick={onOpenOpponentTrash}
+          onInspect={onOpenOpponentTrash}
           useSelectedSleeve={false}
         />
       </div>
@@ -118,6 +122,7 @@ export function LeftPileColumn({
           viewerSecurityRef.current = el;
         }}
         onClick={onOpenViewerSecurity}
+        onInspect={onOpenViewerSecurity}
       />
     </aside>
   );

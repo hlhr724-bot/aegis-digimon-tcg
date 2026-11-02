@@ -1,8 +1,10 @@
-import { splitPrintedClauses, type Seat } from "@aegis/shared";
+import { OptionalActivationCancelled } from "#api/engine/effects/OptionalActivationCancelled";
+import type { Seat } from "@aegis/shared/schema/enums";
 import type { DecisionApi, EffectContext, SeatScopedDecisionApi } from "../effects/EffectContext.js";
 import type { ChooseOptionExtras } from "../effects/context/decisions.js";
 import type { DecisionManager } from "./index.js";
-import { printedPassage } from "#api/engine/decisions/printedPassage";
+import { getEffectDecisionText } from "#api/engine/decisions/getEffectDecisionText";
+import { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 
 /**
  * Concrete {@link DecisionApi} (`ctx.ask.*`) backed by the {@link DecisionManager}
@@ -100,35 +102,19 @@ function buildSeatScopedApi(
   },
 ): SeatScopedDecisionApi {
   const provenance = (ctx: EffectContext) => {
-    const part = ctx.activeEffectTextPart;
-    const focus = ctx.activeEffectTextEmphasis ?? part;
-    const matchingClauses = focus
-      ? splitPrintedClauses(ctx.activeEffectText).filter((clause) => printedPassage(clause.text, focus) !== undefined)
-      : undefined;
-    // Catalog fallback text may include other timing windows.
-    // Retain the complete resolving clause rather than unrelated card effects.
-    const fullText = matchingClauses?.length === 1 ? matchingClauses[0]!.text : ctx.activeEffectText;
-    // Every staged action uses the same display contract, including target picks
-    // and decisions addressed to the opponent. A passage must actually belong to
-    // this effect before it can replace the narrower description with full text.
-    const printedPart =
-      fullText && part && !fullText.toLowerCase().includes(part.toLowerCase()) ? printedPassage(fullText, part) : part;
-    const emphasis =
-      ctx.activeEffectTextEmphasis ??
-      (fullText &&
-      printedPart &&
-      fullText.toLowerCase() !== printedPart.toLowerCase() &&
-      fullText.toLowerCase().includes(printedPart.toLowerCase())
-        ? printedPart
-        : undefined);
     return {
+      ...((ctx.payingCostDepth ?? 0) > 0 && ctx.activeSingleHandCostBenefit !== undefined
+        ? { singleHandCostBenefit: ctx.activeSingleHandCostBenefit }
+        : {}),
+      ...(ctx.activeDecisionSummary === undefined
+        ? {}
+        : { effectSummary: ctx.activeDecisionSummary, effectControllerSeat: ctx.source.ownerSeat }),
+      ...(ctx.activeDecisionSelectionGoal === undefined ? {} : { selectionGoal: ctx.activeDecisionSelectionGoal }),
       timing: ctx.activeTiming,
       ...(ctx.activeEffectIsInherited === true ? { isInherited: true } : {}),
-      effectText: emphasis && fullText ? fullText : ctx.activeEffectText,
+      ...getEffectDecisionText(ctx),
       ...(ctx.activeEffectTextCardId !== undefined ? { effectTextCardId: ctx.activeEffectTextCardId } : {}),
       ...(ctx.activeEffectKey !== undefined ? { effectKey: ctx.activeEffectKey } : {}),
-      ...(part !== undefined ? { effectTextPart: part } : {}),
-      ...(emphasis !== undefined ? { effectTextEmphasis: emphasis } : {}),
       ...(ctx.activeSelectionContext !== undefined ? { selectionContext: ctx.activeSelectionContext } : {}),
       ...(ctx.affectedPermanentIds !== undefined ? { affectedPermanentIds: [...ctx.affectedPermanentIds] } : {}),
       // Raised by `payCost` for as long as a cost payment is on the stack. Without it a
@@ -156,7 +142,8 @@ function buildSeatScopedApi(
     async optional(ctx: EffectContext, prompt: string): Promise<boolean> {
       const preset = presetAnswer(ctx);
       if (preset !== undefined) {
-        if (preset && asksController) ctx.onActivationChosen?.();
+        if (preset && asksController && ctx.optionalActivationCancellation?.available !== true)
+          ctx.onActivationChosen?.();
         return preset;
       }
       // Q2859: the second attack effect still activates during the first attack,
@@ -178,7 +165,8 @@ function buildSeatScopedApi(
         },
       });
       const accepted = response.kind === "optional" && response.accept;
-      if (accepted && asksController) ctx.onActivationChosen?.();
+      if (accepted && asksController && ctx.optionalActivationCancellation?.available !== true)
+        ctx.onActivationChosen?.();
       return accepted;
     },
 
@@ -190,11 +178,15 @@ function buildSeatScopedApi(
         max: number;
         visible?: string[];
         maxTotalPlayCost?: number;
+        allowedTargetCombinations?: string[][];
         maxTotalDP?: number;
         promptKey?: "digivolveHost";
       },
     ): Promise<string[]> {
       const min = pickMinimum(ctx, opts.min, opts.max);
+      const cancellation = ctx.optionalActivationCancellation;
+      const canCancelActivation =
+        asksController && cancellation?.available === true && (ctx.payingCostDepth ?? 0) === 0;
       if (declinedByPreset(ctx, min)) return [];
       const response = await manager.request({
         seat: resolveSeat(ctx),
@@ -209,6 +201,9 @@ function buildSeatScopedApi(
           min,
           max: opts.max,
           ...(opts.maxTotalPlayCost !== undefined ? { maxTotalPlayCost: opts.maxTotalPlayCost } : {}),
+          ...(opts.allowedTargetCombinations !== undefined
+            ? { allowedTargetCombinations: opts.allowedTargetCombinations }
+            : {}),
           ...(opts.maxTotalDP !== undefined ? { maxTotalDP: opts.maxTotalDP } : {}),
           ...(opts.promptKey !== undefined ? { promptKey: opts.promptKey } : {}),
           // What the running action will do to whatever is picked here, so the board
@@ -216,6 +211,8 @@ function buildSeatScopedApi(
           ...(ctx.activeTargetFate !== undefined ? { targetFate: ctx.activeTargetFate } : {}),
           ...provenance(ctx),
           ...backOutPurpose(min, opts.min),
+          ...(canCancelActivation ? { canCancelActivation: true } : {}),
+          ...(asksController && ctx.payingDeclinableCost === true ? { declinesCost: true } : {}),
         },
       });
       const selected = clampSelection(
@@ -223,6 +220,15 @@ function buildSeatScopedApi(
         opts.candidates,
         opts.max,
       );
+      if (canCancelActivation && cancellation) {
+        if (selected.length === 0) {
+          throw new OptionalActivationCancelled({ activation: cancellation });
+        }
+        cancellation.available = false;
+        ctx.oncePerTurnActivationChosen = true;
+        ctx.oncePerTurnActivationDeclined = false;
+        ctx.onActivationChosen?.();
+      }
       const result = clampToCostBudget(ctx, selected, opts.maxTotalPlayCost, (id) => loosePlayCost(ctx, id));
       return result;
     },
@@ -230,6 +236,7 @@ function buildSeatScopedApi(
     async selectCards(
       ctx: EffectContext,
       opts: {
+        selectionGoal?: DecisionSelectionGoal;
         candidates: string[];
         min: number;
         max: number;
@@ -241,12 +248,17 @@ function buildSeatScopedApi(
         distinctNames?: boolean;
         assemblyCardId?: string;
         digiXrosCardId?: string;
+        digiXrosMaterialLimits?: { candidateInstanceIds: string[]; max: number }[];
         /** Paid source cards that will enter trash before this DigiXros is placed. */
         digiXrosRuleTrashInstanceIds?: string[];
       },
     ): Promise<string[]> {
       const min = pickMinimum(ctx, opts.min, opts.max);
       if (declinedByPreset(ctx, min)) return [];
+      let selectionGoal = opts.selectionGoal;
+      if (opts.assemblyCardId !== undefined || opts.digiXrosCardId !== undefined) {
+        selectionGoal = DecisionSelectionGoal.MATERIAL.value;
+      }
       const response = await manager.request({
         seat: resolveSeat(ctx),
         kind: "selectCards",
@@ -270,9 +282,12 @@ function buildSeatScopedApi(
             ? { playCostReductionBlocked: playCostReductionBlocked(resolveSeat(ctx)) }
             : {}),
           digiXrosCardId: opts.digiXrosCardId,
+          digiXrosMaterialLimits: opts.digiXrosMaterialLimits,
           digiXrosRuleTrashInstanceIds: opts.digiXrosRuleTrashInstanceIds,
           ...provenance(ctx),
+          ...(selectionGoal === undefined ? {} : { selectionGoal }),
           ...backOutPurpose(min, opts.min),
+          ...(asksController && ctx.payingDeclinableCost === true ? { declinesCost: true } : {}),
         },
       });
       const selected = clampSelection(
@@ -304,6 +319,7 @@ function buildSeatScopedApi(
           ...(opts.maxTotalPlayCost !== undefined ? { maxTotalPlayCost: opts.maxTotalPlayCost } : {}),
           ...provenance(ctx),
           ...backOutPurpose(min, opts.min),
+          ...(asksController && ctx.payingDeclinableCost === true ? { declinesCost: true } : {}),
         },
       });
       const selected = clampSelection(

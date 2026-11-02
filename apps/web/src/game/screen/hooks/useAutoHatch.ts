@@ -32,12 +32,14 @@ export function useAutoHatch({
       ? actionGuards({ state, viewer, viewerSeat, decisionOpen, presenting, phasePresentationPending })
       : undefined;
   const canHatch = ready && guards?.breedingActionsOpen && guards.canHatchEgg;
+  const raisingDuringBreedingStep = Boolean(guards?.breedingWindow && viewer?.breeding);
   const step = room && state && `${room.roomId}:${state.turnCount}:${viewerSeat}`;
 
   useEffect(() => {
+    if (raisingDuringBreedingStep && step) attempted.current = step;
     if (!enabled || !room || !step || !canHatch || attempted.current === step) return;
     // Mark before sending so rerenders and StrictMode cannot send a second intent.
     attempted.current = step;
     intents.hatchEgg(room);
-  }, [enabled, room, step, canHatch]);
+  }, [enabled, room, step, canHatch, raisingDuringBreedingStep]);
 }

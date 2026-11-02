@@ -7,7 +7,7 @@ import { SecurityShieldPile } from "./SecurityShieldPile";
 import type { DropAttrs } from "./types";
 import type { TrashEffectCard } from "../effectSource";
 import { TrashSourceCard } from "./TrashSourceCard";
-import { useMediaQuery } from "../../design/useMediaQuery";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 export function Pile({
   count,
@@ -32,6 +32,7 @@ export function Pile({
   landing,
   refEl,
   onClick,
+  onInspect,
   drop,
   useSelectedSleeve = true,
   egg = false,
@@ -68,13 +69,14 @@ export function Pile({
   landing?: number;
   refEl?: (el: HTMLDivElement | null) => void;
   onClick?: () => void;
+  onInspect?: () => void;
   drop?: DropAttrs;
   useSelectedSleeve?: boolean;
   egg?: boolean;
   width?: number;
 }) {
   const w = width ?? (compact ? 42 : 62);
-  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const reducedMotion = motionPreference.useReduced();
   const shuffleMotion = riffling && !reducedMotion;
   if (shield) {
     return (
@@ -97,6 +99,7 @@ export function Pile({
         landing={landing}
         refEl={refEl}
         onClick={onClick}
+        onInspect={onInspect}
         drop={drop}
       />
     );
@@ -107,6 +110,17 @@ export function Pile({
       className={className}
       ref={refEl}
       onClick={onClick}
+      data-arena-suggested={(glow && !!onClick) || undefined}
+      data-inspectable={!!onInspect || undefined}
+      onContextMenu={
+        onInspect
+          ? (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onInspect();
+            }
+          : undefined
+      }
       onKeyDown={
         onClick
           ? (event) => {

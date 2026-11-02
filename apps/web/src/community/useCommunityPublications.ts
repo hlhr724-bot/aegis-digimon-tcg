@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
-import type { CommunityPublication, CommunityPublishError } from "@aegis/shared";
+import type { CommunityPublication, CommunityPublishError, CommunityReviewError } from "@aegis/shared";
 import { AccountApiError, accountApi } from "../account/client";
 import type { DeckListing } from "../game/decks";
 import { communityApi } from "./client";
 
 export type PublishOutcome = { ok: true } | { ok: false; error: CommunityPublishError | "failed" };
 
-const PUBLISH_ERRORS: readonly string[] = ["deck_not_found", "deck_not_legal", "name_not_allowed"];
+export type ReviewOutcome = { ok: true } | { ok: false; error: CommunityReviewError | "failed" };
+
+const PUBLISH_ERRORS: readonly string[] = ["deck_not_found", "deck_not_legal", "name_not_allowed", "deck_hidden"];
+const REVIEW_ERRORS: readonly string[] = [
+  "deck_not_found",
+  "deck_not_hidden",
+  "review_pending",
+  "deck_not_legal",
+  "name_not_allowed",
+];
 
 /** The signed-in player's public decks, keyed by the saved deck they were published from. */
 export function useCommunityPublications(signedIn: boolean) {
@@ -43,6 +52,18 @@ export function useCommunityPublications(signedIn: boolean) {
     }
   }, []);
 
+  const requestReview = useCallback(async (deck: DeckListing, note: string): Promise<ReviewOutcome> => {
+    try {
+      await accountApi.saveDeck(deck);
+      const publication = await communityApi.requestReview(deck.id, note.trim() ? { note } : {});
+      setPublications((current) => new Map(current).set(deck.id, publication));
+      return { ok: true };
+    } catch (error) {
+      const code = error instanceof AccountApiError ? error.code : undefined;
+      return { ok: false, error: code && REVIEW_ERRORS.includes(code) ? (code as CommunityReviewError) : "failed" };
+    }
+  }, []);
+
   const unpublish = useCallback(async (deckId: string): Promise<boolean> => {
     try {
       await communityApi.unpublish(deckId);
@@ -57,5 +78,5 @@ export function useCommunityPublications(signedIn: boolean) {
     }
   }, []);
 
-  return { publications, publish, unpublish };
+  return { publications, publish, requestReview, unpublish };
 }

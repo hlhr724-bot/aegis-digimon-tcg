@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 yellow card with [Dramon] in its name",
               filter: {
                 controllerDefault: "mine",
                 colors: ["Yellow"],
@@ -25,6 +26,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 card with [Four Great Dragons] in its traits among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

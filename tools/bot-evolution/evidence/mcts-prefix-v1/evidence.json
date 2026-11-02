@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "32e04f3845",
+  "engineSha256": "cdff87a6d93298f2f0cb7ce332fd8c669001e40def2066bae1cde4feebe4f859",
+  "sourceArchiveSha256": "42c0ed775f103fb9ef57a59dafd1a0815392909c294621c7efd348ae908a70c9",
+  "runtimeArchiveSha256": "37d663a30cf24556755b807022b0ef61e9865a8c2a600768e86e216fa5bc83b2",
+  "proofSha256": "37b951c68411c59720255d37422306d62768e684f7e78d94b5ade17a6b588f22",
+  "method": "Warm requested budget on both paths, then AB/BA paired wall-time measurements with identical seeded inputs. Warm-ups excluded.",
+  "limits": [
+    "One fixed seed and two paired repetitions per workload; descriptive measurements without a statistical generalization claim.",
+    "The 32-simulation workload runs one search after a prefix, not a full game using that budget at every root.",
+    "These measurements do not establish affordable 256-simulation full games.",
+    "Every simulation still replays the authoritative engine prefix; there is no engine snapshot restore."
+  ],
+  "workloads": [
+    {
+      "proofMember": "roadmap-final-fullgame-mcts-8.json",
+      "mode": "full-game",
+      "simulationsPerSearch": 8,
+      "seed": 42,
+      "learnerSeat": 0,
+      "pairedRepetitions": 2,
+      "decks": [
+        {
+          "id": "random-1-2c90313d9fbbdd72",
+          "name": "random-1-2c90313d9fbbdd72",
+          "sha256": "2c90313d9fbbdd725bfa72502d81285dd15584ef075abb2213cce6d0baacf491"
+        },
+        {
+          "id": "random-2-099e429908eb8a63",
+          "name": "random-2-099e429908eb8a63",
+          "sha256": "099e429908eb8a63a624f7922c213e3c0165fd18c186ad8b19d67c6d69780e91"
+        }
+      ],
+      "savedWallTimeFraction": 0.04030624582051012,
+      "equivalentFullResultsSearchesAndTraces": true,
+      "samples": [
+        {
+          "enabled": false,
+          "durationMs": 21532.050869,
+          "identity": "8e38fcdd3410fb61830b9e0c83e42c7f713b689b362ffad4b30c71de7e503967",
+          "requestedRollouts": 96,
+          "completedRollouts": 96,
+          "invalidRollouts": 0,
+          "restoration": {
+            "replays": 96,
+            "replayedWindows": 2920,
+            "reusedActionIndices": 0,
+            "reusedMainCatalogs": 0,
+            "enumeratedMainCatalogs": 1704
+          }
+        },
+        {
+          "enabled": true,
+          "durationMs": 20325.250587,
+          "identity": "8e38fcdd3410fb61830b9e0c83e42c7f713b689b362ffad4b30c71de7e503967",
+          "requestedRollouts": 96,
+          "completedRollouts": 96,
+          "invalidRollouts": 0,
+          "restoration": {
+            "replays": 96,
+            "replayedWindows": 2920,
+            "reusedActionIndices": 2920,
+            "reusedMainCatalogs": 1704,
+            "enumeratedMainCatalogs": 0
+          }
+        },
+        {
+          "enabled": true,
+          "durationMs": 20413.185454,
+          "identity": "8e38fcdd3410fb61830b9e0c83e42c7f713b689b362ffad4b30c71de7e503967",
+          "requestedRollouts": 96,
+          "completedRollouts": 96,
+          "invalidRollouts": 0,
+          "restoration": {
+            "replays": 96,
+            "replayedWindows": 2920,
+            "reusedActionIndices": 2920,
+            "reusedMainCatalogs": 1704,
+            "enumeratedMainCatalogs": 0
+          }
+        },
+        {
+          "enabled": false,
+          "durationMs": 20917.361627000006,
+          "identity": "8e38fcdd3410fb61830b9e0c83e42c7f713b689b362ffad4b30c71de7e503967",
+          "requestedRollouts": 96,
+          "completedRollouts": 96,
+          "invalidRollouts": 0,
+          "restoration": {
+            "replays": 96,
+            "replayedWindows": 2920,
+            "reusedActionIndices": 0,
+            "reusedMainCatalogs": 0,
+            "enumeratedMainCatalogs": 1704
+          }
+        }
+      ]
+    },
+    {
+      "proofMember": "roadmap-final-material-mcts-32.json",
+      "mode": "single-search-after-prefix",
+      "simulationsPerSearch": 32,
+      "seed": 42,
+      "learnerSeat": 0,
+      "pairedRepetitions": 2,
+      "decks": [
+        {
+          "id": "bt26-dgo-2026-08-28-1-toho-braves@1",
+          "name": "BT26 Toho Braves",
+          "sha256": "70b218bfa02fca93798e843a498065c7f7672bd06797433707dd3ff2a69e6259"
+        },
+        {
+          "id": "bt10-xros-heart@1",
+          "name": "Xros Heart",
+          "sha256": "74653e60c8e13782a64876725d7aa67eef4504f94e80f20a4f9c21b7df582de1"
+        }
+      ],
+      "savedWallTimeFraction": 0.020090218585656072,
+      "equivalentFullResultsSearchesAndTraces": true,
+      "samples": [
+        {
+          "enabled": false,
+          "durationMs": 12166.079227999995,
+          "identity": "4bbb102f2fc61bf9dceb9c19c1addc29171bec406be14e3ae839890bea383629",
+          "requestedRollouts": 32,
+          "completedRollouts": 32,
+          "invalidRollouts": 0,
+          "restoration": {
+            "replays": 32,
+            "replayedWindows": 512,
+            "reusedActionIndices": 0,
+            "reusedMainCatalogs": 0,
+            "enumeratedMainCatalogs": 256
+          }
+        },
+        {
+          "enabled": true,
+          "durationMs": 11830.379455000002,
+          "identity": "4bbb102f2fc61bf9dceb9c19c1addc29171bec406be14e3ae839890bea383629",
+          "requestedRollouts": 32,
+          "completedRollouts": 32,
+          "invalidRollouts": 0,
+          "restoration": {
+            "replays": 32,
+            "replayedWindows": 512,
+            "reusedActionIndices": 512,
+            "reusedMainCatalogs": 256,
+            "enumeratedMainCatalogs": 0
+          }
+        },
+        {
+          "enabled": true,
+          "durationMs": 11822.910716999999,
+          "identity": "4bbb102f2fc61bf9dceb9c19c1addc29171bec406be14e3ae839890bea383629",
+          "requestedRollouts": 32,
+          "completedRollouts": 32,
+          "invalidRollouts": 0,
+          "restoration": {
+            "replays": 32,
+            "replayedWindows": 512,
+            "reusedActionIndices": 512,
+            "reusedMainCatalogs": 256,
+            "enumeratedMainCatalogs": 0
+          }
+        },
+        {
+          "enabled": false,
+          "durationMs": 11972.153312000002,
+          "identity": "4bbb102f2fc61bf9dceb9c19c1addc29171bec406be14e3ae839890bea383629",
+          "requestedRollouts": 32,
+          "completedRollouts": 32,
+          "invalidRollouts": 0,
+          "restoration": {
+            "replays": 32,
+            "replayedWindows": 512,
+            "reusedActionIndices": 0,
+            "reusedMainCatalogs": 0,
+            "enumeratedMainCatalogs": 256
+          }
+        }
+      ]
+    }
+  ]
+}

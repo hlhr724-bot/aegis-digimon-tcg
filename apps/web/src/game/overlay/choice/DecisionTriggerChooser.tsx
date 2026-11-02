@@ -1,7 +1,10 @@
+import { encodeTriggerResolutionPlan } from "@aegis/shared/protocol/encodeTriggerResolutionPlan";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { useState } from "react";
 import { DecisionReorderHandle } from "./DecisionReorderHandle";
 import { reorderDecisionItems, useDecisionReorder } from "./useDecisionReorder";
-import { getCardDefinition, parseTriggerKey, type DecisionResponse } from "@aegis/shared";
+import { parseTriggerKey, type DecisionResponse } from "@aegis/shared";
 import { EffectText } from "../../EffectText";
 import { CardFull } from "../../../design/cards";
 import { Button } from "../../../design/primitives";
@@ -16,6 +19,9 @@ import {
 } from "../effectText";
 import type { TriggerDetail } from "../types";
 import { DecisionViewBoardButton } from "./DecisionViewBoardButton";
+import { TriggerChooserScrollCue } from "./TriggerChooserScrollCue";
+import { scrollToNextEntry } from "./scrollToNextEntry";
+import { useContentBelow } from "./useContentBelow";
 
 /** Preset answer for an effect's yes/no questions; absent means the engine asks. */
 type Preset = "yes" | "no";
@@ -44,6 +50,7 @@ export function DecisionTriggerChooser({
   triggerIsOptional,
   waitingTriggers,
   acceptsResolutionPlan,
+  acceptsIndexedResolutionPlan = false,
   onRespond,
   onOpenBoard,
 }: {
@@ -62,13 +69,16 @@ export function DecisionTriggerChooser({
   /** Older pending effects that resolve after every offered entry. Shown, never chosen. */
   waitingTriggers: readonly WaitingTrigger[];
   acceptsResolutionPlan: boolean;
+  acceptsIndexedResolutionPlan?: boolean;
   onRespond: (response: DecisionResponse) => void;
   onOpenBoard: () => void;
 }) {
   const { t } = useTranslation();
+  const getCardName = useTranslatedCardName();
+  const translateCardText = useTranslatedCardText();
   const [order, setOrder] = useState<string[]>([]);
   const [presets, setPresets] = useState<Readonly<Record<string, Preset>>>({});
-  const triggerKeyLabels = triggerLabels(triggerKeys, t, triggerCardIds);
+  const triggerKeyLabels = triggerLabels(triggerKeys, t, triggerCardIds, getCardName);
   // Two effects of ONE permanent reach the chooser with the same name and art; the
   // window each fired in is the only honest thing that separates them.
   const triggerTimingLabels = triggerKeys.map((_key, index) =>
@@ -111,6 +121,10 @@ export function DecisionTriggerChooser({
     if (acceptsResolutionPlan) setOrder(reorderDecisionItems(displayedKeys, from, to));
   };
   const drag = useDecisionReorder(reorder);
+  const contentBelow = useContentBelow(drag.listRef, displayedKeys.length);
+  const revealNextEntry = () => {
+    if (drag.listRef.current) scrollToNextEntry(drag.listRef.current, ".trigger-chooser__entry");
+  };
   const optionalKeys = acceptsResolutionPlan
     ? visibleIndexes.filter((index) => triggerIsOptional?.[index] === true).map((index) => triggerKeys[index]!)
     : [];
@@ -137,7 +151,10 @@ export function DecisionTriggerChooser({
       const { [key]: _previous, ...rest } = current;
       return preset === undefined ? rest : { ...rest, [key]: preset };
     });
-  const presetAll = (preset: Preset) => setPresets(Object.fromEntries(optionalKeys.map((key) => [key, preset])));
+  const presetAll = (preset: Preset) => {
+    orderRemaining();
+    setPresets(Object.fromEntries(optionalKeys.map((key) => [key, preset])));
+  };
 
   // With no effect picked, a plan resolves the list as shown: the Yes/No presets already
   // answer each effect, so making the player click every row again adds nothing.
@@ -146,9 +163,14 @@ export function DecisionTriggerChooser({
   const respond = () => {
     const optionalAnswers = Object.fromEntries(Object.entries(presets).map(([key, preset]) => [key, preset === "yes"]));
     onRespond(
-      acceptsResolutionPlan && Object.keys(optionalAnswers).length > 0
-        ? { kind: "orderTriggers", order: [...submittedOrder], optionalAnswers }
-        : { kind: "orderTriggers", order: [...submittedOrder] },
+      encodeTriggerResolutionPlan({
+        supportsIndexes: acceptsIndexedResolutionPlan,
+        triggerKeys,
+        response:
+          acceptsResolutionPlan && Object.keys(optionalAnswers).length > 0
+            ? { kind: "orderTriggers", order: [...submittedOrder], optionalAnswers }
+            : { kind: "orderTriggers", order: [...submittedOrder] },
+      }),
     );
   };
   const resolveLabel =
@@ -220,6 +242,7 @@ export function DecisionTriggerChooser({
           const detail = triggerDetails[i];
           const timingLabel = triggerTimingLabels[i];
           const activeClause = entryClauses[i];
+          const reason = triggerReasons?.[i] ? translateCardText({ text: triggerReasons[i], cardId }) : undefined;
           return (
             <div
               key={key}
@@ -233,6 +256,12 @@ export function DecisionTriggerChooser({
                 <DecisionReorderHandle
                   position={displayIndex + 1}
                   onCancel={drag.cancel}
+                  onRestore={(originalPosition) => {
+                    const target = displayedKeys[originalPosition - 1];
+                    if (target) {
+                      reorder(key, target);
+                    }
+                  }}
                   {...drag.handleProps(key)}
                   onMove={(delta) => {
                     const target = displayedKeys[displayIndex + delta];
@@ -243,9 +272,7 @@ export function DecisionTriggerChooser({
               <button
                 type="button"
                 className={`trigger-chooser__option${chosen ? " trigger-chooser__option--chosen" : ""}`}
-                aria-label={[timingLabel, triggerKeyLabels[i], detail?.sourceLabel, triggerReasons?.[i]]
-                  .filter(Boolean)
-                  .join(", ")}
+                aria-label={[timingLabel, triggerKeyLabels[i], detail?.sourceLabel, reason].filter(Boolean).join(", ")}
                 aria-pressed={chosen}
                 onClick={() => toggle(key)}
               >
@@ -265,11 +292,18 @@ export function DecisionTriggerChooser({
                   <span className="trigger-chooser__meta">
                     <span className="trigger-chooser__name">{triggerKeyLabels[i]}</span>
                     <span className="trigger-chooser__id">{cardId}</span>
-                    {detail?.sourceLabel ? <span className="trigger-chooser__source">{detail.sourceLabel}</span> : null}
-                    {triggerReasons?.[i] ? (
-                      <span className="trigger-chooser__reason">
-                        {t("overlay.triggerReason", { reason: triggerReasons[i] })}
+                    {detail?.hostCardId ? (
+                      <span className="trigger-chooser__host">
+                        <span className="trigger-chooser__host-art">
+                          <CardFull cardId={detail.hostCardId} width={28} zoomOnHover={false} />
+                        </span>
+                        <span className="trigger-chooser__source">{detail.sourceLabel}</span>
                       </span>
+                    ) : detail?.sourceLabel ? (
+                      <span className="trigger-chooser__source">{detail.sourceLabel}</span>
+                    ) : null}
+                    {reason ? (
+                      <span className="trigger-chooser__reason">{t("overlay.triggerReason", { reason })}</span>
                     ) : null}
                   </span>
                   {chosen && !acceptsResolutionPlan ? (
@@ -281,7 +315,13 @@ export function DecisionTriggerChooser({
                 {activeClause ? (
                   <span className="trigger-chooser__section">
                     <span className="trigger-chooser__effect-text">
-                      <EffectText text={activeClause} />
+                      <EffectText
+                        text={activeClause}
+                        cardId={cardId}
+                        timing={triggerTimings?.[i] || timing}
+                        surface="trigger-order"
+                        allowContext
+                      />
                     </span>
                   </span>
                 ) : null}
@@ -301,6 +341,7 @@ export function DecisionTriggerChooser({
           );
         })}
       </div>
+      {contentBelow ? <TriggerChooserScrollCue onClick={revealNextEntry} /> : null}
       {waitingTriggers.length > 0 ? <WaitingTriggerList entries={waitingTriggers} timing={timing} /> : null}
       <div className="trigger-chooser__footer">
         <DecisionViewBoardButton onOpenBoard={onOpenBoard} />
@@ -399,6 +440,7 @@ function onceActivatableIndexes(triggerKeys: readonly string[], clauses: readonl
  * crowds out the effects the player can actually choose.
  */
 function WaitingTriggerList({ entries, timing }: { entries: readonly WaitingTrigger[]; timing: string | undefined }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const groups = groupWaitingTriggers(entries, timing);
   return (
@@ -411,12 +453,12 @@ function WaitingTriggerList({ entries, timing }: { entries: readonly WaitingTrig
             <CardFull cardId={cardId} width={40} zoomOnHover={false} />
             <span className="trigger-chooser__meta">
               <span className="trigger-chooser__name">
-                {getCardDefinition(cardId)?.nameEn ?? cardId}
+                {getCardName(cardId)}
                 {count > 1 ? <span className="trigger-chooser__waiting-count">×{count}</span> : null}
               </span>
               {clause ? (
                 <span className="trigger-chooser__effect-text">
-                  <EffectText text={clause} />
+                  <EffectText text={clause} cardId={cardId} timing={timing} surface="waiting-trigger" allowContext />
                 </span>
               ) : null}
             </span>

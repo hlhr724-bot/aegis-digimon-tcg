@@ -26,6 +26,7 @@ export const compiled: CompiledCard = {
         {
           kind: "SubTrigger",
           event: "whenAttacking",
+          sourceFilter: { isSelfRef: true },
           actions: [
             {
               kind: "ActivateEffect",

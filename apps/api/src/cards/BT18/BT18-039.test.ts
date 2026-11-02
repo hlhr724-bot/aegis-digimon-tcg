@@ -118,23 +118,52 @@ describe("BT18-039 Mistymon", () => {
     assertNoLoudGap(s);
   });
 
+  it("may refuse its inherited unsuspend after its controller loses security", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT1-060", as: "host", under: ["BT18-039"], suspended: true }],
+          security: ["BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "attacker", dp: 10000 }] },
+      },
+      { autoDeclineOptional: true },
+    );
+    s.state.turnSeat = 1;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.security.length === 0);
+    await settle();
+    expect(s.perm("host").isSuspended).toBe(true);
+    assertNoLoudGap(s);
+  });
+
   it("unsuspends only for its controller's security and only once per turn", async () => {
-    const s = setupEngine({
-      0: {
-        battleArea: [
-          { card: "BT1-009", as: "outgoing", dp: 10000 },
-          { card: "BT1-060", as: "host", under: ["BT18-039"], suspended: true },
-        ],
-        security: ["BT1-009", "BT1-010"],
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT1-009", as: "outgoing", dp: 10000 },
+            { card: "BT1-060", as: "host", under: ["BT18-039"], suspended: true },
+          ],
+          security: ["BT1-009", "BT1-010"],
+        },
+        1: {
+          battleArea: [
+            { card: "BT1-009", as: "incomingOne", dp: 10000 },
+            { card: "BT1-009", as: "incomingTwo", dp: 10000 },
+          ],
+          security: ["BT1-011"],
+        },
       },
-      1: {
-        battleArea: [
-          { card: "BT1-009", as: "incomingOne", dp: 10000 },
-          { card: "BT1-009", as: "incomingTwo", dp: 10000 },
-        ],
-        security: ["BT1-011"],
-      },
-    });
+      { autoAcceptOptional: true },
+    );
     await s.ready();
 
     expect(

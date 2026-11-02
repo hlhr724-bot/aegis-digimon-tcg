@@ -489,3 +489,9 @@
     animation: none;
   }
 }
+
+@media (max-width: 767px) {
+  .game-board .game-breeding-slot .game-permanent .game-permanent__inspect {
+    display: none;
+  }
+}

@@ -68,4 +68,23 @@ describe("runReplay divergence reporting", () => {
       expect.objectContaining({ index, kind: "state-version", expected: tampered.inputs[index]!.stateVersion }),
     ]);
   });
+  it("accepts a duplicate intent the room rejected mid-resolution at an earlier position", async () => {
+    const duplicated = structuredClone(record);
+    const index = duplicated.inputs.findIndex(
+      (input) => input.kind === "intent" && input.ok === true && input.intent.type === "playCard",
+    );
+    expect(index).toBeGreaterThan(0);
+    const accepted = duplicated.inputs[index] as IntentInput;
+    duplicated.inputs.splice(index + 1, 0, {
+      ...structuredClone(accepted),
+      ok: false,
+      reason: "wrong-phase",
+      ...(accepted.engineEvents !== undefined ? { engineEvents: accepted.engineEvents + 1 } : {}),
+    });
+
+    const replay = await runReplay(duplicated, { stopOnDivergence: true });
+
+    expect(replay.divergences).toEqual([]);
+    expect(replay.applied).toBe(duplicated.inputs.length);
+  });
 });

@@ -109,6 +109,7 @@ export interface ContinuousPrimitives {
    * effect's seat; the controller's OWN effects still trash.
    */
   stackTrashLock?(permanentId: string, duration: EffectDuration): void;
+  seatStackTrashLock?(ownerSeat: Seat, duration: EffectDuration): void;
   /**
    * Protect one specific digivolution-card instance from being trashed by effects, including
    * its controller's effects (BT9-109 X Antibody). Rule-driven moves do not consult this lock.
@@ -166,6 +167,7 @@ export interface ContinuousPrimitives {
   ): void;
   /** Treat a permanent as another level only while matching DNA requirements. */
   grantDnaLevel(permanentId: string, level: number, opts?: { intoNames?: string[]; continuous?: boolean }): void;
+  orderDnaMaterials?(materialPermanentIds: string[], resultInstanceId: string): string[] | undefined;
   /** Pure legality check used before offering an effect-driven DNA result. */
   canDnaDigivolve?(
     materialPermanentIds: string[],

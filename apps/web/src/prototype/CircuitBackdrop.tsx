@@ -6,6 +6,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 interface Point {
   x: number;
@@ -106,7 +107,7 @@ function readPalette() {
 export function CircuitBackdrop() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [paused, setPaused] = useState(false);
-  const [reducedMotion] = useState(() => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
+  const [reducedMotion] = useState(motionPreference.isReduced);
 
   useEffect(() => {
     const canvas = canvasRef.current;

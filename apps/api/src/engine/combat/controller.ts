@@ -1,3 +1,6 @@
+import type { CombatControllerState } from "#api/engine/combat/CombatControllerState";
+import type { CounterChoice } from "@aegis/shared/protocol/CounterChoice";
+import { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 import {
   CardKind,
   EffectTiming,
@@ -103,7 +106,8 @@ export class CombatController {
   /** Withdraws the End of Attack timing {@link endAttack} queued, if it has not activated yet. */
   private withdrawDeferredEndOfAttack: (() => boolean) | undefined;
   /** Attack activity bookkeeping; prior attacks do not forbid a new declaration. */
-  readonly attackedThisTurn = new Set<string>();
+  private attackHistory = new Set<string>();
+  private settlementDepth = 0;
   /** Active ＜Alliance＞ decision window. */
   private allianceDecision: AllianceDecisionWindow | undefined;
   /** Active ＜Evade＞ decision window. */
@@ -137,6 +141,46 @@ export class CombatController {
     private readonly hooks: CombatHooks,
   ) {}
 
+  get attackedThisTurn(): Set<string> {
+    return this.attackHistory;
+  }
+
+  getRuntimeState(): CombatControllerState {
+    this.assertSnapshotBoundary();
+    return { attackSequence: this.attackSequence, attackedThisTurn: this.attackHistory };
+  }
+
+  restoreRuntimeState(state: unknown): void {
+    this.assertSnapshotBoundary();
+    if (!isCombatControllerState(state)) {
+      throw new Error("Invalid combat controller state");
+    }
+    this.attackSequence = state.attackSequence;
+    this.attackHistory = state.attackedThisTurn;
+  }
+
+  private assertSnapshotBoundary(): void {
+    if (
+      this.resolving ||
+      this.settlementDepth !== 0 ||
+      this.battles.length !== 0 ||
+      this.currentAttack !== undefined ||
+      this.openWindow !== undefined ||
+      this.counterWindow !== undefined ||
+      this.allianceDecision !== undefined ||
+      this.evadeDecision !== undefined ||
+      this.barrierDecision !== undefined ||
+      this.endRequested ||
+      this.pendingEndOfAttackTrigger !== undefined ||
+      this.withdrawDeferredEndOfAttack !== undefined ||
+      this.completedCombat !== undefined ||
+      this.counterActivationsThisAttack !== 0 ||
+      this.access.game.combatWindow !== undefined
+    ) {
+      throw new Error("Cannot snapshot or restore active combat");
+    }
+  }
+
   private hasKeyword(permanentId: string, keyword: string): boolean {
     return (
       this.hooks.hasKeyword?.(permanentId, keyword) ?? this.hooks.continuous?.hasKeyword(permanentId, keyword) ?? false
@@ -155,7 +199,7 @@ export class CombatController {
       attackerPermanentId?: string;
       permanentId?: string;
       eligiblePermanentIds?: readonly string[];
-      eligibleCounters?: readonly { instanceId: string; effectKey: string; description: string }[];
+      eligibleCounters?: readonly CounterChoice[];
       mustBlock?: boolean;
     },
   ): void {
@@ -281,7 +325,12 @@ export class CombatController {
    * second declaration.
    */
   redirectTarget(target: AttackTarget): boolean {
-    if (this.currentAttack === undefined) return false;
+    if (
+      this.currentAttack === undefined ||
+      this.access.permanentById(this.currentAttack.attackerPermanentId) === undefined
+    ) {
+      return false;
+    }
     // "This Digimon's attack target can't change" (§15-1-3, LM-039/EX7-022/BT13-029). The
     // restriction sits on the ATTACKER, and every printed instance is unscoped — it blocks the
     // switch whoever is attempting it. Returning false lets the caller see the redirect failed.
@@ -629,7 +678,11 @@ export class CombatController {
               const allySuspended = this.suspendInCombat(ally);
               this.hooks.addDpModifier?.(attacker.permanentId, ally.currentDP);
               this.hooks.addSecurityAttack?.(attacker.permanentId);
-              await this.fireSuspended(ally, allySuspended);
+              await this.fireSuspended(ally, allySuspended, {
+                effectSuspendSeat: attackerSeat,
+                byEffectCardId: attacker.topCard.cardId,
+                byEffectKeyword: "Alliance",
+              });
               // Alliance suspends its chosen ally as an effect cost (§16-24), so the
               // effect-suspension bus must observe the actual transition after the keyword's
               // DP/security benefit has been installed. Carry the resolving keyword as the
@@ -800,15 +853,21 @@ export class CombatController {
         await this.fireEndOfAttack({ ...attackTrigger, target: targetAfterCounter });
       });
     } finally {
-      await this.cleanup();
-      const completedCombat = this.takeCompletedCombat();
-      if (completedCombat !== undefined && !this.access.game.gameOver)
-        this.hooks.emit({ kind: "combatResolved", ...completedCombat });
-      // `gameOver` stays the last event of a match; it already closes everything an attack opened.
-      if (!this.access.game.gameOver) {
-        this.hooks.emit({ kind: "attackEnded", seat: attackerSeat, attackerPermanentId: attacker.permanentId });
+      this.settlementDepth++;
+      try {
+        await this.cleanup();
+        const completedCombat = this.takeCompletedCombat();
+        if (completedCombat !== undefined && !this.access.game.gameOver)
+          this.hooks.emit({ kind: "combatResolved", ...completedCombat });
+        // `gameOver` stays the last event of a match; it already closes everything an attack opened.
+        if (!this.access.game.gameOver) {
+          this.hooks.emit({ kind: "attackEnded", seat: attackerSeat, attackerPermanentId: attacker.permanentId });
+        }
+      } finally {
+        this.settlementDepth--;
       }
     }
+    if (!this.access.game.gameOver) await this.hooks.afterAttackEnded?.();
   }
 
   /**
@@ -1133,7 +1192,11 @@ export class CombatController {
     const allySuspended = this.suspendInCombat(ally);
     this.hooks.addDpModifier?.(attacker.permanentId, ally.currentDP);
     this.hooks.addSecurityAttack?.(attacker.permanentId);
-    await this.fireSuspended(ally, allySuspended);
+    await this.fireSuspended(ally, allySuspended, {
+      effectSuspendSeat: attacker.controllerSeat,
+      byEffectCardId: attacker.topCard.cardId,
+      byEffectKeyword: "Alliance",
+    });
     if (allySuspended) {
       await this.hooks.fireSubTrigger?.("whenEffectSuspends", {
         subjectPermanentId: ally.permanentId,
@@ -1232,9 +1295,17 @@ export class CombatController {
    * suspends the ally and only then adds its DP, and those two are one atomic effect (§16-24).
    * Each call site fires once its own step is complete.
    */
-  private async fireSuspended(permanent: Permanent, didSuspend: boolean): Promise<void> {
+  private async fireSuspended(
+    permanent: Permanent,
+    didSuspend: boolean,
+    cause?: Pick<TriggerInfo, "effectSuspendSeat" | "byEffectCardId" | "byEffectKeyword">,
+  ): Promise<void> {
     if (!didSuspend) return;
-    const trigger = { subjectPermanentId: permanent.permanentId, suspendedPermanentId: permanent.permanentId };
+    const trigger = {
+      subjectPermanentId: permanent.permanentId,
+      suspendedPermanentId: permanent.permanentId,
+      ...cause,
+    };
     const fireTappedWindow = () => this.hooks.fireTiming(EffectTiming.OnTappedAnyone, trigger);
     if (this.hooks.withPendingSuspensionSubTriggers !== undefined) {
       await this.hooks.withPendingSuspensionSubTriggers(trigger, fireTappedWindow);
@@ -1289,8 +1360,15 @@ export class CombatController {
       if (battleScopeId !== undefined) this.hooks.endBattleScope?.(battleScopeId);
       throw error;
     } finally {
+      this.settlementDepth++;
       this.battles.pop();
-      if (!this.access.game.gameOver) await this.hooks.recomputeBattleEffects?.();
+      try {
+        if (!this.access.game.gameOver) {
+          await this.hooks.recomputeBattleEffects?.();
+        }
+      } finally {
+        this.settlementDepth--;
+      }
     }
   }
 
@@ -1395,6 +1473,7 @@ export class CombatController {
         [perm.topCard.instanceId],
         "＜Armor Purge＞: trash this Digimon's top card to prevent its deletion?",
         this.permanentSource(perm),
+        DecisionSelectionGoal.PROTECT.value,
       );
       if (chosenInstanceId === undefined) continue;
       // Emitted before the purge: it promotes the digivolution card underneath, so reading the
@@ -1420,6 +1499,7 @@ export class CombatController {
         n,
         `＜Fragment (${n})＞: trash ${n} of this Digimon's digivolution cards to prevent its deletion?`,
         this.permanentSource(perm),
+        DecisionSelectionGoal.PROTECT.value,
       );
       if (chosenIds === undefined || chosenIds.length < n) continue;
       // ＜Fragment＞ is a keyword effect, so "when effects trash" watchers must see this trash.
@@ -1454,6 +1534,7 @@ export class CombatController {
         candidates.map((p) => p.topCard!.instanceId),
         "＜Scapegoat＞: delete 1 of your other Digimon to prevent this deletion?",
         this.permanentSource(perm),
+        DecisionSelectionGoal.PROTECT.value,
       );
       if (chosenInstanceId === undefined) continue;
       const sacrifice = candidates.find((p) => p.topCard?.instanceId === chosenInstanceId);
@@ -1590,6 +1671,7 @@ export class CombatController {
     // Retaliation belongs to the subsequent On Deletion window, not this battle's
     // simultaneous deletion set. Its target is later deleted by an effect.
     const retaliationTargetsByInstanceId: Record<string, string> = {};
+    const retaliationCountsByInstanceId: Record<string, number> = {};
     for (const [holder, opponent] of [
       [attacker, defender],
       [defender, attacker],
@@ -1601,6 +1683,12 @@ export class CombatController {
         this.hasKeyword(holder.permanentId, "Retaliation")
       ) {
         retaliationTargetsByInstanceId[holder.topCard.instanceId] = opponent.permanentId;
+        retaliationCountsByInstanceId[holder.topCard.instanceId] = Math.max(
+          1,
+          this.hooks.continuous
+            ?.grantedKeywords?.(holder.permanentId)
+            .filter((grant) => grant.keyword === "Retaliation").length ?? 0,
+        );
       }
     }
 
@@ -1735,6 +1823,7 @@ export class CombatController {
           ];
     });
     const customEffectGrantsSnapshot = this.hooks.snapshotCustomEffectGrants?.(departingInstanceIds);
+    const stackEffectConferralsSnapshot = this.hooks.snapshotStackEffectConferrals?.();
     const tokenDeletionCandidates = postCardPreventionDeletedIds.flatMap((permanentId) => {
       const top = this.access.permanentById(permanentId)?.topCard;
       return top !== undefined && getCardDefinition(top.cardId)?.isToken === true ? [top] : [];
@@ -1806,9 +1895,17 @@ export class CombatController {
       // simultaneous activations. Capture the watcher before the deletion window and
       // let that window order it with printed On Deletion effects. If no permanent was
       // actually deleted (for example, a replacement prevented it), activate it alone.
-      await resolveBattleWon(
-        deleted.length > 0 && this.currentAttack === undefined ? { deferIntoDeletionWindow: true } : undefined,
-      );
+      if (deleted.length > 0) {
+        await resolveBattleWon(
+          this.currentAttack === undefined || isAttackBattle ? { deferIntoDeletionWindow: true } : undefined,
+        );
+      } else if (this.hooks.resolveAvertedBattleReactions !== undefined) {
+        await this.hooks.resolveAvertedBattleReactions(resolveBattleWon);
+      } else {
+        await resolveBattleWon();
+      }
+    } else if (deleted.length === 0) {
+      await this.hooks.resolveAvertedBattleReactions?.();
     }
     // Battle winners and deletion watchers trigger together. Queue both families before
     // opening the deletion window so turn-player priority applies across the two buses.
@@ -1837,12 +1934,14 @@ export class CombatController {
         deletedLinkHostInstanceByLinkedInstanceId,
         deletedHostInstanceByInstanceId,
         ...(customEffectGrantsSnapshot === undefined ? {} : { customEffectGrantsSnapshot }),
+        ...(stackEffectConferralsSnapshot === undefined ? {} : { stackEffectConferralsSnapshot }),
         fortitudeInstanceIds: [...fortitudeReplayInstanceIds.values()].filter((instanceId) =>
           deletedInstanceIds.includes(instanceId),
         ),
         deletedEffectiveColorsByInstanceId,
         battleOpponentPermanentIdByInstanceId,
         retaliationTargetsByInstanceId,
+        retaliationCountsByInstanceId,
         ...(deletingPermanentId === undefined ? {} : { deletingPermanentId }),
         removalCause: "byBattle" as const,
       };
@@ -1956,4 +2055,17 @@ export class CombatController {
     // behind the rebuild so they never read a partially cleared continuous ledger.
     if (!this.access.game.gameOver) await this.hooks.sweepEndOfAttack?.();
   }
+}
+
+function isCombatControllerState(value: unknown): value is CombatControllerState {
+  if (value === null || typeof value !== "object") {
+    return false;
+  }
+  const state = value as CombatControllerState;
+  return (
+    Number.isSafeInteger(state.attackSequence) &&
+    state.attackSequence >= 0 &&
+    state.attackedThisTurn instanceof Set &&
+    [...state.attackedThisTurn].every((id) => typeof id === "string")
+  );
 }

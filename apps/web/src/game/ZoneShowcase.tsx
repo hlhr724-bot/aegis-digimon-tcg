@@ -1,8 +1,8 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 /* Public arrival: white turn, readable face, then a narrow upward exit.
    The queue owns the lifetime; the existing card, caption and board design stay ours. */
 
 import { useState, type CSSProperties } from "react";
-import { getCardDefinition } from "@aegis/shared";
 import { CardFull } from "../design/cards";
 import { useTranslation } from "../i18n";
 import { CardBurst } from "./CardBurst";
@@ -13,8 +13,9 @@ import { SHOWCASE_OUT_AT_MS } from "./timings";
 const SHOWCASE_CARD_WIDTH = 190;
 
 export function ZoneShowcase({ showcase }: { showcase: ZoneShowcaseModel }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
-  const cardName = getCardDefinition(showcase.cardId)?.nameEn ?? showcase.cardId;
+  const showcaseName = getCardName(showcase.cardId);
   const digivolving = showcase.kind === "digivolve";
   const [extraHoldMs] = useState(() => showcaseExtraHoldMs(showcase));
   return (
@@ -46,7 +47,7 @@ export function ZoneShowcase({ showcase }: { showcase: ZoneShowcaseModel }) {
               : digivolving
                 ? "showcase.opponentDigivolved"
                 : "showcase.opponentPlayed",
-            { card: cardName },
+            { card: showcaseName },
           )}
         </figcaption>
       </figure>

@@ -71,6 +71,7 @@ export function useDecisionBarrier({
     if (presentedStateVersion === undefined) return;
     const timer = setTimeout(
       () => {
+        if (queue.isPaused()) return;
         presentationTelemetry.countBoardBudgetHit();
         progress.settle();
       },
@@ -104,6 +105,7 @@ export function useDecisionBarrier({
     // consequences. Keep their animations intact while bounding snapshot lag.
     const timer = setTimeout(
       () => {
+        if (queue.isPaused()) return;
         // The budget is spent: the board is handed over at the revision the question was
         // asked at, whatever the queue still had to say about the batches before it.
         presentationTelemetry.countDecisionBudgetHit();
@@ -133,6 +135,7 @@ export function useDecisionBarrier({
     if (decisionStalled) return;
     const timer = setTimeout(
       () => {
+        if (queue.isPaused()) return;
         presentationTelemetry.countDecisionStallHit();
         queue.skip();
         setDecisionStalled(true);

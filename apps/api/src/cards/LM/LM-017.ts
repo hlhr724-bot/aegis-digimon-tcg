@@ -11,7 +11,7 @@ const entranceActions = [
   {
     kind: "PlaceUnder" as const,
     effectTextPart:
-      "Then, you may place 1 card with [Gammamon]&#160;in its text from your trash as this Digimon's bottom digivolution card.",
+      "Then, you may place 1 card with [Gammamon] in its text from your trash as this Digimon's bottom digivolution card.",
     target: {
       filter: {
         zone: "trash" as const,

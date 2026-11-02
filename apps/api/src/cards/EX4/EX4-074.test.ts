@@ -28,13 +28,13 @@ describe("EX4-074 ShineGreymon: Ruin Mode", () => {
       playerWide: true,
       target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: "all" },
       amount: -5000,
-      duration: "untilOpponentNextTurnEnd",
+      duration: "untilOpponentTurnEnd",
     });
     expect(compiled.effects?.find((entry) => entry.trigger === "OnDeletion")?.actions?.[0]).toMatchObject({
       kind: "ModifyDP",
       playerWide: true,
       amount: -5000,
-      duration: "untilOpponentNextTurnEnd",
+      duration: "untilOpponentTurnEnd",
     });
     expect(compiled.digivolutionRequirement).toEqual([{ namesExact: ["ShineGreymon"], cost: 4, isAlternate: true }]);
   });
@@ -350,7 +350,7 @@ describe("EX4-074 ShineGreymon: Ruin Mode", () => {
     expect(s.state.players[0]!.breeding).toBeUndefined();
   });
 
-  it("applies the deletion debuff to every opposing target during the current opponent turn", async () => {
+  it("ends the deletion debuff when the current opponent turn ends", async () => {
     const s = setupEngine({
       0: { battleArea: [{ card: "EX4-074", as: "ruin" }], deck: ["BT1-009", "BT1-009", "BT1-009"] },
       1: {
@@ -370,19 +370,29 @@ describe("EX4-074 ShineGreymon: Ruin Mode", () => {
     expect(s.perm("opponentB").currentDP).toBe(6000);
 
     await advance(s.engine).runTurn(1);
-    expect(s.perm("opponentA").currentDP).toBe(5000);
-    expect(s.perm("opponentB").currentDP).toBe(6000);
+    expect(s.perm("opponentA").currentDP).toBe(10000);
+    expect(s.perm("opponentB").currentDP).toBe(11000);
+  });
 
-    s.state.turnSeat = 0;
-    s.state.memory = -s.state.memory;
+  it("keeps the deletion debuff from its owner's turn through the end of the opponent's turn", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "EX4-074", as: "ruin" }], deck: ["BT1-009", "BT1-009", "BT1-009"] },
+      1: {
+        battleArea: [{ card: "BT1-009", as: "opponentA", dp: 10000 }],
+        deck: ["BT1-009", "BT1-009", "BT1-009"],
+      },
+    });
+    await s.ready();
+
+    await advance(s.engine).verb.deletePermanent([s.perm("ruin").permanentId]);
+    expect(s.perm("opponentA").currentDP).toBe(5000);
+
     await advance(s.engine).runTurn(0);
     expect(s.perm("opponentA").currentDP).toBe(5000);
-    expect(s.perm("opponentB").currentDP).toBe(6000);
 
     s.state.turnSeat = 1;
     s.state.memory = -s.state.memory;
     await advance(s.engine).runTurn(1);
     expect(s.perm("opponentA").currentDP).toBe(10000);
-    expect(s.perm("opponentB").currentDP).toBe(11000);
   });
 });

@@ -250,7 +250,11 @@ export function permanentMatchesFilter(
   opts?: { allowPendingRotationHost?: boolean },
 ): boolean {
   if (permanent.topCard === undefined) return false;
-  const def = ctx.game.definitionOf(permanent.topCard);
+  const definition = ctx.game.definitionOf(permanent.topCard);
+  const inactiveDualKind = permanent.placedByEffect ? CardKind.Digimon : CardKind.Option;
+  const def = definition.isDualCard
+    ? { ...definition, kinds: definition.kinds.filter((kind) => kind !== inactiveDualKind) }
+    : definition;
   // DUAL stores its Option use cost in the catalog's cost field. On the field it
   // has no play cost to compare, even if a modifier would change that number.
   const referencesPlayCost =
@@ -263,7 +267,9 @@ export function permanentMatchesFilter(
     filter.playCostLteSourceDigivolutionCards === true ||
     filter.playCostLteScaling !== undefined ||
     filter.relativeTo?.attr === "playCost";
-  if (referencesPlayCost && !hasPlayCost(def)) return false;
+  if (referencesPlayCost && !hasPlayCost(definition)) {
+    return false;
+  }
   // Controller is a live permanent property, not part of the card definition. Keep
   // watcher-side matching (for example, a later entrant to an opponent-only aura)
   // subject to the same source-relative seat scope used during target enumeration.
@@ -912,22 +918,16 @@ export function permanentMatchesFilter(
   // GameAccess.effectiveKinds is available, check effective kinds first; fall back
   // to the static CardDefinition.kinds when it isn't (test fakes / lightweight calls).
   if (filter.kind?.includes("Digimon")) {
-    const effective = ctx.game.effectiveKinds?.(permanent.permanentId, def.kinds) ?? def.kinds;
+    const effective = (ctx.game.effectiveKinds?.(permanent.permanentId, def.kinds) ?? def.kinds).filter(
+      (kind) => !def.isDualCard || kind !== inactiveDualKind,
+    );
     if (effective !== undefined) {
       const wanted = filter.kind.map((k) => KIND_MAP[k]);
       const tokenAsDigimon = filter.allowTokens === true && def.isToken === true && wanted.includes(CardKind.Digimon);
       const liveDigimon =
         permanent.topCard.faceUp !== false &&
         wanted.includes(CardKind.Digimon) &&
-        (def.kinds.includes(CardKind.Digimon) ||
-          // CR 4-3-1 treats a Digi-Egg card on the field as a Digimon. Ordinary Digi-Eggs
-          // are legal Digimon in breeding; in the battle area, require printed DP or DP granted
-          // on top of the baseline (Mother Eater, KB BT22-007 Q4864) so an invalid fixture
-          // can't turn a no-DP level-2 egg into an effect target.
-          (def.kinds.includes(CardKind.DigiEgg) &&
-            (permanent.inBreeding ||
-              (typeof def.dp === "number" && def.dp > 0) ||
-              permanent.currentDP > permanent.baseDP)));
+        (def.kinds.includes(CardKind.Digimon) || def.kinds.includes(CardKind.DigiEgg));
       const pendingEgg =
         opts?.allowPendingRotationHost === true &&
         def.kinds.includes(CardKind.DigiEgg) &&

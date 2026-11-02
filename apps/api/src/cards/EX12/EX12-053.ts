@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with the [Machine], [Cyborg] or [Mutant] trait",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 card with the [ME] trait among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

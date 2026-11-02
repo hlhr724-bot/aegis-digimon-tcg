@@ -14,6 +14,7 @@ export function PlayerMenu({
   anchor,
   onNav,
   onProfile,
+  onChangeAvatar,
   onSignOut,
   onReportBug,
   onClose,
@@ -24,6 +25,7 @@ export function PlayerMenu({
   anchor?: HTMLElement | null;
   onNav: (screen: Screen) => void;
   onProfile: () => void;
+  onChangeAvatar?: () => void;
   onSignOut?: () => void;
   onReportBug?: () => void;
   onClose: () => void;
@@ -105,10 +107,27 @@ export function PlayerMenu({
         </div>
       </header>
       <nav aria-label={t("playerMenu.linksAria")}>
+        {signedIn ? (
+          <a href="/friends" onClick={inApp(() => onNav("friends"))}>
+            <Icons.User size={18} />
+            {t("friends.title")}
+          </a>
+        ) : null}
         <a href="/profile" onClick={inApp(onProfile)}>
           <Icons.User size={18} />
           {t("profile.title")}
         </a>
+        {onChangeAvatar ? (
+          <button
+            onClick={() => {
+              onClose();
+              onChangeAvatar();
+            }}
+          >
+            <Icons.Pencil size={18} />
+            {t("profile.changeAvatar")}
+          </button>
+        ) : null}
         <button onClick={() => go("settings")}>
           <Icons.Settings size={18} />
           {t("menu.settings")}

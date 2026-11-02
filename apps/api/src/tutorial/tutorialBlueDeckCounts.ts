@@ -1,0 +1,15 @@
+export const tutorialBlueDeckCounts: readonly (readonly [string, number])[] = [
+  ["ST2-02", 4],
+  ["ST2-04", 4],
+  ["ST2-05", 4],
+  ["ST2-10", 4],
+  ["ST2-03", 4],
+  ["ST2-06", 4],
+  ["ST2-07", 4],
+  ["ST2-08", 4],
+  ["ST2-09", 4],
+  ["ST2-11", 4],
+  ["ST2-14", 4],
+  ["ST2-15", 4],
+  ["ST2-16", 2],
+];

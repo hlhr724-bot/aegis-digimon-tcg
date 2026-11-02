@@ -1,3 +1,16 @@
+import { ArenaAppearanceControls } from "@/design/arenaAppearance/ArenaAppearanceControls";
+import { useTamerGrouping } from "@/design/tamerGrouping/useTamerGrouping";
+import { setTamerGroupingEnabled } from "@/design/tamerGrouping/setTamerGroupingEnabled";
+import { SpectatorAccessSetting } from "@/account/SpectatorAccessSetting";
+import { cardConfirmationModeLabelKey } from "@/game/cardConfirmation/cardConfirmationModeLabelKey";
+import { cardConfirmationModeValues } from "@/game/cardConfirmation/cardConfirmationModeValues";
+import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
+import { CardLanguageSettings } from "@/screens/cardLanguage/CardLanguageSettings";
+import type { DeckListing } from "@/game/decks";
+import { SpectatorIdentitySetting } from "@/account/SpectatorIdentitySetting";
+import { TokenArtPicker } from "@/design/tokenArt/TokenArtPicker";
+import { ShareDeckAfterMatchSetting } from "@/account/ShareDeckAfterMatchSetting";
+import { LiveMatchListingSetting } from "@/account/LiveMatchListingSetting";
 import { CustomMusicPicker } from "../design/CustomMusicPicker";
 import { MusicCredits } from "../design/MusicCredits";
 import { InterfaceThemeDialog } from "../design/InterfaceThemePicker";
@@ -22,11 +35,13 @@ import {
   useMusicTrack,
 } from "../design/sound";
 import { MUSIC_TRACK_LABEL_KEYS, MUSIC_TRACKS } from "../design/musicTracks";
-import { areActionConfirmationsEnabled, setActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { setEffectConfirmationHoldEnabled, useEffectConfirmationHold } from "../game/effectConfirmationHold";
 import { isKeepAwakeEnabled, setKeepAwakeEnabled } from "../design/keepAwake";
 import { isDecisionPingEnabled, setDecisionPingEnabled } from "@/design/decisionPing";
 import { FieldLayout, setFieldLayout, useFieldLayout } from "../design/fieldLayout";
 import { setPileCountsShown, usePileCountsShown } from "../design/pileCounts";
+import { hoverZoomPreference } from "@/design/hoverZoomPreference";
+import { useHoverZoomPreference } from "@/design/useHoverZoomPreference";
 import { setChatSoundEnabled, useChatSoundEnabled } from "../game/chat/chatSound";
 import { CardSleevePicker, EggSleevePicker } from "../design/sleevePicker";
 import { TEXT_SCALES, setTextScale, useTextScale, type TextScale } from "../design/textScale";
@@ -39,6 +54,9 @@ import {
 } from "../game/effectPromptPosition";
 import { setHandAutoSortEnabled, useHandAutoSort } from "../game/handAutoSort";
 import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeDuration } from "../game/noticeDuration";
+import { MatchLogDisplay } from "@/game/log/MatchLogDisplay";
+import { matchLogDisplayPreference } from "@/game/log/matchLogDisplayPreference";
+import { useMatchLogDisplay } from "@/game/log/useMatchLogDisplay";
 import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { LOCALES, LOCALE_LABELS, useTranslation, type TranslationKey } from "../i18n";
 import type { RemoteAccount } from "../account/client";
@@ -46,6 +64,9 @@ import { setProfileStatsShown, useProfileStatsShown } from "../account/profileSt
 import { useCloudReplays } from "../replays/cloud";
 import { CloudReplaySettings } from "../replays/cloud/CloudReplaySettings";
 import "./settings.css";
+import { motionPreference } from "@/design/motion/motionPreference";
+import { motionModeLabelKey } from "@/design/motion/motionModeLabelKey";
+import { motionModeValues } from "@/design/motion/motionModeValues";
 
 const TEXT_SCALE_LABELS: Record<TextScale, TranslationKey> = {
   default: "settings.textSizeDefault",
@@ -66,16 +87,13 @@ const SECTIONS: readonly SettingsSection[] = [
   { id: "settings-appearance", label: "settings.sectionAppearance", icon: Icons.Palette },
   { id: "settings-language", label: "redesign.settings.languageText", icon: Icons.FileText },
   { id: "settings-sleeves", label: "settings.cardSleeve", icon: Icons.LayoutGrid },
+  { id: "settings-token-art", label: "settings.tokenArt", icon: Icons.LayoutGrid },
   { id: REPLAYS_SECTION_ID, label: "replay.drive.settingsTitle", icon: Icons.Cloud },
   { id: SOUND_SETTINGS_SECTION_ID, label: "redesign.settings.sound", icon: Icons.Play },
   { id: PROFILE_SECTION_ID, label: "profile.title", icon: Icons.User },
   { id: "settings-gameplay", label: "settings.sectionGameplay", icon: Icons.Swords },
   { id: "settings-arena", label: "redesign.settings.arena", icon: Icons.Map },
 ];
-
-function prefersReducedMotion(): boolean {
-  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-}
 
 type ScrollToSectionParams = {
   root: HTMLElement;
@@ -137,7 +155,7 @@ function SettingsNav({ sections, root }: { sections: readonly SettingsSection[];
     // scrollIntoView would also scroll the app's overflow-hidden stage, so scroll only the page.
     event.preventDefault();
     setActiveId(id);
-    scrollToSection({ root, section, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    scrollToSection({ root, section, behavior: motionPreference.isReduced() ? "auto" : "smooth" });
   }
 
   return (
@@ -246,12 +264,18 @@ export function Settings({
   dark,
   onToggleDark,
   initialSectionId,
+  decks = [],
+  decksReady = false,
+  onSaveDeckLanguage,
 }: {
   player: PlayerIdentity;
   account: RemoteAccount | null | undefined;
   dark: boolean;
   onToggleDark: (v: boolean) => void;
   initialSectionId?: string;
+  decks?: readonly DeckListing[];
+  decksReady?: boolean;
+  onSaveDeckLanguage?: (deck: DeckListing) => Promise<void>;
 }) {
   const { t, locale, setLocale } = useTranslation();
   const textScale = useTextScale();
@@ -262,7 +286,9 @@ export function Settings({
   const musicTrack = useMusicTrack();
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [volume, setVolume] = useState(Math.round(getSoundVolume() * 100));
-  const [actionConfirmationsOn, setActionConfirmationsOn] = useState(areActionConfirmationsEnabled());
+  const cardConfirmationMode = cardConfirmationPreference.useMode();
+  const motionMode = motionPreference.useMode();
+  const effectConfirmationHold = useEffectConfirmationHold();
   const [keepAwakeOn, setKeepAwakeOn] = useState(isKeepAwakeEnabled());
   const [decisionPingOn, setDecisionPingOn] = useState(isDecisionPingEnabled());
   const [effectSpeed, setEffectSpeedChoice] = useState<EffectSpeed>(getEffectSpeed);
@@ -272,11 +298,14 @@ export function Settings({
     fast: t("settings.effectSpeedFast"),
   };
   const fieldLayout = useFieldLayout();
+  const groupIdenticalTamers = useTamerGrouping();
   const pileCountsShown = usePileCountsShown();
+  const hoverZoom = useHoverZoomPreference();
   const chatSoundEnabled = useChatSoundEnabled();
   const handAutoSort = useHandAutoSort();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
+  const matchLogDisplay = useMatchLogDisplay();
   const profileStatsShown = useProfileStatsShown();
   const hasCloudReplays = useCloudReplays().provider !== undefined;
   const signedIn = Boolean(account);
@@ -337,6 +366,19 @@ export function Settings({
                   {t("redesign.shell.theme.choose")}
                 </Button>
               </SettingRow>
+              <SettingRow
+                label={t("settings.motion")}
+                labelId="settings-motion-label"
+                description={t("settings.motionDesc")}
+              >
+                <OptionList
+                  options={motionModeValues}
+                  selected={motionMode}
+                  labelledBy="settings-motion-label"
+                  label={(mode) => t(motionModeLabelKey(mode))}
+                  onSelect={motionPreference.setMode}
+                />
+              </SettingRow>
             </SettingsCard>
 
             <SettingsCard id="settings-language" title={t("redesign.settings.languageText")}>
@@ -353,6 +395,9 @@ export function Settings({
                   onSelect={setLocale}
                 />
               </SettingRow>
+              {onSaveDeckLanguage && (
+                <CardLanguageSettings decks={decks} ready={decksReady} onSave={onSaveDeckLanguage} />
+              )}
               <SettingRow
                 label={t("settings.textSize")}
                 labelId="settings-text-size-label"
@@ -368,6 +413,10 @@ export function Settings({
               </SettingRow>
             </SettingsCard>
 
+            <SettingsCard id="settings-arena-accessibility" title={t("redesign.arena.board.title")}>
+              <ArenaAppearanceControls />
+            </SettingsCard>
+
             <SettingsCard id="settings-sleeves" title={t("settings.cardSleeve")}>
               <div className="settings-row settings-row--stack">
                 <p className="settings-row__lede">{t("settings.cardSleeveDesc")}</p>
@@ -376,6 +425,13 @@ export function Settings({
               <SettingRow stacked label={t("settings.eggSleeve")} description={t("settings.eggSleeveDesc")}>
                 <EggSleevePicker />
               </SettingRow>
+            </SettingsCard>
+
+            <SettingsCard id="settings-token-art" title={t("settings.tokenArt")}>
+              <div className="settings-row settings-row--stack">
+                <p className="settings-row__lede">{t("settings.tokenArtDesc")}</p>
+                <TokenArtPicker />
+              </div>
             </SettingsCard>
 
             <CloudReplaySettings />
@@ -502,6 +558,10 @@ export function Settings({
 
             {signedIn ? (
               <SettingsCard id={PROFILE_SECTION_ID} title={t("profile.title")}>
+                <ShareDeckAfterMatchSetting key={account?.id} />
+                <LiveMatchListingSetting key={`live-${account?.id}`} />
+                <SpectatorAccessSetting key={`spectator-${account?.id}`} />
+                <SpectatorIdentitySetting key={`identity-${account?.id}`} />
                 <div className="settings-row">
                   <Switch
                     checked={profileStatsShown}
@@ -514,15 +574,25 @@ export function Settings({
             ) : null}
 
             <SettingsCard id="settings-gameplay" title={t("settings.sectionGameplay")}>
+              <SettingRow
+                label={t("settings.cardConfirmation")}
+                labelId="settings-card-confirmation-label"
+                description={t("settings.cardConfirmationDesc")}
+              >
+                <OptionList
+                  options={cardConfirmationModeValues}
+                  selected={cardConfirmationMode}
+                  labelledBy="settings-card-confirmation-label"
+                  label={(mode) => t(cardConfirmationModeLabelKey(mode))}
+                  onSelect={cardConfirmationPreference.setMode}
+                />
+              </SettingRow>
               <div className="settings-row">
                 <Switch
-                  checked={actionConfirmationsOn}
-                  label={t("settings.actionConfirmations")}
-                  description={t("settings.actionConfirmationsDesc")}
-                  onChange={(next) => {
-                    setActionConfirmationsEnabled(next);
-                    setActionConfirmationsOn(next);
-                  }}
+                  checked={effectConfirmationHold}
+                  label={t("settings.effectConfirmationHold")}
+                  description={t("settings.effectConfirmationHoldDesc")}
+                  onChange={setEffectConfirmationHoldEnabled}
                 />
               </div>
               <div className="settings-row">
@@ -582,12 +652,38 @@ export function Settings({
                   onSelect={setNoticeDuration}
                 />
               </SettingRow>
+              <SettingRow
+                label={t("settings.matchLogDisplay")}
+                labelId="settings-match-log-display-label"
+                description={t("settings.matchLogDisplayDesc")}
+              >
+                <OptionList
+                  options={Object.values(MatchLogDisplay).map((entry) => entry.value)}
+                  selected={matchLogDisplay.value}
+                  labelledBy="settings-match-log-display-label"
+                  label={(display) =>
+                    t(
+                      Object.values(MatchLogDisplay).find((entry) => entry.value === display)?.labelKey ??
+                        MatchLogDisplay.POPUPS.labelKey,
+                    )
+                  }
+                  onSelect={matchLogDisplayPreference.set}
+                />
+              </SettingRow>
               <div className="settings-row">
                 <Switch
                   checked={fieldLayout === FieldLayout.Organized}
                   label={t("settings.organizedField")}
                   description={t("settings.organizedFieldDesc")}
                   onChange={(next) => setFieldLayout(next ? FieldLayout.Organized : FieldLayout.Classic)}
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={groupIdenticalTamers}
+                  label={t("settings.groupIdenticalTamers")}
+                  description={t("settings.groupIdenticalTamersDesc")}
+                  onChange={setTamerGroupingEnabled}
                 />
               </div>
               <div className="settings-row">
@@ -604,6 +700,14 @@ export function Settings({
                   label={t("settings.pileCounts")}
                   description={t("settings.pileCountsDesc")}
                   onChange={setPileCountsShown}
+                />
+              </div>
+              <div className="settings-row">
+                <Switch
+                  checked={hoverZoom}
+                  label={t("settings.hoverZoom")}
+                  description={t("settings.hoverZoomDesc")}
+                  onChange={hoverZoomPreference.setEnabled}
                 />
               </div>
             </SettingsCard>

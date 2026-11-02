@@ -53,10 +53,10 @@ for (const viewport of [
     await expect(page.getByTestId("hand").getByRole("button", { name: /Agumon/i })).toBeVisible();
     await page.getByRole("button", { name: "Next action", exact: true }).click();
     await expect(replay.position()).toHaveValue("1");
-    await expect(page.locator('[data-permanent-id="agumon"]')).toBeVisible();
+    await expect(page.locator('.game-permanent[data-permanent-id="agumon"]')).toBeVisible();
     await page.getByRole("button", { name: "Previous action", exact: true }).click();
     await expect(replay.position()).toHaveValue("0");
-    await expect(page.locator('[data-permanent-id="agumon"]')).toHaveCount(0);
+    await expect(page.locator('.game-permanent[data-permanent-id="agumon"]')).toHaveCount(0);
     await page.getByLabel("Turn", { exact: true }).selectOption("2");
     await expect(replay.position()).toHaveValue("2");
     await page.getByRole("button", { name: "Go to end", exact: true }).click();
@@ -141,10 +141,10 @@ test("autoplay resolves a security battle after its attacker has left the record
   page.on("pageerror", (error) => errors.push(error.message));
   const replay = new ReplayPage(page);
   await replay.open(securityReplayFixture());
-  await expect(page.locator('[data-permanent-id="agumon"]')).toBeVisible();
+  await expect(page.locator('.game-permanent[data-permanent-id="agumon"]')).toBeVisible();
   await page.getByLabel("Playback speed").selectOption("4");
   await page.locator(".replay-controls").getByRole("button", { name: "Play", exact: true }).click();
   await expect(page.getByText("Replay finished", { exact: true })).toBeVisible();
-  await expect(page.locator('[data-permanent-id="agumon"]')).toHaveCount(0);
+  await expect(page.locator('.game-permanent[data-permanent-id="agumon"]')).toHaveCount(0);
   expect(errors).toEqual([]);
 });

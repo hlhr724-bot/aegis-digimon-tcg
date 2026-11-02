@@ -339,3 +339,10 @@ describe("trashed digivolution cards", () => {
     });
   });
 });
+
+it.each(["digivolutionCards", "linkedCards", "underTamer", "resolvingOption", "deckTop", "deckBottom"])(
+  "titles trash arrivals from %s",
+  (from) => {
+    expect(titleForMovement(from, "trash")).toBe("panel.trashedCards");
+  },
+);

@@ -8,7 +8,6 @@ import { scenario } from "./scenarioHarness/scenario";
 import { startTestServer, type TestServer } from "./scenarioHarness/server";
 import { joinHeadlessOpponent } from "./scenarioHarness/headlessOpponent";
 import { respondToHeadlessDecision } from "./scenarioHarness/decisions";
-import { tap } from "./scenarioHarness/tap";
 
 /**
  * Proves historical migration ledger behavioral scenario "block":
@@ -37,7 +36,7 @@ scenario("block", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 7: seed is odd, so the headless opponent (seat 1, RED_DECK) goes first —
+    // Seed 1: seed is odd, so the headless opponent (seat 1, RED_DECK) goes first —
     // apps/api/src/engine/GameEngine.ts's chooseFirstPlayer (seed & 1). Its opening
     // hand includes BT1-010 "Agumon" (Lv.3, cost 3, 2000 DP). The protagonist (seat
     // 0, BLUE_DECK) opening hand includes BT1-031 "Monmon" (Lv.3, cost 4, 1000 DP),
@@ -46,7 +45,7 @@ scenario("block", () => {
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: BLUE_DECK.mainDeck, eggDeck: BLUE_DECK.eggDeck },
-      seed: 7,
+      seed: 1,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Blue" startMode="casual" onExit={() => {}} />);
@@ -114,21 +113,18 @@ scenario("block", () => {
     const agumonPermanentId = opponent.room.state.players[1]!.battleArea[0]!.permanentId;
     opponent.attack(agumonPermanentId, { kind: "player" });
 
-    // The block rail offers the decline action while the server-authorized
-    // blocker can be selected directly from the battle area.
-    await screen.findByRole("button", { name: /take the attack/i }, { timeout: 10_000 });
-    const blockPrompt = screen.getByRole("region", { name: "Block window" });
-    expect(blockPrompt.getAttribute("data-prompt-surface")).toBe("left");
-    const monmonBlockerButton = within(yourBattleArea()).getByRole("button", { name: /^monmon$/i });
+    // The centered block window lists each server-authorized blocker beside the
+    // decline action.
+    const blockPrompt = await screen.findByRole("dialog", { name: "Block window" }, { timeout: 10_000 });
+    expect(within(blockPrompt).getByRole("button", { name: /take the attack/i })).toBeTruthy();
+    const monmonBlockerButton = within(blockPrompt).getByRole("button", { name: /^monmon, 1,000 dp/i });
     const blocker = opponent.room.state.players[0]!.battleArea.find(
       (permanent) => permanent.topCard.cardId === "BT1-031",
     )!;
     const blockerId = blocker.permanentId;
     const blockerCardId = blocker.topCard.instanceId;
     expect(blocker.isSuspended).toBe(false);
-    expect(monmonBlockerButton.classList.contains("game-permanent--candidate")).toBe(true);
-    expect(monmonBlockerButton.getAttribute("data-permanent-id")).toBe(blockerId);
-    tap(monmonBlockerButton);
+    fireEvent.click(monmonBlockerButton);
 
     // The attack is redirected onto Monmon instead of the protagonist's security —
     // the answered-outcome proof: security stays at 5 (never checked) while the

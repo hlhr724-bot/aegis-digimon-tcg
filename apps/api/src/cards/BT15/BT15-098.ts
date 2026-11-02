@@ -44,28 +44,22 @@ export const compiled: CompiledCard = {
     },
     {
       trigger: "AllTurns",
+      keywords: [{ keyword: "Delay", raw: "＜Delay＞" }],
       actions: [
         {
           kind: "SubTrigger",
           event: "onDeletionOf",
           sourceFilter: myotismon,
-          actions: [{ kind: "PlaceInBattleAreaSelf" }],
-        },
-      ],
-    },
-    {
-      trigger: "Main",
-      keywords: [{ keyword: "Delay", raw: "＜Delay＞" }],
-      actions: [
-        {
-          effectTextPart:
-            "[Main] By deleting 1 of your Digimon, you may play 1 [Myotismon] from your trash without paying the cost.",
-          kind: "PlayWithoutCost",
-          target: { filter: venomMyotismon, count: 1 },
-          from: ["trash"],
-          payCost: false,
-          optional: true,
-          requiresDelayArmed: true,
+          actions: [
+            {
+              effectTextPart: "You may play 1 [VenomMyotismon] from your trash without paying the cost.",
+              kind: "PlayWithoutCost",
+              target: { filter: venomMyotismon, count: 1 },
+              from: ["trash"],
+              payCost: false,
+              optional: true,
+            },
+          ],
         },
       ],
     },

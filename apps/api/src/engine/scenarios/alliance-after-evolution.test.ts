@@ -158,7 +158,7 @@ describe("Alliance after Mococomon evolution", () => {
         }),
       ).toEqual({ ok: true });
       await settle();
-      expect(s.perm("host").topCard.cardId).toBe("EX12-034");
+      expect(s.perm("host").topCard.cardId).toBe(evolveFirst ? "EX12-034" : "EX12-045");
       expect(s.perm("host").keywords).toContain("Alliance");
       expect(s.events.some((event) => event.kind === "alliancePrompt")).toBe(true);
       for (const alias of ["host", "suspendedAlly", "breedingAlly"]) {
@@ -174,6 +174,8 @@ describe("Alliance after Mococomon evolution", () => {
         }),
       ).toEqual({ ok: true });
       await settle();
+      expect(s.perm("host").topCard.cardId).toBe("EX12-034");
+      expect(s.perm("host").keywords).toContain("Alliance");
       expect(cho.isSuspended).toBe(acceptAlliance);
       const checked = s.events.filter((event) => event.kind === "securityChecked");
       expect(checked).toHaveLength(acceptAlliance ? 2 : 1);

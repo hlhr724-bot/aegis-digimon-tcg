@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 green or blue card with [Dramon] in its name",
               filter: {
                 controllerDefault: "mine",
                 colors: ["Blue", "Green"],
@@ -25,6 +26,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 card with [Examon] in its name among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

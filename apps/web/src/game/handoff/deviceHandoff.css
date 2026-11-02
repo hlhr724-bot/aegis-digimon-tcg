@@ -1,0 +1,37 @@
+.game-handoff {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin-bottom: var(--ds-space-5);
+}
+
+.game-handoff__panel {
+  display: grid;
+  justify-items: start;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+}
+
+.game-handoff__hint {
+  margin: 0;
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+}
+
+.game-handoff__code {
+  display: grid;
+  justify-items: center;
+  gap: var(--ds-space-2);
+  justify-self: center;
+}
+
+.game-handoff__qr {
+  width: 176px;
+  height: 176px;
+  border-radius: var(--ds-radius-md);
+}
+
+.game-handoff__url {
+  color: var(--ds-text-3);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}

@@ -132,7 +132,7 @@ describe("player-facing watcher text", () => {
   it("keeps a later-entrant grant to the granting clause as printed", () => {
     const definition = getCardDefinition("EX1-068")!;
     const printed =
-      '[Main] All of your opponent\'s Digimon gain "[When Attacking] Lose 2 memory" until the end of their next turn.';
+      '[Main] All of your opponent\'s Digimon gain "[When Attacking] Lose 2 memory" until their turn ends.';
     expect(laterEntrantGrantClause(printed, definition)).toBe(printed);
     expect(laterEntrantGrantClause("[Main] GrantStatic", definition)).toBe(
       `${definition.nameEn}: its effect also applies to a Digimon that entered later`,

@@ -66,6 +66,31 @@ describe("Ascension through public battle deletion", () => {
     assertNoLoudGap(s);
   });
 
+  it.each([true, false])("preserves an Execute-deleted card when Ascension is accepted: %s", async (accept) => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT27-082", as: "executor" }],
+          hand: ["BT1-009"],
+          deck: ["BT1-009", "BT1-009"],
+          security: ["BT1-028"],
+        },
+        1: { security: ["BT1-028", "BT1-028", "BT1-028", "BT1-028"], deck: ["BT1-009"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, declinePrompts: accept ? [] : ["Ascension"] },
+    );
+    await s.ready();
+    const id = s.inst("executor").instanceId;
+    const turn = s.engine.runOneTurn();
+    await advance(s.engine).waitForMainPhase(0);
+    advance(s.engine).endMainPhaseIfOpen(0);
+    await turn;
+    expect(s.state.players[0]!.battleArea).toHaveLength(0);
+    expect(s.state.players[0]!.security.some(({ instanceId }) => instanceId === id)).toBe(accept);
+    expect(s.state.players[0]!.trash.some(({ instanceId }) => instanceId === id)).toBe(!accept);
+    assertNoLoudGap(s);
+  });
+
   it.each([false, true])(
     "Execute preserves the chosen reaction order (Ascension first: %s)",
     async (ascensionFirst) => {

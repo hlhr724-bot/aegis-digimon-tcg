@@ -12,7 +12,7 @@ import { scaleFactor } from "../scaling.js";
 import { candidateLooseInstances, type LooseCandidate, looseCardsInZone, pickLoose } from "../targeting/loose.js";
 import { revealPrivateRequirementPicks } from "../targeting/privateReveal.js";
 import { permanentMatchesFilter } from "../matching/permanent.js";
-import { resolvePermanentTargets, topInstanceIds } from "../targeting/permanents.js";
+import { candidatePermanents, resolvePermanentTargets, topInstanceIds } from "../targeting/permanents.js";
 import { extractCardAt, insertCard } from "../../../state/access.js";
 import { EffectDuration, Zone, type Action, type Filter, type Seat, type Target, type ZoneRef } from "@aegis/shared";
 
@@ -104,7 +104,9 @@ export async function runSecurityManipulation(
   if (action.optionalFor !== undefined) {
     const optionalSeat = action.optionalFor === "opponent" ? opp : mine;
     const decisionCtx =
-      optionalSeat === ctx.source.ownerSeat ? ctx : { ...ctx, source: { ...ctx.source, ownerSeat: optionalSeat } };
+      optionalSeat === ctx.source.ownerSeat
+        ? ctx
+        : { ...ctx, source: { ...ctx.source, ownerSeat: optionalSeat }, presetOptionalAnswer: undefined };
     const accepted = await ctx.ask.optional(decisionCtx, describeAction(action));
     ctx.lastOpponentDeclined = !accepted;
     if (!accepted) {
@@ -307,9 +309,12 @@ export async function runSecurityManipulation(
       ctx.lastEffectActed = ctx.fx.flipSecurityFaceUp(seat, { fromTop: true });
       return;
     case "placeAsSecurity": {
-      const placementToTop = async (): Promise<boolean> =>
+      const placementToTop = async (placedPermanentIds: readonly string[] = []): Promise<boolean> =>
         action.position === "choice"
-          ? (await ctx.ask.chooseOption(ctx, ["Top of security", "Bottom of security"])) === 0
+          ? (await ctx.ask.chooseOption(
+              placedPermanentIds.length === 0 ? ctx : { ...ctx, affectedPermanentIds: placedPermanentIds },
+              ["Top of security", "Bottom of security"],
+            )) === 0
           : (action.toTop ?? action.position !== "bottom");
       // Place cards onto the security stack. Two source shapes:
       //  - LOOSE source ("place 1 card from your hand/trash/deck as security"): resolve
@@ -439,7 +444,7 @@ export async function runSecurityManipulation(
           const top = permanent?.topCard;
           if (permanent === undefined || top === undefined) continue;
           await ctx.fx.addSecurity(top.ownerSeat, [top.instanceId], {
-            toTop: await placementToTop(),
+            toTop: await placementToTop([permanentId]),
             faceUp: action.faceUp,
             detachPermanentTop: action.detachPermanentTop,
           });
@@ -454,7 +459,7 @@ export async function runSecurityManipulation(
           ? [...(await ctx.ask.orderCards(ctx, { candidates: ids }))].reverse()
           : ids;
       await ctx.fx.addSecurity(seat, orderedIds, {
-        toTop: await placementToTop(),
+        toTop: await placementToTop(resolvedPermanentIds),
         faceUp: action.faceUp,
         detachPermanentTop: action.detachPermanentTop,
       });
@@ -538,12 +543,19 @@ async function runSecurityAdd(
 ): Promise<void> {
   const source = (action as { source?: Target | string }).source;
   const actionFilter = (action as { filter?: Filter }).filter;
+  const placedPermanentIds =
+    typeof source === "object" && source.fromSelectionRef !== undefined
+      ? candidatePermanents(ctx, source).map((permanent) => permanent.permanentId)
+      : [];
   const toTop =
     action.op === "addTop"
       ? true
       : action.op === "addBottom"
         ? false
-        : (await ctx.ask.chooseOption(ctx, ["Top of security", "Bottom of security"])) === 0;
+        : (await ctx.ask.chooseOption(
+            placedPermanentIds.length === 0 ? ctx : { ...ctx, affectedPermanentIds: placedPermanentIds },
+            ["Top of security", "Bottom of security"],
+          )) === 0;
   const opts = {
     toTop,
     faceUp: action.faceDown === true ? false : action.faceUp,

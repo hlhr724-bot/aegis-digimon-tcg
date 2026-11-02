@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] You may return 1 of your Digimon with [Omnimon] in its name to its owner's hand to delete all Digimon and Tamers. Trash all of the digivolution cards of the Digimon you returned with this effect.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -26,6 +28,8 @@ const compiled: CompiledCard = {
           abortOnDecline: true,
         },
         {
+          effectTextPart:
+            "[Main] You may return 1 of your Digimon with [Omnimon] in its name to its owner's hand to delete all Digimon and Tamers. Trash all of the digivolution cards of the Digimon you returned with this effect.",
           kind: "Return",
           target: {
             fromSelectionRef: "omnimonSelected",
@@ -35,6 +39,8 @@ const compiled: CompiledCard = {
           to: "hand",
         },
         {
+          effectTextPart:
+            "[Main] You may return 1 of your Digimon with [Omnimon] in its name to its owner's hand to delete all Digimon and Tamers. Trash all of the digivolution cards of the Digimon you returned with this effect.",
           kind: "Delete",
           target: {
             filter: {

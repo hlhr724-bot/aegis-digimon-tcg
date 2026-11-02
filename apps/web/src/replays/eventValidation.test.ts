@@ -24,3 +24,22 @@ describe("replay digivolution outcome validation", () => {
     ).toBe(accepted);
   });
 });
+
+it("accepts optional movement origins and rejects malformed owners and hosts", () => {
+  const event = {
+    kind: "cardsMoved",
+    seq: 1,
+    batch: "effect",
+    stateVersion: 1,
+    instanceIds: ["source"],
+    from: "digivolutionCards",
+    to: "trash",
+  };
+  expect(validReplayEvent(event)).toBe(true);
+  expect(validReplayEvent({ ...event, fromSeat: 1, fromHost: { permanentId: "host", hostCardId: "ST1-07" } })).toBe(
+    true,
+  );
+  expect(validReplayEvent({ ...event, fromSeat: 2 })).toBe(false);
+  expect(validReplayEvent({ ...event, fromHost: { permanentId: "host" } })).toBe(false);
+  expect(validReplayEvent({ ...event, fromHost: null })).toBe(false);
+});

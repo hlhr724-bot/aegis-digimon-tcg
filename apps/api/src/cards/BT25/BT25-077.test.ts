@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { getCardDefinition } from "@aegis/shared";
+import { Phase } from "@aegis/shared/schema/enums";
 import { advance } from "../../engine/testkit/advance.js";
 import { drainMicrotasks, settle, setupEngine, type EngineSetup } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
+import { setupScenario } from "#api/engine/testkit/scenario";
+import opponentEvolutionFixture from "#api/engine/scenarios/bacchusmon-suspends-opponent-evolution.fixture";
 import "./BT25-077.js";
 import "../index.js";
 
@@ -14,6 +17,39 @@ const OVER_CEILING_TS = "BT25-073";
 const CARD_ID = "BT25-077";
 
 describe("BT25-077 Bacchusmon", () => {
+  it("offers the opponent's evolving Digimon for suspension while all of its controller's Digimon are suspended", async () => {
+    const preferred: string[] = [];
+    const s = setupScenario(opponentEvolutionFixture, {
+      autoAcceptOptional: true,
+      autoSelectCards: true,
+      preferInstanceIds: preferred,
+    });
+    s.state.phase = Phase.Main;
+    preferred.push(s.perm("opponent").permanentId);
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(1, {
+        type: "digivolve",
+        permanentId: s.perm("opponent").permanentId,
+        instanceId: s.inst("evolution").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision === undefined && s.perm("opponent").isSuspended);
+
+    expect(s.perm("opponent").topCard.cardId).toBe(HIGH);
+    expect(s.perm("opponent").isSuspended).toBe(true);
+    expect(
+      s.decisions.some(
+        ({ seat, req }) =>
+          seat === 0 &&
+          req.sourceCardId === CARD_ID &&
+          req.kind === "chooseTargets" &&
+          req.options?.candidateInstanceIds?.includes(s.perm("opponent").permanentId),
+      ),
+    ).toBe(true);
+  });
+
   it("matches every printed catalog field and alternate TS evolution requirement", () => {
     const card = getCardDefinition("BT25-077");
     expect(card).toBeDefined();

@@ -2,7 +2,7 @@ import { Schema, ArraySchema, type, view } from "@colyseus/schema";
 import { CardInstance } from "./CardInstance.js";
 import { Permanent } from "./Permanent.js";
 import type { EffectDuration, Seat } from "./enums.js";
-import { PRIVATE_VIEW_TAG } from "./viewTags.js";
+import { PRIVATE_VIEW_TAG, PLAYER_IDENTITY_VIEW_TAG } from "./viewTags.js";
 export { PRIVATE_VIEW_TAG } from "./viewTags.js";
 
 /** Public summary of a rule affecting current and future field entrants. */
@@ -14,6 +14,8 @@ export interface FieldEffectView {
   ownerSeat: Seat;
   sourceCardId?: string;
   effectText?: string;
+  fromSourceKind?: string[];
+  byOpponentEffectsOnly?: boolean;
   continuous?: boolean;
   skipsCurrentOpponentTurnEnd?: boolean;
 }
@@ -67,10 +69,10 @@ export class SecurityCardView extends Schema {
  */
 export class PlayerState extends Schema {
   @type("uint8") seat!: Seat;
-  @type("string") displayName = "";
+  @view(PLAYER_IDENTITY_VIEW_TAG) @type("string") displayName = "";
   /** A Digimon World portrait id, or "" for none (bots, and players who never picked one). */
-  @type("string") avatarId = "";
-  @type("string") sessionId = "";
+  @view(PLAYER_IDENTITY_VIEW_TAG) @type("string") avatarId = "";
+  @view(PLAYER_IDENTITY_VIEW_TAG) @type("string") sessionId = "";
 
   // Hidden zones. A field tagged with @view is withheld in full from every viewer that has
   // not unlocked this PlayerState with the tag, so a viewer without it sees neither the items
@@ -140,4 +142,10 @@ export class PlayerState extends Schema {
    * resolving face-up is public information, same as the battle area or trash.
    */
   @type(CardInstance) resolvingOption?: CardInstance;
+  @type("string") botPersonaId = "";
+  @type("boolean") hideIdentityFromSpectators = false;
+  @view(PRIVATE_VIEW_TAG) @type("string") spectatorNamesJson = "[]";
+  @view(PRIVATE_VIEW_TAG) @type("uint16") anonymousSpectatorCount = 0;
+  @view(PRIVATE_VIEW_TAG) @type("string") manualInspectionJson = "[]";
+  @view(PLAYER_IDENTITY_VIEW_TAG) @type("string") equippedRankedTier = "";
 }

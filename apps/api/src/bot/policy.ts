@@ -1,11 +1,17 @@
-import { CardKind } from "@aegis/shared/schema/enums";
+import { chooseCounterAction } from "#api/bot/decisions/chooseCounterAction";
+import type { DecisionAnswerObservation } from "#api/bot/decisions/DecisionAnswerObservation";
+import { explainDecisionAnswer } from "#api/bot/decisions/explainDecisionAnswer";
+import { explainEvadeResponse } from "#api/bot/decisions/explainEvadeResponse";
+import { selectScoredCandidate } from "#api/bot/levels/selectScoredCandidate";
+import { selectAllianceAlly } from "#api/bot/selectAllianceAlly";
 import type { DecisionRequest, ServerEvent } from "@aegis/shared/protocol/events";
 import type { Intent } from "@aegis/shared/protocol/intents";
 import { enumerateMainPhaseCandidates, digivolveCost, type Candidate } from "#api/bot/candidates";
 import { appraiseBlock, bodyValue, scoreCandidate, shouldPayBarrier } from "#api/bot/evaluate";
 import { DEFAULT_BOT_PROFILE, type BotProfile } from "#api/bot/profiles";
 import { createBotRandom, type BotRandom } from "#api/bot/rng";
-import { isDigimonCard, type BotUnit, type BotView } from "#api/bot/view";
+import { isDigimonCard, type BotView } from "#api/bot/view";
+import type { LiveSearchFallbackCounts } from "#api/bot/search/LiveSearchFallback";
 
 /**
  * The decision surface `BotPlayer` drives.
@@ -17,6 +23,9 @@ import { isDigimonCard, type BotUnit, type BotView } from "#api/bot/view";
  */
 export interface BotPolicy<Result extends Intent | Promise<Intent> = Intent> {
   readonly name: string;
+  getSeenOpponentCards?(): { main: readonly string[]; eggs: readonly string[] };
+  searchFallbacks?(): Readonly<LiveSearchFallbackCounts>;
+  searchErrors?(): Readonly<Record<string, number>>;
   /** Broadcast events only; private decisions enter through answerDecision. */
   observeEvent?(event: ServerEvent): void;
   /** Called at the start of each of the bot's own turns so per-turn state can reset. */
@@ -52,6 +61,11 @@ export type AllianceContext = Extract<ServerEvent, { kind: "alliancePrompt" }>;
 export interface EvaluationPolicyOptions {
   profile?: BotProfile;
   seed?: number;
+  temperature?: number;
+  topK?: number;
+  preferBeneficialSelections?: boolean;
+  preferFreeOptionSelections?: boolean;
+  onDecisionAnswer?: (observation: DecisionAnswerObservation) => void;
 }
 
 /**
@@ -75,19 +89,22 @@ export function createEvaluationPolicy(options: EvaluationPolicyOptions = {}): B
 
   function bestCandidate(view: BotView): Candidate {
     const candidates = enumerateMainPhaseCandidates(view);
-    let best: Candidate | undefined;
-    let bestScore = Number.NEGATIVE_INFINITY;
+    const scored: { candidate: Candidate; score: number; lethal: boolean }[] = [];
     for (const candidate of candidates) {
       if (rejectedThisTurn.has(candidate.key)) continue;
       // An activated ability that stays offered after firing would otherwise loop.
       if (candidate.kind === "activateEffect" && attemptedThisTurn.has(candidate.key)) continue;
       const score = scoreCandidate(view, candidate, profile) + jitter();
-      if (score > bestScore) {
-        bestScore = score;
-        best = candidate;
-      }
+      scored.push({ candidate, score, lethal: candidate.kind === "attackPlayer" && score >= profile.weights.lethal });
     }
-    if (best === undefined || bestScore <= profile.weights.actionThreshold) {
+    const best = selectScoredCandidate({
+      candidates: scored,
+      temperature: options.temperature ?? 0,
+      topK: options.topK ?? 1,
+      random: () => random.next(),
+      passThreshold: profile.weights.actionThreshold,
+    });
+    if (best === undefined) {
       return { kind: "endPhase", key: "endPhase", intent: { type: "endPhase" }, cost: 0 };
     }
     return best;
@@ -135,42 +152,53 @@ export function createEvaluationPolicy(options: EvaluationPolicyOptions = {}): B
     },
 
     chooseBlockResponse(view: BotView, context: BlockContext): Intent {
+      const attacker = view.opponentBoard.find((unit) => unit.permanentId === context.attackerPermanentId);
+      const appraisal = appraiseBlock(view, attacker, context.eligibleBlockerIds, context.targetsPlayer, profile);
       if (context.mustBlock) {
-        const blockerPermanentId = context.eligibleBlockerIds[0];
+        const blockerPermanentId =
+          appraisal?.blockerPermanentId ??
+          [...context.eligibleBlockerIds].sort((left, right) => {
+            const first = view.board.find((unit) => unit.permanentId === left);
+            const second = view.board.find((unit) => unit.permanentId === right);
+            return (first === undefined ? 0 : bodyValue(first)) - (second === undefined ? 0 : bodyValue(second));
+          })[0];
         return blockerPermanentId === undefined
           ? { type: "declineBlock" }
           : { type: "declareBlock", blockerPermanentId };
       }
-      const attacker = view.opponentBoard.find((unit) => unit.permanentId === context.attackerPermanentId);
-      const appraisal = appraiseBlock(view, attacker, context.eligibleBlockerIds, context.targetsPlayer, profile);
       if (appraisal === undefined) return { type: "declineBlock" };
-      return { type: "declareBlock", blockerPermanentId: appraisal.blockerPermanentId };
-    },
-
-    chooseCounterResponse(_view: BotView, context: CounterContext): Intent {
-      // A [Counter] effect costs nothing but the once-per-attack window, and the window
-      // only opens when something is genuinely activatable, so always take it.
-      const counter = context.eligibleCounters[0];
-      if (counter === undefined) return { type: "respondCounter" };
       return {
-        type: "respondCounter",
-        sourceInstanceId: counter.instanceId,
-        effectKey: counter.effectKey,
+        type: "declareBlock",
+        blockerPermanentId: appraisal.blockerPermanentId,
       };
     },
 
-    chooseAllianceResponse(view: BotView, context: AllianceContext): Intent {
-      // ＜Alliance＞ suspends an ally to add its DP to the attack. Worth it only when
-      // something on the other side could actually survive or block the attack unaided.
-      const contested = view.opponentBoard.some((unit) => !unit.suspended);
-      const ally = context.eligibleAllyIds[0];
-      if (!contested || ally === undefined) return { type: "respondAlliance" };
-      return { type: "respondAlliance", allyPermanentId: ally };
+    chooseCounterResponse(view: BotView, context: CounterContext): Intent {
+      const answer = chooseCounterAction({ view, context, profile });
+      options.onDecisionAnswer?.({ kind: "counter", view, answer });
+      return answer.intent;
     },
 
-    chooseEvadeResponse(_view: BotView, permanentId: string): Intent {
-      // ＜Evade＞ only costs suspension, which the Digimon was about to lose anyway.
-      return { type: "respondEvade", permanentId, accept: true };
+    chooseAllianceResponse(view: BotView, context: AllianceContext): Intent {
+      const ally = selectAllianceAlly({
+        view,
+        attackerId: context.permanentId,
+        eligibleAllyIds: context.eligibleAllyIds,
+      });
+      return ally === undefined
+        ? { type: "respondAlliance" }
+        : { type: "respondAlliance", allyPermanentId: ally.permanentId };
+    },
+
+    chooseEvadeResponse(view: BotView, permanentId: string): Intent {
+      const answer = explainEvadeResponse({ view, permanentId, profile });
+      options.onDecisionAnswer?.({
+        kind: "evade",
+        view,
+        sourceCardId: view.board.find((unit) => unit.permanentId === permanentId)?.cardId,
+        answer,
+      });
+      return answer.intent;
     },
 
     chooseBarrierResponse(view: BotView, permanentId: string): Intent {
@@ -182,7 +210,17 @@ export function createEvaluationPolicy(options: EvaluationPolicyOptions = {}): B
     },
 
     answerDecision(view: BotView | undefined, request: DecisionRequest): Intent {
-      return answerDecisionWith(view, request, profile);
+      const answerRequest = (offered: DecisionRequest) =>
+        explainDecisionAnswer({
+          view,
+          request: offered,
+          profile,
+          preferBeneficialSelections: options.preferBeneficialSelections,
+          preferFreeOptionSelections: options.preferFreeOptionSelections,
+        });
+      const answer = answerRequest(request);
+      options.onDecisionAnswer?.({ kind: request.kind, view, request, answer, answerRequest });
+      return answer.intent;
     },
 
     noteRejected(intent: Intent): void {
@@ -212,165 +250,13 @@ function candidateKeyOf(intent: Intent): string | undefined {
   }
 }
 
-/**
- * Shared decision answering. Deliberately not profile-dependent beyond the cases where
- * risk appetite genuinely applies: these are effect resolutions where the printed text is
- * not available to reason over, so the safe general rule is to take the beneficial branch.
- */
-export function answerDecisionWith(view: BotView | undefined, request: DecisionRequest, _profile: BotProfile): Intent {
-  switch (request.kind) {
-    case "mulligan":
-      return { type: "mulligan", keep: shouldKeepHand(view) };
-
-    case "optional":
-      // "You may" clauses on a card you control are written to benefit you.
-      return {
-        type: "respondDecision",
-        decisionId: request.decisionId,
-        response: { kind: "optional", accept: true },
-      };
-
-    case "selectCards": {
-      const instanceIds = pickInstances(view, request);
-      return {
-        type: "respondDecision",
-        decisionId: request.decisionId,
-        response: { kind: "selectCards", instanceIds },
-      };
-    }
-
-    case "chooseTargets": {
-      const instanceIds = pickInstances(view, request);
-      return {
-        type: "respondDecision",
-        decisionId: request.decisionId,
-        response: { kind: "chooseTargets", instanceIds },
-      };
-    }
-
-    case "orderCards":
-      return {
-        type: "respondDecision",
-        decisionId: request.decisionId,
-        response: { kind: "orderCards", order: [...(request.options?.candidateInstanceIds ?? [])] },
-      };
-
-    case "orderTriggers":
-      return {
-        type: "respondDecision",
-        decisionId: request.decisionId,
-        response: { kind: "orderTriggers", order: (request.options?.triggerKeys ?? []).slice(0, 1) },
-      };
-
-    case "chooseOption":
-      return {
-        type: "respondDecision",
-        decisionId: request.decisionId,
-        response: { kind: "chooseOption", optionIndex: 0 },
-      };
-
-    default: {
-      const unhandled: never = request.kind;
-      throw new Error(`Unhandled bot decision kind: ${String(unhandled)}`);
-    }
-  }
-}
-
-/** Keep an opening hand that can actually start: at least one Lv.3 Digimon to play. */
-function shouldKeepHand(view: BotView | undefined): boolean {
-  if (view === undefined) return true;
-  if (view.hand.length === 0) return true;
-  return view.hand.some(
-    (card) =>
-      card.definition !== undefined &&
-      card.definition.kinds.includes(CardKind.Digimon) &&
-      (card.definition.level ?? 0) <= 3,
-  );
-}
-
-/**
- * Order the offered candidates so the ones most likely to be the good pick come first,
- * then take exactly as many as the request demands.
- *
- * The decision protocol carries no statement of what the selection is FOR, so this
- * cannot be exact. What it can do is exploit ownership: a candidate on the opponent's
- * board is almost always something we want gone (biggest first), and a candidate we own
- * is almost always something we are being asked to give up (cheapest first).
- */
-function pickInstances(view: BotView | undefined, request: DecisionRequest): string[] {
-  const candidates = request.options?.candidateInstanceIds ?? [];
-  const min = request.options?.min ?? 0;
-  if (candidates.length === 0) return [];
-  if (view === undefined) return candidates.slice(0, min);
-
-  // A board candidate arrives as a permanent id from a targeting clause and as a card
-  // instance id from a selection clause, and the request never says which. Indexing units
-  // under both names is what makes the ranking below apply to either.
-  const opponentUnits = indexUnits(view.opponentBoard);
-  const ownUnits = indexUnits(view.breeding === undefined ? view.board : [...view.board, view.breeding]);
-  const ownHand = new Map(view.hand.map((card) => [card.instanceId, card]));
-
-  const visibleCardIds = new Map((request.options?.visibleCards ?? []).map((card) => [card.instanceId, card.cardId]));
-  const selectedCardIds = new Set<string>();
-  const ranked = [...candidates]
-    .sort((left, right) => rank(right) - rank(left))
-    .filter((instanceId) => {
-      if (!request.options?.distinctCardIds) return true;
-      const cardId =
-        visibleCardIds.get(instanceId) ??
-        ownHand.get(instanceId)?.cardId ??
-        ownUnits.get(instanceId)?.cardId ??
-        opponentUnits.get(instanceId)?.cardId;
-      if (cardId === undefined || selectedCardIds.has(cardId)) return false;
-      selectedCardIds.add(cardId);
-      return true;
-    });
-
-  if (min > 0) return ranked.slice(0, min);
-  // The bot already accepted this "you may" clause; its pick floor of zero only exists so a
-  // human can back out.
-  if (request.options?.purpose === "acceptedOptional") return ranked.slice(0, 1);
-  // A cost selection IS the payment: an empty answer declines the clause and, on a clause
-  // whose whole body is gated behind it, throws the card away for nothing (P-193 played
-  // its ＜Delay＞ body away by skipping the trash cost). Pay it in full, spending the
-  // cheapest cards we own — a card already committed to the cost is worth less than the
-  // effect it buys, and a partial payment is the same as no payment.
-  if (request.options?.purpose === "cost") {
-    const price = request.options.max ?? 1;
-    const affordable = ranked.filter((instanceId) => !opponentUnits.has(instanceId));
-    // `rank` already scores cards we own negatively by level, play cost and body, so the
-    // descending sort leaves the cheapest one to give up at the front of the pool.
-    const pool = affordable.length > 0 ? affordable : ranked;
-    return pool.length >= price ? pool.slice(0, price) : [];
-  }
-  // An optional selection whose only candidates sit on the opponent's board is a removal
-  // or disruption clause; taking one is strictly better than declining it.
-  const firstIsOpponent = ranked[0] !== undefined && opponentUnits.has(ranked[0]);
-  return firstIsOpponent ? ranked.slice(0, 1) : [];
-
-  function rank(instanceId: string): number {
-    const enemy = opponentUnits.get(instanceId);
-    // Suspending an already suspended Digimon is legal (Q1782) but changes nothing.
-    if (enemy !== undefined && enemy.suspended && request.options?.targetFate === "suspend") {
-      return 500 + bodyValue(enemy);
-    }
-    if (enemy !== undefined) return 1_000 + bodyValue(enemy);
-    const mine = ownUnits.get(instanceId);
-    if (mine !== undefined) return -bodyValue(mine);
-    const inHand = ownHand.get(instanceId);
-    if (inHand?.definition !== undefined) {
-      return -(inHand.definition.level ?? 0) - inHand.definition.playCost / 10;
-    }
-    return 0;
-  }
-}
-
-/** Index units under every id a decision request might name them by. */
-function indexUnits(units: readonly BotUnit[]): Map<string, BotUnit> {
-  const index = new Map<string, BotUnit>();
-  for (const unit of units) {
-    index.set(unit.permanentId, unit);
-    if (unit.topCardInstanceId !== undefined) index.set(unit.topCardInstanceId, unit);
-  }
-  return index;
+export function answerDecisionWith(
+  view: BotView | undefined,
+  request: DecisionRequest,
+  profile: BotProfile,
+  preferBeneficialSelections = false,
+  preferFreeOptionSelections = false,
+): Intent {
+  return explainDecisionAnswer({ view, request, profile, preferBeneficialSelections, preferFreeOptionSelections })
+    .intent;
 }

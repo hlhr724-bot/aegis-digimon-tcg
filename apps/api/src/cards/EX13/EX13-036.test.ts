@@ -216,6 +216,15 @@ describe("EX13-036 Kentaurosmon", () => {
 
     expect(s.perm("first").currentDP).toBe(3000);
     expect(s.perm("second").currentDP).toBe(3000);
+    expect(JSON.parse(s.state.players[1]!.fieldEffectsJson)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "dp",
+          sourceCardId: cardId,
+          effectText: "All of your opponent's Digimon get -7000 DP.",
+        }),
+      ]),
+    );
     // CR 15-11-2-2: a Digimon that enters afterwards is affected too.
     const lateEntrant = s.putOnBoard(1, "BT10-086");
     await advance(s.engine).recompute();

@@ -17,7 +17,7 @@ export function shieldBreakStep({
   setSecurityHitSeat,
   scene,
   replace = true,
-  clausesBefore,
+  clausesThrough,
   afterClauses,
   causingEffectGate,
 }: {
@@ -26,8 +26,11 @@ export function shieldBreakStep({
   setSecurityHitSeat: Dispatch<SetStateAction<number | null>>;
   scene: SecurityBreakScene;
   replace?: boolean;
-  /** The state version of the check's batch; clauses from earlier batches read first. */
-  clausesBefore?: number;
+  /**
+   * The state version of the check's batch. Clauses queued from it or earlier batches read
+   * first; the check's own clauses are held for the dock and queue only after the break.
+   */
+  clausesThrough?: number;
   /** Runs once those clauses have been read, before the shield breaks. */
   afterClauses?: () => void;
   /** Effect clause whose announcement must precede this effect-caused shield break. */
@@ -59,17 +62,17 @@ export function shieldBreakStep({
       // resolves a [When Attacking] effect ahead of the reveal, but its toast glows the
       // source card first, so without this wait the check opened over a clause that had
       // not arrived yet and looked like it had fired afterwards.
-      // Only earlier batches count, so the set is finite. A chain of clauses (BeelStarmon's
-      // unsuspend, then the Option it trashed) outlasts one lead, so each clause that
-      // finishes buys the next its own lead; a stalled clause still lets the check go.
-      if (clausesBefore !== undefined) {
+      // Only batches up to the check's count, so the set is finite. A chain of clauses
+      // (BeelStarmon's unsuspend, then the Option it trashed) outlasts one lead, so each clause
+      // that finishes buys the next its own lead; a stalled clause still lets the check go.
+      if (clausesThrough !== undefined) {
         // A docked Option those clauses are waiting on is part of the same earlier beat.
         const earlierClauses = () =>
           queue.countPendingSteps(
             (step) =>
               (step.id.startsWith("narration-step-") || step.id.startsWith("option-dock-hold-")) &&
               step.origin !== undefined &&
-              step.origin.stateVersion < clausesBefore,
+              step.origin.stateVersion <= clausesThrough,
           );
         let remaining = earlierClauses();
         const clausesWereQueued = remaining > 0;

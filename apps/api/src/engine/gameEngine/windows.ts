@@ -88,7 +88,11 @@ export function endResolvingWindow(engine: GameEngine, wasOutermost: boolean): v
  * its deletion reactions and watchers resolve in the rule check's own window, so the body's
  * effects join that window instead of waiting for the enclosing one.
  */
-export async function resolveLeaveReplacementBody<T>(engine: GameEngine, body: () => Promise<T>): Promise<T> {
+export async function resolveLeaveReplacementBody<T>(
+  engine: GameEngine,
+  body: () => Promise<T>,
+  options: { asEffectBody?: boolean } = {},
+): Promise<T> {
   const wasOutermost = beginResolvingWindow(engine);
   if (!wasOutermost && engine.ruleTriggerPool === undefined) return body();
   const nestedBefore = new Set(engine.pendingNestedTimingEffects);
@@ -101,7 +105,18 @@ export async function resolveLeaveReplacementBody<T>(engine: GameEngine, body: (
     }
     let result!: T;
     await withPendingPoolDrain(engine, true, async () => {
-      result = await body();
+      if (options.asEffectBody !== true) {
+        result = await body();
+        return;
+      }
+      engine.effectBodyTokens.push(++engine.windowTokenSeq);
+      engine.effectResolutionDepth += 1;
+      try {
+        result = await body();
+      } finally {
+        engine.effectBodyTokens.pop();
+        engine.effectResolutionDepth = Math.max(0, engine.effectResolutionDepth - 1);
+      }
     });
     triggered = pendingWindowCollected(engine).filter((pending) => !nestedBefore.has(pending));
     return result;
@@ -158,7 +173,7 @@ export function parkDeferredSecurityRemovalTriggers(
     const armed = armedSubTriggers(engine, deferred.subscriptions, deferred.payload, deferred.contexts);
     const collected = armedAsPendingCollected(engine, armed);
     for (const entry of collected) {
-      engine.nestedTriggerSourceIdentity.set(entry, permanentIdentityOf(entry.source) ?? null);
+      entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
     }
     engine.pendingNestedTimingEffects.push(...collected);
   }
@@ -173,7 +188,7 @@ export function parkDeferredSecurityRemovalTriggers(
  */
 export function parkDeferredTimingWindowsForAttack(engine: GameEngine): void {
   for (const entry of collectDeferredTimingPending(engine)) {
-    engine.nestedTriggerSourceIdentity.set(entry, permanentIdentityOf(entry.source) ?? null);
+    entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
     engine.pendingNestedTimingEffects.push(entry);
   }
 }
@@ -192,9 +207,11 @@ export async function settleBetweenEffects(engine: GameEngine): Promise<void> {
 
 /** Security removal is another reaction of the same completed effect body. */
 function collectDeferredSecurityRemovalPending(engine: GameEngine): CollectedEffect[] {
-  const armed = engine.deferredSecurityRemovalTriggers
-    .splice(0)
-    .flatMap((entry) => armedSubTriggers(engine, entry.subscriptions, entry.payload, entry.contexts));
+  const armed = uniqueOncePerTurnWatcherOccurrences(
+    engine.deferredSecurityRemovalTriggers
+      .splice(0)
+      .flatMap((entry) => armedSubTriggers(engine, entry.subscriptions, entry.payload, entry.contexts)),
+  );
   return armedAsPendingCollected(engine, armed).map((entry, index) => ({
     ...entry,
     effect: {
@@ -206,7 +223,7 @@ function collectDeferredSecurityRemovalPending(engine: GameEngine): CollectedEff
 
 /** Stage one completed body's deferred reactions alongside its other derived effects. */
 export function collectDeferredTimingPending(engine: GameEngine): CollectedEffect[] {
-  if (engine.effectResolutionDepth > 0 || engine.optionResolutionDepth > 0) return [];
+  if (engine.effectResolutionDepth > 0 || engine.optionMainDepth > 0) return [];
   const deferred = engine.deferredTimingWindows.splice(0);
   const deletions = deferred.filter((entry) => entry.timing === EffectTiming.OnDestroyedAnyone);
   const pending = collectDeletionPending(
@@ -255,7 +272,11 @@ export async function flushDeferredTimingWindows(engine: GameEngine): Promise<vo
 }
 
 export function shouldDeferNestedTiming(engine: GameEngine): boolean {
-  return engine.ruleProcessing || (engine.effectResolutionDepth > 0 && engine.activeWindowToken !== undefined);
+  return (
+    engine.ruleProcessing ||
+    (engine.effectResolutionDepth > 0 && engine.activeWindowToken !== undefined) ||
+    (engine.optionResolutionDepth > 0 && engine.optionMainDepth === 0)
+  );
 }
 
 export function collectNestedTimingEffects(
@@ -281,7 +302,7 @@ export function deferNestedTimingEffects(
 ): void {
   const collected = collectNestedTimingEffects(engine, timing, trigger, candidateInstances);
   for (const entry of collected) {
-    engine.nestedTriggerSourceIdentity.set(entry, permanentIdentityOf(entry.source) ?? null);
+    entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
   }
   engine.pendingNestedTimingEffects.push(...collected);
 }

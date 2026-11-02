@@ -1,0 +1,468 @@
+.friends-screen {
+  width: min(100%, var(--ds-container-max));
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  margin-inline: auto;
+  padding: var(--ds-space-8) var(--ds-gutter-desktop);
+  color: var(--ds-text);
+}
+.friends-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-4);
+  margin-bottom: var(--ds-space-8);
+}
+.friends-header h1 {
+  margin: 0 0 var(--ds-space-2);
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-4xl);
+}
+.friends-header p {
+  margin: 0;
+  color: var(--ds-text-2);
+  max-width: var(--ds-readable-max);
+}
+.friends-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--ds-space-6);
+  align-items: start;
+}
+.friends-directory {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  padding: var(--ds-space-5);
+  background: var(--ds-sheet);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-lg);
+}
+.friends-sidebar {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+.friends-add-panel h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin: 0 0 var(--ds-space-4);
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-lg);
+}
+.friends-add-panel p {
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-sm);
+  margin: var(--ds-space-3) 0 0;
+}
+.friends-form > div {
+  display: flex;
+  align-items: end;
+  gap: var(--ds-space-2);
+}
+.friends-form .aegis-field {
+  flex: 1;
+  min-width: 0;
+}
+.friends-tabs {
+  display: flex;
+  gap: var(--ds-space-2);
+  border-bottom: 1px solid var(--ds-line);
+  margin-bottom: var(--ds-space-5);
+  overflow-x: auto;
+}
+.friends-tabs button {
+  min-height: var(--ds-touch-target);
+  padding: var(--ds-space-3) var(--ds-space-2);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--ds-text-2);
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+}
+.friends-tabs button[aria-current] {
+  color: var(--ds-accent);
+  border-bottom-color: var(--ds-accent);
+}
+.friends-list {
+  padding: 0;
+  margin: var(--ds-space-3) 0 0;
+  list-style: none;
+}
+.friends-list > .friends-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-2);
+  border-bottom: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-sm);
+}
+.friends-row[data-selected] {
+  background: var(--ds-accent-soft);
+}
+.friends-person {
+  display: grid;
+  gap: var(--ds-space-1);
+  flex: 1;
+  min-width: 7rem;
+  overflow-wrap: anywhere;
+}
+.friends-person small {
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-xs);
+}
+.friends-name {
+  display: grid;
+  justify-items: start;
+  align-content: center;
+  gap: var(--ds-space-1);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.friends-name .friend-presence,
+.friends-name small {
+  font-weight: 400;
+}
+.friends-name strong {
+  line-height: 1.25;
+}
+.friends-name:hover {
+  color: var(--ds-accent);
+  text-decoration: underline;
+}
+.friends-actions {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+}
+.friends-actions .aegis-button {
+  min-height: var(--ds-touch-target);
+}
+.friends-more {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--ds-touch-target);
+  height: var(--ds-touch-target);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ds-text-2);
+  cursor: pointer;
+  border-radius: var(--ds-radius-md);
+}
+.friends-more:hover,
+.friends-more[data-state="open"] {
+  background: var(--ds-fill);
+}
+.friends-more-actions {
+  z-index: var(--ds-z-sheet);
+  min-width: 12rem;
+  max-width: calc(100vw - var(--ds-space-6));
+  max-height: var(--radix-dropdown-menu-content-available-height);
+  overflow-y: auto;
+  padding: var(--ds-space-2);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-sheet);
+  color: var(--ds-text);
+  box-shadow: var(--ds-shadow-overlay);
+  font-family: var(--ds-font-body);
+}
+.friends-more-actions [role="menuitem"] {
+  display: flex;
+  align-items: center;
+  min-height: var(--ds-touch-target);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-sm);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+.friends-more-actions [data-highlighted] {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+}
+.friends-more-actions [data-disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+.friends-empty {
+  padding: var(--ds-space-8) var(--ds-space-3);
+  text-align: center;
+  color: var(--ds-text-3);
+}
+.friends-add-action {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+.friends-add-action > span {
+  font-size: var(--ds-text-xs);
+}
+.friends-stats {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--ds-space-2) var(--ds-space-4);
+}
+.friends-screen :is(button, summary):focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 3px;
+}
+@media (max-width: 1099px) {
+  .friends-screen {
+    padding: var(--ds-space-6) var(--ds-gutter-phone);
+  }
+  .friends-workspace {
+    display: flex;
+    flex-direction: column;
+  }
+  .friends-directory,
+  .friends-sidebar {
+    width: 100%;
+  }
+  .friends-sidebar {
+    order: -1;
+  }
+  .friends-header {
+    align-items: start;
+    flex-wrap: wrap;
+    margin-bottom: var(--ds-space-5);
+  }
+  .friends-header h1 {
+    font-size: var(--ds-text-3xl);
+  }
+}
+@media (max-width: 599px) {
+  .friends-directory {
+    padding: var(--ds-space-3);
+  }
+  .friends-actions {
+    width: 100%;
+  }
+  .friends-actions > .aegis-button {
+    flex: 1;
+  }
+  .friends-form > div {
+    flex-wrap: wrap;
+  }
+  .friends-form .aegis-field {
+    flex-basis: 100%;
+  }
+  .friends-form button {
+    width: 100%;
+  }
+}
+.friend-detail {
+  display: grid;
+  gap: var(--ds-space-5);
+}
+.friend-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+.friend-detail-header h2 {
+  margin: 0;
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-xl);
+}
+.friend-detail-person {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+}
+.friend-detail-person h3 {
+  margin: 0 0 var(--ds-space-2);
+  font-size: var(--ds-text-xl);
+}
+.friend-detail-replays {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--ds-space-2);
+}
+.friend-detail-replays a {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3);
+  background: var(--ds-fill);
+  color: var(--ds-text);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-md);
+  text-decoration: none;
+}
+.friend-detail-replays a:hover {
+  border-color: var(--ds-accent);
+}
+.friend-detail-replays a > span:not(.aegis-badge) {
+  flex: 1;
+  min-width: 9rem;
+}
+.friend-detail-replays small {
+  display: block;
+  color: var(--ds-text-3);
+  margin-top: var(--ds-space-1);
+}
+.friends-unread {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  margin-inline-start: var(--ds-space-1);
+  padding-inline: 5px;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-accent);
+  color: var(--ds-on-accent);
+  font-size: 11px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.friends-tab-count {
+  font-variant-numeric: tabular-nums;
+}
+.friends-more-actions [role="menuitem"] {
+  gap: var(--ds-space-2);
+}
+.add-friend-dialog {
+  display: grid;
+  gap: var(--ds-space-4);
+  width: min(100%, 26rem);
+}
+.add-friend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+.add-friend-header h2 {
+  margin: 0;
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-2xl);
+}
+.add-friend-hint {
+  margin: calc(-1 * var(--ds-space-2)) 0 0;
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+}
+.add-friend-form {
+  display: grid;
+  gap: var(--ds-space-3);
+}
+.add-friend-form .aegis-button {
+  border-radius: var(--ds-radius-pill);
+}
+.add-friend-field {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-height: 3rem;
+  padding-inline: var(--ds-space-4);
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-sheet);
+  color: var(--ds-text-3);
+}
+.add-friend-field input {
+  flex: 1;
+  min-width: 0;
+  min-height: calc(3rem - 2px);
+  border: 0;
+  background: transparent;
+  color: var(--ds-text);
+  font: inherit;
+  outline: none;
+}
+.add-friend-field input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.add-friend-recent {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+.add-friend-recent h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  margin: 0;
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.add-friend-recent h3::before,
+.add-friend-recent h3::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--ds-line);
+}
+.add-friend-recent ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.add-friend-recent li {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-2);
+  border-bottom: 1px solid var(--ds-line);
+}
+.add-friend-recent li:last-child {
+  border-bottom: 0;
+}
+.add-friend-recent strong {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.add-friend-recent .friends-add-action {
+  justify-content: end;
+}
+.remove-friend-dialog {
+  display: grid;
+  gap: var(--ds-space-3);
+  width: min(100%, 26rem);
+}
+.remove-friend-dialog h2 {
+  margin: 0;
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-xl);
+  overflow-wrap: anywhere;
+}
+.remove-friend-dialog p {
+  margin: 0;
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+}
+.remove-friend-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-2);
+}

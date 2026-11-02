@@ -1,3 +1,5 @@
+import { RankedRoundClock } from "#api/ranked/RankedRoundClock";
+import type { AccountStore } from "#api/accounts/AccountStore";
 import { CloseCode, type Client } from "colyseus";
 import { ArraySchema } from "@colyseus/schema";
 import { CombatWindow, type Intent, type Seat } from "@aegis/shared";
@@ -19,6 +21,7 @@ import { comparableState } from "./roomMatch.fixture.js";
  */
 
 type Internals = {
+  rankedRoundClock?: RankedRoundClock;
   engine: GameEngine;
   handleIntent(client: Client, intent: Intent): void;
   syncMatchClock(): void;
@@ -105,8 +108,10 @@ describe("AegisRoom replay recording", () => {
 
     expect(replayLines(room, "replay.header")).toEqual([
       {
+        gameMode: "automatic",
         replaySeq: 1,
         seed: 99,
+        randomKey: expect.stringMatching(/^[a-f0-9]{64}$/),
         serverRevision: "abc1234",
         deckFormat: "standard",
         unlimited: false,
@@ -152,6 +157,40 @@ describe("AegisRoom replay recording", () => {
     expect(received.map((line) => (line.intent as Intent).type)).toEqual(["ready", "ready", "mulligan", "mulligan"]);
     expect(results.map((line) => line.replaySeq)).toEqual(received.map((line) => line.replaySeq));
     expect(received.every((line) => typeof line.engineEvents === "number")).toBe(true);
+  });
+
+  it("replays a ranked round timeout as the same authoritative draw", async () => {
+    const room = makeRoom();
+    await startedMatch(room);
+    internals(room).rankedRoundClock = new RankedRoundClock(Date.now() - 54 * 60_000);
+    internals(room).syncMatchClock();
+    expect(room.state.gameOver).toBe(true);
+    expect(replayLines(room, "replay.input")).toContainEqual(expect.objectContaining({ kind: "expireRankedRound" }));
+    const replay = await runReplay(extractReplay(lines, room.state.matchLogId));
+    expect(replay.divergences).toEqual([]);
+    expect(replay.state.gameOver).toBe(true);
+    expect(replay.state.winnerSeat).toBe(-1);
+  });
+
+  it("ends after the third extra turn before the next turn can draw a card", async () => {
+    const room = makeRoom();
+    const clients = await startedMatch(room);
+    const turnZero = room.state.turnCount;
+    const clock = new RankedRoundClock(Date.now() - 48 * 60_000);
+    clock.shouldDraw({ now: Date.now(), turn: turnZero, safe: false });
+    internals(room).rankedRoundClock = clock;
+    for (let phase = 0; phase < 16 && !room.state.gameOver; phase++) {
+      internals(room).handleIntent(clients[room.state.turnSeat as Seat], { type: "endPhase" });
+      await macrotask();
+    }
+    expect(room.state.gameOver).toBe(true);
+    expect(room.state.turnCount).toBe(turnZero + 3);
+    expect(replayLines(room, "replay.input")).toContainEqual(
+      expect.objectContaining({ kind: "expireRankedRound", site: "beforeTurn" }),
+    );
+    const replay = await runReplay(extractReplay(lines, room.state.matchLogId));
+    expect(replay.divergences).toEqual([]);
+    expect(replay.state.turnCount).toBe(turnZero + 3);
   });
 
   it("records a dropped connection and its reconnection, then a match-clock loss", async () => {
@@ -264,7 +303,10 @@ describe("AegisRoom replay recording", () => {
 
   it("records a bot's seat, and sends a tournament bot's ready as a recorded intent", async () => {
     const series = {
-      inspectAuthorization: async () => ({ ok: true, value: { kind: "bot", participantId: "participant-1" } }),
+      inspectAuthorization: async () => ({
+        ok: true,
+        value: { kind: "bot", participantId: "participant-1", authorization: { tournamentId: "tournament-one" } },
+      }),
       claimGame: async () => ({
         ok: true,
         value: {
@@ -277,6 +319,9 @@ describe("AegisRoom replay recording", () => {
       markGamePlaying: async () => true,
     } as unknown as SeriesStore;
     class TournamentRoom extends AegisRoom {
+      protected override accounts(): AccountStore {
+        return { tournament: async () => ({ format: "standard", banlistCards: [] }) } as unknown as AccountStore;
+      }
       protected override series(): SeriesStore {
         return series;
       }

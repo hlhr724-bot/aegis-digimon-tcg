@@ -1,0 +1,222 @@
+{
+  "scope": "Standalone candidate catalog; evaluated without planner; no default, experiment activation or production deployment change",
+  "candidateProgramSha256": "8d7b7cd1969b0db187ce0cd0997cfdb56083909e9b5aee6cbbb45f0a975b60bd",
+  "catalogSha256": "e19d7a99b23218eed96ed78458c331e90a5c21b117f9e0c515494c0b3acab83c",
+  "baselineCatalogSha256": "9098bef3b089f2995fe684236f7d33f12a9e89b10ffe741acf28d212478d0e46",
+  "runtimeFingerprint": "4a8800f1fff4c2e52c3cb3a795ad56dbc1425045e5e46a7c4eb065b5464ad178",
+  "confirmationProtocol": {
+    "runtime": "4a8800f1fff4c2e52c3cb3a795ad56dbc1425045e5e46a7c4eb065b5464ad178",
+    "node": "v26.12.0",
+    "workers": 4,
+    "heapMegabytes": 512,
+    "timeoutSeconds": 60,
+    "maxRssMegabytes": 2560,
+    "batchSha256": "5001ceea0d1886fdaa6d060da0a262c325002ef54dcdbd44fcad7ccf4a92711e",
+    "poolSha256": "e054b547c9a317735eb74f387ea30cad9355a71e84fbd6be61514f24c3316cca",
+    "checkpointSha256": "f215225871a159e197ffc57a8d84e3d844775c0d69c689cab8f84f5f1a84dafc",
+    "candidateSha256": "34baabe101eaace8efea9dab3b1b5de8dcbd1b79947ad4cb5d3fdac7cc874895",
+    "baselineSha256": "b8b6fcdb5e820de81b699f0c1f68714cf6277f8539acb6b73674c6573585d971",
+    "pairsSha256": "111ed3def9d8e9f9196c5e5565f5218667eced3590dd258fd87ab8c401be1c39",
+    "sourceSha256": "2f91d8e7e3164c552b88288b7c9cea6aa757604069c77e6aa698b4d8fad1e73a",
+    "seedBase": 15000000,
+    "primaryMetric": "Failure-as-loss paired matchup points",
+    "weights": {
+      "certified": 0.5,
+      "legacy": 0.25,
+      "v2": 0.25
+    },
+    "minimumOpponentBlocks": 20,
+    "maximumOpponentDrop": 0.02,
+    "acceptance": "Weighted lower95 above zero, certified gain positive, no opponent drop above2pp, no more invalid games"
+  },
+  "confirmation": {
+    "complete": true,
+    "games": 1920,
+    "matchups": 240,
+    "peakWorkerRssMiB": 1486,
+    "opponents": {
+      "certified": {
+        "arms": {
+          "baseline": {
+            "games": 480,
+            "valid": 479,
+            "invalid": 1,
+            "rate": 0.44676409185803756,
+            "failureAsLossRate": 0.44583333333333336,
+            "wins": 214,
+            "draws": 0
+          },
+          "candidate": {
+            "games": 480,
+            "valid": 479,
+            "invalid": 1,
+            "rate": 0.46555323590814196,
+            "failureAsLossRate": 0.46458333333333335,
+            "wins": 223,
+            "draws": 0
+          }
+        },
+        "pairedFailureAsLoss": {
+          "mean": 0.01875,
+          "low": -0.005963530270509162,
+          "high": 0.04346353027050916,
+          "varianceOfMean": 0.0001589854691876751,
+          "blocks": 120
+        },
+        "pairedValidBlocks": {
+          "mean": 0.018907563025210083,
+          "low": -0.006012578031721019,
+          "high": 0.043827704082141185,
+          "varianceOfMean": 0.00016165489126857124,
+          "blocks": 119
+        }
+      },
+      "legacy": {
+        "arms": {
+          "baseline": {
+            "games": 240,
+            "valid": 240,
+            "invalid": 0,
+            "rate": 0.5541666666666667,
+            "failureAsLossRate": 0.5541666666666667,
+            "wins": 133,
+            "draws": 0
+          },
+          "candidate": {
+            "games": 240,
+            "valid": 240,
+            "invalid": 0,
+            "rate": 0.5958333333333333,
+            "failureAsLossRate": 0.5958333333333333,
+            "wins": 143,
+            "draws": 0
+          }
+        },
+        "pairedFailureAsLoss": {
+          "mean": 0.041666666666666664,
+          "low": 0.0083829465265539,
+          "high": 0.07495038680677943,
+          "varianceOfMean": 0.0002883709981167608,
+          "blocks": 60
+        },
+        "pairedValidBlocks": {
+          "mean": 0.041666666666666664,
+          "low": 0.0083829465265539,
+          "high": 0.07495038680677943,
+          "varianceOfMean": 0.0002883709981167608,
+          "blocks": 60
+        }
+      },
+      "v2": {
+        "arms": {
+          "baseline": {
+            "games": 240,
+            "valid": 240,
+            "invalid": 0,
+            "rate": 0.5166666666666667,
+            "failureAsLossRate": 0.5166666666666667,
+            "wins": 124,
+            "draws": 0
+          },
+          "candidate": {
+            "games": 240,
+            "valid": 240,
+            "invalid": 0,
+            "rate": 0.525,
+            "failureAsLossRate": 0.525,
+            "wins": 126,
+            "draws": 0
+          }
+        },
+        "pairedFailureAsLoss": {
+          "mean": 0.008333333333333333,
+          "low": -0.02240794779397818,
+          "high": 0.03907461446064485,
+          "varianceOfMean": 0.00024599811676082864,
+          "blocks": 60
+        },
+        "pairedValidBlocks": {
+          "mean": 0.008333333333333333,
+          "low": -0.02240794779397818,
+          "high": 0.03907461446064485,
+          "varianceOfMean": 0.00024599811676082864,
+          "blocks": 60
+        }
+      }
+    },
+    "weightedPairedDifference": {
+      "mean": 0.021875,
+      "low": 0.0051121938778153145,
+      "high": 0.03863780612218468
+    },
+    "baselineInvalid": 1,
+    "candidateInvalid": 1,
+    "accepted": true,
+    "primaryMetric": "Paired matchup points; invalid games count as zero",
+    "interval": "Approximate 95% normal interval, clustered by matchup and stratified by opponent",
+    "opponentWeights": {
+      "certified": 0.5,
+      "legacy": 0.25,
+      "v2": 0.25
+    }
+  },
+  "training": {
+    "complete": true,
+    "selectedSource": "hypothesis:combined",
+    "selected": {
+      "fitness": 0.52734375,
+      "opponents": {
+        "certified": {
+          "rate": 0.5078125,
+          "games": 128,
+          "invalid": 1
+        },
+        "legacy": {
+          "rate": 0.546875,
+          "games": 128,
+          "invalid": 1
+        },
+        "v2": {
+          "rate": 0.546875,
+          "games": 128,
+          "invalid": 0
+        }
+      },
+      "invalid": 2
+    },
+    "control": {
+      "fitness": 0.5078125,
+      "opponents": {
+        "certified": {
+          "rate": 0.484375,
+          "games": 128,
+          "invalid": 1
+        },
+        "legacy": {
+          "rate": 0.53125,
+          "games": 128,
+          "invalid": 1
+        },
+        "v2": {
+          "rate": 0.53125,
+          "games": 128,
+          "invalid": 0
+        }
+      },
+      "invalid": 2
+    },
+    "generations": 4,
+    "peakWorkerRssMiB": 1609,
+    "selectionOnly": true,
+    "requiresIndependentConfirmation": true
+  },
+  "localEvidence": ".local/bot-lab/v3-evidence",
+  "localRawResults": ".local/bot-lab/v3-confirmation/games/results.jsonl",
+  "limitations": [
+    "Approximate normal confidence interval; matchup clustering and opponent stratification",
+    "Certified and frozen-v2 individual intervals include zero; only the aggregate and legacy gains exclude zero",
+    "Real human deck lists; simulated bot opponents, not live-human wins",
+    "No planner or MCTS evaluation; no strict guide-publication certificate",
+    "One invalid game in each confirmation arm"
+  ]
+}

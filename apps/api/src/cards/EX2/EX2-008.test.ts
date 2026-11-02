@@ -34,6 +34,7 @@ describe("EX2-008 Guilmon", () => {
               revealCount: 4,
               add: [
                 {
+                  effectTextPart: "Add 1 card with [Growlmon] or [Gallantmon] in its name",
                   filter: {
                     controllerDefault: "mine",
                     nameOrTrait: [{ tokens: ["Growlmon", "Gallantmon"], match: "name" }],
@@ -42,6 +43,7 @@ describe("EX2-008 Guilmon", () => {
                   to: "hand",
                 },
                 {
+                  effectTextPart: "1 [Takato Matsuki] among them to your hand.",
                   filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Takato Matsuki"], match: "name" }] },
                   count: 1,
                   to: "hand",

@@ -1,14 +1,19 @@
 import { createServer, request as httpRequest } from "node:http";
-import { createReadStream, statSync } from "node:fs";
+import { createReadStream } from "node:fs";
+import { readFile, stat } from "node:fs/promises";
 import { resolve, extname } from "node:path";
+import { monitorEventLoopDelay } from "node:perf_hooks";
 import { pathToFileURL } from "node:url";
-import { readManifest } from "./shared.mjs";
+import { validateManifest } from "./shared.mjs";
+import gameMessageLimits from "../../packages/shared/src/protocol/gameMessageLimits.json" with { type: "json" };
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".json": "application/json",
+  ".xml": "application/xml; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".jpg": "image/jpeg",
@@ -20,6 +25,8 @@ const MIME_TYPES = {
   ".woff2": "font/woff2",
   ".mp3": "audio/mpeg",
   ".ogg": "audio/ogg",
+  ".flac": "audio/flac",
+  ".wav": "audio/wav",
   ".mp4": "video/mp4",
 };
 
@@ -40,14 +47,14 @@ function getAcceptedEncodings(header) {
   return accepted;
 }
 
-function findPrecompressedFile(file, acceptEncoding) {
+async function findPrecompressedFile(file, acceptEncoding) {
   const accepted = getAcceptedEncodings(acceptEncoding);
   for (const [encoding, extension] of PRECOMPRESSED_EXTENSIONS) {
     if (!accepted.has(encoding)) {
       continue;
     }
     try {
-      const info = statSync(`${file}${extension}`);
+      const info = await stat(`${file}${extension}`);
       if (info.isFile()) {
         return { encoding, file: `${file}${extension}`, info };
       }
@@ -58,20 +65,165 @@ function findPrecompressedFile(file, acceptEncoding) {
   return null;
 }
 
+const IMMUTABLE_CACHE = "public, max-age=31536000, immutable";
+const MEDIA_CACHE = "public, max-age=86400";
+const MEDIA_EXTENSIONS = new Set([
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+  ".avif",
+  ".svg",
+  ".ico",
+  ".woff",
+  ".woff2",
+  ".mp3",
+  ".ogg",
+  ".flac",
+  ".wav",
+  ".mp4",
+]);
+
+function getCacheControl(url, file, assets) {
+  const extension = extname(file);
+  if (extension === ".html") return "no-store";
+  if (assets || url.searchParams.has("v")) return IMMUTABLE_CACHE;
+  return MEDIA_EXTENSIONS.has(extension) ? MEDIA_CACHE : "no-cache";
+}
+
+function getEntityTag(info, encoding = "identity") {
+  return `W/"${info.size.toString(16)}-${Math.floor(info.mtimeMs).toString(16)}-${encoding}"`;
+}
+
+function isNotModified(headers, entityTag, modified) {
+  const candidates = headers["if-none-match"];
+  if (candidates) {
+    return candidates.split(",").some((candidate) => ["*", entityTag].includes(candidate.trim()));
+  }
+  const since = Date.parse(headers["if-modified-since"] ?? "");
+  return !Number.isNaN(since) && Math.floor(modified.getTime() / 1000) * 1000 <= since;
+}
+
 function json(response, status, value) {
   response.writeHead(status, { "content-type": "application/json", "cache-control": "no-store" });
   response.end(JSON.stringify(value));
 }
 
+const PAGE_LOAD_LIMIT = { requests: 20, windowMs: 10_000 };
+
+function getClientAddress(request) {
+  const forwarded = request.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.trim()) {
+    return forwarded.split(",")[0].trim();
+  }
+  return request.socket.remoteAddress ?? "unknown";
+}
+
+function createPageLoadLimiter({ requests, windowMs, now }) {
+  let windowStart = now();
+  let counts = new Map();
+  return function getPageLoadRetrySeconds(request) {
+    if (request.headers["sec-fetch-dest"] !== "document") {
+      return 0;
+    }
+    const time = now();
+    if (time - windowStart >= windowMs) {
+      windowStart = time;
+      counts = new Map();
+    }
+    const address = getClientAddress(request);
+    const count = (counts.get(address) ?? 0) + 1;
+    counts.set(address, count);
+    if (count <= requests) {
+      return 0;
+    }
+    return Math.max(1, Math.ceil((windowStart + windowMs - time) / 1000));
+  };
+}
+
+function rejectPageLoad(response, retrySeconds) {
+  response.writeHead(429, {
+    "content-type": "text/plain; charset=utf-8",
+    "cache-control": "no-store",
+    "retry-after": String(retrySeconds),
+  });
+  response.end("Too many page loads. Wait a few seconds and try again.");
+}
+
 export function isApiPath(path, headers) {
   return (
-    /^\/(health|ready|matchmake|auth|account|room|bot|bug-reports)(\/|$)/.test(path) ||
-    (/^\/(tournaments|community|replays|roadmap)(\/|$)/.test(path) && !headers.accept?.includes("text/html"))
+    /^\/(health|ready|matchmake|series|auth|account|room|bot|bug-reports|deck-providers|story|achievements|tournament-circuits|social|messages|spectate)(\/|$)/.test(
+      path,
+    ) ||
+    (/^\/(tournaments|community|replays|roadmap|ranked|friends)(\/|$)/.test(path) &&
+      !headers.accept?.includes("text/html"))
   );
 }
 
+async function loadManifest(state) {
+  return validateManifest(JSON.parse(await readFile(`${state}/routing/manifest.json`, "utf8")));
+}
+
+const CPU_STAT_PATH = "/sys/fs/cgroup/cpu.stat";
+
+async function readCpuThrottling(path) {
+  try {
+    const fields = Object.fromEntries(
+      (await readFile(path, "utf8"))
+        .trim()
+        .split("\n")
+        .map((line) => line.split(" ")),
+    );
+    return { periods: Number(fields.nr_throttled), microseconds: Number(fields.throttled_usec) };
+  } catch {
+    return undefined;
+  }
+}
+
+function startHealthReport({ intervalMs, log, cpuStatPath, openWebSockets }) {
+  const loopDelay = monitorEventLoopDelay({ resolution: 20 });
+  loopDelay.enable();
+  let previousThrottling;
+  const report = async () => {
+    const throttling = await readCpuThrottling(cpuStatPath);
+    const nanosecondsToMs = (value) => Math.round(value / 1e6);
+    log(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        event: "gateway.health",
+        loopMaxMs: nanosecondsToMs(loopDelay.max),
+        loopP99Ms: nanosecondsToMs(loopDelay.percentile(99)),
+        loopMeanMs: nanosecondsToMs(loopDelay.mean),
+        webSockets: openWebSockets(),
+        ...(throttling && previousThrottling
+          ? {
+              throttledPeriods: throttling.periods - previousThrottling.periods,
+              throttledMs: Math.round((throttling.microseconds - previousThrottling.microseconds) / 1000),
+            }
+          : {}),
+      }),
+    );
+    previousThrottling = throttling;
+    loopDelay.reset();
+  };
+  const interval = setInterval(() => void report(), intervalMs);
+  interval.unref();
+  return () => {
+    clearInterval(interval);
+    loopDelay.disable();
+  };
+}
+
 /** Config stays loaded while only the on-disk routing decision changes. */
-export function createGateway({ state, upstreamFor = (slot, index) => `http://aegis-${slot}-api${index}:2567` }) {
+export function createGateway({
+  state,
+  upstreamFor = (slot, index) => `http://aegis-${slot}-api${index}:2567`,
+  pageLoadLimit = PAGE_LOAD_LIMIT,
+  now = Date.now,
+  healthReport,
+}) {
+  const getPageLoadRetrySeconds = createPageLoadLimiter({ ...pageLoadLimit, now });
+  let webSockets = 0;
   let roundRobin = 0;
   const healthy = new Map();
   const healthRevisions = new Map();
@@ -87,7 +239,7 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
   async function refreshHealth() {
     let manifest;
     try {
-      manifest = readManifest(state);
+      manifest = await loadManifest(state);
     } catch {
       return;
     }
@@ -169,7 +321,9 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
     let size = 0;
     for await (const chunk of request) {
       size += chunk.length;
-      if (size > 65_536) return json(response, 413, { error: "Request too large" });
+      if (size > gameMessageLimits.maxMessageBytes) {
+        return json(response, 413, { error: "Request too large", maxMessageBytes: gameMessageLimits.maxMessageBytes });
+      }
       chunks.push(chunk);
     }
     const body = Buffer.concat(chunks);
@@ -213,7 +367,7 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
     json(response, 503, { error: "No room owner could be reached" });
   }
 
-  function staticFile(request, response, manifest) {
+  async function staticFile(request, response, manifest) {
     const pathname = decodeURIComponent(new URL(request.url, "http://gateway").pathname);
     if (pathname === "/reset-web-cache") {
       response.writeHead(303, { location: "/", "clear-site-data": '"cache"', "cache-control": "no-store" });
@@ -226,20 +380,36 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
     if (!file.startsWith(root + "/") && file !== root) return json(response, 404, { error: "Not found" });
     let info;
     try {
-      info = statSync(file);
+      info = await stat(file);
+      if (info.isDirectory()) {
+        file = resolve(file, "index.html");
+        info = await stat(file);
+      }
       if (!info.isFile()) throw new Error("Not a file");
     } catch {
-      if (assets || extname(pathname)) return json(response, 404, { error: "Not found" });
+      if (assets || extname(pathname) || /^\/strategy-guides(?:\/|$)/.test(pathname))
+        return json(response, 404, { error: "Not found" });
       file = resolve(root, "index.html");
-      info = statSync(file);
+      info = await stat(file);
     }
-    const precompressed = findPrecompressedFile(file, request.headers["accept-encoding"]);
+    const precompressed = await findPrecompressedFile(file, request.headers["accept-encoding"]);
+    const served = precompressed?.info ?? info;
+    const cacheControl = getCacheControl(new URL(request.url, "http://gateway"), file, assets);
+    const validators =
+      cacheControl === "no-store"
+        ? {}
+        : { etag: getEntityTag(served, precompressed?.encoding), "last-modified": served.mtime.toUTCString() };
+    if (validators.etag && isNotModified(request.headers, validators.etag, served.mtime)) {
+      response.writeHead(304, { "cache-control": cacheControl, vary: "accept-encoding", ...validators });
+      return response.end();
+    }
     response.writeHead(200, {
       "content-type": MIME_TYPES[extname(file)] ?? "application/octet-stream",
-      "content-length": precompressed?.info.size ?? info.size,
-      "cache-control": assets ? "public, max-age=31536000, immutable" : "no-store",
+      "content-length": served.size,
+      "cache-control": cacheControl,
       "x-content-type-options": "nosniff",
       vary: "accept-encoding",
+      ...validators,
       ...(precompressed ? { "content-encoding": precompressed.encoding } : {}),
     });
     if (request.method === "HEAD") return response.end();
@@ -251,7 +421,7 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
 
   const server = createServer(async (request, response) => {
     try {
-      const manifest = readManifest(state);
+      const manifest = await loadManifest(state);
       const url = new URL(request.url, "http://gateway");
       if (url.pathname === "/deployment/manifest.json") {
         const bundleRevision = request.headers["x-aegis-web-revision"];
@@ -282,7 +452,13 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
           error: "Game server unavailable for this request",
         });
       }
-      if (!destination) return staticFile(request, response, manifest);
+      if (!destination) {
+        const retrySeconds = getPageLoadRetrySeconds(request);
+        if (retrySeconds) {
+          return rejectPageLoad(response, retrySeconds);
+        }
+        return await staticFile(request, response, manifest);
+      }
       proxyHttp(request, response, destination);
     } catch {
       if (!response.headersSent) json(response, 503, { error: "Deployment routing unavailable" });
@@ -290,9 +466,11 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
     }
   });
 
-  server.on("upgrade", (request, socket, head) => {
+  server.on("upgrade", async (request, socket, head) => {
+    socket.on("error", () => socket.destroy());
     try {
-      const destination = target(request, readManifest(state));
+      const destination = target(request, await loadManifest(state));
+      if (socket.destroyed) return;
       if (!destination?.origin || !destination.explicit) {
         socket.end("HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n");
         return;
@@ -310,6 +488,8 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
         if (head.length) upstreamSocket.write(head);
         if (upstreamHead.length) socket.write(upstreamHead);
         socket.pipe(upstreamSocket).pipe(socket);
+        webSockets += 1;
+        socket.once("close", () => (webSockets -= 1));
         socket.on("error", () => upstreamSocket.destroy());
         upstreamSocket.on("error", () => socket.destroy());
         socket.on("close", () => upstreamSocket.destroy());
@@ -329,12 +509,23 @@ export function createGateway({ state, upstreamFor = (slot, index) => `http://ae
   });
   const interval = setInterval(() => void refreshHealth(), 2000);
   interval.unref();
-  server.on("close", () => clearInterval(interval));
+  const stopHealthReport = healthReport
+    ? startHealthReport({
+        intervalMs: healthReport.intervalMs ?? 10_000,
+        log: healthReport.log ?? console.log,
+        cpuStatPath: healthReport.cpuStatPath ?? CPU_STAT_PATH,
+        openWebSockets: () => webSockets,
+      })
+    : () => {};
+  server.on("close", () => {
+    clearInterval(interval);
+    stopHealthReport();
+  });
   return server;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  createGateway({ state: process.env.AEGIS_ROLLOUT_STATE ?? "/state" }).listen(
+  createGateway({ state: process.env.AEGIS_ROLLOUT_STATE ?? "/state", healthReport: {} }).listen(
     Number(process.env.PORT ?? 80),
     "0.0.0.0",
   );

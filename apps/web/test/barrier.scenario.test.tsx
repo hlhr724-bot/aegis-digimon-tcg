@@ -51,7 +51,7 @@ scenario("barrier", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 206: seat 0 (protagonist, swapped BLUE_DECK) goes first and its dealt
+    // Seed 624: seat 0 (protagonist, swapped BLUE_DECK) goes first and its dealt
     // opening hand includes BT14-035 "Unimon" (5000 DP). The headless opponent's
     // (RED_DECK) opening hand includes BT1-020 "Groundramon" (Lv.5, cost 5, 6000
     // DP) — found by exhaustively searching seeds, mirroring
@@ -63,7 +63,7 @@ scenario("barrier", () => {
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: PROTAGONIST_DECK.mainDeck, eggDeck: PROTAGONIST_DECK.eggDeck },
-      seed: 206,
+      seed: 624,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Blue" startMode="casual" onExit={() => {}} />);

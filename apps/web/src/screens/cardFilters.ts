@@ -5,9 +5,12 @@ import { useMemo, useState } from "react";
 import { type CardColor, type CardDefinition } from "@aegis/shared";
 import { isCardInQueriedFieldGroup } from "@aegis/shared/cards/isCardInQueriedFieldGroup";
 import { colorKey, kindOf, type ColorName } from "../design/theme";
-import { collectionOrder, sortCards } from "./cardSorting";
+import { collectionOrder } from "./cardSorting";
 import { matchesCostBucket } from "@/screens/matchesCostBucket";
 import { matchesDigivolutionCostFilter, type DigivolutionCostFilter } from "@/screens/matchesDigivolutionCostFilter";
+import { findCardKeywords } from "@/screens/findCardKeywords";
+import { KEYWORD_FILTERS, type KeywordFilter, type KeywordFilterOption } from "@/screens/KeywordFilter";
+import { matchesKeywordFilter } from "@/screens/matchesKeywordFilter";
 
 export const KIND_FILTERS = ["Digimon", "DigiEgg", "Tamer", "Option"] as const;
 
@@ -105,6 +108,9 @@ function searchIndexFor(card: CardDefinition): CardSearchIndex {
   const cached = searchIndexByCard.get(card);
   if (cached) return cached;
   const textFields = [
+    ...(card.forms ?? []),
+    ...(card.types ?? []),
+    ...(card.attributes ?? []),
     card.effectText,
     card.inheritedEffectText,
     card.securityEffectText,
@@ -131,21 +137,6 @@ export function cardSearchMatch(card: CardDefinition, query: string): CardSearch
   return "none";
 }
 
-/** Sorts each match group on its own so cards found by name stay ahead of cards found only by their text. */
-export function sortSearchResults({
-  cards,
-  sort,
-  query,
-}: {
-  cards: readonly CardDefinition[];
-  sort: CardSort;
-  query: string;
-}): CardDefinition[] {
-  const nameMatches = cards.filter((card) => cardSearchMatch(card, query) === "name");
-  const textMatches = cards.filter((card) => cardSearchMatch(card, query) === "text");
-  return [...sortCards(nameMatches, sort), ...sortCards(textMatches, sort)];
-}
-
 export interface CardFilter {
   query: string;
   setQuery: (v: string) => void;
@@ -155,6 +146,8 @@ export interface CardFilter {
   costs: CostFilter[];
   digivolutionCosts: DigivolutionCostFilter[];
   rarities: RarityFilter[];
+  keywords: KeywordFilter[];
+  availableKeywords: readonly KeywordFilterOption[];
   sort: CardSort;
   traitQuery: string;
   setTraitQuery: (v: string) => void;
@@ -168,6 +161,7 @@ export interface CardFilter {
   toggleCost: (v: CostFilter) => void;
   toggleDigivolutionCost: (v: DigivolutionCostFilter) => void;
   toggleRarity: (v: RarityFilter) => void;
+  toggleKeyword: (v: KeywordFilter) => void;
   setSort: (v: CardSort) => void;
   clear: () => void;
 }
@@ -177,20 +171,23 @@ export function useCardFilter(
   all: readonly CardDefinition[],
   {
     colorFilterMode = "any",
+    initialQuery = "",
     savedSort,
   }: {
     colorFilterMode?: ColorFilterMode;
+    initialQuery?: string;
     /** Keeps the sort in a store owned by the caller, such as a saved preference. */
     savedSort?: { sort: CardSort; setSort: (sort: CardSort) => void };
   } = {},
 ): CardFilter {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [colors, setColors] = useState<ColorName[]>([]);
   const [kinds, setKinds] = useState<KindFilter[]>([]);
   const [levels, setLevels] = useState<LevelFilter[]>([]);
   const [costs, setCosts] = useState<CostFilter[]>([]);
   const [digivolutionCosts, setDigivolutionCosts] = useState<DigivolutionCostFilter[]>([]);
   const [rarities, setRarities] = useState<RarityFilter[]>([]);
+  const [keywords, setKeywords] = useState<KeywordFilter[]>([]);
   const [localSort, setLocalSort] = useState<CardSort>("releaseDate");
   const sort = savedSort?.sort ?? localSort;
   const setSort = savedSort?.setSort ?? setLocalSort;
@@ -203,6 +200,21 @@ export function useCardFilter(
     return [...seen].sort((a, b) => collectionOrder(a) - collectionOrder(b));
   }, [all]);
 
+  const poolKeywords = useMemo(() => {
+    const present = new Set<KeywordFilter>();
+    for (const card of all) {
+      for (const keyword of findCardKeywords(card)) {
+        present.add(keyword);
+      }
+    }
+    return present;
+  }, [all]);
+
+  const availableKeywords = useMemo(
+    () => KEYWORD_FILTERS.filter((option) => poolKeywords.has(option.value) || keywords.includes(option.value)),
+    [poolKeywords, keywords],
+  );
+
   const filtered = useMemo(() => {
     const textMatches: CardDefinition[] = [];
     const nameMatches = all.filter((c) => {
@@ -214,6 +226,7 @@ export function useCardFilter(
       if (!matchesCostFilter(c.playCost, costs)) return false;
       if (!matchesDigivolutionCostFilter({ evoCosts: c.evoCosts, selectedCosts: digivolutionCosts })) return false;
       if (!matchesRarityFilter(c.rarity, rarities)) return false;
+      if (!matchesKeywordFilter({ card: c, selectedKeywords: keywords })) return false;
       if (!matchesTraitOrAttributeFilter(c, traitQuery)) return false;
       if (set && c.set !== set) return false;
       if (searchMatch === "text") {
@@ -223,7 +236,20 @@ export function useCardFilter(
       return true;
     });
     return [...nameMatches, ...textMatches];
-  }, [all, query, colors, kinds, levels, costs, digivolutionCosts, rarities, traitQuery, set, colorFilterMode]);
+  }, [
+    all,
+    query,
+    colors,
+    kinds,
+    levels,
+    costs,
+    digivolutionCosts,
+    rarities,
+    keywords,
+    traitQuery,
+    set,
+    colorFilterMode,
+  ]);
 
   return {
     query,
@@ -234,6 +260,8 @@ export function useCardFilter(
     costs,
     digivolutionCosts,
     rarities,
+    keywords,
+    availableKeywords,
     sort,
     traitQuery,
     setTraitQuery,
@@ -248,6 +276,10 @@ export function useCardFilter(
     toggleDigivolutionCost: (v) =>
       setDigivolutionCosts((cs) => (cs.includes(v) ? cs.filter((x) => x !== v) : [...cs, v])),
     toggleRarity: (v) => setRarities((rs) => (rs.includes(v) ? rs.filter((x) => x !== v) : [...rs, v])),
+    toggleKeyword: (keyword) =>
+      setKeywords((selected) =>
+        selected.includes(keyword) ? selected.filter((current) => current !== keyword) : [...selected, keyword],
+      ),
     setSort,
     clear: () => {
       setQuery("");
@@ -257,6 +289,7 @@ export function useCardFilter(
       setCosts([]);
       setDigivolutionCosts([]);
       setRarities([]);
+      setKeywords([]);
       setTraitQuery("");
       setSet("");
     },

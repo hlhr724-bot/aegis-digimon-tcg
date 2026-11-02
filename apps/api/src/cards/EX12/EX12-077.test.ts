@@ -175,7 +175,7 @@ describe("EX12-077 Proximamon", () => {
     expect(s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("sourceTwo").instanceId)).toBe(false);
   });
 
-  it("Discord 1555224478416633927: asks top or bottom once and places both cards in one move", async () => {
+  it("Discord 1555224478416633927: asks top or bottom once and places both cards in one ordered group", async () => {
     const s = setupEngine(
       {
         0: {
@@ -215,7 +215,10 @@ describe("EX12-077 Proximamon", () => {
         event.to === "battleArea" &&
         event.instanceIds.some((instanceId) => materialIds.includes(instanceId)),
     );
-    expect(moves).toHaveLength(1);
+    expect(moves).toHaveLength(2);
+    expect(moves.flatMap((event) => (event.kind === "cardsMoved" ? event.instanceIds : [])).sort()).toEqual(
+      [...materialIds].sort(),
+    );
   });
 
   it("does not pay or delete when fewer than two matching cards are available", async () => {

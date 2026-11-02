@@ -29,9 +29,9 @@ describe("ST22-08 [Security] delete the opponent's lowest-DP Digimon, then add t
 
   it.each([
     { mine: [6000], deleted: "lowDp", kept: "highDp" },
-    { mine: [3000, 9000], deleted: "highDp", kept: undefined },
+    { mine: [9000, 3000], deleted: "highDp", kept: undefined },
   ])(
-    "Main still deletes after declining the link, comparing to any of your Digimon ($mine)",
+    "Main still deletes after declining the link, comparing to the first chosen Digimon ($mine)",
     async ({ mine, deleted, kept }) => {
       const s = setupEngine(
         {

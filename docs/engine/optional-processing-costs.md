@@ -35,6 +35,12 @@ the preceding decline-capable cost selection uses minimum 0. Heat Viper thus
 offers Pass while choosing the own Digimon, but not while choosing the opposing
 Digimon after payment.
 
+A Delete whose target is defined by the paid card (`bindResultAs` matched by
+`relativeTo.selectionRef` or `sameNameAsSelection`) had its own preflight that
+read only the explicit flag. With no opposing Digimon inside the bound, BT12-108,
+BT13-092, BT13-109, and BT9-102 skipped their printed `By` condition without
+asking. That preflight now delegates to the same seam.
+
 ## Behavioral proof
 
 - `optionalActivationReceipt.test.ts` proves an opted-in Return pays its hand

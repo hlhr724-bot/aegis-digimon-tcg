@@ -69,8 +69,14 @@ describe("EX13-026 Kudamon", () => {
           kind: "RevealAdd",
           revealCount: 3,
           add: [
-            { filter: traitUnion, count: 1, to: "hand" },
             {
+              effectTextPart: "add 1 [Holy Beast], [Royal Knight] or [DATA SQUAD] trait card to the hand",
+              filter: traitUnion,
+              count: 1,
+              to: "hand",
+            },
+            {
+              effectTextPart: "place 1 such card face down under any of your [DATA SQUAD] trait Tamers.",
               filter: traitUnion,
               count: 1,
               to: "underTamer",

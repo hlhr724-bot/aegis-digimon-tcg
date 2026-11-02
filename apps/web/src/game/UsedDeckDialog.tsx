@@ -7,11 +7,13 @@ import { useTranslation } from "@/i18n/useTranslation";
 
 export function UsedDeckDialog({
   snapshot,
+  opponent = false,
   onCopy,
   onClose,
 }: {
   snapshot: UsedDeck;
-  onCopy: (deck: DeckListing) => void;
+  opponent?: boolean;
+  onCopy?: (deck: DeckListing) => void;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -20,13 +22,17 @@ export function UsedDeckDialog({
     <FamousDeckListDialog
       deck={usedDeckListing({ snapshot })}
       collection={snapshot.community?.author.displayName ?? ""}
-      eyebrow={t("overlay.usedDeck")}
+      eyebrow={t(opponent ? "overlay.opponentDeck" : "overlay.usedDeck")}
       active={false}
       copied={copied}
-      onCopy={() => {
-        onCopy(usedDeckListing({ snapshot }));
-        setCopied(true);
-      }}
+      onCopy={
+        onCopy
+          ? () => {
+              onCopy(usedDeckListing({ snapshot }));
+              setCopied(true);
+            }
+          : undefined
+      }
       onClose={onClose}
     />
   );

@@ -249,6 +249,30 @@ describe("BT21-095 Wind Guardians", () => {
     expect(s.state.memory).toBe(0);
   });
 
+  it("does not offer a Vortex attack against a player when no opposing Digimon exist", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT21-038", as: "wg" }],
+          security: [{ card: "BT21-095", faceUp: true }],
+          deck: ["BT1-009", "BT1-009"],
+        },
+        1: { security: ["BT1-009"], deck: ["BT1-009"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    expect(observe(s.engine).hasKeyword(s.perm("wg"), "Vortex")).toBe(true);
+    const turn = s.engine.runOneTurn();
+    await advance(s.engine).waitForMainPhase(0);
+    advance(s.engine).endMainPhaseIfOpen(0);
+    await turn;
+    await settle();
+    expect(s.events.filter((event) => event.kind === "attackDeclared")).toHaveLength(0);
+    expect(s.state.players[1]!.security).toHaveLength(1);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
+
   it("loses the Security Vortex grant when the face-up source is checked", async () => {
     const s = setupEngine(
       {

@@ -1,4 +1,14 @@
 export const arenaEn = {
+  "settings.arenaInput": "Keyboard and controller",
+  "settings.arenaInputDesc": "Move a cursor with the arrow keys or a controller, and show the button for each action.",
+  "game.input.controls": "Keyboard and controller",
+  "game.input.navigate": "Navigate",
+  "game.input.select": "Select",
+  "game.input.inspect": "Inspect",
+  "game.input.region": "Region",
+  "game.input.scroll": "Scroll",
+  "game.input.reorder": "Enter/A: move item; arrows: reorder; Enter/A: finish; Esc/B: undo",
+
   "redesign.arena.look.open": "Match settings",
   "redesign.arena.look.title": "Match settings",
   "redesign.arena.look.description": "Board colors, battlefield and sound. Changes apply right away.",

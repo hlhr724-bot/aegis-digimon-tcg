@@ -10,6 +10,7 @@ import {
   type OwnFeedbackPage,
   type OwnFeedbackReport,
 } from "@aegis/shared/feedback/types";
+import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
 import type { PoolClient } from "pg";
 import type { AccountStore } from "#api/accounts/AccountStore";
 import type { Queryable } from "#api/db/migrator";
@@ -236,6 +237,17 @@ export class FeedbackStore {
       }
 
       const statusChanged = current.status !== update.status;
+      const approvesOfficialTournament =
+        statusChanged &&
+        update.status === FeedbackStatus.RESOLVED.value &&
+        current.report.kind === "official_tournament" &&
+        current.report.tournamentId !== undefined;
+      if (approvesOfficialTournament) {
+        await client.query("UPDATE tournaments SET category=$2 WHERE id=$1", [
+          current.report.tournamentId,
+          TournamentCategory.OFFICIAL.value,
+        ]);
+      }
       if (statusChanged) {
         await client.query(
           "INSERT INTO feedback_status_events (feedback_id, actor_account_id, from_status, to_status, created_at) VALUES ($1,$2,$3,$4,$5)",
@@ -442,16 +454,6 @@ export class FeedbackStore {
     );
     const record = rows[0]?.record;
     return typeof record === "string" ? (JSON.parse(record) as ReplayRecord) : record;
-  }
-
-  /** The replay of a bug report already filed on GitHub, the only replays the public issue links to. */
-  async publishedReplay(reportId: number): Promise<ReplayRecord | undefined> {
-    await this.accounts.ensureReady();
-    const { rows } = await this.accounts.pool.query<{ id: number }>(
-      "SELECT id FROM feedback_reports WHERE id=$1 AND github_status='sent' AND report->>'kind'='bug'",
-      [reportId],
-    );
-    return rows.length ? this.replay(reportId) : undefined;
   }
 
   /** Deletes replays older than the retention window; returns how many went. */

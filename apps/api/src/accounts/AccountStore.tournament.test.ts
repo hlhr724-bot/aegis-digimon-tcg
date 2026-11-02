@@ -1,4 +1,5 @@
-import { newDb } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
+import { TrophyStore } from "#api/achievements/TrophyStore";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { type Account, AccountStore, type TournamentMatch } from "./AccountStore.js";
 
@@ -6,7 +7,7 @@ import { type Account, AccountStore, type TournamentMatch } from "./AccountStore
 // the rough edges called out as `characterizes` — those describe current behavior, not intent.
 
 function createStore(): AccountStore {
-  const adapter = newDb().adapters.createPg();
+  const adapter = createMemoryDatabase().adapters.createPg();
   return new AccountStore(new adapter.Pool() as never);
 }
 
@@ -369,6 +370,12 @@ describe("AccountStore tournament results", () => {
     expect(await store.tournament(id)).toMatchObject({ status: "finished", winnerAccountId: final.player0AccountId });
     const champion = await store.profile(final.player0AccountId!);
     expect(champion.stats).toMatchObject({ tournamentsWon: 1, tournamentsPlayed: 1, tournamentWins: 1 });
+    expect((await new TrophyStore(store).getTrophies(final.player0AccountId!)).items).toMatchObject([
+      { award: "tournament_champion", tier: "gold", source: { tournamentId: id } },
+    ]);
+    expect((await new TrophyStore(store).getTrophies(final.player1AccountId!)).items).toMatchObject([
+      { award: "tournament_top_four", tier: "silver" },
+    ]);
     expect((await store.profile(final.player1AccountId!)).stats).toMatchObject({
       tournamentsWon: 0,
       tournamentLosses: 1,
@@ -421,4 +428,22 @@ describe("AccountStore tournament results", () => {
     ).toBe(true);
     await store.close();
   });
+});
+
+it("keeps cancelled legacy tournaments closed to tickets, room claims and late results", async () => {
+  const store = createStore();
+  try {
+    const { id, players } = await startTournament(store, 2);
+    const match = (await store.tournamentMatches(id)).find((entry) => entry.status === "pending")!;
+    expect(await store.claimTournamentRoom(match.id, "already-playing")).toBe(true);
+    await store.pool.query("UPDATE tournaments SET status='cancelled' WHERE id=$1", [id]);
+    expect(await store.createTournamentMatchTicket(players[0]!.id, id, match.id)).toBeUndefined();
+    expect(await store.claimTournamentRoom(match.id, "already-playing")).toBe(false);
+    const ids: [string, string] = [match.player0AccountId!, match.player1AccountId!];
+    expect(await store.recordTournamentRoomResult(match.id, "already-playing", ids, ids[0], "surrender")).toBe(false);
+    expect(await store.recordTournamentRoomDraw(match.id, "already-playing", ids, "timeout")).toBe(false);
+    expect((await store.tournament(id))?.status).toBe("cancelled");
+  } finally {
+    await store.close();
+  }
 });

@@ -23,3 +23,12 @@
   text-decoration: underline dotted;
   text-underline-offset: 2px;
 }
+
+.card-effect-text__mechanic {
+  cursor: help;
+}
+
+.card-effect-text__mechanic mark[data-kind="timing"] {
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}

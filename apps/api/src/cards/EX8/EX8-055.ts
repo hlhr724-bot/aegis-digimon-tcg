@@ -123,41 +123,14 @@ export const compiled: CompiledCard = {
             filter: {
               zone: "trash",
               controller: "mine",
-              nameOrTrait: [
-                {
-                  tokens: ["Mineral", "Rock"],
-                  match: "trait",
-                },
-              ],
+              nameOrTrait: [{ tokens: ["Mineral", "Rock"], match: "trait" }],
             },
-            count: 1,
-            from: ["trash"],
-          },
-          underFilter: {
-            isSelfRef: true,
-          },
-          position: "bottom",
-        },
-        {
-          kind: "PlaceUnder",
-          target: {
-            filter: {
-              zone: "trash",
-              controller: "mine",
-              nameOrTrait: [
-                {
-                  tokens: ["Mineral", "Rock"],
-                  match: "trait",
-                },
-              ],
-            },
-            count: 2,
+            count: 3,
             upTo: true,
+            minimum: 1,
             from: ["trash"],
           },
-          underFilter: {
-            isSelfRef: true,
-          },
+          underFilter: { isSelfRef: true },
           position: "bottom",
         },
       ],

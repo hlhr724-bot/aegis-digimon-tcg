@@ -84,7 +84,7 @@ export interface ScenarioOpponent {
   blockerCard?: string;
   decisions?: {
     sourceCard: string;
-    kind: "chooseTargets" | "chooseOption" | "optional" | "orderTriggers";
+    kind: "chooseTargets" | "selectCards" | "chooseOption" | "optional" | "orderTriggers";
     timing?: string;
     promptIncludes?: string;
     target?: string;

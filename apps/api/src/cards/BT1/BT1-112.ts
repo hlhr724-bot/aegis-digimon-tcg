@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon gains the following effect for the turn: “When this Digimon deletes an opponent's Digimon in battle and survives, unsuspend it.”",
           kind: "GainTriggeredEffect",
           target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
           gainedTrigger: "whenDeletesInBattle",

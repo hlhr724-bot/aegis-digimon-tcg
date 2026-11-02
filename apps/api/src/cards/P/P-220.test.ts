@@ -11,9 +11,75 @@ import type { EffectContext, GameAccess } from "../../engine/effects/EffectConte
 import { getEffectModule } from "../../engine/effects/registry.js";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
+import "#api/cards/index";
 import "./P-220.js";
 
 describe("P-220 Millenniummon", () => {
+  it("returns level-seven Millenniummon and MoonMillenniummon to pay its revival cost", async () => {
+    const preferred: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "P-220", as: "host" }],
+          trash: [
+            { card: "BT18-019", as: "millennium" },
+            { card: "BT19-075", as: "moon" },
+            { card: "BT2-083", as: "third" },
+            { card: "BT18-073", as: "machinedramon" },
+            { card: "BT19-070", as: "kimeramon" },
+          ],
+        },
+      },
+      { autoSelectCards: true, preferInstanceIds: preferred },
+    );
+    preferred.push(s.inst("millennium").instanceId, s.inst("moon").instanceId, s.inst("third").instanceId);
+    await s.ready();
+    const deletion = advance(s.engine).verb.deletePermanent([s.perm("host").permanentId], "byEffect");
+    await settle(() => s.state.pendingDecision?.kind === "optional");
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "optional", accept: true },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.battleArea.some(({ topCard }) => topCard.cardId === "BT19-070"));
+    await settle(() => s.state.pendingDecision?.kind === "optional");
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "optional", accept: false },
+      }),
+    ).toEqual({ ok: true });
+    await deletion;
+    await settle();
+    expect(
+      s.state.players[0]!.deck.slice(-3)
+        .map(({ cardId }) => cardId)
+        .sort(),
+    ).toEqual(["BT18-019", "BT19-075", "BT2-083"]);
+    expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId).sort()).toEqual([
+      "BT18-073",
+      "BT19-070",
+    ]);
+  });
+
+  it("can choose itself for its optional On Play deletion", async () => {
+    const s = setupEngine(
+      { 0: { hand: [{ card: "P-220", as: "played" }] } },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 14;
+    await s.ready();
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("played").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle();
+    expect(s.state.players[0]!.battleArea).toHaveLength(0);
+    expect(s.state.players[0]!.trash.some(({ instanceId }) => instanceId === s.inst("played").instanceId)).toBe(true);
+  });
+
   it("provides Reboot and Blocker continuously", () => {
     const effects = getEffectModule("P-220")!.effectsForTiming(EffectTiming.None, {
       isOnBattleArea: () => true,

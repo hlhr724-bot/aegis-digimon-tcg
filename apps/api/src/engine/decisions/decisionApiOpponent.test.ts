@@ -4,6 +4,7 @@ import { GameState, PlayerState, getCardDefinition, type DecisionRequest, type S
 import { DecisionManager, type DecisionTransport } from "./index.js";
 import { createDecisionApi, requireOpponentAsk } from "./decisionApi.js";
 import type { EffectContext } from "../effects/EffectContext.js";
+import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
 
 /**
  * Proves the 7th BT26-engine-gaps fix: the decision API can address the effect's
@@ -222,4 +223,19 @@ it("preserves a complete multiline modal effect while highlighting the selected 
   expect(sent[0]!.req.options!.effectText).toContain("Activate 1 of the effects below:");
   manager.respond(0, sent[0]!.req.decisionId, { kind: "optional", accept: false });
   expect(await decision).toBe(false);
+});
+
+it("preserves effect ownership on an opponent-only decision without changing its authorized recipient", async () => {
+  const state = makeState();
+  const { transport, sent } = recordingTransport();
+  const manager = new DecisionManager(state, transport);
+  const api = createDecisionApi(manager);
+  const ctx = makeCtx();
+  ctx.activeDecisionSummary = getDecisionEffectSummary({ actions: [{ kind: "GainMemory", amount: 2 }] });
+  const result = api.opponent!.chooseOption(ctx, ["First", "Second"]);
+  expect(sent.map((entry) => entry.seat)).toEqual([1]);
+  expect(sent[0]!.req.options).toMatchObject({ effectControllerSeat: 0, effectSummary: { memoryGain: 2 } });
+  expect(manager.respond(0, sent[0]!.req.decisionId, { kind: "chooseOption", optionIndex: 1 })).toBe(false);
+  expect(manager.respond(1, sent[0]!.req.decisionId, { kind: "chooseOption", optionIndex: 1 })).toBe(true);
+  expect(await result).toBe(1);
 });

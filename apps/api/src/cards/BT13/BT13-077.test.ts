@@ -451,17 +451,9 @@ describe("BT13-077 Craniamon — KB Q&A rulings", () => {
         response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.decisions.some(({ req }) => req.kind === "chooseTargets"));
-    const pick = s.decisions.find(({ req }) => req.kind === "chooseTargets")!;
-    expect(
-      s.engine.applyIntent(0, {
-        type: "respondDecision",
-        decisionId: pick.req.decisionId,
-        response: { kind: "chooseTargets", instanceIds: [chosenPermanentId] },
-      }),
-    ).toEqual({ ok: true });
 
     await settle(() => s.events.some((event) => event.kind === "blockWindowOpened"));
+    expect(s.decisions.some(({ req }) => req.kind === "chooseTargets")).toBe(false);
     expect(
       s.engine.applyIntent(0, { type: "declareBlock", blockerPermanentId: s.perm("craniamon").permanentId }),
     ).toEqual({ ok: true });

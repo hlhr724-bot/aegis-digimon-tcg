@@ -1,3 +1,4 @@
+import type { TournamentBanlistCard } from "@aegis/shared/tournaments/index";
 import type {
   CardDefinition,
   CardInstance,
@@ -14,7 +15,9 @@ import type {
  * importing Colyseus transport concerns. Supplied by AegisRoom.onCreate.
  */
 export interface GameEngineHooks {
+  omitHandAffordances?: boolean;
   seed: number;
+  randomKey?: string;
   beforeTurn?: (turn: number) => Promise<void> | void;
   /** Who goes first, when the room already knows (a later game of a series). Otherwise the seed decides. */
   firstSeat?: Seat;
@@ -24,6 +27,7 @@ export interface GameEngineHooks {
   onBothReady?: () => void;
   /** Notifies in-process actors only after an asynchronous action has fully settled. */
   onActionSettled?: (seat: Seat, intentType: Intent["type"]) => void;
+  deferHandAffordances?: boolean;
 }
 
 /**
@@ -33,6 +37,7 @@ export interface GameEngineHooks {
  * additionally carries a private-room code the engine never needs) extends this instead.
  */
 export interface SeatJoinOptions {
+  banlistCards?: readonly TournamentBanlistCard[];
   displayName: string;
   /** The joiner's Digimon World portrait, shown beside their name. Unknown ids are dropped. */
   avatarId?: string;

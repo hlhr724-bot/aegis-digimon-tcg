@@ -1,0 +1,66 @@
+{
+  "valid": true,
+  "searches": [
+    {
+      "requested": 32,
+      "attempted": 32,
+      "completed": 32,
+      "invalid": 0,
+      "nodes": 16,
+      "root": [
+        {
+          "action": 3,
+          "visits": 5,
+          "meanReward": 0.4
+        },
+        {
+          "action": 6,
+          "visits": 4,
+          "meanReward": 0.5
+        },
+        {
+          "action": 1,
+          "visits": 4,
+          "meanReward": 0.25
+        },
+        {
+          "action": 7,
+          "visits": 4,
+          "meanReward": 0.25
+        },
+        {
+          "action": 0,
+          "visits": 3,
+          "meanReward": 0
+        },
+        {
+          "action": 2,
+          "visits": 3,
+          "meanReward": 0
+        },
+        {
+          "action": 4,
+          "visits": 3,
+          "meanReward": 0
+        },
+        {
+          "action": 5,
+          "visits": 3,
+          "meanReward": 0
+        },
+        {
+          "action": 8,
+          "visits": 3,
+          "meanReward": 0
+        }
+      ]
+    }
+  ],
+  "restoration": {
+    "replays": 32,
+    "replayedWindows": 512,
+    "reusedActionIndices": 512,
+    "reusedMainCatalogs": 256,
+    "enumeratedMainCatalogs": 0
+  }
+}

@@ -4,6 +4,7 @@ import { CardInstance, Permanent } from "@aegis/shared";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { PermanentView } from "./piece";
+import { BreedingSlot } from "@/game/piece/BreedingSlot";
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => {
@@ -99,4 +100,39 @@ it("reads a right-click without activating the card", () => {
   fireEvent.contextMenu(card);
   expect(inspect).toHaveBeenCalledOnce();
   expect(choose).not.toHaveBeenCalled();
+});
+
+function renderBreedingSlot() {
+  const move = vi.fn<() => void>();
+  const inspect = vi.fn<() => void>();
+  const { container } = render(
+    <I18nProvider>
+      <BreedingSlot perm={fieldCard()} label="Raising" focused onClick={move} onInspect={inspect} />
+    </I18nProvider>,
+  );
+  return { move, inspect, card: container.querySelector(".game-permanent")! };
+}
+
+it("inspects a raised stack without bubbling to its move action", () => {
+  const { move, inspect, card } = renderBreedingSlot();
+  fireEvent.contextMenu(card);
+  expect(inspect).toHaveBeenCalledOnce();
+  expect(move).not.toHaveBeenCalled();
+  const read = screen.getByRole("button", { name: "Read Alphamon" });
+  fireEvent.keyDown(read, { key: "Enter" });
+  fireEvent.click(read, { detail: 0 });
+  expect(inspect).toHaveBeenCalledTimes(2);
+  expect(move).not.toHaveBeenCalled();
+  fireEvent.click(card);
+  expect(move).toHaveBeenCalledOnce();
+});
+
+it("holds a raised stack to read without moving on release", () => {
+  const { move, inspect, card } = renderBreedingSlot();
+  fireEvent.pointerDown(card, { pointerId: 1, pointerType: "touch" });
+  vi.advanceTimersByTime(400);
+  expect(inspect).toHaveBeenCalledOnce();
+  fireEvent.pointerUp(card, { pointerId: 1, pointerType: "touch" });
+  fireEvent.click(card, { detail: 1 });
+  expect(move).not.toHaveBeenCalled();
 });

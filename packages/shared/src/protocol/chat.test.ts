@@ -18,6 +18,10 @@ describe("parseChatMessage", () => {
     expect(parseChatMessage({ kind: "text", text: ` ${String.fromCodePoint(0, 0x202e)} ` })).toBeUndefined();
   });
 
+  it("refuses bot lines from clients, since only the server speaks for a bot", () => {
+    expect(parseChatMessage({ kind: "botLine", line: "victory", text: "Good game!" })).toBeUndefined();
+  });
+
   it("rejects oversized raw text before normalizing it", () => {
     expect(parseChatMessage({ kind: "text", text: "a".repeat(CHAT_TEXT_MAX_LENGTH * 4 + 1) })).toBeUndefined();
   });

@@ -1,3 +1,5 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
 import { cleanup, renderHook } from "@testing-library/react";
@@ -5,7 +7,12 @@ import { FieldLayout } from "../../../design/fieldLayout";
 import { PORTRAIT_ARENA_QUERY, SIDELINE_ARENA_QUERY, SHORT_BOARD_QUERY } from "../queries";
 import { useArenaLayout } from "./useArenaLayout";
 
-const viewport = vi.hoisted(() => ({ queries: new Set<string>(), drawn: 65, heightFitted: 76, beside: 65 }));
+const viewport = vi.hoisted(() => ({
+  queries: new Set<string>(),
+  drawn: 65,
+  heightFitted: 76,
+  beside: 65,
+}));
 vi.mock("../../../design/useMediaQuery", () => ({
   COARSE_POINTER_QUERY: "(pointer: coarse)",
   useMediaQuery: (query: string) => viewport.queries.has(query),
@@ -15,11 +22,16 @@ vi.mock("../../../design/fieldLayout", async (importOriginal) => ({
   useFieldLayout: () => FieldLayout.Organized,
 }));
 vi.mock("../layout/fieldCardWidth", () => ({
-  useFieldCardWidth: () => ({ heightFitted: viewport.heightFitted, drawn: viewport.drawn, beside: viewport.beside }),
+  useFieldCardWidth: () => ({
+    heightFitted: viewport.heightFitted,
+    drawn: viewport.drawn,
+    beside: viewport.beside,
+  }),
 }));
 
 afterEach(() => {
   cleanup();
+  arenaAppearancePreference.resetAppearance();
   viewport.queries.clear();
   viewport.drawn = 65;
   viewport.heightFitted = 76;
@@ -43,13 +55,22 @@ it("preserves shared battlefield and raising sizing on a desktop sideline board"
   const { result } = renderHook(useArenaLayout);
   expect(result.current.arenaPermanentWidth).toBe(100);
   expect(result.current.arenaRaisingWidth).toBe(viewport.heightFitted);
-  expect(result.current.arenaPileWidth).toBe(56);
+  expect(result.current.arenaPileWidth).toBe(viewport.heightFitted);
 });
 
-it("preserves the existing ceiling on compact landscape utility rails", () => {
+it("keeps a short desktop's picked field width and sizes its piles from the field", () => {
   viewport.queries.add(SHORT_BOARD_QUERY);
   const { result } = renderHook(useArenaLayout);
-  expect(result.current.arenaPermanentWidth).toBe(56);
+  expect(result.current.arenaPermanentWidth).toBe(76);
+  expect(result.current.arenaPileWidth).toBe(viewport.heightFitted);
+  expect(result.current.arenaRaisingWidth).toBe(viewport.heightFitted);
+});
+
+it("keeps piles touch-sized when the field cards are small", () => {
+  viewport.queries.add(SHORT_BOARD_QUERY);
+  viewport.heightFitted = 30;
+  const { result } = renderHook(useArenaLayout);
+  expect(result.current.arenaPileWidth).toBe(44);
 });
 
 it("keeps raising and security at the arena's size when one battle lane grows its cards", () => {
@@ -73,4 +94,20 @@ it.each([
   const { result } = renderHook(useArenaLayout);
   expect(result.current.arenaPermanentWidth).toBe(width);
   expect(result.current.handCardWidth).toBe(112);
+});
+
+it("enlarges actual field, piles, raising and hand dimensions while preserving viewport layout", () => {
+  viewport.queries.add(PORTRAIT_ARENA_QUERY);
+  const { result, rerender } = renderHook(useArenaLayout);
+  const standard = result.current;
+  arenaAppearancePreference.setAppearance({
+    ...arenaAppearancePreference.getAppearance(),
+    scale: ArenaUiScale.LARGER.value,
+  });
+  rerender();
+  expect(result.current.arenaPermanentWidth).toBe(Math.round(standard.arenaPermanentWidth * 1.3));
+  expect(result.current.arenaPileWidth).toBe(Math.round(standard.arenaPileWidth * 1.3));
+  expect(result.current.arenaRaisingWidth).toBe(Math.round(standard.arenaRaisingWidth * 1.3));
+  expect(result.current.handCardWidth).toBe(Math.round(standard.handCardWidth * 1.3));
+  expect(result.current.portraitArena).toBe(true);
 });

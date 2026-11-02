@@ -10,7 +10,7 @@ describe("BT22-055 Recomon", () => {
       { level: 2, colors: ["Black"], cost: 0, isAlternate: false },
       { level: 2, traits: ["Appmon"], cost: 0, isAlternate: true },
     ]);
-    expect(compiled.linkRequirement).toEqual([{ traits: ["Appmon"], cost: 2 }]);
+    expect(compiled.linkRequirement).toEqual([{ traits: ["Appmon"], cost: 1 }]);
     const onPlay = compiled.effects.find((entry) => entry.trigger === "OnPlay");
     expect(onPlay?.actions[0]).toMatchObject({
       kind: "Draw",
@@ -56,7 +56,7 @@ describe("BT22-055 Recomon", () => {
     expect(s.state.players[0]!.hand.map((card) => card.cardId)).toEqual(expect.arrayContaining(["BT1-009", "BT1-010"]));
   });
 
-  it("links to an Appmon for 2 and grants Blocker to the host", async () => {
+  it("links to an Appmon for 1 and grants Blocker to the host", async () => {
     const s = setupEngine({
       0: { battleArea: [{ card: "BT21-009", as: "host" }], hand: [{ card: "BT22-055", as: "recomon" }] },
     });
@@ -71,7 +71,7 @@ describe("BT22-055 Recomon", () => {
     ).toEqual({ ok: true });
     await settle(() => observe(s.engine).hasKeyword(s.perm("host"), "Blocker"));
 
-    expect(s.state.memory).toBe(0);
+    expect(s.state.memory).toBe(1);
     expect(observe(s.engine).hasKeyword(s.perm("host"), "Blocker")).toBe(true);
   });
 });

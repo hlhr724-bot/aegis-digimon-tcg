@@ -49,6 +49,16 @@ describe("EX4-072 Digital Translator", () => {
     ]);
   });
 
+  it("chooses only a Digimon named exactly [Gallantmon], [Sakuyamon] or [MegaGargomon], as the errata reads", () => {
+    const main = runtimeCompiledCard("EX4-072")!.effects!.find((effect) => effect.trigger === "Main")!;
+    expect(main.actions![0]).toMatchObject({
+      kind: "Digivolve",
+      target: {
+        filter: { nameOrTrait: [{ tokens: ["Gallantmon", "Sakuyamon", "MegaGargomon"], match: "nameExact" }] },
+      },
+    });
+  });
+
   it("registers separate Main and Security effects for the erratared name set", () => {
     const source = {
       instanceId: "source",

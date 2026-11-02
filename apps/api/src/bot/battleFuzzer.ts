@@ -1,6 +1,9 @@
-import type { ServerEvent } from "@aegis/shared";
+import type { Intent, Seat, ServerEvent } from "@aegis/shared";
+import type { GameEngine } from "#api/engine/GameEngine";
+import type { BotPolicy } from "#api/bot/policy";
+import { mainActionReady } from "#api/bot/training/actions";
 import type { Decklist } from "../engine/testDecks.js";
-import { runBotMatch, type MatchResult } from "./matchHarness.js";
+import { runBotMatch, type MatchResult, type SeatConfig } from "./matchHarness.js";
 import { analyzePresentationEvents, type PresentationAnomaly } from "./presentationOracle.js";
 import type { PresentationRisk } from "./presentationOracle.js";
 
@@ -8,6 +11,13 @@ export interface FuzzDeck {
   id: string;
   deck: Decklist;
 }
+
+export type FuzzSeatPolicyFactory = (input: {
+  engine: GameEngine;
+  seat: Seat;
+  deck: Decklist;
+  seed: number;
+}) => BotPolicy<Intent | Promise<Intent>>;
 
 export interface BattleFuzzOptions {
   decks: readonly FuzzDeck[];
@@ -20,6 +30,7 @@ export interface BattleFuzzOptions {
   turnLimit?: number;
   maximumPresentationBurst?: number;
   runMatch?: typeof runBotMatch;
+  createSeatPolicy?: FuzzSeatPolicyFactory;
 }
 
 export interface BattleFuzzFailure {
@@ -58,6 +69,18 @@ export function createMatchups(decks: readonly FuzzDeck[], orderedSeats = true):
   return matchups;
 }
 
+function buildSeat(deck: FuzzDeck, seed: number, createSeatPolicy: FuzzSeatPolicyFactory | undefined): SeatConfig {
+  if (createSeatPolicy === undefined) {
+    return { profile: "balanced", label: deck.id, deck: deck.deck };
+  }
+  return {
+    label: deck.id,
+    deck: deck.deck,
+    canChooseMainAction: (engine) => mainActionReady(engine),
+    policyFactory: (engine, seat) => createSeatPolicy({ engine, seat, deck: deck.deck, seed: seed + seat * 7_919 }),
+  };
+}
+
 function publicEvents(result: MatchResult): readonly ServerEvent[] {
   if (!result.events) throw new Error("Battle fuzzer requires runBotMatch({ captureEvents: true }) event capture");
   return result.events;
@@ -91,10 +114,7 @@ export async function runBattleFuzz(options: BattleFuzzOptions): Promise<BattleF
       if (!Number.isSafeInteger(seed)) throw new Error("Generated seed exceeds the safe integer range");
       const result = await runMatch({
         seed,
-        seats: [
-          { profile: "balanced", label: left.id, deck: left.deck },
-          { profile: "balanced", label: right.id, deck: right.deck },
-        ],
+        seats: [buildSeat(left, seed, options.createSeatPolicy), buildSeat(right, seed, options.createSeatPolicy)],
         turnLimit: options.turnLimit,
         captureEvents: true,
         verifyProjections: true,

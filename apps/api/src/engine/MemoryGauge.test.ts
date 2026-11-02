@@ -105,7 +105,7 @@ describe("MemoryGauge.addMemoryForSeat (per-seat AddMemory)", () => {
   });
 });
 
-describe("MemoryGauge.setMemoryForSeat (SetFixedMemory, raise-only)", () => {
+describe("MemoryGauge.setMemoryForSeat", () => {
   it("raises the turn player to the fixed value", () => {
     const { gauge } = makeGauge(0, 0);
     gauge.setMemoryForSeat(0, 3);
@@ -113,11 +113,11 @@ describe("MemoryGauge.setMemoryForSeat (SetFixedMemory, raise-only)", () => {
     expect(gauge.memoryFor(0)).toBe(3);
   });
 
-  it("ignores a set that would LOWER the seat's memory (source guard)", () => {
+  it("lowers the seat to the fixed value", () => {
     const { gauge, events } = makeGauge(0, 5);
-    gauge.setMemoryForSeat(0, 3); // 3 < current 5 -> ignored
-    expect(gauge.value).toBe(5);
-    expect(events).toHaveLength(0);
+    gauge.setMemoryForSeat(0, 3);
+    expect(gauge.value).toBe(3);
+    expect(events).toEqual([{ from: 5, to: 3, reason: "setMemory" }]);
   });
 
   it("sets the opponent's perspective and stores it negated", () => {

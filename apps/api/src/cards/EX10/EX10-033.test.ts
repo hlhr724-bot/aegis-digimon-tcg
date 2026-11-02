@@ -109,7 +109,7 @@ describe("EX10-033 Pyramidimon", () => {
         },
         1: { security: ["BT1-009"] },
       },
-      { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },
+      { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred, declinePrompts: ["Pay cost:"] },
     );
     preferred.push(s.inst("mineral").instanceId, s.inst("egg").instanceId, s.inst("rock").instanceId);
     await s.ready();
@@ -147,7 +147,7 @@ describe("EX10-033 Pyramidimon", () => {
     expect(s.state.pendingDecision).toBeUndefined();
   });
 
-  it("Q5096/Q5099: declining the optional placement still pays the mandatory reduction with every eligible card", async () => {
+  it("Q5096/Q5099: declining both processing conditions keeps every eligible source", async () => {
     const s = setupEngine(
       {
         0: {
@@ -166,9 +166,7 @@ describe("EX10-033 Pyramidimon", () => {
     await s.ready();
     s.state.memory = 4;
     const baseInstanceId = s.inst("base").instanceId;
-    const rockAInstanceId = s.inst("rockA").instanceId;
-    const tankmonPermanentId = s.perm("tankmon").permanentId;
-
+    const rockInstanceId = s.inst("rockA").instanceId;
     expect(
       s.engine.applyIntent(0, {
         type: "digivolve",
@@ -176,30 +174,27 @@ describe("EX10-033 Pyramidimon", () => {
         instanceId: s.inst("pyramid").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.perm("base").topCard?.cardId === "EX10-033");
-    await settle(() => false, 40);
-
-    expect(s.perm("base").stack.map((card) => card.instanceId)).toEqual([]);
-    expect(s.perm("otherHost").stack.map((card) => card.instanceId)).toEqual([]);
+    await settle(
+      () =>
+        s.decisions.filter(({ req }) => req.kind === "optional").length >= 2 && s.state.pendingDecision === undefined,
+    );
+    expect(s.perm("base").stack.map((card) => card.instanceId)).toEqual([baseInstanceId]);
+    expect(s.perm("otherHost").stack.map((card) => card.instanceId)).toEqual([rockInstanceId]);
     expect(s.state.players[0]!.trash.map((card) => card.cardId)).toEqual([
       "BT10-062",
       "EX10-003",
       "BT4-065",
       "BT1-009",
-      "BT10-064",
-      "BT4-065",
     ]);
-    expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual(
-      expect.arrayContaining([baseInstanceId, rockAInstanceId]),
-    );
-
-    const modifiers = advance(s.engine).ledgers.modifiers;
     const tankmon = getCardDefinition("BT3-067")!;
-    expect(modifiers.playCostFor({ def: tankmon, controllerSeat: 1, permanentId: tankmonPermanentId }, 6)).toBe(2);
-
+    expect(
+      advance(s.engine).ledgers.modifiers.playCostFor(
+        { def: tankmon, controllerSeat: 1, permanentId: s.perm("tankmon").permanentId },
+        6,
+      ),
+    ).toBe(6);
     expect(s.state.memory).toBe(1);
     expect(s.state.players[0]!.hand.map((card) => card.cardId)).toEqual(["BT1-013"]);
-    expect(s.state.players[1]!.battleArea).toHaveLength(1);
     expect(s.state.pendingDecision).toBeUndefined();
   });
 
@@ -286,7 +281,7 @@ describe("EX10-033 Pyramidimon", () => {
         },
         1: { security: ["BT1-009", "BT1-013", "BT1-014"], deck: ["BT1-009", "BT1-013"], hand: ["BT1-013"] },
       },
-      { autoAcceptOptional: true, autoSelectCards: true },
+      { autoAcceptOptional: true, autoSelectCards: true, declinePrompts: ["Pay cost:"] },
     );
     const loop = s.engine.startTurnLoop();
     await advance(s.engine).waitForMainPhase(0);

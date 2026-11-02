@@ -1,7 +1,7 @@
 import { assemblyRequirementFor, EffectDuration, EffectTiming, getCardDefinition } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
-import { setupEngine, settle, settleAcrossTimers } from "../../engine/testkit/harness.js";
+import { assertNoLoudGap, setupEngine, settle, settleAcrossTimers } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
 import "../index.js";
 import { compiled } from "./EX13-062.js";
@@ -32,6 +32,27 @@ async function openOwnMain(s: ReturnType<typeof setupEngine>): Promise<void> {
 }
 
 describe("EX13-062 Craniamon", () => {
+  it.each(["LM-067", "BT27-035"])("ignores %s use cost when deleting the lowest play cost", async (cardId) => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: CARD_ID, as: "craniamon" }] },
+        1: { battleArea: [{ card: cardId, as: "gundramon", under: ["BT25-082"] }], security: 3 },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("craniamon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await advance(s.engine).finishAttack();
+    await settle();
+    expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard.cardId)).toEqual([cardId]);
+  });
+
   it("matches the catalog identity and every printed clause", () => {
     expect(getCardDefinition(CARD_ID)).toMatchObject({
       cardId: CARD_ID,
@@ -624,6 +645,98 @@ describe("EX13-062 Craniamon", () => {
     advance(s.engine).endMainPhaseIfOpen(0);
     expect(s.engine.applyIntent(0, { type: "surrender" })).toEqual({ ok: true });
     await loop;
+  });
+
+  it("lets an Assembly copy sweep after Kakkinmon suspends it at turn end", async () => {
+    const preferred: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: CARD_ID, as: "first", under: ["P-245"] },
+            { card: CARD_ID, as: "second" },
+          ],
+          hand: [{ card: CARD_ID, as: "third" }, FILLER],
+          trash: [
+            { card: LV5_BLACK_BLOCKER, as: "lv5" },
+            { card: LV4_BLACK_BLOCKER, as: "lv4" },
+            { card: LV3_BLACK_BLOCKER, as: "lv3" },
+          ],
+          deck: DECK,
+          security: [FILLER],
+        },
+        1: {
+          battleArea: [
+            { card: COST2, as: "low" },
+            { card: COST3, as: "middle" },
+            { card: COST4, as: "high" },
+          ],
+          deck: DECK,
+          security: [FILLER],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    const turn = s.engine.runOneTurn();
+    await advance(s.engine).waitForMainPhase(0);
+    await advance(s.engine).verb.suspend([s.perm("first").permanentId]);
+    await advance(s.engine).verb.suspend([s.perm("second").permanentId]);
+    expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard.instanceId)).toEqual([
+      s.inst("high").instanceId,
+    ]);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "playCard",
+        instanceId: s.inst("third").instanceId,
+        assembly: {
+          materialInstanceIds: [s.inst("lv5").instanceId, s.inst("lv4").instanceId, s.inst("lv3").instanceId],
+        },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.battleArea.length === 3 && s.state.pendingDecision === undefined);
+    const third = s.state.players[0]!.battleArea.find(
+      ({ topCard }) => topCard.instanceId === s.inst("third").instanceId,
+    )!;
+    preferred.push(third.permanentId);
+    advance(s.engine).endMainPhaseIfOpen(0);
+    await turn;
+    expect(third.isSuspended).toBe(true);
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    assertNoLoudGap(s);
+  });
+
+  it("tracks each Craniamon suspension sweep independently in the same turn", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: CARD_ID, as: "first" },
+            { card: CARD_ID, as: "second" },
+          ],
+          deck: DECK,
+        },
+        1: {
+          battleArea: [
+            { card: COST2, as: "low" },
+            { card: COST3, as: "high" },
+          ],
+          deck: DECK,
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    await advance(s.engine).verb.suspend([s.perm("first").permanentId]);
+    await settle();
+    expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard.instanceId)).toEqual([
+      s.inst("high").instanceId,
+    ]);
+    await advance(s.engine).verb.suspend([s.perm("second").permanentId]);
+    await settle();
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    assertNoLoudGap(s);
   });
 
   it("deletes every tied lowest-play-cost opponent on an attack suspension, sparing dearer ones and breeding", async () => {

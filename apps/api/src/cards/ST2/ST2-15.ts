@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Choose a Digimon digivolution card placed under 1 of your Digimon and play it as another Digimon without paying its memory cost.",
           kind: "SelectBind",
           target: {
             filter: { controller: "mine", kind: ["Digimon"], digivolutionStackKind: ["Digimon"] },
@@ -15,6 +17,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] Choose a Digimon digivolution card placed under 1 of your Digimon and play it as another Digimon without paying its memory cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

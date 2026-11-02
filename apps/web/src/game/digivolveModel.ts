@@ -310,6 +310,18 @@ function altRequirementMatches(
     !req.baseColors.some((color) => baseColorsOf(base, baseDef).includes(color as CardColor))
   )
     return false;
+  const colors = baseColorsOf(base, baseDef);
+  if (req.baseColorCountMax !== undefined && colors.length > req.baseColorCountMax) return false;
+  if (req.colors && req.colors.length > 0 && !req.colors.some((color) => colors.includes(color as CardColor)))
+    return false;
+  if (req.colorCount !== undefined && colors.length !== req.colorCount) return false;
+  if (req.excludeTraits?.some((trait) => cardHasTrait(baseDef, trait))) return false;
+  if (req.baseWithoutPlayCost === true && !baseDef.kinds.includes(CardKind.Option) && baseDef.playCost >= 0) {
+    return false;
+  }
+  if (req.basePlayCost !== undefined && baseDef.playCost !== req.basePlayCost) return false;
+  if (req.basePlayCostMin !== undefined && (baseDef.playCost ?? 0) < req.basePlayCostMin) return false;
+  if (req.basePlayCostMax !== undefined && (baseDef.playCost ?? 0) > req.basePlayCostMax) return false;
   if (req.level !== undefined && baseLevel !== req.level) return false;
   if (req.levelMin !== undefined && (baseLevel === undefined || baseLevel < req.levelMin)) return false;
   if (req.levelMax !== undefined && (baseLevel === undefined || baseLevel > req.levelMax)) return false;

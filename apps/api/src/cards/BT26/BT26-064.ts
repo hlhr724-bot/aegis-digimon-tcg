@@ -14,8 +14,18 @@ export const compiled: CompiledCard = {
           kind: "RevealAdd",
           revealCount: 3,
           add: [
-            { filter: evil, count: 1, to: "hand" },
-            { filter: ts, count: 1, to: "hand" },
+            {
+              effectTextPart: "Add 1 card with the [Fallen Angel], [Undead], [Wizard] or [Demon Lord] trait",
+              filter: evil,
+              count: 1,
+              to: "hand",
+            },
+            {
+              effectTextPart: "1 card with the [TS] trait among them to the hand.",
+              filter: ts,
+              count: 1,
+              to: "hand",
+            },
           ],
           rest: "deckBottom",
         },

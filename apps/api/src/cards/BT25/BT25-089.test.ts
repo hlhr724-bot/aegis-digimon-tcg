@@ -56,6 +56,53 @@ describe("BT25-089 Kazuki & Itsuki", () => {
     expect(s.state.memory).toBe(2);
   });
 
+  it("links an Appmon from a battle-area Digimon's sources while preserving breeding sources", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT25-089", as: "tamer" },
+            { card: "BT21-009", as: "host", under: [{ card: "BT26-010", as: "material" }] },
+          ],
+          breeding: { card: "BT21-009", as: "breeding", under: [{ card: "BT26-010", as: "breedingSource" }] },
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 3;
+    await s.ready();
+    const effect = activatableEffects(s, s.perm("tamer"))[0]!;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "activateEffect",
+        sourceInstanceId: effect.instanceId,
+        effectKey: effect.effectKey,
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.perm("host").linked.map((card) => card.instanceId)).toEqual([s.inst("material").instanceId]);
+    expect(s.perm("host").stack).toHaveLength(0);
+    expect(s.perm("breeding").stack.map((card) => card.instanceId)).toEqual([s.inst("breedingSource").instanceId]);
+    expect(s.perm("tamer").isSuspended).toBe(true);
+    expect(s.state.memory).toBe(2);
+  });
+
+  it("does not link digivolution cards from breeding or from under a Tamer", async () => {
+    const s = setupEngine({
+      0: {
+        battleArea: [
+          { card: "BT25-089", as: "tamer", under: [{ card: "BT26-010", as: "tamerSource" }] },
+          { card: "BT21-009", as: "host" },
+        ],
+        breeding: { card: "BT21-009", as: "breeding", under: [{ card: "BT26-010", as: "breedingSource" }] },
+      },
+    });
+    await s.ready();
+    expect(activatableEffects(s, s.perm("tamer"))).toEqual([]);
+    expect(s.perm("breeding").stack.map((card) => card.instanceId)).toContain(s.inst("breedingSource").instanceId);
+    expect(s.perm("host").linked).toHaveLength(0);
+  });
+
   it("Q6423 rejects a second copy's Main activation while the first link activation is pending", async () => {
     const s = setupEngine(
       {

@@ -1,3 +1,5 @@
+import fixture from "#api/engine/scenarios/trait-card-trash-return.fixture";
+import { setupScenario } from "#api/engine/testkit/scenario";
 import { EffectTiming } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
@@ -23,7 +25,7 @@ describe("BT18-011 Agunimon", () => {
               zone: "trash",
               controller: "mine",
               or: [
-                { kind: ["Digimon"], nameOrTrait: [{ tokens: ["Hybrid", "Ten Warriors"], match: "trait" }] },
+                { nameOrTrait: [{ tokens: ["Hybrid", "Ten Warriors"], match: "trait" }] },
                 { kind: ["Tamer"], hasInheritedEffects: true },
               ],
             },
@@ -53,6 +55,52 @@ describe("BT18-011 Agunimon", () => {
     ).toEqual({ ok: true });
     await settle(() => s.perm("burning").topCard?.cardId === "BT18-011");
     expect(s.state.players[0]!.hand.some((card) => card.cardId === "BT12-009")).toBe(true);
+  });
+
+  it("returns a Ten Warriors Option alongside eligible Digimon and inherited Tamers", async () => {
+    const s = setupScenario(fixture, { autoAcceptOptional: true });
+    const turn = s.engine.runOneTurn();
+    try {
+      await advance(s.engine).waitForMainPhase(0);
+      expect(
+        s.engine.applyIntent(0, {
+          type: "digivolve",
+          permanentId: s.perm("burning").permanentId,
+          instanceId: s.inst("agunimon").instanceId,
+          useAlternateCost: true,
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.state.pendingDecision?.kind === "selectCards");
+      const choice = s.decisions.findLast(({ req }) => req.kind === "selectCards")!.req;
+      const candidates = [...(choice.options?.candidateInstanceIds ?? [])];
+      expect(candidates).toEqual(
+        expect.arrayContaining(
+          ["ancientGuardian", "hybrid", "tenWarriors", "inheritedTamer"].map((alias) => s.inst(alias).instanceId),
+        ),
+      );
+      expect(candidates).toHaveLength(4);
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: choice.decisionId,
+          response: { kind: "selectCards", instanceIds: [s.inst("ancientGuardian").instanceId] },
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.state.pendingDecision === undefined);
+
+      expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).toContain(
+        s.inst("ancientGuardian").instanceId,
+      );
+      expect(s.perm("burning").topCard.instanceId).toBe(s.inst("agunimon").instanceId);
+      expect(s.perm("burning").stack.at(-1)?.cardId).toBe("BT12-013");
+      expect(s.state.players[0]!.trash).toHaveLength(6);
+      expect(s.state.players[1]!.trash.map(({ instanceId }) => instanceId)).toContain(
+        s.inst("opponentAncientGuardian").instanceId,
+      );
+    } finally {
+      s.engine.applyIntent(0, { type: "surrender" });
+      await turn;
+    }
   });
 
   it("returns a Ten Warriors Digimon from trash when digivolving", async () => {

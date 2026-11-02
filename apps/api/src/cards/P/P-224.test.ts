@@ -78,7 +78,7 @@ describe("P-224 Kotone Amano", () => {
     });
   });
 });
-import { EffectTiming } from "@aegis/shared";
+import { EffectDuration, EffectTiming } from "@aegis/shared";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
@@ -146,6 +146,27 @@ describe("P-224 engine behavior", () => {
       expect(s.decisions.filter(({ req }) => req.options?.digiXrosCardId === "BT19-014")).toHaveLength(1);
     },
   );
+
+  it.each([0, 1] as const)("plays Shoutmon EX6 from its own stack with one memory for seat %s", async (seat) => {
+    const s = setupEngine(
+      { [seat]: { battleArea: [{ card: "P-224", as: "kotone", under: [{ card: "BT19-014", as: "ex6" }] }] } },
+      { autoAcceptOptional: true, autoSelectCards: true, declineDigiXros: true },
+    );
+    s.state.turnSeat = seat;
+    s.state.memory = 1;
+    await s.ready();
+    const effect = observe(s.engine).activatableEffects(s.perm("kotone"))[0]!;
+    expect(
+      s.engine.applyIntent(seat, {
+        type: "activateEffect",
+        sourceInstanceId: s.inst("kotone").instanceId,
+        effectKey: effect.effectKey,
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.state.players[seat]!.battleArea.some((p) => p.topCard.instanceId === s.inst("ex6").instanceId)).toBe(true);
+    expect(s.state.memory).toBe(-9);
+  });
 
   it("plays itself from Security through its Security effect", async () => {
     const s = setupEngine({
@@ -483,4 +504,104 @@ describe("Discord bug 1556113288599834624 — unavailable DigiXros materials", (
     expect(s.state.memory).toBe(-10);
     expect(s.state.pendingDecision).toBeUndefined();
   });
+});
+
+it.each([true, false])("Kotone only uses Taiki's DigiXros expansion when Taiki can suspend: %s", async (locked) => {
+  const preferred: string[] = [];
+  const s = setupEngine(
+    {
+      0: {
+        battleArea: [
+          { card: "P-224", as: "kotone", under: [{ card: "BT19-014", as: "played" }] },
+          { card: "BT10-087", as: "taiki", under: [{ card: "BT21-021", as: "material" }] },
+        ],
+      },
+    },
+    { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },
+  );
+  await s.ready();
+  s.state.memory = 10;
+  preferred.push(s.inst("played").instanceId, s.perm("taiki").permanentId);
+  if (locked) {
+    await advance(s.engine).verb.restrict(s.perm("taiki").permanentId, "suspend", EffectDuration.Permanent);
+  }
+  const effect = observe(s.engine).activatableEffects(s.perm("kotone"))[0]!;
+  expect(
+    s.engine.applyIntent(0, {
+      type: "activateEffect",
+      sourceInstanceId: s.inst("kotone").instanceId,
+      effectKey: effect.effectKey,
+    }),
+  ).toEqual({ ok: true });
+  await settle(
+    () =>
+      s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "P-224") &&
+      !s.state.pendingDecision,
+  );
+  const played = s.state.players[0]!.battleArea.find(
+    ({ topCard }) => topCard.instanceId === s.inst("played").instanceId,
+  )!;
+  expect(played).toBeDefined();
+  expect(played.stack.map(({ instanceId }) => instanceId)).toEqual(locked ? [] : [s.inst("material").instanceId]);
+  expect(s.perm("taiki").isSuspended).toBe(!locked);
+  expect(s.perm("taiki").stack.map(({ instanceId }) => instanceId)).toEqual(
+    locked ? [s.inst("material").instanceId] : [],
+  );
+  expect(s.state.memory).toBe(locked ? 0 : 2);
+});
+
+it("does not consume Taiki materials when suspension becomes blocked after selection", async () => {
+  const s = setupEngine(
+    {
+      0: {
+        battleArea: [
+          { card: "P-224", as: "kotone", under: [{ card: "BT19-014", as: "played" }] },
+          { card: "BT10-087", as: "taiki", under: [{ card: "BT21-021", as: "material" }] },
+        ],
+      },
+    },
+    { autoAcceptOptional: true },
+  );
+  await s.ready();
+  s.state.memory = 10;
+  const effect = observe(s.engine).activatableEffects(s.perm("kotone"))[0]!;
+  expect(
+    s.engine.applyIntent(0, {
+      type: "activateEffect",
+      sourceInstanceId: s.inst("kotone").instanceId,
+      effectKey: effect.effectKey,
+    }),
+  ).toEqual({ ok: true });
+  for (const alias of ["played", "taiki"]) {
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const pending = s.state.pendingDecision!;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: pending.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst(alias).instanceId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+  }
+  await settle(() => s.state.pendingDecision?.kind === "selectCards");
+  const pending = s.state.pendingDecision!;
+  await advance(s.engine).verb.restrict(s.perm("taiki").permanentId, "suspend", EffectDuration.Permanent);
+  expect(
+    s.engine.applyIntent(0, {
+      type: "respondDecision",
+      decisionId: pending.decisionId,
+      response: { kind: "selectCards", instanceIds: [s.inst("material").instanceId] },
+    }),
+  ).toEqual({ ok: true });
+  await settle(
+    () => s.events.some((e) => e.kind === "effectResolved" && e.sourceCardId === "P-224") && !s.state.pendingDecision,
+  );
+  const played = s.state.players[0]!.battleArea.find(
+    ({ topCard }) => topCard.instanceId === s.inst("played").instanceId,
+  )!;
+  expect(played.stack).toHaveLength(0);
+  expect(s.perm("taiki").isSuspended).toBe(false);
+  expect(s.perm("taiki").stack.map(({ instanceId }) => instanceId)).toEqual([s.inst("material").instanceId]);
+  expect(s.state.memory).toBe(0);
 });

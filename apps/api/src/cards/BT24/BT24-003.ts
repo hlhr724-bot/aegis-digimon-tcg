@@ -38,6 +38,7 @@ export const compiled: CompiledCard = {
               useAlternateCost: true,
               reduceCost: 1,
               optional: true,
+              preserveOncePerTurnOnDecline: true,
             },
           ],
         },

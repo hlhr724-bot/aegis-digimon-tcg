@@ -7,9 +7,13 @@ import "./SpectatorInvite.css";
 
 export function SpectatorInvite({
   code,
+  spectatorNamesJson,
+  anonymousSpectatorCount = 0,
   variant = "desktop",
 }: {
   code: string;
+  spectatorNamesJson?: string;
+  anonymousSpectatorCount?: number;
   variant?: "desktop" | "mobile" | "menu";
 }) {
   const { t } = useTranslation();
@@ -17,6 +21,7 @@ export function SpectatorInvite({
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
   const url = spectatorInviteUrl(code);
+  const spectatorNames: string[] = JSON.parse(spectatorNamesJson ?? "[]");
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(url);
@@ -56,6 +61,19 @@ export function SpectatorInvite({
             </button>
           </header>
           <div className="spectator-invite__body">
+            {spectatorNamesJson !== undefined ? (
+              <section aria-label={t("spectator.audience")}>
+                <h3>{t("spectator.audience")}</h3>
+                {spectatorNames.length > 0 ? (
+                  <ul>
+                    {spectatorNames.map((name, index) => (
+                      <li key={`${index}-${name}`}>{name}</li>
+                    ))}
+                  </ul>
+                ) : null}
+                <p>{t("spectator.anonymousCount", { count: anonymousSpectatorCount })}</p>
+              </section>
+            ) : null}
             <Field label={t("spectator.code")} value={code} readOnly onFocus={(event) => event.target.select()} />
             <Field label={t("spectator.link")} value={url} readOnly onFocus={(event) => event.target.select()} />
             {copyError ? (

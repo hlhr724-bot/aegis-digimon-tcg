@@ -177,6 +177,39 @@ beforeEach(async () => {
 });
 
 describe("entering a Tournament Game room", () => {
+  it("loads the event format from the authorized game instead of client preferences", async () => {
+    await accounts.pool.query("UPDATE tournaments SET format='BT10:unlimited' WHERE id=$1", [tournamentId]);
+    const series = await startSeries();
+    const authorization = await authorize(series.id, alice);
+    const room = new TournamentTestRoom();
+    room.broadcast = vi.fn<() => boolean>(() => true) as AegisRoom["broadcast"];
+    (room as unknown as { roomId: string }).roomId = "historical-room";
+    await room.onCreate({ seed: 1, tournamentRoom: true, tournamentGameId: authorization.gameId, format: "pauper" });
+    expect(room.state.format).toBe("BT10:unlimited");
+    expect(room.state.unlimited).toBe(true);
+    const options = { ...joinOptions(authorization.gameId, authorization.token), format: "pauper" as const };
+    const client = fakeClient("historical-player");
+    expect(await room.onAuth(client, options)).toBe(true);
+    room.onJoin(client, options);
+    expect(room.state.players[0]?.displayName).toBe("Registered Alice");
+    room.onDispose();
+  });
+
+  it("ignores a forged banlist when seating a tournament participant", async () => {
+    const series = await startSeries();
+    const authorization = await authorize(series.id, alice);
+    const room = makeRoom("frozen-banlist-room");
+    const options = {
+      ...joinOptions(authorization.gameId, authorization.token),
+      banlistCards: [{ cardId: RED_DECK.mainDeck[0]!, status: "banned" as const, allowedCopies: 0 }],
+    };
+    const client = fakeClient("frozen-player");
+    expect(await room.onAuth(client, options)).toBe(true);
+    room.onJoin(client, options);
+    expect(room.state.players[0]?.displayName).toBe("Registered Alice");
+    room.onDispose();
+  });
+
   it("admits both participants on their own authorizations and preserves their registered names", async () => {
     const series = await startSeries();
     const room = makeRoom("room-1");
@@ -498,5 +531,100 @@ describe("reporting one game's result", () => {
     await seatBoth(room, series.id);
     room.onDispose();
     expect((await store.series(series.id))?.games[0]?.roomId).toBe("room-1");
+  });
+});
+
+describe("spectating a Tournament Game room", () => {
+  async function liveRoom(): Promise<TournamentTestRoom> {
+    const series = await startSeries();
+    const room = makeRoom("spectated-room");
+    await seatBoth(room, series.id);
+    (room as unknown as { startMatchNow: () => void }).startMatchNow();
+    return room;
+  }
+
+  async function spectatorOptions(name: string): Promise<AegisJoinOptions> {
+    const account = await accounts.accountForIdentity("discord", name, name);
+    return {
+      spectator: true,
+      displayName: "",
+      deck: { mainDeck: [], eggDeck: [] },
+      authTicket: await accounts.createRoomTicket(account.id),
+    };
+  }
+
+  async function setPolicy(policy: string): Promise<void> {
+    await accounts.pool.query("UPDATE tournaments SET spectator_policy=$2 WHERE id=$1", [tournamentId, policy]);
+  }
+
+  it("admits an allowlisted account with a public view", async () => {
+    await setPolicy("allowlist");
+    const caster = await accounts.accountForIdentity("discord", "caster", "Caster");
+    await accounts.pool.query(
+      "INSERT INTO tournament_spectators (tournament_id, account_id, added_at) VALUES ($1,$2,1)",
+      [tournamentId, caster.id],
+    );
+    const room = await liveRoom();
+    const client = fakeClient("caster-session");
+    const options = await spectatorOptions("caster");
+    expect(await room.onAuth(client, options)).toBe(true);
+    room.clients.push(client);
+    room.onJoin(client, options);
+    expect(JSON.parse(room.state.players[0]!.spectatorNamesJson)).toEqual(["Caster"]);
+    room.onDispose();
+  });
+
+  it("refuses an account missing from the allowlist", async () => {
+    await setPolicy("allowlist");
+    const room = await liveRoom();
+    expect(await room.onAuth(fakeClient("outsider"), await spectatorOptions("outsider"))).toBe(false);
+    room.onDispose();
+  });
+
+  it("refuses everyone but staff when spectating is off", async () => {
+    const room = await liveRoom();
+    expect(await room.onAuth(fakeClient("outsider"), await spectatorOptions("outsider"))).toBe(false);
+    const admin = await accounts.accountForIdentity("discord", "admin", "Admin");
+    await accounts.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [admin.id]);
+    expect(await room.onAuth(fakeClient("admin"), await spectatorOptions("admin"))).toBe(true);
+    room.onDispose();
+  });
+
+  it("refuses a player still in the event even when any signed-in account may watch", async () => {
+    await setPolicy("signed_in");
+    const room = await liveRoom();
+    expect(await room.onAuth(fakeClient("outsider"), await spectatorOptions("outsider"))).toBe(true);
+    const ticket = await accounts.createRoomTicket(bob);
+    expect(
+      await room.onAuth(fakeClient("bob-watching"), {
+        spectator: true,
+        displayName: "",
+        deck: { mainDeck: [], eggDeck: [] },
+        authTicket: ticket,
+      }),
+    ).toBe(false);
+    room.onDispose();
+  });
+
+  it("refuses a spectator without a room ticket", async () => {
+    await setPolicy("signed_in");
+    const room = await liveRoom();
+    expect(
+      await room.onAuth(fakeClient("anonymous"), {
+        spectator: true,
+        displayName: "",
+        deck: { mainDeck: [], eggDeck: [] },
+      }),
+    ).toBe(false);
+    room.onDispose();
+  });
+
+  it("refuses spectators before the match starts", async () => {
+    await setPolicy("signed_in");
+    const series = await startSeries();
+    const room = makeRoom("waiting-room");
+    await seatBoth(room, series.id);
+    expect(await room.onAuth(fakeClient("early"), await spectatorOptions("early"))).toBe(false);
+    room.onDispose();
   });
 });

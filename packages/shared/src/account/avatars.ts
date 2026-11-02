@@ -78,7 +78,8 @@ export function isDigimonWorldAvatarId(value: unknown): value is DigimonWorldAva
 export const INITIALS_AVATAR = "initials";
 export type AvatarChoice = DigimonWorldAvatarId | typeof INITIALS_AVATAR | null;
 /** Which picture an account shows: a Digimon portrait, the Discord picture, or the initials of its name. */
-export type AvatarSource = "digimon" | "discord" | "initials";
+/** Where the picture comes from: a preset, Discord, the player's own upload, or initials. */
+export type AvatarSource = "digimon" | "discord" | "initials" | "upload";
 
 export function isAvatarChoice(value: unknown): value is AvatarChoice {
   return value === null || value === INITIALS_AVATAR || isDigimonWorldAvatarId(value);

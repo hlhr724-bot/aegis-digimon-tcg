@@ -2,7 +2,7 @@ import { getCardDefinition, type CompiledCard } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import { setupEngine, settle, assertNoLoudGap, type BoardSpec } from "../../engine/testkit/harness.js";
 import { registerIrCard } from "../../engine/effects/interpreter.js";
-import { unregisterCard } from "../../engine/effects/registry.js";
+import { unregisterIrCard } from "#api/engine/effects/interpreter/registration/unregisterIrCard";
 import { syntheticDefinitions } from "../../engine/testkit/syntheticDefinitions.js";
 import { compiled } from "./EX5-063.js";
 import "../index.js";
@@ -297,7 +297,7 @@ describe("EX5-063 Leviamon — KB Q&A rulings", () => {
         s.inst("lowest").instanceId,
       ]);
     } finally {
-      unregisterCard(bouncerId);
+      unregisterIrCard(bouncerId);
       syntheticDefinitions.delete(bouncerId);
     }
   });

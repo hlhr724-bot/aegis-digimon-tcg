@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 Option card with [Plug-In] in its name",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Option"],
@@ -25,6 +26,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 yellow Tamer card among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Tamer"],

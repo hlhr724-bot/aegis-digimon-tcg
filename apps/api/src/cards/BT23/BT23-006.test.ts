@@ -28,6 +28,7 @@ describe("BT23-006 Huckmon", () => {
         revealCount: 3,
         add: [
           {
+            effectTextPart: "Add 1 card with [Huckmon] or [Sistermon] in its name",
             filter: {
               controllerDefault: "mine",
               nameOrTrait: [{ tokens: ["Huckmon", "Sistermon"], match: "name" }],
@@ -36,6 +37,7 @@ describe("BT23-006 Huckmon", () => {
             to: "hand",
           },
           {
+            effectTextPart: "1 card with the [Royal Knight] trait among them to the hand.",
             filter: {
               controllerDefault: "mine",
               nameOrTrait: [{ tokens: ["Royal Knight"], match: "trait" }],

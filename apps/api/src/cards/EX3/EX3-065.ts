@@ -30,6 +30,10 @@ const compiled: CompiledCard = {
           kind: "SubTrigger",
           event: "whenOneOfYoursDigivolves",
           sourceFilter: { controller: "mine", kind: ["Digimon"], nameOrTrait: dragonTraits },
+          activationCondition: {
+            kind: "triggerSubjectMatchesFilter",
+            filter: { controller: "mine", kind: ["Digimon"] },
+          },
           actions: [
             {
               kind: "ActivateEffect",

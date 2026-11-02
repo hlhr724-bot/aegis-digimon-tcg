@@ -31,6 +31,16 @@ describe("EX1-072 Emergency Program Shutdown!", () => {
     });
     await settle(() => s.state.players[0]!.trash.some((c) => c.cardId === "EX1-072"));
     await advance(s.engine).waitForMainPhase(1);
+    expect(JSON.parse(s.state.players[1]!.fieldEffectsJson)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "restriction",
+          value: "play",
+          sourceCardId: "EX1-072",
+          effectText: expect.stringMatching(/\[Main\].*Option cards/),
+        }),
+      ]),
+    );
     expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("opponentOption").instanceId }).ok).toBe(
       false,
     );
@@ -63,6 +73,16 @@ describe("EX1-072 Emergency Program Shutdown!", () => {
     await settle(() => s.state.players[1]!.hand.some((card) => card.instanceId === shutdownId));
 
     expect(s.state.players[1]!.security).toHaveLength(0);
+    expect(JSON.parse(s.state.players[0]!.fieldEffectsJson)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "restriction",
+          value: "play",
+          sourceCardId: "EX1-072",
+          effectText: "[Security] Your opponent can't use Option cards this turn.",
+        }),
+      ]),
+    );
     expect(s.state.players[1]!.hand.some((card) => card.instanceId === shutdownId)).toBe(true);
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("opponentOption").instanceId }).ok).toBe(
       false,

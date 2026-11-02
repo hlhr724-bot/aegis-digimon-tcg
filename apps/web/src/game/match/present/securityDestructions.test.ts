@@ -94,3 +94,61 @@ it("#5409: a DNA card arrival completes before its effect trashes security", asy
     queue.clear();
   }
 });
+
+it("finishes a completed security check before an effect destroys the next security card", async () => {
+  const order: string[] = [];
+  const cancelled: string[] = [];
+  const queue = createAnimationQueue({
+    onStep: (event) => {
+      if (event.cancelled) cancelled.push(event.step.id);
+    },
+  });
+  queue.pause();
+  for (const id of ["security-clash-outcome-1", "security-presented-1"]) {
+    queue.enqueue({
+      id,
+      track: "centerStage",
+      skippable: false,
+      run() {
+        order.push(id);
+      },
+    });
+  }
+  const noop = () => {};
+  enqueueSecurityDestructions({
+    fresh: [
+      {
+        kind: "cardsMoved",
+        from: "security",
+        to: "trash",
+        seat: 1,
+        instanceIds: ["next-security"],
+        cardIds: ["BT1-009"],
+      },
+    ],
+    viewerSeat: 0,
+    replayingHistory: false,
+    queue,
+    sidePanelLookupRef: { current: { cardId: () => undefined, seat: () => undefined } },
+    securityClashKeyRef: { current: 1 },
+    pendingDestructionsRef: { current: 0 },
+    setSecurityBreak: noop,
+    setSecurityHitSeat: noop,
+    setSecurityClash: () => {
+      order.push("destruction");
+    },
+    setPendingRevealKey: noop,
+    securityCountOf: () => 4,
+    holdSecurityCard: noop,
+    releaseSecurityCard: noop,
+    releaseSecurityCardWhenIdle: noop,
+    releaseSecurityPresentation: noop,
+    causingEffectGate: null,
+    enqueue: (step) => queue.enqueue(step),
+  });
+  queue.setMode("replay");
+  queue.resume();
+  await queue.idle();
+  expect(cancelled).toEqual([]);
+  expect(order.slice(0, 3)).toEqual(["security-clash-outcome-1", "security-presented-1", "destruction"]);
+});

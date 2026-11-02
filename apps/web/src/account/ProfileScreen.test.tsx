@@ -1,3 +1,5 @@
+import { setProfileTrophiesShown } from "@/achievements/setProfileTrophiesShown";
+import { copyDeckPreset, type DeckListing } from "@/game/decks";
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -6,7 +8,7 @@ import { I18nProvider } from "../i18n";
 import { AccountApiError, accountApi, type AccountProfile, type RemoteAccount } from "./client";
 import { ProfileScreen } from "./ProfileScreen";
 import type { DigimonWorldAvatarId } from "./avatars";
-import { setProfileStatsShown } from "./profileStats";
+import { areProfileStatsShown, setProfileStatsShown } from "./profileStats";
 import { replayApi } from "../replays/library";
 import { fakeDrive } from "../replays/cloud/fakeProvider.fixture";
 import { syncLocalReplays } from "../replays/cloud";
@@ -35,6 +37,7 @@ const ACCOUNT: RemoteAccount = {
   avatarId: null,
   avatarSource: "discord",
   isAdmin: false,
+  roles: [],
   discordLinked: true,
 };
 const PLAYER = { name: "Guest Tamer", color: "Blue", shards: 0 };
@@ -108,6 +111,7 @@ beforeEach(() => {
   vi.spyOn(accountApi, "profile").mockResolvedValue(PROFILE);
   vi.spyOn(accountApi, "playtest").mockResolvedValue({ member: false, since: null });
   setProfileStatsShown(true);
+  setProfileTrophiesShown(true);
 });
 afterEach(() => {
   cleanup();
@@ -147,7 +151,19 @@ it("shows the identity header with totals and no tabs", async () => {
   expect(await screen.findByRole("heading", { name: "Your completed matches will appear here." })).toBeTruthy();
 });
 
-it("hides the match stats unless the player turns them on", async () => {
+it("lets the player hide and restore trophies from the profile", async () => {
+  vi.spyOn(accountApi, "matches").mockResolvedValue(page([]));
+  renderProfile();
+  expect(await screen.findByRole("heading", { name: "Trophies" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("switch", { name: "Show trophies" }));
+  expect(screen.queryByRole("heading", { name: "Trophies" })).toBeNull();
+  expect(localStorage.getItem("aegis.profile-trophies")).toBe("false");
+  expect(screen.getByRole("switch", { name: "Show trophies" }).getAttribute("aria-checked")).toBe("false");
+  fireEvent.click(screen.getByRole("switch", { name: "Show trophies" }));
+  expect(screen.getByRole("heading", { name: "Trophies" })).toBeTruthy();
+});
+
+it("lets the player show hidden match stats from the profile", async () => {
   setProfileStatsShown(false);
   vi.spyOn(accountApi, "matches").mockResolvedValue(
     page([match(0)], { winRate: { matches: 3, wins: 1, losses: 1, draws: 1 } }),
@@ -157,6 +173,13 @@ it("hides the match stats unless the player turns them on", async () => {
   expect(screen.queryByText("Win rate")).toBeNull();
   expect(screen.queryByText("33%")).toBeNull();
   expect(screen.getByRole("link", { name: "Preferences" })).toBeTruthy();
+
+  const toggle = screen.getByRole("switch", { name: "Show match stats" });
+  expect(toggle.getAttribute("aria-checked")).toBe("false");
+  fireEvent.click(toggle);
+  expect(areProfileStatsShown()).toBe(true);
+  expect(toggle.getAttribute("aria-checked")).toBe("true");
+  expect(await screen.findByText("33%")).toBeTruthy();
 });
 
 it("shows a dash for the win rate before the first match", async () => {
@@ -208,6 +231,7 @@ it("saves avatar choices immediately, including initials over a linked Discord p
   fireEvent.click(screen.getByRole("button", { name: "Change avatar" }));
   let menu = screen.getByRole("dialog", { name: "Choose avatar" });
   expect(within(menu).getByRole("button", { name: "Use Discord avatar" }).getAttribute("aria-pressed")).toBe("true");
+  fireEvent.click(within(menu).getByRole("tab", { name: "Digimon" }));
   fireEvent.change(within(menu).getByRole("searchbox", { name: "Search Digimon" }), { target: { value: "grey" } });
   expect(within(menu).queryByRole("button", { name: "Use Numemon as your avatar" })).toBeNull();
   fireEvent.click(within(menu).getByRole("button", { name: "Use Greymon as your avatar" }));
@@ -217,7 +241,7 @@ it("saves avatar choices immediately, including initials over a linked Discord p
 
   fireEvent.click(screen.getByRole("button", { name: "Change avatar" }));
   menu = screen.getByRole("dialog", { name: "Choose avatar" });
-  fireEvent.click(within(menu).getByRole("button", { name: "Use default avatar" }));
+  fireEvent.click(within(menu).getByRole("button", { name: "Use initials instead" }));
   await waitFor(() => expect(updateAvatar).toHaveBeenLastCalledWith("initials"));
 });
 
@@ -242,12 +266,13 @@ it("lets a guest rename and pick an avatar on this device", async () => {
   const { onGuestChange } = renderProfile({ account: null, player: { ...PLAYER, guestAvatarId: "greymon" } });
   expect(screen.getByRole("button", { name: "Sign in with Discord" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Open replay file" })).toBeTruthy();
+  expect(screen.queryByRole("switch", { name: "Show match stats" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Change avatar" }));
   const menu = screen.getByRole("dialog", { name: "Choose avatar" });
   expect(within(menu).getByRole("button", { name: "Use Greymon as your avatar" }).getAttribute("aria-pressed")).toBe(
     "true",
   );
-  fireEvent.click(within(menu).getByRole("button", { name: "Use default avatar" }));
+  fireEvent.click(within(menu).getByRole("button", { name: "Use initials instead" }));
   await waitFor(() => expect(onGuestChange).toHaveBeenCalledWith("Guest Tamer", null));
   fireEvent.click(screen.getByRole("button", { name: "Edit name: Guest Tamer" }));
   fireEvent.change(screen.getByRole("textbox", { name: "Nickname" }), { target: { value: "  Tai   Kamiya " } });
@@ -455,4 +480,212 @@ it("does not expose the previous account's eligible counts while the next accoun
   );
   expect(screen.queryByText("33%")).toBeNull();
   expect(screen.getByText("Win rate").closest("div")?.querySelector("dd")?.textContent).toBe("—");
+});
+
+it("opens an available opponent list from history and copies its exact cards and artwork independently", async () => {
+  const snapshot = {
+    deckId: null,
+    deckName: "Starting list",
+    mainDeck: ["AD1-001", "AD1-001"],
+    eggDeck: ["BT1-001"],
+    mainDeckArts: ["AD1-001", "AD1-001_P1"],
+    eggDeckArts: ["BT1-001"],
+    format: "standard" as const,
+  };
+  vi.spyOn(accountApi, "matches").mockResolvedValue(page([{ ...match(2), hasOpponentDeck: true }, match(3)]));
+  const load = vi.spyOn(accountApi, "matchOpponentDeck").mockResolvedValue(snapshot);
+  let copied: DeckListing | undefined;
+  const onCopyDeck = vi.fn<(deck: DeckListing) => void>((deck: DeckListing) => {
+    copied = copyDeckPreset(deck, []);
+  });
+  renderProfile({ onCopyDeck });
+  fireEvent.click(await screen.findByRole("button", { name: "View opponent’s deck" }));
+  expect(load).toHaveBeenCalledWith("match-2");
+  const dialog = await screen.findByRole("dialog");
+  expect(dialog.textContent).toContain("Starting list");
+  const copyButton = within(dialog).getByRole("button", { name: /copy/i });
+  fireEvent.click(copyButton);
+  expect(onCopyDeck).toHaveBeenCalledOnce();
+  expect(copied).toMatchObject({
+    mainDeck: snapshot.mainDeck,
+    eggDeck: snapshot.eggDeck,
+    mainDeckArts: snapshot.mainDeckArts,
+    eggDeckArts: snapshot.eggDeckArts,
+    format: "standard",
+  });
+  expect(copied!.mainDeck).not.toBe(snapshot.mainDeck);
+  copied!.mainDeck[0] = "BT1-010";
+  expect(snapshot.mainDeck[0]).toBe("AD1-001");
+});
+
+it("reports an unavailable opponent deck and permits retry without opening a stale list", async () => {
+  setProfileTrophiesShown(false);
+  vi.spyOn(accountApi, "matches").mockResolvedValue(page([{ ...match(2), hasOpponentDeck: true }]));
+  const load = vi.spyOn(accountApi, "matchOpponentDeck").mockRejectedValue(new AccountApiError(404));
+  renderProfile({ onCopyDeck: vi.fn<(deck: DeckListing) => void>() });
+  fireEvent.click(await screen.findByRole("button", { name: "View opponent’s deck" }));
+  expect((await screen.findByRole("alert")).textContent).toContain("This deck is unavailable");
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(screen.getByRole("button", { name: "View opponent’s deck" }).hasAttribute("disabled")).toBe(false);
+  expect(load).toHaveBeenCalledOnce();
+});
+
+it("filters by deck and displays both deck win rates independently of result selection", async () => {
+  const matches = vi.spyOn(accountApi, "matches").mockResolvedValue(
+    page([], {
+      decks: [{ id: "blue", name: "Blue Flare" }],
+    }),
+  );
+  renderProfile();
+  const select = await screen.findByRole("combobox", { name: "Deck" });
+  await screen.findByRole("option", { name: "Blue Flare" });
+  matches.mockResolvedValue(
+    page([match(0)], {
+      decks: [{ id: "blue", name: "Blue Flare" }],
+      deckStats: {
+        total: { matches: 8, wins: 5, losses: 2, draws: 1 },
+        sinceChange: { matches: 4, wins: 3, losses: 1, draws: 0 },
+      },
+    }),
+  );
+  fireEvent.change(select, { target: { value: "blue" } });
+  expect(await screen.findByText("62.5%")).toBeTruthy();
+  expect(screen.getByText("75%")).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Since last card change" })).toBeTruthy();
+  expect(matches).toHaveBeenLastCalledWith(expect.objectContaining({ deckId: "blue", page: 1 }));
+  fireEvent.click(screen.getByRole("button", { name: "Wins" }));
+  await waitFor(() =>
+    expect(matches).toHaveBeenLastCalledWith(expect.objectContaining({ deckId: "blue", result: "win", page: 1 })),
+  );
+  expect(await screen.findByText("62.5%")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+  await waitFor(() => expect(matches).toHaveBeenLastCalledWith({ page: 1, limit: 25 }));
+});
+
+it("counts a deck's last 100 matches when the player picks that window", async () => {
+  const response = page([match(0)], {
+    decks: [{ id: "blue", name: "Blue Flare" }],
+    deckStats: {
+      total: { matches: 8, wins: 5, losses: 2, draws: 1 },
+      sinceChange: { matches: 4, wins: 3, losses: 1, draws: 0 },
+    },
+  });
+  const matches = vi.spyOn(accountApi, "matches").mockResolvedValue(response);
+  renderProfile();
+  fireEvent.change(await screen.findByRole("combobox", { name: "Deck" }), { target: { value: "blue" } });
+  expect(await screen.findByRole("heading", { name: "Deck win rate" })).toBeTruthy();
+  const windows = screen.getByRole("group", { name: "Matches counted" });
+  expect(within(windows).getByRole("button", { name: "All" }).getAttribute("aria-pressed")).toBe("true");
+
+  fireEvent.click(within(windows).getByRole("button", { name: "Last 100" }));
+
+  await waitFor(() =>
+    expect(matches).toHaveBeenLastCalledWith(expect.objectContaining({ deckId: "blue", deckWindow: "last100" })),
+  );
+  expect(await screen.findByRole("heading", { name: "Last 100 matches" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Since last card change" })).toBeTruthy();
+});
+
+it("shows deck identity, opens its current card list and keeps the played deck name on history rows", async () => {
+  const deckMatch = { ...match(0), deckName: "Blue Flare at match time" };
+  const response = page([deckMatch], {
+    decks: [{ id: "blue", name: "Blue Flare" }],
+    deckDetails: {
+      deck: {
+        deckId: "blue",
+        deckName: "Blue Flare",
+        mainDeck: ["BT1-001", "BT1-001"],
+        eggDeck: [],
+        format: "standard",
+      },
+      coverCardId: "BT1-001",
+      cardsChangedAt: 1000,
+    },
+    recentDeckResults: ["win", "loss", "draw"],
+    deckStats: {
+      total: { matches: 8, wins: 5, losses: 2, draws: 1 },
+      sinceChange: { matches: 4, wins: 3, losses: 1, draws: 0 },
+    },
+  });
+  vi.spyOn(accountApi, "matches").mockResolvedValue(response);
+  renderProfile();
+  const overview = await screen.findByRole("region", { name: "Deck performance" });
+  expect(within(overview).getByRole("heading", { name: "Blue Flare" })).toBeTruthy();
+  expect(within(overview).getByText("+12.5 pp vs total")).toBeTruthy();
+  expect(within(overview).getByText("Recent human matches")).toBeTruthy();
+  expect(within(row("Rival 0")).getByText("Blue Flare at match time")).toBeTruthy();
+  const viewDeck = within(overview).getByRole("button", { name: "View deck" });
+  fireEvent.click(viewDeck);
+  const dialog = await screen.findByRole("dialog");
+  expect(within(dialog).getByRole("heading", { name: /Blue Flare/ })).toBeTruthy();
+  expect(within(dialog).getByText("×2")).toBeTruthy();
+  fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+});
+
+it("opens both participants' decks from a match row without requiring a copy action", async () => {
+  vi.spyOn(accountApi, "matches").mockResolvedValue(
+    page([{ ...match(0), deckName: "Historical Blue", hasOwnDeck: true, hasOpponentDeck: true }]),
+  );
+  const ownDeck = { deckId: null, deckName: "Historical Blue", mainDeck: ["BT1-001"], eggDeck: [] };
+  const opponentDeck = { ...ownDeck, deckName: "Historical Red", mainDeck: ["BT1-010"] };
+  const own = vi.spyOn(accountApi, "matchOwnDeck").mockResolvedValue(ownDeck);
+  const opponent = vi.spyOn(accountApi, "matchOpponentDeck").mockResolvedValue(opponentDeck);
+  renderProfile();
+  await screen.findByRole("button", { name: "Historical Blue" });
+  fireEvent.click(within(row("Rival 0")).getByRole("button", { name: "Historical Blue" }));
+  let dialog = await screen.findByRole("dialog");
+  expect(within(dialog).getByRole("heading", { name: "Historical Blue" })).toBeTruthy();
+  expect(own).toHaveBeenCalledWith("match-0");
+  fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  fireEvent.click(within(row("Rival 0")).getByRole("button", { name: "View opponent’s deck" }));
+  dialog = await screen.findByRole("dialog");
+  expect(within(dialog).getByRole("heading", { name: "Historical Red" })).toBeTruthy();
+  expect(opponent).toHaveBeenCalledWith("match-0");
+});
+
+it("reports an unavailable historical own deck and lets the player retry", async () => {
+  setProfileTrophiesShown(false);
+  vi.spyOn(accountApi, "matches").mockResolvedValue(
+    page([{ ...match(0), deckName: "Historical Blue", hasOwnDeck: true }]),
+  );
+  const load = vi
+    .spyOn(accountApi, "matchOwnDeck")
+    .mockRejectedValueOnce(new Error("unavailable"))
+    .mockResolvedValue({ deckId: null, deckName: "Historical Blue", mainDeck: ["BT1-001"], eggDeck: [] });
+  renderProfile();
+  fireEvent.click(await screen.findByRole("button", { name: "Historical Blue" }));
+  expect(await screen.findByRole("alert")).toHaveProperty(
+    "textContent",
+    "The deck used in this match is unavailable. Try again.",
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Historical Blue" }));
+  expect(await screen.findByRole("dialog")).toBeTruthy();
+  expect(load).toHaveBeenCalledTimes(2);
+});
+
+it("compares deck records and opens the selected deck history without matchups", async () => {
+  const records = [
+    { deckId: "serious", name: "Competitive Blue", stats: { matches: 8, wins: 6, losses: 2, draws: 0 } },
+    { deckId: "fun", name: "Fun deck", stats: { matches: 4, wins: 1, losses: 3, draws: 0 } },
+  ];
+  const decks = records.map(({ deckId, name }) => ({ id: deckId, name }));
+  const load = vi.spyOn(accountApi, "matches").mockResolvedValue(page([], { deckRecords: records, decks }));
+  renderProfile();
+  expect(await screen.findByText("Your deck records")).toBeTruthy();
+  expect(screen.getByText("75%")).toBeTruthy();
+  expect(screen.getByText("25%")).toBeTruthy();
+  load.mockResolvedValue(
+    page([match(0)], {
+      decks,
+      deckStats: { total: records[0]!.stats, sinceChange: { matches: 4, wins: 3, losses: 1, draws: 0 } },
+    }),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Competitive Blue" }));
+  expect(await screen.findByRole("heading", { name: "Deck win rate" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Since last card change" })).toBeTruthy();
+  expect(screen.queryByRole("region", { name: "Deck matchups" })).toBeNull();
+  expect(screen.queryByRole("tablist", { name: "Deck matchups" })).toBeNull();
+  expect(load).toHaveBeenLastCalledWith(expect.objectContaining({ deckId: "serious", page: 1 }));
 });

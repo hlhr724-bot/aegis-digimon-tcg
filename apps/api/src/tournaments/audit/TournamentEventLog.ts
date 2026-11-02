@@ -12,9 +12,11 @@ export type TournamentSubjectKind = "tournament" | "phase" | "round" | "match" |
 export type TournamentCommandName =
   // Organizer arbitration (this slice).
   | "decide_series"
+  | "swap_pairings"
   | "concede_match"
   | "disqualify"
   | "cancel_tournament"
+  | "round_start_mode_changed"
   | "correct_result"
   // Automatic decisions. Recorded because the plan's acceptance criterion is that EVERY action,
   // automatic or not, is reconstructible from the ledger — not only the ones a human typed.

@@ -93,6 +93,7 @@ it.each([true, false])(
         { ok: true },
       );
       await replyOptional(s, "ST23-12", true);
+      await replyOptional(s, "ST23-12", true);
       await replyOptional(s, "ST23-13", accept);
       await settle(() => !s.state.pendingDecision && s.engine.mainVerbContinuationsInFlight === 0);
       expect(s.state.memory).toBe(1);
@@ -231,6 +232,7 @@ it.each(["accept", "decline", "suspended"] as const)(
         response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
+    await replyOptional(s, "ST23-12", true);
     await settle(() => s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("return").instanceId));
     if (mode !== "suspended") await replyOptional(s, "ST23-13", mode === "accept");
     await settle(() => !s.state.pendingDecision && s.engine.mainVerbContinuationsInFlight === 0);

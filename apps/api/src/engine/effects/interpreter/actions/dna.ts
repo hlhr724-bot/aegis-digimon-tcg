@@ -1,3 +1,5 @@
+import { definitionMatches } from "#api/engine/effects/interpreter/matching/definition";
+import { Zone } from "@aegis/shared/schema/enums";
 // DNA digivolution, App Fusion, and per-level play.
 
 import type { EffectContext } from "../../EffectContext.js";
@@ -16,6 +18,28 @@ import type { Action, Filter, Target, ZoneRef } from "@aegis/shared";
 function dnaResultTarget(into: NonNullable<Extract<Action, { kind: "DnaDigivolve" }>["into"]>): Target {
   const encodedInto = into as Filter | Target;
   return "filter" in encodedInto ? (encodedInto as Target) : { filter: encodedInto as Filter, count: 1 };
+}
+
+type DnaResultCandidatesParams = {
+  ctx: EffectContext;
+  target: Target;
+  zones: ZoneRef[];
+};
+
+function getDnaResultCandidates({ ctx, target, zones }: DnaResultCandidatesParams) {
+  const resolving = ctx.game.player(ctx.source.ownerSeat).resolvingOption;
+  if (
+    target.filter.isSelfRef === true &&
+    target.filter.zone === undefined &&
+    resolving?.instanceId === ctx.source.instanceId
+  ) {
+    const { isSelfRef: _self, ...filter } = target.filter;
+    if (definitionMatches(filter, ctx.game.definitionOf(resolving))) {
+      return [resolving];
+    }
+    return [];
+  }
+  return candidateLooseInstances(ctx, target, zones);
 }
 
 function selfDnaPartnerFilter(filter: Filter): Filter {
@@ -47,8 +71,8 @@ export async function runDnaDigivolve(
   const intoZone = intoTarget.filter.zone;
   const intoZones: ZoneRef[] =
     intoZone !== undefined ? [Array.isArray(intoZone) ? intoZone[0]! : (intoZone as ZoneRef)] : ["hand"];
-  const resultPool = candidateLooseInstances(ctx, intoTarget, intoZones);
-  const visibleResultPool = candidateLooseInstances(ctx, visibleIntoTarget, intoZones);
+  const resultPool = getDnaResultCandidates({ ctx, target: intoTarget, zones: intoZones });
+  const visibleResultPool = getDnaResultCandidates({ ctx, target: visibleIntoTarget, zones: intoZones });
 
   // Resolve the material permanents. "this Digimon and 1 of your other Digimon" is the
   // common shape; the IR may carry only `isSelf` (self + an implied partner) — in that
@@ -68,44 +92,75 @@ export async function runDnaDigivolve(
       (slot) => slot.zone === undefined || slot.zone === "battleArea" || slot.zone === "breeding",
     );
     const materialSlots = action.materials;
-    for (let slotIndex = 0; slotIndex < materialSlots.length; slotIndex += 1) {
-      const slot = action.materials[slotIndex]!;
-      const slotTarget: Target = { ...slot, filter: slot.filter, count: slot.count } as Target;
-      // An omitted zone is the normal printed "this Digimon / another Digimon in play"
-      // shape (ST10-02/ST10-04), so it defaults to battle-area permanents. Only an explicit
-      // loose zone (hand/trash/security/...) uses the loose-card resolver.
-      if (slot.zone === undefined || slot.zone === "battleArea" || slot.zone === "breeding") {
-        const wanted = typeof slot.count === "number" ? slot.count : 1;
-        const eligible =
-          fieldOnlySlots && wanted === 1
-            ? (permanentId: string): boolean =>
-                hasLegalDnaCompletion(
-                  ctx,
-                  action.materials as typeof action.materials & readonly DnaMaterialSlot[],
-                  slotIndex + 1,
-                  [...materialIds, permanentId],
-                  resultPool,
-                )
-            : undefined;
-        materialIds.push(...(await resolvePermanentTargets(ctx, slotTarget, eligible ? { eligible } : undefined)));
-      } else {
-        looseMaterialIds.push(
-          ...(await pickLoose(
-            ctx,
-            slotTarget,
-            candidateLooseInstances(ctx, slotTarget, [slot.zone]).filter(
-              (candidate) =>
-                slotIndex !== materialSlots.length - 1 || slot.count !== 1 || legalLooseMaterial(candidate.instanceId),
-            ),
-          )),
-        );
+    if (
+      action.looseMaterials === undefined &&
+      resultPool.length === 1 &&
+      materialSlots.length === 2 &&
+      materialSlots.every(
+        (slot) =>
+          slot.count === 1 &&
+          (slot.zone === undefined || slot.zone === "battleArea") &&
+          Object.keys(slot).every((key) => key === "filter" || key === "zone" || key === "count"),
+      )
+    ) {
+      materialIds = await chooseDnaMaterialPair({ ctx, slots: materialSlots, results: resultPool });
+    } else {
+      for (let slotIndex = 0; slotIndex < materialSlots.length; slotIndex += 1) {
+        const slot = action.materials[slotIndex]!;
+        const slotTarget: Target = { ...slot, filter: slot.filter, count: slot.count } as Target;
+        // An omitted zone is the normal printed "this Digimon / another Digimon in play"
+        // shape (ST10-02/ST10-04), so it defaults to battle-area permanents. Only an explicit
+        // loose zone (hand/trash/security/...) uses the loose-card resolver.
+        if (slot.zone === undefined || slot.zone === "battleArea" || slot.zone === "breeding") {
+          const wanted = typeof slot.count === "number" ? slot.count : 1;
+          const eligible =
+            fieldOnlySlots && wanted === 1
+              ? (permanentId: string): boolean =>
+                  hasLegalDnaCompletion(
+                    ctx,
+                    action.materials as typeof action.materials & readonly DnaMaterialSlot[],
+                    slotIndex + 1,
+                    [...materialIds, permanentId],
+                    resultPool,
+                  )
+              : undefined;
+          materialIds.push(...(await resolvePermanentTargets(ctx, slotTarget, eligible ? { eligible } : undefined)));
+        } else {
+          looseMaterialIds.push(
+            ...(await pickLoose(
+              ctx,
+              slotTarget,
+              candidateLooseInstances(ctx, slotTarget, [slot.zone]).filter(
+                (candidate) =>
+                  slotIndex !== materialSlots.length - 1 ||
+                  slot.count !== 1 ||
+                  legalLooseMaterial(candidate.instanceId),
+              ),
+            )),
+          );
+        }
       }
     }
   } else {
     const materialsZone = action.materials.filter.zone;
     const materialsAreLoose =
       materialsZone !== undefined && materialsZone !== "battleArea" && materialsZone !== "breeding";
-    materialIds = materialsAreLoose ? [] : await resolvePermanentTargets(ctx, action.materials);
+    if (
+      !materialsAreLoose &&
+      action.materials.count === 2 &&
+      candidatePermanents(ctx, action.materials, { includeUnaffectable: true }).length > 2 &&
+      Object.keys(action.materials).every((key) => key === "filter" || key === "count") &&
+      action.looseMaterials === undefined &&
+      !action.materials.isSelf &&
+      !action.materials.filter.isSelfRef &&
+      !action.materials.filter.includesSelf &&
+      action.materials.includeRef === undefined
+    ) {
+      const slot: DnaMaterialSlot = { filter: action.materials.filter, count: 1, zone: Zone.BattleArea };
+      materialIds = await chooseDnaMaterialPair({ ctx, slots: [slot, slot], results: resultPool });
+    } else {
+      materialIds = materialsAreLoose ? [] : await resolvePermanentTargets(ctx, action.materials);
+    }
     looseMaterialIds = materialsAreLoose
       ? await pickLoose(
           ctx,
@@ -234,6 +289,49 @@ type DnaMaterialSlot =
       : never
     : never;
 
+type ChooseDnaMaterialPairParams = {
+  ctx: EffectContext;
+  slots: readonly DnaMaterialSlot[];
+  results: readonly { instanceId: string }[];
+};
+
+async function chooseDnaMaterialPair({ ctx, slots, results }: ChooseDnaMaterialPairParams): Promise<string[]> {
+  const firstSlot = slots[0]!;
+  const secondSlot = slots[1]!;
+  const firstCandidates = candidatePermanents(ctx, { filter: firstSlot.filter, count: "all" });
+  const secondCandidates = candidatePermanents(ctx, { filter: secondSlot.filter, count: "all" });
+  const allowedTargetCombinations: string[][] = [];
+  for (const first of firstCandidates) {
+    for (const second of secondCandidates) {
+      const pair = [first.permanentId, second.permanentId];
+      if (first.permanentId === second.permanentId) {
+        continue;
+      }
+      if (allowedTargetCombinations.some((combination) => combination.every((id) => pair.includes(id)))) {
+        continue;
+      }
+      const result = results.find(({ instanceId }) => ctx.fx.canDnaDigivolve?.(pair, instanceId) !== false);
+      if (result !== undefined) {
+        allowedTargetCombinations.push(ctx.fx.orderDnaMaterials?.(pair, result.instanceId) ?? pair);
+      }
+    }
+  }
+  if (allowedTargetCombinations.length === 0) {
+    return [];
+  }
+  const selected = await ctx.ask.chooseTargets(ctx, {
+    candidates: [...new Set(allowedTargetCombinations.flat())],
+    min: 2,
+    max: 2,
+    allowedTargetCombinations,
+  });
+  return (
+    allowedTargetCombinations.find(
+      (combination) => combination.length === selected.length && combination.every((id) => selected.includes(id)),
+    ) ?? []
+  );
+}
+
 function hasLegalDnaCompletion(
   ctx: EffectContext,
   slots: readonly DnaMaterialSlot[],
@@ -286,7 +384,7 @@ export function canAttemptDnaDigivolve(ctx: EffectContext, action: Extract<Actio
   const intoZone = intoTarget.filter.zone;
   const intoZones: ZoneRef[] =
     intoZone !== undefined ? [Array.isArray(intoZone) ? intoZone[0]! : (intoZone as ZoneRef)] : ["hand"];
-  const intoCandidates = candidateLooseInstances(ctx, intoTarget, intoZones);
+  const intoCandidates = getDnaResultCandidates({ ctx, target: intoTarget, zones: intoZones });
   if (intoCandidates.length === 0) return false;
 
   if (!Array.isArray(action.materials)) {

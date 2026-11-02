@@ -39,8 +39,9 @@ export function isBlastDigivolve(intent: Intent): boolean {
 }
 
 /** A hand card reads as playable when it validates, or when only memory is short of a material-cost route. */
-export function playableFromHand(check: PlayCardCheck, cardId: string): boolean {
-  return check.ok || (check.reason === "insufficient-memory" && hasMaterialCostRoute(cardId));
+export function playableFromHand(check: PlayCardCheck, cardId: string, playCostReductionBlocked: boolean): boolean {
+  if (check.ok) return true;
+  return check.reason === "insufficient-memory" && !playCostReductionBlocked && hasMaterialCostRoute(cardId);
 }
 
 /**

@@ -28,7 +28,7 @@ export function LobbyCommunityDecks({
   /** The signed-in account, which can like; guests see the count only. */
   accountId: string | undefined;
   onPick: (id: string) => void;
-  onOpen: (id: string) => void;
+  onOpen?: (id: string) => void;
 }) {
   const { t } = useTranslation();
   const [results, setResults] = useState<Results>({ status: "loading" });
@@ -91,15 +91,17 @@ export function LobbyCommunityDecks({
                       signedIn={accountId !== undefined}
                       ownDeck={deck.author.id === accountId}
                     />
-                    <IconButton
-                      size="sm"
-                      variant="secondary"
-                      label={t("community.viewList")}
-                      title={t("community.viewList")}
-                      onClick={() => onOpen(deck.id)}
-                    >
-                      <Icons.Eye size={16} />
-                    </IconButton>
+                    {onOpen ? (
+                      <IconButton
+                        size="sm"
+                        variant="secondary"
+                        label={t("community.viewList")}
+                        title={t("community.viewList")}
+                        onClick={() => onOpen(deck.id)}
+                      >
+                        <Icons.Eye size={16} />
+                      </IconButton>
+                    ) : null}
                   </>
                 }
               />

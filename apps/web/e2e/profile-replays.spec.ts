@@ -77,6 +77,7 @@ async function setup(page: Page, { count = 37, dark = false } = {}) {
   await page.route("**/auth/me", (route) => route.fulfill({ json: current }));
   await page.route("**/account/decks", (route) => route.fulfill({ json: [] }));
   await page.route("**/account/preferences", (route) => route.fulfill({ json: { profileStats: true } }));
+  await page.route("**/account/playtest", (route) => route.fulfill({ json: { member: false, since: null } }));
   await page.route("**/account/profile", (route) => {
     const replays = matches.filter((match) => match.replay).length;
     const wins = matches.filter((match) => match.result === "win").length;
@@ -198,6 +199,61 @@ for (const [width, dark] of [
     });
   });
 
+for (const width of [320, 390, 768, 1024, 1440]) {
+  for (const dark of [false, true]) {
+    test(`match history controls fit without overlap at ${width}px in ${dark ? "dark" : "light"} mode`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 1000 });
+      await setup(page, { count: 3, dark });
+      await page.goto("/profile");
+      await expect(rows(page)).toHaveCount(3);
+      await page.evaluate(
+        async ({ summary, data }) => {
+          const modulePath = "/src/replays/local.ts";
+          const { saveLocalReplay } = await import(modulePath);
+          await saveLocalReplay({
+            summary: { ...summary, id: "match-1" },
+            data,
+            viewerSeat: 0,
+            indexId: "local-index",
+          });
+        },
+        { summary: recording, data: archive.toString("base64") },
+      );
+      await expect(page.getByText("This device", { exact: true })).toBeVisible();
+      const problems = await rows(page).evaluateAll((items) =>
+        items.flatMap((item) => {
+          const row = item.getBoundingClientRect();
+          const children = Array.from(item.children).map((child) => ({
+            name: child.className,
+            rect: child.getBoundingClientRect(),
+          }));
+          return children.flatMap(({ name, rect }, index) => {
+            const errors = [];
+            if (rect.left < row.left || rect.right > row.right) {
+              errors.push(`${name} overflows its row`);
+            }
+            for (const other of children.slice(index + 1)) {
+              if (
+                rect.left < other.rect.right &&
+                rect.right > other.rect.left &&
+                rect.top < other.rect.bottom &&
+                rect.bottom > other.rect.top
+              ) {
+                errors.push(`${name} overlaps ${other.name}`);
+              }
+            }
+            return errors;
+          });
+        }),
+      );
+      expect(problems).toEqual([]);
+      expect(await noHorizontalScroll(page)).toBe(true);
+    });
+  }
+}
+
 for (const width of [390, 1440])
   test(`filters reset to the first page and the pager walks the history at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -272,9 +328,12 @@ for (const width of [390, 1440])
     const menu = page.getByRole("dialog", { name: "Choose avatar" });
     await expect(menu.getByRole("searchbox", { name: "Search Digimon" })).toBeVisible();
     const box = (await menu.boundingBox())!;
-    const anchor = (await trigger.boundingBox())!;
     if (width < 600) expect(Math.round(box.y + box.height)).toBe(844);
-    else expect(box.y).toBeGreaterThan(anchor.y + anchor.height);
+    else {
+      expect(Math.abs(box.x + box.width / 2 - width / 2)).toBeLessThanOrEqual(1);
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height).toBeLessThanOrEqual(844);
+    }
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(width);
     await expect
@@ -286,7 +345,7 @@ for (const width of [390, 1440])
       )
       .toBe(true);
     const tiles = await menu
-      .locator(".profile-avatar-menu__grid button")
+      .locator(".avatar-picker__grid button")
       .evaluateAll((buttons) =>
         buttons.slice(0, 8).map((button) => button.getBoundingClientRect().toJSON() as DOMRect),
       );
@@ -305,7 +364,7 @@ for (const width of [390, 1440])
     await expect(trigger).toBeFocused();
     expect(writes).toContainEqual({ path: "/account/profile/avatar", body: { avatarId: "greymon" } });
     await trigger.click();
-    await page.getByRole("button", { name: "Use default avatar" }).click();
+    await page.getByRole("button", { name: "Use initials instead" }).click();
     await expect(menu).toHaveCount(0);
     expect(writes).toContainEqual({ path: "/account/profile/avatar", body: { avatarId: "initials" } });
     await trigger.click();

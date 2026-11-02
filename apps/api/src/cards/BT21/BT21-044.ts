@@ -230,7 +230,6 @@ export const compiled: CompiledCard = {
       ],
       isInherited: true,
       frequency: "OncePerTurn",
-      sharedUseKey: "bt21-044-marcus-security",
     },
   ],
   coverage: "full",

@@ -1,10 +1,18 @@
+import type { ReplayEngineSnapshot } from "#api/replays/inputs/ReplayEngineSnapshot";
+import type { GameEngineHooks } from "#api/engine/gameEngine/types";
+import { snapshotGameEngine } from "#api/engine/snapshot/snapshotGameEngine";
+import { restoreGameEngine } from "#api/engine/snapshot/restoreGameEngine";
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { GameState, type Intent, type IntentResult, type Seat, type SequencedServerEvent } from "@aegis/shared";
+import type { DecisionRequest } from "@aegis/shared/protocol/events";
 import { GameEngine } from "../../engine/GameEngine.js";
 import type { ReplayDivergence, ReplayInput, ReplayRecord, ReplaySite } from "./types.js";
 import { translateLegacySubTriggerKeys } from "#api/replays/inputs/translateLegacySubTriggerKeys";
 import "../../cards/index.js";
 
 export interface RunReplayOptions {
+  snapshot?: ReplayEngineSnapshot;
+  onDecision?: (request: DecisionRequest) => void;
   stopBeforeTurn?: number;
   /**
    * Stop before applying `inputs[untilInput]`, once the engine has gone idle, so the state can be
@@ -19,9 +27,12 @@ export interface RunReplayOptions {
    * `ReplayRecording` frame. Every batch here is a broadcast batch (see `runReplay`).
    */
   onBatch?: (state: GameState, events: SequencedServerEvent[]) => void;
+  /** Called with the idle engine just before each input that is applied once idle. */
+  beforeInput?: (input: ReplayInput, index: number, engine: GameEngine) => void;
 }
 
 export interface ReplayRun {
+  getSnapshot(): ReplayEngineSnapshot;
   activate(hooks: import("#api/engine/gameEngine/types").GameEngineHooks): void;
   engineEvents: number;
   pendingRequest?: import("@aegis/shared").DecisionRequest;
@@ -63,7 +74,8 @@ const MAX_IDLE_TURNS = 1_000;
  * so every engine event lands in a broadcast batch and there is nothing here to exclude.
  */
 export async function runReplay(record: ReplayRecord, options: RunReplayOptions = {}): Promise<ReplayRun> {
-  const state = new GameState();
+  let state = new GameState();
+  state.gameMode = record.rules.gameMode ?? GameMode.AUTOMATIC.value;
   state.format = record.rules.deckFormat;
   state.unlimited = record.rules.unlimited;
   // The room keeps it in its own recording, so an exported frame carries it as a player's file does.
@@ -77,15 +89,19 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
   let resumeTurn: (() => void) | undefined;
   let reachedTurn: number | undefined;
   let resumeBatchOffset = 0;
-  let emitted = 0;
+  let emitted = options.snapshot?.engineEvents ?? 0;
   let progress = 0;
-  let cursor = 0;
+  let cursor = options.snapshot?.inputIndex ?? 0;
   let stopped = false;
+  let advancedBeyondRecord = false;
   let batch: OpenBatch | undefined;
-  let batchSeq = 0;
-  let eventSeq = 0;
+  let batchSeq = options.snapshot?.batchSequence ?? 0;
+  let eventSeq = options.snapshot?.eventSequence ?? 0;
   let batchDepth = 0;
-  let started = false;
+  let started = options.snapshot?.started ?? false;
+  if (!Number.isSafeInteger(cursor) || cursor < 0 || cursor > limit) {
+    throw new Error("Replay snapshot input index exceeds the requested replay range");
+  }
 
   const withBatch = <T>(run: () => T): T => {
     const opened = batch ?? (batch = openBatch());
@@ -109,6 +125,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     // refresh them here so a captured frame has current counts. They are derived from the zone
     // arrays and nothing the engine or the divergence checks reads.
     engine.syncCounts();
+    engine.flushHandAffordances();
     options.onBatch?.(state, closing.events);
     // The room's `stampClose` gives the batch's `batchClosed` its own seq, kept out of the frame.
     eventSeq += 1;
@@ -121,11 +138,14 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     withBatch(start);
   };
 
-  const engine: GameEngine = new GameEngine(state, {
+  const replayHooks: GameEngineHooks = {
+    deferHandAffordances: true,
     seed: record.seed,
+    randomKey: record.randomKey,
     ...(record.firstSeat !== undefined ? { firstSeat: record.firstSeat } : {}),
     beforeTurn: (turn) => {
       if (liveHooks) return liveHooks.beforeTurn?.(turn);
+      applyDueAt("beforeTurn");
       if (turn !== options.stopBeforeTurn) return;
       reachedTurn = turn;
       resumeBatchOffset = batch && batch.emitted > 0 ? 1 : 0;
@@ -135,7 +155,12 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     },
     requestDecision: (seat, request) => {
       if (liveHooks) return liveHooks.requestDecision(seat, request);
+      options.onDecision?.(request);
       pendingRequest = request;
+      if (!record.seats[seat].bot) {
+        engine.syncCounts();
+        engine.flushHandAffordances();
+      }
       progress += 1;
       applyDueAt("decisionRequest");
     },
@@ -158,7 +183,15 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
       batch.events.push({ ...event, seq: ++eventSeq, batch: batch.id, stateVersion: state.stateVersion });
       if (event.kind === "matchStarted") applyDueAt("matchStarted");
     },
-  });
+  };
+  let engine: GameEngine;
+  if (options.snapshot === undefined) {
+    engine = new GameEngine(state, replayHooks);
+  } else {
+    const restored = restoreGameEngine({ snapshot: options.snapshot.engine, hooks: replayHooks });
+    engine = restored.engine;
+    state = engine.state;
+  }
 
   /** Apply the next inputs while they were recorded at this site and at exactly this point. */
   function applyDueAt(site: ReplaySite): void {
@@ -177,15 +210,16 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     const before = divergences.length;
     const diverge = (divergence: Omit<ReplayDivergence, "index" | "inputKind" | "seat" | "intentType">) =>
       divergences.push({ index, inputKind: input.kind, ...seatAndType(input), ...divergence });
+    const positionDivergences: Omit<ReplayDivergence, "index" | "inputKind" | "seat" | "intentType">[] = [];
     if (state.stateVersion !== input.stateVersion)
-      diverge({
+      positionDivergences.push({
         kind: "state-version",
         expected: input.stateVersion,
         actual: state.stateVersion,
         message: `input #${index} (${describe(input)}): stateVersion ${state.stateVersion}, recorded ${input.stateVersion}`,
       });
     if (input.engineEvents !== undefined && emitted !== input.engineEvents)
-      diverge({
+      positionDivergences.push({
         kind: "event-count",
         expected: input.engineEvents,
         actual: emitted,
@@ -193,6 +227,8 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
       });
     try {
       const outcome = apply(input);
+      const rejectedAgain = input.kind === "intent" && input.ok === false && outcome?.ok === false;
+      if (!rejectedAgain) positionDivergences.forEach(diverge);
       if (input.kind === "intent" && outcome !== undefined) {
         if (input.threw)
           diverge({
@@ -215,6 +251,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
         }
       }
     } catch (error) {
+      positionDivergences.forEach(diverge);
       const reason = error instanceof Error ? error.message : String(error);
       if (!(input.kind === "intent" && input.threw))
         diverge({
@@ -238,6 +275,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
             displayName: `Seat ${input.seat}`,
             deck: structuredClone(input.deck),
             ...input.deckRules,
+            betaBattleMode: true,
           }),
         );
         return undefined;
@@ -271,6 +309,9 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
       case "clearReady":
         withBatch(() => engine.clearReady(input.seat));
         return undefined;
+      case "expireRankedRound":
+        withBatch(() => engine.win.declareDraw("timeout"));
+        return undefined;
       case "expireMatchTimer":
         withBatch(() => engine.expireMatchTimer(input.seat));
         return undefined;
@@ -298,10 +339,31 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
         actual: "idle",
         message: `input #${cursor} (${describe(input)}): recorded at ${input.site}, never reached there; applied once idle`,
       });
+    options.beforeInput?.(input, cursor, engine);
     applyNext();
   }
   await waitForIdle(() => progress);
   return {
+    getSnapshot() {
+      if (
+        liveHooks !== undefined ||
+        advancedBeyondRecord ||
+        divergences.length > 0 ||
+        batch !== undefined ||
+        batchDepth !== 0 ||
+        (pendingRequest !== undefined && state.pendingDecision)
+      ) {
+        throw new Error("Replay snapshot requires a settled input boundary");
+      }
+      return {
+        engine: snapshotGameEngine({ engine }),
+        inputIndex: cursor,
+        engineEvents: emitted,
+        batchSequence: batchSeq,
+        eventSequence: eventSeq,
+        started,
+      };
+    },
     activate(hooks) {
       liveHooks = hooks;
       resumeTurn?.();
@@ -315,6 +377,7 @@ export async function runReplay(record: ReplayRecord, options: RunReplayOptions 
     applied: cursor,
     divergences,
     applyIntent: async (seat, intent) => {
+      advancedBeyondRecord = true;
       const result = withBatch(() => engine.applyIntent(seat, intent));
       await waitForIdle(() => progress);
       return result;

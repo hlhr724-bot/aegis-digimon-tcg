@@ -30,7 +30,9 @@ if (watcher !== undefined && watcherTrigger?.kind === "SubTrigger" && draw?.kind
   watcherTrigger.actions.push(draw);
   watcher.actions = [watcherTrigger];
 }
-if (watcher !== undefined) watcher.frequency = "OncePerTurn";
+if (watcher !== undefined) {
+  delete watcher.frequency;
+}
 compiled.coverage = "full";
 compiled.residual = [];
 

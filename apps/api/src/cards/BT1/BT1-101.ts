@@ -1,6 +1,7 @@
 import type { Action, CompiledCard } from "@aegis/shared";
 import { registerIrCard } from "../../engine/effects/interpreter.js";
 const trashAll: Action = {
+  effectTextPart: "[Main] Trash all digivolution cards under all of your opponent's Digimon.",
   kind: "TrashDigivolution",
   target: { filter: { controller: "opponent", kind: ["Digimon"], digivolutionCards: "hasAny" }, count: "all" },
   amount: "all",

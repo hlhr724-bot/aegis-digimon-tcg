@@ -1,6 +1,6 @@
 import { Decoder, Encoder } from "@colyseus/schema";
 import { CardInstance, GameState, Permanent, PlayerState, Zone, type Seat } from "@aegis/shared";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   extractCardById,
   extractPermanentAt,
@@ -9,6 +9,7 @@ import {
   placePermanent,
   pushOnStack,
   unshiftOnStack,
+  type VisibilityPort,
 } from "./access.js";
 import { buildStateView, exposeCardInZone, refreshStateView } from "./visibility.js";
 
@@ -125,5 +126,28 @@ describe("synchronized array StateView sync", () => {
       newer.instanceId,
     ]);
     expect(mirror.seat(1).players[0]!.hand).toHaveLength(0);
+  });
+  it("announces cards added to permanents that were on the field before the port was installed", () => {
+    const player = new PlayerState();
+    player.seat = 0;
+    const fielded = new Permanent();
+    fielded.permanentId = "fielded";
+    fielded.controllerSeat = 0;
+    fielded.topCard = card("BT10-009");
+    placePermanent(player, fielded);
+    const hatched = new Permanent();
+    hatched.permanentId = "hatched";
+    hatched.controllerSeat = 0;
+    hatched.inBreeding = true;
+    hatched.topCard = card("BT10-001");
+    player.breeding = hatched;
+    const port = vi.fn<VisibilityPort>();
+    installVisibilityPort(player, port);
+    const material = card("BT10-049");
+    const evolved = card("BT10-008");
+    pushOnStack(fielded, material);
+    pushOnStack(hatched, evolved);
+    expect(port).toHaveBeenCalledWith(0, Zone.BattleArea, material);
+    expect(port).toHaveBeenCalledWith(0, Zone.Breeding, evolved);
   });
 });

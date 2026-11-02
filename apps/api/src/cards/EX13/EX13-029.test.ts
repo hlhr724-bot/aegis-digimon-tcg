@@ -780,3 +780,41 @@ describe("EX13-029 FlameWizardmon", () => {
     expect(s.state.players[0]!.security).toHaveLength(1);
   });
 });
+
+describe("FlameWizardmon against inherited leave prevention", () => {
+  it("pays its security cost and reduces DP while MachGaogamon protects the deletion target", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: CARD_ID, as: "attacker" }],
+          security: ["BT1-009", "BT1-010", "BT1-011", "BT1-012"],
+          deck: DECK,
+        },
+        1: {
+          battleArea: [
+            { card: "BT25-029", as: "protected", dp: 7000, under: ["BT25-027"] },
+            { card: "ST24-13", as: "tamer", under: [{ card: "BT1-009", as: "payment", faceUp: false }] },
+          ],
+          security: ["BT1-009"],
+          deck: DECK,
+        },
+      },
+      AUTOMATION,
+    );
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === CARD_ID));
+    expect(s.state.players[0]!.security).toHaveLength(3);
+    expect(s.state.players[1]!.battleArea.map((permanent) => permanent.permanentId)).toContain(
+      s.perm("protected").permanentId,
+    );
+    expect(s.perm("protected").currentDP).toBe(3000);
+    expect(s.perm("tamer").stack).toHaveLength(0);
+  });
+});

@@ -115,6 +115,25 @@ Press feedback takes `--ds-motion-instant`, hover and state changes take
 `--ds-motion-fast`, and dialogs and sheets take `--ds-motion-base`. Under reduced
 motion, remove translation, scale, particles, and drift, and keep static cues.
 
+### Reduced-motion setting
+
+Players choose **Animations** in Settings: follow the device (default), always
+animate, or reduce motion. The store in `design/motion/motionPreference.ts`
+resolves that choice and writes `data-motion="full"` or `data-motion="reduced"`
+on `<html>`. In system mode, the store follows the device setting live.
+
+- **CSS:** keep writing `@media (prefers-reduced-motion: reduce)` and
+  `@media (prefers-reduced-motion: no-preference)`. A PostCSS plugin
+  (`apps/web/dev/motionPreferenceSelectors.ts`) rewrites these blocks at build
+  time into selectors scoped to the `data-motion` attribute. It wraps the scope in
+  `:where()`, so specificity and cascade order stay the same. Unit tests that read
+  raw stylesheets still see the original media queries.
+- **CSS limits:** the plugin refuses motion queries that use commas, `not`, or
+  `only`, and queries nested inside a rule. Split or move them to the top level.
+- **TypeScript:** never call `matchMedia` for reduced motion. Use
+  `motionPreference.isReduced()` for one-off checks, `motionPreference.useReduced()`
+  in components, and `motionPreference.subscribe()` to react when motion changes.
+
 The backdrop is the one product-owner exception to "no indefinite decorative
 motion". It runs at 10 fps behind all content, never takes pointer events, stops
 while the tab is hidden, and never runs under reduced motion. Do not extend it

@@ -155,6 +155,38 @@ describe("EX5-043 Leopardmon (X Antibody)", () => {
     expect(s.state.pendingDecision).toBeUndefined();
   });
 
+  it("keeps Main available after declining the shared When Digivolving play", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "EX5-039", as: "base" }],
+          hand: [
+            { card: LEOPARDMON_X, as: "source" },
+            { card: "EX5-049", as: "candidate" },
+          ],
+          deck: ["BT1-009", "BT1-010"],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("source").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("base").topCard.cardId === LEOPARDMON_X && s.state.pendingDecision === undefined);
+    await settle();
+    expect(
+      observe(s.engine)
+        .activatableEffects(s.perm("base"))
+        .some((entry) => /play/i.test(entry.description ?? "")),
+    ).toBe(true);
+  });
+
   it("publicly plays through When Digivolving and shares its Once Per Turn use with Main", async () => {
     const s = setupEngine(
       {

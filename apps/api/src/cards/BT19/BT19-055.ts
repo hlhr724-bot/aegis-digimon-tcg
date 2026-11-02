@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "add 1 card with [Knightmon] in its text or the [Twilight] trait to the hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -29,6 +30,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "place 1 such card under your Tamers.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

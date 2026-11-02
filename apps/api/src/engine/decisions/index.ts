@@ -1,3 +1,5 @@
+import type { DecisionManagerState } from "#api/engine/decisions/DecisionManagerState";
+import { decodeTriggerResolutionPlan } from "@aegis/shared/protocol/decodeTriggerResolutionPlan";
 import {
   type DecisionRequest,
   type DecisionResponse,
@@ -47,6 +49,7 @@ interface OpenDecision {
   min: number | undefined;
   candidateInstanceIds: readonly string[] | undefined;
   /** The pick of an accepted "you may": empty backs out, so a non-empty answer must name an offered card. */
+  allowedTargetCombinations: readonly (readonly string[])[] | undefined;
   backsOutOnlyWhenEmpty: boolean;
   distinctCardIds: boolean;
   distinctNames: boolean;
@@ -55,6 +58,7 @@ interface OpenDecision {
   triggerKeys: readonly string[] | undefined;
   /** Whether the `orderTriggers` decision takes a full resolution plan instead of one key. */
   acceptsResolutionPlan: boolean;
+  acceptsIndexedResolutionPlan: boolean;
   /** The `chooseOption` entry that declines an optional effect — the safe default when present. */
   declineIndex: number | undefined;
   resolve: (response: DecisionResponse) => void;
@@ -103,6 +107,32 @@ export class DecisionManager {
     private readonly options: DecisionManagerOptions = {},
   ) {}
 
+  getRuntimeState(): DecisionManagerState {
+    this.assertSnapshotBoundary();
+    return { sequence: this.seq };
+  }
+
+  restoreRuntimeState(state: unknown): void {
+    this.assertSnapshotBoundary();
+    if (
+      state === null ||
+      typeof state !== "object" ||
+      !("sequence" in state) ||
+      typeof state.sequence !== "number" ||
+      !Number.isSafeInteger(state.sequence) ||
+      state.sequence < 0
+    ) {
+      throw new Error("Invalid decision sequence state");
+    }
+    this.seq = state.sequence;
+  }
+
+  private assertSnapshotBoundary(): void {
+    if (this.open !== undefined || this.state.pendingDecision !== undefined) {
+      throw new Error("Cannot snapshot or restore an open decision request");
+    }
+  }
+
   /** Is a decision currently awaiting a response? Mirrors `state.pendingDecision !== undefined`. */
   get hasPending(): boolean {
     return this.open !== undefined;
@@ -137,18 +167,22 @@ export class DecisionManager {
       delete options.pendingEffectInstanceIds;
     }
     const pendingEffects = this.options.pendingEffectCandidates?.(spec) ?? [];
-    const offered = new Set(options?.candidateInstanceIds ?? []);
-    const visible = new Set(options?.visibleInstanceIds ?? options?.candidateInstanceIds ?? []);
-    const readable = new Set(
-      options?.visibleCards?.filter((card) => card.cardId.trim().length > 0).map((card) => card.instanceId) ?? [],
-    );
-    const trash = new Set(
-      Array.from(this.state.players).flatMap((player) => player.trash.map((card) => card.instanceId)),
-    );
-    const pendingEffectInstanceIds = [...new Set(pendingEffects)].filter(
-      (id) => offered.has(id) && visible.has(id) && readable.has(id) && trash.has(id),
-    );
-    if (pendingEffectInstanceIds.length) options = { ...options, pendingEffectInstanceIds };
+    if (pendingEffects.length > 0 && (options?.candidateInstanceIds?.length ?? 0) > 0) {
+      const offered = new Set(options?.candidateInstanceIds ?? []);
+      const visible = new Set(options?.visibleInstanceIds ?? options?.candidateInstanceIds ?? []);
+      const readable = new Set(
+        options?.visibleCards?.filter((card) => card.cardId.trim().length > 0).map((card) => card.instanceId) ?? [],
+      );
+      const trash = new Set(
+        Array.from(this.state.players).flatMap((player) => player.trash.map((card) => card.instanceId)),
+      );
+      const pendingEffectInstanceIds = [...new Set(pendingEffects)].filter(
+        (id) => offered.has(id) && visible.has(id) && readable.has(id) && trash.has(id),
+      );
+      if (pendingEffectInstanceIds.length) {
+        options = { ...options, pendingEffectInstanceIds };
+      }
+    }
     const req: DecisionRequest = {
       decisionId,
       seat: spec.seat,
@@ -186,7 +220,11 @@ export class DecisionManager {
         kind: spec.kind,
         min: spec.options?.min,
         candidateInstanceIds: spec.options?.candidateInstanceIds,
-        backsOutOnlyWhenEmpty: spec.options?.purpose === "acceptedOptional",
+        allowedTargetCombinations: spec.options?.allowedTargetCombinations,
+        backsOutOnlyWhenEmpty:
+          spec.options?.purpose === "acceptedOptional" ||
+          spec.options?.declinesCost === true ||
+          spec.options?.canCancelActivation === true,
         distinctCardIds: spec.options?.distinctCardIds === true,
         distinctNames: spec.options?.distinctNames === true,
         cardIdByInstance: new Map([
@@ -200,6 +238,7 @@ export class DecisionManager {
         ]),
         triggerKeys: spec.options?.triggerKeys,
         acceptsResolutionPlan: spec.options?.acceptsResolutionPlan === true,
+        acceptsIndexedResolutionPlan: spec.options?.acceptsIndexedResolutionPlan === true,
         declineIndex: spec.options?.declineIndex,
         resolve,
         timer,
@@ -220,15 +259,30 @@ export class DecisionManager {
     if (open === undefined) return false;
     if (open.seat !== seat) return false;
     if (open.decisionId !== decisionId) return false;
+    if (!hasValidResponseShape(response)) {
+      return false;
+    }
     if (!responseMatchesKind(open.kind, response)) return false;
-    if (!satisfiesMin(open, response)) return false;
-    if (!namesAnOfferedCardUnlessEmpty(open, response)) return false;
-    if (!satisfiesDistinctCardIds(open, response)) return false;
-    if (!satisfiesDistinctNames(open, response)) return false;
-    if (!choosesOfferedTriggers(open, response)) return false;
-    if (!ordersEveryCard(open, response)) return false;
+    const normalized =
+      response.kind === "orderTriggers"
+        ? decodeTriggerResolutionPlan({
+            response,
+            triggerKeys: open.triggerKeys ?? [],
+            supportsIndexes: open.acceptsResolutionPlan && open.acceptsIndexedResolutionPlan,
+          })
+        : response;
+    if (normalized === undefined) {
+      return false;
+    }
+    if (!satisfiesMin(open, normalized)) return false;
+    if (!namesAnOfferedCardUnlessEmpty(open, normalized)) return false;
+    if (!satisfiesAllowedTargetCombinations(open, normalized)) return false;
+    if (!satisfiesDistinctCardIds(open, normalized)) return false;
+    if (!satisfiesDistinctNames(open, normalized)) return false;
+    if (!choosesOfferedTriggers(open, normalized)) return false;
+    if (!ordersEveryCard(open, normalized)) return false;
 
-    this.resolveOpen(decisionId, response);
+    this.resolveOpen(decisionId, normalized);
     return true;
   }
 
@@ -252,7 +306,43 @@ export class DecisionManager {
   }
 }
 
-/** Reject duplicate card names before resolving the prompt, preserving the chance to retry. */
+function hasValidResponseShape(response: DecisionResponse): boolean {
+  if (typeof response !== "object" || response === null) {
+    return false;
+  }
+  switch (response.kind) {
+    case "chooseTargets":
+    case "selectCards":
+      return Array.isArray(response.instanceIds) && response.instanceIds.every((id) => typeof id === "string");
+    case "orderCards":
+      return Array.isArray(response.order) && response.order.every((id) => typeof id === "string");
+    case "optional":
+      return typeof response.accept === "boolean";
+    case "chooseOption":
+      return Number.isSafeInteger(response.optionIndex) && response.optionIndex >= 0;
+    case "orderTriggers":
+      return true;
+    default:
+      return false;
+  }
+}
+
+function satisfiesAllowedTargetCombinations(open: OpenDecision, response: DecisionResponse): boolean {
+  if (open.allowedTargetCombinations === undefined || response.kind !== "chooseTargets") {
+    return true;
+  }
+  const selected = response.instanceIds;
+  if (selected.length === 0 && (open.min === 0 || open.backsOutOnlyWhenEmpty)) {
+    return true;
+  }
+  if (new Set(selected).size !== selected.length) {
+    return false;
+  }
+  return open.allowedTargetCombinations.some(
+    (combination) => combination.length === selected.length && combination.every((id) => selected.includes(id)),
+  );
+}
+
 function satisfiesDistinctNames(open: OpenDecision, response: DecisionResponse): boolean {
   if (!open.distinctNames || response.kind !== "selectCards") return true;
   const seen = new Set<string>();
@@ -383,6 +473,7 @@ function satisfiesMin(open: OpenDecision, response: DecisionResponse): boolean {
   const ids = response.kind === "chooseTargets" || response.kind === "selectCards" ? response.instanceIds : undefined;
   if (ids === undefined) return true;
 
+  if (ids.length === 0 && open.backsOutOnlyWhenEmpty) return true;
   const candidates = open.candidateInstanceIds ?? [];
   const requiredMin = Math.min(open.min, candidates.length);
   if (requiredMin <= 0) return true;

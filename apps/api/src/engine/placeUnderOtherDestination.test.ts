@@ -22,6 +22,7 @@ describe("PlaceUnder other-host producer sweep — Discord 1557666953748025394",
               { card: "BT1-009", as: "victim", under: [{ card: "BT1-013", as: "shed" }] },
               { card: "BT1-014", as: "host" },
               { card: "BT1-013", as: "other" },
+              { card: "TOKEN-Uka-no-Mitama", as: "token" },
             ],
           },
         },
@@ -43,6 +44,7 @@ describe("PlaceUnder other-host producer sweep — Discord 1557666953748025394",
           : s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("played").instanceId });
       expect(result).toEqual({ ok: true });
       await settle(() => s.perm("host").stack.length === 1 && s.state.pendingDecision === undefined);
+      expect(s.perm("token").stack).toHaveLength(0);
       expect(s.perm("host").stack.map(({ instanceId }) => instanceId)).toEqual([top]);
       expect(s.state.players[1]!.trash.map(({ instanceId }) => instanceId)).toEqual([s.inst("shed").instanceId]);
       const hostDecision = s.decisions.filter(({ req }) => req.kind === "chooseTargets").at(-1)!.req;

@@ -27,7 +27,6 @@ export type TournamentLogFields = {
   seriesId?: string | null;
   gameId?: string | null;
   participantId?: string | null;
-  rulesetVersion?: string | number | null;
   /** Free-form detail token, e.g. a refusal code. Never a decklist, a token or an email. */
   detail?: string;
 };

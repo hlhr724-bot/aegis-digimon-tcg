@@ -97,6 +97,10 @@ it("forwards one pick and the original capture owner for a press on the enlarged
   expect(startDrag).toHaveBeenCalledOnce();
   expect(startDrag.mock.calls[0]![0]).toBe(1);
   expect(startDrag.mock.calls[0]![2]).toBe(origin("b"));
+  expect(document.querySelector('[data-hand-hover-instance-id="b"]')).not.toBeNull();
+  rendered.rerender(view({ startDrag, draggingInstanceId: "b" }));
+  expect(document.querySelector(".game-hand-hover")).toBeNull();
+  rendered.rerender(view({ startDrag }));
   expect(document.querySelector(".game-hand-hover")).toBeNull();
   const onToggle = vi.fn<(id: string) => void>();
   rendered.rerender(view({ selection: { selectableInstanceIds: ["b"], pickedInstanceIds: [], onToggle } }));

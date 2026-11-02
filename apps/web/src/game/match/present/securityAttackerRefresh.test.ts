@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ServerEvent } from "@aegis/shared";
 import { buildSecurityRevealScene, type SecurityClashScene } from "../../securityClash";
+import type { RevealOnStage } from "../types";
 import { refreshSecurityAttacker } from "./securityAttackerRefresh";
 
 /* "When your opponent's security stack is removed from, 1 of your Digimon may digivolve"
@@ -31,15 +32,18 @@ describe("refreshSecurityAttacker", () => {
       current: { seat: 1 as const, cardId: "BT24-011", artId: "BT24-011", permanentId: "perm-6" },
     };
     let scene: SecurityClashScene | null = sceneWithAttacker();
+    const revealOnStageRef: { current: RevealOnStage | null } = { current: { key: 1, scene: sceneWithAttacker() } };
     refreshSecurityAttacker({
       fresh: [digivolved],
       securityAttackerRef,
+      revealOnStageRef,
       setSecurityClash: (update) => {
         scene = typeof update === "function" ? update(scene) : update;
       },
     });
     expect(securityAttackerRef.current.artId).toBe("BT24-018");
     expect(scene?.attacker?.cardId).toBe("BT24-018");
+    expect(revealOnStageRef.current?.scene.attacker?.cardId).toBe("BT24-018");
   });
 
   it("leaves another permanent's digivolution alone", () => {
@@ -47,14 +51,17 @@ describe("refreshSecurityAttacker", () => {
       current: { seat: 1 as const, cardId: "BT24-011", artId: "BT24-011", permanentId: "perm-9" },
     };
     let scene: SecurityClashScene | null = sceneWithAttacker();
+    const revealOnStageRef: { current: RevealOnStage | null } = { current: { key: 1, scene: sceneWithAttacker() } };
     refreshSecurityAttacker({
       fresh: [digivolved],
       securityAttackerRef,
+      revealOnStageRef,
       setSecurityClash: (update) => {
         scene = typeof update === "function" ? update(scene) : update;
       },
     });
     expect(securityAttackerRef.current.artId).toBe("BT24-011");
     expect(scene?.attacker?.cardId).toBe("BT24-011");
+    expect(revealOnStageRef.current?.scene.attacker?.cardId).toBe("BT24-011");
   });
 });

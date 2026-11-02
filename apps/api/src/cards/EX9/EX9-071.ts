@@ -45,20 +45,16 @@ export const compiled: CompiledCard = {
     {
       trigger: "Main",
       actions: [
-        {
-          kind: "Draw",
-          controller: "mine",
-          amount: 1,
-        },
-        {
-          kind: "PlaceInBattleAreaSelf",
-        },
+        { effectTextPart: "[Main] ＜Draw 1＞.", kind: "Draw", controller: "mine", amount: 1 },
+        { effectTextPart: "Then, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
       ],
     },
     {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "By trashing 1 of your [DM]\u00a0trait Digimon's bottom 2 face-down digivolution card, it unsuspends.",
           kind: "Unsuspend",
           target: {
             filter: {},

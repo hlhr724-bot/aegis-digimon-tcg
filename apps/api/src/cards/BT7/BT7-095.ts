@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] For the turn, 1 of your Digimon gets +3000 DP and can also attack your opponent's unsuspended Digimon with no digivolution cards.",
           kind: "ModifyDP",
           target: {
             filter: {
@@ -19,6 +21,8 @@ const compiled: CompiledCard = {
           duration: "forTheTurn",
         },
         {
+          effectTextPart:
+            "[Main] For the turn, 1 of your Digimon gets +3000 DP and can also attack your opponent's unsuspended Digimon with no digivolution cards.",
           kind: "GrantCanAttackUnsuspended",
           target: {
             filter: {

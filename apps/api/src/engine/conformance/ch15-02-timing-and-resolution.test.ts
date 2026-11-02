@@ -300,9 +300,6 @@ describe("§15-4-5 Derived Triggering (comprehensive-0166)", () => {
 
     const log: string[] = [];
     let derivedArmed = false;
-    // "a" resolves first (turn player, seat 0) and arms a DERIVED trigger for the
-    // opponent (seat 1) — the "d" effect only canActivate once armed, simulating a
-    // brand-new trigger appearing mid-resolution.
     const a = fakeEffect("a", {
       onResolve: () => {
         derivedArmed = true;
@@ -310,13 +307,13 @@ describe("§15-4-5 Derived Triggering (comprehensive-0166)", () => {
       },
     });
     const c = fakeEffect("c", { onResolve: () => log.push("c") }); // still-pending turn-player effect
-    const d = fakeEffect("d", { canActivate: () => derivedArmed, onResolve: () => log.push("d") });
+    const d = fakeEffect("d", { onResolve: () => log.push("d") });
     const seed = [collected(0, "a", a), collected(0, "c", c), collected(1, "d", d)];
     const tracker = new UseTracker();
     const env: ResolutionEnv = {
       turnSeat: 0,
       tracker,
-      collect: () => seed,
+      collect: () => seed.filter((entry) => entry.effect.effectKey !== "d" || derivedArmed),
       makeContext: (cEff) => ({ source: cEff.source, trigger: {}, game: {}, fx: {}, ask: {} }) as never,
       ruleProcess: async () => {},
       isGameOver: () => false,
@@ -341,13 +338,13 @@ describe("§15-4-5 Derived Triggering (comprehensive-0166)", () => {
       },
     });
     const c = fakeEffect("c", { onResolve: () => log.push("c") });
-    const d = fakeEffect("d", { canActivate: () => derivedArmed, onResolve: () => log.push("d") });
+    const d = fakeEffect("d", { onResolve: () => log.push("d") });
     const seed = [collected(0, "a", a), collected(0, "c", c), collected(0, "d", d)];
     const tracker = new UseTracker();
     const env: ResolutionEnv = {
       turnSeat: 0,
       tracker,
-      collect: () => seed,
+      collect: () => seed.filter((entry) => entry.effect.effectKey !== "d" || derivedArmed),
       makeContext: (cEff) => ({ source: cEff.source, trigger: {}, game: {}, fx: {}, ask: {} }) as never,
       ruleProcess: async () => {},
       isGameOver: () => false,

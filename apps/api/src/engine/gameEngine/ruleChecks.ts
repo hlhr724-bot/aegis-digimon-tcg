@@ -57,7 +57,6 @@ export class RuleChecks {
     return (
       this.anyPlayerLost() ||
       this.anyInvalidNoDpStackTop() ||
-      this.anyNegativeDpToTrash() ||
       this.anyZeroDpDigimon() ||
       this.anyBreedingNonDigimon() ||
       this.anyFaceDownTopCard() ||
@@ -91,20 +90,6 @@ export class RuleChecks {
   }
 
   /**
-   * #3 predicate — a permanent whose RAW DP is below 0 and is a battle-area Digimon
-   *. `currentDP` floors at 0, so the rule check reads the unclamped
-   * Phase-4 territory and omitted with the rest of the option lifecycle.)
-   */
-  anyNegativeDpToTrash(): boolean {
-    return battleAreaPermanents(this.deps.state).some(
-      (p) =>
-        this.deps.access.isBattleAreaDigimon(p, this.deps.continuous) &&
-        this.deps.modifiers.rawDp(this.deps.state, p.permanentId) < 0 &&
-        !this.protectedFromRuleDeletion(p.permanentId),
-    );
-  }
-
-  /**
    * A "can't be deleted" prohibition takes precedence over the deletion (CR §15-1-3), and
    * `deletePermanent` drops those permanents from a byRule deletion set. The rule-check
    * predicates must agree, or a protected Digimon keeps the fixpoint from converging and the
@@ -119,35 +104,23 @@ export class RuleChecks {
     });
   }
 
-  /** #4 predicate — a battle-area Digimon at exactly raw DP 0. */
   anyZeroDpDigimon(): boolean {
     return battleAreaPermanents(this.deps.state).some(
       (p) =>
+        p.topCard?.faceUp === true &&
         this.deps.access.isBattleAreaDigimon(p, this.deps.continuous) &&
-        this.deps.modifiers.rawDp(this.deps.state, p.permanentId) === 0 &&
+        this.deps.modifiers.rawDp(this.deps.state, p.permanentId) <= 0 &&
         !this.protectedFromRuleDeletion(p.permanentId),
     );
   }
 
-  /** #3 process — trash every raw-DP-below-0 Digimon via deletePermanent(byRule). */
-  async trashNoDpPermanents(): Promise<void> {
-    const ids = battleAreaPermanents(this.deps.state)
-      .filter(
-        (p) =>
-          this.deps.access.isBattleAreaDigimon(p, this.deps.continuous) &&
-          this.deps.modifiers.rawDp(this.deps.state, p.permanentId) < 0,
-      )
-      .map((p) => p.permanentId);
-    if (ids.length > 0) await this.deps.primitives().deletePermanent(ids, "byRule");
-  }
-
-  /** #4 process — delete every raw-DP-0 Digimon via deletePermanent(byRule). */
   async deleteZeroDpDigimon(): Promise<void> {
     const ids = battleAreaPermanents(this.deps.state)
       .filter(
         (p) =>
+          p.topCard?.faceUp === true &&
           this.deps.access.isBattleAreaDigimon(p, this.deps.continuous) &&
-          this.deps.modifiers.rawDp(this.deps.state, p.permanentId) === 0,
+          this.deps.modifiers.rawDp(this.deps.state, p.permanentId) <= 0,
       )
       .map((p) => p.permanentId);
     if (ids.length > 0) await this.deps.primitives().deletePermanent(ids, "byRule");
@@ -181,7 +154,7 @@ export class RuleChecks {
     const ids = fieldPermanents(this.deps.state)
       .filter((p) => p.topCard?.faceUp === false)
       .map((p) => p.permanentId);
-    if (ids.length > 0) await this.deps.primitives().deletePermanent(ids, "byRule");
+    if (ids.length > 0) await this.deps.primitives().trashPermanentByRule(ids);
   }
 
   /**

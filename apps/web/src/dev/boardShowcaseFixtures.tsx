@@ -1,9 +1,11 @@
+import { Phase } from "@aegis/shared/schema/enums";
+import type { LogTurnGroup } from "@/game/log/LogEntry";
 /* The fixed board the showcase renders: cards, permanents, hands, decisions, panels,
    notices and zone scenes, all built once so every case reads the same state. */
 
 import { CardInstance, getCardDefinition, Permanent, type DecisionRequest, type Seat } from "@aegis/shared";
 import { type HandEntry } from "../game/piece";
-import type { LogLine } from "../game/matchLog";
+import type { LogLine } from "@/game/log/LogEntry";
 import type { SecurityClashScene } from "../game/securityClash";
 import type { PermanentBurst, ZoneShowcase as ZoneShowcaseModel } from "../game/showcases";
 import { type MatchNotice } from "../game/notices";
@@ -379,5 +381,20 @@ export const ZONE_SHOWCASES: { label: string; showcase: ZoneShowcaseModel }[] = 
   {
     label: "opponent digivolved in breeding",
     showcase: { key: 2, cardId: CARDS.opponentChampion, seat: 1, mine: false, kind: "digivolve", color: "Blue" },
+  },
+];
+
+export const SHOWCASE_LOG_TURNS: readonly LogTurnGroup[] = [
+  {
+    turnCount: 1,
+    turnSeat: 0,
+    phases: [
+      {
+        phase: Phase.Main,
+        entries: [...SHOWCASE_LOG]
+          .reverse()
+          .map((line, index) => ({ ...line, id: `fixture-${index}`, turnCount: 1, turnSeat: 0, phase: Phase.Main })),
+      },
+    ],
   },
 ];

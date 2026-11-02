@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "with [Twilight] in their traits among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [{ tokens: ["Twilight"], match: "trait" }],
@@ -19,6 +20,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "Add 2 cards that are either black with [Knightmon] or [DeadlyAxemon] in their names",
               filter: {
                 controllerDefault: "mine",
                 colors: ["Black"],

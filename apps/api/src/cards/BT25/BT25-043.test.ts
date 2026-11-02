@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { observe } from "#api/engine/testkit/observe";
 import { compiled as BT25_043 } from "./BT25-043.js";
 import { EffectTiming } from "@aegis/shared";
 import { advance } from "../../engine/testkit/advance.js";
@@ -6,6 +7,50 @@ import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import "../index.js";
 
 describe("BT25-043 Habakirimon", () => {
+  it("checks security only on a second declared attack after Lucemon prevents its battle deletion", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT25-043", as: "habakiri", dp: 15000 }],
+          security: ["BT1-009", "BT1-010", "BT1-011"],
+          deck: ["BT1-009", "BT1-010"],
+        },
+        1: {
+          battleArea: [{ card: "EX10-052", as: "lucemon", under: ["EX10-004", "EX10-013"] }],
+          security: ["BT1-009", "BT1-010"],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    const attackerPermanentId = s.perm("habakiri").permanentId;
+    expect(s.engine.applyIntent(0, { type: "attack", attackerPermanentId, target: { kind: "player" } })).toEqual({
+      ok: true,
+    });
+    await settle(() => observe(s.engine).blockingSeat() === 1);
+    expect(
+      s.engine.applyIntent(1, { type: "declareBlock", blockerPermanentId: s.perm("lucemon").permanentId }),
+    ).toEqual({
+      ok: true,
+    });
+    await settle(() => !observe(s.engine).isAttacking());
+    expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard.cardId)).toEqual(["EX10-052"]);
+    expect(s.perm("lucemon").isSuspended).toBe(true);
+    expect(s.perm("habakiri").isSuspended).toBe(false);
+    expect(s.events.filter((event) => event.kind === "securityChecked")).toHaveLength(0);
+    expect(s.state.players[1]!.security).toHaveLength(2);
+
+    expect(s.engine.applyIntent(0, { type: "attack", attackerPermanentId, target: { kind: "player" } })).toEqual({
+      ok: true,
+    });
+    await advance(s.engine).finishAttack();
+    await settle();
+    expect(s.events.filter((event) => event.kind === "attackDeclared")).toHaveLength(2);
+    expect(s.events.filter((event) => event.kind === "securityChecked")).toHaveLength(1);
+    expect(s.state.players[1]!.security).toHaveLength(1);
+    expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard.cardId)).toEqual(["EX10-052"]);
+  });
+
   it("reaches Habakirimon through the public Glowing Dawn Lv.5 alternate evolution", async () => {
     const s = setupEngine({
       0: {

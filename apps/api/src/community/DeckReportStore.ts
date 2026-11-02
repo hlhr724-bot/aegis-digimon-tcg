@@ -33,7 +33,7 @@ export class DeckReportStore {
     );
   }
 
-  /** Decks with open reports, most recently reported first. */
+  /** Decks with open reports or an owner's pending review request, most recent activity first. */
   async queue(): Promise<ReportedCommunityDeck[]> {
     await this.accounts.ensureReady();
     const { rows } = await this.accounts.pool.query<{
@@ -41,16 +41,22 @@ export class DeckReportStore {
       name: string;
       display_name: string;
       status: CommunityPublicationStatus;
-      open_reports: string;
-      last_reported_at: string;
+      open_reports: string | null;
+      last_reported_at: string | null;
+      review_requested_at: string | null;
+      review_note: string | null;
     }>(
-      `SELECT p.id, p.name, a.display_name, p.status, count(*) AS open_reports, max(r.created_at) AS last_reported_at
-       FROM community_deck_reports r
-       JOIN public_decks p ON p.id = r.public_deck_id
+      `SELECT p.id, p.name, a.display_name, p.status, r.open_reports, r.last_reported_at, p.review_requested_at, p.review_note
+       FROM public_decks p
        JOIN accounts a ON a.id = p.account_id
-       WHERE r.dismissed_at IS NULL
-       GROUP BY p.id, p.name, a.display_name, p.status
-       ORDER BY max(r.created_at) DESC
+       LEFT JOIN (
+         SELECT public_deck_id, count(*) AS open_reports, max(created_at) AS last_reported_at
+         FROM community_deck_reports
+         WHERE dismissed_at IS NULL
+         GROUP BY public_deck_id
+       ) r ON r.public_deck_id = p.id
+       WHERE r.public_deck_id IS NOT NULL OR p.review_requested_at IS NOT NULL
+       ORDER BY GREATEST(COALESCE(r.last_reported_at, 0), COALESCE(p.review_requested_at, 0)) DESC
        LIMIT ${QUEUE_LIMIT}`,
     );
     return rows.map((row) => ({
@@ -58,8 +64,10 @@ export class DeckReportStore {
       name: row.name,
       authorName: row.display_name,
       status: row.status,
-      openReports: Number(row.open_reports),
-      lastReportedAt: Number(row.last_reported_at),
+      openReports: Number(row.open_reports ?? 0),
+      lastReportedAt: row.last_reported_at === null ? null : Number(row.last_reported_at),
+      reviewRequestedAt: row.review_requested_at === null ? null : Number(row.review_requested_at),
+      reviewNote: row.review_note,
     }));
   }
 

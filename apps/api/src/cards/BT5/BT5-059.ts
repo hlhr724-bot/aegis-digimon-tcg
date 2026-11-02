@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 5,
           add: [
             {
+              effectTextPart: "Add 1 Digimon card with [Unidentified] in its type",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -25,6 +26,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Arata Sanada] card among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

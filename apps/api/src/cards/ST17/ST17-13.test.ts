@@ -205,6 +205,52 @@ describe("ST17-13 Magnamon [When Digivolving] — trash digi-cards per color, bo
 });
 
 describe("ST17-13 Magnamon [Security] — end of security battle digivolution", () => {
+  it("does not offer end-of-battle evolution when de-digivolution exposes an attacking Digi-Egg", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "BT26-037", as: "attacker", under: ["BT26-007"] }] },
+        1: {
+          battleArea: [{ card: "BT12-021", as: "veemon" }],
+          security: [{ card: "ST17-13", as: "checked" }],
+        },
+      },
+      { autoDeclineOptional: true, autoSelectCards: false },
+    );
+    await s.ready();
+    const attackerPermanentId = s.perm("attacker").permanentId;
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "chooseTargets", 3000);
+    expect(
+      s.engine.applyIntent(1, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "chooseTargets", instanceIds: [attackerPermanentId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some((event) => event.kind === "attackEnded"), 3000);
+
+    expect(s.state.players[0]!.battleArea).toHaveLength(0);
+    expect(s.state.players[0]!.trash.map((card) => card.cardId)).toEqual(["BT26-037", "BT26-007"]);
+    expect(s.events.find((event) => event.kind === "securityChecked")).toMatchObject({
+      revealedCardId: "ST17-13",
+      resolution: "effect",
+    });
+    expect(s.events.find((event) => event.kind === "securityChecked")).not.toHaveProperty("battle");
+    expect(s.perm("veemon").topCard.cardId).toBe("BT12-021");
+    expect(s.state.players[1]!.trash.map((card) => card.instanceId)).toContain(s.inst("checked").instanceId);
+    expect(s.state.pendingDecision).toBeUndefined();
+    expect(
+      s.decisions.filter((decision) => decision.req.kind === "optional" && decision.req.sourceCardId === "ST17-13"),
+    ).toEqual([]);
+  });
+
   it("allows a legal own Digimon to digivolve into the checked card without paying memory", async () => {
     const s = setupEngine(
       {

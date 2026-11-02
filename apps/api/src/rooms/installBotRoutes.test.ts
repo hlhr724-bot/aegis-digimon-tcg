@@ -106,3 +106,39 @@ describe("authorized bot joins", () => {
     },
   );
 });
+
+describe("bot difficulty and style boundary", () => {
+  it("forwards selected settings to the room owner", async () => {
+    const requestBot = vi.fn<AegisRoom["requestBot"]>(() => 200);
+    roomRegistry.set("local-room", { requestBot } as unknown as AegisRoom);
+    const response = await request({
+      roomId: "local-room",
+      reconnectionToken: "local-room:secret",
+      botDifficulty: "beginner",
+      botStyle: "defensive",
+    });
+    expect(response.status).toBe(200);
+    expect(requestBot).toHaveBeenCalledWith({
+      reconnectionToken: "local-room:secret",
+      botDeckId: undefined,
+      botDifficulty: "beginner",
+      botStyle: "defensive",
+    });
+  });
+
+  it.each(["constructor", "__proto__", "toString", "unknown", null, 1, {}, []])(
+    "rejects invalid settings %j",
+    async (value) => {
+      for (const field of ["botDifficulty", "botStyle"]) {
+        const response = await request({
+          roomId: "local-room",
+          reconnectionToken: "local-room:secret",
+          [field]: value,
+        });
+        expect(response.status).toBe(400);
+      }
+      expect(matchMaker.query).not.toHaveBeenCalled();
+      expect(matchMaker.remoteRoomCall).not.toHaveBeenCalled();
+    },
+  );
+});

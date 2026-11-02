@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 Digimon card with [Gaogamon] in its name",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -19,7 +20,12 @@ export const compiled: CompiledCard = {
               count: 1,
               to: "hand",
             },
-            { filter: { controllerDefault: "mine", kind: ["Tamer"], colors: ["Blue"] }, count: 1, to: "hand" },
+            {
+              effectTextPart: "1 blue Tamer card among them to your hand.",
+              filter: { controllerDefault: "mine", kind: ["Tamer"], colors: ["Blue"] },
+              count: 1,
+              to: "hand",
+            },
           ],
           rest: "trash",
         },

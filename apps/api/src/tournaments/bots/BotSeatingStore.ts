@@ -1,3 +1,4 @@
+import type { DeckFormat } from "@aegis/shared/deckFormat";
 import { randomUUID } from "node:crypto";
 import type { TournamentBanlistCard } from "@aegis/shared";
 import type { PoolClient } from "pg";
@@ -6,7 +7,6 @@ import { metaDecksForBlock, type MetaDeck } from "../../bot/metaDecks/index.js";
 import { validateCompetitiveDeck } from "../participants/index.js";
 import { type AcquireTournamentLock, inProcessTournamentLock } from "../participants/index.js";
 import type { ParticipantRecord } from "../participants/index.js";
-import { findPreset } from "../rules/index.js";
 import { type BotFillPlan, planBotFill } from "./botFill.js";
 
 export type BotSeatingOutcome =
@@ -37,6 +37,7 @@ export class BotSeatingStore {
     private readonly acquireLock: AcquireTournamentLock = inProcessTournamentLock(),
     /** Seam: where the legal, versioned bot decks come from. Tests substitute a fixed list. */
     private readonly decksForBlock: (block: string) => readonly MetaDeck[] = defaultDecksForBlock,
+    private readonly drawStyle: () => number = Math.random,
   ) {}
 
   /**
@@ -54,12 +55,13 @@ export class BotSeatingStore {
         await client.query<{
           id: string;
           block: string;
+          format: DeckFormat;
           max_players: string | number;
           allow_bots: boolean;
-          ruleset_preset: string | null;
+          random_bot_styles: boolean;
           banlist_cards: TournamentBanlistCard[] | string | null;
         }>(
-          "SELECT id, block, max_players, allow_bots, ruleset_preset, banlist_cards FROM tournaments WHERE id=$1 FOR UPDATE",
+          "SELECT id, block, format, max_players, allow_bots, random_bot_styles, banlist_cards FROM tournaments WHERE id=$1 FOR UPDATE",
           [input.tournamentId],
         )
       ).rows[0];
@@ -86,14 +88,19 @@ export class BotSeatingStore {
       // picks the next legal deck for the block. If none of the block's decks survive, `planBotFill`
       // reports `no_legal_bot_deck` and the field stays short — which is the documented fallback,
       // and better than a machine playing a banned card.
-      const decks = legalUnder(this.decksForBlock(tournament.block), parseBanlist(tournament.banlist_cards));
+      const decks = legalUnder(
+        this.decksForBlock(tournament.block),
+        parseBanlist(tournament.banlist_cards),
+        tournament.format,
+      );
       const plan = planBotFill({
         allowBots: tournament.allow_bots === true,
-        presetSupportsBots: findPreset(tournament.ruleset_preset ?? "")?.supportsBots === true,
         confirmedHumans: await this.activeHumanCount(client, input.tournamentId),
         maxPlayers: Number(tournament.max_players),
         decks,
         seed: input.tournamentId,
+        randomStyles: tournament.random_bot_styles === true,
+        drawStyle: this.drawStyle,
       });
       return this.apply(client, input.tournamentId, plan, decks, now);
     });
@@ -236,9 +243,12 @@ function defaultDecksForBlock(block: string): readonly MetaDeck[] {
 }
 
 /** The shipped decks this tournament's frozen banlist actually permits, in their shipped order. */
-function legalUnder(decks: readonly MetaDeck[], banlistCards: readonly TournamentBanlistCard[]): readonly MetaDeck[] {
-  if (banlistCards.length === 0) return decks;
-  return decks.filter((deck) => validateCompetitiveDeck(deck.decklist, banlistCards).legal);
+function legalUnder(
+  decks: readonly MetaDeck[],
+  banlistCards: readonly TournamentBanlistCard[],
+  format: DeckFormat,
+): readonly MetaDeck[] {
+  return decks.filter((deck) => validateCompetitiveDeck(deck.decklist, banlistCards, format).legal);
 }
 
 function parseBanlist(value: TournamentBanlistCard[] | string | null): readonly TournamentBanlistCard[] {

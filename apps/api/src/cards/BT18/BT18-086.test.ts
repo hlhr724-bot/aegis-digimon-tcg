@@ -1,10 +1,13 @@
+import { EffectDuration, EffectTiming } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
+import { advance } from "../../engine/testkit/advance.js";
 import { drainMicrotasks, setupEngine, settle } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
 import { compiled } from "./BT18-086.js";
 import "./BT18-019.js";
 import "./BT18-101.js";
 import "../EX10/EX10-060.js";
+import "../BT26/BT26-029.js";
 import "../ST10/ST10-14.js";
 
 describe("BT18-086 Lucemon: Larva", () => {
@@ -182,6 +185,61 @@ describe("BT18-086 Lucemon: Larva", () => {
       s.state.players[0]!.battleArea.some((perm) => perm.topCard?.instanceId === s.inst("lucemon").instanceId),
     ).toBe(true);
     expect(observe(s.engine).isRestrictedByEffect(s.perm("larva"), "beDeleted", "Digimon")).toBe(true);
+  });
+
+  it("keeps Satan Mode after a DP reduction greater than its remaining DP", async () => {
+    const s = setupEngine({
+      0: {
+        battleArea: [
+          { card: "BT18-086", as: "larva" },
+          { card: "EX10-060", as: "satan", dp: 3000 },
+        ],
+      },
+    });
+    const satanId = s.perm("satan").permanentId;
+    await s.ready();
+
+    await advance(s.engine).verb.modifyDP(satanId, -5000, EffectDuration.UntilEachTurnEnd);
+    expect(s.perm("satan").currentDP).toBe(0);
+    await advance(s.engine).fireGlobal(EffectTiming.OnStartTurn);
+
+    expect(s.state.players[0]!.battleArea.some((perm) => perm.permanentId === satanId)).toBe(true);
+    expect(s.state.players[0]!.trash.some((card) => card.cardId === "EX10-060")).toBe(false);
+  });
+
+  it("deletes the same reduced Digimon without Larva", async () => {
+    const s = setupEngine({ 0: { battleArea: [{ card: "EX10-060", as: "satan", dp: 3000 }] } });
+    const satanId = s.perm("satan").permanentId;
+    await s.ready();
+
+    await advance(s.engine).verb.modifyDP(satanId, -5000, EffectDuration.UntilEachTurnEnd);
+    await advance(s.engine).fireGlobal(EffectTiming.OnStartTurn);
+
+    expect(s.state.players[0]!.battleArea.some((perm) => perm.permanentId === satanId)).toBe(false);
+    expect(s.state.players[0]!.trash.some((card) => card.cardId === "EX10-060")).toBe(true);
+  });
+
+  it("protects Satan Mode when BT26-029 reduces it below zero", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT18-086", as: "larva" },
+            { card: "EX10-060", as: "satan", dp: 3000 },
+          ],
+        },
+        1: { battleArea: [{ card: "BT26-029", as: "aegis" }] },
+      },
+      { autoSelectCards: true },
+    );
+    const satanId = s.perm("satan").permanentId;
+    await s.ready();
+
+    await advance(s.engine).fireSubTrigger("whenSecurityRemoved", { removedFromSecuritySeat: 1 });
+    await settle();
+
+    expect(s.state.players[0]!.battleArea.some((perm) => perm.permanentId === satanId)).toBe(true);
+    expect(s.perm("satan").currentDP).toBe(0);
   });
 
   it("naturally moves Larva from breeding when Satan Mode would leave play", async () => {

@@ -1,5 +1,6 @@
 import type { Pool } from "pg";
-import { newDb } from "pg-mem";
+import { DataType } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 
 /**
  * Test-only in-memory Postgres.
@@ -12,5 +13,24 @@ import { newDb } from "pg-mem";
  * against a legacy database), so the check has to be off to exercise those paths.
  */
 export function createMemoryPool(): Pool {
-  return new (newDb({ noAstCoverageCheck: true }).adapters.createPg().Pool)() as Pool;
+  const db = createMemoryDatabase({ noAstCoverageCheck: true });
+  db.public.registerFunction({
+    name: "decode",
+    args: [DataType.text, DataType.text],
+    returns: DataType.bytea,
+    implementation: (value: string, format: BufferEncoding) => Buffer.from(value, format),
+  });
+  db.public.registerFunction({
+    name: "encode",
+    args: [DataType.bytea, DataType.text],
+    returns: DataType.text,
+    implementation: (value: Buffer, format: BufferEncoding) => Buffer.from(value).toString(format),
+  });
+  db.public.registerFunction({
+    name: "strpos",
+    args: [DataType.text, DataType.text],
+    returns: DataType.integer,
+    implementation: (value: string, part: string) => value.indexOf(part) + 1,
+  });
+  return new (db.adapters.createPg().Pool)() as Pool;
 }

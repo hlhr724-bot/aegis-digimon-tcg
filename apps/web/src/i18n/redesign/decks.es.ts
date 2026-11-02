@@ -39,6 +39,7 @@ export const decksEs: Record<keyof typeof decksEn, string> = {
   "redesign.decks.list.statDecks": "Decks",
   "redesign.decks.list.statActive": "Deck activo",
   "redesign.decks.list.statReady": "Listos para jugar",
+  "redesign.decks.list.statPublished": "En la comunidad",
   "redesign.decks.list.saved": "Decks guardados",
   "redesign.decks.list.columnDeck": "Deck",
   "redesign.decks.list.columnColors": "Colores",

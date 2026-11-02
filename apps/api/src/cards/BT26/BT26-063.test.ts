@@ -182,8 +182,8 @@ describe("BT26-063 Tellermon", () => {
             { card: CARD_ID, as: "second" },
           ],
           hand: [
-            { card: "P-190", as: "firstLink" },
-            { card: "P-190", as: "secondLink" },
+            { card: "BT21-009", as: "firstLink" },
+            { card: "BT21-009", as: "secondLink" },
           ],
           deck: [
             { card: CARD_ID, as: "firstMatch" },

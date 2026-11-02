@@ -1,7 +1,6 @@
 import type { DecisionRequest, Permanent } from "@aegis/shared";
 import type { CandidateZone } from "../../decisionModel";
 
-/** A pick spread across the digivolution cards of several Digimon. */
 export interface SourceHostChoice {
   /** The Digimon holding at least one offered card, in battle-area order. */
   hostPermanentIds: string[];
@@ -46,7 +45,6 @@ export function sourceHostChoiceFor({
     cards.add(candidate.instanceId);
     cardIdsByHost.set(host.permanentId, cards);
   }
-  if (cardIdsByHost.size < 2) return undefined;
   const hostPermanentIds = battleArea
     .map((permanent) => permanent.permanentId)
     .filter((permanentId) => cardIdsByHost.has(permanentId));

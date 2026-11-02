@@ -2,9 +2,9 @@ import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } fro
 import { Icons } from "@/design/icons";
 import { useWheelScrollsHorizontally } from "@/design/useWheelScrollsHorizontally";
 import { useTranslation } from "@/i18n/useTranslation";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 const PAGE_FRACTION = 0.9;
-const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 type DecisionScrollRowParams = {
   className: string;
@@ -29,7 +29,7 @@ export function DecisionScrollRow({ className, children }: DecisionScrollRowPara
     }
     row.scrollBy({
       left: direction * row.clientWidth * PAGE_FRACTION,
-      behavior: shouldReduceMotion() ? "auto" : "smooth",
+      behavior: motionPreference.isReduced() ? "auto" : "smooth",
     });
   }
 
@@ -96,8 +96,4 @@ function useScrollEdges(rowRef: RefObject<HTMLElement | null>): ScrollEdges {
     };
   }, [rowRef]);
   return edges;
-}
-
-function shouldReduceMotion(): boolean {
-  return typeof window.matchMedia === "function" && window.matchMedia(REDUCED_MOTION_QUERY).matches;
 }

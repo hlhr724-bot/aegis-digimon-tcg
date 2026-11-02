@@ -27,6 +27,7 @@ describe("BT1-108 Horn Buster", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart: "[Main] 1 of your Digimon gets +3000 DP for the turn.",
             kind: "ModifyDP",
             target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
             amount: 3000,

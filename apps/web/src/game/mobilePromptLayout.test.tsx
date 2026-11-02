@@ -56,15 +56,18 @@ function expectScrolls(element: Element, axis: "x" | "y", viewport: Viewport) {
 }
 
 /**
- * The panel is a capped flex column: the scroller shrinks into what the header and
- * footer leave. Either `hidden` or `auto` on the panel keeps it inside its cap; the
+ * The panel is a capped flex column, or a capped grid on short landscape screens: the
+ * scroller shrinks into what the header and footer leave. Either `hidden` or `auto` on the panel keeps it inside its cap; the
  * phone sheet picks `auto` so a header and footer that alone outgrow a short
  * landscape screen still scroll instead of clipping.
  */
 function expectCappedPanel(panel: HTMLElement, viewport: Viewport) {
   expectCapped(panel, viewport);
-  expect(explain(panel, "display", viewport)).toMatch(/^display: flex from /);
-  expect(explain(panel, "flex-direction", viewport)).toMatch(/^flex-direction: column from /);
+  const display = explain(panel, "display", viewport);
+  expect(display).toMatch(/^display: (flex|grid) from /);
+  if (display.startsWith("display: flex")) {
+    expect(explain(panel, "flex-direction", viewport)).toMatch(/^flex-direction: column from /);
+  }
   expect(explain(panel, "overflow-y", viewport)).toMatch(/^overflow-y: (hidden|auto) from /);
 }
 
@@ -246,7 +249,7 @@ describe.each(PHONE_VIEWPORTS)("long prompts on a phone at $name", (viewport) =>
       manyCandidates(12),
     );
     const grid = panel.querySelector<HTMLElement>(".decision-overlay__grid")!;
-    expect(within(grid).getAllByRole("button")).toHaveLength(12);
+    expect(grid.querySelectorAll(".decision-overlay__candidate")).toHaveLength(12);
     expect(grid.classList.contains("decision-overlay__grid--scroll")).toBe(true);
     expectScrolls(grid, "x", viewport);
     expectCappedPanel(panel, viewport);
@@ -321,6 +324,10 @@ describe.each(PHONE_VIEWPORTS)("long prompts on a phone at $name", (viewport) =>
       </I18nProvider>,
     );
     const rail = screen.getByTestId("board-prompt");
+    expect(within(rail).getByText(clause)).toBeTruthy();
+    fireEvent.click(within(rail).getByRole("button", { name: "Hide effect" }));
+    expect(within(rail).queryByText(clause)).toBeNull();
+    fireEvent.click(within(rail).getByRole("button", { name: "View effect" }));
     expect(within(rail).getByText(clause)).toBeTruthy();
     const endSelection = within(rail).getByRole("button", { name: /end selection/i });
     expect(endSelection.closest(".board-prompt__actions")).not.toBeNull();

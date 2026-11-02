@@ -96,7 +96,7 @@ describe("EX13-010 Growlmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[1]!.battleArea.length === 0, 20);
+    await settle(() => s.state.players[1]!.battleArea.length === 0);
 
     expect(s.perm("base").topCard?.cardId).toBe(cardId);
     expect(s.perm("base").stack.map((card) => card.cardId)).toEqual(["BT1-009"]);
@@ -143,7 +143,7 @@ describe("EX13-010 Growlmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[1]!.battleArea.length === 1, 20);
+    await settle(() => s.state.players[1]!.battleArea.length === 1);
 
     expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard?.instanceId)).toEqual([
       s.inst("outOfRange").instanceId,
@@ -180,7 +180,7 @@ describe("EX13-010 Growlmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => observe(s.engine).hasKeyword(s.perm("base"), "Raid"), 20);
+    await settle(() => observe(s.engine).hasKeyword(s.perm("base"), "Raid"));
 
     expect(s.perm("base").topCard?.cardId).toBe(cardId);
     expect(s.perm("base").currentDP).toBe(9000);
@@ -217,7 +217,7 @@ describe("EX13-010 Growlmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => observe(s.engine).hasKeyword(s.perm("base"), "Raid"), 20);
+    await settle(() => observe(s.engine).hasKeyword(s.perm("base"), "Raid"));
 
     expect(s.perm("base").currentDP).toBe(9000);
     expect(s.state.pendingDecision).toBeUndefined();
@@ -286,7 +286,7 @@ describe("EX13-010 Growlmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => observe(s.engine).hasKeyword(s.perm("base"), "Raid"), 20);
+    await settle(() => observe(s.engine).hasKeyword(s.perm("base"), "Raid"));
 
     expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard?.cardId)).toEqual([cardId, "BT1-014"]);
     expect(s.state.players[0]!.trash.map(({ cardId: id }) => id)).toEqual([]);
@@ -430,7 +430,7 @@ describe("EX13-010 Growlmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[1]!.battleArea.length === 0, 20);
+    await settle(() => s.state.players[1]!.battleArea.length === 0);
 
     expect(s.perm("base").stack.map((card) => card.cardId)).toEqual([cardId, "BT19-012"]);
     expect(s.state.players[1]!.trash.map(({ instanceId }) => instanceId)).toEqual([s.inst("target").instanceId]);
@@ -497,7 +497,7 @@ describe("EX13-010 Growlmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[1]!.battleArea.length === 1, 20);
+    await settle(() => s.state.players[1]!.battleArea.length === 1);
 
     expect(s.perm("base").topCard?.cardId).toBe(cardId);
     expect(s.perm("base").stack.map((card) => card.cardId)).toEqual(["EX13-007"]);
@@ -536,7 +536,7 @@ describe("EX13-010 Growlmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => observe(s.engine).hasKeyword(s.perm("base"), "Raid"), 20);
+    await settle(() => observe(s.engine).hasKeyword(s.perm("base"), "Raid"));
 
     expect(s.perm("base").currentDP).toBe(9000);
     expect(s.state.players[1]!.trash.map(({ cardId: id }) => id)).toEqual([]);
@@ -608,7 +608,7 @@ describe("EX13-010 Growlmon — KB Q&A rulings", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[1]!.battleArea.length === 1, 20);
+    await settle(() => s.state.players[1]!.battleArea.length === 1);
 
     const targetChoice = s.decisions.find(({ req }) => req.kind === "chooseTargets");
     expect(targetChoice?.req.options?.min).toBe(1);
@@ -645,7 +645,7 @@ describe("EX13-010 Growlmon — KB Q&A rulings", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[1]!.battleArea.length === 1, 20);
+    await settle(() => s.state.players[1]!.battleArea.length === 1);
 
     expect(s.state.players[1]!.trash.map(({ instanceId }) => instanceId)).toEqual([s.inst("inRange").instanceId]);
     expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard?.instanceId)).toEqual([

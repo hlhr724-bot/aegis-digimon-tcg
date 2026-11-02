@@ -1,6 +1,8 @@
 import type { Keyword } from "@aegis/shared";
 import type { EffectContext } from "./EffectContext.js";
 import type { Permanent } from "@aegis/shared";
+import type { ActivationMemoryCost } from "#api/engine/effects/ActivationMemoryCost";
+import type { DecisionEffectSummary } from "@aegis/shared/protocol/DecisionEffectSummary";
 
 /**
  * TS analogue of the source `ICardEffect`. Card files almost never
@@ -8,10 +10,14 @@ import type { Permanent } from "@aegis/shared";
  * the right flags (card-module contract).
  */
 export interface Effect {
+  activationMemoryCost?: ActivationMemoryCost;
+  decisionSummary?: DecisionEffectSummary;
   /** Original declarative trigger, retained for selective stack-effect conferrals. */
   irTrigger?: string;
   /** The compiled body reports acceptance through EffectContext.onActivationChosen. */
   activationDeferred?: boolean;
+  canCancelBeforeTargets?: boolean;
+  activationTextEmphasis?: string;
   isActivatedConsequence?: boolean;
   /** Semantic keyword implemented by this whole effect, retained for selective copying. */
   keywordEffect?: Keyword;

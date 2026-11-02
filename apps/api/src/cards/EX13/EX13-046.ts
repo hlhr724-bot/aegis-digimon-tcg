@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [Mamemon] in its text",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [{ tokens: ["Mamemon"], match: "text" }],
@@ -19,6 +20,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 card with the [Mutant] trait among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [{ tokens: ["Mutant"], match: "trait" }],

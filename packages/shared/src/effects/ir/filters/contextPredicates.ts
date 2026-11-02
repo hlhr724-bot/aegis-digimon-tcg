@@ -81,6 +81,7 @@ export interface ContextPredicates {
    * plays a Digimon" watcher, which omits this field and fires on any play.
    */
   byEffect?: boolean;
+  byOwnEffect?: boolean;
   /**
    * Inherited digivolution-card watcher only: match the exact source stack-card instance that
    * was discarded by this event. The interpreter captures the source instance at install time

@@ -22,7 +22,8 @@ declare global {
   interface Window {
     browserTestOptions: AegisJoinOptions & { seed: number };
     browserTestLab?: boolean;
-    browserTestMode?: "casual" | "bot";
+    browserTestMode?: "casual" | "bot" | "private_host" | "private_guest" | "spectator";
+    browserTestRoomCode?: string;
     browserTestBotDeckId?: string;
     browserTestSnapshot: () => ReturnType<GameState["toJSON"]>;
     browserTestPresentation: () => {
@@ -110,7 +111,7 @@ window.browserTestPresentation = () => ({
 });
 // Observe the actual connection, including the replacement created by page reload.
 // The browser bridge exposes a snapshot only, never an intent sender or state setter.
-for (const method of ["joinOrCreate", "create", "reconnect"] as const) {
+for (const method of ["joinOrCreate", "create", "joinById", "consumeSeatReservation", "reconnect"] as const) {
   const original = Client.prototype[method];
   Client.prototype[method] = async function (this: Client, ...args: unknown[]) {
     const room = (await (original as Function).apply(this, args)) as Room<GameState>;
@@ -122,7 +123,8 @@ for (const method of ["joinOrCreate", "create", "reconnect"] as const) {
     return room;
   } as typeof original;
 }
-createRoot(document.getElementById("root")!).render(
+const root = createRoot(document.getElementById("root")!);
+root.render(
   <I18nProvider>
     {window.browserTestLab ? (
       <EffectsLab joinOptions={window.browserTestOptions} botDeckId={window.browserTestBotDeckId} />
@@ -131,10 +133,11 @@ createRoot(document.getElementById("root")!).render(
         joinOptions={window.browserTestOptions}
         identityColor="Red"
         startMode={window.browserTestMode ?? (window.browserTestOptions.devScenario ? "bot" : "casual")}
+        roomCode={window.browserTestRoomCode}
         botDeckId={window.browserTestBotDeckId}
         devProbe={presentationProbe}
         presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
-        onExit={() => {}}
+        onExit={(destination) => root.render(<div role="status">Returned to {destination}</div>)}
         onCopyUsedDeck={() => {}}
       />
     )}

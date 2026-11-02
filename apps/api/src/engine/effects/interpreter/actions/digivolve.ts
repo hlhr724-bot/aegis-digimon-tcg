@@ -1,3 +1,4 @@
+import { CardKind } from "@aegis/shared/schema/enums";
 // The Digivolve action and its legality preflight.
 
 import {
@@ -10,6 +11,7 @@ import type { EffectContext } from "../../EffectContext.js";
 import { unsupported } from "../errors.js";
 import { knownCards, placeAtStackEnd } from "../placeAtChosenStackEnd.js";
 import { scaleFactor } from "../scaling.js";
+import { liveDigivolutionBase } from "./liveDigivolutionBase.js";
 import { canPayCost } from "../costs.js";
 import { LooseCandidate, candidateLooseInstances, looseCardsInZone, pickLoose } from "../targeting/loose.js";
 import { candidatePermanents, resolvePermanentTargets } from "../targeting/permanents.js";
@@ -22,16 +24,6 @@ import {
 import type { Action, CardColor, CardDefinition, Filter, Permanent, Target, ZoneRef } from "@aegis/shared";
 
 type ProjectedBase = { permanent: Permanent; definition: CardDefinition };
-
-function liveBaseDefinition(ctx: EffectContext, base: Permanent): CardDefinition | undefined {
-  if (!base.topCard) return undefined;
-  const printed = ctx.game.definitionOf(base.topCard);
-  return {
-    ...printed,
-    nameEn: base.originalNameOverride || printed.nameEn,
-    colors: ctx.game.effectiveColors?.(base) ?? printed.colors,
-  };
-}
 
 function projectedRotationBase(
   ctx: EffectContext,
@@ -96,7 +88,7 @@ function legalIntoCandidates(
   projectedBase?: ProjectedBase,
 ): LooseCandidate[] {
   const base = projectedBase?.permanent ?? ctx.game.permanentById(basePermanentId);
-  const actualBaseDef = base ? liveBaseDefinition(ctx, base) : undefined;
+  const actualBaseDef = base ? liveDigivolutionBase(ctx, base) : undefined;
   const baseDef =
     projectedBase !== undefined
       ? projectedBase.definition
@@ -351,7 +343,9 @@ export async function runDigivolve(ctx: EffectContext, action: Extract<Action, {
       const filterKinds = action.target.filter.kind;
       if (filterKinds !== undefined) {
         const topDef = ctx.game.definitionOf(breedingPerm.topCard);
-        const matchesKind = filterKinds.some((k) => topDef.kinds.includes(k as never));
+        const matchesKind = topDef.kinds.some(
+          (kind) => filterKinds.includes(kind) || (kind === CardKind.DigiEgg && filterKinds.includes(CardKind.Digimon)),
+        );
         if (!matchesKind) return;
       }
     }
@@ -544,7 +538,7 @@ export async function runDigivolve(ctx: EffectContext, action: Extract<Action, {
         // A private search followed by "may digivolve" must remain declinable
         // after inspection, including when there is only one legal evolution.
         // A paid one is asked even with a single card, so it can still be declined.
-        action.amongPreviousSearch && ctx.pickingAcceptedOptional
+        ctx.selectingOptionalTarget || (action.amongPreviousSearch && ctx.pickingAcceptedOptional)
           ? { ...intoTarget, upTo: true }
           : paidOptional
             ? { ...intoTarget, forceSelection: true }
@@ -575,7 +569,7 @@ export async function runDigivolve(ctx: EffectContext, action: Extract<Action, {
       const base = ctx.game.permanentById(pid);
       const chosenCandidate = candidates.find((candidate) => candidate.instanceId === chosen[0]);
       const intoDef = chosenCandidate ? ctx.game.definitionOf({ cardId: chosenCandidate.cardId } as never) : undefined;
-      const actualBaseDef = base ? liveBaseDefinition(ctx, base) : undefined;
+      const actualBaseDef = base ? liveDigivolutionBase(ctx, base) : undefined;
       if (chosenCandidate !== undefined && intoDef !== undefined && actualBaseDef !== undefined) {
         const baseDef =
           action.virtualBase === undefined
@@ -704,6 +698,9 @@ export async function runDigivolveViaPlacement(
   const result = await ctx.fx.digivolveFromInstance(hosts[0]!, ctx.source.instanceId, {
     payCost: true,
     costOverride: action.cost,
+    ignoreLevel:
+      action.ignoreLevelRequirement === true &&
+      ctx.fx.isDigivolutionRequirementIgnoreBlocked?.(ctx.source.ownerSeat) !== true,
     ignoreRequirements: action.ignoreDigivolutionRequirements === true,
   });
   if (result !== undefined) ctx.lastDigivolveResult = true;

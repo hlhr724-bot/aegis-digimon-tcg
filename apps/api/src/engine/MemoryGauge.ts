@@ -1,3 +1,4 @@
+import type { MemoryGaugeSnapshot } from "#api/engine/memory/MemoryGaugeSnapshot";
 import type { GameState, ServerEvent, Seat } from "@aegis/shared";
 
 /** Hard bounds of the shared gauge (API-CONTRACT GameState.memory is int8, clamped [-10, 10]). */
@@ -51,6 +52,29 @@ export class MemoryGauge {
     private readonly emit: (event: ServerEvent) => void = () => {},
     private readonly memoryGainPolicy: MemoryGainPolicyCheck = () => true,
   ) {}
+
+  snapshot(): MemoryGaugeSnapshot {
+    if (this.turnEndMinMemoryStaging !== undefined) {
+      throw new Error("Cannot snapshot a staged memory threshold tier");
+    }
+    const snapshot: MemoryGaugeSnapshot = {
+      version: 1,
+      turnEndMinMemoryOverrides: Array.from(this.turnEndMinMemoryOverrides),
+    };
+    readThresholds(snapshot);
+    return snapshot;
+  }
+
+  restore(snapshot: MemoryGaugeSnapshot): void {
+    if (this.turnEndMinMemoryStaging !== undefined) {
+      throw new Error("Cannot restore a staged memory threshold tier");
+    }
+    const thresholds = readThresholds(snapshot);
+    this.turnEndMinMemoryOverrides.clear();
+    for (const [seat, minimum] of thresholds) {
+      this.turnEndMinMemoryOverrides.set(seat, minimum);
+    }
+  }
 
   /** Current gauge value, turn-relative (positive favours the turn player). */
   get value(): number {
@@ -130,14 +154,6 @@ export class MemoryGauge {
     this.addMemoryForSeat(this.state.turnSeat, amount, reason);
   }
 
-  /**
-   * Set the turn player's memory to an absolute (turn-relative) value; clamps and
-   * emits. The seatless Primitives form (EffectContext.Primitives.setMemory).
-   * Effects that target a specific seat call `setMemoryForSeat`.
-   *
-   * NOTE: this seatless wrapper sets unconditionally. The source "only raise"
-   * guard lives in `setMemoryForSeat`, which is the faithful `SetFixedMemory`.
-   */
   setMemory(value: number, reason = "setMemory"): void {
     this.setAbsolute(value, reason);
   }
@@ -164,19 +180,8 @@ export class MemoryGauge {
     this.setAbsolute(this.state.memory + delta, reason);
   }
 
-  /**
-   * Force `seat`'s own-perspective memory to `value` (source `Player.SetFixedMemory`).
-   * Faithful to the source gate: the value is only applied when it would RAISE
-   * that seat's memory (`memoryFor(seat) < value`); a set that would lower it is
-   * ignored, matching `SetFixedMemory`'s `if (MemoryForPlayer < Memory)` guard
-   * around its CanAddMemory check (the documented rules only ever uses this to raise, e.g.
-   * "set your memory to 3"). Clamps and emits.
-   */
   setMemoryForSeat(seat: Seat, value: number, reason = "setMemory"): void {
-    if (value <= this.memoryFor(seat)) {
-      return;
-    }
-    if (!this.canGainMemory(seat)) {
+    if (value > this.memoryFor(seat) && !this.canGainMemory(seat)) {
       return;
     }
     const raw = seat === this.state.turnSeat ? value : -value;
@@ -251,4 +256,35 @@ export class MemoryGauge {
   // effects/interpreter.ts; CanAddMemory vetoes (ICannotAddMemoryEffect) are checked
   // via the injected memoryGainPolicy, backed by
   // ContinuousEffectLedger.canGainMemoryFromEffect.
+}
+
+function readThresholds(value: unknown): Map<Seat, number> {
+  if (
+    value === null ||
+    typeof value !== "object" ||
+    !("version" in value) ||
+    value.version !== 1 ||
+    !("turnEndMinMemoryOverrides" in value) ||
+    !Array.isArray(value.turnEndMinMemoryOverrides)
+  ) {
+    throw new Error("Invalid memory threshold snapshot");
+  }
+  const thresholds = new Map<Seat, number>();
+  for (const entry of value.turnEndMinMemoryOverrides) {
+    if (!Array.isArray(entry) || entry.length !== 2) {
+      throw new Error("Invalid memory threshold entry");
+    }
+    const [seat, minimum] = entry;
+    if (
+      (seat !== 0 && seat !== 1) ||
+      typeof minimum !== "number" ||
+      !Number.isFinite(minimum) ||
+      minimum < DEFAULT_TURN_END_MIN_MEMORY ||
+      thresholds.has(seat)
+    ) {
+      throw new Error("Invalid or duplicate memory threshold entry");
+    }
+    thresholds.set(seat, minimum);
+  }
+  return thresholds;
 }

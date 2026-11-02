@@ -19,11 +19,11 @@ describe("BT15-051", () => {
     });
   });
 
-  it("gains memory with a suspended opposing Digimon and draws when Lillymon/X Antibody is stacked", () => {
+  it("gains memory with any suspended Digimon and draws when Lillymon/X Antibody is stacked", () => {
     expect(compiled.effects?.[0]?.actions[0]).toMatchObject({
       kind: "GainMemory",
       amount: 1,
-      condition: { kind: "opponentHas" },
+      condition: { kind: "anyHas" },
     });
     expect(compiled.effects?.[0]?.actions[1]).toMatchObject({
       kind: "Draw",
@@ -40,6 +40,31 @@ describe("BT15-051", () => {
       scaling: { per: 1, unit: "cards" },
     });
   });
+  it.each([true, false])(
+    "checks a suspended own evolution host when no opposing Digimon is suspended: %s",
+    async (suspended) => {
+      const s = setupEngine({
+        0: {
+          battleArea: [{ card: "BT15-047", as: "host", suspended }],
+          hand: [{ card: "BT15-051", as: "evolution" }],
+          deck: ["BT1-009", "BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "opponent" }] },
+      });
+      await s.ready();
+      s.state.memory = 10;
+      expect(
+        s.engine.applyIntent(0, {
+          type: "digivolve",
+          permanentId: s.perm("host").permanentId,
+          instanceId: s.inst("evolution").instanceId,
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.perm("host").topCard.cardId === "BT15-051" && s.state.pendingDecision === undefined);
+      expect(s.state.memory).toBe(suspended ? 8 : 7);
+    },
+  );
+
   it("gains +1000 DP per suspended opposing Digimon as an inherited effect", () =>
     expect(compiled.effects?.[1]).toMatchObject({
       trigger: "YourTurn",

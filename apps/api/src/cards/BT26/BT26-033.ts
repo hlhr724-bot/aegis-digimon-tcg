@@ -120,8 +120,12 @@ export const compiled: CompiledCard = {
     {
       trigger: "Main",
       actions: [
-        { kind: "Delete", target: { filter: opponentLowestDpDigimon, count: "all" } },
-        { kind: "Recover", amount: 1 } satisfies Action,
+        {
+          effectTextPart: "[Main] Delete all of your opponent's Digimon with the lowest DP.",
+          kind: "Delete",
+          target: { filter: opponentLowestDpDigimon, count: "all" },
+        },
+        { effectTextPart: "Then, ＜Recovery +1＞", kind: "Recover", amount: 1 } satisfies Action,
       ],
     },
   ],

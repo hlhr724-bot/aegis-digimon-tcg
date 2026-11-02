@@ -75,6 +75,7 @@ const compiled: CompiledCard = {
       actions: [
         {
           kind: "CostModifier",
+          optional: true,
           mode: "reduce",
           costType: "play",
           amount: 2,
@@ -120,6 +121,7 @@ const compiled: CompiledCard = {
       actions: [
         {
           kind: "CostModifier",
+          optional: true,
           mode: "reduce",
           costType: "play",
           amount: 2,

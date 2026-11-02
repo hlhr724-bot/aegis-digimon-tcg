@@ -1,3 +1,6 @@
+import { TurnLoopMode } from "#api/engine/turns/TurnLoopMode";
+import type { TurnPhaseFrame } from "#api/engine/turns/TurnPhaseFrame";
+import type { TurnStateMachineSnapshot } from "#api/engine/turns/TurnStateMachineSnapshot";
 import { Phase, EffectTiming, type GameState, type Seat, type ServerEvent } from "@aegis/shared";
 import { MemoryGauge, PASS_TURN_MEMORY } from "./MemoryGauge.js";
 
@@ -24,6 +27,8 @@ export type MainPhaseEnd = "crossed" | "passed";
  * memory every turn end would otherwise hang the server. Past the bound the turn ends.
  */
 const MAX_END_TURN_POSTPONEMENTS = 100;
+
+type ContinueTurnParams = { frame: TurnPhaseFrame; resumeMainInput: boolean };
 
 export interface TurnFlowHooks {
   beforeTurn?: (turn: number) => Promise<void> | void;
@@ -65,6 +70,8 @@ export interface TurnFlowHooks {
    * in engine/actions; this hook owns the per-phase input loop and reports how it ended.
    */
   runMainPhase(seat: Seat): Promise<MainPhaseEnd>;
+  resumeMainPhase?(seat: Seat): Promise<MainPhaseEnd>;
+  isMainPhaseOpen?(): boolean;
 
   /** Re-check crossed memory and legal actions after start-of-main effects settle. */
   finalizeMainPhaseEntry?(): void;
@@ -136,6 +143,9 @@ const noopHooks: TurnFlowHooks = {
 export class TurnStateMachine {
   private readonly memory: MemoryGauge;
   private running = false;
+  private turnActive = false;
+  private frame: TurnPhaseFrame | undefined;
+  private mainInputReady = false;
 
   constructor(
     private readonly state: GameState,
@@ -157,7 +167,7 @@ export class TurnStateMachine {
    * iteration runs as-is and the switch happens only between turns.
    */
   async run(): Promise<void> {
-    if (this.running) {
+    if (this.running || this.turnActive) {
       throw new Error("TurnStateMachine.run called while already running");
     }
     this.running = true;
@@ -169,7 +179,7 @@ export class TurnStateMachine {
         }
         firstIteration = false;
 
-        await this.runTurn();
+        await this.runTurnBody();
       }
     } finally {
       this.running = false;
@@ -178,51 +188,202 @@ export class TurnStateMachine {
 
   /** One full turn: four phases followed by turn-end processing. Visible for testing. */
   async runTurn(): Promise<void> {
-    const turnStart = this.hooks.beforeTurn?.(this.state.turnCount + 1);
-    if (turnStart) await turnStart;
-    if (this.hooks.isGameOver()) return;
-    let activePhaseCompleted = await this.activePhase();
-    if (this.hooks.isGameOver()) return;
-    let drawPhaseRan = false;
-    let breedingPhaseRan = false;
-    let mainPhaseRan = false;
+    if (this.running) {
+      throw new Error("TurnStateMachine.runTurn called while a game loop is active");
+    }
+    await this.runTurnBody();
+  }
 
-    // CR 6-2-1-2 / 6-1-4-1: memory can end a turn in any phase. Resume from
-    // that boundary if an end-turn effect postpones the handoff (CR 6-6-4).
-    // Entry effects and completed phase procedures must not run a second time.
-    const continuePhases = async (): Promise<MainPhaseEnd> => {
-      if (this.memory.hasCrossedToOpponent()) return "crossed";
-      if (!activePhaseCompleted) {
-        await this.completeActivePhase();
-        activePhaseCompleted = true;
+  private async runTurnBody(): Promise<void> {
+    if (this.turnActive) {
+      throw new Error("TurnStateMachine.runTurn called while a turn is active");
+    }
+    this.turnActive = true;
+    try {
+      const turnStart = this.hooks.beforeTurn?.(this.state.turnCount + 1);
+      if (turnStart) {
+        await turnStart;
       }
-      if (this.hooks.isGameOver() || this.memory.hasCrossedToOpponent()) return "crossed";
-      if (!drawPhaseRan) {
-        drawPhaseRan = true;
+      if (this.hooks.isGameOver()) {
+        return;
+      }
+      const frame: TurnPhaseFrame = {
+        seat: this.state.turnSeat,
+        turnCount: this.state.turnCount + 1,
+        activePhaseCompleted: false,
+        drawPhaseRan: false,
+        breedingPhaseRan: false,
+        mainPhaseRan: false,
+        endWindowsRun: 0,
+      };
+      this.frame = frame;
+      frame.activePhaseCompleted = await this.activePhase();
+      if (this.hooks.isGameOver()) {
+        return;
+      }
+      await this.continueTurn({ frame, resumeMainInput: false });
+    } finally {
+      this.mainInputReady = false;
+      this.frame = undefined;
+      this.turnActive = false;
+    }
+  }
+
+  getRuntimeState(): TurnStateMachineSnapshot {
+    if (
+      !this.turnActive ||
+      !this.mainInputReady ||
+      this.frame === undefined ||
+      this.hooks.isMainPhaseOpen?.() === false
+    ) {
+      throw new Error("Turn snapshot requires settled Main input");
+    }
+    const snapshot: TurnStateMachineSnapshot = {
+      version: 1,
+      mode: this.running ? TurnLoopMode.GAME.value : TurnLoopMode.SINGLE_TURN.value,
+      frame: { ...this.frame },
+    };
+    if (!this.canResume(snapshot)) {
+      throw new Error("Turn snapshot requires settled Main input");
+    }
+    return snapshot;
+  }
+
+  async resume(snapshot: TurnStateMachineSnapshot): Promise<void> {
+    if (
+      this.running ||
+      this.turnActive ||
+      this.hooks.isMainPhaseOpen?.() === true ||
+      this.hooks.resumeMainPhase === undefined ||
+      !this.canResume(snapshot)
+    ) {
+      throw new Error("Invalid, mismatched or active turn continuation");
+    }
+    const frame = { ...snapshot.frame };
+    const mode = snapshot.mode;
+    this.running = mode === TurnLoopMode.GAME.value;
+    this.turnActive = true;
+    this.frame = frame;
+    try {
+      try {
+        await this.continueTurn({ frame, resumeMainInput: true });
+      } finally {
+        this.mainInputReady = false;
+        this.frame = undefined;
+        this.turnActive = false;
+      }
+      if (mode === TurnLoopMode.GAME.value) {
+        while (!this.hooks.isGameOver()) {
+          await this.passTurn();
+          await this.runTurnBody();
+        }
+      }
+    } finally {
+      this.running = false;
+    }
+  }
+
+  private canResume(snapshot: TurnStateMachineSnapshot): boolean {
+    if (
+      snapshot === null ||
+      typeof snapshot !== "object" ||
+      snapshot.version !== 1 ||
+      (snapshot.mode !== TurnLoopMode.GAME.value && snapshot.mode !== TurnLoopMode.SINGLE_TURN.value)
+    ) {
+      return false;
+    }
+    const frame = snapshot.frame;
+    return (
+      frame !== null &&
+      typeof frame === "object" &&
+      (frame.seat === 0 || frame.seat === 1) &&
+      frame.seat === this.state.turnSeat &&
+      frame.turnCount === this.state.turnCount &&
+      Number.isSafeInteger(frame.turnCount) &&
+      frame.turnCount >= 1 &&
+      frame.activePhaseCompleted === true &&
+      frame.drawPhaseRan === true &&
+      frame.breedingPhaseRan === true &&
+      typeof frame.mainPhaseRan === "boolean" &&
+      (!frame.mainPhaseRan || frame.endWindowsRun > 0) &&
+      Number.isSafeInteger(frame.endWindowsRun) &&
+      frame.endWindowsRun >= 0 &&
+      frame.endWindowsRun <= MAX_END_TURN_POSTPONEMENTS &&
+      this.state.phase === Phase.Main &&
+      this.state.pendingDecision === undefined &&
+      !this.hooks.isGameOver() &&
+      !this.memory.hasCrossedToOpponent()
+    );
+  }
+
+  private async continueTurn({ frame, resumeMainInput }: ContinueTurnParams): Promise<void> {
+    const continuePhases = async (): Promise<MainPhaseEnd> => {
+      if (this.memory.hasCrossedToOpponent()) {
+        return "crossed";
+      }
+      if (!frame.activePhaseCompleted) {
+        await this.completeActivePhase();
+        frame.activePhaseCompleted = true;
+      }
+      if (this.hooks.isGameOver() || this.memory.hasCrossedToOpponent()) {
+        return "crossed";
+      }
+      if (!frame.drawPhaseRan) {
+        frame.drawPhaseRan = true;
         await this.drawPhase();
       }
-      if (this.hooks.isGameOver() || this.memory.hasCrossedToOpponent()) return "crossed";
-      if (!breedingPhaseRan) {
-        breedingPhaseRan = true;
+      if (this.hooks.isGameOver() || this.memory.hasCrossedToOpponent()) {
+        return "crossed";
+      }
+      if (!frame.breedingPhaseRan) {
+        frame.breedingPhaseRan = true;
         await this.breedingPhase();
       }
-      // Q1770: a breeding action that crosses memory cannot open Main unless
-      // end-turn processing returns the memory to the current player.
-      if (this.hooks.isGameOver() || this.memory.hasCrossedToOpponent()) return "crossed";
-      const ending = await this.mainPhase(mainPhaseRan);
-      mainPhaseRan = true;
+      if (this.hooks.isGameOver() || this.memory.hasCrossedToOpponent()) {
+        return "crossed";
+      }
+      const ending = await this.mainPhase(frame.mainPhaseRan);
+      frame.mainPhaseRan = true;
       return ending;
     };
-    let ending = await continuePhases();
-    if (this.hooks.isGameOver()) return;
-    for (let postponements = 0; postponements < MAX_END_TURN_POSTPONEMENTS; postponements++) {
-      if (!(await this.endTurnWindow(ending))) break;
-      if (this.hooks.isGameOver()) return;
+    let ending: MainPhaseEnd;
+    if (resumeMainInput) {
+      ending = await this.resumeMainInput();
+      frame.mainPhaseRan = true;
+    } else {
       ending = await continuePhases();
-      if (this.hooks.isGameOver()) return;
     }
-
+    if (this.hooks.isGameOver()) {
+      return;
+    }
+    while (frame.endWindowsRun < MAX_END_TURN_POSTPONEMENTS) {
+      frame.endWindowsRun++;
+      const postponed = await this.endTurnWindow(ending);
+      if (this.hooks.isGameOver()) {
+        return;
+      }
+      if (!postponed) {
+        break;
+      }
+      ending = await continuePhases();
+      if (this.hooks.isGameOver()) {
+        return;
+      }
+    }
     await this.closeTurn();
+  }
+
+  private async resumeMainInput(): Promise<MainPhaseEnd> {
+    const endingWindow = this.hooks.resumeMainPhase!(this.state.turnSeat);
+    this.mainInputReady = true;
+    let ending: MainPhaseEnd;
+    try {
+      ending = await endingWindow;
+    } finally {
+      this.mainInputReady = false;
+    }
+    await this.hooks.fireTiming(EffectTiming.OnEndMainPhase);
+    return ending;
   }
 
   // --- Active phase -------------------------------------------------------------
@@ -292,7 +453,13 @@ export class TurnStateMachine {
     }
     this.hooks.finalizeMainPhaseEntry?.();
 
-    const ending = await endingWindow;
+    this.mainInputReady = true;
+    let ending: MainPhaseEnd;
+    try {
+      ending = await endingWindow;
+    } finally {
+      this.mainInputReady = false;
+    }
 
     await this.hooks.fireTiming(EffectTiming.OnEndMainPhase);
     return ending;
@@ -336,6 +503,10 @@ export class TurnStateMachine {
     await this.hooks.clearDurations("eachTurnEnd");
     await this.hooks.clearDurations("ownerTurnEnd");
     await this.hooks.clearDurations("opponentTurnEnd");
+
+    if (this.hooks.isGameOver()) {
+      return;
+    }
 
     this.emit({
       kind: "turnEnded",

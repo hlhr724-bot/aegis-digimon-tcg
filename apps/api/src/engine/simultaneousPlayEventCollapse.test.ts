@@ -14,6 +14,56 @@ function candidates(s: EngineSetup): string[] {
 }
 
 describe("simultaneous-play event collapse", () => {
+  it("reserves all simultaneous entrants against origin-zone processing costs", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [
+            { card: "EX9-030", as: "first" },
+            { card: "EX9-030", as: "second" },
+          ],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    await advance(s.engine).verb.playInstances([s.inst("first").instanceId, s.inst("second").instanceId]);
+    expect(s.decisions).toHaveLength(0);
+    expect(s.state.players[0]!.battleArea).toHaveLength(2);
+    expect(s.state.players[0]!.trash).toHaveLength(0);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
+
+  it.each(["trash", "battleArea"] as const)(
+    "reserves deferred entry materials from %s for their first entrant",
+    async (zone) => {
+      const s = setupEngine(
+        {
+          0: {
+            hand: [
+              { card: "BT15-102", as: "first" },
+              { card: "BT15-102", as: "second" },
+            ],
+            [zone]: [{ card: "BT15-079", as: "material" }],
+          },
+        },
+        { autoAcceptOptional: true, autoSelectCards: true },
+      );
+      await s.ready();
+      await advance(s.engine).verb.playInstances([s.inst("first").instanceId, s.inst("second").instanceId]);
+      const entrants = s.state.players[0]!.battleArea;
+      expect(entrants).toHaveLength(2);
+      expect(
+        entrants
+          .find(({ topCard }) => topCard.instanceId === s.inst("first").instanceId)!
+          .stack.map(({ cardId }) => cardId),
+      ).toEqual(["BT15-079"]);
+      expect(entrants.find(({ topCard }) => topCard.instanceId === s.inst("second").instanceId)!.stack).toHaveLength(0);
+      expect(s.decisions.filter(({ req }) => req.kind === "selectCards")).toHaveLength(1);
+      expect(s.state.pendingDecision).toBeUndefined();
+    },
+  );
+
   it("publishes one whenPlayed activation with the full played set", async () => {
     const s = setupEngine({
       0: {

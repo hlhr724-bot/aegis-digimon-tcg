@@ -1,3 +1,4 @@
+import { hashTournamentPassword } from "#api/tournaments/access/hashTournamentPassword";
 import { getCardArts, type TournamentBanlistCard } from "@aegis/shared";
 import type { Pool } from "pg";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -57,6 +58,101 @@ describe("ParticipantStore registration", () => {
     fixture = await createMigratedFixture();
   });
 
+  it("shows the entrant's selected list and freezes it against later deck edits and replacement", async () => {
+    const { store, participants } = fixture;
+    const player = await createPlayer(store, "Alice");
+    const first = await saveLegalDeck(store, player.id);
+    const second = await saveLegalDeck(store, player.id, BLUE_DECK);
+    const tournamentId = await createTournament(store, player.id);
+    await participants.register({ tournamentId, accountId: player.id, savedDeckId: first, now: T0 });
+    expect(await participants.getOwnDeck({ tournamentId, accountId: player.id })).toMatchObject({
+      savedDeckId: first,
+      locked: false,
+    });
+    expect(
+      (await participants.changeDeck({ tournamentId, accountId: player.id, savedDeckId: second, now: T0 })).ok,
+    ).toBe(true);
+    await participants.checkIn({ tournamentId, accountId: player.id, now: T0 });
+    await participants.closeCheckIn({ tournamentId, now: T0 });
+    await store.saveDeck(player.id, {
+      id: second,
+      name: "Changed later",
+      mainDeck: [...RED_DECK.mainDeck],
+      eggDeck: [...RED_DECK.eggDeck],
+    });
+    expect(await participants.getOwnDeck({ tournamentId, accountId: player.id })).toMatchObject({
+      savedDeckId: second,
+      locked: true,
+      mainDeck: [...BLUE_DECK.mainDeck],
+    });
+    expect(await participants.changeDeck({ tournamentId, accountId: player.id, savedDeckId: first, now: T0 })).toEqual({
+      ok: false,
+      reason: "check_in_closed",
+    });
+    expect(
+      await participants.getOwnDeck({ tournamentId, accountId: "00000000-0000-0000-0000-000000000000" }),
+    ).toBeNull();
+  });
+
+  it("permits replacement when the selected saved deck was deleted", async () => {
+    const { store, participants } = fixture;
+    const player = await createPlayer(store, "Alice");
+    const first = await saveLegalDeck(store, player.id);
+    const second = await saveLegalDeck(store, player.id, BLUE_DECK);
+    const tournamentId = await createTournament(store, player.id);
+    await participants.register({ tournamentId, accountId: player.id, savedDeckId: first, now: T0 });
+    await store.deleteDeck(player.id, first);
+    expect(await participants.getOwnDeck({ tournamentId, accountId: player.id })).toMatchObject({
+      savedDeckId: first,
+      available: false,
+      locked: false,
+    });
+    expect(
+      (await participants.changeDeck({ tournamentId, accountId: player.id, savedDeckId: second, now: T0 })).ok,
+    ).toBe(true);
+    expect(await participants.getOwnDeck({ tournamentId, accountId: player.id })).toMatchObject({
+      savedDeckId: second,
+      mainDeck: [...BLUE_DECK.mainDeck],
+    });
+  });
+
+  it("counts competitive entries and releases the displayed place after a drop", async () => {
+    const { store, participants } = fixture;
+    const player = await createPlayer(store, "Alice");
+    const savedDeckId = await saveLegalDeck(store, player.id);
+    const tournamentId = await createTournament(store, player.id);
+    await participants.register({ tournamentId, accountId: player.id, savedDeckId, now: T0 });
+    expect((await store.tournament(tournamentId))?.registrations).toBe(1);
+    expect((await store.tournaments()).find((entry) => entry.id === tournamentId)?.registrations).toBe(1);
+    await participants.drop({ tournamentId, accountId: player.id, now: T0 + 1 });
+    expect((await store.tournament(tournamentId))?.registrations).toBe(0);
+  });
+
+  it("requires the event password and rejects legacy registration bypasses", async () => {
+    const { store, participants } = fixture;
+    const player = await createPlayer(store, "Alice");
+    const savedDeckId = await saveLegalDeck(store, player.id);
+    const passwordHash = await hashTournamentPassword("community-secret");
+    const tournament = await store.createTournament(player.id, {
+      name: "Private Cup",
+      block: "BT10",
+      startsAt: T0,
+      maxPlayers: 8,
+      passwordHash,
+    });
+    expect(tournament.passwordProtected).toBe(true);
+    expect(tournament).not.toHaveProperty("passwordHash");
+    const input = { tournamentId: tournament.id, accountId: player.id, savedDeckId, now: T0 };
+    expect(await participants.register(input)).toEqual({ ok: false, reason: "incorrect_password" });
+    expect(await participants.register({ ...input, password: "incorrect" })).toEqual({
+      ok: false,
+      reason: "incorrect_password",
+    });
+    expect(await store.registerTournament(tournament.id, player.id)).toBe(false);
+    expect(await participants.participants(tournament.id)).toEqual([]);
+    expect((await participants.register({ ...input, password: "community-secret" })).ok).toBe(true);
+  });
+
   it("registers a player who owns a legal saved deck", async () => {
     const { store, participants } = fixture;
     const player = await createPlayer(store, "Alice");
@@ -72,6 +168,7 @@ describe("ParticipantStore registration", () => {
         displayName: "Alice",
         status: "registered",
         seed: null,
+        botStyle: null,
         // Null for bots; a human carries the account the match rows are keyed by.
         accountId: player.id,
       },
@@ -251,18 +348,36 @@ describe("ParticipantStore check-in", () => {
     const { participants } = fixture;
     await expect(
       participants.setWindows(tournamentId, { checkInOpensAt: T0 + 20, checkInClosesAt: T0 + 10 }),
-    ).rejects.toThrow(/checkInOpensAt must not be after checkInClosesAt/);
-    await expect(
-      participants.setWindows(tournamentId, { registrationClosesAt: T0 + 30, checkInOpensAt: T0 + 20 }),
-    ).rejects.toThrow(/checkInOpensAt must not be before registrationClosesAt/);
-    await expect(
-      participants.setWindows(tournamentId, { registrationClosesAt: T0 + 30, checkInClosesAt: T0 + 20 }),
-    ).rejects.toThrow(/checkInClosesAt must not be before registrationClosesAt/);
+    ).rejects.toThrow(/check_in_window_inverted/);
     expect(await participants.windows(tournamentId)).toEqual({
       registrationClosesAt: null,
       checkInOpensAt: null,
       checkInClosesAt: null,
     });
+  });
+
+  it("lets a latecomer register and check in while check-in is already open", async () => {
+    const { store, participants } = fixture;
+    const latecomer = await createPlayer(store, "Latecomer");
+    const latecomerDeckId = await saveLegalDeck(store, latecomer.id, BLUE_DECK);
+    expect(
+      await participants.setWindows(tournamentId, {
+        registrationClosesAt: T0 + 30,
+        checkInOpensAt: T0 + 10,
+        checkInClosesAt: T0 + 30,
+      }),
+    ).toBe(true);
+    expect(
+      (
+        await participants.register({
+          tournamentId,
+          accountId: latecomer.id,
+          savedDeckId: latecomerDeckId,
+          now: T0 + 25,
+        })
+      ).ok,
+    ).toBe(true);
+    expect((await participants.checkIn({ tournamentId, accountId: latecomer.id, now: T0 + 26 })).ok).toBe(true);
   });
 
   it("accepts a schedule that merely touches at the boundaries", async () => {

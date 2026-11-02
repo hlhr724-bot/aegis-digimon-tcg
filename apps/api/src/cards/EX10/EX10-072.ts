@@ -112,6 +112,7 @@ export const compiled: CompiledCard = {
         {
           kind: "SubTrigger",
           event: "endOfTurn",
+          printedClause: "[Pending] At turn end, delete the Digimon this effect played.",
           on: {
             filter: {
               boundRef: "playedByThisEffect",

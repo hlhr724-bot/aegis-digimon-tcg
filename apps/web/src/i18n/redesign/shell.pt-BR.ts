@@ -28,5 +28,8 @@ export const shellPtBR: Record<keyof typeof shellEn, string> = {
   "redesign.shell.crash.body":
     "Esta tela parou de funcionar. Enviamos um relatório de erro à equipe do Aegis. Recarregue a página para continuar.",
   "redesign.shell.crash.reload": "Recarregar",
+  "redesign.shell.loadFailed.title": "Não foi possível carregar esta tela",
+  "redesign.shell.loadFailed.body":
+    "O Aegis não conseguiu baixar parte desta tela. Verifique sua conexão e recarregue a página.",
   "redesign.shell.ranked.eyebrow": "Partida ranqueada",
 };

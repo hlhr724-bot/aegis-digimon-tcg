@@ -1,3 +1,4 @@
+import type { TournamentBanlistCard } from "@aegis/shared/tournaments/index";
 import {
   deckFormat,
   formatCopyLimit,
@@ -45,11 +46,30 @@ interface ReadonlyDecklist {
  */
 export function validateDecklist(
   deck: ReadonlyDecklist,
-  options?: { betaBattleMode?: boolean; unlimited?: boolean; format?: DeckFormat },
+  options?: {
+    betaBattleMode?: boolean;
+    unlimited?: boolean;
+    format?: DeckFormat;
+    banlistCards?: readonly TournamentBanlistCard[];
+  },
 ): DecklistValidation {
   const betaBattleMode = options?.betaBattleMode ?? false;
   const format = deckFormat(options?.format, options?.unlimited);
-  const copyLimit = (cardId: string): number => formatCopyLimit(cardId, format);
+  const frozen =
+    options?.banlistCards === undefined
+      ? undefined
+      : new Map(options.banlistCards.map((entry) => [entry.cardId, entry]));
+  const copyLimit = (cardId: string): number => {
+    if (!frozen) {
+      return formatCopyLimit(cardId, format);
+    }
+    const printed = getCardDefinition(cardId)?.maxCountInDeck ?? 4;
+    const restriction = frozen.get(cardId);
+    if (!restriction || restriction.status === "banned_pair") {
+      return printed;
+    }
+    return restriction.status === "banned" ? 0 : Math.min(printed, restriction.allowedCopies);
+  };
   for (const cardId of [...deck.mainDeck, ...deck.eggDeck]) {
     const reason = formatCardViolation(cardId, format);
     if (reason) return { ok: false, reason };
@@ -120,7 +140,15 @@ export function validateDecklist(
     }
   }
 
-  const pairViolation = formatPairViolations(allCards, format)[0];
+  const pairViolation = frozen
+    ? [...frozen.values()].flatMap((entry) =>
+        entry.status === "banned_pair" && allCards.includes(entry.cardId)
+          ? (entry.pairPartnerIds ?? [])
+              .filter((partner) => allCards.includes(partner))
+              .map((partner) => [entry.cardId, partner] as const)
+          : [],
+      )[0]
+    : formatPairViolations(allCards, format)[0];
   if (pairViolation !== undefined) {
     const [cardId, partnerCardId] = pairViolation;
     return {

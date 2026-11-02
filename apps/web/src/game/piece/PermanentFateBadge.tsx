@@ -10,7 +10,6 @@ export function PermanentFateBadge({ fate }: { fate: PendingFateBadge }) {
   if (fate.fate === "delete") return null;
   return (
     <span className={`game-fate-badge game-fate-badge--${fate.tone}`} data-fate={fate.fate} aria-hidden="true">
-      <i aria-hidden="true">{fate.glyph}</i>
       {t(fate.labelKey)}
     </span>
   );

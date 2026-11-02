@@ -1,0 +1,78 @@
+.manual-features__gallery {
+  color: var(--ds-text);
+  font-family: var(--ds-font-body);
+  font-size: 0.8125rem;
+}
+
+.manual-features__gallery-cards {
+  align-items: stretch;
+  gap: 1rem;
+  padding-block-end: 0.5rem;
+}
+
+.manual-features__gallery figure:has(.manual-revealed-actions) {
+  flex-basis: 10rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+
+.manual-features__gallery figure > .aegis-card-mini {
+  align-self: flex-start;
+}
+
+.manual-features__gallery figcaption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.manual-features__gallery figcaption > span {
+  font-weight: 600;
+}
+
+.manual-revealed-actions {
+  display: grid;
+  align-content: end;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  margin: auto 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.manual-revealed-actions .aegis-field {
+  gap: 0.25rem;
+}
+
+.manual-revealed-actions .aegis-field__label {
+  color: var(--ds-text-3);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.manual-revealed-actions .aegis-field__control {
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.875rem;
+}
+
+.manual-revealed-actions .aegis-button {
+  min-block-size: 2.75rem;
+  font-size: 0.8125rem;
+}
+
+.manual-revealed-actions:disabled {
+  opacity: 0.5;
+}
+
+.manual-public-status:has(.manual-features__gallery) {
+  max-block-size: min(25rem, 44dvh);
+}
+
+@media (max-width: 600px) {
+  .manual-public-status:has(.manual-features__gallery) {
+    max-block-size: 44dvh;
+  }
+}

@@ -44,7 +44,7 @@ for (const viewport of [
       await expect(dialog).toBeVisible();
       const first = dialog.locator(`[data-instance-id="${firstSource}"]`);
       await expect(first).toHaveAccessibleName(/Greymon/);
-      await expect(first).toContainText("Greymon");
+      await expect(dialog.getByRole("heading", { name: "Greymon", exact: true })).toBeVisible();
       await expect(first).toBeInViewport({ ratio: 1 });
       await expect(dialog.locator(`[data-instance-id="${secondSource}"]`)).toHaveCount(0);
       await first.click();
@@ -55,7 +55,7 @@ for (const viewport of [
       await page.locator(`[data-drop="perm-opp"][data-id="${secondHost}"]`).click();
       const second = dialog.locator(`[data-instance-id="${secondSource}"]`);
       await expect(second).toHaveAccessibleName(/MetalGreymon/);
-      await expect(second).toContainText("MetalGreymon");
+      await expect(dialog.getByRole("heading", { name: "MetalGreymon", exact: true })).toBeVisible();
       await expect(second).toBeInViewport({ ratio: 1 });
       await second.click();
       await expect(dialog.getByRole("button", { name: "Confirm targets", exact: true })).toBeEnabled();

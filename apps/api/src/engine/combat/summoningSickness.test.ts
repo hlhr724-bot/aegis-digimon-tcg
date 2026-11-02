@@ -72,3 +72,28 @@ describe("Permanent.summoningSick projection", () => {
     expect(theirs.summoningSick).toBe(true);
   });
 });
+
+describe("Tamer entry age projection", () => {
+  it.each([0, 1] as const)(
+    "marks a fresh Tamer for seat %s without marking an established Tamer or Option",
+    async (seat) => {
+      const s = setup({
+        [seat]: {
+          battleArea: [
+            { card: "BT12-088", as: "fresh", enteredThisTurn: true },
+            { card: "BT12-088", as: "established" },
+            { card: "P-107", as: "option", enteredThisTurn: true },
+          ],
+        },
+      });
+      await s.ready();
+      expect(s.perm("fresh").summoningSick).toBe(true);
+      expect(s.perm("established").summoningSick).toBe(false);
+      expect(s.perm("option").summoningSick).toBe(false);
+      expect(s.perm("fresh").canAttackPlayer).toBe(false);
+      s.state.turnCount += 1;
+      await s.engine.recomputeContinuousEffects();
+      expect(s.perm("fresh").summoningSick).toBe(false);
+    },
+  );
+});

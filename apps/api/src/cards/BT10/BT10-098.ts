@@ -29,6 +29,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Return 1 of your opponent's level 6 or higher Digimon to its owner's hand.",
           kind: "Return",
           target: {
             filter: {

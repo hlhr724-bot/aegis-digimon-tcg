@@ -13,6 +13,7 @@ const compiled: CompiledCard = {
             // The Legend-Arms slot resolves first so a lone revealed [RagnaLoardmon] can fill it and
             // leave the [RagnaLoardmon] slot empty (KB Q1050).
             {
+              effectTextPart: "1 Digimon card with [Legend-Arms] in its type among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -27,6 +28,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "Add 1 [RagnaLoardmon] Digimon card",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],

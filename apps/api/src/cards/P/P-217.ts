@@ -14,11 +14,13 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 [Social] trait card",
               filter: { nameOrTrait: [{ tokens: ["Social"], match: "trait" }] },
               count: 1,
               to: "hand",
             },
             {
+              effectTextPart: "1 [Creation], [Navi] or [Tool] trait card among them to the hand.",
               filter: { nameOrTrait: [{ tokens: ["Creation", "Navi", "Tool"], match: "trait" }] },
               count: 1,
               to: "hand",

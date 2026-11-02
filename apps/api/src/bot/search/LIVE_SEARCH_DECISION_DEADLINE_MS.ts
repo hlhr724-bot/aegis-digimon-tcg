@@ -1,0 +1,1 @@
+export const LIVE_SEARCH_DECISION_DEADLINE_MS = 1_450;

@@ -1,0 +1,1024 @@
+{
+  "engineSha256": "8daacfe0f14946dca26a17d54bbb867430bb23feed94878ec48d2592053daa5a",
+  "runnerSha256": "d14c021308f8b4ad36b2c66f97d38f0ac5ef61ce29f6f75525dc8fe7f2b115c9",
+  "simulations": 8,
+  "policies": {
+    "generic": {
+      "stage": "generic",
+      "proposals": 1,
+      "validEvaluatedProposals": 1,
+      "retainedStageInitial": true,
+      "retainedOriginalSeed": true,
+      "stageSha256": "4f4f674e14e2741b04331f092b21240729a8720d1e2d9d55b87ab94a2e63ba7a",
+      "program": {
+        "schemaVersion": 1,
+        "title": "Build safely, spend carefully, finish decisively",
+        "rules": [
+          {
+            "feature": "cost",
+            "weight": -0.6,
+            "advice": "Prefer efficient actions when their outcomes are similar."
+          },
+          {
+            "feature": "handover",
+            "weight": -1.8,
+            "advice": "Giving the opponent more memory needs a strong payoff."
+          },
+          {
+            "feature": "attackPlayer",
+            "weight": 4,
+            "advice": "Use available attacks to pressure security."
+          },
+          {
+            "feature": "lethal",
+            "weight": 100,
+            "advice": "At zero opposing security, look for an attack that can end the game; check blockers and counters first."
+          },
+          {
+            "feature": "attackWinningBattle",
+            "weight": 5,
+            "advice": "Attack vulnerable opposing Digimon when your attacker can survive."
+          },
+          {
+            "feature": "attackLosingBattle",
+            "weight": -8,
+            "advice": "Avoid battles that sacrifice your attacker without a clear benefit."
+          },
+          {
+            "feature": "digivolve",
+            "weight": 2,
+            "advice": "Digivolution develops your line and draws a card."
+          },
+          {
+            "feature": "breedingGrowth",
+            "weight": 2,
+            "advice": "Grow a line in breeding while it is protected."
+          },
+          {
+            "feature": "levelGain",
+            "weight": 1.5,
+            "advice": "Advance your evolution line toward higher levels."
+          },
+          {
+            "feature": "dpGain",
+            "weight": 0.4,
+            "advice": "Value evolution that improves battle strength."
+          },
+          {
+            "feature": "playBody",
+            "weight": 0.6,
+            "advice": "Build a board when the memory cost is reasonable."
+          },
+          {
+            "feature": "playTamer",
+            "weight": 2,
+            "advice": "Establish Tamers when you can afford the tempo investment."
+          },
+          {
+            "feature": "hatch",
+            "weight": 10,
+            "advice": "Hatch when the breeding area is empty."
+          },
+          {
+            "feature": "deploy",
+            "weight": 2,
+            "advice": "Move a developed line out to contest the board."
+          },
+          {
+            "feature": "criticalBlock",
+            "weight": 100,
+            "advice": "At zero security, prioritize blocking an attack on the player."
+          },
+          {
+            "feature": "accept",
+            "weight": 1,
+            "advice": "Consider optional effects and defensive responses when their costs are acceptable."
+          },
+          {
+            "feature": "finish",
+            "weight": 0.1,
+            "advice": "Finish optional selections when additional cards do not improve the outcome."
+          },
+          {
+            "feature": "openingRookie",
+            "weight": 5,
+            "advice": "Keep an opening hand with a rookie that can start your line."
+          }
+        ]
+      },
+      "validationScore": 0.75,
+      "candidates": 1,
+      "selectedIndex": 0,
+      "metricCalls": 12,
+      "engineSha256": "8daacfe0f14946dca26a17d54bbb867430bb23feed94878ec48d2592053daa5a"
+    }
+  },
+  "results": {
+    "generic": {
+      "selectedScore": 1.0,
+      "controlScore": 1.0,
+      "allValid": true,
+      "selected": [
+        {
+          "task": {
+            "seed": 3020100,
+            "learnerSeat": 0,
+            "decks": [20001, 20002],
+            "opponent": "mcts",
+            "searchSeed": 20777
+          },
+          "score": 1,
+          "valid": true,
+          "candidateSha256": "a5f5434d566af94495470442b3096f0d825b2d5171d09e036e5577f4f65df8d8",
+          "searches": [
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 3
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            }
+          ]
+        },
+        {
+          "task": {
+            "seed": 3020100,
+            "learnerSeat": 1,
+            "decks": [20001, 20002],
+            "opponent": "mcts",
+            "searchSeed": 20777
+          },
+          "score": 1,
+          "valid": true,
+          "candidateSha256": "a5f5434d566af94495470442b3096f0d825b2d5171d09e036e5577f4f65df8d8",
+          "searches": [
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            }
+          ]
+        },
+        {
+          "task": {
+            "seed": 3020101,
+            "learnerSeat": 0,
+            "decks": [20003, 20004],
+            "opponent": "mcts",
+            "searchSeed": 20778
+          },
+          "score": 1,
+          "valid": true,
+          "candidateSha256": "a5f5434d566af94495470442b3096f0d825b2d5171d09e036e5577f4f65df8d8",
+          "searches": [
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 3
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 11,
+              "completed": 8,
+              "invalid": 3,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 11,
+              "completed": 8,
+              "invalid": 3,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 9,
+              "completed": 8,
+              "invalid": 1,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 11,
+              "completed": 8,
+              "invalid": 3,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 11,
+              "completed": 8,
+              "invalid": 3,
+              "nodes": 1
+            }
+          ]
+        },
+        {
+          "task": {
+            "seed": 3020101,
+            "learnerSeat": 1,
+            "decks": [20003, 20004],
+            "opponent": "mcts",
+            "searchSeed": 20778
+          },
+          "score": 1,
+          "valid": true,
+          "candidateSha256": "a5f5434d566af94495470442b3096f0d825b2d5171d09e036e5577f4f65df8d8",
+          "searches": [
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            }
+          ]
+        }
+      ],
+      "control": [
+        {
+          "task": {
+            "seed": 3020100,
+            "learnerSeat": 0,
+            "decks": [20001, 20002],
+            "opponent": "mcts",
+            "searchSeed": 20777
+          },
+          "score": 1,
+          "valid": true,
+          "candidateSha256": "a5f5434d566af94495470442b3096f0d825b2d5171d09e036e5577f4f65df8d8",
+          "searches": [
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 3
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            }
+          ]
+        },
+        {
+          "task": {
+            "seed": 3020100,
+            "learnerSeat": 1,
+            "decks": [20001, 20002],
+            "opponent": "mcts",
+            "searchSeed": 20777
+          },
+          "score": 1,
+          "valid": true,
+          "candidateSha256": "a5f5434d566af94495470442b3096f0d825b2d5171d09e036e5577f4f65df8d8",
+          "searches": [
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            }
+          ]
+        },
+        {
+          "task": {
+            "seed": 3020101,
+            "learnerSeat": 0,
+            "decks": [20003, 20004],
+            "opponent": "mcts",
+            "searchSeed": 20778
+          },
+          "score": 1,
+          "valid": true,
+          "candidateSha256": "a5f5434d566af94495470442b3096f0d825b2d5171d09e036e5577f4f65df8d8",
+          "searches": [
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 3
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 11,
+              "completed": 8,
+              "invalid": 3,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 11,
+              "completed": 8,
+              "invalid": 3,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 9,
+              "completed": 8,
+              "invalid": 1,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 11,
+              "completed": 8,
+              "invalid": 3,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 11,
+              "completed": 8,
+              "invalid": 3,
+              "nodes": 1
+            }
+          ]
+        },
+        {
+          "task": {
+            "seed": 3020101,
+            "learnerSeat": 1,
+            "decks": [20003, 20004],
+            "opponent": "mcts",
+            "searchSeed": 20778
+          },
+          "score": 1,
+          "valid": true,
+          "candidateSha256": "a5f5434d566af94495470442b3096f0d825b2d5171d09e036e5577f4f65df8d8",
+          "searches": [
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            },
+            {
+              "requested": 8,
+              "attempted": 8,
+              "completed": 8,
+              "invalid": 0,
+              "nodes": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "experimental": true
+}

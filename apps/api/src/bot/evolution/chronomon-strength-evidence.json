@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "claim": "Chronomon exact-deck superiority over the incumbent sourceDp 0.2 on the frozen 12-opponent confirmation distribution",
+  "policy": {
+    "catalog": "apps/api/src/bot/evolution/programs/certified-pilots.json",
+    "deckVersion": "bt26-dgo-2026-08-28-7-chronomon@1",
+    "semanticSha256": "b3a4f1e59037995d2ac124dfe7420e959f1dfc68cfe84b4726f0817fffa7f64b",
+    "controlSemanticSha256": "ae4a00106017e2859e07c153538287f932e95ab127ad35247dbb87fd93879082",
+    "deploymentPolicySha256": "421a80f7f918b965b28be30c79c2edb050a808aa2b8f2bbefe2cbf62884ee076",
+    "selectedRule": {
+      "feature": "sourceDp",
+      "weight": 0.25
+    }
+  },
+  "certificate": {
+    "engineSha256": "9114fa452e004013ddb9f33a6a1c280feef956a3e1794d94575c26d2ae0848a3",
+    "protocolSha256": "41b77ae4d64ca864662fd38cacced112333f5c4eb1e43775c3fc0d296e0da463",
+    "attempt": 3,
+    "maximumAttempts": 5,
+    "alphaPerCandidate": 0.01,
+    "looks": 1,
+    "opponents": [
+      "bt5-lordknightmon",
+      "bt1-red-omnimon",
+      "bt26-dgo-2026-09-05-1-glowing-dawn",
+      "ex4-dgo-2022-06-25-1-ulforceveedramon",
+      "bt10-xros-heart",
+      "ex11-dgo-2026-02-14-1-sakuyamon",
+      "bt4-yellow-wargreymon",
+      "bt26-dgo-2026-09-05-2-abbadomon",
+      "bt26-dgo-2026-08-28-4-beelstarmon",
+      "bt26-dgo-2026-08-28-1-toho-braves",
+      "bt8-mastemon",
+      "ex11-dgo-2026-02-21-1-machinedramon"
+    ],
+    "seedRange": [1200000000, 1300000000],
+    "gamesPerArm": 2880,
+    "seedBlocks": 1440,
+    "result": {
+      "arms": {
+        "control": {
+          "played": 2880,
+          "wins": 1894,
+          "draws": 0,
+          "score": 0.6576388888888889
+        },
+        "candidate": {
+          "played": 2880,
+          "wins": 2042,
+          "draws": 0,
+          "score": 0.7090277777777778
+        }
+      },
+      "difference": 0.05138888888888889,
+      "evidence": {
+        "configured": 2880,
+        "played": 2880,
+        "seedBlocks": 1440,
+        "difference": 0.05138888888888889,
+        "sampleVariance": 0.04113774998069647,
+        "lowerBound": 0.016756931528351726,
+        "alpha": 0.01,
+        "conditioningProbability": 0.989692638999581,
+        "effectiveDelta": 0.00989692638999581,
+        "population": 100000000,
+        "method": "paired seed-block empirical Bernstein; Maurer-Pontil 2009 Theorem 11",
+        "accepted": true
+      }
+    }
+  },
+  "selection": {
+    "origin": "Exploratory subgroup of rejected global candidate, followed by a frozen independent opponent/seed split",
+    "screen": {
+      "arms": {
+        "control": {
+          "played": 480,
+          "wins": 350,
+          "draws": 0,
+          "score": 0.7291666666666666
+        },
+        "candidate": {
+          "played": 480,
+          "wins": 374,
+          "draws": 0,
+          "score": 0.7791666666666667
+        }
+      },
+      "difference": 0.05,
+      "continued": true,
+      "certification": false
+    },
+    "screenGames": 960,
+    "screenUsedForCertification": false,
+    "excludedDiscoveryMatchups": [
+      "bt8-blackwargreymon",
+      "bt25-dgo-2026-06-06-4-shinegreymon",
+      "ex9-dgo-2025-07-19-2-numemon"
+    ]
+  },
+  "evidence": {
+    "archive": "tools/bot-evolution/evidence/chronomon-quarter-v1/proof.tgz",
+    "sha256": "7ea7bc2f01ce9a3a404908ad3986403b9b50a8a06b30d0c60f407910af611060",
+    "bytes": 1988166,
+    "contents": "Frozen protocol and proposal, both programs, all 6720 raw screen and confirmation games, worker metadata, family ledger, resource limits, independent audits and manifests, runner and auditor sources",
+    "runtimeArchive": "artifacts/bot-evolution/local-mcts-v1/chronomon-quarter-v1/frozen-runtime.tgz",
+    "runtimeArchiveSha256": "32f664389002be5e55b4015fa2185b69a2087dc3e0ed8d9d1445d5c2b36bff85",
+    "independentAuditSha256": "869b2b7c860200e73acf9e05de283c8d8619a7f7cbccec807cd774349cf0c230"
+  },
+  "scope": {
+    "eligibleDeck": "Exact main and egg card multisets of Chronomon@1; order independent",
+    "genericPolicyUnchanged": true,
+    "opponentPolicy": "Incumbent sourceDp 0.2",
+    "limitations": "Fixed opponent distribution and frozen engine; not a global policy improvement or a human, tournament, MCTS, or all-opponent guarantee",
+    "productionDeployed": false
+  }
+}

@@ -106,11 +106,20 @@ export function soundsForPresentation(cues: MatchCues, board?: PresentationAudio
   }
   for (const [pile, key] of cues.deckRiffles) add(`shuffle:${pile}:${key}`, "shuffle");
   for (const [key] of cues.securityFlights) add(`recovery:${key}`, "recover");
-  for (const flight of cues.drawFlights)
-    add(`flight:${flight.key}`, flight.deckReturn || flight.handReturn ? "move" : "draw");
+  for (const flight of cues.drawFlights) {
+    if (!flight.handTrash) {
+      add(`flight:${flight.key}`, flight.deckReturn || flight.handReturn ? "move" : "draw");
+    }
+  }
   if (cues.revealShowcase) add(`reveal:${cues.revealShowcase.key}`, "reveal");
   for (const pulse of cues.dpPulses.values()) add(`dp:${pulse.key}`, pulse.kind === "buff" ? "buff" : "debuff");
-  for (const pulse of cues.freezePulses.values()) add(`freeze:${pulse.key}`, "freeze");
+  for (const pulse of cues.freezePulses.values()) {
+    if (pulse.kind === "buff" || pulse.kind === "debuff") {
+      add(`status:${pulse.key}`, pulse.kind);
+    } else {
+      add(`freeze:${pulse.key}`, "freeze");
+    }
+  }
   // Unsuspend and Draw already sound through their sweep and draw flight.
   if (cues.phaseBanner && (cues.phaseBanner.phase === Phase.Breeding || cues.phaseBanner.phase === Phase.Main))
     add(`phase:${cues.phaseBanner.key}`, "phase");
@@ -120,7 +129,10 @@ export function soundsForPresentation(cues: MatchCues, board?: PresentationAudio
     const body = notice.body;
     if (body.variant === "effect") {
       // A physical source focus already explains this activation. Unlocated sources still have the painted clause.
-      if (!cues.effectSources.some((source) => source.itemId === notice.id || source.cardId === body.cardId))
+      if (
+        body.isContinuation !== true &&
+        !cues.effectSources.some((source) => source.itemId === notice.id || source.cardId === body.cardId)
+      )
         add(`notice:${notice.id}`, "effectActivate");
     } else if (notice.body.variant === "keyword")
       add(`notice:${notice.id}`, PROTECTION_KEYWORDS.has(notice.body.keyword) ? "protect" : "group");

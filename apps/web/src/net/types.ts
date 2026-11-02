@@ -1,3 +1,4 @@
+import type { GameMode } from "@aegis/shared/manual/GameMode";
 /**
  * Join payload sent to client.joinOrCreate(ROOM_TYPE, options). Mirrors
  * AegisJoinOptions declared on the server room (API-CONTRACT.md section 1). The
@@ -5,7 +6,16 @@
  * must agree on it.
  */
 export interface AegisJoinOptions {
+  rankedPairId?: string;
+  rankedToken?: string;
+  rankedRegion?: import("@aegis/shared/ranked/RankedRegion").RankedRegion;
+  tournamentGameId?: string;
+  tournamentGameToken?: string;
+  gameMode?: GameMode;
+  storyBattleId?: string;
+  storyGuestToken?: string;
   allowRollback?: boolean;
+  requireApproval?: boolean;
   spectator?: boolean;
   displayName: string;
   avatarId?: string;

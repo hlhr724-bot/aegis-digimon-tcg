@@ -120,3 +120,124 @@ describe("draw flight source-peel ordering", () => {
     expect(sequence.log).toContain("later-strip-end");
   });
 });
+
+it("flies public cards from trash under the host and from deck into trash", async () => {
+  const board = document.createElement("div");
+  const trash = document.createElement("div");
+  const deck = document.createElement("div");
+  trash.className = "game-utility-slot--you-trash";
+  board.append(trash, deck);
+  board.getBoundingClientRect = () => new DOMRect(0, 0, 800, 600);
+  trash.getBoundingClientRect = () => new DOMRect(600, 400, 60, 80);
+  deck.getBoundingClientRect = () => new DOMRect(600, 200, 60, 80);
+  let flights: readonly DrawFlight[] = [];
+  const observed: DrawFlight[] = [];
+  const queue = createAnimationQueue();
+  const { flyPublicPileCard } = cueFlights({
+    queue,
+    anchors: {
+      board: { current: board },
+      yourDeck: { current: deck },
+      oppDeck: { current: null },
+      yourHandDock: { current: null },
+      oppHandStrip: { current: null },
+      yourSecurity: { current: null },
+      oppSecurity: { current: null },
+      permanentCenter: () => ({ x: 300, y: 300 }),
+    },
+    viewerSeat: 0,
+    causingEffectGateRef: { current: null },
+    securityGainKeyRef: { current: 0 },
+    drawFlightKeyRef: { current: 0 },
+    setSecurityFlights: () => {},
+    setSecurityDealCounts: () => {},
+    setDrawBursts: () => {},
+    setHeldHandArrivals: () => {},
+    setDrawFlights: (next) => {
+      flights = typeof next === "function" ? next(flights) : next;
+      observed.push(...flights);
+    },
+  });
+  const context = { mode: "live" as const, cancelled: false, skipping: false, wait: async () => {} };
+  await flyPublicPileCard({
+    event: {
+      kind: "cardsMoved",
+      from: "trash",
+      to: "battleArea",
+      fromSeat: 0,
+      placedUnder: { permanentId: "host" },
+      instanceIds: ["source"],
+      cardIds: ["BT15-031"],
+    },
+    index: 0,
+    context,
+  });
+  await flyPublicPileCard({
+    event: { kind: "cardsMoved", from: "deck", to: "trash", fromSeat: 0, instanceIds: ["milled"], cardIds: ["ST1-03"] },
+    index: 0,
+    context,
+  });
+  expect(observed).toMatchObject([
+    { x: 630, y: 440, dx: -330, dy: -140, card: { cardId: "BT15-031" } },
+    { x: 630, y: 240, dx: 0, dy: 200, card: { cardId: "ST1-03" } },
+  ]);
+  expect(flights).toEqual([]);
+  queue.clear();
+});
+it.each([0, 1] as const)(
+  "animates a public hand discard to its owner's trash after the clause, seat %s",
+  async (seat) => {
+    const board = document.createElement("div");
+    const hand = document.createElement("div");
+    const trash = document.createElement("div");
+    trash.className = seat === 0 ? "game-utility-slot--you-trash" : "game-utility-slot--opp-trash";
+    board.append(trash);
+    board.getBoundingClientRect = () => new DOMRect(10, 20, 800, 600);
+    hand.getBoundingClientRect = () => new DOMRect(200, 30, 100, 60);
+    trash.getBoundingClientRect = () => new DOMRect(650, 200, 60, 84);
+    const queue = createAnimationQueue();
+    const cause = createPresentationGate();
+    let flights: readonly DrawFlight[] = [];
+    const { launchHandTrashFlight } = cueFlights({
+      queue,
+      viewerSeat: 0,
+      anchors: {
+        board: { current: board },
+        yourHandDock: { current: hand },
+        oppHandStrip: { current: hand },
+        yourDeck: { current: null },
+        oppDeck: { current: null },
+        yourSecurity: { current: null },
+        oppSecurity: { current: null },
+      },
+      causingEffectGateRef: { current: cause },
+      securityGainKeyRef: { current: 0 },
+      drawFlightKeyRef: { current: 0 },
+      setSecurityFlights: () => {},
+      setSecurityDealCounts: () => {},
+      setDrawBursts: () => {},
+      setHeldHandArrivals: () => {},
+      setDrawFlights: (next) => {
+        flights = typeof next === "function" ? next(flights) : next;
+      },
+    });
+    launchHandTrashFlight(seat, { cardId: "BT1-009", artId: "alternate" });
+    await vi.advanceTimersByTimeAsync(100);
+    expect(flights).toEqual([]);
+    cause.release();
+    await vi.advanceTimersByTimeAsync(32);
+    expect(flights).toEqual([
+      expect.objectContaining({
+        handTrash: true,
+        card: { cardId: "BT1-009", artId: "alternate" },
+        x: 240,
+        y: 40,
+        dx: 430,
+        dy: 182,
+      }),
+    ]);
+    await vi.runAllTimersAsync();
+    expect(flights).toEqual([]);
+    expect(queue.isIdle()).toBe(true);
+  },
+);

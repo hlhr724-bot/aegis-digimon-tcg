@@ -82,7 +82,7 @@ describe("security reveal watcher priority", () => {
     expect(fired).toBe(0);
   });
 
-  it("defers the face-up-security-added watcher until the actual Security check completes", async () => {
+  it("never fires the face-up-security-added watcher for a checked face-down card", async () => {
     const s = setupEngine(
       {
         0: { battleArea: [{ card: "BT20-046", as: "attacker" }] },
@@ -118,6 +118,6 @@ describe("security reveal watcher priority", () => {
       }),
     ).toEqual({ ok: true });
     await settle(() => s.events.some((event) => event.kind === "securityChecked"));
-    expect(fired).toBe(1);
+    expect(fired).toBe(0);
   });
 });

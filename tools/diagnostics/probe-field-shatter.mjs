@@ -137,7 +137,11 @@ try {
           assert.ok(row.ages.every((time) => Math.abs(time - row.time) < 0.01));
           for (const key of ["x", "y", "width", "height"])
             assert.ok(Math.abs(row.root[key] - row.original.rect[key]) < 0.2, `physical ${key} jumped`);
-          if (row.time < 249.99) assert.ok(row.opacity.every((opacity) => opacity === 1));
+          const expectedOpacity = Math.max(0, Math.min(1, (250 - row.time) / 150));
+          assert.ok(
+            row.opacity.every((opacity) => Math.abs(opacity - expectedOpacity) < 0.01),
+            `fragment fade disagrees with its clock at ${row.time}ms`,
+          );
           const progress = row.time < 100 ? row.time / 3100 : Math.min(1, (100 + (row.time - 100) * 20) / 3100);
           row.translation.forEach((translate, index) => {
             const components = translate
@@ -151,7 +155,9 @@ try {
           });
         }
         results.push({ width, speed, capture });
-        console.log(`${width}px ${speed}: 41 simultaneous fragments, physical face, acceleration and cleanup passed`);
+        console.log(
+          `${width}px ${speed}: 41 simultaneous fragments, physical face, acceleration, fade and cleanup passed`,
+        );
       } finally {
         await page.close();
       }

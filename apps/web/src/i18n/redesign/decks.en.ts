@@ -36,6 +36,7 @@ export const decksEn = {
   "redesign.decks.list.statDecks": "Decks",
   "redesign.decks.list.statActive": "Active deck",
   "redesign.decks.list.statReady": "Ready to play",
+  "redesign.decks.list.statPublished": "In the community",
   "redesign.decks.list.saved": "Saved decks",
   "redesign.decks.list.columnDeck": "Deck",
   "redesign.decks.list.columnColors": "Colors",

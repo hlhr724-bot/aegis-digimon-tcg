@@ -116,16 +116,12 @@ describe("EX3-022 MegaSeadramon", () => {
     );
     expect(payload.visibleInstanceIds).toEqual(
       expect.arrayContaining(
-        [
-          "aquaticLineGabumon",
-          "otherEligible",
-          "invalidBlueLevel4",
-          "invalidBlueTamer",
-          "invalidBlueUnderRed",
-          "invalidRedLevel3",
-        ].map((alias) => s.inst(alias).instanceId),
+        ["aquaticLineGabumon", "otherEligible", "invalidBlueLevel4", "invalidBlueTamer", "invalidRedLevel3"].map(
+          (alias) => s.inst(alias).instanceId,
+        ),
       ),
     );
+    expect(payload.visibleInstanceIds).not.toContain(s.inst("invalidBlueUnderRed").instanceId);
     expect(s.decisions.at(-1)!.req).toMatchObject({
       sourceCardId: "EX3-022",
       options: {

@@ -1127,8 +1127,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 125,
-      "engineEvents": 183
+      "stateVersion": 126,
+      "engineEvents": 184
     },
     {
       "kind": "intent",
@@ -1142,8 +1142,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 126,
-      "engineEvents": 184
+      "stateVersion": 127,
+      "engineEvents": 185
     },
     {
       "kind": "intent",
@@ -1153,8 +1153,8 @@
         "permanentId": "perm-3"
       },
       "ok": true,
-      "stateVersion": 139,
-      "engineEvents": 198
+      "stateVersion": 140,
+      "engineEvents": 199
     },
     {
       "kind": "intent",
@@ -1168,8 +1168,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 141,
-      "engineEvents": 201
+      "stateVersion": 142,
+      "engineEvents": 202
     },
     {
       "kind": "intent",
@@ -1180,8 +1180,8 @@
         "instanceId": "s1-15"
       },
       "ok": true,
-      "stateVersion": 146,
-      "engineEvents": 206
+      "stateVersion": 147,
+      "engineEvents": 207
     },
     {
       "kind": "intent",
@@ -1192,8 +1192,8 @@
         "effectKey": "BT20-013/ir-27-0"
       },
       "ok": true,
-      "stateVersion": 148,
-      "engineEvents": 211
+      "stateVersion": 149,
+      "engineEvents": 212
     },
     {
       "kind": "intent",
@@ -1207,8 +1207,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 148,
-      "engineEvents": 211
+      "stateVersion": 149,
+      "engineEvents": 212
     },
     {
       "kind": "intent",
@@ -1222,8 +1222,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 149,
-      "engineEvents": 212
+      "stateVersion": 150,
+      "engineEvents": 213
     },
     {
       "kind": "intent",
@@ -1237,8 +1237,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 149,
-      "engineEvents": 212
+      "stateVersion": 150,
+      "engineEvents": 213
     },
     {
       "kind": "intent",
@@ -1258,8 +1258,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 155,
-      "engineEvents": 219
+      "stateVersion": 156,
+      "engineEvents": 220
     },
     {
       "kind": "intent",
@@ -1273,8 +1273,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 158,
-      "engineEvents": 222
+      "stateVersion": 159,
+      "engineEvents": 223
     },
     {
       "kind": "intent",
@@ -1288,8 +1288,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 165,
-      "engineEvents": 231
+      "stateVersion": 166,
+      "engineEvents": 232
     },
     {
       "kind": "intent",
@@ -1298,8 +1298,8 @@
         "type": "hatchEgg"
       },
       "ok": true,
-      "stateVersion": 168,
-      "engineEvents": 235
+      "stateVersion": 169,
+      "engineEvents": 236
     },
     {
       "kind": "intent",
@@ -1312,8 +1312,8 @@
         "alternateRequirementIndex": 0
       },
       "ok": true,
-      "stateVersion": 172,
-      "engineEvents": 241
+      "stateVersion": 173,
+      "engineEvents": 242
     },
     {
       "kind": "intent",
@@ -1326,8 +1326,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 174,
-      "engineEvents": 244
+      "stateVersion": 175,
+      "engineEvents": 245
     },
     {
       "kind": "intent",
@@ -1341,8 +1341,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 175,
-      "engineEvents": 245
+      "stateVersion": 176,
+      "engineEvents": 246
     },
     {
       "kind": "intent",
@@ -1356,25 +1356,14 @@
         }
       },
       "ok": true,
-      "stateVersion": 177,
-      "engineEvents": 247
+      "stateVersion": 178,
+      "engineEvents": 248
     },
     {
       "kind": "intent",
       "seat": 1,
       "intent": {
         "type": "respondCounter"
-      },
-      "ok": true,
-      "stateVersion": 183,
-      "engineEvents": 253
-    },
-    {
-      "kind": "intent",
-      "seat": 1,
-      "intent": {
-        "type": "declareBlock",
-        "blockerPermanentId": "perm-12"
       },
       "ok": true,
       "stateVersion": 185,
@@ -1384,27 +1373,8 @@
       "kind": "intent",
       "seat": 1,
       "intent": {
-        "type": "respondDecision",
-        "decisionId": "dec-38",
-        "response": {
-          "kind": "optional",
-          "accept": true
-        }
-      },
-      "ok": true,
-      "stateVersion": 186,
-      "engineEvents": 256
-    },
-    {
-      "kind": "intent",
-      "seat": 1,
-      "intent": {
-        "type": "respondDecision",
-        "decisionId": "dec-39",
-        "response": {
-          "kind": "selectCards",
-          "instanceIds": ["s1-26"]
-        }
+        "type": "declareBlock",
+        "blockerPermanentId": "perm-12"
       },
       "ok": true,
       "stateVersion": 187,
@@ -1415,7 +1385,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-40",
+        "decisionId": "dec-38",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1430,6 +1400,36 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
+        "decisionId": "dec-39",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s1-26"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 189,
+      "engineEvents": 259
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-40",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 190,
+      "engineEvents": 260
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
         "decisionId": "dec-41",
         "response": {
           "kind": "selectCards",
@@ -1437,8 +1437,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 189,
-      "engineEvents": 259
+      "stateVersion": 191,
+      "engineEvents": 261
     },
     {
       "kind": "intent",
@@ -1452,8 +1452,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 197,
-      "engineEvents": 268
+      "stateVersion": 199,
+      "engineEvents": 270
     },
     {
       "kind": "intent",
@@ -1463,8 +1463,8 @@
         "instanceId": "s0-23"
       },
       "ok": true,
-      "stateVersion": 205,
-      "engineEvents": 279
+      "stateVersion": 207,
+      "engineEvents": 281
     },
     {
       "kind": "intent",
@@ -1478,8 +1478,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 206,
-      "engineEvents": 283
+      "stateVersion": 208,
+      "engineEvents": 285
     },
     {
       "kind": "intent",
@@ -1493,8 +1493,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 207,
-      "engineEvents": 284
+      "stateVersion": 209,
+      "engineEvents": 286
     },
     {
       "kind": "intent",
@@ -1508,8 +1508,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 208,
-      "engineEvents": 285
+      "stateVersion": 210,
+      "engineEvents": 287
     },
     {
       "kind": "intent",
@@ -1523,8 +1523,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 208,
-      "engineEvents": 285
+      "stateVersion": 210,
+      "engineEvents": 287
     },
     {
       "kind": "intent",
@@ -1535,8 +1535,8 @@
         "effectKey": "BT12-089/ir-27-0"
       },
       "ok": true,
-      "stateVersion": 210,
-      "engineEvents": 287
+      "stateVersion": 212,
+      "engineEvents": 289
     },
     {
       "kind": "intent",
@@ -1550,8 +1550,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 211,
-      "engineEvents": 288
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1565,8 +1565,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 211,
-      "engineEvents": 288
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1580,8 +1580,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 211,
-      "engineEvents": 288
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1595,8 +1595,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 214,
-      "engineEvents": 291
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1610,8 +1610,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 214,
-      "engineEvents": 291
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1625,8 +1625,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 216,
-      "engineEvents": 296
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1640,8 +1640,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 218,
-      "engineEvents": 298
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1655,8 +1655,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 220,
-      "engineEvents": 300
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1670,8 +1670,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 223,
-      "engineEvents": 304
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1685,8 +1685,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 223,
-      "engineEvents": 304
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1700,8 +1700,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 224,
-      "engineEvents": 305
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1715,8 +1715,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 229,
-      "engineEvents": 310
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1727,8 +1727,8 @@
         "effectKey": "blast-digivolve:perm-12"
       },
       "ok": true,
-      "stateVersion": 231,
-      "engineEvents": 313
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1742,8 +1742,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 234,
-      "engineEvents": 317
+      "stateVersion": 213,
+      "engineEvents": 290
     },
     {
       "kind": "intent",
@@ -1757,8 +1757,8 @@
         }
       },
       "ok": true,
-      "stateVersion": 235,
-      "engineEvents": 318
+      "stateVersion": 213,
+      "engineEvents": 290
     }
   ]
 }

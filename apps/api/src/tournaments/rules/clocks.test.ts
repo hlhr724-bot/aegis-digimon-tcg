@@ -1,10 +1,14 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import { describe, expect, it } from "vitest";
 import { seriesDurationFor } from "./clocks.js";
-import { AEGIS_LIGHTNING_PRESET, BANDAI_GENERAL_PRESET, rulesSnapshot } from "./presets.js";
 
 const MINUTE = 60_000;
-const OFFICIAL = rulesSnapshot(BANDAI_GENERAL_PRESET, 3);
-const LIGHTNING = rulesSnapshot(AEGIS_LIGHTNING_PRESET, 1);
+const OFFICIAL = buildTournamentRules({ bestOf: 3 });
+const COMMUNITY_BEST_OF_ONE = buildTournamentRules({ bestOf: 1 });
+const NO_CUT_CLOCK = {
+  ...COMMUNITY_BEST_OF_ONE,
+  match: { ...COMMUNITY_BEST_OF_ONE.match, topCutDurationMs: null, finalDurationMs: 30 * MINUTE },
+};
 
 describe("seriesDurationFor", () => {
   // Every timed answer is round clock + overtime, because what this feeds is the instant the
@@ -30,15 +34,19 @@ describe("seriesDurationFor", () => {
     // A plain bracket event has no Swiss phase at all, so borrowing its clock would apply a
     // duration the format never runs.
     expect(
-      seriesDurationFor(LIGHTNING, {
+      seriesDurationFor(NO_CUT_CLOCK, {
         phaseKind: "single_elimination",
         isFinal: false,
         structure: "single_elimination",
       }),
-    ).toBe(25 * MINUTE + 5 * MINUTE);
+    ).toBe(30 * MINUTE + 5 * MINUTE);
     expect(
-      seriesDurationFor(LIGHTNING, { phaseKind: "single_elimination", isFinal: true, structure: "single_elimination" }),
-    ).toBe(25 * MINUTE + 5 * MINUTE);
+      seriesDurationFor(NO_CUT_CLOCK, {
+        phaseKind: "single_elimination",
+        isFinal: true,
+        structure: "single_elimination",
+      }),
+    ).toBe(30 * MINUTE + 5 * MINUTE);
   });
 
   it("uses the event's structure for a match that belongs to no phase", () => {
@@ -46,9 +54,9 @@ describe("seriesDurationFor", () => {
     expect(seriesDurationFor(OFFICIAL, { phaseKind: null, isFinal: false, structure: "swiss" })).toBe(
       45 * MINUTE + 5 * MINUTE,
     );
-    expect(seriesDurationFor(LIGHTNING, { phaseKind: null, isFinal: false, structure: "single_elimination" })).toBe(
-      25 * MINUTE + 5 * MINUTE,
-    );
+    expect(
+      seriesDurationFor(COMMUNITY_BEST_OF_ONE, { phaseKind: null, isFinal: false, structure: "single_elimination" }),
+    ).toBe(25 * MINUTE + 5 * MINUTE);
   });
 
   it("runs untimed when the event has no frozen ruleset at all", () => {

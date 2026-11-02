@@ -19,7 +19,7 @@ const compiled: CompiledCard = {
       ],
     },
     {
-      trigger: "WhenDigivolving",
+      trigger: "OnDeletion",
       actions: [
         {
           kind: "Suspend",

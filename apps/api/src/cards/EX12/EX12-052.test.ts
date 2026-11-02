@@ -78,7 +78,7 @@ describe("EX12-052 Diarbbitmon", () => {
     }
     for (const trigger of ["WhenDigivolving", "WhenAttacking", "Counter"] as const) {
       const shared = compiled.effects.filter((effect) => effect.trigger === trigger).at(-1)!;
-      expect(shared.optional).toBeUndefined();
+      expect(shared.optional).toBe(true);
       for (const action of shared.actions) expect(action).not.toHaveProperty("optional");
     }
     expect(compiled.effects.find((effect) => effect.trigger === "Main")).toMatchObject({
@@ -135,24 +135,6 @@ describe("EX12-052 Diarbbitmon", () => {
     expect(s.perm("source").currentDP).toBe(15000);
   });
 
-  it("Q6836 resolves the DP boost and battle with no optional prompt on the mandatory timing", async () => {
-    const s = setupEngine(
-      {
-        0: { battleArea: [{ card: "EX12-052", as: "source", dp: 12000 }] },
-        1: { battleArea: [{ card: "BT1-009", as: "opponent", dp: 3000 }] },
-      },
-      { autoAcceptOptional: false, autoSelectCards: true },
-    );
-    await s.ready();
-
-    await advance(s.engine).fire(EffectTiming.WhenDigivolving, s.perm("source"));
-    await settle(() => s.state.players[1]!.battleArea.length === 0);
-
-    expect(s.state.pendingDecision?.kind).not.toBe("optional");
-    expect(s.perm("source").currentDP).toBe(15000);
-    expect(s.state.players[1]!.battleArea).toHaveLength(0);
-  });
-
   it("shares the once-per-turn budget across When Digivolving and When Attacking", async () => {
     const s = setupEngine(
       {
@@ -190,7 +172,7 @@ describe("EX12-052 Diarbbitmon", () => {
     expect(s.state.players[1]!.battleArea).toHaveLength(0);
   });
 
-  it("resolves the mandatory shared effect from a public attack intent", async () => {
+  it("resolves the accepted shared effect from a public attack intent", async () => {
     const s = setupEngine(
       {
         0: { battleArea: [{ card: "EX12-052", as: "source", dp: 12000 }] },

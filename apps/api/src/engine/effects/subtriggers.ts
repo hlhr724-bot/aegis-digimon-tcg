@@ -1,3 +1,12 @@
+import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
+import type { RuntimeReferenceRegistry } from "#api/engine/snapshot/RuntimeReferenceRegistry";
+import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
+import type { SubTriggerRegistryState } from "#api/engine/effects/SubTriggerRegistryState";
+import type { RuntimeCallbackRegistry } from "#api/engine/snapshot/RuntimeCallbackRegistry";
+import type { RuntimeGraphSnapshot } from "#api/engine/snapshot/RuntimeGraphSnapshot";
+import { encodeRuntimeGraph } from "#api/engine/snapshot/encodeRuntimeGraph";
+import { decodeRuntimeGraph } from "#api/engine/snapshot/decodeRuntimeGraph";
+import type { DecisionEffectSummary } from "@aegis/shared/protocol/DecisionEffectSummary";
 import {
   type CardDefinition,
   type Condition,
@@ -43,9 +52,12 @@ export type SubTriggerRootZone = "trash" | "hand" | "security";
 
 /** A delayed/triggered sub-effect installed during resolution. */
 export interface SubTriggerSubscription {
+  decisionSummary?: DecisionEffectSummary;
   id: number;
   identicalInstallOrdinal?: number;
   event: SubTriggerEventName;
+  attackRedirectTargetIds?: (ctx: EffectContext) => string[];
+  attackRedirectRequiresSelfSuspend?: boolean;
   /** Printed timing of the clause that installed this watcher. */
   printedTiming?: string;
   /** The printed clause this watcher implements, for players; identity and prompts keep `description`. */
@@ -150,6 +162,7 @@ export interface SubTriggerSubscription {
    * the body still resolves with its own source and controller.
    */
   orderedByTurnPlayer?: boolean;
+  appliesOnEntry?: boolean;
   /**
    * Produced by a PERSISTENT (static / `[Breeding]` / `EffectTiming.None`) effect that the
    * continuous-recompute pass re-derives every time it runs. The recompute clears these via
@@ -432,10 +445,23 @@ export function isRedirectReplacement(r: ReplacementSubscription): r is Replacem
  */
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 
+type SnapshotParams = {
+  callbacks?: RuntimeCallbackRegistry;
+  objects?: RuntimeObjectRegistry;
+  references?: RuntimeReferenceRegistry;
+};
+type RestoreParams = {
+  snapshot: RuntimeGraphSnapshot;
+  callbacks?: RuntimeCallbackRegistry;
+  objects?: RuntimeObjectRegistry;
+  references?: RuntimeReferenceRegistry;
+};
+
 export class SubTriggerRegistry {
   private subs: SubTriggerSubscription[] = [];
   private replacements: RegisteredReplacement[] = [];
   private seq = 0;
+  private activeResolutionDepth = 0;
   /**
    * The `windowToken` each `oncePerTiming` subscription last fired for (by subscription
    * id). Persists ACROSS `fire()` calls — unlike the rest of this registry's per-call
@@ -450,6 +476,54 @@ export class SubTriggerRegistry {
    * be offered the same reducer again (BT25-087 Thomas H. Norstein, Discord 1555674174369042583).
    */
   private readonly activatingOncePerTurnKeys = new Set<string>();
+
+  getRuntimeState(): SubTriggerRegistryState {
+    this.assertSnapshotBoundary();
+    return {
+      subscriptions: this.subs,
+      replacements: this.replacements,
+      sequence: this.seq,
+      oncePerTimingFiredFor: this.oncePerTimingFiredFor,
+    };
+  }
+
+  snapshot({ callbacks, objects, references }: SnapshotParams = {}): RuntimeGraphSnapshot {
+    return encodeRuntimeGraph({
+      value: this.getRuntimeState(),
+      describeCallback: callbacks?.describe.bind(callbacks),
+      describeObject: objects?.describe.bind(objects),
+      references,
+    });
+  }
+
+  restore({ snapshot, callbacks, objects, references }: RestoreParams): void {
+    this.assertSnapshotBoundary();
+    this.restoreRuntimeState(
+      decodeRuntimeGraph({
+        snapshot,
+        createCallback: callbacks?.create.bind(callbacks),
+        objects,
+        references,
+      }),
+    );
+  }
+
+  restoreRuntimeState(state: unknown): void {
+    this.assertSnapshotBoundary();
+    if (!isSubTriggerRegistryState(state)) {
+      throw new Error("Invalid subtrigger registry snapshot");
+    }
+    this.subs = state.subscriptions;
+    this.replacements = state.replacements;
+    this.seq = state.sequence;
+    this.oncePerTimingFiredFor = state.oncePerTimingFiredFor;
+  }
+
+  private assertSnapshotBoundary(): void {
+    if (this.activeResolutionDepth !== 0 || this.activatingOncePerTurnKeys.size > 0) {
+      throw new Error("Cannot snapshot or restore during a subtrigger resolution or cost payment");
+    }
+  }
 
   private oncePerTimingKey(sub: SubTriggerSubscription): number | string {
     return sub.oncePerTimingIdentity ?? sub.id;
@@ -468,6 +542,12 @@ export class SubTriggerRegistry {
    * that class of bug into an immediate crash instead of a mystery.
    */
   subscribe(sub: Omit<SubTriggerSubscription, "id" | "identicalInstallOrdinal">): number {
+    if ("activationContext" in sub && sub.activationContext !== undefined) {
+      sub.activationContext.game?.runtimeObjects?.track({
+        value: sub.activationContext,
+        key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value,
+      });
+    }
     if (
       sub.matches !== undefined &&
       sub.sourcePermanentId === undefined &&
@@ -519,6 +599,12 @@ export class SubTriggerRegistry {
 
   /** Install a replacement effect. Returns its id. */
   subscribeReplacement(sub: DistributiveOmit<ReplacementSubscription, "id">): number {
+    if ("activationContext" in sub && sub.activationContext !== undefined) {
+      sub.activationContext.game?.runtimeObjects?.track({
+        value: sub.activationContext,
+        key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value,
+      });
+    }
     // Only interactive cost reductions can be consumed after activation. Narrow both
     // discriminated unions before reading that mode-specific field; DNA-memory, instead,
     // prevent, and redirect replacements intentionally do not carry it.
@@ -560,8 +646,15 @@ export class SubTriggerRegistry {
   /** Active subscriptions for an event (optionally filtered to a source permanent). */
   subscriptionsFor(event: SubTriggerEventName, sourcePermanentId?: string): SubTriggerSubscription[] {
     return this.subs.filter(
-      (s) => s.event === event && (sourcePermanentId === undefined || s.sourcePermanentId === sourcePermanentId),
+      (s) =>
+        s.event === event &&
+        s.appliesOnEntry !== true &&
+        (sourcePermanentId === undefined || s.sourcePermanentId === sourcePermanentId),
     );
+  }
+
+  entryGrants(): SubTriggerSubscription[] {
+    return this.subs.filter((s) => s.appliesOnEntry === true);
   }
 
   /** Active granted effects anchored to a permanent, for its public inspector. */
@@ -620,102 +713,107 @@ export class SubTriggerRegistry {
     oncePerTurnSnapshotKeys?: ReadonlySet<string>,
     oncePerTurnSuccessfulKeys?: Set<string>,
   ): Promise<number> {
-    let fired = 0;
-    const successfulOncePerTurnKeys = oncePerTurnSuccessfulKeys ?? new Set<string>();
-    // A snapshot represents one event. Capture shared [Once Per Turn] budget once at entry so
-    // distinct action-path clauses with the same key can all resolve in this event; the ledger
-    // remains authoritative for every later event. GameEngine passes its ordered-window capture
-    // explicitly because those bodies resolve through separate fireSnapshot calls.
-    const snapshotKeys =
-      oncePerTurnSnapshotKeys ??
-      new Set(
-        matching
-          .filter((sub) => sub.oncePerTurnKey !== undefined && !turnLedger?.hasFired(sub.oncePerTurnKey))
-          .map((sub) => sub.oncePerTurnKey!)
-          .filter((key, index, keys) => keys.indexOf(key) === index),
-      );
-    for (const sub of matching) {
-      // Already resolved by the caller: the timing window that shares this event resolved it
-      // through the same ledgers (GameEngine.withPendingSubTriggers). Filtered here rather than
-      // by pre-filtering the caller's list, so the await chain reaching a body is unchanged.
-      if (skip?.(sub) === true) continue;
-      // oncePerTiming: skip when this subscription already fired for the SAME window
-      // (persists across fire() calls, unlike a per-call local — see oncePerTimingFiredFor).
-      if (
-        sub.oncePerTiming &&
-        windowToken !== undefined &&
-        this.oncePerTimingFiredFor.get(this.oncePerTimingKey(sub)) === windowToken
-      ) {
-        continue;
-      }
-      // oncePerTurnKey: skip when this (stable, recompute-surviving) key already fired a
-      // watcher this turn.
-      if (
-        sub.oncePerTurnKey !== undefined &&
-        turnLedger?.hasFired(sub.oncePerTurnKey) &&
-        !snapshotKeys.has(sub.oncePerTurnKey)
-      )
-        continue;
-      // A watcher whose anchor source has left the field yields no context — skip it
-      // (its subscription should already have been dropped on leave; this is a guard).
-      const ctx = makeContext(sub);
-      if (ctx === undefined) {
-        // An ANCHOR-LESS delayed one-shot (no sourcePermanentId, no sourceInstanceId)
-        // deliberately survives its installer's deletion (BT1-021's end-of-turn memory
-        // loss; KB Q882: the effect "has already activated"). It needs no bound context and
-        // carries no payload predicate, so run its body directly. Anchored watchers (either
-        // form) keep the skip-on-missing-anchor guard instead — `subscribe()` guarantees a
-        // `matches`-bearing sub always has one of the two anchors, so this branch is reached
-        // by that combination only when it is the intentional, contextless BT1-021 shape.
-        if (sub.sourcePermanentId === undefined && sub.sourceInstanceId === undefined && sub.matches === undefined) {
-          this.markFired(sub, windowToken, turnLedger);
-          const resolved = announce?.(sub, undefined);
-          await sub.run(undefined as unknown as EffectContext);
-          resolved?.();
-          if (sub.oncePerTurnKey !== undefined) successfulOncePerTurnKeys.add(sub.oncePerTurnKey);
-          fired += 1;
+    this.activeResolutionDepth++;
+    try {
+      let fired = 0;
+      const successfulOncePerTurnKeys = oncePerTurnSuccessfulKeys ?? new Set<string>();
+      // A snapshot represents one event. Capture shared [Once Per Turn] budget once at entry so
+      // distinct action-path clauses with the same key can all resolve in this event; the ledger
+      // remains authoritative for every later event. GameEngine passes its ordered-window capture
+      // explicitly because those bodies resolve through separate fireSnapshot calls.
+      const snapshotKeys =
+        oncePerTurnSnapshotKeys ??
+        new Set(
+          matching
+            .filter((sub) => sub.oncePerTurnKey !== undefined && !turnLedger?.hasFired(sub.oncePerTurnKey))
+            .map((sub) => sub.oncePerTurnKey!)
+            .filter((key, index, keys) => keys.indexOf(key) === index),
+        );
+      for (const sub of matching) {
+        // Already resolved by the caller: the timing window that shares this event resolved it
+        // through the same ledgers (GameEngine.withPendingSubTriggers). Filtered here rather than
+        // by pre-filtering the caller's list, so the await chain reaching a body is unchanged.
+        if (skip?.(sub) === true) continue;
+        // oncePerTiming: skip when this subscription already fired for the SAME window
+        // (persists across fire() calls, unlike a per-call local — see oncePerTimingFiredFor).
+        if (
+          sub.oncePerTiming &&
+          windowToken !== undefined &&
+          this.oncePerTimingFiredFor.get(this.oncePerTimingKey(sub)) === windowToken
+        ) {
+          continue;
         }
-        continue;
+        // oncePerTurnKey: skip when this (stable, recompute-surviving) key already fired a
+        // watcher this turn.
+        if (
+          sub.oncePerTurnKey !== undefined &&
+          turnLedger?.hasFired(sub.oncePerTurnKey) &&
+          !snapshotKeys.has(sub.oncePerTurnKey)
+        )
+          continue;
+        // A watcher whose anchor source has left the field yields no context — skip it
+        // (its subscription should already have been dropped on leave; this is a guard).
+        const ctx = makeContext(sub);
+        if (ctx === undefined) {
+          // An ANCHOR-LESS delayed one-shot (no sourcePermanentId, no sourceInstanceId)
+          // deliberately survives its installer's deletion (BT1-021's end-of-turn memory
+          // loss; KB Q882: the effect "has already activated"). It needs no bound context and
+          // carries no payload predicate, so run its body directly. Anchored watchers (either
+          // form) keep the skip-on-missing-anchor guard instead — `subscribe()` guarantees a
+          // `matches`-bearing sub always has one of the two anchors, so this branch is reached
+          // by that combination only when it is the intentional, contextless BT1-021 shape.
+          if (sub.sourcePermanentId === undefined && sub.sourceInstanceId === undefined && sub.matches === undefined) {
+            this.markFired(sub, windowToken, turnLedger);
+            const resolved = announce?.(sub, undefined);
+            await sub.run(undefined as unknown as EffectContext);
+            resolved?.();
+            if (sub.oncePerTurnKey !== undefined) successfulOncePerTurnKeys.add(sub.oncePerTurnKey);
+            fired += 1;
+          }
+          continue;
+        }
+        if (sub.matches !== undefined && !sub.matches(ctx)) {
+          continue;
+        }
+        // A lone watcher bypasses the ordering path, so its live activation gates must also be
+        // enforced here. Otherwise a self-suspending Tamer that is still suspended announces an
+        // activation its body then fails to pay for.
+        if (sub.canFire !== undefined && !sub.canFire(ctx)) continue;
+        if (sub.hasLegalOutcome !== undefined && !sub.hasLegalOutcome(ctx)) continue;
+        this.markFired(sub, windowToken, turnLedger);
+        const resolved = announce?.(sub, ctx);
+        // Every triggered watcher is an effect resolution. Keep the resolving seat/kinds on
+        // the same stack used by ordinary timing effects so nested verbs retain effect
+        // provenance (for example, a Tamer's PlaceUnder must publish byEffectSeat).
+        const sourceKinds = effectProvenanceKinds(ctx, { isLinked: sub.isLinkedSource });
+        ctx.effectSourceKinds = sourceKinds;
+        ctx.fx?.enterEffectResolution?.(ctx.source.ownerSeat, sourceKinds, ctx.source.permanent?.()?.permanentId);
+        try {
+          await sub.run(ctx);
+        } finally {
+          ctx.fx?.leaveEffectResolution?.();
+        }
+        resolved?.();
+        if (
+          sub.oncePerTurnKey !== undefined &&
+          ctx.oncePerTurnActivationDeclined === true &&
+          ctx.oncePerTurnActivationChosen !== true
+        ) {
+          // A shared same-event snapshot may contain several action-path clauses. A declined
+          // sibling rolls back only its provisional mark; once any sibling has succeeded, the
+          // shared [Once Per Turn] budget must remain consumed even with a Set-backed ledger that
+          // cannot represent multiple provisional marks.
+          if (!successfulOncePerTurnKeys.has(sub.oncePerTurnKey)) turnLedger?.unmarkFired?.(sub.oncePerTurnKey);
+          ctx.oncePerTurnActivationDeclined = false;
+        } else if (sub.oncePerTurnKey !== undefined) {
+          successfulOncePerTurnKeys.add(sub.oncePerTurnKey);
+        }
+        fired += 1;
       }
-      if (sub.matches !== undefined && !sub.matches(ctx)) {
-        continue;
-      }
-      // A lone watcher bypasses the ordering path, so its live activation gates must also be
-      // enforced here. Otherwise a self-suspending Tamer that is still suspended announces an
-      // activation its body then fails to pay for.
-      if (sub.canFire !== undefined && !sub.canFire(ctx)) continue;
-      if (sub.hasLegalOutcome !== undefined && !sub.hasLegalOutcome(ctx)) continue;
-      this.markFired(sub, windowToken, turnLedger);
-      const resolved = announce?.(sub, ctx);
-      // Every triggered watcher is an effect resolution. Keep the resolving seat/kinds on
-      // the same stack used by ordinary timing effects so nested verbs retain effect
-      // provenance (for example, a Tamer's PlaceUnder must publish byEffectSeat).
-      const sourceKinds = effectProvenanceKinds(ctx, { isLinked: sub.isLinkedSource });
-      ctx.effectSourceKinds = sourceKinds;
-      ctx.fx?.enterEffectResolution?.(ctx.source.ownerSeat, sourceKinds, ctx.source.permanent?.()?.permanentId);
-      try {
-        await sub.run(ctx);
-      } finally {
-        ctx.fx?.leaveEffectResolution?.();
-      }
-      resolved?.();
-      if (
-        sub.oncePerTurnKey !== undefined &&
-        ctx.oncePerTurnActivationDeclined === true &&
-        ctx.oncePerTurnActivationChosen !== true
-      ) {
-        // A shared same-event snapshot may contain several action-path clauses. A declined
-        // sibling rolls back only its provisional mark; once any sibling has succeeded, the
-        // shared [Once Per Turn] budget must remain consumed even with a Set-backed ledger that
-        // cannot represent multiple provisional marks.
-        if (!successfulOncePerTurnKeys.has(sub.oncePerTurnKey)) turnLedger?.unmarkFired?.(sub.oncePerTurnKey);
-        ctx.oncePerTurnActivationDeclined = false;
-      } else if (sub.oncePerTurnKey !== undefined) {
-        successfulOncePerTurnKeys.add(sub.oncePerTurnKey);
-      }
-      fired += 1;
+      return fired;
+    } finally {
+      this.activeResolutionDepth--;
     }
-    return fired;
   }
 
   /**
@@ -922,55 +1020,61 @@ export class SubTriggerRegistry {
     originZone?: ZoneRef,
     baseAsDigimon?: CardDefinition,
   ): Promise<number> {
-    let reduction = 0;
-    const consumed = new Set<number>();
-    for (const replacement of this.replacements) {
-      if (replacement.event !== event || replacement.mode !== "reduceCost") continue;
-      if (replacement.activate === undefined || replacement.controllerSeat !== seat) continue;
-      const oncePerTurnKey = replacement.oncePerTurnKey;
-      if (
-        oncePerTurnKey !== undefined &&
-        (turnBudget?.hasFired(oncePerTurnKey) === true || this.activatingOncePerTurnKeys.has(oncePerTurnKey))
-      )
-        continue;
-      if (replacement.appliesTo !== undefined) {
-        if (!replacement.appliesTo(target, originZone, baseAsDigimon)) continue;
-      } else if (replacement.sourcePermanentId !== undefined && replacement.sourcePermanentId !== target.permanentId)
-        continue;
-      if (replacement.intoMatches !== undefined && !replacement.intoMatches(into)) continue;
-      const sourcePermanentId = replacement.sourcePermanentId;
-      const ctx =
-        sourcePermanentId === undefined
-          ? replacement.activationContext
-          : buildContext(sourcePermanentId, replacement.sourceInstanceId);
-      if (ctx === undefined) continue;
-      // Resident reducers survive a declined payment window. Their printed turn
-      // restriction must still hold when a later play consults that subscription.
-      // Triggered grants retain the duration established by their resolving effect.
-      if (
-        replacement.residentReduction === true &&
-        ((replacement.activationTiming === "YourTurn" && ctx.game.state.turnSeat !== ctx.source.ownerSeat) ||
-          (replacement.activationTiming === "OpponentsTurn" && ctx.game.state.turnSeat === ctx.source.ownerSeat))
-      )
-        continue;
-      if (replacement.activationTiming !== undefined) ctx.activeTiming = replacement.activationTiming;
-      if (replacement.activationEffectText !== undefined) ctx.activeEffectText = replacement.activationEffectText;
-      if (oncePerTurnKey !== undefined) this.activatingOncePerTurnKeys.add(oncePerTurnKey);
-      let activated: Awaited<ReturnType<typeof replacement.activate>>;
-      try {
-        activated = await replacement.activate(ctx, target, into, evolvingInstanceId, materials, baseAsDigimon);
-      } finally {
-        if (oncePerTurnKey !== undefined) this.activatingOncePerTurnKeys.delete(oncePerTurnKey);
+    this.activeResolutionDepth++;
+    try {
+      let reduction = 0;
+      const consumed = new Set<number>();
+      for (const replacement of this.replacements) {
+        if (replacement.event !== event || replacement.mode !== "reduceCost") continue;
+        if (replacement.activate === undefined || replacement.controllerSeat !== seat) continue;
+        const oncePerTurnKey = replacement.oncePerTurnKey;
+        if (
+          oncePerTurnKey !== undefined &&
+          (turnBudget?.hasFired(oncePerTurnKey) === true || this.activatingOncePerTurnKeys.has(oncePerTurnKey))
+        )
+          continue;
+        if (replacement.appliesTo !== undefined) {
+          if (!replacement.appliesTo(target, originZone, baseAsDigimon)) continue;
+        } else if (replacement.sourcePermanentId !== undefined && replacement.sourcePermanentId !== target.permanentId)
+          continue;
+        if (replacement.intoMatches !== undefined && !replacement.intoMatches(into)) continue;
+        const sourcePermanentId = replacement.sourcePermanentId;
+        const ctx =
+          sourcePermanentId === undefined
+            ? replacement.activationContext
+            : buildContext(sourcePermanentId, replacement.sourceInstanceId);
+        if (ctx === undefined) continue;
+        // Resident reducers survive a declined payment window. Their printed turn
+        // restriction must still hold when a later play consults that subscription.
+        // Triggered grants retain the duration established by their resolving effect.
+        if (
+          replacement.residentReduction === true &&
+          ((replacement.activationTiming === "YourTurn" && ctx.game.state.turnSeat !== ctx.source.ownerSeat) ||
+            (replacement.activationTiming === "OpponentsTurn" && ctx.game.state.turnSeat === ctx.source.ownerSeat))
+        )
+          continue;
+        if (replacement.activationTiming !== undefined) ctx.activeTiming = replacement.activationTiming;
+        if (replacement.activationEffectText !== undefined) ctx.activeEffectText = replacement.activationEffectText;
+        if (oncePerTurnKey !== undefined) this.activatingOncePerTurnKeys.add(oncePerTurnKey);
+        let activated: Awaited<ReturnType<typeof replacement.activate>>;
+        try {
+          activated = await replacement.activate(ctx, target, into, evolvingInstanceId, materials, baseAsDigimon);
+        } finally {
+          if (oncePerTurnKey !== undefined) this.activatingOncePerTurnKeys.delete(oncePerTurnKey);
+        }
+        if (!activated) {
+          continue;
+        }
+        reduction += typeof activated === "number" ? activated : (replacement.amount ?? 0);
+        if (oncePerTurnKey !== undefined) turnBudget?.markFired(oncePerTurnKey);
+        if (replacement.consumeOnActivate === true) consumed.add(replacement.id);
       }
-      if (!activated) {
-        continue;
-      }
-      reduction += typeof activated === "number" ? activated : (replacement.amount ?? 0);
-      if (oncePerTurnKey !== undefined) turnBudget?.markFired(oncePerTurnKey);
-      if (replacement.consumeOnActivate === true) consumed.add(replacement.id);
+      if (consumed.size > 0)
+        this.replacements = this.replacements.filter((replacement) => !consumed.has(replacement.id));
+      return reduction;
+    } finally {
+      this.activeResolutionDepth--;
     }
-    if (consumed.size > 0) this.replacements = this.replacements.filter((replacement) => !consumed.has(replacement.id));
-    return reduction;
   }
 
   /** Active "prevent"/"instead" replacements for an event. */
@@ -995,61 +1099,67 @@ export class SubTriggerRegistry {
     turnBudget?: SubTriggerTurnLedger,
     onApplicable?: (replacement: ReplacementSubscriptionInstead, targetInstanceIds?: readonly string[]) => void,
   ): Promise<number> {
-    if (event !== "wouldBePlayed") return 0;
-    const candidates = this.replacements.filter(
-      (replacement): replacement is ReplacementSubscriptionInstead & { id: number } =>
-        replacement.event === event && replacement.mode === "instead",
-    );
-    let activated = 0;
-    const targets = Array.isArray(target) ? target : [target];
-    for (const replacement of candidates) {
-      const sourcePermanentId = replacement.sourcePermanentId;
-      if (sourcePermanentId === undefined) continue;
-      const qualifyingTargets: Permanent[] = [];
-      const candidateInstanceIds = new Map<Permanent, string>();
-      const candidateContexts = new Map<Permanent, EffectContext>();
-      for (const candidate of targets) {
-        const candidateContext = buildContext(
-          sourcePermanentId,
-          replacement.sourceInstanceId,
-          candidate.topCard?.instanceId,
-        );
-        if (candidateContext === undefined) continue;
-        candidateContexts.set(candidate, candidateContext);
-        if (replacement.appliesToPending !== undefined && !replacement.appliesToPending(candidateContext, candidate))
-          continue;
-        if (
-          replacement.appliesToPending === undefined &&
-          replacement.appliesTo !== undefined &&
-          !replacement.appliesTo(candidateContext, candidate.permanentId)
-        )
-          continue;
-        qualifyingTargets.push(candidate);
-        const candidateInstanceId = candidate.topCard?.instanceId ?? candidateContext.trigger?.wouldBePlayedInstanceId;
-        if (candidateInstanceId !== undefined) candidateInstanceIds.set(candidate, candidateInstanceId);
+    this.activeResolutionDepth++;
+    try {
+      if (event !== "wouldBePlayed") return 0;
+      const candidates = this.replacements.filter(
+        (replacement): replacement is ReplacementSubscriptionInstead & { id: number } =>
+          replacement.event === event && replacement.mode === "instead",
+      );
+      let activated = 0;
+      const targets = Array.isArray(target) ? target : [target];
+      for (const replacement of candidates) {
+        const sourcePermanentId = replacement.sourcePermanentId;
+        if (sourcePermanentId === undefined) continue;
+        const qualifyingTargets: Permanent[] = [];
+        const candidateInstanceIds = new Map<Permanent, string>();
+        const candidateContexts = new Map<Permanent, EffectContext>();
+        for (const candidate of targets) {
+          const candidateContext = buildContext(
+            sourcePermanentId,
+            replacement.sourceInstanceId,
+            candidate.topCard?.instanceId,
+          );
+          if (candidateContext === undefined) continue;
+          candidateContexts.set(candidate, candidateContext);
+          if (replacement.appliesToPending !== undefined && !replacement.appliesToPending(candidateContext, candidate))
+            continue;
+          if (
+            replacement.appliesToPending === undefined &&
+            replacement.appliesTo !== undefined &&
+            !replacement.appliesTo(candidateContext, candidate.permanentId)
+          )
+            continue;
+          qualifyingTargets.push(candidate);
+          const candidateInstanceId =
+            candidate.topCard?.instanceId ?? candidateContext.trigger?.wouldBePlayedInstanceId;
+          if (candidateInstanceId !== undefined) candidateInstanceIds.set(candidate, candidateInstanceId);
+        }
+        if (qualifyingTargets.length === 0) continue;
+        const qualifyingIds = qualifyingTargets
+          .map((candidate) => candidateInstanceIds.get(candidate))
+          .filter((id): id is string => id !== undefined);
+        if (qualifyingIds.length === 0) continue;
+        const ctx =
+          candidateContexts.get(qualifyingTargets[0]!) ??
+          buildContext(sourcePermanentId, replacement.sourceInstanceId, qualifyingIds[0]);
+        if (ctx === undefined) continue;
+        ctx.trigger = {
+          ...(ctx.trigger ?? {}),
+          wouldBePlayedInstanceId: qualifyingIds[0],
+          wouldBePlayedInstanceIds: qualifyingIds,
+        };
+        onApplicable?.(replacement, qualifyingIds);
+        if (replacement.oncePerTurnKey !== undefined && turnBudget?.hasFired(replacement.oncePerTurnKey)) continue;
+        const result = await replacement.apply(ctx);
+        if (result === false) continue;
+        activated += 1;
+        if (replacement.oncePerTurnKey !== undefined) turnBudget?.markFired(replacement.oncePerTurnKey);
       }
-      if (qualifyingTargets.length === 0) continue;
-      const qualifyingIds = qualifyingTargets
-        .map((candidate) => candidateInstanceIds.get(candidate))
-        .filter((id): id is string => id !== undefined);
-      if (qualifyingIds.length === 0) continue;
-      const ctx =
-        candidateContexts.get(qualifyingTargets[0]!) ??
-        buildContext(sourcePermanentId, replacement.sourceInstanceId, qualifyingIds[0]);
-      if (ctx === undefined) continue;
-      ctx.trigger = {
-        ...(ctx.trigger ?? {}),
-        wouldBePlayedInstanceId: qualifyingIds[0],
-        wouldBePlayedInstanceIds: qualifyingIds,
-      };
-      onApplicable?.(replacement, qualifyingIds);
-      if (replacement.oncePerTurnKey !== undefined && turnBudget?.hasFired(replacement.oncePerTurnKey)) continue;
-      const result = await replacement.apply(ctx);
-      if (result === false) continue;
-      activated += 1;
-      if (replacement.oncePerTurnKey !== undefined) turnBudget?.markFired(replacement.oncePerTurnKey);
+      return activated;
+    } finally {
+      this.activeResolutionDepth--;
     }
-    return activated;
   }
 
   /** Drop every subscription anchored to a permanent (when it leaves the field). */
@@ -1094,4 +1204,35 @@ export class SubTriggerRegistry {
     this.seq = 0;
     this.oncePerTimingFiredFor.clear();
   }
+}
+
+function isSubTriggerRegistryState(value: unknown): value is SubTriggerRegistryState {
+  if (value === null || typeof value !== "object") {
+    return false;
+  }
+  const state = value as SubTriggerRegistryState;
+  if (
+    !Array.isArray(state.subscriptions) ||
+    !Array.isArray(state.replacements) ||
+    !(state.oncePerTimingFiredFor instanceof Map) ||
+    !Number.isSafeInteger(state.sequence) ||
+    state.sequence < 0
+  ) {
+    return false;
+  }
+  const identities = new Set<number>();
+  for (const entry of [...state.subscriptions, ...state.replacements]) {
+    if (
+      entry === null ||
+      typeof entry !== "object" ||
+      !Number.isSafeInteger(entry.id) ||
+      entry.id < 0 ||
+      entry.id >= state.sequence ||
+      identities.has(entry.id)
+    ) {
+      return false;
+    }
+    identities.add(entry.id);
+  }
+  return state.subscriptions.every((entry) => typeof entry.run === "function");
 }

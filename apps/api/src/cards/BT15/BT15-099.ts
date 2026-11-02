@@ -5,6 +5,8 @@ const handDigimon: Filter = { controller: "mine", zone: "hand", kind: ["Digimon"
 const myotismonText: Filter = { nameOrTrait: [{ tokens: ["Myotismon"], match: "text" }] };
 const body: Action[] = [
   {
+    effectTextPart:
+      "[Main] By trashing 1 Digimon card in your hand, delete 1 of your opponent's Digimon whose level is less than or equal to the trashed card's level. When a card with [Myotismon] in its text is trashed by this effect, ＜Draw 2＞ (Draw 2 cards from your deck).",
     kind: "CostGatedBlock",
     cost: { kind: "trash", target: { filter: handDigimon, count: 1 }, storeAs: "trashedDigimonLevel" },
     optional: true,

@@ -15,6 +15,8 @@ const emptyFilter: CardFilter = {
   costs: [],
   digivolutionCosts: [],
   rarities: [],
+  keywords: [],
+  availableKeywords: [],
   sort: "name",
   traitQuery: "",
   setTraitQuery: () => undefined,
@@ -28,6 +30,7 @@ const emptyFilter: CardFilter = {
   toggleCost: () => undefined,
   toggleDigivolutionCost: () => undefined,
   toggleRarity: () => undefined,
+  toggleKeyword: () => undefined,
   setSort: () => undefined,
   clear: () => undefined,
 };

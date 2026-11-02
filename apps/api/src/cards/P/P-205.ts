@@ -31,20 +31,20 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] ＜Draw 2＞ and trash 2 cards in your hand.",
           kind: "Draw",
           controller: "mine",
           amount: 2,
         },
         {
+          effectTextPart: "[Main] ＜Draw 2＞ and trash 2 cards in your hand.",
           kind: "Trash",
           target: {
             filter: { controller: "mine", zone: "hand" },
             count: 2,
           },
         },
-        {
-          kind: "PlaceInBattleAreaSelf",
-        },
+        { effectTextPart: "Then, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
       ],
     },
     {
@@ -57,6 +57,8 @@ const compiled: CompiledCard = {
       ],
       actions: [
         {
+          effectTextPart:
+            "By deleting 1 of your play cost 7 or lower Digimon, you may play 1 Digimon card with [Kimeramon] or [Millenniummon]\u00a0in its name from your trash with the play cost reduced by 3.",
           kind: "Delete",
           target: {
             filter: {
@@ -70,6 +72,8 @@ const compiled: CompiledCard = {
           abortOnDecline: true,
         },
         {
+          effectTextPart:
+            "By deleting 1 of your play cost 7 or lower Digimon, you may play 1 Digimon card with [Kimeramon] or [Millenniummon]\u00a0in its name from your trash with the play cost reduced by 3.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

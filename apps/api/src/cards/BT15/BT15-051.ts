@@ -10,9 +10,8 @@ const compiled: CompiledCard = {
           kind: "GainMemory",
           amount: 1,
           condition: {
-            kind: "opponentHas",
+            kind: "anyHas",
             filter: {
-              controllerDefault: "opponent",
               kind: ["Digimon"],
               suspended: true,
             },

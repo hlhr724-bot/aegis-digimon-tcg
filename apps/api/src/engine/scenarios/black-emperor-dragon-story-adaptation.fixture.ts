@@ -1,0 +1,93 @@
+import type { ScenarioFixture } from "#api/engine/scenario/types";
+import { buildStoryDrawPile } from "#api/story/buildStoryDrawPile";
+
+const violetHand = ["BT20-067", "BT20-072", "BT20-079", "BT20-098", "BT20-062"];
+const violetSecurity = ["BT20-068", "BT20-067", "BT20-072", "BT20-062", "ST6-15"];
+const fixture: ScenarioFixture = {
+  name: "black-emperor-dragon-story-adaptation",
+  memory: 6,
+  turnSeat: 0,
+  turnCount: 4,
+  isFirstPlayersFirstTurn: false,
+  presentation: { timed: false },
+  board: {
+    0: {
+      hand: violetHand,
+      security: violetSecurity,
+      deck: buildStoryDrawPile({
+        counts: [
+          ["BT20-063", 4],
+          ["BT20-062", 4],
+          ["BT20-067", 4],
+          ["BT20-068", 4],
+          ["BT20-072", 4],
+          ["BT20-073", 4],
+          ["BT20-079", 4],
+          ["BT20-078", 4],
+          ["BT20-088", 4],
+          ["BT20-098", 4],
+          ["P-108", 4],
+          ["P-040", 4],
+          ["ST6-15", 2],
+        ],
+        placed: [...violetHand, ...violetSecurity, "BT20-063", "BT20-088"],
+      }),
+      eggDeck: ["BT20-006", "BT20-006", "BT20-006"],
+      battleArea: [{ card: "BT20-088" }],
+      breeding: { card: "BT20-063", under: ["BT20-006"] },
+    },
+    "1": {
+      hand: ["EX3-004", "P-110", "EX3-010", "EX3-055", "BT20-020"],
+      security: ["EX1-066", "EX3-058", "EX3-055", "BT16-077", "EX3-058"],
+      deck: [
+        "EX3-058",
+        "EX3-055",
+        "EX3-063",
+        "EX3-055",
+        "EX3-058",
+        "EX3-063",
+        "EX3-004",
+        "EX3-004",
+        "BT7-107",
+        "EX3-063",
+        "BT20-020",
+        "BT16-040",
+        "EX3-008",
+        "BT20-074",
+        "EX3-063",
+        "BT16-040",
+        "P-110",
+        "BT16-030",
+        "LM-032",
+        "EX3-008",
+        "P-110",
+        "EX3-004",
+        "EX3-061",
+        "BT16-077",
+        "BT16-040",
+        "EX3-010",
+        "BT16-077",
+        "BT20-011",
+        "EX3-008",
+        "BT16-040",
+        "EX3-010",
+        "BT16-070",
+        "BT19-074",
+        "BT16-030",
+        "BT20-020",
+        "BT16-077",
+        "EX3-010",
+        "BT20-020",
+        "P-110",
+      ],
+      eggDeck: ["P-149", "P-149", "P-149", "P-149"],
+      battleArea: [
+        {
+          card: "AD1-024",
+        },
+      ],
+    },
+  },
+};
+
+export default fixture;

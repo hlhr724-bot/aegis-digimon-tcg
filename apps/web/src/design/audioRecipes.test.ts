@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { AUDIO_BANK_URL, AUDIO_CUES } from "./audioBank";
+import { AUDIO_BANK_URL, AUDIO_CUES, PCM_AUDIO_BANK_URL } from "./audioBank";
 import {
   SOUND_KINDS,
   audioRecipe,
@@ -67,11 +67,22 @@ describe("authored original bank", () => {
       new Set(SOUND_KINDS.filter((kind) => !foleyOnly.has(kind))),
     );
   });
+  it("serves the lossless compressed bank under its content hash", () => {
+    const root = new URL("../../public/audio/", import.meta.url);
+    const manifest = JSON.parse(readFileSync(new URL("manifest.json", root), "utf8"));
+    const [path, version] = AUDIO_BANK_URL.split("?v=");
+    const flac = readFileSync(new URL(path!.slice(7), root));
+    const sha256 = createHash("sha256").update(flac).digest("hex");
+    expect(flac.subarray(0, 4).toString("latin1")).toBe("fLaC");
+    expect(manifest.compressedBank).toEqual({ file: path!.slice(7), bytes: flac.length, sha256 });
+    expect(sha256.startsWith(version!)).toBe(true);
+    expect(PCM_AUDIO_BANK_URL).toBe(`/audio/${manifest.bank.file}?v=${manifest.bank.sha256.slice(0, 12)}`);
+  });
   it("compares the rejected cue version and exact natural recorded runtime slices", () => {
     const root = new URL("../../public/audio/", import.meta.url);
     const comparison = JSON.parse(readFileSync(new URL("previews/cue-comparison.json", root), "utf8"));
     expect(comparison.examples).toHaveLength(13);
-    expect(comparison.current.url).toBe(AUDIO_BANK_URL);
+    expect(comparison.current.url).toBe(PCM_AUDIO_BANK_URL);
     for (const version of ["previous", "current"]) {
       const row = comparison[version];
       const wav = readFileSync(new URL(row.url.split("?")[0].slice(7), root));

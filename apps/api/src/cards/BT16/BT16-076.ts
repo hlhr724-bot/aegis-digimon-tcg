@@ -132,11 +132,9 @@ const compiled: CompiledCard = {
             isSelf: true,
           },
           condition: {
-            kind: "opponentHas",
-            filter: {
-              controllerDefault: "opponent",
-            },
-            count: 1,
+            kind: "memoryAtLeast",
+            controller: "opponent",
+            value: 1,
             raw: "your opponent has 1 or more memory",
           },
         },

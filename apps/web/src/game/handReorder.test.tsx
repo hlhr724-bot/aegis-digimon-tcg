@@ -4,7 +4,8 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { GameScreen } from "./GameScreen";
-import { setActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { CardConfirmationMode } from "@/game/cardConfirmation/CardConfirmationMode";
+import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
 import type { AegisRoom } from "../net/client";
 
 afterEach(cleanup);
@@ -167,7 +168,7 @@ it("blocks reordering while a server decision is pending", () => {
 });
 
 it("still plays the physical instance dragged from its reordered position onto the battle area", () => {
-  setActionConfirmationsEnabled(false);
+  cardConfirmationPreference.setMode(CardConfirmationMode.NEVER.value);
   try {
     const { row, ids, state, refresh, send } = mountHand();
     fireEvent.keyDown(row.querySelector('[data-hand-instance-id="b"]')!, { key: "ArrowLeft", altKey: true });
@@ -196,7 +197,7 @@ it("still plays the physical instance dragged from its reordered position onto t
     expect(send).toHaveBeenCalledWith("playCard", expect.objectContaining({ instanceId: "b" }));
     expect([...state.players[0]!.hand].map((instance) => instance.instanceId)).toEqual(["a", "b", "c"]);
   } finally {
-    setActionConfirmationsEnabled(true);
+    cardConfirmationPreference.setMode(CardConfirmationMode.ALWAYS.value);
   }
 });
 

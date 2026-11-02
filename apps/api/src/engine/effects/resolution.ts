@@ -1,3 +1,4 @@
+import { trackResolutionEnvironment } from "#api/engine/effects/resolution/trackResolutionEnvironment";
 import { EffectTiming, type CardInstance, type Seat } from "@aegis/shared";
 import { createEffectContext, createGameAccess, gatherTriggeredEffects, type EffectEnvironment } from "./context.js";
 import type { CollectedEffect } from "./collect.js";
@@ -26,6 +27,7 @@ import { isTimingActivationDisabled } from "./timingActivation.js";
 
 /** The engine-side dependencies the resolver composition needs beyond the framework env. */
 export interface ResolutionDeps {
+  registerPendingEffects?: ResolutionEnv["registerPendingEffects"];
   /** Active player (turn-player-first ordering). Usually `state.turnSeat`. */
   turnSeat: Seat;
 
@@ -106,9 +108,15 @@ export function eventGrantSnapshot(env: EffectEnvironment): NonNullable<Paramete
  * set each pass; `makeContext` reuses the framework's EffectContext factory bound to
  * the same state/fx/ask the env carries.
  */
-export function buildResolutionEnv(env: EffectEnvironment, deps: ResolutionDeps): ResolutionEnv {
-  const grantSnapshot = eventGrantSnapshot(env);
-  return {
+export function buildResolutionEnv(
+  env: EffectEnvironment,
+  deps: ResolutionDeps,
+  grantSnapshot: ReturnType<typeof eventGrantSnapshot> = eventGrantSnapshot(env),
+): ResolutionEnv {
+  const environment: ResolutionEnv = {
+    runtimeObjects: env.runtimeObjects,
+    runtimeCallbacks: env.runtimeCallbacks,
+    registerPendingEffects: deps.registerPendingEffects,
     turnSeat: deps.turnSeat,
     tracker: env.tracker,
     collect: (timing: EffectTiming): CollectedEffect[] => [
@@ -129,24 +137,27 @@ export function buildResolutionEnv(env: EffectEnvironment, deps: ResolutionDeps)
         // and GameEngine.buildEffectContext: without it, a Link action resolved from a
         // TRIGGERED effect (e.g. BT24-038's OnPlay Link) reads the () => 0 default inside
         // createGameAccess and ignores any active <Link +N> cost-reduction grant (BT25-004).
-        game: createGameAccess(
-          env.state,
-          (id) => env.continuous.linkMaxDelta(id),
-          (id, traits) => env.continuous.linkCostReduction(id, traits),
-          env.hasKeyword,
-          env.digivolvedThisTurn,
-          (permanentId, timing) => isTimingActivationDisabled(env.continuous, permanentId, timing),
-          env.effectiveColors,
-          env.colorRequirementWaived,
-          env.colorRequirementAlternatives,
-          env.canDeclareAttack,
-          (permanentId, printedTraits) => effectiveTraits(env.continuous, permanentId, printedTraits),
-          (permanentId, printedKinds) => effectiveKinds(env.continuous, permanentId, printedKinds),
-          env.baseGrantedDigivolve,
-          undefined,
-          (id, traits) => env.continuous.linkCostReductionGrant(id, traits),
-          (permanent, printedName) => effectiveNames(env.continuous, permanent, printedName),
-          env.battleOpponentOf,
+        game: Object.assign(
+          createGameAccess(
+            env.state,
+            (id) => env.continuous.linkMaxDelta(id),
+            (id, traits) => env.continuous.linkCostReduction(id, traits),
+            env.hasKeyword,
+            env.digivolvedThisTurn,
+            (permanentId, timing) => isTimingActivationDisabled(env.continuous, permanentId, timing),
+            env.effectiveColors,
+            env.colorRequirementWaived,
+            env.colorRequirementAlternatives,
+            env.canDeclareAttack,
+            (permanentId, printedTraits) => effectiveTraits(env.continuous, permanentId, printedTraits),
+            (permanentId, printedKinds) => effectiveKinds(env.continuous, permanentId, printedKinds),
+            env.baseGrantedDigivolve,
+            undefined,
+            (id, traits) => env.continuous.linkCostReductionGrant(id, traits),
+            (permanent, printedName) => effectiveNames(env.continuous, permanent, printedName),
+            env.battleOpponentOf,
+          ),
+          { runtimeCallbacks: env.runtimeCallbacks, runtimeObjects: env.runtimeObjects },
         ),
         fx: env.fxForSource?.(collected.source) ?? env.fx,
         ask: env.ask,
@@ -173,6 +184,16 @@ export function buildResolutionEnv(env: EffectEnvironment, deps: ResolutionDeps)
     onWithoutLegalOutcome: deps.onWithoutLegalOutcome,
     betweenEffects: deps.betweenEffects,
   };
+  trackResolutionEnvironment({
+    framework: env,
+    environment,
+    payload: {
+      trigger: env.triggerInfo ?? {},
+      grants: grantSnapshot,
+      dependencies: deps,
+    },
+  });
+  return environment;
 }
 
 /**

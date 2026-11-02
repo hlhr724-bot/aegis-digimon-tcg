@@ -36,6 +36,8 @@ describe("EX7-007 Vorvomon", () => {
               revealCount: 3,
               add: [
                 {
+                  effectTextPart:
+                    "Add 1 card with the [Rock Dragon]/[Earth Dragon]/[Machine Dragon]/[Sky Dragon] trait",
                   filter: {
                     controllerDefault: "mine",
                     nameOrTrait: [
@@ -49,6 +51,7 @@ describe("EX7-007 Vorvomon", () => {
                   to: "hand",
                 },
                 {
+                  effectTextPart: "1 [Hina Kurihara] among them to the hand.",
                   filter: {
                     controllerDefault: "mine",
                     nameOrTrait: [{ tokens: ["Hina Kurihara"], match: "nameExact" }],

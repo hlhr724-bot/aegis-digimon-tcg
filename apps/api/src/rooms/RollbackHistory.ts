@@ -4,6 +4,8 @@ import { runReplay } from "#api/replays/inputs/run";
 import { REPLAY_FORMAT, type ReplayInput, type ReplayRecord } from "#api/replays/inputs/types";
 import type { GameState } from "@aegis/shared/schema/GameState";
 
+type FingerprintSource = Parameters<typeof rollbackStateFingerprint>[0];
+
 export class RollbackHistory {
   readonly inputs: ReplayInput[] = [];
   private actions: number[] = [];
@@ -14,8 +16,8 @@ export class RollbackHistory {
 
   constructor(private readonly record: Omit<ReplayRecord, "inputs" | "format" | "seats">) {}
 
-  append(input: ReplayInput, state?: GameState): void {
-    if (input.kind === "intent" && state) this.checkpoints.set(this.inputs.length, rollbackStateFingerprint(state));
+  append(input: ReplayInput, engine?: FingerprintSource): void {
+    if (input.kind === "intent" && engine) this.checkpoints.set(this.inputs.length, rollbackStateFingerprint(engine));
     this.inputs.push(structuredClone(input));
   }
 
@@ -23,8 +25,8 @@ export class RollbackHistory {
     this.actions.push(index);
   }
 
-  beforeTurn(turn: number, state: GameState): void {
-    this.turnFingerprints.set(turn, rollbackStateFingerprint(state));
+  beforeTurn(turn: number, engine: FingerprintSource): void {
+    this.turnFingerprints.set(turn, rollbackStateFingerprint(engine));
     this.turns.set(turn, this.inputs.length);
   }
 
@@ -71,7 +73,7 @@ export class RollbackHistory {
       rebuilt.applied !== target.index ||
       (target.turn !== undefined && rebuilt.reachedTurn !== target.turn) ||
       rebuilt.state.gameOver ||
-      rollbackStateFingerprint(rebuilt.state) !==
+      rollbackStateFingerprint(rebuilt.engine) !==
         (target.turn === undefined ? this.checkpoints.get(target.index) : this.turnFingerprints.get(target.turn))
     ) {
       rebuilt.state.gameOver = true;

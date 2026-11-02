@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EffectTiming } from "@aegis/shared";
+import { EffectTiming, Phase } from "@aegis/shared";
 import { advance } from "../../engine/testkit/advance.js";
 import { drainMicrotasks, setupEngine, settle, type BoardSpec } from "../../engine/testkit/harness.js";
 import "../index.js";
@@ -92,12 +92,12 @@ describe("ST22-04 Taomon — KB Q&A rulings", () => {
    * is true, otherwise the `decoy`, which leaves `subject` as the unlocked control. Hands the turn
    * to the opponent afterwards; the lock lasts until their turn ends.
    */
-  async function playTaomonLocking(board: BoardSpec, lockSubject: boolean) {
+  async function playTaomonLocking(board: BoardSpec, lockSubject: boolean, startingMemory = 10) {
     const preferred: string[] = [];
     const s = setupEngine(board, { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred });
     const locked = s.perm(lockSubject ? "subject" : "decoy");
     preferred.push(locked.permanentId, locked.topCard.instanceId);
-    s.state.memory = 10;
+    s.state.memory = startingMemory;
     await s.ready();
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("taomon").instanceId })).toEqual({
       ok: true,
@@ -142,6 +142,82 @@ describe("ST22-04 Taomon — KB Q&A rulings", () => {
     await settle(() => !observe(s.engine).isAttacking(), 3000);
     return s;
   }
+
+  it("does not impose a timing lock on Magnamon X while its evolution immunity is active", async () => {
+    const s = setupEngine(
+      {
+        0: { hand: [{ card: "ST22-04", as: "taomon" }], deck: ["BT1-009", "BT1-009"], security: ["BT1-009"] },
+        1: {
+          battleArea: [{ card: "BT21-036", as: "magna" }],
+          hand: [{ card: "BT16-102", as: "magnaX" }],
+          deck: ["BT1-009"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.turnSeat = 1;
+    s.state.memory = 10;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(1, {
+        type: "digivolve",
+        permanentId: s.perm("magna").permanentId,
+        instanceId: s.inst("magnaX").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.perm("magna").currentDP).toBe(15000);
+    s.state.turnSeat = 0;
+    s.state.memory = 3;
+    const turn = s.engine.runOneTurn();
+    await advance(s.engine).waitForMainPhase(0);
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("taomon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle();
+    expect(observe(s.engine).timingEffectDisabled(s.perm("magna"), "whenDigivolving")).toBe(false);
+    await turn;
+    s.state.turnSeat = 1;
+    s.state.phase = Phase.Main;
+    s.state.memory = 3;
+    await advance(s.engine).recompute();
+    expect(observe(s.engine).timingEffectDisabled(s.perm("magna"), "whenDigivolving")).toBe(false);
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("magna").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.perm("magna").isSuspended).toBe(false);
+    expect(s.state.players[0]!.security).toHaveLength(0);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
+
+  it.each([true, false])("gates Magnamon X security-triggered reactivation while locked=%s", async (lockSubject) => {
+    const s = await playTaomonLocking(
+      {
+        0: { hand: [{ card: "ST22-04", as: "taomon" }] },
+        1: {
+          battleArea: [
+            { card: "BT16-102", as: "subject", suspended: true, under: ["BT21-036"] },
+            { card: "BT1-009", as: "decoy", dp: 8000 },
+          ],
+          hand: [{ card: "BT4-104", as: "blindingRay" }],
+          security: ["BT1-009"],
+        },
+      },
+      lockSubject,
+      3,
+    );
+    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("blindingRay").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle();
+    expect(s.perm("subject").isSuspended).toBe(lockSubject);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
 
   it.each([true, false])(
     "stops a locked Digimon's [When Digivolving] effect from activating on digivolution (locked=%s) (Q5410)",

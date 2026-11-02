@@ -7,6 +7,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Choose 1 of your Digimon with [Hybrid] in its traits.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -24,6 +25,7 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart: "Delete 1 of your opponent's Digimon with DP less than or equal to the chosen Digimon's DP.",
           kind: "Delete",
           target: {
             filter: {

@@ -1,5 +1,6 @@
-import type { Action, CompiledCard } from "@aegis/shared";
-import { registerIrCard } from "../../engine/effects/interpreter.js";
+import type { Action } from "@aegis/shared/effects/ir/actions/action";
+import type { CompiledCard } from "@aegis/shared/effects/ir/card";
+import { registerIrCard } from "#api/engine/effects/interpreter";
 
 const suspendAndRestrict = (): Action[] => [
   {
@@ -8,7 +9,6 @@ const suspendAndRestrict = (): Action[] => [
       filter: {
         controller: "opponent",
         kind: ["Digimon"],
-        unsuspended: true,
       },
       count: 1,
       bindAs: "suspended",

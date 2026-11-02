@@ -1,4 +1,14 @@
+import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
+import type { BotSettings } from "@aegis/shared/bot/BotSettings";
+import { GameMode } from "@aegis/shared/manual/GameMode";
+import { getDecisionMaterialSelectionOrder } from "@/game/screen/model/getDecisionMaterialSelectionOrder";
 import { UsedDeckDialog } from "@/game/UsedDeckDialog";
+import { MatchQueueActivity } from "@/matchmaking/MatchQueueActivity";
+import { getMatchQueueSelection } from "@/matchmaking/getMatchQueueSelection";
+import { collectViewerCardArtIds } from "@/screens/cardLanguage/collectViewerCardArtIds";
+import { ViewerCardArtIdsContext } from "@/screens/cardLanguage/ViewerCardArtIdsContext";
 import type { DeckListing } from "@/game/decks";
 import { downloadReplay } from "../replays/files";
 /* The in-game board — the design's letterboxed board layout, driven entirely by
@@ -25,9 +35,12 @@ import { boardActions } from "./screen/boardActions";
 import { matchIntents } from "./screen/matchIntents";
 import { PendingMatchBoard } from "./screen/layout/PendingMatchBoard";
 import { pendingMatchNotice } from "./screen/model/pendingMatchNotice";
+import { getGuestApprovalView } from "@/game/screen/model/getGuestApprovalView";
+import { GUEST_APPROVAL_CHANNEL } from "@aegis/shared/protocol/GuestApprovalMessage";
 import { sourceHostChoiceFor } from "./screen/model/sourceHostChoice";
 import { BoardStage, type BoardAnchors } from "./screen/layout/BoardStage";
 import { useMatchChat } from "./chat/useMatchChat";
+import { useMatchChatWindow } from "./chat/useMatchChatWindow";
 import { BreedingDock } from "./screen/layout/BreedingDock";
 import { MatchOverlays } from "./screen/layout/MatchOverlays";
 
@@ -63,8 +76,13 @@ import {
   reorderedHandInstanceIds,
 } from "./screen/model/handEntries";
 import { useAutoHatch } from "./screen/hooks/useAutoHatch";
+import { useBotMatchStartDeadline } from "./screen/hooks/useBotMatchStartDeadline";
+import { clientErrorReporter } from "@/clientErrors/clientErrorReporter";
+import { ClientErrorKind } from "@aegis/shared/clientErrors/ClientErrorKind";
 import { useHandAutoSort } from "./handAutoSort";
 import { setHandSortMode, useHandSortMode, type HandSortMode } from "./handSortMode";
+import type { HandSortDirection } from "@/game/HandSortDirection";
+import { setHandSortDirection, useHandSortDirection } from "@/game/handSortDirectionPreference";
 import { dnaFieldChoice, dnaMaterialPicks, toggleDnaMaterial } from "./screen/model/dnaMaterialSelection";
 import { presentedSeats } from "./screen/model/presentedSeats";
 import { visibleBoard } from "./screen/model/visibleBoard";
@@ -76,7 +94,9 @@ import { combatAnswers } from "./screen/combatAnswers";
 import { playChoiceAnswers } from "./screen/playChoiceAnswers";
 import type { DropZoneHit, PermanentChrome } from "./screen/types";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import type { SeriesDeckDialogProps } from "@/game/overlay/match/SeriesDeckDialog";
+import type { DeckFormat } from "@aegis/shared/deckFormat";
 import {
   CardKind,
   PRESENTATION_CHANNEL,
@@ -90,9 +110,11 @@ import {
 } from "@aegis/shared";
 import { rejectionMessage } from "../rejectionMessages";
 import { useTranslation } from "../i18n";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { intents } from "../net/intents";
 import { useRoom, type MatchMode, type SeriesGameTicket, type UseRoomResult } from "../net/useRoom";
 import { seriesView } from "./seriesModel";
+import { getRematchView } from "@/game/getRematchView";
 import { singleServerBatch, type ServerBatch } from "../net/serverBatches";
 import { selectPresentedState, type StateSnapshot } from "../net/presentedState";
 import { joinWithBot } from "../net/client";
@@ -109,7 +131,7 @@ import { isDecisionPingEnabled } from "@/design/decisionPing";
 import { useLowTimeWarning } from "@/game/useLowTimeWarning";
 import { usePresentationAudio, useReadoutAudio } from "./usePresentationAudio";
 import { audioBoardFromPresentedSeats } from "./match/present/presentationAudio";
-import { areActionConfirmationsEnabled } from "../design/actionConfirmation";
+import { cardConfirmationPreference } from "@/game/cardConfirmation/cardConfirmationPreference";
 import { isKeepAwakeEnabled } from "../design/keepAwake";
 import { useScreenWakeLock } from "../design/useScreenWakeLock";
 import { useArenaBoardLook } from "./arenaLook";
@@ -130,13 +152,24 @@ import {
 import { openCombatWindow, mirroredCombatWindow } from "./combatWindowModel";
 import { buildInstanceIndex, instancePermanentId } from "./decisionModel";
 import { digivolveBasePermanentIds } from "./digivolveModel";
-import { buildMatchLog, type LogLine } from "./matchLog";
+import { useMatchLogHistory } from "@/game/log/useMatchLogHistory";
+import { TutorialCoach } from "@/game/tutorial/TutorialCoach";
+import { findTutorialLesson } from "@aegis/shared/tutorial/findTutorialLesson";
+import { getSeatNames } from "@/game/log/getSeatNames";
+import type { ServerEvent } from "@aegis/shared/protocol/events";
 import { useMatchCues } from "./useMatchCues";
 import { useAnimationSpeedReport } from "./useAnimationSpeedReport";
 import type { PresentationPacing, PresentationProbe } from "./presentationProbe";
 import { TIMINGS } from "./timings";
 import { loadReconnectSession } from "../net/reconnectSession";
 import { pendingFateBadges } from "./pendingFate";
+import { useEffectConfirmationHold } from "./effectConfirmationHold";
+import { findEffectSourceMarks } from "@/game/effectMarks/findEffectSourceMarks";
+
+export type SeriesDeckPickerParams = Pick<
+  SeriesDeckDialogProps,
+  "format" | "unlimited" | "betaAllowed" | "onChoose" | "onClose"
+>;
 
 const SERIES_HOP_DELAY_MS = 1500;
 
@@ -145,11 +178,13 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     joinOptions,
     startMode = "casual",
     roomCode,
+    spectatorFriendId,
     waitForHost,
     betaBattleMode,
     unlimited,
     presentationPacing,
     seriesGame,
+    tournamentMatch,
     demoConnection,
     replayMode,
   } = props;
@@ -157,13 +192,13 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
   const matchConfig = useMemo(() => {
-    if (startMode === "spectator") return { mode: "spectator" as const, roomCode };
+    if (startMode === "spectator") return { mode: "spectator" as const, roomCode, spectatorFriendId, tournamentMatch };
     if (seriesGame) return { mode: "series" as const, seriesGame };
     if (startMode === "casual" || startMode === "unlimited" || startMode === "ranked" || startMode === "beta")
       return undefined;
     if (startMode === "bot") return { mode: "bot" as MatchMode };
     return { mode: startMode, roomCode, waitForHost };
-  }, [startMode, roomCode, waitForHost, seriesGame]);
+  }, [startMode, roomCode, spectatorFriendId, waitForHost, seriesGame, tournamentMatch]);
   const roomOptions = useMemo(
     () => ({
       ...joinOptions,
@@ -178,6 +213,12 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     [joinOptions, startMode, betaBattleMode, unlimited, presentationPacing, spectating],
   );
   const liveConnection = useRoom(roomOptions, matchConfig, demoConnection !== undefined);
+  const onPrivateRoomReady = props.onPrivateRoomReady;
+  useEffect(() => {
+    if (startMode === "private_host" && liveConnection.roomCode) {
+      onPrivateRoomReady?.(liveConnection.roomCode);
+    }
+  }, [startMode, liveConnection.roomCode, onPrivateRoomReady]);
   return (
     <GameScreenSession
       key={`${(demoConnection ?? liveConnection).room?.roomId ?? "preview"}:${(demoConnection?.state ?? liveConnection.state)?.rollbackRevision ?? 0}`}
@@ -194,7 +235,9 @@ function GameScreenSession({
   seriesGame,
   startMode = "casual",
   botDeckId,
+  botSettings,
   onExit,
+  onStartLesson,
   onRematch,
   onCopyUsedDeck,
   onResetScenario,
@@ -202,10 +245,13 @@ function GameScreenSession({
   autoHatchReady = true,
   demoConnection,
   replayMode = false,
+  historyEvents,
+  replayPlayers,
   devProbe,
   presentationPacing,
   onSeriesNext,
   onLeaveForfeitsChange,
+  renderSeriesDeckPicker,
 }: {
   liveConnection: UseRoomResult;
   joinOptions: AegisJoinOptions;
@@ -214,13 +260,18 @@ function GameScreenSession({
   identityAvatarUrl?: string | null;
   startMode?: StartMode;
   roomCode?: string;
+  tournamentMatch?: TournamentSpectateTarget;
+  spectatorFriendId?: string;
+  onPrivateRoomReady?: (code: string) => void;
   /** A guest returning to a private room waits until the host has reopened it. */
   waitForHost?: boolean;
   /** Famous-deck preset the seated bot should play; absent means the server picks at random. */
   botDeckId?: string;
+  botSettings?: BotSettings;
   betaBattleMode?: boolean;
   unlimited?: boolean;
   onExit: (screen: Screen) => void;
+  onStartLesson?: (lessonId: string) => void;
   onCopyUsedDeck?: (deck: DeckListing) => void;
   /** Restart a server-backed development scenario from the match controls. */
   onResetScenario?: () => void;
@@ -230,6 +281,7 @@ function GameScreenSession({
     unlimited?: boolean,
     privateHost?: boolean,
     format?: import("@aegis/shared").DeckFormat,
+    gameMode?: GameMode,
   ) => void;
   /** Only shapes what the report dialog says about follow-up questions; reporting needs no account. */
   signedIn?: boolean;
@@ -250,6 +302,8 @@ function GameScreenSession({
   };
   /** Portable file playback uses the read-only board without live result dialogs. */
   replayMode?: boolean;
+  historyEvents?: readonly ServerEvent[];
+  replayPlayers?: readonly string[];
   /** Dev inspector hooks (the effects lab): queue controls, step events, batches, decisions. */
   devProbe?: PresentationProbe;
   presentationPacing?: PresentationPacing;
@@ -263,14 +317,16 @@ function GameScreenSession({
    * Must be a stable callback.
    */
   onLeaveForfeitsChange?: (concede: (() => void) | undefined) => void;
+  renderSeriesDeckPicker?: (params: SeriesDeckPickerParams) => ReactNode;
 }) {
   const { t } = useTranslation();
+  const getCardName = useTranslatedCardName();
   const [handOrder, setHandOrder] = useState<readonly string[]>([]);
   const [spectating] = useState(
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
   const usedDeck = spectating ? undefined : liveConnection.usedDeck;
-  const actionConfirmationsEnabled = areActionConfirmationsEnabled();
+  const cardConfirmationMode = cardConfirmationPreference.useMode();
   const arenaLayout = useArenaLayout();
   const { narrowGameLayout, compactPiles, shortBoard, collapseNotices } = arenaLayout;
   const {
@@ -309,8 +365,10 @@ function GameScreenSession({
   // stay cached as the fallback seat 0.
   const viewerSeat = viewerSeatOf(state, sessionId);
   const chat = useMatchChat({ room: connectedRoom, viewerSeat, spectating });
+  const guestApproval = spectating ? undefined : getGuestApprovalView({ state, sessionId });
 
-  const leaveForfeits = !demoConnection && !spectating && !!state && bothSeated(state) && !state.gameOver;
+  const leaveForfeits =
+    !demoConnection && !spectating && !!state && bothSeated(state) && !state.gameOver && !guestApproval;
   useEffect(() => {
     if (!leaveForfeits || !onLeaveForfeitsChange) return;
     onLeaveForfeitsChange(() => {
@@ -320,6 +378,7 @@ function GameScreenSession({
   }, [leaveForfeits, onLeaveForfeitsChange, connectedRoom]);
 
   const vsBot = startMode === "bot";
+  const effectConfirmationHold = useEffectConfirmationHold();
   const isPrivateMatch = startMode === "private_host" || startMode === "private_guest" || !!state?.roomCode;
 
   const botCalledRef = useRef(false);
@@ -327,14 +386,24 @@ function GameScreenSession({
   useEffect(() => {
     if (!vsBot || botCalledRef.current || !room || status !== "connected") return;
     botCalledRef.current = true;
-    void joinWithBot(room.roomId, botDeckId).catch((botJoinError: unknown) => {
+    void joinWithBot(room.roomId, botDeckId, botSettings).catch((botJoinError: unknown) => {
       console.error("[BOT_JOIN_CLIENT] failed", {
         roomId: room.roomId,
         error: botJoinError instanceof Error ? botJoinError.message : String(botJoinError),
       });
       setBotError(t("game.botConnectionFailedDetail"));
     });
-  }, [vsBot, room, status, botDeckId, t]);
+  }, [vsBot, room, status, botDeckId, botSettings, t]);
+  useBotMatchStartDeadline({
+    waiting: vsBot && !botError && (status === "connecting" || status === "connected") && !bothSeated(state),
+    onExpired: () => {
+      clientErrorReporter.capture({
+        kind: ClientErrorKind.ERROR.value,
+        error: new Error(`Bot match did not start before the deadline (status ${status})`),
+      });
+      setBotError(t("game.botConnectionFailedDetail"));
+    },
+  });
 
   const selectionState = useBoardSelection({ state, viewerSeat });
   const {
@@ -349,8 +418,17 @@ function GameScreenSession({
     vortexMode,
     setVortexMode,
     clearSel,
+    clearDeclarations,
   } = selectionState;
-  const overlayState = useOverlayState({ decision, state, clearSel });
+  const overlayState = useOverlayState({
+    decision,
+    state,
+    handPreview,
+    setHandPreview,
+    clearSel,
+    clearDeclarations,
+    viewerSeat,
+  });
   const {
     cardMenu,
     setCardMenu,
@@ -401,16 +479,26 @@ function GameScreenSession({
     permanentId: string;
   }>();
   const allianceConfirmationSubmittedRef = useRef(false);
+  const [blockConfirmation, setBlockConfirmation] = useState<{
+    windowKey: string;
+    permanentId: string;
+  }>();
+  const blockConfirmationSubmittedRef = useRef(false);
 
   const { drag, dragHover, handleTapRef, handleDropRef, canDragRef, startHandDrag, startPermDrag, cancelDrag } =
-    useDragPlumbing();
+    useDragPlumbing({ manual: state?.gameMode === GameMode.MANUAL.value });
   canDragRef.current = null;
+  const playDragStarted = drag?.kind === DragKind.Play && drag.started;
+  useEffect(() => {
+    if (playDragStarted && handPreview) clearSel();
+  }, [playDragStarted, handPreview, clearSel]);
 
   const boardRef = useRef<HTMLDivElement | null>(null);
   const fieldRef = useRef<HTMLDivElement | null>(null);
+  const { scale: arenaScale } = arenaAppearancePreference.useAppearance();
   const fittedWidths = useFittedCardWidths({
     fieldRef,
-    enabled: arenaLayout.landscapePhone,
+    enabled: arenaLayout.landscapePhone && arenaScale === ArenaUiScale.DEFAULT.value,
     permanentWidth: arenaLayout.arenaPermanentWidth,
     pileWidth: arenaLayout.arenaPileWidth,
   });
@@ -564,9 +652,20 @@ function GameScreenSession({
     },
     devProbe,
     presentationPacing,
+    holdEffectsForConfirmation: vsBot && !spectating && effectConfirmationHold,
+  });
+  const liveChat = connectedRoom ? chat : undefined;
+  const chatWindow = useMatchChatWindow({
+    chat: liveChat,
+    resultShown: !!state?.gameOver && !cues.resultPending,
   });
   const you = state?.players[viewerSeat];
   const opp = state?.players[otherSeat(viewerSeat)];
+  const viewerCardArtKey =
+    spectating || !state
+      ? ""
+      : collectViewerCardArtIds({ deck: joinOptions.deck, players: [...state.players], viewerSeat }).join("\n");
+  const viewerCardArtIds = useMemo(() => new Set(viewerCardArtKey.split("\n").filter(Boolean)), [viewerCardArtKey]);
   /**
    * The two boards this screen reads (docs/presentation-queue-plan.md 3.2).
    *
@@ -752,6 +851,15 @@ function GameScreenSession({
     ),
   );
 
+  if (state?.gameMode === GameMode.MANUAL.value && state.manual.signalSeat !== -1) {
+    if (state.manual.signalPermanentId) {
+      effectLinkedPermanentIds.add(state.manual.signalPermanentId);
+    }
+    if (state.manual.signalTargetPermanentId) {
+      effectLinkedPermanentIds.add(state.manual.signalTargetPermanentId);
+    }
+  }
+
   const arenaLook = useArenaBoardLook({ viewer: you, opponent: opp, matchKey: connectedRoom?.roomId });
 
   // A play written into a dropping socket can be lost without the server ever refusing it, so a
@@ -829,25 +937,66 @@ function GameScreenSession({
   const presentedHandKey = presentedHand?.map((card) => `${card.instanceId}\u0001${card.cardId}`).join("\0");
   const handAutoSort = useHandAutoSort();
   const handSortMode = useHandSortMode();
+  const handSortDirection = useHandSortDirection();
   useEffect(() => {
     if (presentedHandKey === undefined) return;
     const hand = presentedHandKey.split("\0").map((card) => {
       const [instanceId = "", cardId = ""] = card.split("\u0001");
       return { instanceId, cardId };
     });
-    setHandOrder((order) => (handAutoSort ? sortedHandInstanceIds(hand, handSortMode) : retainHandOrder(order, hand)));
-  }, [presentedHandKey, handAutoSort, handSortMode]);
+    setHandOrder((order) =>
+      handAutoSort ? sortedHandInstanceIds(hand, handSortMode, handSortDirection) : retainHandOrder(order, hand),
+    );
+  }, [presentedHandKey, handAutoSort, handSortMode, handSortDirection]);
+
+  const instanceIndex = state ? buildInstanceIndex(state, viewerSeat) : new Map<string, string>();
+  const playerName0 = state?.players[0]?.displayName;
+  const playerName1 = state?.players[1]?.displayName;
+  const seatNames = useMemo(
+    () =>
+      getSeatNames({
+        players: [{ displayName: playerName0 }, { displayName: playerName1 }],
+        viewerSeat: spectating ? undefined : viewerSeat,
+        replayPlayers,
+        t,
+      }),
+    [playerName0, playerName1, spectating, viewerSeat, replayPlayers, t],
+  );
+  const playerAvatar0 = state?.players[0]?.avatarId;
+  const playerAvatar1 = state?.players[1]?.avatarId;
+  const seatAvatars = useMemo(
+    () => ({ 0: playerAvatar0 || undefined, 1: playerAvatar1 || undefined }),
+    [playerAvatar0, playerAvatar1],
+  );
+  const {
+    turns: logTurns,
+    recent: log,
+    entries: logEntries,
+  } = useMatchLogHistory({
+    events: historyEvents ?? events,
+    initialTurn: state
+      ? { turnCount: Math.max(1, state.turnCount), turnSeat: state.turnSeat, phase: state.phase }
+      : undefined,
+    batches: historyEvents ? undefined : batches,
+    resetKey: `${connectedRoom?.roomId ?? "preview"}:${liveConnection.rollbackCount}`,
+    viewerSeat,
+    seatNames,
+    instanceIndex,
+    t,
+  });
 
   if (
     status === "reconnecting" ||
     status === "error" ||
+    (status === "closed" && !state?.gameOver) ||
     botError ||
     !state ||
     !you ||
     !opp ||
     !shownState ||
     !seats ||
-    !bothSeated(state)
+    !bothSeated(state) ||
+    guestApproval
   ) {
     const pendingSeries = state && viewerSeat !== undefined ? seriesView(state.series, viewerSeat) : undefined;
     const notice =
@@ -867,7 +1016,20 @@ function GameScreenSession({
           }
         : seriesGame && status === "connected"
           ? { title: t("overlay.series.joining"), detail: "", spinner: true, roomCode: undefined }
-          : pendingMatchNotice({ status, botError, error, vsBot, startMode, hostRoomCode, joinOptions, t });
+          : pendingMatchNotice({
+              status,
+              botError,
+              error,
+              vsBot,
+              spectating,
+              hasOpponent: !!state && bothSeated(state),
+              startMode,
+              hostRoomCode,
+              joinOptions,
+              guestApproval,
+              t,
+            });
+    const guestRequest = guestApproval?.kind === "hostReview" ? guestApproval.guest : undefined;
     return (
       <PendingMatchBoard
         title={notice.title}
@@ -875,6 +1037,28 @@ function GameScreenSession({
         spinner={notice.spinner}
         actionLabel={notice.actionLabel}
         roomCode={notice.roomCode}
+        guestRequest={guestRequest}
+        onAnswerGuest={
+          guestRequest
+            ? (accept) => room?.send(GUEST_APPROVAL_CHANNEL, { guestSessionId: guestRequest.sessionId, accept })
+            : undefined
+        }
+        status={
+          "searchingQueue" in notice && notice.searchingQueue ? (
+            <MatchQueueActivity
+              className="waiting-dialog__queue-activity"
+              viewerQueued
+              selection={getMatchQueueSelection({
+                options: {
+                  ...joinOptions,
+                  ranked: startMode === "ranked",
+                  betaBattleMode: startMode === "beta",
+                  unlimited: startMode === "unlimited" || joinOptions.unlimited,
+                },
+              })}
+            />
+          ) : undefined
+        }
         onAction={notice.exitTo ? () => onExit(notice.exitTo!) : undefined}
         onCancel={() => onExit("lobby")}
       />
@@ -917,7 +1101,6 @@ function GameScreenSession({
     },
     viewerSeat,
   );
-  const instanceIndex = buildInstanceIndex(state, viewerSeat);
 
   const { handEntries, shownHandEntries } = handEntriesOf({
     handOrder,
@@ -972,7 +1155,7 @@ function GameScreenSession({
     handEntries,
     digivolveRoutesOf,
     mainActionBlocked,
-    actionConfirmationsEnabled,
+    cardConfirmationMode,
     playGameCue,
     lastPlayAttemptRef,
     playAttemptEventSeqRef,
@@ -1001,6 +1184,15 @@ function GameScreenSession({
     allianceConfirmation.windowKey === allianceWindowKey &&
     combatWindows.allianceWindow?.eligibleAllyIds.includes(allianceConfirmation.permanentId)
       ? allianceConfirmation.permanentId
+      : undefined;
+  const blockWindowKey = combatWindows.blockWindow
+    ? `block:${combatWindows.blockWindow.attackerPermanentId}:${openCombatWindowForBarrier?.stateVersion ?? state.stateVersion}`
+    : undefined;
+  const activeBlockConfirmationPermanentId =
+    blockConfirmation &&
+    blockConfirmation.windowKey === blockWindowKey &&
+    combatWindows.blockWindow?.eligibleBlockerIds.includes(blockConfirmation.permanentId)
+      ? blockConfirmation.permanentId
       : undefined;
   const { markCombatWindowAnswered } = combatWindows;
   const counterWindowKey = `${openCombatWindowForBarrier?.key ?? ""}:${openCombatWindowForBarrier?.stateVersion ?? ""}`;
@@ -1064,7 +1256,7 @@ function GameScreenSession({
     !dnaChoosing &&
     !mainActionBlocked &&
     (candidate.kind !== DragKind.Attack || (!handSel && !linkSel)) &&
-    canDragCard({ drag: candidate, you, handEntries });
+    (state.gameMode === GameMode.MANUAL.value || canDragCard({ drag: candidate, you, handEntries }));
   const dragIntentAt = (hit: DropZoneHit | null) => {
     if (drag?.started && hit?.target === "hand-you" && drag.kind === DragKind.Play && canReorderHand(drag.instanceId))
       return "reorder" as const;
@@ -1147,7 +1339,6 @@ function GameScreenSession({
   });
 
   // ----- log + game over -----
-  const log: LogLine[] = buildMatchLog(events, viewerSeat, instanceIndex, t);
 
   const gameOverReason = modelGameOverReason({ events });
 
@@ -1159,9 +1350,10 @@ function GameScreenSession({
 
   const viewerTurnOrder = modelViewerTurnOrder({ events, viewerSeat });
 
-  const revealed = state.gameOver ? modelRevealedZones({ events, viewerSeat }) : undefined;
+  const revealed = modelRevealedZones({ events, viewerSeat, resultShown: state.gameOver && !cues.resultPending });
 
-  const series = spectating ? undefined : seriesView(state.series, viewerSeat);
+  const rematch = spectating ? undefined : getRematchView({ series: state.series, viewerSeat });
+  const series = spectating || rematch?.stage === "accepted" ? undefined : seriesView(state.series, viewerSeat);
 
   const attackerPerm = selPerm ? you.battleArea.find((p) => p.permanentId === selPerm) : undefined;
   const draggedAttackerPerm =
@@ -1205,6 +1397,7 @@ function GameScreenSession({
     decisionDifferentColors,
     decisionDistinctCardIds,
     decisionDistinctNames,
+    decisionAllowedTargetCombinations,
     decisionMaxTotalPlayCost,
     decisionMaxTotalDP,
     decisionCandidateDP,
@@ -1233,9 +1426,11 @@ function GameScreenSession({
       decisionVisibleCardIds,
       decisionDistinctCardIds,
       decisionDistinctNames,
+      decisionAllowedTargetCombinations,
       decisionMaxTotalPlayCost,
       decisionMaxTotalDP,
       decisionCandidateDP,
+      decisionMax,
     });
 
   const decisionAllowsPermanent = (perm: Permanent) => {
@@ -1253,13 +1448,16 @@ function GameScreenSession({
     candidates: decisionView.decisionVisible,
     battleArea: allPermanents,
   });
-  const chosenSourceHostId =
+  const explicitlyChosenSourceHostId =
     sourceHostChoice !== undefined &&
     chosenSourceHost !== undefined &&
     chosenSourceHost.decisionId === viewerDecision?.decisionId &&
     sourceHostChoice.cardIdsByHost.has(chosenSourceHost.permanentId)
       ? chosenSourceHost.permanentId
       : undefined;
+  const onlySourceHostId =
+    sourceHostChoice?.hostPermanentIds.length === 1 ? sourceHostChoice.hostPermanentIds[0] : undefined;
+  const chosenSourceHostId = explicitlyChosenSourceHostId ?? onlySourceHostId;
   const pickingSourceHost = sourceHostChoice !== undefined && chosenSourceHostId === undefined;
   const chooseSourceHost = (permanentId: string | undefined) => {
     if (decisionMax === 1) setPicks([]);
@@ -1307,9 +1505,22 @@ function GameScreenSession({
     decision: viewerDecision,
     viewer: you,
     opponent: opp,
-    handInstanceIds,
+    handInstanceIds: shownHandEntries.map((entry) => entry.instanceId),
     t,
+    getCardName,
   });
+  const effectSourceMarks = findEffectSourceMarks({
+    events,
+    presentedStateVersion: cues.presentedStateVersion,
+    viewerDecision,
+  });
+  const trashChrome = (seat: Seat): string | undefined => {
+    const trash = seat === viewerSeat ? shownYou.trash : shownOpp.trash;
+    const marked = trash.some((card) => effectSourceMarks.has(card.instanceId));
+    return (
+      [trashEffectSource(seat), marked ? "game-pile--effect-marked" : undefined].filter(Boolean).join(" ") || undefined
+    );
+  };
 
   const appFusion = appFusionLive({
     choice: appFusionChoice,
@@ -1318,6 +1529,7 @@ function GameScreenSession({
     available: appFusionActionAvailable(),
   });
   const playAnswers = playChoiceAnswers({
+    playNormally: (instanceId, confirmDrop) => matchSenders.playCard(instanceId, confirmDrop, false, true),
     room,
     viewer: you,
     handEntries,
@@ -1368,6 +1580,13 @@ function GameScreenSession({
       }
       slotDrop={{ "data-drop": "breeding-you", ...dropIntentAttrs("breeding-you") }}
       onHatch={onBreeding}
+      onInspect={() => {
+        if (!breedingYou.breeding) {
+          return;
+        }
+        cancelDrag();
+        actions.showCardMenu(breedingYou.breeding.permanentId, Side.Viewer, { preserveSelection: true });
+      }}
       onOpenEggDeck={
         revealed ? () => overlayState.setRevealedZoneView({ side: Side.Viewer, zone: "eggDeck" }) : undefined
       }
@@ -1389,7 +1608,8 @@ function GameScreenSession({
       }
     />
   );
-  const overlays = (
+  const tutorialLesson = spectating || replayMode ? undefined : findTutorialLesson(joinOptions.storyBattleId);
+  const matchOverlays = (
     <MatchOverlays
       state={state}
       viewer={you}
@@ -1423,6 +1643,19 @@ function GameScreenSession({
         handInstanceIds: counterHandInstanceIds,
       }}
       combatWindowAnswers={combatWindowAnswers}
+      blockConfirmationPermanentId={activeBlockConfirmationPermanentId}
+      onConfirmBlock={() => {
+        if (!activeBlockConfirmationPermanentId || blockConfirmationSubmittedRef.current) {
+          return;
+        }
+        blockConfirmationSubmittedRef.current = true;
+        combatWindowAnswers.onBlock(activeBlockConfirmationPermanentId);
+        setBlockConfirmation(undefined);
+      }}
+      onCancelBlockConfirmation={() => {
+        blockConfirmationSubmittedRef.current = false;
+        setBlockConfirmation(undefined);
+      }}
       allianceConfirmationPermanentId={activeAllianceConfirmationPermanentId}
       onConfirmAlliance={() => {
         if (!activeAllianceConfirmationPermanentId || allianceConfirmationSubmittedRef.current) return;
@@ -1436,38 +1669,63 @@ function GameScreenSession({
       }}
       scenes={{ securityBreak, securityClash, securityBranch, optionBranch, zoneShowcase, revealShowcase }}
       collapseNotices={collapseNotices}
-      log={log}
+      logTurns={logTurns}
+      seatNames={seatNames}
+      seatAvatars={seatAvatars}
+      logViewerSeat={spectating ? undefined : viewerSeat}
       signedIn={signedIn}
+      handoffUrl={
+        signedIn &&
+        !spectating &&
+        !replayMode &&
+        !tutorialLesson &&
+        !demoConnection &&
+        !state.gameOver &&
+        viewerSeat !== undefined
+          ? `${window.location.origin}/`
+          : undefined
+      }
       opponentDropped={!spectating && !vsBot && !opp.connected && !state.gameOver}
       gameOver={
-        !replayMode && (state.gameOver || series?.stage === "over") && !cues.resultPending
+        !replayMode && !tutorialLesson && (state.gameOver || series?.stage === "over") && !cues.resultPending
           ? {
               result: series?.outcome ?? gameOverResult,
-              usedDeckDialog:
-                usedDeck && onCopyUsedDeck
+              usedDeckName: usedDeck?.deckName,
+              opponentDeckName: !spectating ? liveConnection.opponentDeck?.deckName : undefined,
+              opponentDeckDialog:
+                !spectating && liveConnection.opponentDeck
                   ? (onClose: () => void) => (
-                      <UsedDeckDialog snapshot={usedDeck} onCopy={onCopyUsedDeck} onClose={onClose} />
+                      <UsedDeckDialog
+                        snapshot={liveConnection.opponentDeck!}
+                        onCopy={onCopyUsedDeck}
+                        onClose={onClose}
+                        opponent
+                      />
                     )
                   : undefined,
+              usedDeckDialog: usedDeck
+                ? (onClose: () => void) => (
+                    <UsedDeckDialog snapshot={usedDeck} onCopy={onCopyUsedDeck} onClose={onClose} />
+                  )
+                : undefined,
               onDownloadReplay:
-                !spectating && liveConnection.replayDownload?.kind === "ready"
+                liveConnection.replayDownload?.kind === "ready"
                   ? () => {
                       if (liveConnection.replayDownload?.kind === "ready")
                         downloadReplay(liveConnection.replayDownload);
                     }
                   : undefined,
-              replayFile:
-                !spectating && liveConnection.replayDownload?.kind === "ready"
-                  ? liveConnection.replayDownload
-                  : undefined,
+              replayFile: liveConnection.replayDownload?.kind === "ready" ? liveConnection.replayDownload : undefined,
               replayStatus:
-                spectating || demoConnection || joinOptions.devScenario
+                demoConnection || joinOptions.devScenario
                   ? undefined
                   : liveConnection.replayDownload?.kind === "unavailable"
                     ? "unavailable"
                     : liveConnection.replayDownload
                       ? undefined
                       : "preparing",
+              friendMatchId: !spectating && !vsBot ? room?.roomId : undefined,
+              chat: liveChat && { open: chatWindow.open, unread: chatWindow.unread, onToggle: chatWindow.toggle },
               reason: gameOverReason,
               revealed,
               series: series && {
@@ -1476,10 +1734,43 @@ function GameScreenSession({
                 onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
                 onLeave: () => room?.send(SERIES_CHANNEL, { action: "leave" }),
               },
+              rematch: rematch && {
+                view: rematch,
+                opponentName: opp.displayName || t("game.opponent"),
+                onOffer: (mode) => room?.send(SERIES_CHANNEL, { action: "offerRematch", mode }),
+                onAnswer: (accept) => room?.send(SERIES_CHANNEL, { action: "answerRematch", accept }),
+                onChooseTurnOrder: (goFirst) => room?.send(SERIES_CHANNEL, { action: "chooseTurnOrder", goFirst }),
+                onKeepDeck: () => room?.send(SERIES_CHANNEL, { action: "chooseSeriesDeck" }),
+                deckPicker: renderSeriesDeckPicker
+                  ? (onClose) =>
+                      renderSeriesDeckPicker({
+                        format: state.format as DeckFormat,
+                        unlimited: state.unlimited,
+                        betaAllowed: startMode === "beta" || isPrivateMatch,
+                        onChoose: (deck) =>
+                          room?.send(SERIES_CHANNEL, {
+                            action: "chooseSeriesDeck",
+                            deck: {
+                              deckId: deck.id,
+                              deckName: deck.name,
+                              mainDeck: deck.mainDeck,
+                              eggDeck: deck.eggDeck,
+                              mainDeckArts: deck.mainDeckArts,
+                              eggDeckArts: deck.eggDeckArts,
+                              community: deck.community,
+                            },
+                          }),
+                        onClose,
+                      })
+                  : undefined,
+              },
               spectatorResult: spectating
                 ? state.winnerSeat < 0
                   ? t("spectator.draw")
-                  : t("spectator.winner", { name: state.players[state.winnerSeat]?.displayName ?? "" })
+                  : t("spectator.winner", {
+                      name:
+                        state.players[state.winnerSeat]?.displayName || t("log.player", { n: state.winnerSeat + 1 }),
+                    })
                 : undefined,
             }
           : undefined
@@ -1502,6 +1793,7 @@ function GameScreenSession({
       linkTargetsOfPermanent={linkTargetsOfPermanent}
       handEntries={handEntries}
       shownHandEntries={shownHandEntries}
+      effectSourceMarks={effectSourceMarks}
       viewerTurnOrder={viewerTurnOrder}
       boardRef={boardRef}
       permanentRefs={permRefs}
@@ -1519,10 +1811,25 @@ function GameScreenSession({
                   state?.unlimited,
                   isPrivateMatch ? viewerSeat === 0 : undefined,
                   state?.format as import("@aegis/shared").DeckFormat | undefined,
+                  state?.gameMode,
                 )
             : () => onExit("lobby")
       }
     />
+  );
+  const overlays = (
+    <>
+      {matchOverlays}
+      {tutorialLesson && onStartLesson && (!state.gameOver || !cues.resultPending) ? (
+        <TutorialCoach
+          lesson={tutorialLesson}
+          state={state}
+          viewerSeat={viewerSeat}
+          onStartLesson={onStartLesson}
+          onLeave={() => onExit("home")}
+        />
+      ) : null}
+    </>
   );
 
   /** What both battle rows put on a permanent; only the sweep's stagger differs. */
@@ -1543,7 +1850,7 @@ function GameScreenSession({
     decisionPickedInstanceIds: dnaChoosing ? new Set(dnaPicks) : fieldDecision ? new Set(picks) : new Set<string>(),
     materialSelectionOrder: dnaChoosing
       ? new Map(dnaChoice.orderedPicks.map((id, index) => [id, index + 1]))
-      : undefined,
+      : getDecisionMaterialSelectionOrder({ allowedTargetCombinations: decisionAllowedTargetCombinations, picks }),
     permanentBursts,
     pendingPermanentIds,
     fateBadges,
@@ -1568,7 +1875,8 @@ function GameScreenSession({
       spectating={spectating}
       onLeaveSpectator={() => onExit("lobby")}
       room={spectating ? undefined : room}
-      chat={connectedRoom ? chat : undefined}
+      chat={liveChat}
+      chatWindow={chatWindow}
       look={arenaLook}
       layout={layout}
       anchors={anchors}
@@ -1589,7 +1897,16 @@ function GameScreenSession({
         mainActionBlocked: guards.mainActionBlocked || dnaChoosing,
         endPhaseBlocked: guards.endPhaseBlocked || dnaChoosing,
       }}
-      readouts={{ memory, memoryPrediction, displayedTurnSeat, displayedTurnCount, log }}
+      readouts={{
+        memory,
+        memoryPrediction,
+        displayedTurnSeat,
+        displayedTurnCount,
+        log,
+        logEntries,
+        seatNames,
+        seatAvatars,
+      }}
       targeting={{
         spotlight,
         spotlightSubjects,
@@ -1629,12 +1946,20 @@ function GameScreenSession({
           (pickingSourceHost && sourceHostChoice?.cardIdsByHost.has(perm.permanentId) === true) ||
           (fieldDecision && decisionAllowsPermanent(perm)),
       }}
-      chrome={{ permanentChrome, unsuspendStagger, dropIntentAttrs, baseDropIntentAttrs, trashEffectSource }}
+      chrome={{
+        permanentChrome,
+        unsuspendStagger,
+        dropIntentAttrs,
+        baseDropIntentAttrs,
+        trashEffectSource: trashChrome,
+      }}
       handDock={{
         handSortMode,
-        onSortHand: (mode: HandSortMode) => {
+        handSortDirection,
+        onSortHand: (mode: HandSortMode, direction: HandSortDirection) => {
           setHandSortMode(mode);
-          setHandOrder(sortedHandInstanceIds(shownHandEntries, mode));
+          setHandSortDirection(direction);
+          setHandOrder(sortedHandInstanceIds(shownHandEntries, mode, direction));
         },
         reorderDropBeforeInstanceId: hoveredDragIntent === "reorder" ? (dragHover?.id ?? null) : undefined,
         onMoveHandCard: (instanceId, direction) => {
@@ -1649,6 +1974,7 @@ function GameScreenSession({
         effectSource: handEffectSource,
         effectSourceInstanceId:
           handEffectSourceInstanceId?.zone === "hand" ? handEffectSourceInstanceId.instanceId : undefined,
+        effectSourceMarks,
         shakeInstanceId: shakeHandInstanceId,
         selection: dnaChoosing
           ? {
@@ -1728,9 +2054,12 @@ function GameScreenSession({
               ? {
                   ...actions,
                   onYourPerm: (perm) => () => {
-                    if (combatWindows.blockWindow?.eligibleBlockerIds.includes(perm.permanentId))
-                      combatWindowAnswers.onBlock(perm.permanentId);
-                    else setZoomCardId(perm.topCard.cardId);
+                    if (combatWindows.blockWindow?.eligibleBlockerIds.includes(perm.permanentId) && blockWindowKey) {
+                      blockConfirmationSubmittedRef.current = false;
+                      setBlockConfirmation({ windowKey: blockWindowKey, permanentId: perm.permanentId });
+                    } else {
+                      setZoomCardId(perm.topCard.cardId);
+                    }
                   },
                 }
               : combatWindows.allianceWindow
@@ -1786,6 +2115,11 @@ function GameScreenSession({
       onInspectPermanent={{
         viewer: (perm) => {
           cancelDrag();
+          if (state.gameMode === GameMode.MANUAL.value && !spectating) {
+            setHandSel(null);
+            setSelPerm(perm.permanentId);
+            return;
+          }
           actions.showCardMenu(perm.permanentId, Side.Viewer, { preserveSelection: true });
         },
         opponent: (perm) => {
@@ -1799,5 +2133,5 @@ function GameScreenSession({
       }}
     />
   );
-  return board;
+  return <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>;
 }

@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            '[Main] All of your Digimon gain "[Your Turn] When attacking an opponent\'s Digimon with no digivolution cards, delete that Digimon" for the turn.',
           kind: "GrantAuraToOpponents",
           includeLaterEntrants: true,
           target: {

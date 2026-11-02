@@ -172,9 +172,8 @@
   .aegis-arena .game-board .game-field::before,
   .aegis-arena .game-board .game-field::after {
     border: 1px dashed color-mix(in srgb, var(--arena-side, var(--ds-ink-accent)) 45%, transparent);
-    background: var(--arena-zone-fill);
+    background: var(--arena-overlay-fill);
     box-shadow: none;
-    backdrop-filter: blur(3px);
   }
 
   .aegis-arena .game-board .game-field::before {
@@ -203,7 +202,6 @@
     box-shadow:
       inset 0 0 0 1px color-mix(in srgb, var(--ds-ink-accent) 25%, transparent),
       0 0 24px color-mix(in srgb, var(--ds-ink) 45%, transparent);
-    backdrop-filter: blur(4px);
   }
 
   .aegis-arena .game-board .game-memory-gauge__track {

@@ -1,10 +1,11 @@
+import { MemoryBadge } from "@/game/log/MemoryBadge";
 /* The slim ticker at the board's right edge: whose turn it is, the turn and memory
    readout, and the running match log. Desktop replaced the sidebar with it and keeps
    it unobtrusive — the header's log button opens the full history sheet. */
 
 import { useTranslation } from "../../../i18n";
 import type { Seat } from "@aegis/shared";
-import type { LogLine } from "../../matchLog";
+import type { LogLine } from "@/game/log/LogEntry";
 
 export function LogTicker({
   log,
@@ -34,6 +35,7 @@ export function LogTicker({
         {log.map((e, i) => (
           <li key={i} data-kind={e.kind}>
             {e.text}
+            {e.memory ? <MemoryBadge memory={e.memory} /> : null}
           </li>
         ))}
       </ol>

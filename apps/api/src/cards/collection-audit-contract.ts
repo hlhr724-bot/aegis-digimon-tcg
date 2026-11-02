@@ -136,7 +136,7 @@ export function describeRemainingCollectionAuditContract({
             if (!provesEmptyEffects) invalidNoEffectExceptions.push(cardId);
             continue;
           }
-          const harnessImport = testSource.match(/import\s*{([^}]*)}\s*from\s*["'][^"']*testkit\/harness\.js["']/);
+          const harnessImport = testSource.match(/import\s*{([^}]*)}\s*from\s*["'][^"']*testkit\/harness(?:\.js)?["']/);
           const setupImport = harnessImport?.[1]?.match(/\bsetupEngine(?:\s+as\s+(\w+))?/);
           const setupName = setupImport?.[1] ?? (setupImport ? "setupEngine" : undefined);
           const invokesHarness = setupName !== undefined && new RegExp(`\\b${setupName}\\s*\\(`).test(testSource);

@@ -141,6 +141,10 @@
     display: none !important;
   }
 
+  :root:has(.game-mobile-menu[open]) .game-result-bar {
+    visibility: hidden;
+  }
+
   .game-mobile-menu {
     position: relative;
     align-self: center;

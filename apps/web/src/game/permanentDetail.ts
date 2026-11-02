@@ -14,6 +14,9 @@ import { forcedAttackGrants, restrictionBadges, type ForcedAttackGrant, type Res
 import { readableStackCardIdentity } from "./stackCardIdentity";
 import { originalDP, permanentTransformation, type PermanentTransformation } from "./transformation";
 import type { StackCard } from "./overlay";
+import { fieldEffectExpiry } from "@/game/fieldEffectExpiry";
+import { readFieldEffects } from "@/game/readFieldEffects";
+import type { TranslationKey } from "@/i18n/translationTypes";
 
 /** How many security cards an attack checks with no modifier at all. */
 const BASE_SECURITY_ATTACK = 1;
@@ -54,6 +57,7 @@ export interface PermanentDetail {
    * re-derives each flag from the ledger the rule itself reads.
    */
   restrictions: readonly RestrictionBadge[];
+  heldDpEffects: readonly HeldDpEffect[];
   /**
    * What this position counts as after an effect rewrote its ORIGINAL card information
    * (BT11-043 KingSukamon and friends), or undefined while nothing did. Server truth like
@@ -64,6 +68,36 @@ export interface PermanentDetail {
   suspended: boolean;
   summoningSick: boolean;
   inBreeding: boolean;
+}
+
+export interface HeldDpEffect {
+  delta: number;
+  expiryKey: TranslationKey;
+}
+
+function heldDpExpiryKey(effect: Parameters<typeof fieldEffectExpiry>[0], viewerSeat: Seat): TranslationKey {
+  const expiry = fieldEffectExpiry(effect);
+  switch (expiry.kind) {
+    case "whileActive":
+      return "game.fieldEffects.whileActive";
+    case "turnEnd":
+      if (expiry.seat === viewerSeat) {
+        return expiry.next ? "game.fieldEffects.untilYourNextTurnEnd" : "game.fieldEffects.untilYourTurnEnd";
+      }
+      return expiry.next ? "game.fieldEffects.untilOpponentNextTurnEnd" : "game.fieldEffects.untilOpponentTurnEnd";
+    case "attackEnd":
+      return "game.fieldEffects.untilAttackEnd";
+    case "battleEnd":
+      return "game.fieldEffects.untilBattleEnd";
+    case "activePhase":
+      return expiry.seat === viewerSeat
+        ? "game.fieldEffects.untilYourActivePhase"
+        : "game.fieldEffects.untilOpponentActivePhase";
+    case "costCalculated":
+      return "game.fieldEffects.untilCost";
+    case "thisTurn":
+      return "game.fieldEffects.untilTurnEnd";
+  }
 }
 
 /**
@@ -83,13 +117,14 @@ export function buildPermanentDetail(
   permanent: Permanent,
   { keywordLabels, viewerSeat }: { keywordLabels?: Readonly<Record<string, string>>; viewerSeat?: Seat } = {},
 ): PermanentDetail {
-  const topCardId = permanent.topCard?.cardId ?? "";
+  const topIdentity = permanent.topCard ? readableStackCardIdentity(permanent.topCard, viewerSeat) : { cardId: "" };
+  const topCardId = topIdentity.cardId;
   const cards: StackCard[] = [
     ...(topCardId
       ? [
           {
             cardId: topCardId,
-            ...(permanent.topCard?.artId ? { artId: permanent.topCard.artId } : {}),
+            ...(topIdentity.artId ? { artId: topIdentity.artId } : {}),
             role: "top" as const,
           },
         ]
@@ -100,21 +135,27 @@ export function buildPermanentDetail(
         cardId: identity.cardId,
         ...(identity.artId ? { artId: identity.artId } : {}),
         ...(!card.faceUp ? { faceDown: true } : {}),
+        ...(card.oncePerTurnUsed ? { oncePerTurnUsed: true as const } : {}),
         role: "stack" as const,
       };
     }),
-    ...[...permanent.linked].map((card) => ({
-      cardId: card.cardId,
-      ...(card.artId ? { artId: card.artId } : {}),
-      role: "linked" as const,
-    })),
+    ...[...permanent.linked].map((card) => {
+      const identity = readableStackCardIdentity(card, viewerSeat);
+      return {
+        cardId: identity.cardId,
+        ...(identity.artId ? { artId: identity.artId } : {}),
+        ...(!card.faceUp ? { faceDown: true } : {}),
+        ...(card.oncePerTurnUsed ? { oncePerTurnUsed: true as const } : {}),
+        role: "linked" as const,
+      };
+    }),
   ];
   const keywords = [...permanent.keywords];
   const transformation = permanentTransformation(permanent);
   return {
     permanentId: permanent.permanentId,
     cardId: topCardId,
-    ...(permanent.topCard?.artId ? { artId: permanent.topCard.artId } : {}),
+    ...(topIdentity.artId ? { artId: topIdentity.artId } : {}),
     name: getCardDefinition(topCardId)?.nameEn ?? topCardId,
     cards,
     currentDP: permanent.currentDP,
@@ -128,6 +169,12 @@ export function buildPermanentDetail(
     securityAttack: shownSecurityAttack(permanent),
     securityAttackModifier: permanent.securityAttackModifier ?? permanent.securityAttack - BASE_SECURITY_ATTACK,
     restrictions: restrictionBadges(permanent),
+    heldDpEffects: readFieldEffects(permanent.heldDpEffectsJson)
+      .filter((effect) => effect.kind === "dp")
+      .map((effect) => ({
+        delta: Number(effect.value),
+        expiryKey: heldDpExpiryKey(effect, viewerSeat ?? permanent.controllerSeat),
+      })),
     ...(transformation ? { transformation } : {}),
     suspended: permanent.isSuspended,
     summoningSick: permanent.summoningSick,
@@ -153,6 +200,7 @@ export type CardInspectionDetail = Pick<
   | "securityAttack"
   | "securityAttackModifier"
   | "restrictions"
+  | "heldDpEffects"
   | "transformation"
   | "suspended"
 > & { printedOnly?: boolean };
@@ -173,6 +221,7 @@ export function buildPrintedCardDetail(cardId: string, artId?: string): CardInsp
     grantedEffectTexts: [],
     forcedAttackGrants: [],
     restrictions: [],
+    heldDpEffects: [],
     suspended: false,
   };
 }

@@ -38,7 +38,7 @@ export function createDigiXrosVerbs(pc: PrimitivesContext) {
         entry.pendingPlayInstanceId !== pendingPlayInstanceId
       )
         continue;
-      for (const zone of entry.zones) counts[zone] = (counts[zone] ?? 0) + 1;
+      for (const zone of entry.zones) counts[zone] = (counts[zone] ?? 0) + (entry.materialLimits?.[zone] ?? 1);
     }
     return counts;
   };
@@ -58,7 +58,8 @@ export function createDigiXrosVerbs(pc: PrimitivesContext) {
     zones,
     duration,
     pendingPlayInstanceId,
-  ) => addDigiXrosExpansion(seat, zones, duration, true, pendingPlayInstanceId);
+    materialLimits,
+  ) => addDigiXrosExpansion(seat, zones, duration, true, pendingPlayInstanceId, materialLimits);
   const consumeDigiXrosPlayExpansions: Primitives["consumeDigiXrosPlayExpansions"] = (seat, pendingPlayInstanceId) => {
     const remaining = (digiXrosZoneExpansions.get(seat) ?? []).filter(
       (entry) =>

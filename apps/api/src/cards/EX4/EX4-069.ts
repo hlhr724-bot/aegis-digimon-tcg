@@ -2,6 +2,7 @@ import type { Action, CompiledCard } from "@aegis/shared";
 import { registerIrCard } from "../../engine/effects/interpreter.js";
 
 const deleteExceptHighest = (controller: "mine" | "opponent"): Action => ({
+  effectTextPart: "[Main] Choose 1 of each player's Digimon with the highest play cost. Delete all other Digimon.",
   kind: "Delete",
   target: {
     filter: { controller, kind: ["Digimon"] },

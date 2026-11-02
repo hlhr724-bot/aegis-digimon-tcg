@@ -1,0 +1,99 @@
+.private-room-card {
+  display: grid;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-5);
+  color: var(--ds-text);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-sheet);
+  box-shadow: var(--ds-shadow-card);
+}
+
+.private-room-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.private-room-card__header h2 {
+  margin: 0;
+  font: 600 16px / 1.3 var(--ds-font-body);
+}
+
+.private-room-card__header p,
+.private-room-card__option p {
+  margin: 0;
+  color: var(--ds-text-3);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.private-room-card__icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  place-items: center;
+  color: var(--ds-accent);
+  border-radius: 10px;
+  background: var(--ds-accent-soft);
+}
+
+.private-room-card__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-6);
+}
+
+.private-room-card__option {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--ds-space-3);
+  min-width: 0;
+}
+
+.private-room-card__option + .private-room-card__option {
+  padding-left: var(--ds-space-6);
+  border-left: 1px solid var(--ds-line);
+}
+
+.private-room-card__join {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ds-space-3);
+  width: 100%;
+}
+
+.private-room-card__code {
+  flex: 1 1 12rem;
+}
+
+.private-room-card__code .aegis-field__control {
+  font-family: var(--ds-font-mono);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+@container page (max-width: 860px) {
+  .private-room-card__options {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ds-space-4);
+  }
+
+  .private-room-card__option + .private-room-card__option {
+    padding-top: var(--ds-space-4);
+    padding-left: 0;
+    border-top: 1px solid var(--ds-line);
+    border-left: 0;
+  }
+}
+
+@container page (max-width: 640px) {
+  .private-room-card {
+    padding: var(--ds-space-4);
+    border-radius: 14px;
+  }
+}

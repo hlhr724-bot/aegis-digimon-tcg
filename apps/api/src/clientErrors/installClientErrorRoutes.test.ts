@@ -2,6 +2,7 @@ import type { AddressInfo } from "node:net";
 import express from "express";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ClientErrorReport } from "@aegis/shared/clientErrors/ClientErrorReport";
+import { GAME_MESSAGE_LIMITS } from "@aegis/shared/protocol/gameMessageLimits";
 import type { AuthSession } from "#api/accounts/AccountStore";
 import { createClientErrorAlerts } from "#api/clientErrors/createClientErrorAlerts";
 import { installClientErrorRoutes, type ClientErrorLogRecord } from "#api/clientErrors/installClientErrorRoutes";
@@ -97,7 +98,7 @@ describe("client error endpoint", () => {
 
   it("refuses an oversized body", async () => {
     const { records, post } = await startHarness();
-    const response = await post(JSON.stringify({ ...report, stack: "s".repeat(40_000) }));
+    const response = await post(JSON.stringify({ ...report, stack: "s".repeat(GAME_MESSAGE_LIMITS.maxMessageBytes) }));
     expect(response.status).toBe(413);
     expect(records).toEqual([]);
   });

@@ -307,7 +307,7 @@ describe("BT10-104 (Immortal Ruler)", () => {
     expect(record.waiveColorRequirementCalls).toEqual([source.instanceId]);
   });
 
-  it("[Main] calls reveal(3) from deck and trashes the revealed cards", async () => {
+  it("[Main] trashes the top three deck cards without revealing them", async () => {
     const source = makeSource();
     const effects = module!.effectsForTiming(EffectTiming.OnUseOption, source);
     expect(effects.length).toBeGreaterThanOrEqual(1);
@@ -335,8 +335,7 @@ describe("BT10-104 (Immortal Ruler)", () => {
 
     await effects[0]!.resolve(ctx);
 
-    expect(record.revealCalls.length).toBeGreaterThanOrEqual(1);
-    expect(record.revealCalls[0]!.n).toBe(3);
+    expect(record.revealCalls).toEqual([]);
     expect(record.trashCalls.length).toBeGreaterThanOrEqual(1);
     expect(record.trashCalls[0]!.length).toBe(3);
   });

@@ -100,7 +100,7 @@ describe("Discord bug 1557475935962398842 sweep: keyword reactions accept Yes/No
     await advance(s.engine).waitForMainPhase(0);
 
     const ascensionPrompts = s.decisions.filter(
-      ({ req }) => req.kind === "selectCards" && req.promptText.includes("Ascension"),
+      ({ req }) => (req.kind === "selectCards" || req.kind === "optional") && req.promptText.includes("Ascension"),
     );
     expect(ascensionPrompts).toHaveLength(0);
     expect(s.state.players[0]!.security.some(({ instanceId }) => instanceId === ascendingId)).toBe(accept);

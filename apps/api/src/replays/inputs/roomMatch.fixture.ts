@@ -208,6 +208,8 @@ export async function recordRoomMatch(options: RoomMatchOptions): Promise<Record
     // Let whatever the last input started finish, as the replay will before comparing.
     await macrotask();
     internals.engine.syncCounts();
+    internals.engine.projection.syncHandAffordances();
+    internals.engine.flushHandAffordances();
     return {
       lines,
       matchId: room.state.matchLogId,
@@ -254,6 +256,7 @@ export function comparableState(state: GameState): unknown {
     delete player.sessionId;
     delete player.displayName;
     delete player.avatarId;
+    delete player.botPersonaId;
   }
   return json;
 }

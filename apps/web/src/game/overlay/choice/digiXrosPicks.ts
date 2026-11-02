@@ -51,3 +51,20 @@ export function toggleDigiXrosPick({
   if (zone === "underTamer" && underTamerCount >= underTamerMax) return picks;
   return [...picks, instanceId];
 }
+
+/** Server-authorized material cohorts can overlap; every cap must be respected. */
+export function pruneDigiXrosMaterialLimits(
+  picks: string[],
+  limits: { candidateInstanceIds: string[]; max: number }[],
+): string[] {
+  const counts = limits.map(() => 0);
+  const next = picks.filter((id) => {
+    if (limits.some((limit, index) => limit.candidateInstanceIds.includes(id) && counts[index]! >= limit.max))
+      return false;
+    limits.forEach((limit, index) => {
+      if (limit.candidateInstanceIds.includes(id)) counts[index]!++;
+    });
+    return true;
+  });
+  return next.length === picks.length ? picks : next;
+}

@@ -179,3 +179,22 @@ describe("validateCompetitiveDeck", () => {
     });
   });
 });
+
+it("rejects shared card-number copies above the combined budget", () => {
+  const mainDeck = [...LEGAL.mainDeck];
+  mainDeck.splice(0, 5, "RB1-004", "RB1-004", "P-009", "P-009", "P-009");
+  expect(validateCompetitiveDeck({ mainDeck, eggDeck: LEGAL.eggDeck }).violations).toContainEqual({
+    kind: "over_copy_limit",
+    cardId: "RB1-004",
+    copies: 5,
+    allowed: 4,
+  });
+});
+
+it("rejects cards outside the event's historical pool", () => {
+  const deck = { mainDeck: ["BT20-037", ...LEGAL.mainDeck.slice(1)], eggDeck: LEGAL.eggDeck };
+  expect(validateCompetitiveDeck(deck, [], "BT10").violations).toContainEqual({
+    kind: "outside_format",
+    cardId: "BT20-037",
+  });
+});

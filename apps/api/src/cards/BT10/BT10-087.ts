@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 card with [Xros Heart] in its traits among them to your hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [{ tokens: ["Xros Heart"], match: "trait" }],
@@ -19,6 +20,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "place 1 Digimon card with [Xros Heart] in its traits among them under this Tamer.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],

@@ -316,7 +316,7 @@ describe("EX13-007 Guilmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[1]!.battleArea.length === 0, 20);
+    await settle(() => s.state.players[1]!.battleArea.length === 0);
 
     expect(s.state.memory).toBe(3);
     expect(s.perm("base").topCard?.cardId).toBe("BT19-015");
@@ -380,7 +380,7 @@ describe("EX13-007 Guilmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[1]!.battleArea.length === 1, 20);
+    await settle(() => s.state.players[1]!.battleArea.length === 1);
 
     expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard?.cardId)).toEqual(["BT1-010"]);
     expect(s.state.pendingDecision).toBeUndefined();
@@ -453,7 +453,7 @@ describe("EX13-007 Guilmon — KB Q&A rulings", () => {
         instanceId: s.inst("growlmon").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[1]!.battleArea.length === 1, 20);
+    await settle(() => s.state.players[1]!.battleArea.length === 1);
 
     expect(s.state.players[1]!.trash.map(({ instanceId }) => instanceId)).toEqual([s.inst("atRaised").instanceId]);
     expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard?.instanceId)).toEqual([

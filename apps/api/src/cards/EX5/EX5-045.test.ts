@@ -260,6 +260,35 @@ describe("EX5-045 Chuumon", () => {
     expect(s.state.pendingDecision).toBeUndefined();
   });
 
+  it("offers inherited revival alongside Sukamon's own deletion effect after a battle trade", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "EX13-028", as: "host", under: [{ card: "EX5-045", as: "inherited" }], suspended: true },
+          ],
+          deck: ["BT1-009", "BT1-009", "BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT1-010", as: "attacker", dp: 2000 }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.turnSeat = 1;
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("host").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await advance(s.engine).finishAttack();
+    await settle();
+    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.topCard.instanceId)).toContain(
+      s.inst("inherited").instanceId,
+    );
+  });
+
   it("revives one Chuumon suspended from trash after public battle deletion of a Sukamon-name host", async () => {
     const preferred: string[] = [];
     const s = setupEngine(

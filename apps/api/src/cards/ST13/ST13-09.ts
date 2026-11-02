@@ -11,6 +11,8 @@ const compiled: CompiledCard = {
           revealCount: 1,
           add: [
             {
+              effectTextPart:
+                "You may play 1 Digimon card with [Legend-Arms] in its traits and a play cost of 7 or less among them without paying its memory cost.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -27,6 +29,7 @@ const compiled: CompiledCard = {
               optional: true,
             },
             {
+              effectTextPart: "Add the rest to your hand.",
               filter: {
                 controllerDefault: "mine",
               },

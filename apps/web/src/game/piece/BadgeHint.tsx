@@ -1,3 +1,4 @@
+import "@/game/piece/BadgeHint.css";
 import { useCallback, useEffect, useRef, useState, type HTMLAttributes, type ReactNode, type Ref } from "react";
 import { createPortal } from "react-dom";
 

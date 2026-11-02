@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CardInstance, Permanent, type Seat } from "@aegis/shared";
+import { CardInstance, EffectDuration, Permanent, type Seat } from "@aegis/shared";
 import { buildPermanentDetail, inspectorPlacement } from "./permanentDetail";
 
 function instance(instanceId: string, cardId: string, seat: Seat = 0): CardInstance {
@@ -110,6 +110,32 @@ describe("buildPermanentDetail", () => {
   });
 });
 
+describe("held DP effects", () => {
+  function protectedPermanent(): Permanent {
+    const perm = permanent();
+    perm.heldDpEffectsJson = JSON.stringify([
+      { kind: "dp", value: -3000, duration: EffectDuration.UntilOpponentTurnEnd, ownerSeat: 0 },
+    ]);
+    return perm;
+  }
+
+  it("tells the protected Digimon's controller the reduction lasts until the opponent's turn ends", () => {
+    expect(buildPermanentDetail(protectedPermanent(), { viewerSeat: 0 }).heldDpEffects).toEqual([
+      { delta: -3000, expiryKey: "game.fieldEffects.untilOpponentTurnEnd" },
+    ]);
+  });
+
+  it("tells the player who applied it that it lasts until their own turn ends", () => {
+    expect(buildPermanentDetail(protectedPermanent(), { viewerSeat: 1 }).heldDpEffects).toEqual([
+      { delta: -3000, expiryKey: "game.fieldEffects.untilYourTurnEnd" },
+    ]);
+  });
+
+  it("holds nothing while no reduction is blocked", () => {
+    expect(buildPermanentDetail(permanent(), { viewerSeat: 0 }).heldDpEffects).toEqual([]);
+  });
+});
+
 const VIEWPORT = { viewportWidth: 1200, viewportHeight: 800, panelWidth: 400, panelHeight: 480 };
 
 describe("inspectorPlacement", () => {
@@ -131,4 +157,18 @@ describe("inspectorPlacement", () => {
     expect(placement.left).toBeGreaterThanOrEqual(12);
     expect(placement.top).toBeLessThanOrEqual(800 - 480 - 12);
   });
+});
+
+it("hides stale face-down top and link identities from opponents while allowing their owner to inspect", () => {
+  const position = permanent();
+  position.topCard.faceUp = false;
+  position.linked[0]!.faceUp = false;
+  const opponent = buildPermanentDetail(position, { viewerSeat: 1 });
+  expect(opponent.cardId).toBe("");
+  expect(opponent.artId).toBeUndefined();
+  expect(opponent.name).toBe("");
+  expect(opponent.cards.find((card) => card.role === "linked")?.cardId).toBe("");
+  const owner = buildPermanentDetail(position, { viewerSeat: 0 });
+  expect(owner.cardId).toBe("ST1-11");
+  expect(owner.cards.find((card) => card.role === "linked")?.cardId).toBe("ST1-07");
 });

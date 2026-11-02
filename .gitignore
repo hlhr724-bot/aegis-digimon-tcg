@@ -44,8 +44,15 @@ apps/web/playwright-report/
 
 # Local bot datasets, checkpoints, and Python environments
 artifacts/bot-training/
+artifacts/bot-strength-probe/
 tools/bot-training/.venv/
 tools/bot-training/__pycache__/
+artifacts/bot-evolution/
+tools/bot-evolution/.venv/
+tools/bot-evolution/__pycache__/
+tools/bot-evolution/.pytest_cache/
+tools/bot-evolution/evidence/*/matchups.json
+tools/bot-evolution/evidence/*/matchups.html
 
 # Digimon World game art used only for local background tests; owned by Bandai, never commit
 apps/web/public/battlefield/test-dw/
@@ -66,3 +73,5 @@ apps/web/public/dev/modal-review/manifest.json
 
 # Throwaway scenario fixtures for pnpm scenario open (committed regression fixtures live with tests)
 /.local/scenarios/
+
+/docs/audits/**/*.md

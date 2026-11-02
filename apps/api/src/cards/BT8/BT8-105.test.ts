@@ -29,6 +29,27 @@ describe("BT8-105 Dark Gaia Force", () => {
     expect(s.state.players[1]!.battleArea).toHaveLength(0);
   });
 
+  it.each([
+    { token: "Diaboromon Token", remaining: 1 },
+    { token: "Familiar Token", remaining: 2 },
+  ])("uses printed costs for $token and excludes DUAL Digimon without play costs", async ({ token, remaining }) => {
+    const s = setupEngine(
+      {
+        0: { battleArea: ["BT8-011"], hand: [{ card: "BT8-105", as: "option" }] },
+        1: { battleArea: [{ card: "BT26-075", as: "dual" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 10;
+    await advance(s.engine).verb.playTwoTokensInOneWindow(1, token);
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle();
+    expect(s.state.players[1]!.battleArea).toHaveLength(remaining + 1);
+    expect(s.state.players[1]!.battleArea.some(({ topCard }) => topCard.cardId === "BT26-075")).toBe(true);
+  });
+
   it("deletes one opposing Digimon costing 15 or less from Security", async () => {
     const s = setupEngine(
       {

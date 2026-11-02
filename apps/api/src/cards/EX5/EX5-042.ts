@@ -21,6 +21,7 @@ export const compiled: CompiledCard = {
           revealCount: 1,
           add: [
             {
+              effectTextPart: "a level 5 or lower Digimon card with ＜Fortitude＞, play it without paying the cost.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -34,6 +35,7 @@ export const compiled: CompiledCard = {
               to: "play",
             },
             {
+              effectTextPart: "Add the rest to your hand.",
               filter: {},
               count: 1,
               to: "hand",
@@ -51,6 +53,7 @@ export const compiled: CompiledCard = {
           revealCount: 1,
           add: [
             {
+              effectTextPart: "a level 5 or lower Digimon card with ＜Fortitude＞, play it without paying the cost.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -64,6 +67,7 @@ export const compiled: CompiledCard = {
               to: "play",
             },
             {
+              effectTextPart: "Add the rest to your hand.",
               filter: {},
               count: 1,
               to: "hand",

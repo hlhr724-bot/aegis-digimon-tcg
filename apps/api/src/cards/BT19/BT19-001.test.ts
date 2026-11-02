@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Phase, type PlayerState } from "@aegis/shared";
 import { advance } from "../../engine/testkit/advance.js";
+import { observe } from "../../engine/testkit/observe.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import "../index.js";
 
@@ -168,7 +169,7 @@ describe("BT19-001 Pickmons", () => {
         target: { kind: "player" },
       }),
     ).toEqual({ ok: true });
-    await settle(() => false, 20);
+    await settle(() => !observe(s.engine).isAttacking());
     expect(s.perm("tamer").stack).toHaveLength(1);
     expect(s.state.players[0]!.hand).toHaveLength(handAfterFirstAttack);
 

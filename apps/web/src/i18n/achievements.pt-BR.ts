@@ -1,0 +1,18 @@
+export const achievementsPt = {
+  "achievements.trophies.description": "Conquistas em torneios da comunidade.",
+  "achievements.trophies.show": "Mostrar troféus",
+  "achievements.trophies.title": "Troféus",
+  "achievements.trophies.empty": "Nenhum troféu ainda. Chegue ao Top 8 de um torneio da comunidade para ganhar um.",
+  "achievements.trophies.error": "Não foi possível carregar seus troféus. Recarregue a página para tentar de novo.",
+  "achievements.trophies.awardedOn": "Conquistado em {date}",
+  "achievements.tier.bronze": "Troféu de bronze",
+  "achievements.tier.silver": "Troféu de prata",
+  "achievements.tier.gold": "Troféu de ouro",
+  "achievements.tier.rainbow": "Troféu arco-íris",
+  "achievements.award.tournament_champion": "Campeão",
+  "achievements.award.tournament_top_four": "Top 4",
+  "achievements.award.tournament_top_eight": "Top 8",
+  "achievements.award.circuit_champion": "Campeão do circuito",
+  "achievements.award.circuit_top_four": "Top 4 do circuito",
+  "achievements.award.circuit_top_eight": "Top 8 do circuito",
+} as const;

@@ -1,3 +1,4 @@
+import { SPECTATOR_REPLAY_SEAT } from "@aegis/shared/replays/spectatorReplaySeat";
 import { MAX_REPLAY_BYTES, REPLAY_FORMAT_VERSION, type MatchReplay, type ReplayDownloadMessage } from "@aegis/shared";
 import { validateReplay } from "./validation";
 
@@ -19,6 +20,9 @@ export function replayBlob(message: ReadyReplay): Blob {
 }
 
 export function replayFileName(message: ReadyReplay): string {
+  if (message.viewerSeat === SPECTATOR_REPLAY_SEAT) {
+    return `aegis-${message.summary.id}-spectator.aegis-replay`;
+  }
   return `aegis-${message.summary.id}-player-${message.viewerSeat + 1}.aegis-replay`;
 }
 

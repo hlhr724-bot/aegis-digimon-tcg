@@ -186,6 +186,23 @@ describe("BT25-093 Ignition Flare", () => {
     expect(s.state.players[1]!.battleArea).toHaveLength(0);
   });
 
+  it("Security still offers the self-link when its controller has a Digimon", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          security: [{ card: CARD_ID, as: "securityFlare", faceUp: true }],
+          battleArea: [{ card: "BT24-019", as: "host" }],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "victim" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await advance(s.engine).fireForInstance(EffectTiming.SecuritySkill, s.inst("securityFlare"));
+    await settle(() => s.perm("host").linked.length > 0);
+
+    expect(s.perm("host").linked.map((card) => card.cardId)).toEqual([CARD_ID]);
+  });
+
   it("linked When Attacking deletes at host DP, is a physical OPT, and ignores the over-DP boundary", async () => {
     const preferred: string[] = [];
     const s = setupEngine(

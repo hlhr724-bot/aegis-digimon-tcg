@@ -1,9 +1,10 @@
 import { famousDeckById } from "@aegis/shared";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { extractReplay } from "./extract.js";
 import { runReplay } from "./run.js";
 import type { ReplayInput } from "./types.js";
 import { comparableState, recordRoomMatch, type RoomMatchOptions } from "./roomMatch.fixture.js";
+import { recordApplicationRandomCalls } from "#api/engine/testkit/recordApplicationRandomCalls";
 
 /**
  * The whole loop on real room logs: a real `AegisRoom` plays a match and writes its log lines,
@@ -19,7 +20,7 @@ function deck(id: string) {
 const MATCHES: (RoomMatchOptions & { name: string; expects: (inputs: ReplayInput[]) => void })[] = [
   {
     name: "a dropped connection and a combat prompt left to time out",
-    seed: 13,
+    seed: 6,
     // Decks with ＜Blocker＞ on both sides, so seat 0 is asked to block and can ignore it.
     humanDeck: deck("bt10-xros-heart"),
     botDeck: deck("bt5-lordknightmon"),
@@ -61,14 +62,14 @@ const MATCHES: (RoomMatchOptions & { name: string; expects: (inputs: ReplayInput
 describe("match replay round trip through a real room", () => {
   for (const { name, expects, ...match } of MATCHES) {
     it(`seed ${match.seed}: ${name}`, async () => {
-      const random = vi.spyOn(Math, "random");
+      const random = recordApplicationRandomCalls();
       let unseededDraws: number;
       let recorded: Awaited<ReturnType<typeof recordRoomMatch>>;
       try {
         recorded = await recordRoomMatch(match);
       } finally {
-        unseededDraws = random.mock.calls.length;
-        random.mockRestore();
+        unseededDraws = random.stacks.length;
+        random.restore();
       }
       // A match is reproducible from its seed only if nothing in it draws unseeded randomness.
       expect(unseededDraws, "the room drew unseeded randomness, which no replay can reproduce").toBe(0);

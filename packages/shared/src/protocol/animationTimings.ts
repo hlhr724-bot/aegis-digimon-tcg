@@ -210,6 +210,8 @@ export const ANIMATION_TIMINGS = {
   logSidebar: 160,
   /** The jolt a permanent takes when an attack or block lock lands on it (0.2 s). */
   freezeShake: 200,
+  /** The glow a permanent shows when an effect grants or takes something other than DP. */
+  statusPulse: 600,
   /** One riffle of a deck pile being shuffled. */
   deckRiffle: 180,
   /** A card that just landed settling on its OutBounce drop. */

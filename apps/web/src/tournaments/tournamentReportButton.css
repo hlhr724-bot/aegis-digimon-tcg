@@ -1,0 +1,73 @@
+.tournament-report__done {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  color: var(--ds-text-3);
+  font: 500 var(--ds-text-sm) / 1.4 var(--ds-font-body);
+}
+
+.tournament-report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  width: min(520px, 92vw);
+  max-height: 86vh;
+  overflow-y: auto;
+}
+
+.tournament-report__title {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.tournament-report__title > svg {
+  flex: none;
+  color: var(--ds-ink-accent);
+}
+
+.tournament-report__title h2 {
+  overflow-wrap: anywhere;
+}
+
+.tournament-report .aegis-dialog__header p {
+  margin: var(--ds-space-2) 0 0;
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-body);
+}
+
+.tournament-report__reasons {
+  display: grid;
+  gap: var(--ds-space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.tournament-report__reason {
+  display: flex;
+  min-height: var(--ds-touch-target);
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: 0 var(--ds-space-3);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-sheet);
+  color: var(--ds-text);
+  font-size: var(--ds-text-sm);
+  cursor: pointer;
+}
+
+.tournament-report__reason:has(input:checked) {
+  border-color: var(--ds-accent);
+}
+
+.tournament-report__reason input {
+  accent-color: var(--ds-accent);
+}
+
+.tournament-report__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ds-space-2);
+}

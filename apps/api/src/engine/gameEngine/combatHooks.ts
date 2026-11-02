@@ -1,11 +1,10 @@
 import { EffectDuration, EffectTiming, type CardInstance } from "@aegis/shared";
 import { effectiveColorsOf } from "./matchLifecycle.js";
 import { printedKeywordsOf, resolveKeywords } from "../combat/keywords.js";
-import { buildResolutionEnv, permanentIdentityOf } from "../effects/index.js";
+import { permanentIdentityOf } from "#api/engine/effects/stack";
 import { effectsOf } from "../effects/collect.js";
 import type { CollectedEffect } from "../effects/collect.js";
 import { engineRunSecurityCheck, payBarrierSecurityCost } from "./securityCheck.js";
-import { resolutionDeps } from "./actionDeps.js";
 import { counterEligibleSources } from "./intents.js";
 import {
   combatTriggerInfo,
@@ -15,15 +14,22 @@ import {
   runTimingWindow,
 } from "./timing.js";
 import {
+  armedAsPendingCollected,
   armedSubTriggers,
   parkArmedForEnclosingWindow,
   prepareFrozenSubTrigger,
   prepareSubTrigger,
   withPendingSubTriggers,
 } from "./subTriggers.js";
-import { deferNestedTimingEffects, shouldDeferNestedTiming } from "./windows.js";
-import { collectPermanentInstances } from "./ruleProcess.js";
-import { cardSourceOf, dropPermanentSubscriptions, effectEnvironment } from "./effectContext.js";
+import {
+  collectNestedTimingEffects,
+  deferNestedTimingEffects,
+  shouldDeferNestedTiming,
+  takeLeaveReplacementPending,
+} from "#api/engine/gameEngine/windows";
+import { runPendingTimingWindow } from "#api/engine/gameEngine/timing/fire";
+import { collectPermanentInstances, listCandidateInstances, ruleProcess } from "#api/engine/gameEngine/ruleProcess";
+import { cardSourceOf, dropPermanentSubscriptions } from "./effectContext.js";
 import { beginBattleScope, endBattleScope, sweepBattleDurations, sweepCombatDurations } from "./turnFlow.js";
 import type { GameEngine } from "../GameEngine.js";
 import type { CombatHooks } from "../combat/types.js";
@@ -88,8 +94,17 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
         permanent: () => engine.access.permanentById(attacker.permanentId),
         isOnBattleArea: () => engine.access.permanentById(attacker.permanentId)?.inBreeding === false,
       };
+      const retainedAllianceGrants = engine.continuous.captureContinuousKeywordGrantsFromOtherSources(
+        attacker.permanentId,
+        "Alliance",
+        top.instanceId,
+      );
+      const retainedAllianceGrantAt = (index: number) => retainedAllianceGrants[index - gainedAllianceCount];
       const allianceEffects: CollectedEffect[] = Array.from({ length: allianceCount }, (_, index) => ({
-        source: index < gainedAllianceCount ? gainedKeywordSource : allianceSource,
+        source:
+          index < gainedAllianceCount || retainedAllianceGrantAt(index) !== undefined
+            ? gainedKeywordSource
+            : allianceSource,
         timing: EffectTiming.OnUseAttack,
         effect: {
           effectKey: `${top.instanceId}/alliance/${index}`,
@@ -110,8 +125,9 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
           // put it after an effect that first creates the ally. `resolveAllianceEffect`
           // re-reads the board and does nothing when no ally is there at resolution time.
           canActivate: () =>
-            index >= gainedAllianceCount ||
-            engine.continuous.gainedKeywordCount(attacker.permanentId, "Alliance") > index,
+            index < gainedAllianceCount
+              ? engine.continuous.gainedKeywordCount(attacker.permanentId, "Alliance") > index
+              : (retainedAllianceGrantAt(index)?.() ?? true),
           resolve: async (ctx) => engine.combat.resolveAllianceEffect(attacker.permanentId, ctx.presetOptionalAnswer),
         },
       }));
@@ -165,20 +181,20 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
               subjectPermanentId: opts.suspendedPermanentId,
               suspendedPermanentId: opts.suspendedPermanentId,
             };
-      const attackEnvironment = buildResolutionEnv(
-        effectEnvironment(engine, { ...attackPayload, ...(suspensionPayload ?? {}) }),
-        resolutionDeps(engine),
+      const attackCandidates = listCandidateInstances(engine);
+      const allyAttackEffects = collectNestedTimingEffects(
+        engine,
+        EffectTiming.OnAllyAttack,
+        { ...attackPayload, ...(suspensionPayload ?? {}) },
+        attackCandidates,
       );
-      const allyAttackEffects = attackEnvironment.collect(EffectTiming.OnAllyAttack);
       // Suspending the attacker and declaring the attack are the same game event. Effects
       // triggered by either part share one activation order (§11-2-8, §15-4-3), including
       // [On Tapped] timing effects and the `whenSuspended` watcher bus.
       const suspensionEffects =
         suspensionPayload === undefined
           ? []
-          : attackEnvironment
-              .collect(EffectTiming.OnTappedAnyone)
-              .map((effect) => ({ ...effect, triggerInfo: suspensionPayload }));
+          : collectNestedTimingEffects(engine, EffectTiming.OnTappedAnyone, suspensionPayload, attackCandidates);
       const pendingAttackEffects = [...allyAttackEffects, ...suspensionEffects, ...allianceEffects, ...raidEffects];
       if (shouldDeferNestedTiming(engine)) {
         // An effect-directed declaration joins its enclosing pool. Keyword instances
@@ -190,7 +206,7 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
             triggerInfo: effect.triggerInfo ?? attackPayload,
             activationIdentity: attackPayload,
           };
-          engine.nestedTriggerSourceIdentity.set(entry, permanentIdentityOf(entry.source) ?? null);
+          entry.sourceIdentityAtDefer = permanentIdentityOf(entry.source) ?? null;
           engine.pendingNestedTimingEffects.push(entry);
         }
         await fireTimingForPermanent(engine, EffectTiming.OnUseAttack, attacker, attackPayload);
@@ -277,7 +293,7 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
         trigger,
         candidates,
         (deletionTrigger, simultaneousPending = []) =>
-          simultaneousPending.length > 0
+          simultaneousPending.length > 0 || candidates.length > 0
             ? runTimingWindow(
                 engine,
                 EffectTiming.OnDestroyedAnyone,
@@ -294,8 +310,27 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
       return permanent === undefined ? [] : effectiveColorsOf(engine, permanent);
     },
     keywordReactionsInLeavePrevention: true,
-    consultLeavePrevention: async (permanentIds, opts) =>
-      engine.consultLeavePrevention(permanentIds, "byBattle", undefined, opts),
+    consultLeavePrevention: async (permanentIds, opts) => {
+      return engine.consultLeavePrevention(permanentIds, "byBattle", undefined, {
+        ...opts,
+        holdTriggered: true,
+      });
+    },
+    resolveAvertedBattleReactions: async (resolveBattleWon) => {
+      const triggered = takeLeaveReplacementPending(engine);
+      if (triggered.length === 0) {
+        await resolveBattleWon?.();
+        return;
+      }
+      if (shouldDeferNestedTiming(engine)) {
+        engine.pendingNestedTimingEffects.push(...triggered);
+        await resolveBattleWon?.();
+        return;
+      }
+      await resolveBattleWon?.({ deferIntoDeletionWindow: true });
+      const battleWon = engine.pendingBattleWonSubTriggers.splice(0);
+      await runPendingTimingWindow(engine, [...armedAsPendingCollected(engine, battleWon), ...triggered]);
+    },
     dropPermanentSubscriptions: (permanentId) => dropPermanentSubscriptions(engine, permanentId),
     snapshotCustomEffectGrants: (departingInstanceIds) =>
       engine.continuous.listCustomEffectGrants().map((grant) => {
@@ -303,6 +338,7 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
         const activeAtDeletion = grant.isActive?.() ?? true;
         return { ...grant, isActive: () => activeAtDeletion };
       }),
+    snapshotStackEffectConferrals: () => [...engine.continuous.listStackEffectConferrals()],
     checkSecurity: async (defenderSeat, attackerPermanentId, reason, options) =>
       engineRunSecurityCheck(engine, defenderSeat, attackerPermanentId, reason, options),
     // The pierce read seam: combat consults both the temporary modifier ledger and
@@ -320,6 +356,16 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
       engine.continuous.addKeywordGrant(permanentId, "SecurityAttack", EffectDuration.UntilEndAttack, 1),
     trashTopSecurityForBarrier: (seat, isAttackBattle) => payBarrierSecurityCost(engine, seat, isAttackBattle),
     sweepEndOfAttack: () => sweepCombatDurations(engine),
+    afterAttackEnded: async () => {
+      if (
+        engine.activeWindowToken !== undefined ||
+        engine.effectResolutionDepth > 0 ||
+        engine.optionResolutionDepth > 0 ||
+        engine.optionMainDepth > 0
+      )
+        return;
+      await ruleProcess(engine);
+    },
     deferEndOfAttack: (trigger) => {
       if (engine.activeWindowToken === undefined) return undefined;
       const endOfAttackWindow = {
@@ -378,28 +424,33 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
     // ＜Scapegoat＞'s sacrifice choice (both battle-path consumers of combat/controller.ts) —
     // the same generic selectCards decision `ask.selectInstances` uses in primitives.ts, so no
     // bespoke per-keyword protocol intent is needed.
-    selectOptionalInstance: async (seat, candidateInstanceIds, promptText, source) => {
+    selectOptionalInstance: async (seat, candidateInstanceIds, promptText, source, selectionGoal) => {
       if (candidateInstanceIds.length === 0) return undefined;
       const response = await engine.decisions.request({
         seat,
         kind: "selectCards",
         promptText,
         ...source,
-        options: { candidateInstanceIds, min: 0, max: 1 },
+        options: { candidateInstanceIds, min: 0, max: 1, ...(selectionGoal === undefined ? {} : { selectionGoal }) },
       });
       return response.kind === "selectCards" ? response.instanceIds[0] : undefined;
     },
     // ＜Fragment＞'s "choose exactly N, or decline" cost decision (§16-37): the same
     // selectCards decision channel as selectOptionalInstance, but requiring the full count
     // (a partial pick reads as a decline — no partial trash).
-    selectOptionalInstances: async (seat, candidateInstanceIds, count, promptText, source) => {
+    selectOptionalInstances: async (seat, candidateInstanceIds, count, promptText, source, selectionGoal) => {
       if (candidateInstanceIds.length < count) return undefined;
       const response = await engine.decisions.request({
         seat,
         kind: "selectCards",
         promptText,
         ...source,
-        options: { candidateInstanceIds, min: 0, max: count },
+        options: {
+          candidateInstanceIds,
+          min: 0,
+          max: count,
+          ...(selectionGoal === undefined ? {} : { selectionGoal }),
+        },
       });
       if (response.kind !== "selectCards") return undefined;
       return response.instanceIds.length === count ? response.instanceIds : undefined;

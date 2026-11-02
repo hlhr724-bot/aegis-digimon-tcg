@@ -49,6 +49,11 @@
     "bytes": 4105074,
     "sha256": "d8dc255a97d1944501d2f544ae9049a3944aeab8c628355b6ade7c89924488c7"
   },
+  "compressedBank": {
+    "file": "aegis-cues-v2.flac",
+    "bytes": 1264352,
+    "sha256": "e0dc53f894756988f701844657e610030bd74dc85664be6f6eec8583a4c5b0d2"
+  },
   "music": {
     "id": "digitalBattle",
     "file": "music/shortcuts.mp3",

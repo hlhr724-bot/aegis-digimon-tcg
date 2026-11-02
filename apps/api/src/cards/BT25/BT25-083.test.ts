@@ -215,6 +215,73 @@ describe("BT25-083 LadyDevimon", () => {
     );
     expect(s.state.memory).toBe(0);
   });
+
+  it("highlights the cost, then the optional Option use, and lets the player decline the just-trashed Option", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: CARD_ID, as: "lady", under: [{ card: "EX7-071", as: "trashedCopy" }] }] },
+      },
+      { autoAcceptOptional: true, declinePrompts: ["LadyDevimon", "By placing 1 [Three Musketeers]"] },
+    );
+    s.state.memory = 5;
+    await s.ready();
+
+    await advance(s.engine).fireForPermanent(EffectTiming.WhenDigivolving, s.perm("lady"));
+    await settle(() => s.state.memory === 6);
+    await drainMicrotasks();
+
+    const activation = s.decisions.find(
+      ({ req }) => req.kind === "optional" && req.options?.effectKey === `${CARD_ID}/trash-source-use-option`,
+    );
+    expect(activation?.req.options?.effectTextEmphasis).toBe(
+      "By trashing 1 Option card from any of your Digimon's digivolution cards",
+    );
+    const optionPick = s.decisions.find(
+      ({ req }) =>
+        req.kind === "selectCards" && req.options?.candidateInstanceIds?.includes(s.inst("trashedCopy").instanceId),
+    );
+    expect(optionPick?.req.options).toMatchObject({
+      min: 0,
+      effectTextEmphasis:
+        "you may use 1 [Three Musketeers] trait Option card from your trash with the cost reduced by 3",
+    });
+    expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual([s.inst("trashedCopy").instanceId]);
+    expect(s.state.memory).toBe(6);
+  });
+
+  it("leaves the activation question unhighlighted when the cost has its own selection", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: CARD_ID, as: "lady", under: [{ card: "EX7-071" }, { card: "EX7-071" }] }],
+        },
+      },
+      {
+        autoAcceptOptional: true,
+        autoSelectCards: true,
+        declinePrompts: ["LadyDevimon", "By placing 1 [Three Musketeers]"],
+      },
+    );
+    s.state.memory = 5;
+    await s.ready();
+
+    await advance(s.engine).fireForPermanent(EffectTiming.WhenDigivolving, s.perm("lady"));
+    await settle(() => s.state.memory === 6);
+    await drainMicrotasks();
+
+    const prompts = s.decisions
+      .map(({ req }) => req)
+      .filter((req) => req.options?.effectKey === `${CARD_ID}/trash-source-use-option`);
+    expect(prompts.map((req) => [req.kind, req.options?.min, req.options?.effectTextEmphasis])).toEqual([
+      ["optional", undefined, undefined],
+      ["selectCards", 1, "By trashing 1 Option card from any of your Digimon's digivolution cards"],
+      [
+        "selectCards",
+        0,
+        "you may use 1 [Three Musketeers] trait Option card from your trash with the cost reduced by 3",
+      ],
+    ]);
+  });
 });
 
 describe("BT25-083 LadyDevimon — KB Q&A rulings", () => {

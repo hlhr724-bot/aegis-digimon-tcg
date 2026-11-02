@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 Digimon card with [Vegetation], [Plant], or [Fairy] in one of its traits",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -29,6 +30,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Yoshino Fujieda] among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

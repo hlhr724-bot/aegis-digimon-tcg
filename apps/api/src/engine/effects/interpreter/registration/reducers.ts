@@ -1,11 +1,16 @@
 // Self-cost reducers a card applies to its own play or digivolve.
 
+import { splitPrintedClauses } from "@aegis/shared/effects/printedClauses";
 import type { EffectContext } from "../../EffectContext.js";
 import { evaluateCondition } from "../conditions.js";
 import { canPayCost, payCost } from "../costs.js";
 import { runAction } from "../dispatch.js";
 import { scaleFactor } from "../scaling.js";
-import { candidateLooseInstances } from "../targeting/loose.js";
+import {
+  candidateLooseInstances,
+  pickLoose,
+  type LooseCandidate,
+} from "#api/engine/effects/interpreter/targeting/loose";
 import { candidatePermanents, resolvePermanentTargets } from "../targeting/permanents.js";
 import { permanentMatchesFilter } from "../matching/permanent.js";
 import { definitionMatches } from "../matching/definition.js";
@@ -76,6 +81,9 @@ const VERIFIED_SELF_REDUCER_CARDS = new Set([
   "BT13-080", // delete one own level-2 Digimon in breeding -> self play cost -2
   "BT13-083", // delete one own level-3 Digimon -> self play cost -4
   "BT13-086", // delete one own level-4 Digimon -> self play cost -6
+  "BT27-075",
+  "BT27-076",
+  "BT27-079",
   "BT13-111", // no battle-area Digimon; -2 per 5 combined trash cards (KB Q2364; §15-1-7)
   "BT2-099", // self Option use cost -1 per yellow Tamer
   "BT2-112", // opponent has a 10000+ DP Digimon -> -6
@@ -129,6 +137,7 @@ const VERIFIED_SELF_REDUCER_CARDS = new Set([
   "BT20-057", // condition: you have a Huckmon/Jesmon/Sistermon-named Digimon -> self play cost -4
   "BT8-097", // scaling: Option use cost -1 per opposing Digimon (floor applied by play path)
   "BT25-018", // opponent has a 12000+ DP Digimon -> self play cost -5
+  "BT27-053",
   "BT25-028", // opponent has a level 6+ Digimon -> self play cost -5
   "BT25-020", // any Digimon has 13000+ DP -> self play cost -5
   "BT25-044", // 6 or fewer total security cards -> -5 (Q7004 effect-driven stacking)
@@ -637,8 +646,12 @@ export async function applyWouldBePlayedSelfReducer(
  */
 function printedSelfReducerClause(ctx: EffectContext, reducer: WouldBePlayedSelfReducer): string | undefined {
   const normalize = (text: string) => text.replace(/\s+/g, " ").trim().toLowerCase();
-  const lines = (ctx.source.definition.effectText ?? "")
-    .split("\n")
+  const text = ctx.source.definition.effectText ?? "";
+  const clauses = splitPrintedClauses(text);
+  const firstClause = clauses[0];
+  const prefix = firstClause === undefined ? text : text.slice(0, text.indexOf(firstClause.text));
+  const lines = [prefix, ...clauses.map((clause) => clause.text)]
+    .flatMap((clause) => clause.split("\n"))
     .map((line) => line.trim())
     .filter(Boolean);
   const raw = normalize(reducer.raw);
@@ -693,7 +706,7 @@ async function resolveWouldBePlayedSelfReducer(
         declaredZones.flatMap((zone) => (zone === "trashOrBattleArea" ? ["trash", "battleArea"] : [zone])),
       );
       const candidateFilter = { ...target.filter, zone: undefined };
-      const candidates: { instanceId: string; cardId: string; permanentId?: string }[] = [];
+      const candidates: (LooseCandidate & { permanentId?: string })[] = [];
       if (sourceZones.has("trash")) {
         candidates.push(
           ...candidateLooseInstances(ctx, { ...target, filter: { ...candidateFilter, zone: "trash" } }, ["trash"]),
@@ -708,6 +721,7 @@ async function resolveWouldBePlayedSelfReducer(
             candidates.push({
               instanceId: permanent.topCard.instanceId,
               cardId: permanent.topCard.cardId,
+              ownerSeat: permanent.topCard.ownerSeat,
               permanentId: permanent.permanentId,
             });
           }
@@ -719,35 +733,22 @@ async function resolveWouldBePlayedSelfReducer(
       }
       if (candidates.length === 0) return;
 
-      const maxPlacements = typeof target.count === "number" ? target.count : candidates.length;
-      const minimumPerPick = target.upTo === true ? 0 : 1;
-      const chosenInstanceIds = new Set<string>();
-      const chosenPermanentIds = new Set<string>();
-      const chosenNames = new Set<string>();
+      const chosenIds = await pickLoose(
+        ctx,
+        target,
+        candidates,
+        undefined,
+        ctx.ask,
+        candidates.map(({ instanceId }) => instanceId),
+      );
       const chosenPlacements: string[] = [];
       const chosenRelocations: { permanentId: string; shedOwnCards?: boolean }[] = [];
-      for (let pick = 0; pick < maxPlacements; pick += 1) {
-        const available = candidates.filter((candidate) => {
-          if (chosenInstanceIds.has(candidate.instanceId)) return false;
-          if (candidate.permanentId !== undefined && chosenPermanentIds.has(candidate.permanentId)) return false;
-          const name = (ctx.game.definitionOf(candidate as never).nameEn ?? candidate.cardId).toLowerCase();
-          return !chosenNames.has(name);
-        });
-        if (available.length === 0) break;
-        const [chosenId] = await ctx.ask.selectCards(ctx, {
-          candidates: available.map(({ instanceId }) => instanceId),
-          min: minimumPerPick,
-          max: 1,
-          visibleCards: available.map(({ instanceId, cardId }) => ({ instanceId, cardId })),
-        });
-        if (chosenId === undefined) break;
-        const selected = available.find(({ instanceId }) => instanceId === chosenId);
-        if (selected === undefined) return;
-        const name = (ctx.game.definitionOf(selected as never).nameEn ?? selected.cardId).toLowerCase();
-        chosenNames.add(name);
-        chosenInstanceIds.add(selected.instanceId);
+      for (const chosenId of chosenIds) {
+        const selected = candidates.find(({ instanceId }) => instanceId === chosenId);
+        if (selected === undefined) {
+          return;
+        }
         if (selected.permanentId !== undefined) {
-          chosenPermanentIds.add(selected.permanentId);
           chosenRelocations.push({ permanentId: selected.permanentId, shedOwnCards: true });
         } else {
           chosenPlacements.push(selected.instanceId);

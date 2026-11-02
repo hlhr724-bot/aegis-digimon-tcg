@@ -65,26 +65,6 @@ export const compiled: CompiledCard = {
           },
           optional: true,
         },
-        {
-          effectTextPart:
-            "Then, if played by effects, you may return 1 of their suspended Digimon with the lowest DP to the hand.",
-          kind: "Return",
-          target: {
-            filter: {
-              controller: "opponent",
-              suspended: true,
-              kind: ["Digimon"],
-              superlative: "lowestDP",
-            },
-            count: 1,
-          },
-          to: "hand",
-          condition: {
-            kind: "triggerEnteredByEffect",
-            raw: "played by effects",
-          },
-          optional: true,
-        },
       ],
     },
     {

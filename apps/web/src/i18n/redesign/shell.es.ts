@@ -28,5 +28,8 @@ export const shellEs: Record<keyof typeof shellEn, string> = {
   "redesign.shell.crash.body":
     "Esta pantalla dejó de funcionar. Enviamos un informe de error al equipo de Aegis. Recarga la página para continuar.",
   "redesign.shell.crash.reload": "Recargar",
+  "redesign.shell.loadFailed.title": "No se pudo cargar esta pantalla",
+  "redesign.shell.loadFailed.body":
+    "Aegis no pudo descargar parte de esta pantalla. Revisa tu conexión y recarga la página.",
   "redesign.shell.ranked.eyebrow": "Partida clasificatoria",
 };

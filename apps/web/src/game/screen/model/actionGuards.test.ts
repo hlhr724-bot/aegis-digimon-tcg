@@ -44,3 +44,86 @@ it("blocks every ordinary game action for an observer on the displayed player's 
   expect(guards.endPhaseBlocked).toBe(true);
   expect(guards.breedingActionsOpen).toBe(false);
 });
+
+it("blocks passing during manual combat without blocking other manual board edits", () => {
+  const viewer = viewerWith(false);
+  const state = {
+    gameOver: false,
+    turnSeat: 0,
+    phase: Phase.Main,
+    gameMode: "manual",
+    manual: { combatStage: "counter", undoRequester: -1, resultRequester: -1, restartRequester: -1 },
+  } as unknown as GameState;
+  const guards = actionGuards({
+    state,
+    viewer,
+    viewerSeat: 0,
+    decisionOpen: false,
+    presenting: false,
+    phasePresentationPending: false,
+  });
+  expect(guards.endPhaseBlocked).toBe(true);
+  expect(guards.turnActionBlocked).toBe(false);
+  expect(guards.mainActionBlocked).toBe(false);
+});
+
+it("blocks manual board mutations during every pending table agreement", () => {
+  for (const key of ["undoRequester", "resultRequester", "restartRequester"]) {
+    const state = {
+      gameOver: false,
+      turnSeat: 0,
+      phase: Phase.Main,
+      gameMode: "manual",
+      manual: { combatStage: "none", undoRequester: -1, resultRequester: -1, restartRequester: -1, [key]: 1 },
+    } as unknown as GameState;
+    const guards = actionGuards({
+      state,
+      viewer: viewerWith(false),
+      viewerSeat: 0,
+      decisionOpen: false,
+      presenting: false,
+      phasePresentationPending: false,
+    });
+    expect(guards.turnActionBlocked).toBe(true);
+    expect(guards.endPhaseBlocked).toBe(true);
+  }
+});
+
+it.each([0, 1] as const)("keeps manual breeding choices separate from passing for viewer seat %s", (viewerSeat) => {
+  const state = {
+    gameOver: false,
+    turnSeat: 0,
+    phase: Phase.Main,
+    gameMode: "manual",
+    manual: {
+      turnPhase: Phase.Breeding,
+      combatStage: "none",
+      undoRequester: -1,
+      resultRequester: -1,
+      restartRequester: -1,
+    },
+  } as unknown as GameState;
+  const guards = actionGuards({
+    state,
+    viewer: viewerWith(false),
+    viewerSeat,
+    decisionOpen: false,
+    presenting: false,
+    phasePresentationPending: false,
+  });
+  expect(guards.endPhaseBlocked).toBe(viewerSeat !== 0);
+  expect(guards.breedingActionsOpen).toBe(viewerSeat === 0);
+  expect(guards.turnActionBlocked).toBe(false);
+  expect(guards.mainActionBlocked).toBe(false);
+  state.manual.turnPhase = Phase.Main;
+  expect(
+    actionGuards({
+      state,
+      viewer: viewerWith(false),
+      viewerSeat,
+      decisionOpen: false,
+      presenting: false,
+      phasePresentationPending: false,
+    }).endPhaseBlocked,
+  ).toBe(viewerSeat !== 0);
+});

@@ -8,6 +8,7 @@
    idle client costs nothing. */
 
 import { useEffect, useRef } from "react";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 interface Mote {
   x: number;
@@ -70,8 +71,7 @@ export function CursorParticles() {
     if (!canvas || typeof window === "undefined" || !window.matchMedia) return;
 
     const coarse = window.matchMedia("(pointer: coarse)");
-    const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (coarse.matches || calm.matches) return;
+    if (coarse.matches || motionPreference.isReduced()) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;

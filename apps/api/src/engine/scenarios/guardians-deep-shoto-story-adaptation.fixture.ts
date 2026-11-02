@@ -1,0 +1,93 @@
+import { buildStoryDrawPile } from "#api/story/buildStoryDrawPile";
+import { deepSaversTournamentDeck } from "#api/story/decks/deepSaversTournamentDeck";
+import type { ScenarioFixture } from "#api/engine/scenario/types";
+
+const fixture: ScenarioFixture = {
+  name: "guardians-deep-shoto-story-adaptation",
+  memory: 3,
+  turnSeat: 0,
+  turnCount: 1,
+  isFirstPlayersFirstTurn: true,
+  presentation: {
+    timed: false,
+  },
+  board: {
+    "0": {
+      hand: ["ST18-05", "ST18-07", "ST18-11", "ST18-14", "ST18-12"],
+      security: ["ST18-11", "ST18-07", "BT18-045", "ST18-08", "ST18-14"],
+      deck: [
+        "ST18-07",
+        "ST18-05",
+        "ST18-08",
+        "ST18-05",
+        "ST18-05",
+        "ST18-12",
+        "ST18-15",
+        "ST18-06",
+        "EX7-074",
+        "ST18-06",
+        "ST18-06",
+        "ST18-10",
+        "EX7-074",
+        "ST18-15",
+        "ST18-15",
+        "ST18-04",
+        "ST18-10",
+        "ST18-13",
+        "ST18-14",
+        "ST18-04",
+        "ST18-10",
+        "BT18-045",
+        "ST18-06",
+        "ST18-13",
+        "ST18-12",
+        "ST18-04",
+        "ST18-14",
+        "ST18-11",
+        "ST18-08",
+        "ST18-10",
+        "ST18-04",
+        "ST18-13",
+        "ST18-08",
+        "EX7-074",
+        "ST18-07",
+        "EX7-074",
+        "ST18-12",
+        "ST18-13",
+        "ST18-15",
+        "ST18-11",
+      ],
+      eggDeck: ["ST18-01", "ST18-01", "ST18-01"],
+      battleArea: [],
+      breeding: {
+        card: "ST18-01",
+      },
+    },
+    "1": {
+      hand: ["EX8-018", "EX8-021", "EX8-024", "BT19-082", "EX8-027"],
+      security: ["EX8-018", "EX8-021", "EX8-024", "EX8-027", "LM-028"],
+      deck: buildStoryDrawPile({
+        counts: deepSaversTournamentDeck.mainDeck,
+        placed: [
+          "EX8-018",
+          "EX8-021",
+          "EX8-024",
+          "BT19-082",
+          "EX8-027",
+          "EX8-018",
+          "EX8-021",
+          "EX8-024",
+          "EX8-027",
+          "LM-028",
+        ],
+      }),
+      eggDeck: ["EX8-002", "EX8-002", "EX8-002"],
+      battleArea: [],
+      breeding: {
+        card: "EX8-002",
+      },
+    },
+  },
+};
+
+export default fixture;

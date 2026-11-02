@@ -2,8 +2,19 @@ import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import "../index.js";
+import { compiled } from "./RB1-032.js";
 
 describe("RB1-032 Hiro Amanokawa", () => {
+  it("draws before gaining memory after paying its placement cost", () => {
+    expect(compiled.effects?.[0]).toMatchObject({
+      trigger: "StartOfYourMainPhase",
+      actions: [
+        { kind: "Draw", amount: 1, cost: { kind: "place" }, optional: true, abortOnDecline: true },
+        { kind: "GainMemory", amount: 1 },
+      ],
+    });
+  });
+
   it("places the exact Gammamon from hand under a Digimon, gains memory, and draws", async () => {
     const preferInstanceIds: string[] = [];
     const s = setupEngine(

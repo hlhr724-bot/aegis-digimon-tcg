@@ -1,3 +1,4 @@
+import type { SecurityDpSnapshot } from "#api/engine/security/SecurityDpSnapshot";
 import { EffectDuration, type Seat } from "@aegis/shared";
 
 interface TriggeredSecurityDpModifier {
@@ -12,6 +13,40 @@ export class SecurityDpLedger {
   private triggered: TriggeredSecurityDpModifier[] = [];
 
   constructor(private readonly onChange?: (seat: Seat, delta: number) => void) {}
+
+  snapshot(): SecurityDpSnapshot {
+    return {
+      continuous: Array.from(this.continuousBySeat, ([seat, delta]) => [seat, delta] as const),
+      triggered: this.triggered.map((entry) => ({ ...entry })),
+    };
+  }
+
+  restore(snapshot: SecurityDpSnapshot): void {
+    const continuous = new Map<Seat, number>();
+    for (const [seat, delta] of snapshot.continuous) {
+      if ((seat !== 0 && seat !== 1) || !Number.isFinite(delta) || continuous.has(seat)) {
+        throw new Error("Invalid continuous security DP snapshot");
+      }
+      continuous.set(seat, delta);
+    }
+    const triggered = snapshot.triggered.map((entry) => {
+      if (
+        (entry.seat !== 0 && entry.seat !== 1) ||
+        !Number.isFinite(entry.delta) ||
+        !Number.isInteger(entry.duration) ||
+        !Object.values(EffectDuration).includes(entry.duration)
+      ) {
+        throw new Error("Invalid triggered security DP snapshot");
+      }
+      return { ...entry };
+    });
+    this.continuousBySeat.clear();
+    for (const [seat, delta] of continuous) {
+      this.continuousBySeat.set(seat, delta);
+    }
+    this.triggered = triggered;
+    this.publish();
+  }
 
   private publish(): void {
     this.onChange?.(0, this.deltaFor(0));

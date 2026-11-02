@@ -1,4 +1,4 @@
-import { fixturePermanentId } from "./references.js";
+import { fixtureInstanceId, fixturePermanentId } from "#api/engine/scenario/references";
 import type { ScenarioOpponent } from "./types.js";
 import { createEvaluationPolicy, type BotPolicy } from "../../bot/policy.js";
 
@@ -75,9 +75,22 @@ export function createFixtureBotPolicy(script: ScenarioOpponent | undefined): Bo
             },
           };
         if (rule.kind === "chooseTargets" && rule.target) {
-          const target = fixturePermanentId(rule.target);
+          const instanceId = fixtureInstanceId(rule.target);
+          const target =
+            [...(view?.board ?? []), ...(view?.opponentBoard ?? [])].find(
+              (permanent) => permanent.topCardInstanceId === instanceId,
+            )?.permanentId ?? fixturePermanentId(rule.target);
           if (request.options?.candidateInstanceIds?.includes(target))
             return { type: "respondDecision", decisionId, response: { kind: "chooseTargets", instanceIds: [target] } };
+        }
+        if (rule.kind === "selectCards" && rule.target) {
+          const instanceId = fixtureInstanceId(rule.target);
+          if (request.options?.candidateInstanceIds?.includes(instanceId))
+            return {
+              type: "respondDecision",
+              decisionId,
+              response: { kind: "selectCards", instanceIds: [instanceId] },
+            };
         }
         if (rule.kind === "chooseOption") {
           const optionIndex = (request.options?.choices ?? []).findIndex((choice) =>

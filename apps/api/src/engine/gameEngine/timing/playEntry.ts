@@ -3,6 +3,7 @@ import { EffectTiming, Permanent, type Seat, type ZoneRef } from "@aegis/shared"
 import { definitionOf } from "../../cards/cardData.js";
 import { canActivate, canTrigger } from "../../effects/kernel.js";
 import { effectsOf, type CollectedEffect } from "../../effects/collect.js";
+import { effectProvenanceKinds } from "#api/engine/effects/effectProvenance";
 import type { EffectContext, TriggerInfo } from "../../effects/EffectContext.js";
 import { digivolvedFromTamerBase } from "../subTriggerIdentity.js";
 import { findInstance } from "../intents.js";
@@ -110,6 +111,7 @@ export async function fireEnteredByEffectTiming(
   instanceId: string,
   ownerSeat: Seat,
   opts?: {
+    byEffect?: boolean;
     isDnaDigivolve?: boolean;
     digivolvedFromZone?: ZoneRef;
     baseWasDigimon?: boolean;
@@ -124,7 +126,11 @@ export async function fireEnteredByEffectTiming(
 ): Promise<void> {
   const attackerPermanentId = engine.combat?.currentAttackerId;
   const subjectPermanent = findInstance(engine, instanceId)?.permanent;
-  if (subjectPermanent !== undefined) subjectPermanent.enteredByEffect = true;
+  const byEffect = opts?.byEffect !== false;
+  const effectEntryTrigger = byEffect ? { enteredByEffect: ownerSeat } : {};
+  if (subjectPermanent !== undefined) {
+    subjectPermanent.enteredByEffect = byEffect;
+  }
   if (timing === EffectTiming.OnPlay) materializePlayerCustomEffects(engine, subjectPermanent);
   // Effect-driven digivolutions are genuine digivolutions for "digivolved engine turn"
   // conditions (BT1-007 Q871). As with the manual action seam, breeding-area evolutions
@@ -138,7 +144,7 @@ export async function fireEnteredByEffectTiming(
       timing,
       instanceId,
       {
-        enteredByEffect: ownerSeat,
+        ...effectEntryTrigger,
         ...(attackerPermanentId !== undefined ? { attackerPermanentId } : {}),
         ...(opts?.playedFromZone !== undefined ? { playedFromZone: opts.playedFromZone } : {}),
         ...(opts?.digiXrosMaterialCount !== undefined ? { digiXrosMaterialCount: opts.digiXrosMaterialCount } : {}),
@@ -152,7 +158,7 @@ export async function fireEnteredByEffectTiming(
     return;
   }
   const scopedTrigger: TriggerInfo = {
-    enteredByEffect: ownerSeat,
+    ...effectEntryTrigger,
     ...(attackerPermanentId !== undefined ? { attackerPermanentId } : {}),
     ...(opts?.isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
     ...(opts?.digivolvedFromZone !== undefined ? { digivolvedFromZone: opts.digivolvedFromZone } : {}),
@@ -170,7 +176,7 @@ export async function fireEnteredByEffectTiming(
   const enterFieldTrigger = {
     subjectPermanentId,
     entryCause: "digivolve" as const,
-    enteredByEffect: ownerSeat,
+    ...effectEntryTrigger,
     ...(opts?.isDnaDigivolve === true ? { isDnaDigivolve: true } : {}),
   };
   // Q6671/Q6708: a Tamer base digivolves as a Tamer, so the payload is tagged and the
@@ -184,7 +190,8 @@ export async function fireEnteredByEffectTiming(
   const watcherTrigger = {
     subjectPermanentId,
     digivolvedInstanceId: instanceId,
-    enteredByEffect: ownerSeat,
+    ...(subjectPermanent === undefined ? {} : { digivolvedSubject: subjectPermanent.clone() }),
+    ...effectEntryTrigger,
     ...(opts?.previousDigivolutionLevel === undefined
       ? {}
       : { previousDigivolutionLevel: opts.previousDigivolutionLevel }),
@@ -214,9 +221,11 @@ export async function fireEnteredByEffectTiming(
 export function materializePlayerCustomEffects(engine: GameEngine, permanent: Permanent | undefined): void {
   const top = permanent?.topCard;
   if (permanent === undefined || top === undefined) return;
-  for (const grant of engine.continuous.playerCustomEffectsFor(permanent.permanentId, permanent.controllerSeat)) {
+  const permanentId = permanent.permanentId;
+  for (const grant of engine.continuous.playerCustomEffectsOf(permanent.controllerSeat)) {
     engine.continuous.addCustomEffectGrant(top.instanceId, top.ownerSeat, grant.token, grant.duration, {
       activationIdentity: grant.activationIdentity,
+      isActive: () => grant.matches(permanentId),
     });
   }
 }
@@ -304,7 +313,10 @@ export async function reactivateOnPlay(
   ]
     .filter(({ effect }) => !effect.isSecurity)
     .filter(({ effect, ctx }) => opts?.outsideTriggerWindow === true || canTrigger(effect, ctx, engine.tracker));
-  const availableCandidates = candidates.filter(({ ctx, timing }) => {
+  const availableCandidates = candidates.filter(({ effect, ctx, timing }) => {
+    if (opts?.outsideTriggerWindow === true && !canActivate(effect, ctx, engine.tracker)) {
+      return false;
+    }
     if (timing === undefined) return true;
     const sourcePermanentId = ctx.source.permanent()?.permanentId;
     return sourcePermanentId === undefined || !isTimingActivationDisabled(engine.continuous, sourcePermanentId, timing);
@@ -321,7 +333,7 @@ export async function reactivateOnPlay(
         isTimingActivationDisabled(engine.continuous, sourcePermanentId, timing)
       )
         continue;
-      await effect.resolve(ctx);
+      await resolveReactivatedEffect({ effect, ctx });
       activatedAny = true;
     }
     await engine.recomputeContinuousEffects();
@@ -347,7 +359,29 @@ export async function reactivateOnPlay(
     chosen.ctx.continueEffectAfterAttackDeclaration = opts.continueEffectAfterAttackDeclaration;
   // KB Q4963: an effect activated by another effect still spends its [Once Per Turn].
   engine.tracker.register(chosen.source.instanceId, chosen.effect.effectKey);
-  await chosen.effect.resolve(chosen.ctx);
+  await resolveReactivatedEffect({ effect: chosen.effect, ctx: chosen.ctx });
   await engine.recomputeContinuousEffects();
   return true;
+}
+
+type ResolveReactivatedEffectParams = {
+  effect: CollectedEffect["effect"];
+  ctx: EffectContext;
+};
+
+async function resolveReactivatedEffect({ effect, ctx }: ResolveReactivatedEffectParams): Promise<void> {
+  const outerSourceKinds = ctx.effectSourceKinds;
+  const sourceKinds = effectProvenanceKinds(ctx, { isLinked: effect.isLinked });
+  ctx.effectSourceKinds = sourceKinds;
+  ctx.fx.enterEffectResolution?.(
+    ctx.source.ownerSeat,
+    sourceKinds,
+    ctx.conferredToPermanentId ?? ctx.source.permanent()?.permanentId,
+  );
+  try {
+    await effect.resolve(ctx);
+  } finally {
+    ctx.fx.leaveEffectResolution?.();
+    ctx.effectSourceKinds = outerSourceKinds;
+  }
 }

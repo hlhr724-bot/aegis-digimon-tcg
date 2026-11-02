@@ -23,7 +23,7 @@ describe("BT15-034", () => {
       optional: true,
     });
   });
-  it("once per turn gives an opposing Digimon -2000 DP when opponent security is removed", () =>
+  it("once per turn gives an opposing Digimon -2000 DP when its controller loses security", () =>
     expect(compiled.effects?.[1]).toMatchObject({
       trigger: "AllTurns",
       isInherited: true,
@@ -32,7 +32,7 @@ describe("BT15-034", () => {
         {
           kind: "SubTrigger",
           event: "whenSecurityRemoved",
-          sourceFilter: { controller: "opponent" },
+          sourceFilter: { controller: "mine" },
           actions: [{ kind: "ModifyDP", amount: -2000 }],
         },
       ],
@@ -73,7 +73,7 @@ describe("BT15-034", () => {
         .map(({ req }) => req.options?.effectTextPart),
     ).toEqual([
       "[Start of Your Main Phase] If you have 3 or more security cards, you may add the top card of your security stack to the hand.",
-      "If you have 2 or fewer, you may place 1 yellow Digimon card with the [Vaccine]&#160;trait from your hand at the top or bottom of your security stack.",
+      "If you have 2 or fewer, you may place 1 yellow Digimon card with the [Vaccine] trait from your hand at the top or bottom of your security stack.",
     ]);
   });
 
@@ -131,10 +131,13 @@ describe("BT15-034", () => {
     ]);
   });
 
-  it("its inherited host applies -2000 DP only once when opponent security is removed", async () => {
+  it("its inherited host applies -2000 DP only once when its controller loses security", async () => {
     const s = setupEngine(
       {
-        0: { battleArea: [{ card: "BT15-035", as: "host", under: ["BT15-034"] }], security: ["BT1-009"] },
+        0: {
+          battleArea: [{ card: "BT15-035", as: "host", under: ["BT15-034"] }],
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+        },
         1: {
           battleArea: [{ card: "BT15-029", as: "target", dp: 7000 }],
           security: ["BT1-009", "BT1-010", "BT1-009"],
@@ -145,11 +148,11 @@ describe("BT15-034", () => {
     );
     await s.ready();
 
-    await advance(s.engine).verb.trashFromSecurity(0, 1);
+    await advance(s.engine).verb.trashFromSecurity(1, 1);
     expect(s.perm("target").currentDP).toBe(7000);
-    await advance(s.engine).verb.trashFromSecurity(1, 1);
+    await advance(s.engine).verb.trashFromSecurity(0, 1);
     await settle(() => s.perm("target").currentDP === 5000);
-    await advance(s.engine).verb.trashFromSecurity(1, 1);
+    await advance(s.engine).verb.trashFromSecurity(0, 1);
 
     expect(s.perm("target").currentDP).toBe(5000);
 
@@ -158,7 +161,7 @@ describe("BT15-034", () => {
     s.state.memory = 3;
     const opponentTurn = s.engine.runOneTurn();
     await advance(s.engine).waitForMainPhase(1);
-    await advance(s.engine).verb.trashFromSecurity(1, 1);
+    await advance(s.engine).verb.trashFromSecurity(0, 1);
     await settle(() => s.perm("target").currentDP === 5000);
     expect(s.perm("target").currentDP).toBe(5000);
     advance(s.engine).endMainPhaseIfOpen(1);

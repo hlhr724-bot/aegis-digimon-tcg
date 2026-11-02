@@ -227,6 +227,33 @@ describe("EX10-056 [DigiXros -2] 2 Digimon cards w/[Bagra Army] trait", () => {
 });
 
 describe("EX10-056 [On Play] [When Digivolving] placement", () => {
+  it("does not place an opposing Digimon under a token", async () => {
+    const preferred: string[] = [];
+    const s = setupEngine(
+      {
+        0: { hand: [{ card: CARD_ID, as: "bagramon" }] },
+        1: {
+          battleArea: [
+            { card: "BT1-009", as: "victim" },
+            { card: "TOKEN-Uka-no-Mitama", as: "token" },
+          ],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    preferred.push(s.perm("victim").permanentId, s.perm("token").permanentId);
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("bagramon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.pendingDecision === undefined && s.state.players[0]!.battleArea.length === 1);
+    expect(s.perm("token").stack).toHaveLength(0);
+    expect(s.state.players[1]!.battleArea.map(({ permanentId }) => permanentId)).toContain(
+      s.perm("victim").permanentId,
+    );
+  });
+
   it("[On Play] via a real DigiXros: the victim leaves the battle area and its stack is trashed (Q5145)", async () => {
     const preferred: string[] = [];
     const s = setupEngine(

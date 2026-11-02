@@ -1,3 +1,7 @@
+import { ReplayDeckIcons } from "@/replays/ReplayDeckIcons";
+import { ReplayDeckDialog } from "@/replays/ReplayDeckDialog";
+import { getReplayResult } from "@/replays/getReplayResult";
+import { useReplayEnding } from "@/replays/useReplayEnding";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MatchReplay, Seat } from "@aegis/shared";
 import { GameScreen } from "../game/GameScreen";
@@ -10,6 +14,8 @@ import { createPlaybackClock, frameDelay, playbackState, presentationEnd, turnPo
 import { SEQUENTIAL_PACING_ENABLED } from "../features";
 import { createAnimationPlayback } from "../game/animationPlayback";
 import { ReplayRecording } from "./ReplayRecording";
+import { ReplayControls } from "@/replays/ReplayControls";
+import { ReplayTimeline } from "@/replays/ReplayTimeline";
 
 const emptyDeck = { mainDeck: [], eggDeck: [] };
 const acknowledgeDecision = () => undefined;
@@ -28,11 +34,15 @@ export function ReplayPlayer({
   const { t, locale } = useTranslation();
   const [cursor, setCursor] = useState({ index: 0, from: 0, epoch: 0, animate: false });
   const [playing, setPlaying] = useState(false);
+  const [jumping, setJumping] = useState(false);
+  const pendingJump = useRef<number | undefined>(undefined);
   const [settled, setSettled] = useState(true);
   const clock = useMemo(() => createPlaybackClock(), []);
   const [speed, setSpeed] = useState(1);
+  const [skipThinking, setSkipThinking] = useState(true);
+  const [deckSeat, setDeckSeat] = useState<Seat>();
   const [showHand, setShowHand] = useState(true);
-  const [viewerSeat, setViewerSeat] = useState<Seat>(replay.viewerSeat);
+  const [viewerSeat, setViewerSeat] = useState<Seat>(replay.viewerSeat === 1 ? 1 : 0);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const [recordingMode, setRecordingMode] = useState(false);
@@ -42,25 +52,30 @@ export function ReplayPlayer({
   const controls = useRef<PresentationControls | undefined>(undefined);
   const painted = useMemo(
     () =>
-      createAnimationPlayback(
-        () => surface.current?.querySelector(".replay-player__board")?.getAnimations({ subtree: true }) ?? [],
+      createAnimationPlayback(() =>
+        (surface.current?.querySelector(".replay-player__board")?.getAnimations({ subtree: true }) ?? []).filter(
+          (animation) => !(animation instanceof CSSAnimation && animation.animationName === "replay-board-enter"),
+        ),
       ),
     [],
   );
   useEffect(() => {
     let frameId: number;
     const sync = () => {
-      painted.apply(speed, !playing);
+      painted.apply(speed, !playing && !jumping);
       frameId = requestAnimationFrame(sync);
     };
     sync();
     return () => cancelAnimationFrame(frameId);
-  }, [painted, speed, playing]);
+  }, [painted, speed, playing, jumping]);
   useEffect(() => () => painted.release(), [painted]);
   const speedRef = useRef(speed);
   speedRef.current = speed;
   const turns = useMemo(() => turnPositions(replay), [replay]);
   const atEnd = cursor.index === replay.frames.length - 1;
+  const resultVisible = atEnd && settled && !playing;
+  const endingFinished = useReplayEnding({ visible: resultVisible });
+  const result = useMemo(() => getReplayResult({ replay, viewerSeat }), [replay, viewerSeat]);
   const state = useMemo(() => playbackState(replay, cursor.index, showHand), [replay, cursor.index, showHand]);
   const probe = useMemo<PresentationProbe>(
     () => ({
@@ -82,14 +97,24 @@ export function ReplayPlayer({
     }),
     [],
   );
-  const labels = useMemo(
+  const logLines = useMemo(
     () =>
       replay.frames.map(
         (entry) =>
-          buildMatchLog(entry.events, replay.viewerSeat, new Map(), t, 1)[0]?.text ??
-          `${t("replay.turn")} ${entry.state.turnCount} · ${entry.state.phase}`,
+          buildMatchLog(entry.events, replay.viewerSeat === 1 ? 1 : 0, new Map(), t, 1, {
+            0: replay.players[0],
+            1: replay.players[1],
+          })[0]?.text,
       ),
     [replay, t],
+  );
+  const labels = useMemo(
+    () =>
+      logLines.map(
+        (line, index) =>
+          line ?? `${t("replay.turn")} ${replay.frames[index]!.state.turnCount} · ${replay.frames[index]!.state.phase}`,
+      ),
+    [logLines, replay, t],
   );
   const presentedFrames = useMemo(
     () => (cursor.animate ? replay.frames.slice(cursor.from, cursor.index + 1) : []),
@@ -105,6 +130,10 @@ export function ReplayPlayer({
     [presentedFrames, cursor.from],
   );
   // Every dependency in this causal span arrives before the queue waits for it.
+  const historyEvents = useMemo(
+    () => replay.frames.slice(0, cursor.index + 1).flatMap((frame) => frame.events),
+    [replay, cursor.index],
+  );
   const events = useMemo(() => presentedFrames.flatMap((entry) => entry.events), [presentedFrames]);
   const snapshotStart = Math.min(Math.max(0, cursor.index - 39), Math.max(0, cursor.from - 1));
   const connection = useMemo(
@@ -132,15 +161,16 @@ export function ReplayPlayer({
     controls.current?.queue.setRate(speed);
   }, [clock, speed, playing]);
   useEffect(() => {
-    if (!playing) return;
+    if (!playing && !jumping) return;
     const interval = setInterval(() => {
       if (!controls.current?.queue.isIdle()) return;
-      if (atEnd) {
+      if (!playing || atEnd) {
         setSettled(true);
         setPlaying(false);
+        setJumping(false);
         return;
       }
-      if (clock.elapsed() < frameDelay(replay, cursor.index, 1)) return;
+      if (clock.elapsed() < frameDelay(replay, cursor.index, 1, skipThinking)) return;
       clock.reset();
       setSettled(false);
       setCursor((current) => ({
@@ -151,7 +181,7 @@ export function ReplayPlayer({
       }));
     }, 50);
     return () => clearInterval(interval);
-  }, [clock, playing, atEnd, replay, cursor.index]);
+  }, [clock, playing, jumping, atEnd, replay, cursor.index, skipThinking]);
   useEffect(() => {
     if (!historyOpen) return;
     history.current?.querySelector<HTMLElement>('[aria-current="step"]')?.scrollIntoView({ block: "nearest" });
@@ -167,43 +197,54 @@ export function ReplayPlayer({
     window.addEventListener("keydown", escape);
     return () => window.removeEventListener("keydown", escape);
   }, [historyOpen]);
-  useEffect(() => {
-    const element = surface.current;
-    if (!element) return;
-    const position = () => {
-      const hand = element.querySelector('[data-testid="hand"]')?.getBoundingClientRect();
-      element.style.setProperty(
-        "--replay-hand-clearance",
-        `${hand ? Math.max(12, window.innerHeight - hand.top + 12) : 12}px`,
-      );
-    };
-    const mutations = new MutationObserver(position);
-    mutations.observe(element.querySelector(".replay-player__board")!, { childList: true, subtree: true });
-    const resize = new ResizeObserver(position);
-    resize.observe(element);
-    position();
-    return () => {
-      mutations.disconnect();
-      resize.disconnect();
-    };
-  }, [cursor.epoch, viewerSeat, showHand]);
 
+  useEffect(() => {
+    if (pendingJump.current === undefined) return;
+    const timeout = setTimeout(() => {
+      const start = pendingJump.current;
+      pendingJump.current = undefined;
+      if (start !== undefined) animateFrom(start);
+    }, 220);
+    return () => clearTimeout(timeout);
+  }, [cursor.epoch]);
+
+  function animateFrom(start: number) {
+    setSettled(false);
+    setJumping(true);
+    controls.current?.queue.resume();
+    setCursor((current) => ({ ...current, from: start, index: presentationEnd(replay, start), animate: true }));
+  }
   function seek(index: number) {
+    const target = Math.max(0, Math.min(replay.frames.length - 1, index));
+    pendingJump.current = undefined;
     setPlaying(false);
+    setJumping(false);
     setSettled(true);
     clock.reset();
     controls.current = undefined;
-    setCursor((current) => ({
-      index: Math.max(0, Math.min(replay.frames.length - 1, index)),
-      from: Math.max(0, Math.min(replay.frames.length - 1, index)),
-      epoch: current.epoch + 1,
-      animate: false,
-    }));
+    setCursor((current) => ({ index: target, from: target, epoch: current.epoch + 1, animate: false }));
+  }
+  function jump(index: number) {
+    const target = Math.max(0, Math.min(replay.frames.length - 1, index));
+    if (target === 0) {
+      seek(0);
+      return;
+    }
+    setPlaying(false);
+    setSettled(true);
+    clock.reset();
+    if (target === cursor.index + 1 && controls.current) {
+      animateFrom(target);
+      return;
+    }
+    seek(target - 1);
+    pendingJump.current = target;
   }
   function togglePlay() {
     if (playing) {
       controls.current?.queue.pause();
       setPlaying(false);
+      setJumping(false);
       return;
     }
     if (atEnd && settled) seek(0);
@@ -231,7 +272,7 @@ export function ReplayPlayer({
     >
       <ReplayRecording
         replayId={replay.id}
-        finished={atEnd && settled && !playing}
+        finished={endingFinished}
         onStart={startRecordingPlayback}
         onStop={stopRecordingPlayback}
         onActiveChange={setRecordingMode}
@@ -257,12 +298,21 @@ export function ReplayPlayer({
           <span className="replay-player__outcome">{outcome}</span>
         </div>
       </header>
-      <p className="aegis-sr-only">{t("replay.perspective", { name: replay.players[replay.viewerSeat] })}</p>
+      {deckSeat !== undefined && replay.decks?.[deckSeat] ? (
+        <ReplayDeckDialog deck={replay.decks[deckSeat]} onClose={() => setDeckSeat(undefined)} />
+      ) : null}
+      <p className="aegis-sr-only">
+        {t("replay.perspective", {
+          name: replay.viewerSeat === -1 ? t("friends.spectatorReplay") : replay.players[replay.viewerSeat],
+        })}
+      </p>
       <div className="replay-player__body">
         <div className="replay-player__board">
           <GameScreen
             key={`${cursor.epoch}-${viewerSeat}`}
             replayMode
+            historyEvents={historyEvents}
+            replayPlayers={replay.players}
             presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}
             joinOptions={{ displayName: replay.players[viewerSeat], deck: emptyDeck }}
             identityColor="Blue"
@@ -271,6 +321,17 @@ export function ReplayPlayer({
             onExit={onClose}
           />
         </div>
+        {resultVisible ? (
+          <div className="replay-result" role="status" data-tone={result.tone}>
+            <strong>{t(result.titleKey)}</strong>
+            <span>
+              {replay.winnerSeat < 0
+                ? t("replay.draw")
+                : t("replay.winner", { name: replay.players[replay.winnerSeat]! })}
+            </span>
+            {result.reasonKey ? <p>{t(result.reasonKey)}</p> : null}
+          </div>
+        ) : null}
         {historyOpen ? (
           <aside ref={history} id="replay-history" className="replay-history" aria-label={t("replay.log")}>
             <header>
@@ -292,7 +353,7 @@ export function ReplayPlayer({
                   <button
                     type="button"
                     aria-current={index === cursor.index ? "step" : undefined}
-                    onClick={() => seek(index)}
+                    onClick={() => jump(index)}
                   >
                     <span className="replay-history__number">{index + 1}</span>
                     <span className="replay-history__entry">
@@ -333,27 +394,23 @@ export function ReplayPlayer({
           <Icons.PlayCircle size={20} />
         </button>
       </div>
-      <div
-        id="replay-controls"
-        className="replay-controls"
-        role="group"
-        aria-label={t("replay.title")}
-        hidden={!controlsVisible}
-      >
+      <ReplayControls visible={controlsVisible}>
         <div className="replay-controls__timeline">
-          <label htmlFor="replay-position">
-            {t("replay.action", { current: cursor.index + 1, total: replay.frames.length })}
-          </label>
-          <input
-            id="replay-position"
-            type="range"
-            min={0}
-            max={replay.frames.length - 1}
-            value={cursor.index}
-            aria-label={t("replay.position")}
-            onChange={(event) => seek(Number(event.target.value))}
-          />
-          <span role="status">{atEnd && settled ? t("replay.finished") : labels[cursor.index]}</span>
+          <ReplayTimeline replay={replay} logLines={logLines} index={cursor.index} onSeek={seek} onJump={jump} />
+          <span role="status" title={atEnd && settled ? t("replay.finished") : labels[cursor.index]}>
+            {atEnd && settled ? t("replay.finished") : labels[cursor.index]}
+          </span>
+        </div>
+        <div className="replay-player__decks">
+          <ReplayDeckIcons summary={replay} />
+          {replay.decks?.map((deck, seat) =>
+            deck ? (
+              <button key={seat} type="button" onClick={() => setDeckSeat(seat as Seat)}>
+                <span>{replay.players[seat]}</span>
+                <strong>{deck.deckName}</strong>
+              </button>
+            ) : null,
+          )}
         </div>
         <div className="replay-controls__buttons">
           <div className="replay-controls__transport">
@@ -389,7 +446,7 @@ export function ReplayPlayer({
               size="sm"
               variant="secondary"
               disabled={atEnd}
-              onClick={() => seek(cursor.index + 1)}
+              onClick={() => jump(cursor.index + 1)}
               aria-label={t("replay.next")}
             >
               <Icons.ChevronRight size={18} />
@@ -411,6 +468,17 @@ export function ReplayPlayer({
               <span>{t("replay.options")}</span>
             </summary>
             <div className="replay-controls__settings">
+              <label>
+                <span>{t("replay.skipThinking")}</span>
+                <input
+                  type="checkbox"
+                  checked={skipThinking}
+                  onChange={(event) => {
+                    clock.reset();
+                    setSkipThinking(event.target.checked);
+                  }}
+                />
+              </label>
               <label>
                 <span>{t("replay.speedShort")}</span>
                 <select
@@ -466,7 +534,7 @@ export function ReplayPlayer({
             </div>
           </details>
         </div>
-      </div>
+      </ReplayControls>
     </section>
   );
 }

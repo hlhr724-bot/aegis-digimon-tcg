@@ -12,7 +12,7 @@ export function PermanentCardStack({ stack, width }: { stack: readonly CardInsta
   return (
     <>
       {stack.map((ci, i) => {
-        const sc = COLORS[colorKey(getCardDefinition(ci.cardId)?.colors[0])];
+        const sc = COLORS[colorKey(ci.faceUp === false ? undefined : getCardDefinition(ci.cardId)?.colors[0])];
         return (
           <div
             key={i}

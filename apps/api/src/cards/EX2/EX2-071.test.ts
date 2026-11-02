@@ -44,6 +44,8 @@ describe("EX2-071 Death Slinger", () => {
           trigger: "Main",
           actions: [
             {
+              effectTextPart:
+                "[Main] Delete 1 of your opponent's level 4 or lower Digimon. For every 10 cards in your trash, add 1 to the maximum level of the Digimon you can choose with this effect.",
               kind: "Delete",
               target: {
                 filter: {

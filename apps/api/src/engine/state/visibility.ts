@@ -1,4 +1,5 @@
-import { $changes, ArraySchema, type ChangeTree, type Metadata, StateView } from "@colyseus/schema";
+import { refreshIdentityVisibility } from "#api/engine/state/refreshIdentityVisibility";
+import { $changes, $refId, ArraySchema, type ChangeTree, type Metadata, StateView } from "@colyseus/schema";
 import { type VisibilityZone, isHiddenZone, isOwnerPrivateZone } from "./access.js";
 import {
   PRIVATE_VIEW_TAG,
@@ -282,6 +283,7 @@ function unlockInto(view: StateView, state: GameState, seat: Seat | undefined, f
   // Nothing below this walks cards on a plain refresh, so the sweep is snapshot-only; each
   // arriving card is repaired individually by `exposeCardInZone` instead.
   if (fullSnapshot) repairDetachedCardSchemas(state);
+  refreshIdentityVisibility({ view, state, seat });
   if (owner !== undefined) {
     // Unlock exactly this seat's private fields. A single PRIVATE_VIEW_TAG is safe:
     // Colyseus scopes the reveal to this specific PlayerState object, so the
@@ -299,7 +301,7 @@ function unlockInto(view: StateView, state: GameState, seat: Seat | undefined, f
     // field of every card, which is what made each patch cost a full state re-encode.
     if (fullSnapshot) {
       for (const card of owner.hand) {
-        view.add(card);
+        exposeCard(view, card, true);
         view.add(card, CARD_ID_VIEW_TAG);
       }
       // Security identity is withheld from the owner too: a player may not look at their own
@@ -307,7 +309,7 @@ function unlockInto(view: StateView, state: GameState, seat: Seat | undefined, f
       // gets its cardId. Deck and egg deck are absent entirely — HIDDEN_ZONE_VIEW_TAG is
       // granted to no view, so the arrays are never encoded and there is nothing to tag.
       for (const card of owner.security) {
-        view.add(card);
+        exposeCard(view, card, true);
         if (card.faceUp) view.add(card, CARD_ID_VIEW_TAG);
       }
     }
@@ -342,7 +344,7 @@ function unlockInto(view: StateView, state: GameState, seat: Seat | undefined, f
   // and keeps the policy uniform.
   for (const player of state.players) {
     for (const card of publicBoardCardsOf(player, fullSnapshot)) {
-      view.add(card);
+      exposeCard(view, card, true);
       if (card.faceUp || card.ownerSeat === seat) view.add(card, CARD_ID_VIEW_TAG);
     }
   }
@@ -421,13 +423,13 @@ export function exposeCardInZone(
     // arrives in hand with `instanceId: undefined`. Adding with the default tag force-queues
     // every untagged field and fixes that; it deliberately does NOT reveal `cardId`, which is
     // tagged and therefore only travels on the explicit grant below.
-    view.add(card);
+    exposeCard(view, card);
     // Your hand is yours to read; your face-down security is not (§3-7-2). A security card that
     // is later turned face up, or one you already knew, is settled by `syncOwnSecurityIdentities`.
     if (zone === Zone.Hand || card.faceUp) view.add(card, CARD_ID_VIEW_TAG);
     return;
   }
-  view.add(card);
+  exposeCard(view, card);
   if (card.faceUp || card.ownerSeat === viewerSeat) view.add(card, CARD_ID_VIEW_TAG);
 }
 
@@ -437,8 +439,59 @@ export function exposeCardInZone(
  */
 const departuresByView = new WeakMap<StateView, Set<CardInstance>>();
 
+// A card exposed and withdrawn before a patch has no client refId yet. Its forced
+// ADDs must be cancelled, while a previously delivered card must remain visible
+// until its departure is encoded. Full views are used only with a snapshot.
+const boundCardsByView = new WeakMap<StateView, WeakSet<CardInstance>>();
+const pendingCardsByView = new WeakMap<StateView, Set<CardInstance>>();
+
+function exposeCard(view: StateView, card: CardInstance, snapshot = false): void {
+  view.add(card);
+  const tree = card[$changes];
+  if (tree !== undefined) {
+    orderCardChangesAfterParent({ view, tree });
+  }
+  if (snapshot) {
+    let bound = boundCardsByView.get(view);
+    if (bound === undefined) boundCardsByView.set(view, (bound = new WeakSet()));
+    bound.add(card);
+  } else {
+    let pending = pendingCardsByView.get(view);
+    if (pending === undefined) pendingCardsByView.set(view, (pending = new Set()));
+    pending.add(card);
+  }
+}
+
+type OrderCardChangesParams = { view: StateView; tree: ChangeTree };
+
+function orderCardChangesAfterParent({ view, tree }: OrderCardChangesParams): void {
+  const refId = tree.ref[$refId];
+  const changes = view.changes.get(refId);
+  if (changes !== undefined) {
+    view.changes.delete(refId);
+    view.changes.set(refId, changes);
+  }
+  tree.forEachChild((child) => orderCardChangesAfterParent({ view, tree: child }));
+}
+
+function cancelPendingCard(view: StateView, tree: ChangeTree): void {
+  view.changes.delete(tree.ref[$refId]);
+  tree.forEachChild((child) => cancelPendingCard(view, child));
+}
+
 function rememberDeparture(view: StateView, card: CardInstance): void {
   if (!view.has(card) && !view.hasTag(card)) return;
+  const tree = card[$changes];
+  if (tree === undefined) return;
+  if (!boundCardsByView.get(view)?.has(card)) {
+    // The public parent may already have been removed from the state, while the
+    // card remains rooted in a hidden hand. Colyseus skips that parent's ADD but
+    // otherwise emits the card's queued subtree against an unintroduced refId.
+    cancelPendingCard(view, tree);
+    hideFromView(view, tree);
+    pendingCardsByView.get(view)?.delete(card);
+    return;
+  }
   let departures = departuresByView.get(view);
   if (departures === undefined) {
     departures = new Set();
@@ -484,11 +537,21 @@ function hideFromView(view: StateView, tree: ChangeTree): void {
  */
 export function forgetWithheldCards(view: StateView, state: GameState, viewerSeat: Seat | undefined): void {
   const departures = departuresByView.get(view);
-  if (departures === undefined) return;
   departuresByView.delete(view);
-  for (const card of departures) {
+  for (const card of departures ?? []) {
     const tree = card[$changes];
-    if (tree !== undefined && isWithheldFrom(state, viewerSeat, card)) hideFromView(view, tree);
+    if (tree !== undefined && isWithheldFrom(state, viewerSeat, card)) {
+      hideFromView(view, tree);
+      boundCardsByView.get(view)?.delete(card);
+    }
+  }
+  const pending = pendingCardsByView.get(view);
+  pendingCardsByView.delete(view);
+  for (const card of pending ?? []) {
+    if (isWithheldFrom(state, viewerSeat, card)) continue;
+    let bound = boundCardsByView.get(view);
+    if (bound === undefined) boundCardsByView.set(view, (bound = new WeakSet()));
+    bound.add(card);
   }
 }
 

@@ -207,3 +207,125 @@ Verification under Node 26.5.0 and pnpm 10.30.1: all 66 tooling tests pass, incl
 The full tooling suite reproduced the catalog fingerprint failure. A field-by-field comparison against the reviewed catalog at `bfc57a04e9` finds exactly one changed field: EX12-016 MetalGreymon's `effectText` removes the unprinted Security Attack +1 keyword. Its Assembly requirement, alternate digivolution requirement, Decode and removal effects remain identical. All card IDs and other catalog fields are unchanged.
 
 All DNA, App Fusion and Burst matching effect, inherited and security fields retain identical complete text. The removal introduces no provider, recipient zone or route requirement. The 22 covered cells, eight absence classifications, scenario evidence and rule-source fingerprint remain unchanged. The reviewed catalog fingerprint moves from `268f0ababc2de8e15a5ac50194bca5ca645a0709d8ef41b9fd704feba9afcc3a` to `f1f65e7c8771028cad7360a90ca223a5048878ac96250d20f89cce8f0a5cf45e`; drift guards remain enforced.
+
+### Catalog review after BT27-084 addition (2026-10-13)
+
+The simulator verification check on PR #5462 failed on the catalog fingerprint. The only catalog change since the previous review is one new card: BT27-084 LordKnightmon (X Antibody). Its texts contain no Assembly, DigiXros, DNA, App Fusion or Burst requirement or provider. Its [When Digivolving] effect plays cards from hand, and its [Digivolve] requirement is an ordinary hand digivolution from LordKnightmon. It adds no provider for any of the eight reviewed absence cells.
+
+The 22 covered cells, eight absence classifications, scenario evidence and rule-source fingerprint remain unchanged. After merging `develop`, whose EX8-071 text fix was reviewed separately as route-neutral, the reviewed catalog fingerprint moves from `abe2764d45739099111feb6cb447c0e40511078598300889ad549867df8c2d07` to `d162e1967d88f030cfcfdedee7b00ff885443b279ce2c912b1d182069848fd44`; drift guards remain enforced.
+
+### Catalog review after reprint and errata updates (2026-10-14)
+
+The simulator verification check on PR #5526 failed on the catalog fingerprint. A field-by-field comparison against `origin/develop` finds no added or removed cards. Twenty-four existing cards change only `effectText`, `inheritedEffectText`, `securityEffectText`, `nameEn` or `imageId`: newer printing wording (BT3-039, BT4-109, BT8-038, EX1-068, BT9-102, BT11-095, RB1-032), errata text (EX4-072, EX2-028, BT12-037, BT12-051, BT14-002, BT14-029, BT14-091, BT16-060, BT20-095, ST10-06, P-115), errata names (BT10-101, BT4-031) and default art (BT1-042, BT12-094, P-071, P-123).
+
+None of these changes adds or alters an Assembly, DigiXros, DNA, App Fusion or Burst requirement or provider, or an alternate digivolution requirement. ST10-06 keeps its DNA requirement and changes only its security-search sentence. BT12-037 and BT12-051 keep their DigiXros text and change only the Ryoma Mogami spelling. EX4-072 digivolves from hand while ignoring requirements, which is not one of the matrix mechanics.
+
+The 22 covered cells, eight absence classifications, scenario evidence and rule-source fingerprint remain unchanged. The reviewed catalog fingerprint moves from `d162e1967d88f030cfcfdedee7b00ff885443b279ce2c912b1d182069848fd44` to `abe6ef929a8d8c1e0834af8186f839d891da3816089cc71b94fdb98def69872e`; drift guards remain enforced.
+
+### Catalog review for BT27 and EX14 additions (2026-10-15)
+
+Compared with the reviewed catalog at `68d82b6773`, five cards were added (BT27-035, BT27-070, BT27-103, EX14-012, EX14-054), EX1-068 changed, and no cards were removed. The review includes DUAL `optionEffect` text as well as effect, inherited and security fields.
+
+- BT27-035 adds a manual Burst requirement; neither side instructs Burst digivolution by effect. It is included in all four Burst absence candidate lists.
+- BT27-103 adds a manual DNA requirement and an Option action that DNA digivolves into the resolving card itself. It does not select a result from security or revealed deck cards. Both DNA absence reviews now explicitly include this provider.
+- BT27-070 and EX14-012 add alternate requirements and Arts Digivolve; neither provides DNA, App Fusion or Burst from an excluded zone. EX14-012's security action uses itself as an Option, not as a DNA/App Fusion/Burst result.
+- EX14-054 adds an Assembly requirement and a trash-play effect. These routes are already covered; it adds no excluded digivolution provider.
+- EX1-068 changes only the Ice Wall memory-loss wording, unrelated to these routes.
+
+The App Fusion search still finds seven explicit providers: six target hand and BT24-087 targets trash. The 22 covered cells, eight absence classifications, scenario proof and rules fingerprint remain unchanged. The catalog fingerprint is renewed only after this review; catalog drift remains an error.
+
+### Catalog review after preview colors and Hjaðningar Waltz (2026-10-15)
+
+The PR verification failure reproduced with `node --test tools/kb/rule-obligations.test.mjs`: the reviewed catalog fingerprint was stale. A field-by-field comparison against the reviewed catalog at `4f5453f89f` finds one added card, two changed cards, and no removals:
+
+- BT27-035 changes its colors from blue/yellow to blue/black. Its printed requirements and every effect field remain unchanged.
+- EX14-054 adds red to its colors and a red level-5 evolution requirement for cost 4. Its Assembly requirement and all effect text remain unchanged.
+- BT27-100 Hjaðningar Waltz grants a forced attack, places itself in the battle area, and uses Delay to De-Digivolve and delete opposing Digimon. Its Security effect deletes Digimon and returns itself to hand. None of these clauses instructs play, DNA, App Fusion, Burst, or alternate digivolution from a new recipient zone.
+
+All other catalog fields are unchanged. These additions and corrections preserve the 22 covered route classifications and eight reviewed provider absences. Scenario evidence, candidate lists and the rules fingerprint remain unchanged. The reviewed catalog fingerprint moves from `3fbdd1ed3350aeee8899f4027ec2ec89b57952377ea794365dd7675bcf1e7687` to `3a6953f662084646e6b7ba47c391819fb669fd03962b81f7b0d904389c41a032`; catalog drift remains an error and automatic refresh still cannot recertify a review.
+
+### Catalog review after Mistymon inherited consent correction (2026-10-20)
+
+PR #5882 changes exactly one catalog field relative to `d7dadc1939`: BT18-039's `inheritedEffectText` adds the printed optional consent to unsuspend. No card is added or removed, and every other catalog field is unchanged. Mistymon has no Assembly, DigiXros, DNA, App Fusion, Burst or alternate digivolution provider in this changed clause. The correction changes no recipient zone or route requirement.
+
+The 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain unchanged. After reviewing this bounded delta, the matrix catalog fingerprint changes from `febc2e47c2a358bab84433796571387fbdaaccc9fa7acc61810e3d1c8ce9d766` to `d206dee6d3cea97d6b96598a55b2adbd6179e752b92b1a27078473a392a653dc`. Catalog drift continues to fail validation, and automatic refresh cannot recertify the review.
+
+### Catalog review after the Falcomon evolution line (2026-10-24)
+
+The PR check reproduced the catalog-drift failure in `node --test tools/kb/rule-obligations.test.mjs`. The reviewed fingerprint matches the catalog at `9975d9f3cc`. Comparing that catalog with this branch finds exactly three added cards (BT27-074 Falcomon, BT27-078 Peckmon and BT27-081 Crowmon), no removed cards and no changed fields on existing cards.
+
+All three add alternate DATA SQUAD evolution requirements. Falcomon places a hand card under Keenan Crier and draws/discards; its inherited effect draws/discards. Peckmon plays Keenan from hand and has an inherited opponent discard. Crowmon plays or uses a cost-five-or-lower DATA SQUAD card from hand and its inherited effect plays an eligible Avian/Bird or DATA SQUAD card from trash. These use already covered hand/trash play routes; none instructs DNA, App Fusion or Burst digivolution, or introduces an excluded security/deck-reveal recipient route. Existing covered providers and all eight reviewed absence candidate lists and conclusions remain applicable.
+
+After this bounded delta review, the catalog fingerprint changes from `9f16adfc4a6344101f82757d76723f59252a6c35bd3abf7ef00977d83021f2cd` to `f3da384b801928ebe75349e6e58b3f952ac4a00094f898a870915f5558adc39d`. All 30 route classifications, scenario evidence, exclusion rationale and rule-source fingerprint remain unchanged. Catalog drift is still rejected; no checker or test expectation was weakened.
+
+### Catalog review after Ravemon dual-card additions (2026-10-25)
+
+PR #6087 reproduced the catalog fingerprint failure in `node --test tools/kb/rule-obligations.test.mjs`. Compared with the reviewed catalog at `9e4bd72a60`, this branch adds only BT27-083 Ravemon and BT27-085 Ravemon: Burst Mode. Existing card records are unchanged.
+
+Ravemon adds ordinary and alternate evolution requirements, an opponent hand/security discard, a purple Avian/Bird trash play and an Option discard/deletion effect. Burst Mode adds ordinary green and alternate DATA SQUAD evolution routes, plus a manual Burst requirement returning Keenan Crier. Its effects activate its Option's Main effect, discard, delete and unsuspend. Both cards have Arts Digivolve, which evolves into the resolving Option card; neither instructs DNA, App Fusion or Burst digivolution by effect or introduces a provider for an excluded security/deck-reveal route.
+
+BT27-085 is added to the four Burst absence candidate lists as a printed requirement, following the existing BT27-035 classification. All 30 route classifications, scenario links, exclusion rationale and rule-source fingerprint remain unchanged. After reviewing this bounded delta, the catalog fingerprint is renewed; drift checking remains enforced.
+
+### Catalog review after the purple Ravemon evolution correction (2026-10-26)
+
+Compared with the reviewed catalog at `4763de3067`, no card is added or removed. The only changed field is BT27-085's `evoCosts`: it adds the printed purple level-6 cost-5 route alongside the existing green route. All printed effect text, alternate DATA SQUAD evolution, manual Burst requirements and Option actions remain unchanged.
+
+This ordinary evolution correction also permits Arts Digivolve onto a purple level-6 base, as covered by `arts-digivolve-purple-level-six.test.ts`. It introduces no DNA, App Fusion or Burst effect provider and changes no recipient source zone. The 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain applicable.
+
+After this bounded semantic review, the catalog fingerprint changes from `92c3b9e01cdbd6193dca0a369524d9c139d9ab28b1e4dacf88589e85b1b4c70d` to `86b3f0dcd41c4ffc8d08a709ef99d2c0f6a139da7f06a08080634de3e00ae71f`. Catalog drift remains an error; no validator or test expectation is weakened.
+
+### Catalog review after printed-text corrections (2026-10-31)
+
+PR #6314 reproduced the catalog-drift failure in `node --test tools/kb/rule-obligations.test.mjs`. Compared with the reviewed catalog at `63e8463749`, no card is added or removed and no non-text field changes. 127 text fields on 113 cards change, all checked against the official card images:
+
+- Punctuation only: full-width commas become ASCII commas, wrong closing quotes are fixed (BT1-104, BT1-112, BT3-109), and BT2-111 gains a paragraph break before `[When Digivolving]`.
+- Spelling: "digivoLv.e" becomes "digivolve" on BT1-078, BT1-109, BT2-062 and BT2-111, and BT2-097's DP modifier spacing is fixed. BT1-078 keeps its existing revealed-deck digivolution.
+- Wording that keeps the same recipient zone: LM-054 to LM-062 digivolve into a card "in the hand" with the cost reduced by 2 (LM-056 lists purple before blue). BT18-100 keeps its trash digivolutions. BT12-109 keeps digivolving into a card under the Tamers. P-103 to P-108 change only their reveal-and-add sentence. P-161 removes a duplicated trash trigger.
+
+Re-running the three absence searches (`DNA digivolv`, `app fus`, `burst digivolv`) over the effect fields returns the same card sets as the reviewed catalog (134, 38 and 7 cards). No change introduces a DNA, App Fusion or Burst provider or a new recipient zone, so the 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain applicable.
+
+After this bounded review, the catalog fingerprint changes from `6d0c162bcf8ee07b48bc32e573159e683d2dd0e69748d91b1039b51fd5aca307` to `2c2aadcbb89ce3de9ae9f097a2328fa124a4237781b0965a0a5ddf23ef575894`. Catalog drift remains an error; no validator or test expectation is weakened.
+
+### Catalog review after MirageGaogamon (2026-10-31)
+
+Compared with `develop` at `4f2ddbbcba`, this branch adds only BT27-032 MirageGaogamon. Existing card records are unchanged. Its ordinary blue level-5 evolution and alternate Gaogamon-name or DATA SQUAD evolution do not introduce DNA, App Fusion or Burst providers. Full Moon Blaster returns an opposing highest-level Digimon to hand; Arts Digivolve uses the resolving DUAL Option as its recipient. Neither clause creates a provider for any excluded security or deck-reveal route.
+
+The 22 covered route cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain applicable. After this bounded review, the catalog fingerprint changes from `20a69972d246e0c19110acdf319bb6003ea4473ea8abdfe9942da67dc6b47068` to `c6a63b269c518ad5cfa19c27d52cbe0054d00b95ca6f1d339801fa91c60560ec`. Catalog drift remains an error; no validator or test expectation is weakened.
+
+### Catalog review after Solarmon's black evolution correction (2026-10-31)
+
+Compared with the reviewed catalog at `6d1c0502c3`, all 4,552 card identities remain unchanged. The only changed field is BT27-007 Solarmon's `evoCosts`: it adds the printed black level-2 cost-0 requirement alongside the existing red requirement. Its alternate Flame evolution, effect text, inherited deletion and all other catalog fields are unchanged.
+
+This correction adds an ordinary Digi-Egg evolution base. It does not introduce an effect provider or change a recipient source zone. Comparing the DNA, App Fusion and Burst searches over all five effect text fields produces the same candidate sets as the reviewed catalog (134, 38 and 7 cards). All 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and the rule-source fingerprint remain applicable.
+
+After this bounded semantic review, the catalog fingerprint changes from `c6a63b269c518ad5cfa19c27d52cbe0054d00b95ca6f1d339801fa91c60560ec` to `e193fee1e406c425a23ed90a544164bf5daab362dea2956556cff18dacca2149`. Catalog drift remains an error; no validator or test expectation is weakened.
+
+### Catalog review after BanchoLeomon (2026-11-01)
+
+Compared with `develop` at `f7ed44fc4e`, this branch adds only BT27-053 BanchoLeomon. Existing card records are unchanged. Its ordinary green or yellow level-5 evolution and alternate Leomon-name or DATA SQUAD evolution do not introduce DNA, App Fusion or Burst providers. Its On Deletion effect plays a Tamer or uses an Option from the hand, so it adds no Digimon recipient and no security or deck-reveal source zone. Comparing the DNA, App Fusion and Burst searches over all five effect text fields produces the same candidate sets as the reviewed catalog (134, 38 and 7 cards).
+
+The 22 covered route cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain applicable. After this bounded review, the catalog fingerprint changes from `e193fee1e406c425a23ed90a544164bf5daab362dea2956556cff18dacca2149` to `ba3ccd7642198d024e5dd17b79b88ef480eaa434809d5e269ca929374aec7199`. Catalog drift remains an error; no validator or test expectation is weakened.
+
+### Catalog review after unmatched-bracket text corrections (2026-10-31)
+
+Compared with the reviewed catalog after BanchoLeomon (`1d88003359`), no card is added or removed and no non-text field changes. Three `effectText` fields change, each checked against the official card image:
+
+- BT3-093 Davis Motomiya: a line break and the opening bracket return before `[On Play]`. The Start of Your Turn and On Play effects were already separate in the card module.
+- EX8-027 Plesiomon: a stray closing bracket after "DNA digivolve" is removed. The effect still DNA digivolves 2 Digimon into a [DS] card in the hand.
+- RB1-018 Monzaemon: a stray `on]` after `[When Digivolving]` is removed.
+
+Re-running the three absence searches (`DNA digivolv`, `app fus`, `burst digivolv`) over the effect fields returns the same card sets as the reviewed catalog (134, 38 and 7 cards). No change introduces a provider or a new recipient zone, so the 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain applicable.
+
+After this bounded review, the catalog fingerprint changes from `ba3ccd7642198d024e5dd17b79b88ef480eaa434809d5e269ca929374aec7199` to `66359d05278a5f652017fb71f9ebb1e1caa250e5f44d105386a2de7510c0a1d3`. Catalog drift remains an error; no validator or test expectation is weakened.
+
+### Catalog review after Spencer and Kurata's Army cards (2026-11-01)
+
+Compared with the reviewed catalog after the bracket corrections (`373533af17`), this branch adds three cards. Existing card records are unchanged.
+
+- BT27-090 Spencer Damon places itself under a played Digimon and grants protection. It plays and digivolves nothing.
+- BT27-092 Nanami, Kouki, & Ivan lets this Tamer digivolve into a Kurata's Army Digimon from the hand or trash through that card's printed requirement. Hand and trash recipients are already covered cells.
+- BT27-102 Bio Hybrid Digivolution plays a Tamer from the hand or trash, and its Delay lets a Tamer digivolve from the hand or trash without paying the cost. Its Security effect plays a card from the hand or trash. None of these routes reads from security or a revealed deck.
+
+Re-running the three absence searches (`DNA digivolv`, `app fus`, `burst digivolv`) over the effect fields returns the same counts as the reviewed catalog (134, 38 and 7 cards). No new card provides DNA, App Fusion, Burst, or a security or deck-reveal recipient, so the 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain applicable.
+
+After this bounded review, the catalog fingerprint changes from `66359d05278a5f652017fb71f9ebb1e1caa250e5f44d105386a2de7510c0a1d3` to `af81130a84a6fec753e17a6b92dfe531029233ee13399a430a1583529b45c995`. Catalog drift remains an error; no validator or test expectation is weakened.

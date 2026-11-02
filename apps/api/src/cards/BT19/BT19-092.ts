@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "By returning 1 of your blue Digimon to the bottom of the deck, return 1 of their level 6 or lower Digimon to the bottom of the deck instead.",
           kind: "Return",
           target: {
             filter: {
@@ -38,6 +40,7 @@ const compiled: CompiledCard = {
           abortOnDecline: false,
         },
         {
+          effectTextPart: "[Main] Return 1 of your opponent's level 4 or lower Digimon to the bottom of the deck.",
           kind: "Return",
           target: {
             filter: {

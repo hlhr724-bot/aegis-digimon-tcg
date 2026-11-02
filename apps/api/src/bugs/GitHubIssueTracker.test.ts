@@ -187,13 +187,12 @@ describe("the issue a report becomes", () => {
       expect(body.indexOf("### Replay")).toBeLessThan(body.indexOf("Reported in-game by"));
     });
 
-    it("links the anonymous download when the public API origin is known", () => {
+    it("keeps saved replay details private in public issue bodies", () => {
       const body = issueBody(report({ matchId }), undefined, undefined, {
         replay: { saved: true, reportId: 7, inputCount: 3 },
-        replayOrigin: "https://aegis-digi.online/",
       });
       expect(body).toContain(
-        "### Replay\n[Download the replay](https://aegis-digi.online/bug-reports/7/replay) (3 inputs; decks and inputs only, no player names; kept for a limited time). Maintainers: `pnpm replay fetch 7`.",
+        "### Replay\nSaved privately with report `#7` (3 inputs). Maintainers: `pnpm replay fetch 7`.",
       );
     });
 

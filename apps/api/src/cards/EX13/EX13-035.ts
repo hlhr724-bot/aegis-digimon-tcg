@@ -16,7 +16,6 @@ const returnTenSuchCards: Cost = {
     filter: {
       zone: "trash",
       controller: "mine",
-      kind: ["Digimon"],
       nameOrTrait: [{ tokens: [...NAME_TOKENS], match: "name" }],
     },
     count: 10,

@@ -95,4 +95,6 @@ export class CardInstance extends Schema {
   @type([DnaDigivolveRoute]) dnaDigivolveRoutes = new ArraySchema<DnaDigivolveRoute>();
   /** Legal App Fusion routes for this hand card. The owning hand zone controls visibility. */
   @type([AppFusionRoute]) appFusionRoutes = new ArraySchema<AppFusionRoute>();
+  @type("string") negamonPlayEffectKey = "";
+  @type("boolean") oncePerTurnUsed = false;
 }

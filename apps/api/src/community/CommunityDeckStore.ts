@@ -11,11 +11,14 @@ import {
   type CommunityDeckPage,
   type CommunityDeckSummary,
   type CommunityLikeResult,
-  type CommunityModerationAction,
+  type CommunityModeration,
+  type CommunityModerationInput,
   type CommunityPeriod,
   type CommunityPublicationStatus,
   type CommunityPublication,
   type CommunityPublishError,
+  type CommunityReportReason,
+  type CommunityReviewError,
   type CommunitySort,
 } from "@aegis/shared";
 import type { PoolClient } from "pg";
@@ -42,6 +45,8 @@ export type PublishResult =
 /** Why a like was refused, or the new state. Authors cannot like their own deck. */
 export type LikeResult = { ok: true; like: CommunityLikeResult } | { ok: false; error: "deck_not_found" | "own_deck" };
 
+export type ReviewResult = { ok: true; publication: CommunityPublication } | { ok: false; error: CommunityReviewError };
+
 export type DeckStatus = CommunityPublicationStatus | "unpublished";
 
 /** What a report names, or why it was refused. Authors cannot report their own deck. */
@@ -49,7 +54,27 @@ export type ReportTarget =
   | { ok: true; deck: { id: string; name: string; authorName: string } }
   | { ok: false; error: "deck_not_found" | "own_deck" };
 
-type PublicDeckRow = {
+type UpdateGuideParams = { accountId: string; publicDeckId: string; guide: string | null };
+
+type RequestReviewParams = { accountId: string; sourceDeckId: string; note: string | null };
+
+type ModerationRow = {
+  hidden_reason: CommunityReportReason | null;
+  hidden_note: string | null;
+  hidden_at: string | null;
+  review_requested_at: string | null;
+  review_note: string | null;
+};
+
+type SnapshotParams = { client: PoolClient; accountId: string; sourceDeckId: string; at: number };
+
+type SnapshotResult =
+  | { ok: true; name: string; values: unknown[] }
+  | { ok: false; error: "deck_not_found" | "deck_not_legal" | "name_not_allowed" };
+
+type PublicDeckRow = ModerationRow & {
+  guide: string | null;
+  has_guide: boolean;
   id: string;
   account_id: string;
   display_name: string;
@@ -67,8 +92,9 @@ type PublicDeckRow = {
   status: CommunityPublicationStatus;
 };
 
-const PUBLIC_DECK_COLUMNS =
-  "p.id,p.account_id,a.display_name,p.name,p.colors,p.main_deck,p.egg_deck,p.main_deck_arts,p.egg_deck_arts,p.cover_card_id,p.like_count,p.copy_count,p.published_at,p.updated_at,p.status";
+const MODERATION_COLUMNS = "p.hidden_reason,p.hidden_note,p.hidden_at,p.review_requested_at,p.review_note";
+
+const PUBLIC_DECK_COLUMNS = `p.id,p.account_id,a.display_name,p.name,p.colors,p.main_deck,p.egg_deck,p.main_deck_arts,p.egg_deck_arts,p.cover_card_id,p.like_count,p.copy_count,p.published_at,p.updated_at,p.status,p.guide,(p.guide IS NOT NULL) AS has_guide,${MODERATION_COLUMNS}`;
 
 /**
  * Public decks: publishing, browsing, likes and copies. Shares the AccountStore's pool and
@@ -82,35 +108,9 @@ export class CommunityDeckStore {
 
   async publish(accountId: string, sourceDeckId: string): Promise<PublishResult> {
     return this.transaction(async (client) => {
-      const saved = (
-        await client.query<{
-          name: string;
-          main_deck: string[];
-          egg_deck: string[];
-          main_deck_arts: string[] | null;
-          egg_deck_arts: string[] | null;
-          cover_card_id: string | null;
-        }>(
-          "SELECT name,main_deck,egg_deck,main_deck_arts,egg_deck_arts,cover_card_id FROM saved_decks WHERE account_id=$1 AND id=$2",
-          [accountId, sourceDeckId],
-        )
-      ).rows[0];
-      if (!saved) return { ok: false, error: "deck_not_found" };
-      if (!deckLegality({ mainDeck: saved.main_deck, eggDeck: saved.egg_deck }).legal)
-        return { ok: false, error: "deck_not_legal" };
-      const review = reviewDeckName(saved.name);
-      if (!review.allowed) return { ok: false, error: "name_not_allowed" };
-      const now = Date.now();
-      const values = [
-        review.name,
-        JSON.stringify(deckColors(saved.main_deck)),
-        JSON.stringify(saved.main_deck),
-        JSON.stringify(saved.egg_deck),
-        JSON.stringify(saved.main_deck_arts ?? saved.main_deck),
-        JSON.stringify(saved.egg_deck_arts ?? saved.egg_deck),
-        saved.cover_card_id ?? fallbackCover(saved.main_deck),
-        now,
-      ];
+      const snapshot = await savedDeckSnapshot({ client, accountId, sourceDeckId, at: Date.now() });
+      if (!snapshot.ok) return snapshot;
+      const { values } = snapshot;
       const existing = (
         await client.query<{ id: string; like_count: number; status: string }>(
           "SELECT id,like_count,status FROM public_decks WHERE account_id=$1 AND source_deck_id=$2 FOR UPDATE",
@@ -134,10 +134,43 @@ export class CommunityDeckStore {
         publication: {
           id,
           sourceDeckId,
-          name: review.name,
+          name: snapshot.name,
           likeCount: existing?.like_count ?? 0,
           outdated: false,
           status: "public",
+        },
+      };
+    });
+  }
+
+  async requestReview({ accountId, sourceDeckId, note }: RequestReviewParams): Promise<ReviewResult> {
+    return this.transaction(async (client) => {
+      const existing = (
+        await client.query<ModerationRow & { id: string; like_count: number; status: DeckStatus }>(
+          `SELECT p.id,p.like_count,p.status,${MODERATION_COLUMNS} FROM public_decks p WHERE p.account_id=$1 AND p.source_deck_id=$2 FOR UPDATE`,
+          [accountId, sourceDeckId],
+        )
+      ).rows[0];
+      if (!existing) return { ok: false, error: "deck_not_found" };
+      if (existing.status !== "hidden") return { ok: false, error: "deck_not_hidden" };
+      if (existing.review_requested_at !== null) return { ok: false, error: "review_pending" };
+      const now = Date.now();
+      const snapshot = await savedDeckSnapshot({ client, accountId, sourceDeckId, at: now });
+      if (!snapshot.ok) return snapshot;
+      await client.query(
+        "UPDATE public_decks SET name=$1,colors=$2,main_deck=$3,egg_deck=$4,main_deck_arts=$5,egg_deck_arts=$6,cover_card_id=$7,updated_at=$8,review_requested_at=$8,review_note=$9 WHERE id=$10",
+        [...snapshot.values, note, existing.id],
+      );
+      return {
+        ok: true,
+        publication: {
+          id: existing.id,
+          sourceDeckId,
+          name: snapshot.name,
+          likeCount: existing.like_count,
+          outdated: false,
+          status: "hidden",
+          moderation: toModeration({ ...existing, review_requested_at: String(now), review_note: note }),
         },
       };
     });
@@ -156,16 +189,18 @@ export class CommunityDeckStore {
   async publications(accountId: string): Promise<CommunityPublication[]> {
     await this.accounts.ensureReady();
     const rows = (
-      await this.accounts.pool.query<{
-        id: string;
-        source_deck_id: string;
-        name: string;
-        like_count: number;
-        updated_at: string;
-        saved_updated_at: string | null;
-        status: CommunityPublicationStatus;
-      }>(
-        "SELECT p.id,p.source_deck_id,p.name,p.like_count,p.updated_at,p.status,s.updated_at saved_updated_at FROM public_decks p LEFT JOIN saved_decks s ON s.account_id=p.account_id AND s.id=p.source_deck_id WHERE p.account_id=$1 AND p.status IN ('public','hidden')",
+      await this.accounts.pool.query<
+        ModerationRow & {
+          id: string;
+          source_deck_id: string;
+          name: string;
+          like_count: number;
+          updated_at: string;
+          saved_updated_at: string | null;
+          status: CommunityPublicationStatus;
+        }
+      >(
+        `SELECT p.id,p.source_deck_id,p.name,p.like_count,p.updated_at,p.status,${MODERATION_COLUMNS},s.updated_at saved_updated_at FROM public_decks p LEFT JOIN saved_decks s ON s.account_id=p.account_id AND s.id=p.source_deck_id WHERE p.account_id=$1 AND p.status IN ('public','hidden')`,
         [accountId],
       )
     ).rows;
@@ -176,6 +211,7 @@ export class CommunityDeckStore {
       likeCount: row.like_count,
       outdated: row.saved_updated_at !== null && Number(row.saved_updated_at) > Number(row.updated_at),
       status: row.status,
+      ...(row.status === "hidden" ? { moderation: toModeration(row) } : {}),
     }));
   }
 
@@ -236,10 +272,12 @@ export class CommunityDeckStore {
     return {
       ...toSummary(row, liked.has(row.id)),
       status: row.status,
+      guide: row.guide,
       mainDeck: row.main_deck,
       eggDeck: row.egg_deck,
       mainDeckArts: row.main_deck_arts,
       eggDeckArts: row.egg_deck_arts,
+      ...(row.status === "hidden" ? { moderation: toModeration(row) } : {}),
     };
   }
 
@@ -288,6 +326,7 @@ export class CommunityDeckStore {
           ? {
               ...toSummary(selected, false),
               status: selected.status,
+              guide: selected.guide,
               mainDeck: selected.main_deck,
               eggDeck: selected.egg_deck,
               mainDeckArts: selected.main_deck_arts,
@@ -296,6 +335,18 @@ export class CommunityDeckStore {
           : null,
       };
     });
+  }
+
+  async updateGuide({ accountId, publicDeckId, guide }: UpdateGuideParams): Promise<boolean> {
+    if (!isUuid(publicDeckId)) {
+      return false;
+    }
+    await this.accounts.ensureReady();
+    const result = await this.accounts.pool.query(
+      "UPDATE public_decks SET guide=$3 WHERE id=$2 AND account_id=$1 AND status='public'",
+      [accountId, publicDeckId, guide],
+    );
+    return result.rowCount === 1;
   }
 
   async like(accountId: string, id: string): Promise<LikeResult> {
@@ -324,19 +375,26 @@ export class CommunityDeckStore {
    * `hide` covers an unpublished deck too, so its owner cannot bring it back by publishing again.
    * Undefined when no such deck exists.
    */
-  async moderate(id: string, action: CommunityModerationAction): Promise<DeckStatus | undefined> {
+  async moderate(id: string, input: CommunityModerationInput, at = Date.now()): Promise<DeckStatus | undefined> {
     if (!isUuid(id)) return undefined;
     await this.accounts.ensureReady();
+    const query = (sql: string, params: unknown[]) =>
+      this.accounts.pool.query<{ status: DeckStatus }>(`${sql} RETURNING status`, [id, ...params]);
     const result =
-      action === "hide"
-        ? await this.accounts.pool.query<{ status: DeckStatus }>(
-            "UPDATE public_decks SET status='hidden' WHERE id=$1 RETURNING status",
-            [id],
+      input.action === "hide"
+        ? await query(
+            "UPDATE public_decks SET status='hidden',hidden_reason=$2,hidden_note=$3,hidden_at=$4,review_requested_at=NULL,review_note=NULL WHERE id=$1",
+            [input.reason, input.note ?? null, at],
           )
-        : await this.accounts.pool.query<{ status: DeckStatus }>(
-            "UPDATE public_decks SET status=CASE WHEN status='hidden' THEN 'public' ELSE status END WHERE id=$1 RETURNING status",
-            [id],
-          );
+        : input.action === "restore"
+          ? await query(
+              "UPDATE public_decks SET status=CASE WHEN status='hidden' THEN 'public' ELSE status END,hidden_reason=NULL,hidden_note=NULL,hidden_at=NULL,review_requested_at=NULL,review_note=NULL WHERE id=$1",
+              [],
+            )
+          : await query(
+              "UPDATE public_decks SET hidden_note=COALESCE($2,hidden_note),review_requested_at=NULL,review_note=NULL WHERE id=$1 AND status='hidden'",
+              [input.note ?? null],
+            );
     return result.rows[0]?.status;
   }
 
@@ -423,6 +481,7 @@ function toSummary(row: PublicDeckRow, likedByMe: boolean): CommunityDeckSummary
     likeCount: row.like_count,
     copyCount: row.copy_count,
     likedByMe,
+    hasGuide: row.has_guide,
     // The banlist moves after a deck goes public, so legality is judged on every read.
     legal: deckLegality({ mainDeck: row.main_deck, eggDeck: row.egg_deck }).legal,
     publishedAt: Number(row.published_at),
@@ -431,6 +490,51 @@ function toSummary(row: PublicDeckRow, likedByMe: boolean): CommunityDeckSummary
 }
 
 /** The same pick the famous presets make: the last Digimon in the list, usually its top level. */
+async function savedDeckSnapshot({ client, accountId, sourceDeckId, at }: SnapshotParams): Promise<SnapshotResult> {
+  const saved = (
+    await client.query<{
+      name: string;
+      main_deck: string[];
+      egg_deck: string[];
+      main_deck_arts: string[] | null;
+      egg_deck_arts: string[] | null;
+      cover_card_id: string | null;
+    }>(
+      "SELECT name,main_deck,egg_deck,main_deck_arts,egg_deck_arts,cover_card_id FROM saved_decks WHERE account_id=$1 AND id=$2",
+      [accountId, sourceDeckId],
+    )
+  ).rows[0];
+  if (!saved) return { ok: false, error: "deck_not_found" };
+  if (!deckLegality({ mainDeck: saved.main_deck, eggDeck: saved.egg_deck }).legal)
+    return { ok: false, error: "deck_not_legal" };
+  const review = reviewDeckName(saved.name);
+  if (!review.allowed) return { ok: false, error: "name_not_allowed" };
+  return {
+    ok: true,
+    name: review.name,
+    values: [
+      review.name,
+      JSON.stringify(deckColors(saved.main_deck)),
+      JSON.stringify(saved.main_deck),
+      JSON.stringify(saved.egg_deck),
+      JSON.stringify(saved.main_deck_arts ?? saved.main_deck),
+      JSON.stringify(saved.egg_deck_arts ?? saved.egg_deck),
+      saved.cover_card_id ?? fallbackCover(saved.main_deck),
+      at,
+    ],
+  };
+}
+
+function toModeration(row: ModerationRow): CommunityModeration {
+  return {
+    reason: row.hidden_reason,
+    note: row.hidden_note,
+    hiddenAt: row.hidden_at === null ? null : Number(row.hidden_at),
+    reviewRequestedAt: row.review_requested_at === null ? null : Number(row.review_requested_at),
+    reviewNote: row.review_note,
+  };
+}
+
 function fallbackCover(mainDeck: readonly string[]): string | null {
   return [...mainDeck].reverse().find((cardId) => getCardDefinition(cardId)?.level !== undefined) ?? null;
 }

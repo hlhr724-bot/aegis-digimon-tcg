@@ -28,6 +28,7 @@ export function TurnControl({
         state === "endBreeding" ? " game-end-turn-orb--breeding" : ""
       }${covered ? " game-end-turn-orb--covered" : ""}`}
       data-state={state}
+      data-arena-turn
       disabled={waiting || covered}
       aria-disabled={covered || undefined}
       onClick={() => {

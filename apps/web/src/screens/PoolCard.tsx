@@ -1,3 +1,5 @@
+import { useCardImageLanguage } from "@/screens/cardLanguage/useCardImageLanguage";
+import { findCardArtForLanguage } from "@aegis/shared/cards/findCardArtForLanguage";
 /* One card in the builder's pool, with the steppers that add or remove copies. */
 
 import { useState } from "react";
@@ -5,6 +7,7 @@ import { formatCopyLimit, formatRestrictionLabel, type DeckFormat } from "@aegis
 import { CardFull } from "../design/cards";
 import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
+import { isBetaCard } from "@/screens/isBetaCard";
 import "./deckBuilder.css";
 
 export function PoolCard({
@@ -29,11 +32,13 @@ export function PoolCard({
   selected: boolean;
 }) {
   const { t } = useTranslation();
+  const language = useCardImageLanguage();
   const [hover, setHover] = useState(false);
   const banLabel = pairConflict ? t("deck.pairBadge") : formatRestrictionLabel(cardId, format);
   const banned = formatCopyLimit(cardId, format) === 0;
   const blocked = banned || pairConflict;
   const hasCopies = inDeck > 0;
+  const beta = isBetaCard(cardId);
   return (
     <div
       className="deck-pool-card"
@@ -44,6 +49,7 @@ export function PoolCard({
       <div className="deck-pool-card__art">
         <CardFull
           cardId={cardId}
+          artId={findCardArtForLanguage({ cardId, language })?.artId}
           width={132}
           selected={selected}
           count={hasCopies ? inDeck : undefined}
@@ -54,14 +60,23 @@ export function PoolCard({
         />
         {blocked ? <div className="deck-pool-card__tint" /> : null}
       </div>
-      {banLabel ? (
-        <div className="deck-pool-card__restriction" data-tone={blocked ? "danger" : "warning"}>
-          {banLabel}
+      {banLabel || beta ? (
+        <div className="deck-pool-card__badges">
+          {banLabel ? (
+            <div className="deck-pool-card__restriction" data-tone={blocked ? "danger" : "warning"}>
+              {banLabel}
+            </div>
+          ) : null}
+          {beta ? (
+            <div className="deck-pool-card__restriction" data-tone="beta" title={t("beta.cardHint")}>
+              {t("beta.tag")}
+            </div>
+          ) : null}
         </div>
       ) : null}
       <button
         className="deck-pool-card__info"
-        data-shifted={Boolean(banLabel)}
+        data-shifted={Boolean(banLabel || beta)}
         onClick={(e) => {
           e.stopPropagation();
           onOpen();

@@ -775,3 +775,93 @@ describe("concurrency", () => {
     expect((await fixture.store.series(series.id))?.wins).toEqual([1, 0]);
   });
 });
+
+it("publishes roster identities and the winning seat for a bot confrontation", async () => {
+  const { accounts, store, tournamentId, matchId, alice, bob } = fixture;
+  const roster = (
+    await accounts.pool.query<{ id: string; account_id: string }>(
+      "SELECT id,account_id FROM tournament_participants WHERE tournament_id=$1",
+      [tournamentId],
+    )
+  ).rows;
+  const humanId = roster.find((participant) => participant.account_id === alice)!.id;
+  const botId = roster.find((participant) => participant.account_id === bob)!.id;
+  await accounts.pool.query("UPDATE tournament_participants SET kind='bot',account_id=NULL WHERE id=$1", [botId]);
+  await accounts.pool.query(
+    "UPDATE tournament_matches SET player0_participant_id=$1,player1_participant_id=$2,player1_account_id=NULL WHERE id=$3",
+    [humanId, botId, matchId],
+  );
+  expect((await store.scoreViews(tournamentId))[0]).toMatchObject({
+    participantIds: [humanId, botId],
+    participant0Id: alice,
+    participant1Id: null,
+    winnerSeat: null,
+  });
+  const resolved = await store.overrideResolution({
+    tournamentId,
+    matchId,
+    mode: "decide",
+    outcome: { officialResult: "participant1" },
+    reason: "Bot won the confrontation",
+    winsRequired: 2,
+    seriesDurationMs: null,
+    commandId: randomUUID(),
+    now: START,
+  });
+  expect(resolved.ok).toBe(true);
+  expect((await store.scoreViews(tournamentId))[0]).toMatchObject({
+    participantIds: [humanId, botId],
+    winnerSeat: 1,
+    winnerParticipantId: null,
+  });
+});
+
+it("refuses to start a waiting round even when both players request presence", async () => {
+  await fixture.accounts.pool.query("UPDATE tournament_matches SET status='waiting' WHERE id=$1", [fixture.matchId]);
+  for (const accountId of [fixture.alice, fixture.bob]) {
+    expect(
+      await fixture.store.markPresent({
+        tournamentId: fixture.tournamentId,
+        matchId: fixture.matchId,
+        accountId,
+        winsRequired: 2,
+        seriesDurationMs: SERIES_DURATION_MS,
+        now: START,
+      }),
+    ).toEqual({ ok: false, reason: "match_not_ready" });
+  }
+  expect(await fixture.store.seriesForMatch(fixture.matchId)).toBeUndefined();
+});
+
+it("rejects issued authorizations and late results after the tournament is cancelled", async () => {
+  const series = await startSeries();
+  const credentials = await fixture.store.authorizeNextGame({
+    seriesId: series.id,
+    accountId: fixture.alice,
+    now: START + 6000,
+  });
+  expect(credentials.ok).toBe(true);
+  if (!credentials.ok) {
+    return;
+  }
+  await fixture.accounts.pool.query("UPDATE tournaments SET status='cancelled' WHERE id=$1", [fixture.tournamentId]);
+  expect(
+    await fixture.store.authorizeNextGame({ seriesId: series.id, accountId: fixture.bob, now: START + 7000 }),
+  ).toEqual({ ok: false, reason: "tournament_cancelled" });
+  expect(
+    await fixture.store.claimGame({
+      gameId: credentials.value.gameId,
+      authorizationToken: credentials.value.token,
+      roomId: "late-room",
+      now: START + 7000,
+    }),
+  ).toEqual({ ok: false, reason: "tournament_cancelled" });
+  expect(
+    await fixture.store.recordGameResult({
+      gameId: credentials.value.gameId,
+      roomId: "late-room",
+      outcome: { kind: "winner", winnerAccountId: fixture.alice },
+      finishedAt: START + 8000,
+    }),
+  ).toEqual({ ok: false, reason: "tournament_cancelled" });
+});

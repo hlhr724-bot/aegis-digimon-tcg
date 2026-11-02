@@ -1,4 +1,4 @@
-import type { Seat, SeriesEndReason, SeriesState } from "@aegis/shared";
+import type { Seat, SeriesEndReason, SeriesPhase, SeriesState } from "@aegis/shared";
 import type { GameOverOutcome } from "./gameOverSplash";
 
 export type SeriesPip = "win" | "loss" | "draw" | "pending";
@@ -11,11 +11,14 @@ export interface SeriesView {
   opponentWins: number;
   /** One per game: the played ones in order, then the games still to come. */
   pips: SeriesPip[];
-  stage: "playing" | "choosing" | "starting" | "over";
+  stage: SeriesPhase;
   viewerChooses: boolean;
   choiceSecondsLeft: number;
   /** Known once the turn order for the next game is set. */
   viewerGoesFirst: boolean | undefined;
+  viewerDeckReady: boolean;
+  opponentDeckReady: boolean;
+  opponentDeckChanged: boolean;
   outcome: GameOverOutcome | undefined;
   endReason: SeriesEndReason;
 }
@@ -42,6 +45,9 @@ export function seriesView(series: SeriesState | undefined, viewerSeat: Seat): S
     viewerChooses: series.phase === "choosing" && series.chooserSeat === viewerSeat,
     choiceSecondsLeft: series.choiceSecondsLeft,
     viewerGoesFirst: series.nextFirstSeat === -1 ? undefined : series.nextFirstSeat === viewerSeat,
+    viewerDeckReady: viewerSeat === 0 ? series.deckReady0 : series.deckReady1,
+    opponentDeckReady: opponentSeat === 0 ? series.deckReady0 : series.deckReady1,
+    opponentDeckChanged: opponentSeat === 0 ? series.deckChanged0 : series.deckChanged1,
     outcome: !over ? undefined : series.winnerSeat === -1 ? "draw" : series.winnerSeat === viewerSeat ? "win" : "loss",
     endReason: series.endReason,
   };

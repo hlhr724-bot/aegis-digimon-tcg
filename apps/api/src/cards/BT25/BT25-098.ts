@@ -50,6 +50,7 @@ export const compiled: CompiledCard = {
       keywords: [{ keyword: "Delay" }],
       actions: [
         {
+          effectTextPart: "You may play 1 [Appmon] trait card from your hand with the cost reduced by 3.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

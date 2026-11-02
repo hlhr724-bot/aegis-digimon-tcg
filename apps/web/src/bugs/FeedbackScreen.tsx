@@ -23,8 +23,11 @@ import {
   type FeedbackRecord,
 } from "@/bugs/adminClient";
 import { FEEDBACK_STATUS_TONE } from "@/bugs/feedbackStatus";
+import { AccountRolesPanel } from "@/account/roles/AccountRolesPanel";
 import { PlaytestAdminPanel } from "@/bugs/PlaytestAdminPanel";
 import { ReportedDecksPanel } from "@/bugs/ReportedDecksPanel";
+import { ReportedTournamentsPanel } from "@/bugs/ReportedTournamentsPanel";
+import { pathForRoute } from "@/routes";
 import "@/bugs/feedbackScreen.css";
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -53,7 +56,9 @@ export function FeedbackScreen({
         </header>
         {isAdmin ? (
           <>
+            <AccountRolesPanel />
             <ReportedDecksPanel onOpenDeck={onOpenDeck} />
+            <ReportedTournamentsPanel />
             <PlaytestAdminPanel />
             <FeedbackTriage selectedId={selectedId} onSelect={onSelect} />
           </>
@@ -396,6 +401,13 @@ function FeedbackDetailPanel({
         ) : null}
       </header>
       <p className="feedback-detail__description">{report.description}</p>
+      {report.tournamentId ? (
+        <Alert tone="info" title={t("feedback.officialTournament.hint")}>
+          <a href={pathForRoute({ screen: "tournaments", tournament: { kind: "detail", id: report.tournamentId } })}>
+            {t("feedback.officialTournament.open")}
+          </a>
+        </Alert>
+      ) : null}
       {report.cardIds.length ? (
         <ul className="feedback-detail__cards" aria-label={t("bugReport.cardsLabel")}>
           {report.cardIds.map((cardId) => (
@@ -437,7 +449,9 @@ function FeedbackDetailPanel({
         onConflict={setDetail}
       />
 
-      <RoadmapPublishPanel feedbackId={detail.id} summary={report.summary} description={report.description} />
+      {report.kind === "official_tournament" ? null : (
+        <RoadmapPublishPanel feedbackId={detail.id} summary={report.summary} description={report.description} />
+      )}
 
       <section className="feedback-history" aria-labelledby={`feedback-${id}-history`}>
         <h3 id={`feedback-${id}-history`}>{t("feedback.triage.history")}</h3>

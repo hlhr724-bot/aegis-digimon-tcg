@@ -166,6 +166,18 @@ const ArrowRight = (p: IconProps) => (
     <polyline points="12 5 19 12 12 19" />
   </Svg>
 );
+const ArrowUp = (p: IconProps) => (
+  <Svg {...p}>
+    <line x1="12" y1="19" x2="12" y2="5" />
+    <polyline points="5 12 12 5 19 12" />
+  </Svg>
+);
+const ArrowDown = (p: IconProps) => (
+  <Svg {...p}>
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <polyline points="19 12 12 19 5 12" />
+  </Svg>
+);
 const Send = (p: IconProps) => (
   <Svg {...p}>
     <line x1="22" y1="2" x2="11" y2="13" />
@@ -344,6 +356,13 @@ const Info = (p: IconProps) => (
     <line x1="12" y1="8" x2="12.01" y2="8" />
   </Svg>
 );
+const CircleHelp = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </Svg>
+);
 const Compass = (p: IconProps) => (
   <Svg {...p}>
     <circle cx="12" cy="12" r="10" />
@@ -420,6 +439,35 @@ const Clock = (p: IconProps) => (
   <Svg {...p}>
     <circle cx="12" cy="12" r="10" />
     <polyline points="12 6 12 12 16 14" />
+  </Svg>
+);
+const House = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 10.5 12 3l9 7.5" />
+    <path d="M5 9.5V21h14V9.5" />
+    <path d="M10 21v-6h4v6" />
+  </Svg>
+);
+const Globe = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18" />
+    <path d="M12 3a14 14 0 0 1 0 18" />
+    <path d="M12 3a14 14 0 0 0 0 18" />
+  </Svg>
+);
+const Cards = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="3" y="6" width="12" height="16" rx="2" />
+    <path d="M7 6V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+  </Svg>
+);
+const Package = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m7.5 4.3 9 5.2" />
+    <path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7Z" />
+    <path d="M3.3 7 12 12l8.7-5" />
+    <path d="M12 22V12" />
   </Svg>
 );
 const Trophy = (p: IconProps) => (
@@ -607,6 +655,13 @@ const Lightbulb = (p: IconProps) => (
     <path d="M10 22h4" />
   </Svg>
 );
+const GraduationCap = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M22 10 12 5 2 10l10 5 10-5z" />
+    <path d="M6 12v5c3 2 9 2 12 0v-5" />
+    <path d="M22 10v6" />
+  </Svg>
+);
 const MessageSquare = (p: IconProps) => (
   <Svg {...p}>
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -671,6 +726,8 @@ export const Icons = {
   ChevronUp,
   ArrowLeft,
   ArrowRight,
+  ArrowUp,
+  ArrowDown,
   Send,
   ScrollText,
   Maximize,
@@ -694,6 +751,7 @@ export const Icons = {
   CircleAlert,
   CircleCheck,
   Info,
+  CircleHelp,
   Compass,
   Settings,
   Filter,
@@ -706,6 +764,10 @@ export const Icons = {
   Map: MapIcon,
   Sparkles,
   Clock,
+  House,
+  Globe,
+  Cards,
+  Package,
   Trophy,
   FileText,
   BookOpen,
@@ -733,6 +795,7 @@ export const Icons = {
   Trash,
   Devices,
   Lightbulb,
+  GraduationCap,
   MessageSquare,
   Megaphone,
   Flag,

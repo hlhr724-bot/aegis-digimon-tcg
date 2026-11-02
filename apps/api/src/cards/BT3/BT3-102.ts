@@ -7,8 +7,17 @@ const compiled: CompiledCard = {
     {
       trigger: "Main",
       actions: [
-        { kind: "SecurityManipulation", op: "trashTop", controller: "opponent", optionalFor: "opponent", amount: 1 },
         {
+          effectTextPart: "[Main] Your opponent may trash the top card of their security stack.",
+          kind: "SecurityManipulation",
+          op: "trashTop",
+          controller: "opponent",
+          optionalFor: "opponent",
+          amount: 1,
+        },
+        {
+          effectTextPart:
+            "If they don't, trigger ＜Recovery +1 (Deck)＞. (Place the top card of your deck on top of your security stack.)",
           kind: "SecurityManipulation",
           op: "addTop",
           controller: "mine",

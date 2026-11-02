@@ -77,6 +77,14 @@ export function useTrackingArrow({
   if (!attackTracker.current) attackTracker.current = createAttackArrowTracker();
   const openAttackArrow = attackTracker.current.read(events);
   const trackingArrowRequest =
+    effectTargetArrow({
+      decision,
+      picks,
+      viewerSeat,
+      sourcePermanentId:
+        decision?.sourcePermanentId ??
+        (decision?.sourceCardId ? attackerCardIds.get(decision.sourceCardId) : undefined),
+    }) ??
     (effectSelection
       ? {
           kind: "effect" as const,
@@ -87,15 +95,8 @@ export function useTrackingArrow({
       : null) ??
     fieldClashArrow ??
     (securityClash && !securityClash.departing && !securityClash.exiting ? securityClash.attackArrow : null) ??
-    (phasePresentationPending ? null : openAttackArrow) ??
-    effectTargetArrow({
-      decision,
-      picks,
-      viewerSeat,
-      sourcePermanentId:
-        decision?.sourcePermanentId ??
-        (decision?.sourceCardId ? attackerCardIds.get(decision.sourceCardId) : undefined),
-    });
+    (phasePresentationPending ? null : openAttackArrow);
+
   const [trackingArrow, setTrackingArrow] = useState<TrackingArrowGeometry | null>(null);
   const trackingArrowRef = useRef<TrackingArrow | null>(null);
   trackingArrowRef.current = trackingArrowRequest;

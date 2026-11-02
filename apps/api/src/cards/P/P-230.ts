@@ -13,6 +13,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [Royal Base] in its text",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -26,6 +27,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [LIBERATOR] trait card among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

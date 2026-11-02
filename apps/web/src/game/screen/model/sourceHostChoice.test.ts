@@ -35,9 +35,11 @@ describe("source host choice", () => {
     expect([...choice!.cardIdsByHost.get("canoweissmon")!]).toEqual(["b1"]);
   });
 
-  it("skips the host step when every card sits under one Digimon", () => {
+  it("identifies the sole host so its source picker can open directly", () => {
     const candidates = sources.filter((candidate) => candidate.instanceId !== "b1");
-    expect(sourceHostChoiceFor({ decision, answerOnBoard: false, candidates, battleArea })).toBeUndefined();
+    const choice = sourceHostChoiceFor({ decision, answerOnBoard: false, candidates, battleArea });
+    expect(choice?.hostPermanentIds).toEqual(["proximamon"]);
+    expect([...choice!.cardIdsByHost.get("proximamon")!]).toEqual(["a1", "a2"]);
   });
 
   it("groups multi-card opponent source picks without including unoffered stacks", () => {

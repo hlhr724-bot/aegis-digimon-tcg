@@ -1,3 +1,4 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import type { AddressInfo } from "node:net";
 import { Encoder } from "@colyseus/schema";
 import type { Seat, ServerEvent } from "@aegis/shared";
@@ -21,7 +22,7 @@ import {
 } from "./bots/index.js";
 import { EliminationStore, type BracketView, type EliminationMatch } from "./elimination/index.js";
 import { ParticipantStore } from "./participants/index.js";
-import { AEGIS_LIGHTNING_PRESET } from "./rules/index.js";
+
 import { SeriesStore } from "./series/index.js";
 import { SwissProgram } from "./swiss/index.js";
 import "../cards/index.js";
@@ -41,7 +42,8 @@ import "../cards/index.js";
  */
 
 const SERIES_DURATION_MS =
-  AEGIS_LIGHTNING_PRESET.clocks[1].topCutDurationMs ?? AEGIS_LIGHTNING_PRESET.clocks[1].finalDurationMs;
+  buildTournamentRules({ bestOf: 1 }).match.topCutDurationMs ??
+  buildTournamentRules({ bestOf: 1 }).match.finalDurationMs;
 const WINS_REQUIRED = 1;
 const MINUTE_MS = 60_000;
 /**
@@ -168,7 +170,7 @@ async function buildHarness(pool: Pool): Promise<Harness> {
   await new Promise((resolve) => server.once("listening", resolve));
 
   const organizer = await accounts.accountForIdentity("discord", "organizer", "Organizer");
-  await accounts.pool.query("UPDATE accounts SET is_admin=true WHERE id=$1", [organizer.id]);
+  await accounts.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [organizer.id]);
   const session = await accounts.issueSession(organizer);
   const driver = new BotMatchDriver(accounts, series, testGateway(), {
     // A yield instead of a two-second pause: same decisions, no waiting.
@@ -300,12 +302,11 @@ describe("a lightning cup from registration to champion", () => {
     const created = await send<{ id: string }>("POST", "/tournaments", harness.organizerCookie, {
       name: "Lightning Cup",
       block: "BT10",
-      startsAt: START + 86_400_000,
+      startsAt: START + 30 * 60_000,
       maxPlayers: 4,
       structure: "single_elimination",
       bestOf: 1,
       allowBots: true,
-      rulesetPreset: AEGIS_LIGHTNING_PRESET.id,
     });
 
     const people = [];
@@ -341,7 +342,9 @@ describe("a lightning cup from registration to champion", () => {
             now,
           });
 
+      const roomsBeforeSweep = rooms.length;
       botMatchesOpenedBySweep += await harness.sweep(now);
+      for (const room of rooms.slice(roomsBeforeSweep)) expect(room.autoDispose).toBe(false);
 
       for (const match of openMatches(bracket)) {
         const humans = humanSeats(match);
@@ -388,12 +391,11 @@ describe("a lightning cup from registration to champion", () => {
     const created = await send<{ id: string }>("POST", "/tournaments", harness.organizerCookie, {
       name: "Lightning Cup",
       block: "BT10",
-      startsAt: START + 86_400_000,
+      startsAt: START + 30 * 60_000,
       maxPlayers: 4,
       structure: "single_elimination",
       bestOf: 1,
       allowBots: false,
-      rulesetPreset: AEGIS_LIGHTNING_PRESET.id,
     });
     const people = new Map<string, { accountId: string; cookie: string }>();
     for (const name of ["Alice", "Bruno", "Chiara", "Dmitri"]) {
@@ -489,12 +491,11 @@ describe("a lightning cup from registration to champion", () => {
     const created = await send<{ id: string }>("POST", "/tournaments", harness.organizerCookie, {
       name: "Lightning Cup",
       block: "BT10",
-      startsAt: START + 86_400_000,
+      startsAt: START + 30 * 60_000,
       maxPlayers: 4,
       structure: "single_elimination",
       bestOf: 1,
       allowBots: true,
-      rulesetPreset: AEGIS_LIGHTNING_PRESET.id,
     });
     for (const name of ["Alice", "Bruno", "Chiara"]) await enter(created.id, (await signUp(name)).cookie);
     const closed = await send<{ botsSeated: number }>(

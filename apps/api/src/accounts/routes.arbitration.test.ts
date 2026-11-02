@@ -1,3 +1,4 @@
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import type { AddressInfo } from "node:net";
 import express from "express";
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -8,7 +9,7 @@ import { ArbitrationService, tokenBucketLimiter } from "../tournaments/arbitrati
 import { BotSeatingStore } from "../tournaments/bots/index.js";
 import { EliminationStore } from "../tournaments/elimination/index.js";
 import { ParticipantStore } from "../tournaments/participants/index.js";
-import { AEGIS_LIGHTNING_PRESET, rulesSnapshot } from "../tournaments/rules/index.js";
+
 import { SeriesStore } from "../tournaments/series/index.js";
 import { SwissProgram } from "../tournaments/swiss/index.js";
 import { AccountStore } from "./AccountStore.js";
@@ -104,8 +105,7 @@ async function buildHarness(pool: Pool): Promise<Harness> {
     maxPlayers: 8,
     structure: "swiss",
     bestOf: 3,
-    rulesetPreset: AEGIS_LIGHTNING_PRESET.id,
-    rules: rulesSnapshot(AEGIS_LIGHTNING_PRESET, 3),
+    rules: buildTournamentRules({ bestOf: 3 }),
   });
   for (const name of ["alice", "bob", "carol", "dave"]) {
     const deck = await store.saveDeck(accountIds[name]!, {

@@ -32,9 +32,13 @@ language is saved and synchronized through account preferences when signed in.
 
 Translations ship with the app and need no translation service during gameplay.
 The seven newest language dictionaries are machine translated with selected gameplay
-terms corrected; native-speaker review is still needed. Card names, printed effects,
-and server-provided effect descriptions remain in English. Release notes and the
-privacy policy fall back to English where a published translation is unavailable.
+terms corrected; native-speaker review is still needed. Simplified Chinese also
+uses maintained dictionaries for card names, complete printed effects, keyword
+hints and card metadata in the connected display components. Missing entries,
+unmatched effect fragments and arbitrary server prose retain English. Other
+locales keep their existing card display. See the [card localization guide](docs/LOCALIZATION.zh-CN.md)
+for coverage and source notes. Release notes and the privacy policy fall back to
+English where a published translation is unavailable.
 
 ## Screens
 
@@ -285,6 +289,10 @@ Chat emote icons come from the PlayStation _Digimon World_ battle command sheet
 ripped by **Romsstar** and published on The Spriters Resource.
 `tools/extract-dw-command-emotes.py` slices that sheet into the files under
 `apps/web/public/emotes/digimon-world-1/`.
+
+Clean card scans without the SAMPLE watermark were provided by **Karasu Komadreja**. They
+cover BT22, BT23, EX10, EX11, alternate arts, and promotion cards, and live in
+`data/card-images/clean/`.
 
 ## License
 

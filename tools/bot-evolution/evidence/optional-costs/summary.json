@@ -1,0 +1,694 @@
+{
+  "experiment": "optional-single-hand-cost-resources",
+  "date": "2026-10-20",
+  "scope": "Development only on reused original training and validation data; no independent confirmation or human win-rate estimate.",
+  "status": "development-accepted-awaiting-independent-data",
+  "baseline": "All 43 v3 rules on the current runtime, with decision context and activation-memory costs enabled in both arms and the frozen v3 opponent.",
+  "totalDevelopmentGames": 1152,
+  "programs": {
+    "control": 43,
+    "balanced": 50,
+    "conservative": 50
+  },
+  "screen": {
+    "control": {
+      "fitness": 0.5234375,
+      "invalid": 1,
+      "opponents": {
+        "certified": {
+          "rate": 0.421875,
+          "games": 64,
+          "invalid": 0
+        },
+        "legacy": {
+          "rate": 0.6875,
+          "games": 32,
+          "invalid": 0
+        },
+        "v3": {
+          "rate": 0.5625,
+          "games": 32,
+          "invalid": 1
+        }
+      }
+    },
+    "balanced": {
+      "fitness": 0.53125,
+      "invalid": 1,
+      "opponents": {
+        "certified": {
+          "rate": 0.453125,
+          "games": 64,
+          "invalid": 0
+        },
+        "legacy": {
+          "rate": 0.65625,
+          "games": 32,
+          "invalid": 0
+        },
+        "v3": {
+          "rate": 0.5625,
+          "games": 32,
+          "invalid": 1
+        }
+      }
+    },
+    "conservative": {
+      "fitness": 0.53125,
+      "invalid": 1,
+      "opponents": {
+        "certified": {
+          "rate": 0.4375,
+          "games": 64,
+          "invalid": 0
+        },
+        "legacy": {
+          "rate": 0.6875,
+          "games": 32,
+          "invalid": 0
+        },
+        "v3": {
+          "rate": 0.5625,
+          "games": 32,
+          "invalid": 1
+        }
+      }
+    }
+  },
+  "selection": {
+    "control": {
+      "fitness": 0.46875,
+      "invalid": 1,
+      "opponents": {
+        "certified": {
+          "rate": 0.453125,
+          "games": 128,
+          "invalid": 1
+        },
+        "legacy": {
+          "rate": 0.53125,
+          "games": 64,
+          "invalid": 0
+        },
+        "v3": {
+          "rate": 0.4375,
+          "games": 64,
+          "invalid": 0
+        }
+      }
+    },
+    "balanced": {
+      "fitness": 0.47265625,
+      "invalid": 1,
+      "opponents": {
+        "certified": {
+          "rate": 0.4375,
+          "games": 128,
+          "invalid": 1
+        },
+        "legacy": {
+          "rate": 0.578125,
+          "games": 64,
+          "invalid": 0
+        },
+        "v3": {
+          "rate": 0.4375,
+          "games": 64,
+          "invalid": 0
+        }
+      }
+    },
+    "conservative": {
+      "fitness": 0.4765625,
+      "invalid": 1,
+      "opponents": {
+        "certified": {
+          "rate": 0.453125,
+          "games": 128,
+          "invalid": 1
+        },
+        "legacy": {
+          "rate": 0.578125,
+          "games": 64,
+          "invalid": 0
+        },
+        "v3": {
+          "rate": 0.421875,
+          "games": 64,
+          "invalid": 0
+        }
+      }
+    }
+  },
+  "selectionCounts": {
+    "control": {
+      "games": 256,
+      "wins": 120,
+      "draws": 0,
+      "losses": 135,
+      "invalid": 1,
+      "points": 120.0,
+      "rate": 0.46875
+    },
+    "balanced": {
+      "games": 256,
+      "wins": 121,
+      "draws": 0,
+      "losses": 134,
+      "invalid": 1,
+      "points": 121.0,
+      "rate": 0.47265625
+    },
+    "conservative": {
+      "games": 256,
+      "wins": 122,
+      "draws": 0,
+      "losses": 133,
+      "invalid": 1,
+      "points": 122.0,
+      "rate": 0.4765625
+    }
+  },
+  "selectedSource": "conservative",
+  "selectedProgram": {
+    "schemaVersion": 1,
+    "title": "Human panel optional hand payments: conservative",
+    "rules": [
+      {
+        "feature": "cost",
+        "weight": -0.6361,
+        "advice": "In the main phase, avoid actions with a higher memory cost.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "handover",
+        "weight": -1.0042,
+        "advice": "In the main phase, avoid actions that pass more memory to the opponent.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackPlayer",
+        "weight": -0.3003,
+        "advice": "In the main phase, avoid attacks on the opponent's security.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "lethal",
+        "weight": 16.0,
+        "advice": "In the main phase, favor attacks on the player at zero opposing security.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackWinningBattle",
+        "weight": 1.0,
+        "advice": "In the main phase, favor attacks on opposing Digimon with lower DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "attackLosingBattle",
+        "weight": -5.3753,
+        "advice": "In the main phase, avoid attacks on an opposing Digimon with equal or higher DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "digivolve",
+        "weight": 1.271,
+        "advice": "In the main phase, favor digivolving.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "breedingGrowth",
+        "weight": 0.1889,
+        "advice": "In the main phase, favor digivolving the Digimon in the breeding area.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "levelGain",
+        "weight": 1.0427,
+        "advice": "In the main phase, favor digivolutions that gain more levels.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "dpGain",
+        "weight": 0.2493,
+        "advice": "In the main phase, favor digivolutions that gain more DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playBody",
+        "weight": 0.0126,
+        "advice": "In the main phase, favor playing Digimon from hand, more so for higher DP.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playTamer",
+        "weight": 0.1098,
+        "advice": "In the main phase, favor playing Tamers.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "playOption",
+        "weight": 0.3141,
+        "advice": "In the main phase, favor using Option cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceLevel",
+        "weight": 0.3504,
+        "advice": "In the main phase, favor actions by higher-level cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceDp",
+        "weight": 0.4002,
+        "advice": "In the main phase, favor actions by higher-DP cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "targetDp",
+        "weight": -0.1007,
+        "advice": "In the main phase, avoid actions that target higher-DP Digimon.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "pass",
+        "weight": -8.0148,
+        "advice": "In the main phase, avoid ending the main phase.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "activate",
+        "weight": 2.5335,
+        "advice": "In the main phase, favor activating card effects.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceInHand",
+        "weight": -1.3832,
+        "advice": "In the main phase, avoid actions that use a card from hand.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceInTrash",
+        "weight": -6.7499,
+        "advice": "In the main phase, avoid actions that use a card from the trash.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceOnBoard",
+        "weight": -0.5031,
+        "advice": "In the main phase, avoid actions by a Digimon already on the battle area.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceOpponent",
+        "weight": -1.3601,
+        "advice": "In the main phase, avoid actions whose source is an opposing card.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.239,
+        "advice": "In the main phase, favor actions by more valuable cards (DP, level, and cost combined).",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "digiXros",
+        "weight": -0.1419,
+        "advice": "In the main phase, avoid DigiXros plays.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "assembly",
+        "weight": 2.3499,
+        "advice": "In the main phase, favor Assembly plays.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "dnaDigivolve",
+        "weight": 0.0391,
+        "advice": "In the main phase, favor DNA digivolution.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "appFusion",
+        "weight": 5.7053,
+        "advice": "In the main phase, favor App Fusion.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "link",
+        "weight": -0.9559,
+        "advice": "In the main phase, avoid linking cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "materials",
+        "weight": 0.0676,
+        "advice": "In the main phase, favor actions that use more material cards.",
+        "when": {
+          "kind": "main"
+        }
+      },
+      {
+        "feature": "activate",
+        "weight": 3,
+        "advice": "In the main phase, use activated effects that cost no memory before other plays, because they never end the turn and often make the next play cheaper.",
+        "when": {
+          "kind": "main",
+          "maximum": {
+            "handover": 0
+          }
+        }
+      },
+      {
+        "feature": "hatch",
+        "weight": 10,
+        "advice": "Hatch when the breeding area is empty."
+      },
+      {
+        "feature": "deploy",
+        "weight": 2,
+        "advice": "Move a developed line out to contest the board."
+      },
+      {
+        "feature": "criticalBlock",
+        "weight": 100,
+        "advice": "At zero security, prioritize blocking an attack on the player."
+      },
+      {
+        "feature": "accept",
+        "weight": 1,
+        "advice": "Consider optional effects and defensive responses when their costs are acceptable."
+      },
+      {
+        "feature": "finish",
+        "weight": 0.1,
+        "advice": "Finish optional selections when additional cards do not improve the outcome."
+      },
+      {
+        "feature": "openingRookie",
+        "weight": 5,
+        "advice": "Keep an opening hand with a rookie that can start your line."
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.2,
+        "advice": "When choosing targets for your own effect among opposing cards, favor the most valuable opposing Digimon (higher DP and level).",
+        "when": {
+          "kind": "chooseTargets",
+          "minimum": {
+            "sourceOpponent": 1
+          }
+        }
+      },
+      {
+        "feature": "block",
+        "weight": -0.5,
+        "advice": "When you still have 3 or more security cards, decline ordinary blocks and keep your Digimon; take the security check instead.",
+        "when": {
+          "kind": "block",
+          "minimum": {
+            "ownSecurity": 3
+          }
+        }
+      },
+      {
+        "feature": "sourceInHand",
+        "weight": 1,
+        "advice": "In a counter window, favor using a counter card from hand, such as Blast Digivolve, over declining.",
+        "when": {
+          "kind": "counter"
+        }
+      },
+      {
+        "feature": "accept",
+        "weight": -2,
+        "advice": "Decline a Barrier response when you have 1 or fewer security cards; keeping the last security card matters more than saving the Digimon.",
+        "when": {
+          "kind": "respondBarrier",
+          "maximum": {
+            "ownSecurity": 1
+          }
+        }
+      },
+      {
+        "feature": "sourceValue",
+        "weight": 0.2,
+        "advice": "When a card selection picks among opposing cards on the battle area, favor the most valuable opposing Digimon (higher DP and level).",
+        "when": {
+          "kind": "selectCards",
+          "minimum": {
+            "sourceOpponent": 1,
+            "sourceOnBoard": 1
+          }
+        }
+      },
+      {
+        "feature": "finish",
+        "weight": -0.2,
+        "advice": "When choosing targets for your own effect, prefer picking a legal target over finishing the selection early.",
+        "when": {
+          "kind": "chooseTargets"
+        }
+      },
+      {
+        "feature": "activate",
+        "weight": -4,
+        "advice": "In the main phase, reduce the preference for activating effects from hand.",
+        "when": {
+          "kind": "main",
+          "minimum": {
+            "sourceInHand": 1
+          }
+        }
+      },
+      {
+        "feature": "paymentDraw",
+        "weight": 0.75,
+        "advice": "Compare certified resource gains with the visible hand resource spent.",
+        "when": {
+          "kind": "selectCards"
+        }
+      },
+      {
+        "feature": "paymentMemory",
+        "weight": 0.75,
+        "advice": "Compare certified resource gains with the visible hand resource spent.",
+        "when": {
+          "kind": "selectCards"
+        }
+      },
+      {
+        "feature": "paymentRecovery",
+        "weight": 1.5,
+        "advice": "Compare certified resource gains with the visible hand resource spent.",
+        "when": {
+          "kind": "selectCards"
+        }
+      },
+      {
+        "feature": "paymentCard",
+        "weight": -1.0,
+        "advice": "Compare certified resource gains with the visible hand resource spent.",
+        "when": {
+          "kind": "selectCards"
+        }
+      },
+      {
+        "feature": "paymentValue",
+        "weight": -0.075,
+        "advice": "Compare certified resource gains with the visible hand resource spent.",
+        "when": {
+          "kind": "selectCards"
+        }
+      },
+      {
+        "feature": "paymentStarter",
+        "weight": -3.0,
+        "advice": "Compare certified resource gains with the visible hand resource spent.",
+        "when": {
+          "kind": "selectCards"
+        }
+      },
+      {
+        "feature": "paymentDuplicate",
+        "weight": 0.25,
+        "advice": "Compare certified resource gains with the visible hand resource spent.",
+        "when": {
+          "kind": "selectCards"
+        }
+      }
+    ]
+  },
+  "developmentAccepted": true,
+  "selectedDifferencePercentagePoints": 0.78125,
+  "approximatePairedMatchup95IntervalPercentagePoints": [-1.3928408460651878, 2.9553408460651878],
+  "intervalLimit": "Unstratified paired normal approximation across the 64 validation matchup means. Exploratory on the data used for selecting the policy; not confirmatory or adjusted for selection. One exact deck-pair composition overlaps the 32 FITNESS matchups.",
+  "pairedOutcomeChanges": {
+    "turn": 16,
+    "win": 6,
+    "reason": 1
+  },
+  "guards": {
+    "strictlyPositiveWeightedGain": true,
+    "maximumOpponentDropPercentagePoints": 2,
+    "additionalInvalidGamesAllowed": 0
+  },
+  "requiresIndependentConfirmation": true,
+  "confirmationReserveAvailable": false,
+  "catalogPromoted": false,
+  "defaultCatalog": "v2",
+  "deployed": false,
+  "paymentScope": "Initial optional selection of exactly one own-hand card, certified static unconditional immediate resources, zero declared memory spending; complex, dynamic and unsupported costs stay unchanged.",
+  "initialDiagnosis": {
+    "games": 16,
+    "exactOutcomeReproduction": true,
+    "initialCostFrames": 28,
+    "emptyInitialFinishes": 27,
+    "scope": "Previously consumed confirmation losses, inspected for diagnosis only; never fresh confirmation data."
+  },
+  "reproduction": {
+    "games": 16,
+    "matchups": 8,
+    "sourceSha256": "b719bb321ef675ee8c1c984817fa85ea5e027327d0d8f98d02091d5247cf78c0",
+    "sampling": "Eight distinct validation matchups, prioritizing changed outcomes/turns by ascending seed; paired control and selected policy. Diagnostics only.",
+    "scope": "Reused development data; this sample does not estimate global payment coverage or causal win-rate gains.",
+    "counts": {
+      "control": {
+        "allDecisions": 568,
+        "initialCostFrames": 37,
+        "certifiedFrames": 15,
+        "valuedPaymentFrames": 15,
+        "declinedValuedFrames": 15
+      },
+      "conservative": {
+        "allDecisions": 635,
+        "initialCostFrames": 43,
+        "certifiedFrames": 14,
+        "valuedPaymentFrames": 14,
+        "paidValuedFrames": 11,
+        "declinedValuedFrames": 3
+      }
+    },
+    "traceLimitGames": 0
+  },
+  "validation": {
+    "api": {
+      "files": 109,
+      "passed": 2074,
+      "command": "pnpm --filter @aegis/api exec vitest run [affected suites] --maxWorkers=1 --no-file-parallelism"
+    },
+    "web": {
+      "files": 1,
+      "passed": 62
+    },
+    "python": {
+      "passed": 26,
+      "scope": "new optional-cost protocol and existing panel control/checkpoint/adapters"
+    },
+    "node": {
+      "passed": 3
+    },
+    "applicationTypes": "passed",
+    "focusedTestTypes": {
+      "passed": true,
+      "files": 3
+    },
+    "style": "passed with existing lint warnings",
+    "ruff": "passed",
+    "diffCheck": "passed",
+    "devStartup": "API listening; local PostgreSQL authentication fails; owned dev group stopped before freeze",
+    "review": "No material remaining issues in final read-only review",
+    "unrun": "Database integration and full repository test suite were not run."
+  },
+  "freeze": {
+    "runtime": "76aafe855b41e5f86a9c738d5bb5f6e4484b33176e239a9089ca44745eb55bd3",
+    "compiledFiles": 48842,
+    "compiledArchiveSha256": "b73c331c44132184b624d902c79317672cba5bcd3bfb6fb8c2a55cd10f14ad9d",
+    "compiledArchiveBytes": 26608058,
+    "sourceFiles": 75,
+    "sourcesArchiveSha256": "ed8b5ae7dee32330afd17632f8b05e99a2c8b260a2406ef99e4c79773ab05f60",
+    "pairsSha256": "bdfa9d6024a7faea5a5c567e0f5db95e0826a78c49fff05e016776bbb4c533f3"
+  },
+  "hashes": {
+    "development/summary.json": "af270582ee64239f849cf753926219d92efa61eb72ce84bbccef6acbd4776c54",
+    "development/start-program.json": "34baabe101eaace8efea9dab3b1b5de8dcbd1b79947ad4cb5d3fdac7cc874895",
+    "development/selected-program.json": "662fa876f0763431314440f91b805b6283b250ed9340d655c48a1a1890165304",
+    "development/protocol/manifest.json": "95c336f15e6e7f606d0039f6b7bb158f3aa415427ff933c1f7bb51207d7f08d5",
+    "development/screen/manifest.json": "91e034092afddd83a829436bca28dafe364990a6dd05391bc86ff90ad20ffaa6",
+    "development/screen/results.jsonl": "4e8a3c22d7b1704ce9601eb72a9ff8288b27574677886a29ae722db6cbaf2603",
+    "development/selection/manifest.json": "37292221a7d2edc2a5260b012aec6e83828b355fe4e7592231d82d464059bf79",
+    "development/selection/results.jsonl": "ff8c99c2b08922e9865e546554c565abde4455e51306dec6dca05d9924c7c467",
+    "evidence/freeze.json": "7fbe58b3964c03caa3ac44e6bdf2d2b546c788a59f211936b6c45cd17c5f9826",
+    "evidence/compiled-sha256.json": "5221dc6929b6b18d08ce1dcf6f387cfd4d2990eb9b139f5128734334092ed428",
+    "evidence/sources-sha256.json": "415a161a4ba0cd02a374f91eb7a85c9089e3a67f5f697936b6bb78f01e9bf9f3",
+    "validation.json": "62eb6f56e72f1dc255dde8d3b42ebddc0212ecc7c44f25a85c8104224e2ffc68",
+    "diagnosis/summary.json": "57220e64bb27f365d927733d91dfb9dcbd4cb34c7893435b01cf3311ed4f48ef",
+    "reproduction/summary.json": "49f4387932cd1a3ce940a1c2d7313b836a87fa10c46d98651146ff22a29d0d72"
+  },
+  "evidenceDirectory": ".local/bot-lab/optional-costs",
+  "invalidLimit": "One shared invalid game per program at each stage, scored zero. Worker diagnostics show no timeout or inference fallback but do not attribute the invalid event; no new rules defect is inferred.",
+  "proofArchive": {
+    "path": ".local/bot-lab/optional-costs/evidence/proof.tgz",
+    "sha256": "1adacf87981b2b0eced958aee33514fc33bcc56089b557e5989ef38799623ccf",
+    "bytes": 29759138,
+    "contents": "Frozen runtime and source inventory, initial source snapshot, inputs, raw development and diagnostic results, analysis scripts and validation logs. Public aggregate is intentionally outside the archive to avoid a circular hash."
+  }
+}

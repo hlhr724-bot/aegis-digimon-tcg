@@ -25,7 +25,7 @@ describe("BT1-076 MegaKabuterimon", () => {
     });
     expect(getCardDefinition("BT1-076")?.effectText).toBeUndefined();
     expect(getCardDefinition("BT1-076")?.inheritedEffectText).toBe(
-      "[When Attacking] If your opponent has 2 or more suspended Digimon， gain 1 memory.",
+      "[When Attacking] If your opponent has 2 or more suspended Digimon, gain 1 memory.",
     );
     expect(getCardDefinition("BT1-076")?.securityEffectText).toBeUndefined();
     expect(compiled).toEqual({

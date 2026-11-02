@@ -100,6 +100,100 @@ function envOver(
 }
 
 describe("derived activation tiers", () => {
+  it.each([
+    { seat: 0, nested: false },
+    { seat: 1, nested: false },
+    { seat: 0, nested: true },
+    { seat: 1, nested: true },
+  ] as const)(
+    "retires an exhausted derived effect before an older effect enables it ($seat, nested=$nested)",
+    async ({ seat, nested }) => {
+      let derived = false;
+      let targetExists = false;
+      const order: string[] = [];
+      const parent = collected(
+        0,
+        "parent",
+        fakeEffect("parent", {
+          onResolve: () => {
+            derived = true;
+            order.push("parent");
+          },
+        }),
+      );
+      const older = collected(
+        1,
+        "older",
+        fakeEffect("older", {
+          onResolve: () => {
+            targetExists = true;
+            order.push("older");
+          },
+        }),
+      );
+      const child = collected(
+        seat,
+        "child",
+        fakeEffect("child", {
+          canActivate: () => targetExists,
+          onResolve: () => order.push("child"),
+        }),
+      );
+      const attack = collected(
+        0,
+        "attack",
+        fakeEffect("attack", {
+          onResolve: async (ctx) => {
+            await ctx.drainCurrentTimingWindow?.();
+          },
+        }),
+      );
+      const { env } = envOver([], {
+        collect: () => [...(nested ? [attack] : []), parent, older, ...(derived ? [child] : [])],
+      });
+      await resolveTiming(EffectTiming.OnEndTurn, env);
+      expect(order).toEqual(["parent", "older"]);
+    },
+  );
+
+  it("keeps an unavailable derived effect pending while its simultaneous sibling enables it", async () => {
+    let derived = false;
+    let targetExists = false;
+    const order: string[] = [];
+    const parent = collected(
+      0,
+      "parent",
+      fakeEffect("parent", {
+        onResolve: () => {
+          derived = true;
+          order.push("parent");
+        },
+      }),
+    );
+    const older = collected(0, "older", fakeEffect("older", { onResolve: () => order.push("older") }));
+    const child = collected(
+      0,
+      "child",
+      fakeEffect("child", {
+        canActivate: () => targetExists,
+        onResolve: () => order.push("child"),
+      }),
+    );
+    const sibling = collected(
+      1,
+      "sibling",
+      fakeEffect("sibling", {
+        onResolve: () => {
+          targetExists = true;
+          order.push("sibling");
+        },
+      }),
+    );
+    const { env } = envOver([], { collect: () => [parent, older, ...(derived ? [child, sibling] : [])] });
+    await resolveTiming(EffectTiming.OnEndTurn, env);
+    expect(order).toEqual(["parent", "sibling", "child", "older"]);
+  });
+
   it("keeps granted copies and event occurrences distinct without reactivating after evolution", async () => {
     let top = "original-top";
     const resolved: string[] = [];
@@ -1087,4 +1181,65 @@ describe("resolveTiming: a pending effect whose source card changes permanent id
 
     expect(resolvedKeys).toEqual(["selfMove:start", "other", "selfMove:end"]);
   });
+});
+
+it("exposes only unresolved effects across nested resolver windows and removes readers on errors", async () => {
+  const readers = new Set<() => readonly CollectedEffect[]>();
+  const readKeys = () => [...readers].flatMap((read) => read().map((entry) => entry.effect.effectKey));
+  const registerPendingEffects: NonNullable<ResolutionEnv["registerPendingEffects"]> = (read) => {
+    readers.add(read);
+    return () => {
+      readers.delete(read);
+    };
+  };
+  const waiting = collected(1, "waiting", fakeEffect("waiting"));
+  const first = collected(
+    0,
+    "first",
+    fakeEffect("first", {
+      onResolve: async () => {
+        expect(readKeys()).toEqual(["waiting"]);
+        const nested = collected(
+          0,
+          "nested",
+          fakeEffect("nested", {
+            onResolve: () => {
+              expect(readKeys()).toEqual(["waiting"]);
+              throw new Error("failed body");
+            },
+          }),
+        );
+        const { env } = envOver([nested], { registerPendingEffects });
+        await expect(resolveTiming(EffectTiming.OnPlay, env)).rejects.toThrow("failed body");
+        expect(readers.size).toBe(1);
+        expect(readKeys()).toEqual(["waiting"]);
+      },
+    }),
+  );
+  const { env } = envOver([first, waiting], { registerPendingEffects });
+  await resolveTiming(EffectTiming.OnPlay, env);
+  expect(readers.size).toBe(0);
+});
+
+it("retires declined optional effects from the pending display reader", async () => {
+  let read: (() => readonly CollectedEffect[]) | undefined;
+  const declined = collected(0, "declined", fakeEffect("declined", { optional: true, maxPerTurn: -1 }));
+  const next = collected(
+    1,
+    "next",
+    fakeEffect("next", {
+      onResolve: () => expect(read?.()).toEqual([]),
+    }),
+  );
+  const { env } = envOver([declined, next], {
+    registerPendingEffects: (reader) => {
+      read = reader;
+      return () => {
+        read = undefined;
+      };
+    },
+    askOptional: async () => false,
+  });
+  await resolveTiming(EffectTiming.OnPlay, env);
+  expect(read).toBeUndefined();
 });

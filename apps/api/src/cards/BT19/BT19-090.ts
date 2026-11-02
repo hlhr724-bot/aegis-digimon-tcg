@@ -9,6 +9,8 @@ const xrosHeart: Filter = {
   dp: { op: "lte", value: 4000 },
 };
 const playFromTamer: Action = {
+  effectTextPart:
+    "You may play 1 Digimon card with the [Xros Heart]\u00a0trait and 4000 DP or less from under your Tamer without paying the cost.",
   kind: "PlayWithoutCost",
   target: { filter: xrosHeart, count: 1 },
   from: ["underTamers"],
@@ -21,6 +23,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Activate 1 of the following effects:",
           kind: "Modal",
           choose: 1,
           labels: ["Play a Xros Heart Digimon", "Unsuspend Shoutmon EX6 and ShootingStarmon, then attack"],
@@ -28,10 +31,11 @@ const compiled: CompiledCard = {
             [playFromTamer],
             [
               {
+                effectTextPart:
+                  "By unsuspending 1 of your [Shoutmon EX6] and 1 of your [ShootingStarmon], attack a player with 1 of your Digimon.",
                 kind: "Attack",
                 target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
                 attackTargetScope: "player",
-                mandatory: true,
                 cost: {
                   kind: "unsuspendNamed",
                   targets: [
@@ -54,6 +58,7 @@ const compiled: CompiledCard = {
                       count: 1,
                     },
                   ],
+                  optional: true,
                   raw: "by unsuspending 1 [Shoutmon EX6] and 1 [ShootingStarmon]",
                 },
               },

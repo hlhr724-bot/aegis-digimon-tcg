@@ -16,6 +16,7 @@ const result = (value: unknown) =>
 
 type Check = (value: unknown) => boolean;
 const shapes = {
+  manualAction: { seat, action: string },
   matchStarted: { firstSeat: seat },
   phaseChanged: { phase: string, turnSeat: seat, turnCount: number },
   cardPlayed: { seat, cardId: string },
@@ -50,6 +51,7 @@ const shapes = {
   effectTriggered: { seat, sourceCardId: string, effectKey: string, description: string },
   resolutionOrderChosen: { seat, entries: records },
   effectOptionChosen: { seat, sourceCardId: string, clause: string },
+  effectClauseAdvanced: { seat, sourceCardId: string, clause: string },
   effectResolved: { seat, sourceCardId: string, effectKey: string, description: string },
   effectHadNoEffect: { seat, sourceCardId: string, effectKey: string, description: string },
   cardsMoved: { instanceIds: strings, from: string, to: string },
@@ -85,6 +87,8 @@ export function validReplayEvent(value: unknown): boolean {
   for (const [key, check] of Object.entries({
     seat,
     cardId: string,
+    fromSeat: seat,
+    fromHost: (host: unknown) => record(host) && string(host.permanentId) && string(host.hostCardId),
     artId: string,
     permanentId: string,
     instanceId: string,

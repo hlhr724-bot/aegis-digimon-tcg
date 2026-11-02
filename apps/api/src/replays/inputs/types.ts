@@ -1,3 +1,5 @@
+import type { TournamentBanlistCard } from "@aegis/shared/tournaments/index";
+import type { GameMode } from "@aegis/shared/manual/GameMode";
 import type { DeckFormat, Intent, Seat } from "@aegis/shared";
 import type { ScenarioFixture } from "../../engine/scenario/types.js";
 
@@ -19,6 +21,7 @@ export interface ReplayRecord {
   serverRevision?: string;
   /** The engine seed (`GameEngineHooks.seed`): shuffles, first player and every seeded choice. */
   seed: number;
+  randomKey?: string;
   /** The first player the room imposed (a later game of a casual series). Otherwise the seed decides. */
   firstSeat?: Seat;
   /** Room-level rules mirrored into the state, and the dev scenario a non-production bot room laid. */
@@ -30,6 +33,7 @@ export interface ReplayRecord {
 }
 
 export interface ReplayRules {
+  gameMode?: GameMode;
   deckFormat: DeckFormat;
   unlimited: boolean;
   betaBattle: boolean;
@@ -45,6 +49,7 @@ export interface ReplayDeck {
 
 /** The deck-legality options the room passed to `seatPlayer` with the deck. */
 export interface ReplayDeckRules {
+  banlistCards?: readonly TournamentBanlistCard[];
   betaBattleMode?: boolean;
   unlimited?: boolean;
   format?: DeckFormat;
@@ -86,6 +91,7 @@ export type ReplayRoomInput =
   | { kind: "disconnect"; seat: Seat; final: boolean }
   | { kind: "reconnect"; seat: Seat }
   | { kind: "clearReady"; seat: Seat }
+  | { kind: "expireRankedRound" }
   | { kind: "expireMatchTimer"; seat: Seat }
   /** The mulligan window ran out: the room keeps the seat's hand (`mulligan` with `keep: true`). */
   | { kind: "expireMulliganWindow"; seat: Seat }
@@ -104,7 +110,7 @@ export type ReplayRoomInput =
  *
  * Inputs without a site arrived while the engine was idle (a message, a timer between ticks).
  */
-export type ReplaySite = "bothReady" | "batchClose" | "decisionRequest" | "matchStarted" | "afterIntent";
+export type ReplaySite = "beforeTurn" | "bothReady" | "batchClose" | "decisionRequest" | "matchStarted" | "afterIntent";
 
 interface Placed {
   stateVersion: number;
@@ -138,8 +144,10 @@ export interface ReplayDivergence {
 
 /** `replay.header`, written once when the room builds its engine. */
 export interface ReplayHeaderLine {
+  gameMode?: GameMode;
   replaySeq: number;
   seed: number;
+  randomKey?: string;
   firstSeat?: Seat;
   serverRevision?: string;
   deckFormat: DeckFormat;

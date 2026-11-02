@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { freezeKind, freezePulses, type FreezeFlags } from "./freezePulse";
 
-const FREE: FreezeFlags = { cannotAttack: false, cannotBlock: false };
-const NO_ATTACK: FreezeFlags = { cannotAttack: true, cannotBlock: false };
-const NO_BLOCK: FreezeFlags = { cannotAttack: false, cannotBlock: true };
-const LOCKED: FreezeFlags = { cannotAttack: true, cannotBlock: true };
+const FREE: FreezeFlags = { cannotAttack: false, cannotBlock: false, debuffs: 0, buffs: 0 };
+const NO_ATTACK: FreezeFlags = { ...FREE, cannotAttack: true };
+const NO_BLOCK: FreezeFlags = { ...FREE, cannotBlock: true };
+const LOCKED: FreezeFlags = { ...FREE, cannotAttack: true, cannotBlock: true };
+const WEAKENED: FreezeFlags = { ...FREE, debuffs: 1 };
+const STRENGTHENED: FreezeFlags = { ...FREE, buffs: 2 };
 
 describe("freezeKind", () => {
   it("names the attack lock that just landed", () => {
@@ -29,6 +31,26 @@ describe("freezeKind", () => {
 
   it("still fires for the second lock landing on an already-restricted card", () => {
     expect(freezeKind(NO_ATTACK, LOCKED)).toBe("cannotBlock");
+  });
+
+  it("names a debuff when another restriction or a Security Attack loss lands", () => {
+    expect(freezeKind(FREE, WEAKENED)).toBe("debuff");
+    expect(freezeKind(WEAKENED, { ...WEAKENED, debuffs: 2 })).toBe("debuff");
+  });
+
+  it("names a buff when a keyword, protection or Security Attack gain lands", () => {
+    expect(freezeKind(FREE, STRENGTHENED)).toBe("buff");
+    expect(freezeKind(STRENGTHENED, { ...STRENGTHENED, buffs: 3 })).toBe("buff");
+  });
+
+  it("stays quiet when a buff or debuff expires", () => {
+    expect(freezeKind(WEAKENED, FREE)).toBeUndefined();
+    expect(freezeKind(STRENGTHENED, FREE)).toBeUndefined();
+  });
+
+  it("lets a lock outrank a buff landing in the same commit", () => {
+    expect(freezeKind(FREE, { ...STRENGTHENED, cannotAttack: true })).toBe("cannotAttack");
+    expect(freezeKind(FREE, { ...STRENGTHENED, debuffs: 1 })).toBe("debuff");
   });
 });
 

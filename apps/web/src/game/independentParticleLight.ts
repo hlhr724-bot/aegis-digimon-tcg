@@ -4,6 +4,8 @@ import { paintParticleLight } from "./particleLightCanvas";
 import { waitForPaintedAnimation } from "./paintedAnimationClock";
 import type { BurstPalette } from "./showcases";
 import type { RegisterParticleLight } from "./ParticleLightScope";
+import { getParticleLightCanvasSize } from "@/game/getParticleLightCanvasSize";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 /** Local presentation ownership, never part of the server's scene payload. */
 export interface ParticleLightOwner {
@@ -20,8 +22,14 @@ export function mountIndependentParticleLight(
   owner: ParticleLightOwner,
   register?: RegisterParticleLight,
 ) {
-  const media = matchMedia("(prefers-reduced-motion: reduce)");
-  if (media.matches || owner.context.cancelled || owner.context.skipping || owner.context.mode !== "live") return;
+  if (
+    motionPreference.isReduced() ||
+    owner.context.cancelled ||
+    owner.context.skipping ||
+    owner.context.mode !== "live"
+  ) {
+    return;
+  }
   const sourceAnimation = sourceClock
     .getAnimations()
     .find((entry) => "animationName" in entry && entry.animationName === "battle-particle-clock");
@@ -60,7 +68,7 @@ export function mountIndependentParticleLight(
     if (!active) return;
     active = false;
     cancelAnimationFrame(frame);
-    media.removeEventListener("change", dispose);
+    unsubscribeMotion();
     owner.context.signal?.removeEventListener("abort", dispose);
     resize.disconnect();
     window.removeEventListener("resize", size);
@@ -72,8 +80,7 @@ export function mountIndependentParticleLight(
     // The positioned frame is stable while its artwork reveals, shakes and exits.
     // After the scene leaves, retain that last position for the remaining light.
     if (!anchor.isConnected) return;
-    const rect = anchor.getBoundingClientRect(),
-      ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = anchor.getBoundingClientRect();
     Object.assign(canvas.style, {
       inset: "auto",
       left: `${rect.left}px`,
@@ -81,8 +88,11 @@ export function mountIndependentParticleLight(
       width: `${rect.width}px`,
       height: `${rect.height}px`,
     });
-    const width = Math.max(1, Math.round(rect.width * ratio)),
-      height = Math.max(1, Math.round(rect.height * ratio));
+    const { width, height } = getParticleLightCanvasSize({
+      width: rect.width,
+      height: rect.height,
+      pixelRatio: window.devicePixelRatio,
+    });
     if (canvas.width !== width || canvas.height !== height) {
       canvas.width = width;
       canvas.height = height;
@@ -112,7 +122,11 @@ export function mountIndependentParticleLight(
     if (age >= PARTICLE_LIGHT_MS) dispose();
     else frame = requestAnimationFrame(paint);
   }
-  media.addEventListener("change", dispose);
+  const unsubscribeMotion = motionPreference.subscribe(() => {
+    if (motionPreference.isReduced()) {
+      dispose();
+    }
+  });
   owner.context.signal?.addEventListener("abort", dispose, { once: true });
   const resize = new ResizeObserver(size);
   const unregister = register?.(dispose);

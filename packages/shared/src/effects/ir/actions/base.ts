@@ -7,6 +7,8 @@ import type { Scaling } from "../predicates/scaling.js";
 export interface ActionBase {
   /** Verbatim printed passage for decisions raised by this part of a compound effect. */
   effectTextPart?: string;
+  costTextEmphasis?: string;
+  optionalTextEmphasis?: string;
   /** This action is the payload of a Delay activation armed by a prior GainKeyword(Delay). */
   requiresDelayArmed?: true;
   /** Optional per-action gate (the clause-level "If ..."). */

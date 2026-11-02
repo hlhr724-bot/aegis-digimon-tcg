@@ -16,11 +16,14 @@ import { snapshotGameState } from "../net/presentedState";
 import type { ServerBatch } from "../net/serverBatches";
 import { GameScreen } from "./GameScreen";
 import { HandSortMode, setHandSortMode } from "./handSortMode";
+import { HandSortDirection } from "@/game/HandSortDirection";
+import { setHandSortDirection } from "@/game/handSortDirectionPreference";
 import { TIMINGS } from "./timings";
 
 afterEach(() => {
   cleanup();
   setHandSortMode(HandSortMode.Type);
+  setHandSortDirection(HandSortDirection.ASCENDING.value);
   vi.useRealTimers();
 });
 
@@ -174,7 +177,7 @@ it("sorts from the hand tray without opening settings and appends later draws", 
     </I18nProvider>
   );
   const rendered = render(view());
-  const button = screen.getByRole("button", { name: "Sort hand: By type" });
+  const button = screen.getByRole("button", { name: "Sort hand: By type, Low to high" });
   expect(button.closest(".game-player-dock")?.querySelector('[data-testid="hand"]')).toBeTruthy();
   expect(screen.queryByRole("dialog", { name: "Match settings" })).toBeNull();
   const ids = () =>
@@ -198,6 +201,73 @@ it("sorts from the hand tray without opening settings and appends later draws", 
   fireEvent.click(screen.getByRole("menuitemradio", { name: "By cost" }));
   expect(screen.queryByRole("menu")).toBeNull();
   expect(ids()).toEqual(["sort-card-1", "later-draw", "sort-card-0", "sort-card-2"]);
-  expect(screen.getByRole("button", { name: "Sort hand: By cost" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Sort hand: By cost, Low to high" })).toBeTruthy();
   expect(localStorage.getItem("aegis.hand.sort-mode")).toBe("cost");
+
+  fireEvent.click(screen.getByRole("button", { name: "Choose sort order" }));
+  expect(screen.getByRole("menuitemradio", { name: "Low to high" }).getAttribute("aria-checked")).toBe("true");
+  fireEvent.click(screen.getByRole("menuitemradio", { name: "High to low" }));
+  expect(screen.queryByRole("menu")).toBeNull();
+  expect(ids()).toEqual(["sort-card-2", "sort-card-0", "sort-card-1", "later-draw"]);
+  expect(screen.getByRole("button", { name: "Sort hand: By cost, High to low" })).toBeTruthy();
+  expect(localStorage.getItem("aegis.hand.sort-direction")).toBe("descending");
+});
+
+it.each([0, 1])("shows all redealt physical cards when a mulligan retains %s original identities", (retained) => {
+  vi.useFakeTimers();
+  const state = new GameState();
+  state.phase = Phase.None;
+  state.stateVersion = 1;
+  for (const seat of [0, 1] as const) {
+    const player = new PlayerState();
+    player.seat = seat;
+    player.sessionId = `redeal-seat-${seat}`;
+    player.handCount = 5;
+    player.deckCount = 45;
+    state.players.push(player);
+  }
+  for (let index = 0; index < 5; index++) {
+    state.players[0]!.hand.push(
+      Object.assign(new CardInstance(), { instanceId: `opening-${index}`, cardId: "ST1-03" }),
+    );
+  }
+  const before = snapshotGameState(state);
+  const view = () => (
+    <I18nProvider>
+      <GameScreen
+        joinOptions={{ displayName: "You", deck: { mainDeck: [], eggDeck: [] } }}
+        identityColor="Blue"
+        onExit={() => undefined}
+        demoConnection={{
+          room: undefined,
+          status: "connected",
+          error: undefined,
+          decision: undefined,
+          state,
+          events: [],
+          batches: [],
+          snapshots: [{ stateVersion: 1, state: before }],
+          acknowledgeDecision: () => undefined,
+          sessionId: "redeal-seat-0",
+          roomCode: "",
+        }}
+      />
+    </I18nProvider>
+  );
+  const rendered = render(view());
+  const ids = () =>
+    [...document.querySelectorAll<HTMLElement>('[data-testid="hand"] [data-hand-instance-id]')].map(
+      (card) => card.dataset.handInstanceId,
+    );
+  expect(ids()).toHaveLength(5);
+  for (let index = retained; index < 5; index++) {
+    state.players[0]!.hand[index] = Object.assign(new CardInstance(), {
+      instanceId: `redealt-${index}`,
+      cardId: "ST1-03",
+    });
+  }
+  rendered.rerender(view());
+  expect(ids()).toEqual(
+    Array.from({ length: 5 }, (_, index) => (index < retained ? `opening-${index}` : `redealt-${index}`)),
+  );
 });

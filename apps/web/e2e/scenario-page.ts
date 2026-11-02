@@ -22,6 +22,11 @@ type Selection = {
 };
 export type DecisionPolicy = (decision: Decision) => Selection | Promise<Selection>;
 
+type HealthyOptions = {
+  resumedEffectBudgets?: Record<string, number>;
+  expectedCancelledStepIds?: readonly string[];
+};
+
 /** Drives only visible controls; snapshots and probes are read-only evidence. */
 export class ScenarioPage {
   readonly errors: string[] = [];
@@ -107,6 +112,7 @@ export class ScenarioPage {
     await this.page.getByRole("button", { name: `Play ${kind}`, exact: true }).click();
   }
   async evolve(name: string, permanentId: string, cheapest = false) {
+    await expect(this.page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
     await this.hand(name);
     await this.page.getByRole("button", { name: "Digivolve", exact: true }).click();
     await this.page.locator(`[data-drop="perm-you"][data-id="${permanentId}"]`).click();
@@ -177,7 +183,10 @@ export class ScenarioPage {
       } as Decision;
       const selection = await policy(decision);
       await base.step(`${decision.kind}: ${decision.promptText}`, async () => {
-        if (decision.kind === "optional") {
+        if (
+          decision.kind === "optional" ||
+          (decision.kind === "selectCards" && decision.options.selectionContext === "materialSaveActivation")
+        ) {
           const answer = this.page.getByRole("button", {
             name: selection.accept === false ? DECLINE : ACTIVATE,
             exact: true,
@@ -204,6 +213,7 @@ export class ScenarioPage {
             const name = getCardDefinition(selection.triggerCardId)!.nameEn;
             await panel
               .getByRole("button", { name: new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) })
+              .and(panel.locator("[aria-pressed]"))
               .first()
               .click();
           } else {
@@ -226,6 +236,25 @@ export class ScenarioPage {
                   .getByRole("button", { name: decision.options.choices![index]!, exact: true });
           await this.decisionReady(choice, decision, selection.decisionBudgetMs);
           await choice.click();
+        } else if (decision.kind === "selectCards" && decision.options.assemblyCardId) {
+          const panel = this.page.getByRole("dialog", { name: /^＜Assembly＞/ });
+          await this.decisionReady(panel, decision, selection.decisionBudgetMs);
+          if (selection.accept === false) {
+            await panel.getByRole("button", { name: "Play without Assembly", exact: true }).click();
+          } else {
+            const ids = selection.instanceIds ?? decision.options.candidateInstanceIds ?? [];
+            for (const id of ids) {
+              const card = decision.options.visibleCards?.find((entry) => entry.instanceId === id);
+              expect(card, `visible Assembly material ${id}`).toBeDefined();
+              const name = getCardDefinition(card!.cardId)!.nameEn;
+              await panel
+                .getByRole("button", { name: `${name} (trash)`, exact: true })
+                .and(panel.locator('[aria-pressed="false"]'))
+                .first()
+                .click();
+            }
+            await panel.getByRole("button", { name: /^Assembly \(\d+ cards\)$/ }).click();
+          }
         } else if (decision.kind === "selectCards" && decision.options.digiXrosCardId) {
           const noXros = this.page.getByRole("button", { name: "Play without DigiXros", exact: true });
           await this.decisionReady(noXros, decision, selection.decisionBudgetMs);
@@ -340,13 +369,19 @@ export class ScenarioPage {
     }
     throw new Error("Scenario exceeded 40 decisions");
   }
-  async healthy({ resumedEffectBudgets = {} }: { resumedEffectBudgets?: Record<string, number> } = {}) {
+  async healthy({ resumedEffectBudgets = {}, expectedCancelledStepIds = [] }: HealthyOptions = {}) {
     await this.idle();
     const probe = await this.presentation();
     expect(this.errors).toEqual([]);
     expect(probe.pending).toBe(0);
     expect(probe.gateExpiries).toEqual([]);
-    expect(probe.steps.filter((s) => s.failed || s.cancelled)).toEqual([]);
+    expect(probe.steps.filter((s) => s.failed)).toEqual([]);
+    expect(
+      probe.steps
+        .filter((step) => step.cancelled)
+        .map((step) => step.id)
+        .sort(),
+    ).toEqual([...expectedCancelledStepIds].sort());
     expect(probe.steps.filter((s) => s.skipping).map((s) => s.id)).toEqual([]);
     expect(probe.counters).toEqual({
       boardBudgetHits: 0,

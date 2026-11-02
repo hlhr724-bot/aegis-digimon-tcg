@@ -52,6 +52,7 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] Place this card as 1 of your non-white Digimon's bottom digivolution card.",
           kind: "PlaceUnder",
           target: {
             filter: {

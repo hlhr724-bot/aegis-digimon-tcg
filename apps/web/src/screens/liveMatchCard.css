@@ -1,0 +1,194 @@
+.live-match-card {
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  border: 1px solid var(--ds-line);
+  border-radius: 10px;
+  background: var(--ds-sheet);
+  transition: border-color var(--ds-motion-fast);
+}
+
+.live-match-card:hover {
+  border-color: var(--ds-line-strong);
+}
+
+.live-match-card__arena {
+  position: relative;
+  max-width: 100%;
+  aspect-ratio: 16 / 5;
+  overflow: hidden;
+  color: #ffffff;
+  background: var(--ds-ink);
+}
+
+.live-match-card__arena::after {
+  position: absolute;
+  background: linear-gradient(to top, rgb(7 21 43 / 55%), transparent 55%);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+}
+
+.live-match-card__artwork {
+  position: absolute;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  inset: 0;
+}
+
+.live-match-card__art {
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  mask-image: linear-gradient(to right, #000000 72%, transparent);
+}
+
+.live-match-card__art:last-child {
+  mask-image: linear-gradient(to left, #000000 72%, transparent);
+}
+
+.live-match-card__art img {
+  transform: scale(1.45);
+  transform-origin: 50% 30%;
+}
+
+.live-match-card__top {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  inset: 10px 10px auto;
+}
+
+.live-match-card__live {
+  display: inline-flex;
+  height: 22px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: var(--ds-radius-pill);
+  background: #e11d48;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.35);
+}
+
+.live-match-card__live i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  animation: live-match-card-blink 1.8s ease-in-out infinite;
+}
+
+@keyframes live-match-card-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.live-match-card__format {
+  display: inline-flex;
+  min-width: 0;
+  height: 22px;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 9px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 12px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--ds-radius-pill);
+  background: rgba(7, 21, 43, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.live-match-card__duel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 10px;
+}
+
+.live-match-card__player {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-match-card__player:last-child {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.live-match-card__identity {
+  display: grid;
+  min-width: 0;
+}
+
+.live-match-card__identity b,
+.live-match-card__identity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-match-card__identity b {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.live-match-card__identity small {
+  color: var(--ds-text-3);
+  font-size: 12px;
+}
+
+.live-match-card__versus {
+  color: var(--ds-text-3);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.live-match-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: auto;
+  padding: 10px 14px 14px;
+  border-top: 1px dashed var(--ds-line);
+  color: var(--ds-text-3);
+  font-size: 12.5px;
+}
+
+.live-match-card__foot .aegis-button {
+  margin-left: auto;
+}
+
+.live-match-card__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-match-card {
+    transition: none;
+  }
+
+  .live-match-card__live i {
+    animation: none;
+  }
+}

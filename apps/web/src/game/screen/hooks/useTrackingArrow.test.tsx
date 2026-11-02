@@ -21,6 +21,8 @@ const originalAnimations = Object.getOwnPropertyDescriptor(SVGElement.prototype,
 function Harness({
   exiting = false,
   effect = false,
+  effectTarget = "defender",
+  targetDecision = false,
   attack = declaration,
   sceneVisible = true,
   phasePending = false,
@@ -43,13 +45,22 @@ function Harness({
   const tracking = useTrackingArrow({
     state: undefined,
     events: closed ? events : [attack],
-    decision: undefined,
-    picks: [],
+    decision: targetDecision
+      ? {
+          decisionId: "return-to-hand",
+          kind: "chooseTargets",
+          seat: 0,
+          sourcePermanentId: "attacker",
+          promptText: "Return a Digimon to hand",
+          options: { candidateInstanceIds: ["defender"], targetFate: "returnToHand" },
+        }
+      : undefined,
+    picks: targetDecision ? ["defender"] : [],
     viewerSeat: 0,
     fieldClash: null,
     securityClash: sceneVisible ? { ...scene, exiting } : null,
     phasePresentationPending: phasePending,
-    effectSelection: effect ? { sourcePermanentId: "attacker", targetPermanentIds: ["defender"] } : undefined,
+    effectSelection: effect ? { sourcePermanentId: "attacker", targetPermanentIds: [effectTarget] } : undefined,
     boardRef,
     permRefs,
     permCentersRef,
@@ -209,4 +220,27 @@ it("redirects the painted arrow before the next animation frame", () => {
     />,
   );
   expect(arrow()?.getAttribute("data-attack-targets")).toBe('["defender"]');
+});
+
+it.each([false, true])("aims at the chosen return target over an earlier effect cue: %s", (effect) => {
+  let frame: FrameRequestCallback | undefined;
+  vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+    frame = callback;
+    return 1;
+  });
+  vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+    const left = this.previousElementSibling ? 300 : 0;
+    return { x: left, y: 0, left, top: 0, right: left + 100, bottom: 100, width: 100, height: 100, toJSON() {} };
+  });
+  const view = render(<Harness sceneVisible={false} closed={false} />);
+  act(() => frame?.(1000));
+  const arrow = () => view.container.querySelector("[data-attack-targets]");
+  expect(arrow()?.getAttribute("data-attack-targets")).toBe('["security-opp"]');
+  view.rerender(<Harness sceneVisible={false} closed={false} targetDecision effect={effect} effectTarget="attacker" />);
+  act(() => frame?.(1016));
+  expect(arrow()?.getAttribute("data-attack-targets")).toBe('["defender"]');
+  view.rerender(<Harness sceneVisible={false} closed={false} />);
+  act(() => frame?.(1032));
+  expect(arrow()?.getAttribute("data-attack-targets")).toBe('["security-opp"]');
 });

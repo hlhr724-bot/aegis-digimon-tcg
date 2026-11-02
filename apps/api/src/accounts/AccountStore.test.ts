@@ -1,9 +1,9 @@
-import { newDb } from "pg-mem";
+import { createMemoryDatabase } from "#api/db/createMemoryDatabase";
 import { describe, expect, it, vi } from "vitest";
 import { AccountStore, DisplayNameTakenError, InvalidDisplayNameError } from "./AccountStore.js";
 
 function createStore(): AccountStore {
-  const adapter = newDb().adapters.createPg();
+  const adapter = createMemoryDatabase().adapters.createPg();
   return new AccountStore(new adapter.Pool() as never);
 }
 
@@ -156,7 +156,12 @@ describe("AccountStore", () => {
     const first = await store.accountForIdentity("discord", "1", "One"),
       second = await store.accountForIdentity("discord", "2", "Two");
     const ticket = await store.createRoomTicket(first.id);
+    expect(await store.getRoomTicketAccountId(ticket)).toBe(first.id);
+    expect(await store.getRoomTicketAccountId(ticket)).toBe(first.id);
     expect((await store.consumeRoomTicket(ticket))?.account.id).toBe(first.id);
+    expect(await store.getRoomTicketAccountId(ticket)).toBeUndefined();
+    expect(await store.getRoomTicketAccountId("invalid-ticket")).toBeUndefined();
+    expect(await store.getRoomTicketAccountId({ accountId: first.id })).toBeUndefined();
     expect(await store.consumeRoomTicket(ticket)).toBeUndefined();
     const decks = [
       { deckId: "blue", deckName: "Blue", mainDeck: ["BT1-001", "BT1-001"], eggDeck: ["BT1-002"] },

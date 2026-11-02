@@ -20,7 +20,9 @@ import { DragKind } from "../enums";
 import type { DragState, DropZoneHit } from "../types";
 import type { HandEntry } from "../../piece";
 
-export function useDragPlumbing() {
+type Params = { manual?: boolean };
+
+export function useDragPlumbing({ manual = false }: Params = {}) {
   const dragRef = useRef<DragState | null>(null);
   const [drag, setDragState] = useState<DragState | null>(null);
   const setDrag = (d: DragState | null) => {
@@ -134,7 +136,7 @@ export function useDragPlumbing() {
   }
 
   function startPermDrag(perm: Permanent, e: ReactPointerEvent) {
-    if (!canAttackWith(perm)) return;
+    if (!manual && !canAttackWith(perm)) return;
     const deferred = e.pointerType !== "mouse";
     if (!deferred) {
       e.preventDefault();

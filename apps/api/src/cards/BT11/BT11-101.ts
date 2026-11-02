@@ -31,12 +31,16 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 3 of your opponent's Digimon get -5000 DP and gain ＜Security Attack -1＞.",
           kind: "ModifyDP",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 3 },
           amount: -5000,
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 3 of your opponent's Digimon get -5000 DP and gain ＜Security Attack -1＞.",
           kind: "GainKeyword",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 3, sameTarget: true },
           keyword: { keyword: "SecurityAttack", amount: -1, raw: "＜Security Attack -1＞" },

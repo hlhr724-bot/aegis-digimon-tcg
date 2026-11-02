@@ -9,6 +9,7 @@ import {
   textMatchesToken,
 } from "@aegis/shared";
 import type { AssemblyMaterial, AssemblyRequirement, CardDefinition } from "@aegis/shared";
+import { canAssignDistinctNames } from "@aegis/shared/cards/canAssignDistinctNames";
 
 /*
  * Best-effort client-side filtering for the Assembly material picker (Comprehensive Rules
@@ -166,9 +167,8 @@ function selectionFits(
       if (levels.some((level) => level === undefined)) return false;
       if (new Set(levels).size !== levels.length) return false;
     }
-    if (slot.differentNames === true) {
-      const names = selected.map((candidate) => candidate.definition.nameEn.toLocaleLowerCase());
-      if (new Set(names).size !== names.length) return false;
+    if (slot.differentNames === true && !canAssignDistinctNames(selected.map((candidate) => candidate.definition))) {
+      return false;
     }
     if (
       slot.differentColors === true &&

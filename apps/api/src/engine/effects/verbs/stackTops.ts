@@ -11,7 +11,6 @@ import type { PrimitivesContext } from "./context.js";
  */
 
 export function createStackTopsVerbs(pc: PrimitivesContext) {
-  let stripSequence = 0;
   const { engine, access, continuous, effectSeatStack, ledger, player, promotedTopNeedsInvalidRuleTrash, state } = pc;
   // Reached through the context because these are built in sibling modules: the
   // whole set exists before any of it runs, so forwarding at call time is safe.
@@ -35,7 +34,9 @@ export function createStackTopsVerbs(pc: PrimitivesContext) {
     }
     const controllerSeat = permanent.controllerSeat;
     const moved: CardInstance[] = [];
-    const sequenceId = engine.recomputeContinuousDerivedEffects ? `${permanentId}/strip/${++stripSequence}` : undefined;
+    const sequenceId = engine.recomputeContinuousDerivedEffects
+      ? `${permanentId}/strip/${++pc.sequences.stripSequence}`
+      : undefined;
     const levelFloor = opts?.stopAtLevel ?? 3;
     for (let i = 0; i < n; i++) {
       if (permanent.stack.length === 0) break; // no source to revert to

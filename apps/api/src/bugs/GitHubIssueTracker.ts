@@ -10,6 +10,7 @@ const KIND_LABELS: Record<FeedbackKind, string> = {
   bug: "bug",
   improvement: "enhancement",
   other: "feedback",
+  official_tournament: "tournament",
 };
 
 export const GITHUB_API = "https://api.github.com";
@@ -28,6 +29,7 @@ export type NewBugReport = {
   opponentDeck?: string;
   /** Correlates the report with the server match log; absent outside a match. */
   matchId?: string;
+  tournamentId?: string;
   clientRevision?: string;
   userAgent?: string;
 };
@@ -50,8 +52,6 @@ export type ReplayOutcome =
 export type IssueContext = {
   /** Absent when no capture was attempted (no match ID, or capture is switched off). */
   replay?: ReplayOutcome;
-  /** The public API origin a saved replay downloads from; without it the issue names only the maintainer command. */
-  replayOrigin?: string;
 };
 
 /**
@@ -72,8 +72,6 @@ export type GitHubIssueTrackerOptions = {
   serverRevision?: string;
   /** Player-facing release identity, kept separate from the exact build revision. */
   publicVersion?: string;
-  /** Public origin of the API, so an issue can link the anonymous replay download. */
-  publicApiUrl?: string;
   fetch?: typeof globalThis.fetch;
 };
 
@@ -112,7 +110,6 @@ export class GitHubIssueTracker implements IssueTracker {
       labels: labels?.length ? labels : ["player-report"],
       serverRevision: env.AEGIS_REVISION,
       publicVersion: env.AEGIS_PUBLIC_VERSION,
-      publicApiUrl: env.AEGIS_API_URL,
     });
   }
 
@@ -123,10 +120,7 @@ export class GitHubIssueTracker implements IssueTracker {
       headers: githubHeaders(this.options.token),
       body: JSON.stringify({
         title: issueTitle(report),
-        body: issueBody(report, this.options.serverRevision, this.options.publicVersion, {
-          replayOrigin: this.options.publicApiUrl,
-          ...context,
-        }),
+        body: issueBody(report, this.options.serverRevision, this.options.publicVersion, context),
         labels: [...(this.options.labels ?? []), KIND_LABELS[report.kind]],
       }),
     });
@@ -181,8 +175,7 @@ export function issueBody(
   sections.push(isBug ? "### Steps to reproduce" : "### Details", neutralizeMarkdownRefs(description));
   if (opponentDeck) sections.push("", "### Opponent's deck", neutralizeMarkdownRefs(opponentDeck));
   if (report.matchId) sections.push("", "### Match ID", `\`${code(report.matchId)}\``);
-  if (report.matchId && context.replay)
-    sections.push("", "### Replay", replayNote({ replay: context.replay, origin: context.replayOrigin }));
+  if (report.matchId && context.replay) sections.push("", "### Replay", replayNote(context.replay));
   const credit = reporterName ? `**${neutralizeMarkdownRefs(reporterName)}**` : "an anonymous player";
   sections.push("", "---", `Reported in-game by ${credit}.`, reportContext(report, serverRevision, publicVersion));
   return sections.join("\n");
@@ -200,13 +193,12 @@ const REPLAY_FAILURE_TEXT: Record<ReplayFailure, string> = {
  * Where the replay is, never what is in it. The report number sits in a code span because a bare
  * `#12` would cross-link GitHub issue 12, which has nothing to do with feedback report 12.
  */
-function replayNote({ replay, origin }: { replay: ReplayOutcome; origin?: string }): string {
-  if (!replay.saved) return `Replay not available: ${REPLAY_FAILURE_TEXT[replay.reason]}.`;
+function replayNote(replay: ReplayOutcome): string {
+  if (!replay.saved) {
+    return `Replay not available: ${REPLAY_FAILURE_TEXT[replay.reason]}.`;
+  }
   const inputs = `${replay.inputCount} input${replay.inputCount === 1 ? "" : "s"}`;
-  const command = `Maintainers: \`pnpm replay fetch ${replay.reportId}\`.`;
-  if (!origin) return `Saved privately with report \`#${replay.reportId}\` (${inputs}). ${command}`;
-  const url = `${origin.replace(/\/+$/, "")}/bug-reports/${replay.reportId}/replay`;
-  return `[Download the replay](${url}) (${inputs}; decks and inputs only, no player names; kept for a limited time). ${command}`;
+  return `Saved privately with report \`#${replay.reportId}\` (${inputs}). Maintainers: \`pnpm replay fetch ${replay.reportId}\`.`;
 }
 
 /** The build and browser the reporter was on, which they should never have to type. */

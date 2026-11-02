@@ -1,3 +1,4 @@
+import { GameMode } from "@aegis/shared/manual/GameMode";
 import { gzipSync } from "node:zlib";
 import type { GameState, ReplaySummary, SequencedServerEvent } from "@aegis/shared";
 import { projectReplay, ReplayRecording } from "../recording.js";
@@ -85,6 +86,9 @@ export async function exportPlayerReplay(
 
 /** The room's `replayMode()` for the rules a record carries; room kinds it does not carry play as casual. */
 function replayMode(rules: ReplayRules): ReplaySummary["mode"] {
+  if (rules.gameMode === GameMode.MANUAL.value) {
+    return GameMode.MANUAL.value;
+  }
   if (rules.unlimited) return "unlimited";
   return rules.betaBattle ? "beta" : "casual";
 }

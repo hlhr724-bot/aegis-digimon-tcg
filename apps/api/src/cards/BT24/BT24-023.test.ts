@@ -71,11 +71,33 @@ describe("BT24-023 Calmaramon", () => {
   });
 
   it("gates the follow-up suspend restriction on effect-played entry", () => {
-    for (const trigger of ["OnPlay", "WhenDigivolving"]) {
-      expect(compiled.effects.find((effect) => effect.trigger === trigger)).toMatchObject({
-        actions: [{}, { condition: { kind: "triggerEnteredByEffect" }, restriction: "suspend" }],
-      });
-    }
+    expect(compiled.effects.find((effect) => effect.trigger === "OnPlay")).toMatchObject({
+      actions: [{}, { condition: { kind: "triggerEnteredByEffect" }, restriction: "suspend" }],
+    });
+    expect(compiled.effects.find((effect) => effect.trigger === "WhenDigivolving")?.actions).toHaveLength(1);
+  });
+
+  it("does not restrict suspension when digivolved by an effect", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "BT24-023", as: "calmaramon" }] },
+        1: {
+          battleArea: [
+            { card: "BT1-009", as: "returned" },
+            { card: "BT1-040", as: "unrestricted" },
+          ],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+
+    await advance(s.engine).fireForPermanent(EffectTiming.WhenDigivolving, s.perm("calmaramon"), {
+      enteredByEffect: 0,
+    });
+
+    expect(s.state.players[1]!.deck.at(-1)?.instanceId).toBe(s.inst("returned").instanceId);
+    expect(observe(s.engine).isRestricted(s.perm("unrestricted"), "suspend")).toBe(false);
   });
 
   it("implements Decode by playing Lanamon from the stack on non-battle removal", () => {

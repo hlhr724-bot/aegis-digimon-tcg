@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { settle } from "#api/engine/testkit/harness";
 import {
   GameState,
   PlayerState,
@@ -126,7 +127,11 @@ interface Setup {
   decisions: { seat: Seat; req: DecisionRequest }[];
 }
 
-function setup(): Setup {
+interface SetupParams {
+  autoAcceptOptional?: boolean;
+}
+
+function setup({ autoAcceptOptional = true }: SetupParams = {}): Setup {
   const state = new GameState();
   const events: ServerEvent[] = [];
   const decisions: Setup["decisions"] = [];
@@ -135,7 +140,16 @@ function setup(): Setup {
     seed: 1,
     requestDecision: (seat, req) => {
       decisions.push({ seat, req });
-      if (req.kind === "optional") {
+      if (req.kind === "orderTriggers") {
+        queueMicrotask(() =>
+          engineRef?.applyIntent(seat, {
+            type: "respondDecision",
+            decisionId: req.decisionId,
+            response: { kind: "orderTriggers", order: req.options?.triggerKeys ?? [] },
+          }),
+        );
+      }
+      if (req.kind === "optional" && autoAcceptOptional) {
         queueMicrotask(() =>
           engineRef?.applyIntent(seat, {
             type: "respondDecision",
@@ -170,12 +184,6 @@ function setup(): Setup {
   state.phase = Phase.Main;
   state.turnSeat = 0;
   return { engine, state, events, decisions };
-}
-
-async function settle(predicate: () => boolean, maxTicks = 200): Promise<void> {
-  for (let i = 0; i < maxTicks && !predicate(); i++) {
-    await Promise.resolve();
-  }
 }
 
 function findPermanent(s: Setup, seat: Seat, cardId: string) {
@@ -281,7 +289,7 @@ describe("A3 LinkedMax — a link beyond linkMax(recipient) lands, then the rule
    * → the "landed 2, settled to 1" shape below cannot be observed → this assertion goes RED.
    */
   it("lands both offered cards on a base-limit-1 Digimon, then the rule-check sweep trims it back to 1", async () => {
-    const s = setup();
+    const s = setup({ autoAcceptOptional: false });
     const player = s.state.players[0] as PlayerState;
     const source = looseCard("AD1-005", 0);
     const firstLink = looseCard("BT21-009", 0);
@@ -292,8 +300,15 @@ describe("A3 LinkedMax — a link beyond linkMax(recipient) lands, then the rule
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: source.instanceId })).toEqual({ ok: true });
     // AD1-005 itself prints <Link +1>. Cancel that printed grant in this fixture so the case
     // isolates the base-limit-1 trim; the companion test below proves positive LinkMax grants.
-    await settle(() => findPermanent(s, 0, "AD1-005") !== undefined);
+    await settle(() => s.state.pendingDecision?.kind === "optional");
     grantLinkMax(s.engine, findPermanent(s, 0, "AD1-005")!.permanentId, -1);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "optional", accept: true },
+      }),
+    ).toEqual({ ok: true });
     // Settle on the STABLE post-rule-check count (1), not the first tick where 2 land — the
     // rule-check sweep runs asynchronously after the link itself resolves.
     await settle(() => (findPermanent(s, 0, "AD1-005")?.linked.length ?? 0) === 1);

@@ -34,17 +34,13 @@ function findRandomSetPool(requestedDeckId: string | undefined): readonly Famous
  * This runs the authoritative gate for both requested and random presets. If the
  * requested preset cannot be played, the bot draws from the same legal catalog pool.
  */
-export function playableBotDeck(
-  requestedDeckId: string | undefined,
-  betaBattleMode: boolean,
-  format: DeckFormat = "standard",
-): Decklist {
+export function playableBotDeck(requestedDeckId: string | undefined, format: DeckFormat = "standard"): Decklist {
   const requested = requestedDeckId === undefined ? undefined : famousDeckById(requestedDeckId);
-  if (requested && validateDecklist(requested.decklist, { betaBattleMode, format }).ok) {
+  if (requested && validateDecklist(requested.decklist, { format }).ok) {
     return { mainDeck: [...requested.decklist.mainDeck], eggDeck: [...requested.decklist.eggDeck] };
   }
 
-  const isLegal = (preset: FamousDeck) => validateDecklist(preset.decklist, { betaBattleMode, format }).ok;
+  const isLegal = (preset: FamousDeck) => validateDecklist(preset.decklist, { format }).ok;
   const setCandidates = findRandomSetPool(requestedDeckId).filter(isLegal);
   const candidates = setCandidates.length > 0 ? setCandidates : ALL_FAMOUS_DECKS.filter(isLegal);
   if (candidates.length > 0) {
@@ -52,7 +48,7 @@ export function playableBotDeck(
     return { mainDeck: [...selected.decklist.mainDeck], eggDeck: [...selected.decklist.eggDeck] };
   }
 
-  const fallback = BOT_DECKS.find((deck) => validateDecklist(deck, { betaBattleMode, format }).ok);
+  const fallback = BOT_DECKS.find((deck) => validateDecklist(deck, { format }).ok);
   if (fallback === undefined) {
     // The built-in pool is asserted legal at module load, so this is unreachable short of
     // a banlist edit that outlaws a starter deck. Surfacing it as an explicit failure beats
@@ -62,7 +58,7 @@ export function playableBotDeck(
       if (card.kinds.includes(CardKind.DigiEgg) || formatCardViolation(card.cardId, format)) continue;
       const count = Math.min(formatCopyLimit(card.cardId, format), 50 - mainDeck.length);
       mainDeck.push(...Array(count).fill(card.cardId));
-      if (mainDeck.length === 50 && validateDecklist({ mainDeck, eggDeck: [] }, { betaBattleMode, format }).ok)
+      if (mainDeck.length === 50 && validateDecklist({ mainDeck, eggDeck: [] }, { format }).ok)
         return { mainDeck, eggDeck: [] };
     }
     throw new Error("no legal bot deck available");

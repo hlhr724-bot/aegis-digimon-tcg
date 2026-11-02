@@ -37,6 +37,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] By placing up to 2 Digimon cards with ＜Save＞ in their text from under your Tamers or your trash under 1 of your Digimon with ＜Save＞\u00a0in its text as its bottom digivolution cards, that Digimon gains +1000 DP for each card placed by this effect.",
           kind: "ModifyDP",
           target: {
             filter: {

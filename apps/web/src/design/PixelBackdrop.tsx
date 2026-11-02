@@ -14,6 +14,7 @@
 import { useEffect, useRef } from "react";
 import { COLORS } from "./theme";
 import "./PixelBackdrop.css";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 const PITCH = 22;
 const CELL = 16;
@@ -122,7 +123,7 @@ export function PixelBackdrop() {
     const context = canvas?.getContext("2d");
     if (!canvas || !context) return;
 
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = motionPreference.isReduced();
     const moving = !reducedMotion;
     let cells: Cell[] = [];
     let frame = 0;

@@ -1,3 +1,4 @@
+import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 /* The right edge of the field: the opponent's raising area and security stack at the
    top, the viewer's own deck and trash at the bottom — the mirror of the left edge. A
    desktop too short for all five piles moves the deck and trash into the bottom strip.
@@ -77,6 +78,7 @@ export function RightPileColumn({
   return (
     <aside
       className="game-pile-column game-pile-column--right"
+      data-arena-region={ArenaInputRegion.PILES.value}
       style={{
         width: 130,
         flexShrink: 0,
@@ -100,6 +102,7 @@ export function RightPileColumn({
             useSelectedSleeve={false}
             riffling={opponentEggDeckRiffling}
             onClick={onOpenOpponentEggDeck}
+            onInspect={onOpenOpponentEggDeck}
           />
           <div className="game-utility-slot game-utility-slot--opp-raising">
             <BreedingSlot
@@ -138,6 +141,7 @@ export function RightPileColumn({
           glow={attackable}
           selected={selected}
           onClick={onAttackSecurity ?? onOpenOpponentSecurity}
+          onInspect={onOpenOpponentSecurity}
         />
       </div>
       <div style={{ flex: 1 }} />

@@ -38,6 +38,7 @@ export const decksPtBR: Record<keyof typeof decksEn, string> = {
   "redesign.decks.list.statDecks": "Decks",
   "redesign.decks.list.statActive": "Deck ativo",
   "redesign.decks.list.statReady": "Prontos para jogar",
+  "redesign.decks.list.statPublished": "Na comunidade",
   "redesign.decks.list.saved": "Decks salvos",
   "redesign.decks.list.columnDeck": "Deck",
   "redesign.decks.list.columnColors": "Cores",

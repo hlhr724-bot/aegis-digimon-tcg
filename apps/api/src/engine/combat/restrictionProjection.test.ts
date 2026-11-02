@@ -17,6 +17,49 @@ import "../../cards/index.js";
 const VANILLA_CARD = "AD1-001"; // no keywords
 
 describe("Permanent combat-restriction projection", () => {
+  it("publishes stacked-card protections only while UlforceVeedramon is unsuspended", async () => {
+    const s = setup({
+      0: { battleArea: [{ card: "EX13-023", as: "ulforce", under: ["EX13-022", "EX13-019", "EX13-016"] }] },
+      1: { battleArea: [{ card: VANILLA_CARD, as: "other" }] },
+    });
+    await s.ready();
+    for (const isSuspended of [false, true, false]) {
+      s.perm("ulforce").isSuspended = isSuspended;
+      await s.engine.recomputeContinuousEffects();
+      expect(s.perm("ulforce")).toMatchObject({
+        protectedFromStackTrash: !isSuspended,
+        protectedFromStackReturn: !isSuspended,
+        protectedFromEffectReturn: false,
+      });
+      expect(s.perm("other")).toMatchObject({
+        protectedFromStackTrash: false,
+        protectedFromStackReturn: false,
+      });
+    }
+  });
+
+  it("publishes battle protection separately from opponent effect deletion protection and expires it", async () => {
+    const s = setup();
+    const permanent = digimon(0, 5000, VANILLA_CARD);
+    s.state.players[0]!.battleArea.push(permanent);
+    const { continuous } = internalsOf(s.engine);
+    continuous.addRestriction(permanent.permanentId, "beDeleted", EffectDuration.Permanent, {
+      byOpponentEffectsOnly: true,
+    });
+    await s.engine.recomputeContinuousEffects();
+    expect(permanent.protectedFromEffectDeletion).toBe(true);
+    expect(permanent.protectedFromBattleDeletion).toBe(false);
+    continuous.addRestriction(permanent.permanentId, "beDeletedInBattle", EffectDuration.UntilEachTurnEnd);
+    await s.engine.recomputeContinuousEffects();
+    expect(permanent.protectedFromBattleDeletion).toBe(true);
+    continuous.sweep(s.state, "eachTurnEnd", 0);
+    await s.engine.recomputeContinuousEffects();
+    expect(permanent.protectedFromBattleDeletion).toBe(false);
+    continuous.addRestriction(permanent.permanentId, "beDeleted", EffectDuration.Permanent);
+    await s.engine.recomputeContinuousEffects();
+    expect(permanent.protectedFromBattleDeletion).toBe(true);
+  });
+
   it.each([
     ["immuneToOpponentOptionEffects", "beAffected", "Option"],
     ["immuneToOpponentTamerEffects", "beAffected", "Tamer"],

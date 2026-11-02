@@ -1,4 +1,5 @@
-import type { ReplaySummary, Seat } from "@aegis/shared";
+import type { ReplayViewerSeat } from "@aegis/shared/replays/ReplayViewerSeat";
+import type { ReplaySummary } from "@aegis/shared";
 import type { ReadyReplay } from "./files";
 
 /** A finished match's replay kept in this browser, whether or not it also reached Google Drive. */
@@ -6,7 +7,7 @@ export interface LocalReplay {
   /** `matchId:viewerSeat`: one copy per seat, like the Drive files. */
   key: string;
   matchId: string;
-  viewerSeat: Seat;
+  viewerSeat: ReplayViewerSeat;
   /** The account library entry, for a signed-in player. */
   indexId?: string;
   summary: ReplaySummary;

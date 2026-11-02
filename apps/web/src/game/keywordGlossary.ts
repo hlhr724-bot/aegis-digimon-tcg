@@ -1,7 +1,3 @@
-/* Every keyword effect in section 16 of the official Comprehensive Rules, Ver. 4.3
-   (data/kb/rules/comprehensive.md), keyed by keywordBaseName. Card text is printed in
-   English on every locale, so the reminders are English too. */
-
 export const OFFICIAL_COMPREHENSIVE_RULES_URL = "https://world.digimoncard.com/rule/pdf/general_rule.pdf";
 
 export interface KeywordGlossaryEntry {
@@ -19,7 +15,10 @@ export const KEYWORD_GLOSSARY: Readonly<Record<string, KeywordGlossaryEntry>> = 
     reminder:
       "When an opponent's Digimon attacks, you may suspend this Digimon to force the opponent to attack it instead.",
   },
-  Recovery: { rule: "16-6", reminder: "Place the top X card(s) of your deck on top of your security stack." },
+  Recovery: {
+    rule: "16-6",
+    reminder: "Place the specified number of cards from the specified area face down on top of your security stack.",
+  },
   Piercing: {
     rule: "16-7",
     reminder:
@@ -36,7 +35,7 @@ export const KEYWORD_GLOSSARY: Readonly<Record<string, KeywordGlossaryEntry>> = 
   DeDigivolve: {
     rule: "16-12",
     reminder:
-      "Trash up to X cards from the top of one of your opponent's Digimon. If it has no digivolution cards, or becomes a level 3 Digimon, you can't trash any more cards.",
+      "Trash up to X top cards from the chosen Digimon. Stop when it has no digivolution cards or its level is 3 or lower.",
   },
   Retaliation: {
     rule: "16-13",
@@ -47,7 +46,10 @@ export const KEYWORD_GLOSSARY: Readonly<Record<string, KeywordGlossaryEntry>> = 
     reminder: "Trash X of this Digimon's digivolution cards to activate the effect that follows.",
   },
   Rush: { rule: "16-15", reminder: "This Digimon can attack the turn it comes into play." },
-  Blitz: { rule: "16-16", reminder: "This Digimon can attack when your opponent has 1 or more memory." },
+  Blitz: {
+    rule: "16-16",
+    reminder: "When this effect activates, this Digimon may attack if your opponent has 1 or more memory.",
+  },
   Delay: {
     rule: "16-17",
     reminder:
@@ -67,7 +69,7 @@ export const KEYWORD_GLOSSARY: Readonly<Record<string, KeywordGlossaryEntry>> = 
   MaterialSave: {
     rule: "16-21",
     reminder:
-      "When this Digimon is deleted, you may place X cards named in its DigiXros requirements from its digivolution cards under 1 of your Tamers.",
+      "When this Digimon would be deleted, you may place X cards named in its DigiXros requirements from its digivolution cards under 1 of your Tamers.",
   },
   Evade: {
     rule: "16-22",
@@ -90,7 +92,8 @@ export const KEYWORD_GLOSSARY: Readonly<Record<string, KeywordGlossaryEntry>> = 
   },
   BlastDigivolve: {
     rule: "16-26",
-    reminder: "One of your Digimon may digivolve into this card in your hand without paying the cost.",
+    reminder:
+      "One of your Digimon may digivolve into this card in your hand without paying the cost, meeting its requirements.",
   },
   Fortitude: {
     rule: "16-27",

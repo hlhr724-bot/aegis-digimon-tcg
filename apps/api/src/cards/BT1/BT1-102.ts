@@ -1,6 +1,7 @@
 import type { Action, CompiledCard } from "@aegis/shared";
 import { registerIrCard } from "../../engine/effects/interpreter.js";
 const drawPerSecurity: Action = {
+  effectTextPart: "[Main] Trigger ＜Draw 1＞ (Draw 1 card from your deck) for every 2 security cards you have.",
   kind: "Draw",
   controller: "mine",
   amount: 1,

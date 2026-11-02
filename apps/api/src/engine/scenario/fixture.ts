@@ -137,9 +137,9 @@ export function validateScenarioFixture(fixture: ScenarioFixture): void {
     }
     for (const rule of opponent.decisions ?? []) {
       checkCard(rule.sourceCard);
-      if (!["optional", "orderTriggers", "chooseTargets", "chooseOption"].includes(rule.kind))
+      if (!["optional", "orderTriggers", "chooseTargets", "selectCards", "chooseOption"].includes(rule.kind))
         throw new Error("Invalid scenario opponent decision");
-      if (rule.kind === "chooseTargets" && !permanentAliases.has(rule.target ?? ""))
+      if ((rule.kind === "chooseTargets" || rule.kind === "selectCards") && !aliases.has(rule.target ?? ""))
         throw new Error("Unknown scenario opponent target");
       if (rule.kind === "chooseOption" && !rule.choice && !rule.choiceStartsWith)
         throw new Error("Missing scenario opponent choice");

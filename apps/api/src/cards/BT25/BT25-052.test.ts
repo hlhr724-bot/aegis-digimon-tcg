@@ -200,6 +200,7 @@ describe("BT25-052 Logimon", () => {
     expect(linked?.actions[0]).toMatchObject({
       kind: "SubTrigger",
       event: "whenLinked",
+      sourceFilter: { isSelfRef: true },
       on: { filter: { isSelfRef: true }, count: 1, isSelf: true },
     });
   });

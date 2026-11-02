@@ -80,7 +80,7 @@ for (const [id, played, target] of [
       await card.press("Enter");
       await page.getByRole("button", { name: "Play Digimon", exact: true }).click();
       if (id === fixtureRyugumonWatcher) {
-        await page.getByRole("button", { name: "[All Turns], Ryugumon, Field:1", exact: true }).click();
+        await page.getByRole("button", { name: "[All Turns], Ryugumon, Field", exact: true }).click();
         await page.getByRole("button", { name: "Resolve next effect", exact: true }).click();
       }
       const region = page.getByRole("region", { name: "Confirm targets", exact: true });

@@ -126,9 +126,9 @@ export const bt4Fixtures: Record<string, CardEffectsFixtureBuilder> = {
   "BT4-031": (cardId) =>
     effectBt3Demo(
       cardId,
-      "MarinChimairamon",
+      "MarineChimairamon",
       7000,
-      "MarinChimairamon returned another own Digimon as cost and returned an opposing Digimon without sources.",
+      "MarineChimairamon returned another own Digimon as cost and returned an opposing Digimon without sources.",
     ),
   "BT4-032": (cardId) =>
     effectBt3Demo(

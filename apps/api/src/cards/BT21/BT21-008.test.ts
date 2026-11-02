@@ -15,6 +15,7 @@ describe("BT21-008 Elizamon", () => {
             revealCount: 3,
             add: [
               {
+                effectTextPart: "Add 1 card with the [Reptile]/[Dragonkin] trait",
                 filter: {
                   controllerDefault: "mine",
                   nameOrTrait: [{ tokens: ["Reptile", "Dragonkin"], match: "trait" }],
@@ -23,6 +24,7 @@ describe("BT21-008 Elizamon", () => {
                 to: "hand",
               },
               {
+                effectTextPart: "1 card with the [LIBERATOR] trait among them to the hand.",
                 filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["LIBERATOR"], match: "trait" }] },
                 count: 1,
                 to: "hand",

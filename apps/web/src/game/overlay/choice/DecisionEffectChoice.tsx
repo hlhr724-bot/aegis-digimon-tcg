@@ -1,10 +1,12 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import type { DecisionResponse } from "@aegis/shared";
 import { EffectText } from "../../EffectText";
 import { CardFull } from "../../../design/cards";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
 import { playerFacingEffectClause, printedTimingLabel } from "../effectText";
-import { printedCardName } from "../printedCardName";
+
 import { DecisionViewBoardButton } from "./DecisionViewBoardButton";
 
 export interface EffectChoice {
@@ -32,6 +34,8 @@ export function DecisionEffectChoice({
   onRespond: (response: DecisionResponse) => void;
   onOpenBoard: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
+  const translateCardText = useTranslatedCardText();
   const { t } = useTranslation();
   return (
     <div className="decision-overlay__choice-layout">
@@ -46,8 +50,9 @@ export function DecisionEffectChoice({
               description: label,
               isInherited: effect.isInherited,
             }) ?? label;
-          const timingLabel = printedTimingLabel(effect.timing);
-          const name = printedCardName(effect.cardId);
+          const printedTiming = printedTimingLabel(effect.timing);
+          const timingLabel = printedTiming ? translateCardText({ text: printedTiming }) : undefined;
+          const name = getCardName(effect.cardId);
           return (
             <li key={index}>
               <button
@@ -69,7 +74,13 @@ export function DecisionEffectChoice({
                     {timingLabel && <span className="effect-choice__timing">{timingLabel}</span>}
                   </span>
                   <span className="effect-choice__clause">
-                    <EffectText text={clause} />
+                    <EffectText
+                      text={clause}
+                      cardId={effect.cardId}
+                      timing={effect.timing}
+                      surface="effect-choice"
+                      allowContext
+                    />
                   </span>
                 </span>
                 <span className="effect-choice__go" aria-hidden="true">

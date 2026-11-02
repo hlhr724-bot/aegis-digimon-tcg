@@ -1,4 +1,8 @@
-/* Simple actions use the left dialog. Hand and field choices use their physical cards;
+import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useMediaQuery } from "@/design/useMediaQuery";
+import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
+/* Simple actions use the dialog at the chosen prompt position. Hand and field choices use their physical cards;
    other card choices use the central gallery. The pill tells
    the viewer when the opponent is choosing. */
 
@@ -8,7 +12,7 @@ import { CardMini } from "../design/cards";
 import { Icons } from "../design/icons";
 import { useTranslation, type TranslationKey } from "../i18n";
 import { en } from "../i18n/en";
-import { cardDisplayName, useCardOpener } from "./cardLinks";
+import { useCardOpener } from "./cardLinks";
 import { DecisionBoardReturn } from "./overlay/choice/DecisionBoardReturn";
 import { recordViewBoardOrigin } from "@/game/overlay/choice/recordViewBoardOrigin";
 import { useEffectPromptFocus } from "./overlay/choice/useEffectPromptFocus";
@@ -16,6 +20,10 @@ import "./overlay/fieldDecisionRail.css";
 import { usePromptHandSpace, type PromptHandSpace } from "./overlay/choice/usePromptHandSpace";
 import { useDecisionSourceMask } from "./overlay/choice/useDecisionSourceMask";
 import { useNoticeBandPassThrough } from "./overlay/choice/useNoticeBandPassThrough";
+import { PromptMoveHandle } from "./overlay/choice/PromptMoveHandle";
+import { useDraggableWindow } from "./chat/useDraggableWindow";
+import { useEffectPromptPosition } from "@/game/effectPromptPosition";
+import { getBoardPromptSurface } from "@/game/getBoardPromptSurface";
 
 function useEscapeToDialog(onOpenDialog: (() => void) | undefined) {
   useEffect(() => {
@@ -41,6 +49,7 @@ const BOARD_PROMPT_ART_WIDTH = 64;
  * route to the card, so it carries the link's role and label rather than being decorative.
  */
 function BoardPromptArt({ cardId, width }: { cardId: string; width: number }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const openCard = useCardOpener();
   const art = (
@@ -53,7 +62,7 @@ function BoardPromptArt({ cardId, width }: { cardId: string; width: number }) {
     <button
       type="button"
       className="board-prompt__art"
-      aria-label={t("feed.openCard", { card: cardDisplayName(cardId, t) })}
+      aria-label={t("feed.openCard", { card: getCardName(cardId) })}
       onClick={() => openCard(cardId)}
     >
       {art}
@@ -70,6 +79,7 @@ export function BoardPromptRail({
   eyebrow,
   prompt,
   clause,
+  clauseEmphasis,
   clauseLang,
   detail,
   budgetText,
@@ -89,6 +99,7 @@ export function BoardPromptRail({
   eyebrow?: ReactNode;
   prompt: string;
   clause?: string;
+  clauseEmphasis?: string;
   clauseLang?: string;
   detail?: string;
   budgetText?: string;
@@ -104,11 +115,21 @@ export function BoardPromptRail({
 }) {
   const { t } = useTranslation();
   useEscapeToDialog(onOpenDialog);
+  const [isTextExpanded, setIsTextExpanded] = useState(true);
+  const mobile = useMediaQuery("(width < 768px), (height < 520px) and (orientation: landscape)");
   const modal = variant === "prompt";
+  const effectPromptPosition = useEffectPromptPosition();
+  const surface = getBoardPromptSurface({ variant, position: effectPromptPosition });
+  const isTextVisible = modal || !mobile || isTextExpanded;
   const sourceMask = useDecisionSourceMask(modal ? sourcePermanentId : undefined);
   const noticeBand = useNoticeBandPassThrough();
   const focusProps = useEffectPromptFocus(!modal, handSpace);
-  usePromptHandSpace(focusProps.ref, !modal, handSpace);
+  usePromptHandSpace(focusProps.ref, !modal && variant !== "selection", handSpace);
+  useArenaInputCancel({ ref: focusProps.ref, onCancel: onOpenDialog });
+  const drag = useDraggableWindow(focusProps.ref, {
+    viewportGutter: 16,
+    resetKey: `${variant}:${label}:${sourcePermanentId ?? ""}`,
+  });
   return (
     <>
       <div
@@ -127,10 +148,19 @@ export function BoardPromptRail({
         ref={focusProps.ref}
         data-testid="board-prompt"
         data-variant={variant}
-        data-prompt-surface="left"
+        data-prompt-surface={surface}
+        data-text-hidden={!isTextVisible || undefined}
+        data-prompt-dragged={drag.position === undefined ? undefined : true}
         style={
           {
             "--decision-hand-clearance": handClearance === undefined ? undefined : `${handClearance}px`,
+            "--mobile-prompt-hand-clearance": handClearance === undefined ? undefined : `${handClearance}px`,
+            ...(drag.position
+              ? {
+                  "--effect-prompt-drag-left": `${drag.position.left}px`,
+                  "--effect-prompt-drag-top": `${drag.position.top}px`,
+                }
+              : {}),
           } as CSSProperties
         }
       >
@@ -148,19 +178,30 @@ export function BoardPromptRail({
           </Button>
         ) : null}
         <div className="board-prompt__heading">
+          <PromptMoveHandle drag={drag} className="board-prompt__move-handle" tabIndex={-1} />
           {eyebrow ? <p className="board-prompt__eyebrow">{eyebrow}</p> : null}
           {/* Announce the action first; the printed clause supplies its context below. */}
           <p className="board-prompt__text" aria-live="polite">
             {prompt}
           </p>
+          {clause && !modal && mobile ? (
+            <button
+              type="button"
+              className="board-prompt__toggle-text"
+              aria-expanded={isTextVisible}
+              onClick={() => setIsTextExpanded((visible) => !visible)}
+            >
+              {t(isTextVisible ? "overlay.hideEffect" : "overlay.showEffect")}
+            </button>
+          ) : null}
         </div>
         {/* The clause leads and the art sits beside it, against the top: the text is what
             the player reads, the picture only says which card is asking. */}
         {clause || art ? (
           <div className="board-prompt__body">
-            {clause ? (
+            {clause && isTextVisible ? (
               <p className="board-prompt__clause" lang={clauseLang}>
-                {clause}
+                <EffectStepText text={clause} emphasis={clauseEmphasis} cardId={art} />
               </p>
             ) : null}
             {art ? <BoardPromptArt cardId={art} width={artWidth} /> : null}
@@ -185,6 +226,7 @@ export function BoardSelectionRail({
   sourceCardId,
   prompt,
   clause,
+  clauseEmphasis,
   min,
   max,
   pickCount,
@@ -193,6 +235,7 @@ export function BoardSelectionRail({
   budgetText,
   onConfirm,
   onNoSelection,
+  onCancelActivation,
   onOpenDialog,
 }: {
   fieldSelection?: boolean;
@@ -203,6 +246,7 @@ export function BoardSelectionRail({
   prompt: string;
   /** The printed clause that asked for the selection, so the rail carries the same context the dialog did. */
   clause?: string;
+  clauseEmphasis?: string;
   min: number;
   max: number;
   pickCount: number;
@@ -212,6 +256,7 @@ export function BoardSelectionRail({
   budgetText?: string;
   onConfirm: () => void;
   onNoSelection: () => void;
+  onCancelActivation?: () => void;
   onOpenDialog?: () => void;
 }) {
   const { t } = useTranslation();
@@ -224,29 +269,17 @@ export function BoardSelectionRail({
     const hand = document.querySelector<HTMLElement>(".game-hand-dock");
     if (!hand) return;
     const update = () => {
-      // The fan and selected cards can rise above the dock's layout box.
-      // Reserve their painted bounds as well as the dock's scroll controls.
-      const cardTops = [...hand.querySelectorAll<HTMLElement>(".game-hand-card")]
+      const bounds = [...hand.querySelectorAll<HTMLElement>(".game-hand-card")]
         .map((card) => card.getBoundingClientRect())
-        .filter((bounds) => bounds.width > 0 && bounds.height > 0)
-        .map((bounds) => bounds.top);
-      const top = Math.min(hand.getBoundingClientRect().top, ...cardTops);
+        .filter((card) => card.width > 0 && card.height > 0);
+      const selectionReserve = Math.max(32, ...bounds.map((card) => card.height * 0.1));
+      const top = Math.min(hand.getBoundingClientRect().top, ...bounds.map((card) => card.top)) - selectionReserve;
       setHandClearance(Math.max(0, window.innerHeight - top));
     };
     update();
-    const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(update);
-    observer?.observe(hand);
-    const mutations = new MutationObserver(update);
-    mutations.observe(hand, { attributes: true, childList: true, subtree: true });
     window.addEventListener("resize", update);
-    hand.addEventListener("transitionend", update);
-    hand.addEventListener("scroll", update, true);
     return () => {
-      observer?.disconnect();
-      mutations.disconnect();
       window.removeEventListener("resize", update);
-      hand.removeEventListener("transitionend", update);
-      hand.removeEventListener("scroll", update, true);
     };
   }, [fieldSelection, attackSelection, isViewingBoard]);
 
@@ -296,19 +329,21 @@ export function BoardSelectionRail({
       art={sourceCardId}
       prompt={prompt}
       clause={clause}
+      clauseEmphasis={clauseEmphasis}
       detail={detail}
       budgetText={budgetText}
       handClearance={handClearance}
       onOpenDialog={fieldSelection ? undefined : onOpenDialog}
     >
-      {/* Keep the confirm slot mounted so the rail does not jump when the first card is
-          picked. No Selection only exists for an up-to selection (min 0); a mandatory
-          one (BT24-016 forcing the opponent to place a card as security) has no way out,
-          so offering the button would promise an answer the server rejects. */}
       <Button full icon={Icons.Check} disabled={pickCount === 0 || !canConfirm} onClick={onConfirm}>
         {resolvedConfirmLabel}
       </Button>
-      {min === 0 ? (
+      {onCancelActivation ? (
+        <Button full variant="secondary" onClick={onCancelActivation}>
+          {t("overlay.cancelActivation")}
+        </Button>
+      ) : null}
+      {!onCancelActivation && min === 0 ? (
         <Button full variant="secondary" onClick={onNoSelection}>
           {t(fieldSelection || attackSelection ? "overlay.passNoSelection" : "overlay.noSelection")}
         </Button>
@@ -444,12 +479,16 @@ export function ViewBoardButton({ onClick }: { onClick: () => void }) {
 export function BoardSourceHostPrompt({
   sourceCardId,
   clause,
+  clauseEmphasis,
   onNoSelection,
+  onCancel,
 }: {
   sourceCardId?: string;
   clause?: string;
+  clauseEmphasis?: string;
   /** Set when the pick may be declined. */
   onNoSelection?: () => void;
+  onCancel?: () => void;
 }) {
   const { t } = useTranslation();
   const { boardReturn, viewBoard } = useBoardView();
@@ -463,8 +502,14 @@ export function BoardSourceHostPrompt({
       art={sourceCardId}
       prompt={t("overlay.chooseSourceHostPrompt")}
       clause={clause}
+      clauseEmphasis={clauseEmphasis}
     >
-      {onNoSelection ? (
+      {onCancel ? (
+        <Button full variant="secondary" onClick={onCancel}>
+          {t("common.cancel")}
+        </Button>
+      ) : null}
+      {!onCancel && onNoSelection ? (
         <Button full variant="secondary" onClick={onNoSelection}>
           {t("overlay.noSelection")}
         </Button>
@@ -480,6 +525,7 @@ export function BoardOptionalPrompt({
   sourcePermanentId,
   contextText,
   clause,
+  clauseEmphasis,
   onUse,
   onDecline,
   onOpenDialog,
@@ -489,13 +535,15 @@ export function BoardOptionalPrompt({
   /** Additional decision context belongs below the standard activation heading. */
   contextText?: string;
   clause?: string;
+  clauseEmphasis?: string;
   onUse: () => void;
   onDecline: () => void;
   onOpenDialog?: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const { boardReturn, viewBoard } = useBoardView();
-  const sourceName = sourceCardId ? cardDisplayName(sourceCardId, t) : undefined;
+  const sourceName = sourceCardId ? getCardName(sourceCardId) : undefined;
   if (boardReturn) return boardReturn;
   return (
     <BoardPromptRail
@@ -507,6 +555,7 @@ export function BoardOptionalPrompt({
       art={sourceCardId}
       prompt={t("overlay.useEffectPrompt")}
       clause={clause ?? contextText}
+      clauseEmphasis={clauseEmphasis}
       detail={clause ? contextText : undefined}
       // The dialog shows nothing the rail does not, so Escape is the only way back to it.
       onOpenDialog={onOpenDialog}

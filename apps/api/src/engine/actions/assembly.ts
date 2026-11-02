@@ -15,6 +15,7 @@ import {
   effectiveStaticNames,
   nameIncludesToken,
 } from "@aegis/shared";
+import { canAssignDistinctNames } from "@aegis/shared/cards/canAssignDistinctNames";
 import { cardHasTrait, definitionOf, isDigimon } from "../cards/cardData.js";
 import { matchNameOrTrait } from "../effects/interpreter.js";
 import { definitionHasKeyword } from "../effects/interpreter/matching/definition.js";
@@ -337,10 +338,7 @@ export function materialsSatisfyAssemblyRecipe(
       if (levels.some((l) => l === undefined)) return false;
       if (new Set(levels).size !== levels.length) return false;
     }
-    if (slot.differentNames === true) {
-      const names = materials.map((m) => m.nameEn);
-      if (new Set(names).size !== names.length) return false;
-    }
+    if (slot.differentNames === true && !canAssignDistinctNames(materials)) return false;
     if (slot.differentColors === true && !canAssignDistinctColors(materials.map((m) => m.colors))) return false;
     if (slot.differentCardNumbers === true) {
       const cardNumbers = materials.map((m) => m.cardId);

@@ -10,10 +10,12 @@ import {
 } from "@aegis/shared";
 import { effectiveColors, effectiveNames } from "../continuous.js";
 import type { Primitives } from "../EffectContext.js";
+import { orderDnaMaterials } from "#api/engine/effects/verbs/orderDnaMaterials";
 import { dnaDigivolveCostFor } from "../verbs/digivolveCost.js";
 import { peekLooseInstance } from "../verbs/looseInstances.js";
 
 import type { PrimitivesContext } from "./context.js";
+import { emitEffectTargetsSelected } from "./emitEffectTargetsSelected.js";
 
 /**
  * The static-continuous grants: keywords, names, colors, kinds and custom
@@ -64,6 +66,11 @@ export function createGrantsVerbs(pc: PrimitivesContext) {
               : opts?.sourceCardId !== undefined || opts?.sourceSeat !== undefined
                 ? provenance
                 : undefined;
+    const isContinuousGrant =
+      opts?.continuous === true || (duration === EffectDuration.Permanent && continuousOpt() !== undefined);
+    if (!isContinuousGrant) {
+      emitEffectTargetsSelected({ pc, permanentIds: [permanentId] });
+    }
     continuous.addKeywordGrant(permanentId, keyword, durationForTarget(permanentId, duration), amount, continuousOpts);
   };
 
@@ -249,7 +256,7 @@ export function createGrantsVerbs(pc: PrimitivesContext) {
   // reads this store back yet: the grant kinds it captures remain behaviorally inert until a
   // subsystem is built per grant kind, matching how `continuous.ts`'s own restriction store
   // documents unread entries as "documented TODOs where not yet wired" rather than crashes.
-  const customGrants = new Map<string, { grant: Record<string, unknown>; duration: EffectDuration }[]>();
+  const customGrants = pc.customGrants;
   const grantCustom: NonNullable<Primitives["grantCustom"]> = (permanentId, grant, duration) => {
     const existing = customGrants.get(permanentId);
     if (existing) existing.push({ grant, duration });
@@ -262,6 +269,8 @@ export function createGrantsVerbs(pc: PrimitivesContext) {
     grantKeyword,
     grantDnaLevel,
     canDnaDigivolve,
+    orderDnaMaterials: (materialPermanentIds: string[], resultInstanceId: string) =>
+      orderDnaMaterials({ pc, materialPermanentIds, resultInstanceId }),
     grantedKeywords,
     grantPlayerKeyword,
     revokeKeyword,

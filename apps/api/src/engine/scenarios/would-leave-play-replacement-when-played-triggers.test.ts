@@ -12,7 +12,10 @@ const record = JSON.parse(
 describe("Would-leave replacement play opens when-played triggers", () => {
   it("triggers [All Turns] when-played watchers after a would-leave replacement plays a Digimon", async () => {
     const events: ServerEvent[] = [];
-    const replay = await runReplay(record, { untilInput: 60, onBatch: (_state, batch) => events.push(...batch) });
+    const replay = await runReplay(record, {
+      untilInput: record.inputs.length - 1,
+      onBatch: (_state, batch) => events.push(...batch),
+    });
     try {
       expect(replay.divergences).toEqual([]);
       const materialPrompt = replay.state.pendingDecision!;

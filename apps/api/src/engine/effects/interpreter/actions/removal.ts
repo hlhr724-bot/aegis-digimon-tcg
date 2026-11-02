@@ -501,6 +501,31 @@ export async function runRemovalAction(ctx: EffectContext, action: Action, scope
       return false;
     }
     case "Trash": {
+      if (Array.isArray(action.target.filter.zone)) {
+        const zones = action.target.filter.zone;
+        if (zones.every((zone) => zone === "hand" || zone === "security")) {
+          const asker = action.chooser === "opponent" ? requireOpponentAsk(ctx) : ctx.ask;
+          const candidates = candidateLooseInstances(ctx, action.target, zones);
+          const seats = seatsForController(ctx, action.target.filter);
+          const visible = seats.flatMap((seat) => Array.from(ctx.game.player(seat).hand, (card) => card.instanceId));
+          const chosen = await pickLoose(ctx, action.target, candidates, undefined, asker, visible);
+          for (const seat of seats) {
+            const securityIds = chosen.filter((id) =>
+              Array.from(ctx.game.player(seat).security).some((card) => card.instanceId === id),
+            );
+            if (securityIds.length > 0) {
+              await ctx.fx.trashFromSecurity(seat, securityIds.length, { instanceIds: securityIds });
+            }
+            const handIds = chosen.filter((id) =>
+              Array.from(ctx.game.player(seat).hand).some((card) => card.instanceId === id),
+            );
+            if (handIds.length > 0) {
+              await ctx.fx.trash(handIds, { byEffectSeat: ctx.source.ownerSeat });
+            }
+          }
+          return false;
+        }
+      }
       // A hand-zone target is a discard ("trash N card(s) in your/their hand"): resolve
       // loose hand cards and trash the chosen ones. Otherwise it is a field trash (the
       // resolved permanents' top cards).
@@ -511,6 +536,26 @@ export async function runRemovalAction(ctx: EffectContext, action: Action, scope
         // (the controller reaching into a hand, e.g. "trash 1 of your opponent's cards in
         // their hand") is unchanged.
         const asker = action.chooser === "opponent" ? requireOpponentAsk(ctx) : ctx.ask;
+        const passage = action.effectTextPart?.trim();
+        const continuationCandidates = candidateLooseInstances(ctx, action.target, ["hand"]);
+        let discardCount = continuationCandidates.length;
+        if (typeof action.target.count === "number") {
+          discardCount = action.target.count;
+        }
+        if (action.target.untilHandSize !== undefined) {
+          discardCount = Math.max(0, continuationCandidates.length - action.target.untilHandSize);
+        }
+        if (
+          action.chooser === "opponent" &&
+          action.optional !== true &&
+          passage !== undefined &&
+          /^Then,\s/i.test(passage) &&
+          (ctx.activeEffectText?.indexOf(passage) ?? -1) > 0 &&
+          continuationCandidates.length > 0 &&
+          discardCount > 0
+        ) {
+          ctx.fx.announceEffectClauseAdvanced?.(ctx, passage);
+        }
         // Only an explicit printed look/search permission exposes an opponent hand.
         // Blind selections take precedence and keep their opaque handles.
         const visible =

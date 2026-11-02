@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] You may play 1 yellow Digimon card with [Starmon] in its name from your hand without paying its memory cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

@@ -10,6 +10,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 [Thomas H. Norstein] or card with the [DATA SQUAD] trait",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -27,6 +28,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 card with [Gaogamon] in its name among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

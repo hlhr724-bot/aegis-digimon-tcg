@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Delete 1 of your opponent's Digimon with 15000 DP or less. For each of your opponent's security cards, remove 2000 from this DP deletion effect's maximum.",
           kind: "Delete",
           target: {
             filter: {

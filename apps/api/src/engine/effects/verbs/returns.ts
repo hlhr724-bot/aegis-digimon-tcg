@@ -1,3 +1,5 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
 import {
   CardKind,
   DECK_BOTTOM,
@@ -8,7 +10,6 @@ import {
   type Seat,
   type ServerEvent,
 } from "@aegis/shared";
-import { peekCheckedCard } from "../../security/checkedCard.js";
 import { applyOverflow, insertCard } from "../../state/access.js";
 import {
   collectForReturn,
@@ -20,6 +21,7 @@ import {
 } from "../verbs/looseInstances.js";
 
 import type { PrimitivesContext } from "./context.js";
+import { emitEffectTargetsSelected } from "./emitEffectTargetsSelected.js";
 import { createPartitionReactions } from "./partition.js";
 
 /**
@@ -79,6 +81,13 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
       if (targetedPermanentId === undefined) return true;
       return access.permanentById(targetedPermanentId)?.topCard?.instanceId === instanceId;
     });
+    emitEffectTargetsSelected({
+      pc,
+      permanentIds: instanceIds.flatMap((instanceId) => {
+        const targetedPermanentId = targetedPermanentByInstance.get(instanceId);
+        return targetedPermanentId === undefined ? [] : [targetedPermanentId];
+      }),
+    });
     await fireWhenReturnedPermanentsLeave(instanceIds, opts);
     // Record which of the requested instances start in TRASH before the move, for
     // whenCardReturnsFromTrashToHand (BT15-082/BT16-011: "a card returns from your trash to
@@ -89,14 +98,7 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
         if (instanceIds.includes(card.instanceId)) trashOriginIds.add(card.instanceId);
       }
     }
-    const deckOriginIds = new Set(
-      Array.from(state.players).flatMap((owner) =>
-        owner.deck.filter((card) => instanceIds.includes(card.instanceId)).map((card) => card.instanceId),
-      ),
-    );
-    const checkedSecurityIds = new Set(
-      instanceIds.filter((instanceId) => peekCheckedCard(state, instanceId) !== undefined),
-    );
+    const origins = locateMoveOrigins({ state, instanceIds });
     const moved: CardInstance[] = [];
     const movedToHand: CardInstance[] = [];
     const returnedPermanents: NonNullable<Extract<ServerEvent, { kind: "cardsMoved" }>["returnedPermanents"]> = [];
@@ -165,16 +167,8 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
       // (a card taken from a reveal), never for an ordinary private hand addition.
       // Keep contiguous owner/origin groups in requested order. A revealed card still
       // leaves the deck, and a multi-owner return must not assign both hands to one seat.
-      const groups: { seat: Seat; from: "deck" | "various"; fromSecurityCheck: boolean; cards: CardInstance[] }[] = [];
-      for (const card of movedToHand) {
-        const from = deckOriginIds.has(card.instanceId) ? "deck" : "various";
-        const fromSecurityCheck = checkedSecurityIds.has(card.instanceId);
-        const last = groups.at(-1);
-        if (last?.seat === card.ownerSeat && last.from === from && last.fromSecurityCheck === fromSecurityCheck)
-          last.cards.push(card);
-        else groups.push({ seat: card.ownerSeat, from, fromSecurityCheck, cards: [card] });
-      }
-      for (const { seat, from, fromSecurityCheck, cards } of groups) {
+      for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: movedToHand })) {
+        const seat = cards[0]!.ownerSeat;
         const artIds = cards.map((card) => card.artId ?? "");
         const fieldReturns = returnedPermanents.filter((returned) =>
           cards.some((card) => card.instanceId === returned.instanceId),
@@ -182,11 +176,10 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
         engine.emit({
           kind: "cardsMoved",
           instanceIds: cards.map((card) => card.instanceId),
-          from,
+          ...origin,
           to: Zone.Hand,
           handAddition: opts?.silent === true ? "staging" : "transfer",
           seat,
-          ...(fromSecurityCheck ? { fromSecurityCheck: true as const } : {}),
           ...(fieldReturns.length ? { returnedPermanents: fieldReturns } : {}),
           ...(opts?.publicIdentities === true
             ? { cardIds: cards.map((card) => card.cardId), ...(artIds.some((artId) => artId !== "") ? { artIds } : {}) }
@@ -304,6 +297,13 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
       if (targetedPermanentId === undefined) return true;
       return access.permanentById(targetedPermanentId)?.topCard?.instanceId === instanceId;
     });
+    emitEffectTargetsSelected({
+      pc,
+      permanentIds: instanceIds.flatMap((instanceId) => {
+        const targetedPermanentId = targetedPermanentByInstance.get(instanceId);
+        return targetedPermanentId === undefined ? [] : [targetedPermanentId];
+      }),
+    });
     // Digivolution-stack cards being returned to the deck BOTTOM (toTop === false): record each
     // one's host permanent + cardId BEFORE removal so onDigivolutionCardReturnToDeckBottom can fire
     // for the host's own watcher once the card has landed (BT11-065 "[Vemmon] placed from this
@@ -337,6 +337,7 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
         });
       }
     }
+    const origins = locateMoveOrigins({ state, instanceIds });
     const collectedBatches: { instanceId: string; cards: CardInstance[] }[] = [];
     for (const instanceId of instanceIds) {
       const collected = collectForReturn(state, instanceId, dropPermanentLedgers);
@@ -387,8 +388,11 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
     if (addedToDeck.length > 0) {
       // One movement per deck joined: "3 cards in trashes" (BT26-016) lands in both decks,
       // and each side's client narrates only the return into its own seat's deck.
-      for (const seat of new Set(addedToDeck.map((card) => card.ownerSeat))) {
-        const joined = addedToDeck.filter((card) => card.ownerSeat === seat);
+      for (const { cards: joined, ...origin } of groupCardsByOrigin({
+        origins,
+        cards: toTop ? [...addedToDeck].reverse() : addedToDeck,
+      })) {
+        const seat = joined[0]!.ownerSeat;
         // The deck hides the cards from here on, so the event is the only place a client
         // can read their names. A hand card stays unnamed: its owner's opponent never saw it.
         const named = joined.every((card) => publicBeforeMove.has(card.instanceId));
@@ -398,13 +402,14 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
         engine.emit({
           kind: "cardsMoved",
           instanceIds: joined.map((card) => card.instanceId),
-          from: "various",
+          ...origin,
           // `toTop` is a per-call option, so one batch never splits across both ends. The
           // bottom gets its own destination name because "under the whole deck" is the part
           // the player must be able to read back; `cardsMoved.to` is already a free-form label
           // (`"various"`, `"suspended"`) that no rules code branches on, so naming the position
           // here is a smaller change than adding a placement field to every mover.
           to: toTop ? Zone.Deck : DECK_BOTTOM,
+          deckReturnOrder: true,
           seat,
           ...(named ? { cardIds: joined.map((card) => card.cardId) } : {}),
           ...(named && joined.every((card) => card.artId !== "") ? { artIds: joined.map((card) => card.artId) } : {}),
@@ -478,6 +483,12 @@ export function createReturnsVerbs(pc: PrimitivesContext) {
 function identityIsPublic(state: GameState, instanceId: string): boolean {
   const zone = looseZoneOfInstance(state, instanceId);
   if (zone === "hand") return false;
-  if (zone === "deck" || zone === "security") return peekLooseInstance(state, instanceId)?.faceUp === true;
+  const card = peekLooseInstance(state, instanceId);
+  if (card !== undefined) {
+    return card.faceUp === true;
+  }
+  if (zone === "deck" || zone === "security") {
+    return false;
+  }
   return true;
 }

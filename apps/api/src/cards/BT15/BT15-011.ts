@@ -16,6 +16,7 @@ const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 Digimon card with the [SoC] trait",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -30,6 +31,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 such Tamer card among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Tamer"],

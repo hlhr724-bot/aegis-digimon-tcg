@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect } from "vitest";
+import { unregisterIrCard } from "#api/engine/effects/interpreter/registration/unregisterIrCard";
 import {
   EffectDuration,
   EffectTiming,
@@ -115,7 +116,7 @@ function perm(
       instanceId: `${permanentId}#s${i}`,
       cardId: c,
       ownerSeat: seat,
-      faceUp: false,
+      faceUp: true,
     })) as never,
     linked: linkedCardIds.map((c, i) => ({
       instanceId: `${permanentId}#l${i}`,
@@ -3127,11 +3128,11 @@ describe("CAP-A4: cannotActivateWhenDigivolving restriction (BT19-038)", () => {
     };
   }
 
-  it("blocks a permanent's WhenDigivolving effect from being collected when restricted", () => {
+  it("blocks a permanent's WhenDigivolving effect from activating when restricted", () => {
     const { env, candidateInstance } = makeCapA4Env({ permanentId: "PERM_RESTRICTED", restricted: true });
     const collected = gatherTriggeredEffects(env, EffectTiming.WhenDigivolving, [candidateInstance as never]);
-    // The restriction is set on PERM_RESTRICTED — the WhenDigivolving effect must be filtered out.
-    expect(collected).toHaveLength(0);
+    expect(collected).toHaveLength(1);
+    expect(collected[0]!.effect.canActivate({} as EffectContext)).toBe(false);
   });
 
   it("allows a permanent's WhenDigivolving effect when the restriction is absent", () => {
@@ -7091,6 +7092,10 @@ describe("CAP-C-13: target.filter.digivolutionCards = 'none'", () => {
 // ---------------------------------------------------------------------------
 
 describe("CAP-C-14: AllowDigiXrosMaterialsFromTrash", () => {
+  afterEach(() => {
+    for (const cardId of ["CAP_C14_TEST_CARD_A", "CAP_C14_TEST_CARD_B", "CAP_C14_PLAYED"]) unregisterIrCard(cardId);
+  });
+
   /**
    * BT21-030: "cards in your trash can also be placed for DigiXros". The card's IR carries
    * an `AllowDigiXrosMaterialsFromTrash` action inside the `wouldBePlayed` Replacement's
@@ -8413,7 +8418,7 @@ describe("digivolutionCardsUnderTamers from-zone (BT19-025)", () => {
     const played: string[] = [];
 
     // Tamer permanent with one digivolution card (the Blue Flare Digimon).
-    const digiXrosMat = { instanceId: "MAT#0", cardId: "XROS_DIGI", ownerSeat: 0 as Seat, faceUp: false };
+    const digiXrosMat = { instanceId: "MAT#0", cardId: "XROS_DIGI", ownerSeat: 0 as Seat, faceUp: true };
     const tamerPerm = {
       permanentId: "TAMER",
       controllerSeat: 0 as Seat,
@@ -8427,7 +8432,7 @@ describe("digivolutionCardsUnderTamers from-zone (BT19-025)", () => {
     } as unknown as Permanent;
 
     // Non-tamer permanent with a digivolution card that should NOT be sourced.
-    const notUnderTamer = { instanceId: "NOT#0", cardId: "RED", ownerSeat: 0 as Seat, faceUp: false };
+    const notUnderTamer = { instanceId: "NOT#0", cardId: "RED", ownerSeat: 0 as Seat, faceUp: true };
     const digimonPerm = {
       permanentId: "DIGIMON",
       controllerSeat: 0 as Seat,
@@ -9049,7 +9054,7 @@ describe("CAP-E4: zone underTamers for PlayWithoutCost (BT19-026)", () => {
   it("sources candidates from cards under Tamer permanents using zone alias underTamers", async () => {
     const played: string[] = [];
 
-    const matCard = { instanceId: "MAT#e4", cardId: "RED", ownerSeat: 0 as Seat, faceUp: false };
+    const matCard = { instanceId: "MAT#e4", cardId: "RED", ownerSeat: 0 as Seat, faceUp: true };
     const tamerPerm = {
       permanentId: "TAMER_E4",
       controllerSeat: 0 as Seat,
@@ -9063,7 +9068,7 @@ describe("CAP-E4: zone underTamers for PlayWithoutCost (BT19-026)", () => {
     } as unknown as Permanent;
 
     // A Digimon permanent whose stack card must NOT be sourced.
-    const notUnderTamer = { instanceId: "NOT#e4", cardId: "RED", ownerSeat: 0 as Seat, faceUp: false };
+    const notUnderTamer = { instanceId: "NOT#e4", cardId: "RED", ownerSeat: 0 as Seat, faceUp: true };
     const digiPerm = {
       permanentId: "DIGI_E4",
       controllerSeat: 0 as Seat,
@@ -13895,6 +13900,7 @@ describe("CAP-H-01: whenTrashedFromDeck SubTrigger (BT19-097)", () => {
       definition: def(anchorCardId),
       permanent: () => anchorPerm,
       isOnBattleArea: () => true,
+      isInTrash: () => true,
       isOwnersTurn: () => true,
       hasColor: () => false,
     } as never;
@@ -13939,7 +13945,7 @@ describe("CAP-H-01: whenTrashedFromDeck SubTrigger (BT19-097)", () => {
 
     const subCtx: EffectContext = {
       source: src,
-      trigger: { trashedFromDeckCardId: "BT19-097" },
+      trigger: { trashedFromDeckCardId: "BT19-097", trashedFromDeckInstanceId: "H1_ANCHOR#i" },
       game,
       fx: {} as never,
       ask: {} as never,

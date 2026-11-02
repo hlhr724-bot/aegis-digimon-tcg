@@ -5,8 +5,14 @@ export const compiled: CompiledCard = {
     {
       trigger: "Main",
       actions: [
-        { kind: "Draw", controller: "mine", amount: 2 },
         {
+          effectTextPart: "[Main] Trigger ＜Draw 2＞ (Draw 2 cards from your deck).",
+          kind: "Draw",
+          controller: "mine",
+          amount: 2,
+        },
+        {
+          effectTextPart: "Then 1 of your Digimon gets +2000 DP for the turn.",
           kind: "ModifyDP",
           target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
           amount: 2000,

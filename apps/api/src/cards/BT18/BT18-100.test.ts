@@ -180,56 +180,59 @@ describe("BT18-100 Gospel of the Fallen Angel", () => {
     expect(s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("option").instanceId)).toBe(true);
   });
 
-  it("leaves an opposing non-Option permanent untouched at the Q3052 target boundary", async () => {
-    const s = setupEngine(
-      {
-        0: {
-          battleArea: [
-            { card: "BT18-082", as: "base" },
-            { card: "BT18-100", as: "option" },
-          ],
-          trash: [{ card: "BT19-043", as: "destination" }],
-          deck: ["BT1-010"],
+  it.each(["BT1-010", "BT26-032"])(
+    "leaves opposing %s untouched at the Option target boundary",
+    async (targetCardId) => {
+      const s = setupEngine(
+        {
+          0: {
+            battleArea: [
+              { card: "BT18-082", as: "base" },
+              { card: "BT18-100", as: "option" },
+            ],
+            trash: [{ card: "BT19-043", as: "destination" }],
+            deck: ["BT1-010"],
+          },
+          1: { battleArea: [{ card: targetCardId, as: "opponentDigimon" }] },
         },
-        1: { battleArea: [{ card: "BT1-010", as: "opponentDigimon" }] },
-      },
-      { autoAcceptOptional: true, autoSelectCards: true, preferOptionIndex: 0 },
-    );
-    s.perm("option").placedByEffect = true;
-    s.state.memory = 10;
-    await s.ready();
+        { autoAcceptOptional: true, autoSelectCards: true, preferOptionIndex: 0 },
+      );
+      s.perm("option").placedByEffect = true;
+      s.state.memory = 10;
+      await s.ready();
 
-    const activatable = observe(s.engine).activatableEffects(s.perm("option"));
-    const delay = Array.isArray(activatable)
-      ? activatable.find(
-          (entry): entry is { effectKey: string; description?: string } =>
-            typeof entry === "object" &&
-            entry !== null &&
-            "effectKey" in entry &&
-            typeof entry.effectKey === "string" &&
-            "description" in entry &&
-            typeof entry.description === "string" &&
-            entry.description.includes("Delay"),
-        )
-      : undefined;
-    expect(delay?.effectKey).toBeDefined();
-    expect(
-      s.engine.applyIntent(0, {
-        type: "activateEffect",
-        sourceInstanceId: s.perm("option").topCard!.instanceId,
-        effectKey: delay!.effectKey,
-      }),
-    ).toEqual({ ok: true });
-    await settle(() => s.perm("base").topCard?.instanceId === s.inst("destination").instanceId);
+      const activatable = observe(s.engine).activatableEffects(s.perm("option"));
+      const delay = Array.isArray(activatable)
+        ? activatable.find(
+            (entry): entry is { effectKey: string; description?: string } =>
+              typeof entry === "object" &&
+              entry !== null &&
+              "effectKey" in entry &&
+              typeof entry.effectKey === "string" &&
+              "description" in entry &&
+              typeof entry.description === "string" &&
+              entry.description.includes("Delay"),
+          )
+        : undefined;
+      expect(delay?.effectKey).toBeDefined();
+      expect(
+        s.engine.applyIntent(0, {
+          type: "activateEffect",
+          sourceInstanceId: s.perm("option").topCard!.instanceId,
+          effectKey: delay!.effectKey,
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.perm("base").topCard?.instanceId === s.inst("destination").instanceId);
 
-    expect(s.perm("base").topCard?.instanceId).toBe(s.inst("destination").instanceId);
-    expect(
-      s.state.players[1]!.battleArea.some((perm) => perm.permanentId === s.perm("opponentDigimon").permanentId),
-    ).toBe(true);
-    expect(s.state.players[1]!.trash.some((card) => card.instanceId === s.inst("opponentDigimon").instanceId)).toBe(
-      false,
-    );
-  });
+      expect(s.perm("base").topCard?.instanceId).toBe(s.inst("destination").instanceId);
+      expect(
+        s.state.players[1]!.battleArea.some((perm) => perm.permanentId === s.perm("opponentDigimon").permanentId),
+      ).toBe(true);
+      expect(s.state.players[1]!.trash.some((card) => card.instanceId === s.inst("opponentDigimon").instanceId)).toBe(
+        false,
+      );
+    },
+  );
 
   it("naturally places itself from Security", async () => {
     const s = setupEngine(

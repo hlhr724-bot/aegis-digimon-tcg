@@ -23,6 +23,8 @@ const suspendBuff: Action = {
   actions: [
     {
       kind: "Restrict",
+      effectTextPart:
+        "Your opponent's Option card effects don't affect any of your suspended Digimon with the [Insectoid] or [Titan] trait.",
       target: suspendedTraits,
       restriction: "beAffected",
       duration: "untilOpponentTurnEnd",
@@ -30,7 +32,14 @@ const suspendBuff: Action = {
       byOpponentEffectsOnly: true,
       whileMatchesTargetFilter: true,
     },
-    { kind: "ModifyDP", target: suspendedTraits, playerWide: true, amount: 3000, duration: "untilOpponentTurnEnd" },
+    {
+      kind: "ModifyDP",
+      effectTextPart: "All of your suspended Digimon with the [Insectoid] or [Titan] trait get +3000 DP.",
+      target: suspendedTraits,
+      playerWide: true,
+      amount: 3000,
+      duration: "untilOpponentTurnEnd",
+    },
   ],
 };
 const battle: Action = {

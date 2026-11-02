@@ -1,3 +1,11 @@
+import { CardAceBadge } from "@/design/CardAceBadge";
+import { CardTextField } from "@/i18n/CardTextField";
+import { I18nContext } from "@/i18n/I18nContext";
+import { useCardFaceTranslation } from "@/screens/cardLanguage/useCardFaceTranslation";
+import { EffectText } from "@/game/EffectText";
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
+import { getTranslatedCardMeta } from "@/i18n/getTranslatedCardMeta";
 /* The card detail drawer: the full card, its printed numbers and its effect text. */
 
 import { useState, type ReactNode } from "react";
@@ -13,6 +21,7 @@ import { Eyebrow } from "../design/primitives";
 import { CardFull } from "../design/cards";
 import { formLabel, kindOf } from "../design/theme";
 import { useTranslation } from "../i18n";
+import { isBetaCard } from "@/screens/isBetaCard";
 import "./cardLibrary.css";
 
 /* ---------- the shared right detail drawer ---------- */
@@ -22,6 +31,7 @@ export function CardDetailDrawer({
   onClose,
   footer,
   artId,
+  initialArtId,
   onArtChange,
   onArtApply,
 }: {
@@ -30,6 +40,7 @@ export function CardDetailDrawer({
   onClose: () => void;
   footer?: ReactNode;
   artId?: string;
+  initialArtId?: string;
   onArtChange?: (artId: string) => void;
   onArtApply?: (artId: string) => void;
 }) {
@@ -37,12 +48,19 @@ export function CardDetailDrawer({
   const [browsedArt, setBrowsedArt] = useState<{ cardId: string; artId: string } | null>(null);
   const selectedArt = resolveCardArt(
     cardId,
-    artId ?? (browsedArt?.cardId === cardId ? browsedArt.artId : undefined),
+    artId ?? (browsedArt?.cardId === cardId ? browsedArt.artId : initialArtId),
   ).artId;
+  const cardTranslation = useCardFaceTranslation({ artId: selectedArt });
+  const translations = useCardTranslations({ locale: cardTranslation.locale });
   const arts = getCardArts(cardId);
   const def = getCardDefinition(cardId);
   if (!def) return null;
   const isDigi = kindOf(def) === "Digimon";
+  const forms = isDigi && def.forms?.length ? def.forms : [formLabel(def)];
+  const traits = [
+    ...(def.attributes ?? []).map((value) => getTranslatedCardMeta({ value, group: "attributes", translations })),
+    ...(def.types ?? []).map((value) => getTranslatedCardMeta({ value, group: "traits", translations })),
+  ].filter((value) => value && value !== "-" && value !== "—");
   const copyLimit = formatCopyLimit(cardId, format);
   const banLabel = formatRestrictionLabel(cardId, format);
   return (
@@ -94,27 +112,64 @@ export function CardDetailDrawer({
           </div>
         ) : null}
         <div className="card-detail-summary">
+          <h2>
+            {getTranslatedCardName({ name: def.nameEn, translations })}
+            <CardAceBadge cardId={cardId} />
+          </h2>
           <div className="card-detail-limit">
             {banLabel ? <span className="card-detail-restriction">{banLabel}</span> : null}
+            {isBetaCard(cardId) ? (
+              <span className="card-detail-restriction" data-tone="beta" title={t("beta.cardHint")}>
+                {t("beta.tag")}
+              </span>
+            ) : null}
             <span className="card-detail-copy-limit">{t("library.maxPerDeck", { count: copyLimit })}</span>
           </div>
           <div className="card-detail-metadata">
-            <DetailRow label={t("library.rowSet")} value={def.set} mono />
-            <DetailRow label={t("library.rowColor")} value={def.colors.join(" / ")} />
-            <DetailRow label={t("library.rowType")} value={formLabel(def)} />
-            <DetailRow label={t("library.rowPlayCost")} value={def.playCost < 0 ? "—" : String(def.playCost)} mono />
-            {isDigi ? <DetailRow label={t("library.rowDp")} value={def.dp.toLocaleString()} mono /> : null}
-            {def.types && def.types.length ? (
-              <DetailRow label={t("library.rowTraits")} value={def.types.join(", ")} />
+            <DetailRow label={cardTranslation.t("library.rowSet")} value={def.set} mono />
+            <DetailRow label={cardTranslation.t("library.rowColor")} value={def.colors.join(" / ")} />
+            <DetailRow
+              label={cardTranslation.t("library.rowType")}
+              value={forms.map((value) => getTranslatedCardMeta({ value, group: "forms", translations })).join(" / ")}
+            />
+            <DetailRow
+              label={cardTranslation.t(def.isDualCard ? "library.rowUseCost" : "library.rowPlayCost")}
+              value={def.playCost < 0 ? "—" : String(def.playCost)}
+              mono
+            />
+            {isDigi ? (
+              <DetailRow label={cardTranslation.t("library.rowDp")} value={def.dp.toLocaleString()} mono />
             ) : null}
-            {def.rarity ? <DetailRow label={t("library.rowRarity")} value={def.rarity} mono /> : null}
+            {traits.length ? (
+              <DetailRow label={cardTranslation.t("library.rowTraits")} value={traits.join(", ")} />
+            ) : null}
+            {def.rarity ? <DetailRow label={cardTranslation.t("library.rowRarity")} value={def.rarity} mono /> : null}
           </div>
         </div>
       </div>
       <div className="card-detail-effects">
-        <DetailEffect title={t("library.mainEffect")} text={def.effectText} />
-        <DetailEffect title={t("library.inheritedEffect")} text={def.inheritedEffectText} tone="inherited" />
-        <DetailEffect title={t("library.securityEffect")} text={def.securityEffectText} tone="security" />
+        <I18nContext.Provider value={cardTranslation}>
+          <DetailEffect cardId={cardId} title={cardTranslation.t("library.mainEffect")} text={def.effectText} />
+          <DetailEffect cardId={cardId} title={cardTranslation.t("library.optionEffect")} text={def.optionEffect} />
+          <DetailEffect
+            cardId={cardId}
+            title={cardTranslation.t("library.inheritedEffect")}
+            text={def.inheritedEffectText}
+            tone="inherited"
+          />
+          <DetailEffect
+            cardId={cardId}
+            title={cardTranslation.t("library.linkEffect")}
+            text={def.linkEffect}
+            field={CardTextField.LINK.value}
+          />
+          <DetailEffect
+            cardId={cardId}
+            title={cardTranslation.t("library.securityEffect")}
+            text={def.securityEffectText}
+            tone="security"
+          />
+        </I18nContext.Provider>
         {footer}
       </div>
     </aside>
@@ -132,19 +187,25 @@ function DetailRow({ label, value, mono }: { label: string; value?: string; mono
 }
 
 function DetailEffect({
+  cardId,
   title,
   text,
+  field,
   tone = "main",
 }: {
+  cardId: string;
   title: string;
   text?: string;
+  field?: CardTextField;
   tone?: "main" | "inherited" | "security";
 }) {
   if (!text) return null;
   return (
     <div className="card-detail-effect" data-tone={tone}>
       <div className="card-detail-effect__title">{title}</div>
-      <p>{readableEffectText(text)}</p>
+      <p>
+        <EffectText cardId={cardId} text={readableEffectText(text)} field={field} />
+      </p>
     </div>
   );
 }

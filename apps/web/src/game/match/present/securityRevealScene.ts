@@ -216,7 +216,7 @@ export function securityRevealScene(deps: SecurityRevealSceneDeps) {
         setSecurityHitSeat,
         scene: buildSecurityBreakScene({ key, defenderSeat: seat, viewerSeat }),
         replace,
-        ...(replayingHistory ? {} : { clausesBefore: stateVersion }),
+        ...(replayingHistory ? {} : { clausesThrough: stateVersion }),
         ...(battlePending
           ? {
               afterClauses: () => {

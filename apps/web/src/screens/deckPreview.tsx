@@ -1,3 +1,5 @@
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 import {
   formatCopyLimit,
   getCardDefinition,
@@ -11,7 +13,9 @@ import { ColorDot } from "../design/primitives";
 import { colorKey, kindOf } from "../design/theme";
 import { Icons } from "../design/icons";
 import { useTranslation } from "../i18n";
+import { isBetaCard } from "@/screens/isBetaCard";
 import { sortCardIds } from "./cardSorting";
+import { deckSectionLevel } from "@/screens/deckSectionLevel";
 import { countDeckCardTypes } from "@/screens/countDeckCardTypes";
 import { DeckCurveChart } from "@/screens/DeckCurveChart";
 import { setDeckBuilderPreferences, useDeckBuilderPreferences, type DeckView } from "./deckBuilderPreferences";
@@ -108,13 +112,14 @@ export function DeckPreviewSections({
       continue;
     }
     const kind = kindOf(definition);
-    if (kind === "Tamer") tamers.push(cardId);
-    else if (kind === "Option") options.push(cardId);
-    else if (kind === "Digimon" && definition.level != null) {
-      const cards = byLevel.get(definition.level) ?? [];
+    const level = deckSectionLevel(definition);
+    if (level != null) {
+      const cards = byLevel.get(level) ?? [];
       cards.push(cardId);
-      byLevel.set(definition.level, cards);
-    } else other.push(cardId);
+      byLevel.set(level, cards);
+    } else if (kind === "Tamer") tamers.push(cardId);
+    else if (kind === "Option") options.push(cardId);
+    else other.push(cardId);
   }
 
   const sections: DeckSection[] = [
@@ -209,6 +214,7 @@ function entryLimits(cardId: string, count: number, pairConflict: boolean, pairL
   return {
     definition,
     banLabel: pairConflict ? pairLabel : formatRestrictionLabel(cardId, format),
+    beta: isBetaCard(cardId),
     banned,
     addDisabled: banned || count >= cap,
   };
@@ -254,8 +260,9 @@ function DeckGridCard({
   onRemove,
 }: DeckEntryProps) {
   const { t } = useTranslation();
+  const translations = useCardTranslations();
   if (!getCardDefinition(cardId)) return null;
-  const { definition, banLabel, banned, addDisabled } = entryLimits(
+  const { definition, banLabel, beta, banned, addDisabled } = entryLimits(
     cardId,
     count,
     pairConflict,
@@ -267,13 +274,25 @@ function DeckGridCard({
       <button
         type="button"
         className="deck-grid-card__open"
-        aria-label={t("deck.openCard", { name: definition.nameEn, count })}
+        aria-label={t("deck.openCard", {
+          name: getTranslatedCardName({ name: definition.nameEn, translations }),
+          count,
+        })}
         onClick={onOpen}
       >
         <CardFull cardId={cardId} artId={artId} width={cardWidth} count={count} />
-        {banLabel ? (
-          <span className="deck-grid-card__restriction" data-tone={banned ? "danger" : "warning"}>
-            {banLabel}
+        {banLabel || beta ? (
+          <span className="deck-grid-card__badges">
+            {banLabel ? (
+              <span className="deck-grid-card__restriction" data-tone={banned ? "danger" : "warning"}>
+                {banLabel}
+              </span>
+            ) : null}
+            {beta ? (
+              <span className="deck-grid-card__restriction" data-tone="beta" title={t("beta.cardHint")}>
+                {t("beta.tag")}
+              </span>
+            ) : null}
           </span>
         ) : null}
         {isCover ? (
@@ -282,7 +301,13 @@ function DeckGridCard({
           </span>
         ) : null}
       </button>
-      <DeckStepper name={definition.nameEn} count={count} addDisabled={addDisabled} onAdd={onAdd} onRemove={onRemove} />
+      <DeckStepper
+        name={getTranslatedCardName({ name: definition.nameEn, translations })}
+        count={count}
+        addDisabled={addDisabled}
+        onAdd={onAdd}
+        onRemove={onRemove}
+      />
     </div>
   );
 }
@@ -299,22 +324,26 @@ function DeckListRow({
   onRemove,
 }: DeckEntryProps) {
   const { t } = useTranslation();
+  const translations = useCardTranslations();
   if (!getCardDefinition(cardId)) return null;
-  const { definition, banLabel, banned, addDisabled } = entryLimits(
+  const { definition, banLabel, beta, banned, addDisabled } = entryLimits(
     cardId,
     count,
     pairConflict,
     t("deck.pairBadge"),
     format,
   );
-  const kind = kindOf(definition);
-  const typeLabel = kind === "Digimon" && definition.level != null ? `Lv.${definition.level}` : kind;
+  const level = deckSectionLevel(definition);
+  const typeLabel = level != null ? `Lv.${level}` : kindOf(definition);
   return (
     <div className="deck-list-row">
       <button
         type="button"
         className="deck-list-row__open"
-        aria-label={t("deck.openCard", { name: definition.nameEn, count })}
+        aria-label={t("deck.openCard", {
+          name: getTranslatedCardName({ name: definition.nameEn, translations }),
+          count,
+        })}
         onClick={onOpen}
       >
         <span className="deck-list-row__art" aria-hidden="true">
@@ -324,18 +353,33 @@ function DeckListRow({
           <ColorDot color={colorKey(definition.colors[0])} size={8} />
           <span className="deck-list-row__type">{typeLabel}</span>
           <span className="deck-list-row__name">
-            {definition.nameEn}
+            {getTranslatedCardName({ name: definition.nameEn, translations })}
             {isCover ? <Icons.Star size={11} /> : null}
           </span>
-          {banLabel ? (
-            <span className="deck-tag" data-tone={banned ? "danger" : "warning"}>
-              {banLabel}
+          {banLabel || beta ? (
+            <span className="deck-list-row__tags">
+              {banLabel ? (
+                <span className="deck-tag" data-tone={banned ? "danger" : "warning"}>
+                  {banLabel}
+                </span>
+              ) : null}
+              {beta ? (
+                <span className="deck-tag" data-tone="beta" title={t("beta.cardHint")}>
+                  {t("beta.tag")}
+                </span>
+              ) : null}
             </span>
           ) : null}
           <span className="deck-list-row__id">{cardId}</span>
         </span>
       </button>
-      <DeckStepper name={definition.nameEn} count={count} addDisabled={addDisabled} onAdd={onAdd} onRemove={onRemove} />
+      <DeckStepper
+        name={getTranslatedCardName({ name: definition.nameEn, translations })}
+        count={count}
+        addDisabled={addDisabled}
+        onAdd={onAdd}
+        onRemove={onRemove}
+      />
     </div>
   );
 }
@@ -355,6 +399,11 @@ export function DeckKindCounts({ main }: { main: CountMap }) {
       <span>
         {t("deck.kindOption")} <strong>{counts.Option}</strong>
       </span>
+      {counts.Dual > 0 ? (
+        <span>
+          {t("deck.kindDual")} <strong>{counts.Dual}</strong>
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -365,8 +414,9 @@ export function DeckLevelCurve({ main, compact = false }: { main: CountMap; comp
   const counts = new Map<number, number>();
   for (const [cardId, count] of Object.entries(main)) {
     const definition = getCardDefinition(cardId);
-    if (!definition || kindOf(definition) !== "Digimon" || definition.level == null) continue;
-    counts.set(definition.level, (counts.get(definition.level) ?? 0) + count);
+    const level = definition ? deckSectionLevel(definition) : undefined;
+    if (level == null) continue;
+    counts.set(level, (counts.get(level) ?? 0) + count);
   }
   const levels = [...new Set([2, 3, 4, 5, 6, 7, ...counts.keys()])].sort((a, b) => a - b);
   const columns = levels.map((level) => ({ key: String(level), label: `Lv.${level}`, count: counts.get(level) ?? 0 }));

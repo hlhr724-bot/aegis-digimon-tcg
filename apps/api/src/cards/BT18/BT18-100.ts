@@ -8,7 +8,7 @@ export const compiled: CompiledCard = {
       actions: [
         {
           effectTextPart:
-            "[Main] Your Digimon in the breeding area may digivolve into [Lucemon] from your trash without paying the cost.",
+            "[Main] Your Digimon in the breeding area may digivolve into [Lucemon] in your trash without paying the cost.",
           kind: "Digivolve",
           target: {
             filter: {
@@ -37,6 +37,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "By digivolving 1 of your Digimon with [Lucemon] in its name into a Digimon card with [Lucemon] in its name in the trash with the digivolution cost reduced by 3, trash 1 of your opponent's Option cards in the battle area.",
           kind: "Trash",
           target: {
             filter: {

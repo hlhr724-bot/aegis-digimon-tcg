@@ -9,12 +9,28 @@ import { trainingDeck, TRAINING_DECK_VERSIONS } from "./training/decks.js";
 import { InferenceClient } from "./training/inferenceClient.js";
 import { trainingMetadata } from "./training/metadata.js";
 import { createAsyncTrainingPolicy } from "./training/policy.js";
+import { startEvolvedBots, stopEvolvedBots } from "./evolution/livePolicy.js";
+import { startBotExperiment, stopBotExperiment } from "#api/bot/experiment/activeBotExperiment";
 
 let client: InferenceClient | undefined;
 let startup: Promise<void> | undefined;
 
 /** Called once before admitting rooms. An explicitly configured incompatible model fails startup. */
 export async function startBotInference(environment: NodeJS.ProcessEnv): Promise<void> {
+  await Promise.all([startBotPolicy(environment), startBotExperiment(environment)]);
+}
+
+async function startBotPolicy(environment: NodeJS.ProcessEnv): Promise<void> {
+  if (environment.AEGIS_BOT_HEURISTIC) {
+    if (client !== undefined || startup !== undefined) throw new Error("Bot inference is already started");
+    startup = startEvolvedBots(environment);
+    try {
+      await startup;
+    } finally {
+      startup = undefined;
+    }
+    return;
+  }
   const checkpoint = environment.AEGIS_BOT_CHECKPOINT;
   if (!checkpoint) return;
   if (client !== undefined || startup !== undefined) throw new Error("Bot inference is already started");
@@ -42,6 +58,8 @@ export async function startBotInference(environment: NodeJS.ProcessEnv): Promise
 export async function stopBotInference(): Promise<void> {
   // Shutdown may arrive while Python is still loading its checkpoint.
   await startup?.catch(() => undefined);
+  stopEvolvedBots();
+  await stopBotExperiment();
   const active = client;
   client = undefined;
   await active?.close();

@@ -52,4 +52,22 @@ describe("local application logs", () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it("drops lines instead of buffering them without bound while the disk is behind", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "aegis-logs-"));
+    try {
+      const writer = new LocalLogWriter(dir, 64 * 1024 * 1024, 1024);
+      const lines = Array.from({ length: 1000 }, (_, i) => JSON.stringify({ index: i }) + "\n");
+      for (const line of lines) writer.write(line);
+      await writer.close();
+      const written = readdirSync(dir).flatMap((name) => readFileSync(join(dir, name), "utf8").trim().split("\n"));
+      expect(written.length).toBeGreaterThan(0);
+      expect(written.length).toBeLessThan(lines.length);
+      expect(written.map((line) => JSON.parse(line).index)).toEqual(
+        Array.from({ length: written.length }, (_, i) => i),
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

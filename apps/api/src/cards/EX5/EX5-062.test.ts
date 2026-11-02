@@ -52,7 +52,7 @@ describe("EX5-062 Anubismon", () => {
       });
     }
     const watcher = compiled.effects.find((effect) => effect.trigger === "YourTurn");
-    expect(watcher).toMatchObject({ frequency: "OncePerTurn" });
+    expect(watcher?.frequency).toBeUndefined();
     expect(watcher?.actions?.[0]).toMatchObject({
       kind: "SubTrigger",
       sourceFilter: { controller: "mine", kind: ["Digimon"], byEffect: true },
@@ -289,6 +289,40 @@ describe("EX5-062 Anubismon", () => {
     expect(s.state.players[1]!.battleArea.some((permanent) => permanent.topCard?.cardId === OPP_LV6)).toBe(true);
     expect(s.state.players[0]!.hand).toHaveLength(0);
     expect(s.state.pendingDecision).toBeUndefined();
+  });
+
+  it("deletes again when a separate effect plays another Digimon in the same turn", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: ANUBIS, as: "anubis" }],
+          hand: [
+            { card: "BT2-108", as: "firstRaid" },
+            { card: "BT2-108", as: "secondRaid" },
+          ],
+          trash: [
+            { card: "ST6-03", as: "firstRevival" },
+            { card: "ST6-03", as: "secondRevival" },
+          ],
+        },
+        1: {
+          battleArea: [
+            { card: OPP_LV5, as: "firstTarget" },
+            { card: OPP_LV5, as: "secondTarget" },
+          ],
+        },
+      },
+      { autoSelectCards: true, autoAcceptOptional: true },
+    );
+    s.state.memory = 8;
+    await s.ready();
+    for (const alias of ["firstRaid", "secondRaid"]) {
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst(alias).instanceId })).toEqual({ ok: true });
+      await settle();
+    }
+    expect(s.state.players[0]!.battleArea.filter(({ topCard }) => topCard.cardId === "ST6-03")).toHaveLength(2);
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    expect(s.state.players[1]!.trash.filter(({ cardId }) => cardId === OPP_LV5)).toHaveLength(2);
   });
 
   it("rejects an illegal direct evolution source without changing the card or memory", async () => {

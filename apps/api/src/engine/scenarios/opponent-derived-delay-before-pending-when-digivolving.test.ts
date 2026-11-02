@@ -30,7 +30,10 @@ function eventIndex(
 describe("Opponent trigger derived from the turn player's first [When Digivolving]", () => {
   it("activates the opponent's Delay and its derived [When Digivolving] before the second pending [When Digivolving]", async () => {
     const allEvents: ServerEvent[] = [];
-    const replay = await runReplay(record, { untilInput: 97, onBatch: (_state, batch) => allEvents.push(...batch) });
+    const replay = await runReplay(record, {
+      untilInput: record.inputs.length - 1,
+      onBatch: (_state, batch) => allEvents.push(...batch),
+    });
     try {
       expect(replay.divergences).toEqual([]);
       const firstTriggered = eventIndex(allEvents, "effectTriggered", (key) => key === firstWhenDigivolvingKey);

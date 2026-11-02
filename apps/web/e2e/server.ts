@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import { Server, createEndpoint, createRouter } from "colyseus";
-import { WebSocketTransport } from "@colyseus/ws-transport";
+import { createGameTransport } from "../../api/dist/connections/createGameTransport.js";
 import { ROOM_TYPE, ROOM_TYPE_BOT } from "@aegis/shared";
 import { AegisRoom, roomRegistry } from "../../api/dist/rooms/AegisRoom.js";
 import "../../api/dist/cards/index.js";
@@ -68,7 +68,7 @@ export async function startBrowserServer({
     if (turn < holdBotAfterTurn) originalPhase.call(this, phase, turn);
   };
   const http = createServer();
-  const server = new Server({ transport: new WebSocketTransport({ server: http }) });
+  const server = new Server({ transport: createGameTransport({ server: http }) });
   // Colyseus 404s unknown routes itself, so a second request listener would double-respond.
   server.router = createRouter({
     botJoin: createEndpoint("/bot/join", { method: "POST" }, async (context) => {

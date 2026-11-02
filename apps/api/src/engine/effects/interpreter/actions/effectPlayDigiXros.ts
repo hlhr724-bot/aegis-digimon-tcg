@@ -118,6 +118,9 @@ export async function prepareEffectPlayDigiXros(
           const expanders = Array.from(player.battleArea).filter((permanent) => {
             if (replacementSourcePermanentIds.includes(permanent.permanentId)) return false;
             if (permanent.isSuspended || permanent.topCard === undefined) return false;
+            if (ctx.fx.canSuspend?.(permanent.permanentId, ownerSeat) === false) {
+              return false;
+            }
             const expander = digiXrosZoneExpanderFor(permanent.topCard.cardId);
             if (expander === undefined) return false;
             if (expander.requiresSinglePlay === true && playedCards.length > 1) return false;
@@ -265,6 +268,16 @@ export async function prepareEffectPlayDigiXros(
               min: 0,
               max: materialCap,
               digiXrosCardId: playedCard.cardId,
+              digiXrosMaterialLimits: [
+                {
+                  candidateInstanceIds: scopedUnderTamerCandidates.map(({ instanceId }) => instanceId),
+                  max: Math.min(expansion.underTamerMax, materialCandidates.length),
+                },
+                {
+                  candidateInstanceIds: looseCardsInZone(ctx, ownerSeat, "trash").map(({ instanceId }) => instanceId),
+                  max: Math.min(expansion.trashMax, materialCandidates.length),
+                },
+              ],
               digiXrosRuleTrashInstanceIds: preparedMaterials?.ruleTrashMaterials.map((card) => card.instanceId),
             },
           );
@@ -289,10 +302,17 @@ export async function prepareEffectPlayDigiXros(
             materialsSatisfyRecipe(definitions, requirement.materials)
           ) {
             if ((selectedUnderTamer > 0 && !grantsUnderTamers) || (selectedTrash > 0 && !grantsTrash)) {
-              await ctx.fx.suspend(
-                selectedExpanders.map((permanent) => permanent.permanentId),
-                { byEffectSeat: ownerSeat, byEffectCardId: ctx.source.cardId },
-              );
+              const expanderIds = selectedExpanders.map((permanent) => permanent.permanentId);
+              if (expanderIds.some((id) => ctx.fx.canSuspend?.(id, ownerSeat) === false)) {
+                continue;
+              }
+              const suspendedIds = await ctx.fx.suspend(expanderIds, {
+                byEffectSeat: ownerSeat,
+                byEffectCardId: ctx.source.cardId,
+              });
+              if (expanderIds.some((id) => !suspendedIds.includes(id))) {
+                continue;
+              }
             }
             materialInstanceIdsByPlay[playedCard.instanceId] = selected;
             for (const materialId of selected) reservedMaterials.add(materialId);

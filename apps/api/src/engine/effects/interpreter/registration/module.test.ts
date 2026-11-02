@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { compiledEffects, digiXrosRequirementFor, type Action } from "@aegis/shared";
+import { compiledEffects, digiXrosRequirementFor, type Action, type CompiledCard } from "@aegis/shared";
 import { setupEngine, settle } from "../../../testkit/harness.js";
 import { advance } from "../../../testkit/advance.js";
 import { getEffectModule, registerCard, unregisterCard } from "../../registry.js";
@@ -37,6 +37,21 @@ describe("registerIrCard", () => {
 
     expect(module.cardId).toBe(CARD_ID);
     expect(getEffectModule(CARD_ID)).toBe(module);
+  });
+
+  it("freezes the normalized registered IR before exposing it to runtime readers", () => {
+    const source: CompiledCard = {
+      coverage: "full",
+      residual: [],
+      effects: [{ trigger: "Main", actions: [{ kind: "GainMemory", amount: 1 }] }],
+    };
+    registerIrCard(CARD_ID, source);
+    const normalized = registeredCompiledCards.get(CARD_ID)!;
+    expect(Object.isFrozen(normalized)).toBe(true);
+    expect(Object.isFrozen(normalized.effects)).toBe(true);
+    expect(Object.isFrozen(normalized.effects[0]!.actions)).toBe(true);
+    expect(Object.isFrozen(source)).toBe(false);
+    expect(() => normalized.effects[0]!.actions.push({ kind: "GainMemory", amount: 2 })).toThrow(TypeError);
   });
 
   it("publishes the direct module's normalized structural requirements to shared rule readers", () => {

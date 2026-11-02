@@ -2,6 +2,7 @@ import { CardInstance, PlayerState, Permanent, DnaDigivolveRoute } from "@aegis/
 import { beforeEach, expect, it, vi } from "vitest";
 import { sendIntent, type AegisRoom } from "../net/client";
 import { matchIntents } from "./screen/matchIntents";
+import { CardConfirmationMode } from "@/game/cardConfirmation/CardConfirmationMode";
 import { playChoiceAnswers } from "./screen/playChoiceAnswers";
 import { dnaFieldChoice } from "./screen/model/dnaMaterialSelection";
 import { handEntriesOf } from "./screen/model/handEntries";
@@ -99,7 +100,7 @@ it.each([0, 1] as const)(
           events: [],
           digivolveRoutesOf: () => [],
           mainActionBlocked: false,
-          actionConfirmationsEnabled: false,
+          cardConfirmationMode: CardConfirmationMode.NEVER.value,
           playGameCue: vi.fn<() => void>(),
           lastPlayAttemptRef: { current: undefined },
           playAttemptEventSeqRef: { current: -1 },

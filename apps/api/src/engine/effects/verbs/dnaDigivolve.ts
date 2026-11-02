@@ -1,3 +1,6 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { ArraySchema } from "@colyseus/schema";
 import {
   CardKind,
@@ -49,6 +52,7 @@ export function createDnaDigivolveVerbs(pc: PrimitivesContext) {
       extraMaterialInstanceIds?: string[];
       extraMaterialsOnBottom?: boolean;
       costOverride?: number;
+      publicEntry?: boolean;
     },
   ): Promise<Permanent | undefined> => {
     const materials = materialPermanentIds
@@ -117,6 +121,10 @@ export function createDnaDigivolveVerbs(pc: PrimitivesContext) {
       if (engine.memory.maxCostFor(seat) < cost) return undefined;
       if (cost > 0) engine.memory.pay(seat, cost, "digivolve");
     }
+    const linkedOrigins = locateMoveOrigins({
+      state,
+      instanceIds: materials.flatMap((material) => material.linked.map((card) => card.instanceId)),
+    });
     const fromZone = looseZoneOfInstance(state, resultInstanceId);
     const instance = removeLooseInstance(state, resultInstanceId);
     if (instance === undefined) return undefined;
@@ -178,11 +186,11 @@ export function createDnaDigivolveVerbs(pc: PrimitivesContext) {
     // genuine leave. The materials' own stack/top cards are NOT included here: they become
     // digivolution cards under the new result (moving TO under a card, excluded by §4-18-4).
     applyOverflow(engine.memory, trashedLinked, state.turnSeat);
-    if (trashedLinked.length > 0) {
+    for (const { cards, ...origin } of groupCardsByOrigin({ origins: linkedOrigins, cards: trashedLinked })) {
       engine.emit({
         kind: "cardsMoved",
-        instanceIds: trashedLinked.map((c) => c.instanceId),
-        from: "various",
+        instanceIds: cards.map((card) => card.instanceId),
+        ...origin,
         to: Zone.Trash,
       });
     }
@@ -251,12 +259,13 @@ export function createDnaDigivolveVerbs(pc: PrimitivesContext) {
     // CR 8-2-3-3: the DNA digivolution procedure itself draws 1 card — unconditional, part of
     // the placement procedure (mirrors applyDigivolve step 6), not an optional card effect.
     await draw(seat, 1, { drawReason: "digivolution" });
-    // The DNA-digivolved card's OWN [When Digivolving] fires (it was digivolved BY AN EFFECT), with
-    // `enteredByEffect` set to its controller (the producer for the BT25-084 by-effect gate) and
-    // `isDnaDigivolve` set so an `isDnaDigivolving` condition resolves its DNA-only branch.
-    await engine.fireEnteredByEffect?.(EffectTiming.WhenDigivolving, instance.instanceId, seat, {
-      isDnaDigivolve: true,
-    });
+    if (opts?.publicEntry === true) {
+      await engine.fireWhenDigivolving?.(seat, permanent, undefined, true);
+    } else {
+      await engine.fireEnteredByEffect?.(EffectTiming.WhenDigivolving, instance.instanceId, seat, {
+        isDnaDigivolve: true,
+      });
+    }
     return permanent;
   };
 
@@ -414,6 +423,7 @@ export function createDnaDigivolveVerbs(pc: PrimitivesContext) {
       return undefined;
     if (engine.memory.maxCostFor(seat) < effectiveCost) return undefined;
     if (effectiveCost > 0) engine.memory.pay(seat, effectiveCost, "appFusion");
+    const origin = locateMoveOrigins({ state, instanceIds: [resultInstanceId] }).get(resultInstanceId);
     const instance = removeLooseInstance(state, resultInstanceId);
     if (instance === undefined) return undefined;
     instance.faceUp = true;
@@ -440,7 +450,13 @@ export function createDnaDigivolveVerbs(pc: PrimitivesContext) {
       mechanic: "appFusion",
       inBreeding: false,
     });
-    engine.emit({ kind: "cardsMoved", instanceIds: [instance.instanceId], from: "various", to: Zone.BattleArea });
+    engine.emit({
+      kind: "cardsMoved",
+      instanceIds: [instance.instanceId],
+      from: origin?.from ?? CardMovePosition.VARIOUS.value,
+      ...origin,
+      to: Zone.BattleArea,
+    });
     // CR 8-4-3-3: the app fusion procedure itself draws 1 card — unconditional, part of the
     // placement procedure (mirrors applyDigivolve step 6 / dnaDigivolveInto).
     await draw(seat, 1, { drawReason: "digivolution" });

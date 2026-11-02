@@ -1,11 +1,40 @@
 import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
 import { observe } from "../../engine/testkit/observe.js";
-import { settle, setupEngine } from "../../engine/testkit/harness.js";
+import { drainMicrotasks, settle, setupEngine } from "../../engine/testkit/harness.js";
 import "../index.js";
 import { compiled } from "./BT15-067.js";
 
 describe("BT15-067", () => {
+  it.each([
+    ["BT15-058", false],
+    ["BT15-087", true],
+  ])("requires a DigiPolice Tamer rather than a Digimon for its evolution bonus: %s", async (source, allowed) => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT15-063", as: "host", under: [{ card: source, faceUp: true }] }],
+          hand: [{ card: "BT15-067", as: "evolution" }],
+          deck: ["BT1-009", "BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT1-009", as: "target", suspended: true }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.memory = 10;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("host").permanentId,
+        instanceId: s.inst("evolution").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("host").topCard.cardId === "BT15-067" && s.state.pendingDecision === undefined);
+    await drainMicrotasks();
+    expect(s.state.players[1]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT1-009")).toBe(!allowed);
+  });
+
   it("has the printed Blocker keyword", () =>
     expect(compiled.effects?.[0]).toMatchObject({ trigger: "Static", keywords: [{ keyword: "Blocker" }] }));
   it("returns a suspended opposing Digimon or Tamer when DigiPolice is in the stack", () =>

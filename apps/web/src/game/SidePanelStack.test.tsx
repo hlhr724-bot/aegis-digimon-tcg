@@ -112,7 +112,7 @@ describe("side panel card links", () => {
   it("opens a listed card from its name", () => {
     const opened: string[] = [];
     renderWithOpener(panel({ titleKey: "panel.deletedCards" }), (cardId) => opened.push(cardId));
-    fireEvent.click(screen.getByRole("button", { name: "Open Bebydomon" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open Bebydomon (BT1-002)" }));
     expect(opened).toEqual(["BT1-002"]);
   });
 
@@ -141,7 +141,7 @@ describe("AttackAnnouncementBanner", () => {
         </CardOpenerProvider>
       </I18nProvider>,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Open Yokomon" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open Yokomon (BT1-001)" }));
     expect(opened).toEqual(["BT1-001"]);
   });
 });

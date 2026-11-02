@@ -48,7 +48,7 @@ describe("BT22-099 Kuremi Detective Agency", () => {
     const delay = compiled.effects.find(
       (entry) => entry.trigger === "Main" && entry.keywords?.some((k) => k.keyword === "Delay"),
     );
-    expect(delay?.actions).toEqual([{ kind: "GainMemory", amount: 2 }]);
+    expect(delay?.actions).toEqual([{ effectTextPart: "Gain 2 memory.", kind: "GainMemory", amount: 2 }]);
     expect(compiled.effects.find((entry) => entry.trigger === "Security")).toMatchObject({
       isSecurity: true,
       actions: [{ kind: "PlaceInBattleAreaSelf" }],

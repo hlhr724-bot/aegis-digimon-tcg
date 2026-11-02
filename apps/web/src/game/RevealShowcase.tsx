@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 /* The row of cards an opponent's effect revealed, held centre-screen the way a played card
    is (ZoneShowcase). A deck card turned face-up never reaches the viewer's state, so this is
    the one place the viewer sees those cards before they move on.
@@ -8,26 +9,22 @@
 import { CardFull } from "../design/cards";
 import { useTranslation } from "../i18n";
 import type { RevealShowcase as RevealShowcaseModel } from "./match/present/revealShowcases";
-import { printedCardName } from "./overlay";
 
 const REVEAL_CARD_WIDTH = 150;
 
 export function RevealShowcase({ showcase }: { showcase: RevealShowcaseModel }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const caption =
     showcase.sourceCardId === undefined
       ? t("showcase.opponentRevealed")
-      : t("showcase.opponentRevealedWith", { source: printedCardName(showcase.sourceCardId) });
+      : t("showcase.opponentRevealedWith", { source: getCardName(showcase.sourceCardId) });
   return (
     <div className="battle-showcase battle-showcase--reveal" data-testid="reveal-showcase" role="status">
       <figure className="battle-showcase__frame">
         <ol className="battle-showcase__row">
           {showcase.cards.map((card, index) => (
-            <li
-              key={`${index}-${card.cardId}`}
-              className="battle-showcase__art"
-              aria-label={printedCardName(card.cardId)}
-            >
+            <li key={`${index}-${card.cardId}`} className="battle-showcase__art" aria-label={getCardName(card.cardId)}>
               <CardFull cardId={card.cardId} artId={card.artId} width={REVEAL_CARD_WIDTH} zoomOnHover={false} />
             </li>
           ))}

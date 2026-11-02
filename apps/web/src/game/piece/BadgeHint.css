@@ -1,0 +1,33 @@
+.game-badge-hint {
+  position: fixed;
+  z-index: var(--ds-z-hint);
+  display: grid;
+  gap: 2px;
+  padding: 6px 10px;
+  color: var(--ds-on-ink);
+  border: 1px solid color-mix(in srgb, var(--ds-ink-accent) 35%, transparent);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-ink);
+  box-shadow: var(--ds-shadow-overlay);
+  font: 400 var(--ds-text-xs) / 1.4 var(--ds-font-body);
+  text-align: left;
+  pointer-events: auto;
+}
+
+.game-badge-hint[data-placement="above"] {
+  translate: 0 -100%;
+}
+
+.game-badge-hint strong {
+  font-weight: 700;
+}
+
+.game-badge-hint > span {
+  color: var(--ds-on-ink-2);
+}
+
+.game-badge-hint__link {
+  justify-self: start;
+  color: var(--ds-ink-accent);
+  text-decoration: underline;
+}

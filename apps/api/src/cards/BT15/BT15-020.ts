@@ -22,8 +22,7 @@ export const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
-          effectTextPart:
-            "Then, if you have a Tamer with [Matt Ishida]&#160;in its name,  (Draw 1 card from your deck).",
+          effectTextPart: "Then, if you have a Tamer with [Matt Ishida] in its name,  (Draw 1 card from your deck).",
           kind: "Draw",
           controller: "mine",
           amount: 1,

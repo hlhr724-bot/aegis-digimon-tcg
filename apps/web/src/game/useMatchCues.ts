@@ -1,3 +1,6 @@
+import { useManualSignalNarration } from "@/game/manual/useManualSignalNarration";
+import { Phase } from "@aegis/shared/schema/enums";
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { createDiscardedSourceResolution } from "./match/present/announcements";
 import { createDiscardedSourcePanels } from "./match/narration/presentableNarration";
 /* Everything the board plays back at the player because the server said
@@ -22,7 +25,6 @@ import { createDiscardedSourcePanels } from "./match/narration/presentableNarrat
    (ARCHITECTURE.md §4). */
 
 import { CueTrack, OpeningDealState } from "./match/enums";
-import { REDUCED_MOTION_QUERY } from "./match/environment";
 import { holdsTheBoard, OPTION_DOCK_TRACKS } from "./match/tracks";
 import { liveMode } from "./match/environment";
 import { buildCardSiteIndex } from "./match/cardSiteIndex";
@@ -121,6 +123,7 @@ import { type FieldClashScene, type OpenAttack } from "./fieldClash";
 import { type PhaseBanner } from "./phaseBanner";
 import { type DpPulse } from "./dpPulse";
 import { type FreezeFlags, type FreezePulse } from "./freezePulse";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 export function useMatchCues({
   batches,
@@ -140,6 +143,7 @@ export function useMatchCues({
   onPresentationReport,
   devProbe,
   presentationPacing = "current",
+  holdEffectsForConfirmation = false,
 }: {
   /** The closed server batches, in order. One batch is one moment of the rules. */
   batches: readonly ServerBatch[];
@@ -183,6 +187,7 @@ export function useMatchCues({
    * announce, results and settle beats, one after the other (match/effectSequence.ts).
    */
   presentationPacing?: PresentationPacing;
+  holdEffectsForConfirmation?: boolean;
 }): MatchCues {
   // How far the presentation has got, in server revisions. Every step is counted into the
   // batch it was enqueued for, so the board can be rendered from the snapshot of the batch
@@ -204,6 +209,16 @@ export function useMatchCues({
   // The watchdog fired: the queue stopped moving while the viewer had a question to answer,
   // so the prompt is handed over whatever the queue still claims to owe.
   const [decisionStalled, setDecisionStalled] = useState(false);
+  const [effectAwaitingConfirmation, setEffectAwaitingConfirmation] = useState(false);
+  const effectConfirmationRef = useRef<(() => void) | null>(null);
+  const holdEffectsRef = useRef(holdEffectsForConfirmation);
+  holdEffectsRef.current = holdEffectsForConfirmation;
+  const viewerReadingRef = useRef(false);
+  const readingHeldRef = useRef(false);
+  useEffect(() => {
+    if (!holdEffectsForConfirmation) effectConfirmationRef.current?.();
+  }, [holdEffectsForConfirmation]);
+  useEffect(() => () => effectConfirmationRef.current?.(), []);
   const queueChangedRef = useRef<() => void>(() => {});
   const visiblePhaseBannerRef = useRef(false);
   // A cue belongs after its preceding phase announcement, not merely after whichever
@@ -405,6 +420,7 @@ export function useMatchCues({
   publishPresentedRef.current = () => setPresentedStateVersion(progress.current());
 
   const [narration, setNarration] = useState<ReadonlyMap<string, NarrationItem>>(new Map());
+  useManualSignalNarration({ state, viewerSeat, collapseNarration, narrationLimit, setNarration });
   const [rejection, setRejection] = useState<MatchNotice | null>(null);
   const narrationRef = useRef(narration);
   narrationRef.current = narration;
@@ -464,7 +480,9 @@ export function useMatchCues({
             (event) =>
               event.kind === "cardsMoved" &&
               event.to === "hand" &&
-              (event.from === "various" || event.from === "battleArea"),
+              (event.from === CardMovePosition.VARIOUS.value ||
+                event.from === "battleArea" ||
+                event.from === CardMovePosition.DIGIVOLUTION_CARDS.value),
           )
           .flatMap((event) => (event.kind === "cardsMoved" ? event.instanceIds : []))
           .find((instanceId) =>
@@ -665,11 +683,10 @@ export function useMatchCues({
       if (!queue.isPaused()) queue.setMode(liveMode());
     };
     sync();
-    const query = typeof window.matchMedia === "function" ? window.matchMedia(REDUCED_MOTION_QUERY) : undefined;
-    query?.addEventListener("change", sync);
+    const unsubscribeMotion = motionPreference.subscribe(sync);
     document.addEventListener("visibilitychange", sync);
     return () => {
-      query?.removeEventListener("change", sync);
+      unsubscribeMotion();
       document.removeEventListener("visibilitychange", sync);
     };
   }, [queue]);
@@ -765,6 +782,7 @@ export function useMatchCues({
     lastBatchIdRef,
     narrationSequenceRef,
     narrationRef,
+    awaitEffectConfirmation,
   });
 
   /* A lit source belongs to the clause it raised: it goes out when that clause does, not
@@ -966,9 +984,11 @@ export function useMatchCues({
       flushHeldNotices,
       launchDrawFlight,
       launchDeckToUnderFlight,
+      flyPublicPileCard,
       flyDockedOptionUnder,
       flyCardToDeck,
       flyCardToHand,
+      launchHandTrashFlight,
       releaseTrashArrivalsThrough,
       launchSecurityGainFlight,
       securityCountOf,
@@ -1073,6 +1093,7 @@ export function useMatchCues({
     previousDrawStateRef,
     phaseStateRef,
     state,
+    presentedStateVersion,
     setPendingPhaseBanners,
     setTurnTransition,
     setAnnouncedTurn,
@@ -1268,23 +1289,22 @@ export function useMatchCues({
     [queue],
   );
 
+  function getPresentationRevisionContext(stateVersion: number) {
+    const batch = batches.find((candidate) => candidate.stateVersion === stateVersion);
+    return {
+      gate:
+        stateVersion > effectSequence.observedVersion()
+          ? effectSequence.causeOfLiveChange(stateVersion)
+          : (effectSequence.causeOfObservedChange(stateVersion - 1, stateVersion) ?? null),
+      ...(batch ? { origin: { batchId: batch.id, stateVersion, phaseOrder: phaseOrderFor(batch.events) } } : {}),
+    };
+  }
+
   useDpPulses({
     state,
     preserveChanges: presentationPacing === "sequential",
     snapshots,
-    contextOfRevision(stateVersion) {
-      const batch = batches.find((candidate) => candidate.stateVersion === stateVersion);
-      return {
-        gate:
-          stateVersion > effectSequence.observedVersion()
-            ? effectSequence.causeOfLiveChange(stateVersion)
-            : // A retained snapshot names an exact revision, not the whole coalesced
-              // patch. Turn-end DP expiry has no effect owner and must not wait on a
-              // later Active clause whose ribbon is itself waiting for that pulse.
-              (effectSequence.causeOfObservedChange(stateVersion - 1, stateVersion) ?? null),
-        ...(batch ? { origin: { batchId: batch.id, stateVersion, phaseOrder: phaseOrderFor(batch.events) } } : {}),
-      };
-    },
+    contextOfRevision: getPresentationRevisionContext,
     queue: liveStateQueue,
     dpByPermanentRef,
     dpPulseKeyRef,
@@ -1296,6 +1316,8 @@ export function useMatchCues({
 
   useRestrictionPulses({
     state,
+    snapshots: presentationPacing === "sequential" ? snapshots : undefined,
+    contextOfRevision: presentationPacing === "sequential" ? getPresentationRevisionContext : undefined,
     queue: liveStateQueue,
     restrictionsByPermanentRef,
     freezePulseKeyRef,
@@ -1310,9 +1332,11 @@ export function useMatchCues({
     launchOpeningSecurityDeal,
     launchDrawFlight,
     launchDeckToUnderFlight,
+    flyPublicPileCard,
     flyCardUnder,
     flyCardToDeck,
     flyCardToHand,
+    launchHandTrashFlight,
   } = cueFlights({
     queue,
     anchors,
@@ -1427,7 +1451,36 @@ export function useMatchCues({
 
   /** Stop every reading clock while the viewer reads, and restart them where they left off. */
   function holdNarration(held: boolean) {
+    viewerReadingRef.current = held;
+    applyReadingHold();
+  }
+
+  function applyReadingHold() {
+    const held = viewerReadingRef.current || effectConfirmationRef.current !== null;
+    if (held === readingHeldRef.current) return;
+    readingHeldRef.current = held;
     setNarration((items) => (held ? pauseNarration(items, Date.now()) : resumeNarration(items, Date.now())));
+  }
+
+  function awaitEffectConfirmation(context: AnimationStepContext): Promise<void> | undefined {
+    if (!holdEffectsRef.current || context.mode !== "live" || context.skipping || context.cancelled) return undefined;
+    effectConfirmationRef.current?.();
+    return new Promise<void>((resolve) => {
+      effectConfirmationRef.current = () => {
+        effectConfirmationRef.current = null;
+        setEffectAwaitingConfirmation(false);
+        applyReadingHold();
+        queue.resume();
+        resolve();
+      };
+      queue.pause();
+      applyReadingHold();
+      setEffectAwaitingConfirmation(true);
+    });
+  }
+
+  function confirmEffect() {
+    effectConfirmationRef.current?.();
   }
 
   /**
@@ -1437,6 +1490,7 @@ export function useMatchCues({
    */
   function fastForwardWithFilter(eligible?: (step: AnimationStep) => boolean) {
     presentationTelemetry.countSkip();
+    confirmEffect();
     narrationSkipRef.current = true;
     targetClausesRef.current.clear();
     effectSequence.skipClauses();
@@ -1463,7 +1517,7 @@ export function useMatchCues({
   // A patch can arrive before batchClosed. Reserve incoming draws immediately:
   // the batch's measured flight takes over this hold before the next paint.
   const incomingHandArrivals = new Map(heldHandArrivals);
-  if (cueBaselineRef.current && liveMode() === "live") {
+  if (cueBaselineRef.current && liveMode() === "live" && state?.phase !== Phase.None && !mulliganOpen) {
     const closed = new Set(batches.map((batch) => batch.id));
     const opaqueClaims = new Map<Seat, number>();
     for (const hold of heldHandArrivals.values()) {
@@ -1546,11 +1600,16 @@ export function useMatchCues({
         ),
       );
       const added = current.hand.filter((card) => !known.has(card.instanceId) && !staged.has(card.instanceId));
-      for (const card of deckDraws > 0 ? added.slice(-deckDraws) : []) {
+      let incoming = added.slice(-deckDraws);
+      if (deckDraws === 0) {
+        incoming = state!.stateVersion === closedVersion ? added : [];
+      }
+      for (const card of incoming) {
         if (pending.has(card.instanceId)) continue;
         incomingHandArrivals.set(incomingKey--, {
           seat: viewerSeat,
           instanceId: card.instanceId,
+          fromDeck: deckDraws > 0,
           stateVersion: state!.stateVersion,
           handCountAfter: current.handCount,
           deckCountAfter: current.deckCount,
@@ -1623,5 +1682,7 @@ export function useMatchCues({
     drawBursts,
     playCue,
     skipAnimations: fastForward,
+    effectAwaitingConfirmation,
+    confirmEffect,
   };
 }

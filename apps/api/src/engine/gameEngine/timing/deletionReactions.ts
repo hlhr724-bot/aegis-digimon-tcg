@@ -1,3 +1,4 @@
+import { createPendingDeletionEffectReader } from "#api/engine/gameEngine/createPendingDeletionEffectReader";
 import { EffectTiming, type CardInstance, type Seat } from "@aegis/shared";
 import { definitionOf } from "../../cards/cardData.js";
 import type { TriggerInfo } from "../../effects/EffectContext.js";
@@ -53,6 +54,7 @@ export async function resolveDeletionReactions(
     // window reaches its between-effects boundary.
     engine.pendingBattleWonSubTriggers = [...battleWonSubTriggers, ...engine.pendingBattleWonSubTriggers];
     engine.deferredTimingWindows.push({
+      readPendingEffects: createPendingDeletionEffectReader({ engine, trigger, transientCandidates }),
       timing: EffectTiming.OnDestroyedAnyone,
       trigger: { ...trigger },
       transientCandidates: [...transientCandidates],
@@ -141,6 +143,7 @@ export async function resolveDeletionReactions(
           printed.slice(printed.indexOf("[On Deletion]")),
         ],
         acceptsResolutionPlan: true,
+        acceptsIndexedResolutionPlan: true,
         // Native On Deletion bodies keep their individual optional choices.
         triggerIsOptional: [true],
       },

@@ -15,6 +15,7 @@ import { ResolutionPlan } from "./resolutionPlan.js";
 import type { CollectedEffect } from "../effects/collect.js";
 import type { CardSource } from "../effects/CardSource.js";
 import type { Effect } from "../effects/Effect.js";
+import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDecisionEffectSummary";
 
 function gameWithSeats(): GameState {
   const game = new GameState();
@@ -390,4 +391,31 @@ describe("createResolverDecisions.askOptional", () => {
     await decisions.askOptional(1, fakeCollected("opt", true));
     expect(requests[0]?.seat).toBe(1);
   });
+});
+
+it("keeps summaries aligned for duplicate trigger sources, unknown effects and different controllers", async () => {
+  const game = gameWithSeats();
+  const { transport, requests, bind } = autoTransport((request) => ({
+    kind: "orderTriggers",
+    order: request.options!.triggerKeys!.slice(0, 1),
+  }));
+  const manager = new DecisionManager(game, transport);
+  bind(manager);
+  const first = fakeCollected("shared", false, "first-copy", "BT1-010");
+  first.effect.decisionSummary = getDecisionEffectSummary({ actions: [{ kind: "GainMemory", amount: 2 }] });
+  const secondBase = fakeCollected("shared", false, "second-copy", "BT1-010");
+  const second = { ...secondBase, source: { ...secondBase.source, ownerSeat: 1 as const } };
+  second.effect.decisionSummary = getDecisionEffectSummary({
+    actions: [{ kind: "Draw", controller: "mine", amount: 1 }],
+  });
+  const unknown = fakeCollected("shared", false, "third-copy", "BT1-010");
+  expect(await createResolverDecisions(manager).chooseOrder(0, [first, second, unknown])).toBe(0);
+  const options = requests[0]!.options!;
+  expect(new Set(options.triggerKeys).size).toBe(3);
+  expect(options.triggerSummaries).toMatchObject([
+    { memoryGain: 2, cardsDrawn: 0 },
+    { memoryGain: 0, cardsDrawn: 1 },
+    null,
+  ]);
+  expect(options.triggerControllerSeats).toEqual([0, 1, 0]);
 });

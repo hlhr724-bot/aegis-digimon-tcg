@@ -61,10 +61,44 @@ function describeValue(value: unknown): string {
 }
 
 function readErrorDetails(error: unknown): ErrorDetails {
-  if (error instanceof Error) {
-    return { message: `${error.name}: ${error.message}`, stack: error.stack ?? "" };
+  if (!(error instanceof Error)) {
+    return { message: describeValue(error), stack: "" };
   }
-  return { message: describeValue(error), stack: "" };
+  const chain: Error[] = [];
+  const visited = new Set<Error>();
+  let thrownValue: ErrorDetails | undefined;
+  let current = error;
+  while (chain.length < 8 && !visited.has(current)) {
+    visited.add(current);
+    chain.push(current);
+    let cause: unknown;
+    try {
+      cause = current.cause;
+    } catch {
+      break;
+    }
+    if (!(cause instanceof Error)) {
+      if (cause !== undefined) {
+        thrownValue = { message: describeValue(cause), stack: "" };
+      }
+      break;
+    }
+    current = cause;
+  }
+  let original = thrownValue;
+  if (!original) {
+    const failure = chain.pop()!;
+    original = { message: `${failure.name}: ${failure.message}`, stack: failure.stack ?? "" };
+  }
+  const wrappers = chain.reverse().map((wrapper) => {
+    const message = `${wrapper.name}: ${wrapper.message}`.slice(0, MAX_CLIENT_ERROR_MESSAGE);
+    const stack = (wrapper.stack ?? "").slice(0, MAX_CLIENT_ERROR_STACK);
+    return `Wrapped by: ${message}\n${stack}`;
+  });
+  return {
+    message: original.message,
+    stack: [original.stack.slice(0, MAX_CLIENT_ERROR_STACK), ...wrappers].filter(Boolean).join("\n\n"),
+  };
 }
 
 function readOptionalId(value: unknown): string | undefined {

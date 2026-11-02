@@ -12,6 +12,7 @@ export const compiled: CompiledCard = {
           sourceFilter: {
             isSelfRef: true,
             byEffect: true,
+            byOwnEffect: true,
           },
           actions: [
             {

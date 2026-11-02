@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 Digimon card with [Chaosmon] in its name or the [ACCEL] trait",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -29,6 +30,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 Option card with the [ACCEL] trait among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Option"],

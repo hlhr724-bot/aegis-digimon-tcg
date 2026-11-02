@@ -1,0 +1,103 @@
+.manual-features {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.manual-features__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.5rem;
+  inline-size: 100%;
+  align-items: end;
+}
+
+.manual-features__token-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  inline-size: 100%;
+}
+
+.manual-features__token-preview > button {
+  flex: 1;
+}
+
+.manual-features__section {
+  display: grid;
+  gap: 0.5rem;
+  inline-size: 100%;
+  padding-block: 0.5rem;
+}
+
+.manual-features__section > strong {
+  color: var(--ds-text-2);
+  font-size: 0.75rem;
+}
+
+.manual-features__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.manual-table .manual-features__chips button {
+  min-block-size: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.manual-table .manual-features__chips button[aria-pressed="true"] {
+  border-color: var(--ds-accent-strong);
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent-strong);
+  box-shadow: inset 0 0 0 1px var(--ds-accent-strong);
+}
+
+.manual-features__gallery {
+  padding: 0.75rem;
+  border: 1px solid var(--ds-line);
+  border-radius: 0.625rem;
+  background: var(--ds-paper);
+}
+
+.manual-features__gallery > strong {
+  font-size: 0.8125rem;
+}
+
+.manual-features__gallery-cards {
+  display: flex;
+  overflow-x: auto;
+  gap: 0.75rem;
+  padding-block: 0.75rem 0.25rem;
+  scrollbar-width: thin;
+}
+
+.manual-features__gallery figure {
+  flex: 0 0 5rem;
+  margin: 0;
+}
+
+.manual-features__gallery figcaption {
+  display: grid;
+  gap: 0.25rem;
+  padding-block-start: 0.375rem;
+  font-size: 0.6875rem;
+  overflow-wrap: anywhere;
+}
+
+.manual-features__gallery small {
+  color: var(--ds-text-3);
+}
+
+.manual-features__quick-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.manual-table .manual-features__quick-actions button {
+  min-block-size: 2.75rem;
+  padding: 0.625rem;
+  overflow-wrap: anywhere;
+  font-size: 0.75rem;
+}

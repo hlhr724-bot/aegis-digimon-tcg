@@ -1,0 +1,19 @@
+.quick-chat-fixture-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: var(--ds-nav-height-wide);
+  padding-inline: var(--ds-space-6);
+  background: var(--ds-ink);
+  color: var(--ds-on-ink);
+}
+.quick-chat-fixture-header nav {
+  display: flex;
+  gap: var(--ds-space-3);
+}
+.quick-chat-fixture-header .aegis-button {
+  color: var(--ds-on-ink);
+}
+.quick-chat-fixture-content {
+  height: calc(100% - var(--ds-nav-height-wide));
+}

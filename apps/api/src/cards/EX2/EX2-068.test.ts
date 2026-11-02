@@ -44,12 +44,16 @@ describe("EX2-068 High-Speed Plug-In D", () => {
           trigger: "Main",
           actions: [
             {
+              effectTextPart:
+                "[Main] For the turn, 1 of your Digimon gains ＜Jamming＞ (This Digimon can't be deleted in battles against Security Digimon) and can't be blocked by your opponent's Digimon.",
               kind: "GainKeyword",
               target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
               keyword: { keyword: "Jamming", raw: "＜Jamming＞" },
               duration: "forTheTurn",
             },
             {
+              effectTextPart:
+                "[Main] For the turn, 1 of your Digimon gains ＜Jamming＞ (This Digimon can't be deleted in battles against Security Digimon) and can't be blocked by your opponent's Digimon.",
               kind: "Restrict",
               target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1, sameTarget: true },
               restriction: "cantBeBlocked",

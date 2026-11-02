@@ -78,7 +78,7 @@ export function EvoCostChoiceOverlay({
         })}
       </div>
       <div className="evo-cost-prompt__footer">
-        <Button variant="ghost" onClick={onCancel}>
+        <Button variant="ghost" data-arena-cancel onClick={onCancel}>
           {t("common.cancel")}
         </Button>
         <ViewBoardButton onClick={openBoard} />

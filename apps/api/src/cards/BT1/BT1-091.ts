@@ -6,6 +6,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] 1 of your Digimon gains ＜Piercing＞ (When this Digimon attacks and deletes an opponent's Digimon and survives the battle, it performs any security checks it normally would) for the turn.",
           kind: "GainKeyword",
           target: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
           keyword: { keyword: "Piercing" },

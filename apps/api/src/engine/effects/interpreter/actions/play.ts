@@ -8,9 +8,10 @@ import { definitionMatches, hasExactName } from "../matching/definition.js";
 import { permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
 import { countMatching, scaleFactor } from "../scaling.js";
 import { DEFAULT_PLAY_ZONES, candidateLooseInstances, looseCardsInZone, pickLoose } from "../targeting/loose.js";
+import { stackHostMatches } from "../targeting/stackHostMatches.js";
 import { runPlayPerLevel } from "./dna.js";
 import { CardKind, effectiveStaticNames, getCardDefinition, resolveTokenCardId } from "@aegis/shared";
-import type { Action, Scaling, Seat, Target } from "@aegis/shared";
+import type { Action, Filter, Scaling, Seat, Target } from "@aegis/shared";
 import { availableEffectPlayAssembly, playEffectInstances } from "./effectPlayAssembly.js";
 import { availableEffectPlayDigiXrosReduction } from "./effectPlayDigiXrosAvailability.js";
 
@@ -111,16 +112,14 @@ export function isEffectPlayProhibited(ctx: EffectContext, card: { cardId: strin
   );
 }
 
-export function playableCandidates<T extends { instanceId: string; cardId: string }>(
-  ctx: EffectContext,
-  target: Target | undefined,
-  candidates: readonly T[],
-  chooseDualMode?: true,
-): T[] {
+export function playableCandidates<
+  T extends { instanceId: string; cardId: string; hostPermanentId?: string; faceUp?: boolean },
+>(ctx: EffectContext, target: Target | undefined, candidates: readonly T[], chooseDualMode?: true): T[] {
   const requestedKinds = requestedPlayKinds(target);
   const namesOption = requestedKinds.includes("Option");
   const optionOnly = namesOption && !requestedKinds.includes("Digimon") && !requestedKinds.includes("Tamer");
   return candidates.filter((candidate) => {
+    if (candidate.hostPermanentId !== undefined && candidate.faceUp === false) return false;
     const definition = ctx.game.definitionOf({ cardId: candidate.cardId } as never);
     const kinds = definition.kinds;
     if (!kinds.includes(CardKind.Option)) return true;
@@ -147,6 +146,7 @@ export function ownStackPlayCandidates(ctx: EffectContext, target: Target) {
     (ctx.source.permanent()?.stack ?? []).filter((card) => {
       const definition = ctx.game.definitionOf(card);
       return (
+        card.faceUp !== false &&
         filters.some((filter) => definitionMatches(filter, definition)) &&
         !ctx.fx.isPlayProhibited?.(ctx.source.ownerSeat, card.cardId, "play")
       );
@@ -230,6 +230,19 @@ export function applyDecodeHostScope(action: Extract<Action, { kind: "PlayWithou
     action.fromOwnDigivolutionStack === true;
   if (action.playedByDecode !== true || alreadyScoped || !zones.includes("digivolutionCards")) return target;
   return { ...target, filter: { ...target.filter, hostFilter: { isSelfRef: true } } };
+}
+
+function isVisibleStackHost(
+  ctx: EffectContext,
+  target: Target,
+  filter: Filter,
+  hostPermanentId: string | undefined,
+): boolean {
+  const sources = target.source === undefined ? [] : Array.isArray(target.source) ? target.source : [target.source];
+  if (sources.includes("thisDigimon") && hostPermanentId !== ctx.source.permanent()?.permanentId) return false;
+  const { or: branches, ...common } = filter;
+  const filters = branches && branches.length > 0 ? branches.map((branch) => ({ ...common, ...branch })) : [filter];
+  return filters.some((branch) => stackHostMatches(ctx, branch.hostFilter, hostPermanentId));
 }
 
 export function applyPlayCostCeiling(
@@ -747,10 +760,18 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
             zones.flatMap((zone) => looseCardsInZone(ctx, seat, zone).map((candidate) => candidate.instanceId)),
           )
         : zones.every((zone) => zone === "digivolutionCards")
-          ? [playCostAdjustedTarget.filter, ...(playCostAdjustedTarget.orFilters ?? [])]
+          ? [
+              playCostAdjustedTarget.filter,
+              ...(playCostAdjustedTarget.orFilters ?? []),
+              ...(playCostAdjustedTarget.filter.orFilters ?? []),
+            ]
               .flatMap((filter) =>
                 seatsForController(ctx, filter).flatMap((seat) =>
-                  looseCardsInZone(ctx, seat, "digivolutionCards").map(({ instanceId }) => instanceId),
+                  looseCardsInZone(ctx, seat, "digivolutionCards")
+                    .filter(({ hostPermanentId }) =>
+                      isVisibleStackHost(ctx, playCostAdjustedTarget, filter, hostPermanentId),
+                    )
+                    .map(({ instanceId }) => instanceId),
                 ),
               )
               .filter((instanceId, index, all) => all.indexOf(instanceId) === index)

@@ -34,7 +34,7 @@
 
 /* Short-screen row rules must not replace the space the fitter reserved for sources. */
 .game-board .game-field .game-battle-zones > .game-battle-row[data-field-layout="organized"] > .game-battle-lane {
-  padding: var(--field-lane-top) 12px var(--field-lane-bottom) !important;
+  padding: var(--field-lane-top) 16px var(--field-lane-bottom) !important;
 }
 
 .game-board .game-battle-row[data-field-layout="organized"] > .game-battle-lane::-webkit-scrollbar {
@@ -130,6 +130,15 @@
     opacity 160ms !important;
 }
 
+@media (min-width: 1024px) and (min-height: 760px),
+  (min-width: 600px) and (min-height: 520px) and (max-height: 759px) and (orientation: landscape),
+  (min-width: 600px) and (max-width: 1023px) and (min-height: 520px) and (orientation: landscape) {
+  .game-board .game-field .game-battle-zones > .game-battle-row[data-field-layout="organized"] {
+    --field-overlap-lanes: 1;
+    --field-fit-width: 1;
+  }
+}
+
 /* Upright phones draw one lane across the whole width, Digimon first. Compact
    utilities return height to that lane. */
 @media (width < 600px) and (orientation: portrait) {
@@ -147,7 +156,7 @@
     --field-reserve-support: 1;
     --field-overlap-lanes: 1;
     --field-fit-width: 1;
-    --field-fixed-width: 50;
+    --field-fixed-width: 64;
     min-height: 78px !important;
   }
   .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field {
@@ -199,11 +208,19 @@
     --arena-utility-height: 90px;
   }
   .game-board .game-field .game-battle-zones > .game-battle-row[data-field-layout="organized"] {
-    --field-fixed-width: 64;
+    --field-fixed-width: 88;
   }
 }
 @media (width < 600px) and (orientation: portrait) and (min-height: 650px) and (max-height: 759px) {
   .game-board .game-field .game-battle-zones > .game-battle-row[data-field-layout="organized"] {
-    --field-fixed-width: 58;
+    --field-fixed-width: 76;
   }
+}
+
+.game-board .game-battle-row[data-field-layout="organized"] > .game-battle-lane > :first-child {
+  margin-left: auto;
+}
+
+.game-board .game-battle-row[data-field-layout="organized"] > .game-battle-lane > :last-child {
+  margin-right: auto;
 }

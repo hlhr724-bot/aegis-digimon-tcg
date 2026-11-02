@@ -1,5 +1,5 @@
-import type { CompiledCard } from "@aegis/shared";
-import { registerIrCard } from "../../engine/effects/interpreter.js";
+import type { CompiledCard } from "@aegis/shared/effects/ir/card";
+import { registerIrCard } from "#api/engine/effects/interpreter";
 
 const compiled: CompiledCard = {
   effects: [
@@ -36,6 +36,24 @@ const compiled: CompiledCard = {
         },
       ],
       frequency: "OncePerTurn",
+    },
+    {
+      trigger: "WhenLinking",
+      isLinked: true,
+      actions: [
+        {
+          kind: "Return",
+          target: {
+            filter: {
+              controller: "opponent",
+              kind: ["Digimon"],
+              dp: { op: "lte", value: 5000 },
+            },
+            count: 1,
+          },
+          to: "deckBottom",
+        },
+      ],
     },
   ],
   coverage: "full",

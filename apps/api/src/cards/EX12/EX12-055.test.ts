@@ -114,6 +114,44 @@ describe("EX12-055 Andromon", () => {
     expect(compiledEffects["EX12-055"]).toEqual(compiled);
   });
 
+  it("does not use Giant Meat when its evolution effect can only play revealed cards", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT3-066", as: "base" }],
+          hand: [{ card: "EX12-055", as: "andromon" }],
+          deck: ["BT1-009", { card: "EX12-073", as: "giant-meat" }, "BT1-010", "BT1-011"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.memory = 10;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("andromon").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.state.players[0]!.trash.some((card) => card.cardId === "EX12-073") && s.state.pendingDecision === undefined,
+    );
+    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.topCard.cardId)).toEqual(["EX12-055"]);
+    expect(s.state.players[0]!.trash.map((card) => card.cardId)).toEqual(
+      expect.arrayContaining(["EX12-073", "BT1-010", "BT1-011"]),
+    );
+    expect(
+      s.events.some(
+        (event) =>
+          event.kind === "cardsMoved" &&
+          event.optionUsed === true &&
+          event.instanceIds.includes(s.inst("giant-meat").instanceId),
+      ),
+    ).toBe(false);
+  });
+
   it("plays only a matching Machine/Cyborg/ME card with play cost 5 or less and trashes the rest", async () => {
     const s = setupEngine(
       {

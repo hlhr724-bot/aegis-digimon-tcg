@@ -10,10 +10,18 @@ export function pendingEffectCandidates(engine: GameEngine, spec: DecisionSpec):
     Array.from(engine.state.players).flatMap((player) => Array.from(player.trash, (card) => card.instanceId)),
   );
   if (!offered.size) return [];
+  const deletionPending = [
+    ...Array.from(engine.pendingEffectReaders).flatMap((read) => [...read()]),
+    ...engine.deferredTimingWindows.flatMap((window) => [...(window.readPendingEffects?.() ?? [])]),
+  ];
   return [
     ...new Set(
-      pendingWindowCollected(engine).flatMap((pending) => {
-        const id = pending.discardedStackSourceProof?.sourceInstanceId;
+      [...pendingWindowCollected(engine), ...deletionPending].flatMap((pending) => {
+        const deletionSource =
+          deletionPending.includes(pending) &&
+          pending.effect.irTrigger === "OnDeletion" &&
+          pending.triggerInfo?.deletedInstanceIds?.includes(pending.source.instanceId) === true;
+        const id = deletionSource ? pending.source.instanceId : pending.discardedStackSourceProof?.sourceInstanceId;
         return id !== undefined &&
           id === pending.source.instanceId &&
           offered.has(id) &&

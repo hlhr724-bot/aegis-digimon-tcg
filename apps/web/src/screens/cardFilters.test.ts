@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { sortSearchResults } from "@/screens/sortSearchResults";
 import { CardColor, CardKind, allCards, type CardDefinition } from "@aegis/shared";
-import { sortSearchResults, useCardFilter } from "./cardFilters";
+import { matchesTraitOrAttributeFilter, useCardFilter } from "./cardFilters";
 
 function searchIds(cards: readonly CardDefinition[], query: string): string[] {
   const { result } = renderHook(() => useCardFilter(cards));
@@ -25,7 +26,27 @@ function testCard(cardId: string, nameEn: string, text: Partial<CardDefinition> 
   };
 }
 
+it.each([
+  ["ST23-13", "BEATBREAK"],
+  ["BT18-102", "Hybrid"],
+  ["BT16-102", "Free"],
+  ["BT16-102", "Royal Knight"],
+])("matches a later form, attribute or type on %s with %s", (cardId, query) => {
+  const card = allCards().find((candidate) => candidate.cardId === cardId)!;
+
+  expect(matchesTraitOrAttributeFilter(card, query)).toBe(true);
+  expect(matchesTraitOrAttributeFilter(card, "missing-trait")).toBe(false);
+});
+
 describe("card search box", () => {
+  it("finds Makoto and other Glowing Dawn cards by traits absent from their effects", () => {
+    const cards = allCards().filter(({ cardId }) => ["BT26-095", "ST23-14", "BT1-009"].includes(cardId));
+    expect(searchIds(cards, "Glowing Dawn").sort()).toEqual(["BT26-095", "ST23-14"]);
+    const { result } = renderHook(() => useCardFilter(cards));
+    act(() => result.current.setTraitQuery("Glowing Dawn"));
+    expect(result.current.filtered.map(({ cardId }) => cardId).sort()).toEqual(["BT26-095", "ST23-14"]);
+  });
+
   it("finds cards by their effect text, ignoring trait brackets (Discord 1557071980103213056)", () => {
     const gotsumon = allCards().find((candidate) => candidate.cardId === "EX13-047");
     expect(gotsumon?.effectText).toContain("[Royal Knight]");
@@ -60,6 +81,15 @@ describe("card search box", () => {
     expect(
       sortSearchResults({ cards: [cards[0]!, cards[1]!], sort: "name", query: "agumon" }).map((c) => c.nameEn),
     ).toEqual(["Agumon", "Greymon"]);
+  });
+
+  it("keeps level ordering across name and trait search matches", () => {
+    const cards = [
+      testCard("BT1-001", "Dragon Lord", { level: 6 }),
+      testCard("BT1-002", "Small Beast", { level: 3, types: ["Dragon"] }),
+      testCard("BT1-003", "Dragon Champion", { level: 4 }),
+    ];
+    expect(sortSearchResults({ cards, sort: "level", query: "dragon" }).map((card) => card.level)).toEqual([3, 4, 6]);
   });
 
   it("lists a field group's members by its name or abbreviation alongside normal matches (issue 5330)", () => {

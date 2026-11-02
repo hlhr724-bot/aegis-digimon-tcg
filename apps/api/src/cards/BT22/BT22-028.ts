@@ -234,8 +234,13 @@ export const compiled: CompiledCard = {
   residual: [],
   digivolutionRequirement: [
     {
-      names: ["Yao Qinglan", "MarineBullmon"],
+      namesExact: ["MarineBullmon"],
       cost: 6,
+      controllerControls: {
+        kind: ["Tamer"],
+        namesExact: ["Yao Qinglan"],
+        min: 1,
+      },
       isAlternate: true,
     },
   ],

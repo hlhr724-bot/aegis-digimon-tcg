@@ -261,4 +261,25 @@ describe("Assembly recipes restored from the official images", () => {
       ),
     ).toBe(requirements[0]);
   });
+
+  it("offers a Thundermon beside BT8-061 because BT8-061 can count as [Mamemon]", () => {
+    const requirements = assemblyRequirementFor("EX13-063")!;
+    const candidates = trash("BT8-061", "P-246", "EX13-053");
+    expect(eligibleAssemblyCandidateIds(requirements, candidates, ["BT8-061#0", "P-246#1"])).toContain("EX13-053#2");
+    expect(
+      completedAssemblyRequirement(
+        requirements,
+        candidates,
+        candidates.map(({ instanceId }) => instanceId),
+      ),
+    ).toBe(requirements[0]);
+  });
+
+  it("does not offer a Thundermon once BT8-061 must count as [Thundermon]", () => {
+    const requirements = assemblyRequirementFor("EX13-063")!;
+    const candidates = trash("BT8-061", "BT6-064", "EX13-053");
+    expect(eligibleAssemblyCandidateIds(requirements, candidates, ["BT8-061#0", "BT6-064#1"])).not.toContain(
+      "EX13-053#2",
+    );
+  });
 });

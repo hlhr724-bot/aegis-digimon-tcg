@@ -1,15 +1,10 @@
-/* One line per queued trigger, for the dialog that asks which order they resolve in.
-
-   Positions count inside the owner's own battle area: numbering across both players'
-   fields printed "Field: 3" for the first Digimon a player had out. One permanent can
-   queue an [On Play] and a [When Digivolving] at once, so each row reads its own clause
-   rather than the decision's. */
-
 import { getCardDefinition, parseTriggerKey, type DecisionRequest, type PlayerState } from "@aegis/shared";
+import { Zone } from "@aegis/shared/schema/enums";
 import { triggerCardId } from "../../boardModel";
-import { fieldSlots, triggerClauseSummary, triggerSource, type TriggerSource } from "../../decisionPresentation";
+import { triggerClauseSummary } from "../../decisionPresentation";
 import { playerFacingEffectClause, type TriggerDetail } from "../../overlay";
 import type { Translate } from "../../../i18n";
+import { findTriggerSource, type TriggerSource } from "@/game/screen/model/findTriggerSource";
 
 export function triggerDetailsFor({
   decision,
@@ -17,21 +12,22 @@ export function triggerDetailsFor({
   opponent,
   handInstanceIds,
   t,
+  getCardName = (cardId) => getCardDefinition(cardId)?.nameEn ?? cardId,
 }: {
   decision: DecisionRequest | undefined;
   viewer: PlayerState;
   opponent: PlayerState;
-  handInstanceIds: string[];
+  handInstanceIds: readonly string[];
   t: Translate;
+  getCardName?: (cardId: string) => string;
 }): TriggerDetail[] {
   if (decision?.kind !== "orderTriggers") return [];
   return (decision.options?.triggerKeys ?? []).map((key, index) => {
-    const instanceId = parseTriggerKey(key).instanceId;
-    const source = ((): TriggerSource => {
-      const mine = triggerSource(instanceId, { fieldSlots: fieldSlots(viewer.battleArea), handInstanceIds });
-      if (mine.zone !== "unknown") return mine;
-      return triggerSource(instanceId, { fieldSlots: fieldSlots(opponent.battleArea), handInstanceIds });
-    })();
+    const source = findTriggerSource({
+      instanceId: parseTriggerKey(key).instanceId,
+      players: [viewer, opponent],
+      handInstanceIds,
+    });
     const cardId = decision.options?.triggerCardIds?.[index] ?? triggerCardId(key);
     const clause =
       playerFacingEffectClause({
@@ -41,13 +37,39 @@ export function triggerDetailsFor({
         isInherited: decision.options?.triggerIsInherited?.[index] === true,
       }) ?? getCardDefinition(cardId)?.effectText;
     return {
-      sourceLabel:
-        source.zone === "field"
-          ? t("overlay.triggerSourceField", { position: source.position })
-          : source.zone === "hand"
-            ? t("overlay.triggerSourceHand")
-            : undefined,
+      sourceLabel: getTriggerSourceLabel(source, t, getCardName),
       summary: triggerClauseSummary(clause),
+      ...(source?.zone === Zone.BattleArea && source.inherited ? { hostCardId: source.hostCardId } : {}),
     };
   });
+}
+
+function withCopy(label: string, source: { copy: number; copies: number }, t: Translate): string {
+  return source.copies > 1 ? t("log.copySuffix", { label, n: source.copy }) : label;
+}
+
+function getTriggerSourceLabel(
+  source: TriggerSource | undefined,
+  t: Translate,
+  getCardName: (cardId: string) => string,
+): string | undefined {
+  if (!source) {
+    return undefined;
+  }
+  switch (source.zone) {
+    case Zone.BattleArea:
+      return source.inherited
+        ? t("overlay.triggerSourceInherited", { name: withCopy(getCardName(source.hostCardId), source, t) })
+        : withCopy(t("overlay.triggerSourceField"), source, t);
+    case Zone.Hand:
+      return t("overlay.triggerSourceHand", { position: source.position });
+    case Zone.Breeding:
+      return t("overlay.triggerSourceBreeding");
+    case Zone.Trash:
+      return t("overlay.triggerSourceTrash");
+    case Zone.Delay:
+      return t("overlay.triggerSourceDelay");
+    case Zone.Security:
+      return t("overlay.triggerSourceSecurity");
+  }
 }

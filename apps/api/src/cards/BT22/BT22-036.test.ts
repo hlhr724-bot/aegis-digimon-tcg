@@ -134,7 +134,7 @@ describe("BT22-036 Chaperomon", () => {
         sourceInstanceId: s.inst("chaperomon").instanceId,
         effectKey: effectKey!,
       }),
-    ).toEqual({ ok: true });
+    ).toEqual({ ok: false, reason: "illegal-target" });
     await settle();
 
     expect(s.perm("opponentShoemon").topCard?.cardId).toBe("EX7-024");

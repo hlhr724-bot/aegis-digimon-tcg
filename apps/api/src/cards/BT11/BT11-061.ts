@@ -11,6 +11,8 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart:
+                "Add up to 1 [Snatchmon], [Destromon], [Galacticmon], or [Fusionize] among them to your hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -23,6 +25,7 @@ export const compiled: CompiledCard = {
               upTo: true,
             },
             {
+              effectTextPart: "place 1 [Vemmon] among them under this Digimon as its bottom digivolution card.",
               filter: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Vemmon"], match: "nameExact" }] },
               count: 1,
               to: "placeUnder",

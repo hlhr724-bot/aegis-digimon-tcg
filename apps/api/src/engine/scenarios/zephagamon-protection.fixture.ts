@@ -46,7 +46,7 @@ const fixture: ScenarioFixture = {
           top: { card: "LM-066", as: "zephagamon-protection-1-field-0-card" },
           dp: 13000,
           enterFieldTurnCount: -1,
-          placedByEffect: true,
+          placedByEffect: false,
           suspended: true,
         },
       ],

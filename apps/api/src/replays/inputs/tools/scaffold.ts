@@ -11,7 +11,7 @@ export interface ScaffoldOptions {
   testPath: string;
   /** Absolute path of `apps/api/src/replays/inputs`, which the test imports `runReplay` from. */
   replayDir: string;
-  issue?: number;
+  issue?: string;
 }
 
 export interface Scaffold {

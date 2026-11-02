@@ -34,6 +34,7 @@ describe("EX13-009 Huckmon", () => {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 Digimon card with [Huckmon] or [Sistermon] in its text",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -43,6 +44,7 @@ describe("EX13-009 Huckmon", () => {
               to: "hand",
             },
             {
+              effectTextPart: "1 such Tamer card or Option card among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Tamer", "Option"],

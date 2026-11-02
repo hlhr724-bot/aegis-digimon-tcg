@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, type RefObject } from "react";
 import type { AnimationQueue, AnimationStepContext } from "./animationQueue";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 export const BREEDING_TRANSFER_MS = 200;
 const OUT_CUBIC = "cubic-bezier(0.333333, 1, 0.666667, 1)";
@@ -99,7 +100,7 @@ export async function runBreedingTransfer(
     return;
   }
   origins.get(board)?.delete(permanentId);
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (motionPreference.isReduced()) {
     handOver();
     return;
   }

@@ -16,13 +16,15 @@ import {
 import type { DecisionManager } from "../decisions/index.js";
 import type { GameStateAccess } from "../state/access.js";
 import {
-  canDigivolveOntoWithAlternates,
   cardHasTrait,
   definitionOf,
   isDigimon,
   isTamer,
   lookupDefinition,
+  matchingAlternateDigivolutionRequirement,
+  matchingEvoCost,
 } from "../cards/cardData.js";
+import { effectiveDigivolutionBase } from "../effects/continuous/effective.js";
 import { matchNameOrTrait } from "../effects/interpreter.js";
 import { digisorptionAmountFor, isDigisorptionRedirector } from "../cards/digisorptionDigivolve.js";
 import type { ContinuousEffectLedger } from "../effects/continuous.js";
@@ -113,30 +115,6 @@ export class DigivolveSupport {
     }
     const moved = await this.deps.primitives.returnToHand([target.topCard.instanceId]);
     return moved.length > 0;
-  }
-
-  /**
-   * §8-3-2-1 Burst Digivolve's end-of-turn pending processing: for every permanent flagged
-   * `burstDigivolvePendingTrash`, trash its current top card and promote the highest source.
-   * A permanent with no source, or whose current top is not a Digimon, is unchanged. The flag
-   * is cleared unconditionally so it cannot re-fire on a later turn.
-   */
-  async processPendingBurstDigivolveTrash(): Promise<void> {
-    for (const player of this.deps.state.players) {
-      if (player === undefined) continue;
-      for (const perm of player.battleArea) {
-        if (!perm.burstDigivolvePendingTrash) continue;
-        perm.burstDigivolvePendingTrash = false;
-        const currentTop = perm.topCard;
-        if (perm.stack.length === 0 || currentTop === undefined) continue;
-        const def = lookupDefinition(currentTop.cardId);
-        if (def === undefined || !def.kinds.includes(CardKind.Digimon)) continue;
-        // Burst's pending processing removes the Burst card itself and promotes its
-        // former source. Use the stack-aware physical peel without applying De-Digivolve's
-        // keyword restrictions or level floor.
-        await this.deps.primitives.trashStackTops(perm.permanentId, 1);
-      }
-    }
   }
 
   /**
@@ -364,6 +342,21 @@ export class DigivolveSupport {
     return result;
   }
 
+  private meetsArtsDigivolutionRequirement(
+    definition: CardDefinition,
+    base: Permanent,
+    sourceZone: ZoneRef | undefined,
+  ): boolean {
+    const baseDefinition = effectiveDigivolutionBase(this.deps.continuous, base, definitionOf(base.topCard.cardId));
+    return (
+      matchingEvoCost(definition, baseDefinition) !== undefined ||
+      matchingAlternateDigivolutionRequirement(definition, baseDefinition, {
+        grantedBaseExactNames: this.deps.continuous.grantedExactNames(base.permanentId),
+        ...(sourceZone === undefined ? {} : { sourceZone }),
+      }) !== undefined
+    );
+  }
+
   async performArtsDigivolve(seat: Seat, instance: CardInstance, definition: CardDefinition): Promise<boolean> {
     const sourceZone = looseZoneOfInstance(this.deps.state, instance.instanceId);
     // CR §4-20-1 offers "one of your cards on the field", and the field includes the
@@ -377,7 +370,7 @@ export class DigivolveSupport {
     const eligible = fieldPermanents.filter(
       (p) =>
         p.topCard !== undefined &&
-        (canDigivolveOntoWithAlternates(definition, definitionOf(p.topCard.cardId)) ||
+        (this.meetsArtsDigivolutionRequirement(definition, p, sourceZone) ||
           (!p.inBreeding && this.matchBaseGrantedDigivolve(seat, p, definition, sourceZone) !== undefined)),
     );
     if (eligible.length === 0) return false;
@@ -399,6 +392,7 @@ export class DigivolveSupport {
     let artsRulePool: PooledRuleDeletion[] = [];
     const result = await this.deps.primitives.digivolveFromInstance(target.permanentId, instance.instanceId, {
       payCost: false,
+      byEffect: false,
       beforeWhenDigivolving: async () => {
         await this.deps.recomputeContinuousEffects();
         artsRulePool = await this.deps.collectRuleProcessMovements();

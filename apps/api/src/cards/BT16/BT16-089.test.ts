@@ -47,29 +47,35 @@ describe("BT16-089", () => {
     });
   });
 
-  it("deletes this Tamer to reduce a natural Arukenimon/Mummymon play", async () => {
+  it.each([
+    ["BT16-072", true, 7],
+    ["BT16-073", true, 7],
+    ["BT16-089", false, 6],
+  ])("only reduces the exact named Digimon %s", async (card, sacrificeDeleted, memory) => {
     const s = setupEngine(
       {
         0: {
           battleArea: [{ card: "BT16-089", as: "sacrifice" }],
-          hand: [{ card: "BT16-089", as: "played" }],
+          hand: [{ card, as: "played" }],
         },
       },
       { autoAcceptOptional: true, autoSelectCards: true },
     );
-    s.state.turnSeat = 0;
-    s.state.memory = 3;
+    s.state.memory = 10;
     await s.ready();
-
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("played").instanceId })).toEqual({
       ok: true,
     });
-    await settle(() =>
-      s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.instanceId === s.inst("played").instanceId),
+    await settle(
+      () =>
+        s.state.players[0]!.battleArea.some(
+          (permanent) => permanent.topCard.instanceId === s.inst("played").instanceId,
+        ) && s.state.pendingDecision === undefined,
     );
-
-    expect(s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("sacrifice").instanceId)).toBe(true);
-    expect(s.state.memory).toBe(2);
+    expect(s.state.players[0]!.trash.some((candidate) => candidate.instanceId === s.inst("sacrifice").instanceId)).toBe(
+      sacrificeDeleted,
+    );
+    expect(s.state.memory).toBe(memory);
   });
 
   it("revives a Myotismon-text Digimon from trash and deletes it at the next opponent turn end", async () => {

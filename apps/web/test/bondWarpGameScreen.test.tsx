@@ -110,7 +110,7 @@ it("renders the Agumon permanent candidate and submits the warp target", async (
   const prompt = screen.getByRole("region", { name: "Confirm targets" });
   expect(prompt.getAttribute("data-prompt-surface")).toBe("left");
   const agumon = within(screen.getByRole("group", { name: "Your battle area" })).getByRole("button", {
-    name: /^agumon$/i,
+    name: /^agumon, \(BT1-010\), Field reference #/i,
   });
   expect(agumon.classList.contains("game-permanent--candidate")).toBe(true);
   expect(agumon.getAttribute("data-permanent-id")).toBe(actualAgumonPermanentId);

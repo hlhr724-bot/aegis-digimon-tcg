@@ -1,6 +1,6 @@
 ---
 title: "<Use Req.> and the breeding area"
-updated: 2026-09-19
+updated: 2026-10-15
 ---
 
 # `<Use Req.>` and the breeding area
@@ -18,8 +18,10 @@ CR 4-3-1 additionally treats a Digi-Egg card on the field as a Digimon. Therefor
 a matching Digi-Egg in the breeding area satisfies a Digimon-based `<Use Req.>`.
 Issue #4870 exposed that the live-kind matcher recognized only printed Digimon
 cards (and DP-bearing battle-area Digi-Eggs), excluding ordinary Digi-Eggs in
-breeding. The matcher now recognizes that rules-defined Digimon state without
-making no-DP Digi-Eggs legal battle-area targets.
+breeding. The matcher recognizes face-up Digi-Eggs on the field as Digimon independently
+of their current DP. Reaching 0 DP does not remove that classification or make
+continuous reductions stop applying. Rule processing handles deletion at 0 DP
+and removes invalid no-DP remnants separately.
 
 ## Why the two templates differ
 

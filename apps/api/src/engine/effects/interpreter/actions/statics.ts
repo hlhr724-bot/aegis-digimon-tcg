@@ -1,3 +1,4 @@
+import { createTrackedGrantActivity } from "#api/engine/effects/interpreter/matching/createTrackedGrantActivity";
 // Auras and continuous permissions.
 
 import type { CardColor } from "@aegis/shared";
@@ -10,7 +11,7 @@ import { unsupported } from "../errors.js";
 import { GRANTED_EFFECT_LIBRARY } from "../grantedEffects.js";
 import { scaleFactor } from "../scaling.js";
 import { resolvePermanentTargets } from "../targeting/permanents.js";
-import { isPermanentUnaffectable, permanentMatchesFilter } from "../matching/permanent.js";
+import { permanentMatchesFilter } from "../matching/permanent.js";
 import { subscribeLaterEntrants } from "./laterEntrants.js";
 import { SUBTRIGGER_EVENT_MAP } from "./subTrigger.js";
 import { EffectDuration } from "@aegis/shared";
@@ -132,10 +133,12 @@ export async function runStaticAction(ctx: EffectContext, action: Action): Promi
             sourceCardId: ctx.source.cardId,
             // Q2120/Q2121: a duration-scoped Option aura is applied only while this Digimon can
             // be affected by the granting Option. Re-evaluate at trigger collection time.
-            isActive: () => {
-              const current = ctx.game.permanentById(permanentId);
-              return current !== undefined && !isPermanentUnaffectable(ctx, ctx.source, current, grantingSourceKinds);
-            },
+            isActive: createTrackedGrantActivity({
+              ctx,
+              filter: undefined,
+              sourceKinds: grantingSourceKinds,
+              permanentId,
+            }),
           });
           grantedPermanentIds.add(permanentId);
         };

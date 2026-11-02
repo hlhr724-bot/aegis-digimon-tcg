@@ -377,7 +377,7 @@ describe("extracting a replay from raw log segments for the replay tool", () => 
 describe("downloading a saved replay", () => {
   async function adminCookie(h: Harness): Promise<string> {
     const admin = await h.accounts.accountForIdentity("discord", "admin", "Vn");
-    await h.accounts.pool.query("UPDATE accounts SET is_admin=true WHERE id=$1", [admin.id]);
+    await h.accounts.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [admin.id]);
     return `aegis_session=${(await h.accounts.issueSession(admin)).id}`;
   }
 
@@ -496,16 +496,13 @@ describe("the public replay download linked from a GitHub issue", () => {
     return fetch(`${h.url}/bug-reports/${id}/replay`);
   }
 
-  it("serves the anonymous replay of a bug report that reached GitHub", async () => {
+  it("keeps a mirrored report replay unavailable through the former public URL", async () => {
     const h = await startHarness({ replayCapture: new ReplayCapturer({ logDir }) });
     expect((await submit(h, { matchId: match.matchId })).status).toBe(201);
-
-    const response = await download(h, 1);
-    expect(response.status).toBe(200);
-    expect(response.headers.get("content-disposition")).toBe('attachment; filename="aegis-report-1.replay.json"');
-    const body = await response.text();
-    expect(JSON.parse(body)).toEqual(record);
-    expect(body).not.toContain("Tamer");
+    expect(await h.feedback.replay(1)).toEqual(record);
+    expect((await download(h, 1)).status).toBe(404);
+    const signedIn = await fetch(`${h.url}/bug-reports/1/replay`, { headers: { Cookie: h.cookie } });
+    expect(signedIn.status).toBe(404);
   });
 
   it.each([

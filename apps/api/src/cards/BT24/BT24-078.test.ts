@@ -163,6 +163,49 @@ describe("BT24-078 Creepymon (X Antibody)", () => {
     expect(s.events.filter((event) => event.kind === "securityChecked")).toHaveLength(1);
   });
 
+  it("combines a free trash evolution with Seventh Graviton and a legal SkullSatamon revival", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "EX10-009", as: "creepymon" }],
+          trash: [
+            { card: "BT24-078", as: "creepymonX" },
+            { card: "BT24-096", as: "graviton" },
+            { card: "EX10-049", as: "skullSatamon" },
+          ],
+          deck: ["BT1-009", "BT1-009"],
+        },
+        1: {
+          trash: Array<string>(20).fill("BT1-009"),
+          deck: Array<string>(10).fill("BT1-009"),
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true, autoOrderTriggers: true },
+    );
+    await s.ready();
+    const memoryBefore = s.state.memory;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("creepymon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => !observe(s.engine).isAttacking());
+    expect(s.perm("creepymon").topCard.cardId).toBe("BT24-078");
+    expect(
+      s.state.players[0]!.battleArea.some(
+        (permanent) => permanent.topCard.instanceId === s.inst("skullSatamon").instanceId,
+      ),
+    ).toBe(true);
+    expect(s.state.players[0]!.deck.at(-1)?.instanceId).toBe(s.inst("graviton").instanceId);
+    expect(s.state.players[1]!.deck).toHaveLength(7);
+    expect(s.state.players[1]!.security).toHaveLength(1);
+    expect(s.state.memory).toBe(memoryBefore);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
+
   it("Q5658: the trash evolution condition is met with an empty deck", async () => {
     const s = setupEngine(
       {

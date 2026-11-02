@@ -12,6 +12,7 @@ import { armedAsPendingCollected, runSubTriggersInChosenOrder, subTriggerStillAc
 import type { GameEngine } from "../GameEngine.js";
 import { collectNestedTimingEffects, takeLeaveReplacementPending, withTriggeredMutations } from "./windows.js";
 import { cardSourceOf } from "./effectContext.js";
+import { runPendingTimingWindow } from "./timing/fire.js";
 
 /**
  * Defensive pass cap for the rule fixpoint, mirroring the resolver's
@@ -31,8 +32,6 @@ export const rulePassCap = { max: 1000 };
  * cited by Comprehensive Rules §17-1-3 subsection (the local KB `comprehensive.md`
  * chunk verified against `node tools/kb/query.mjs rules "rule check"`):
  *
- *   - §17-1-3-1-1 (delete): a battle-area Digimon at raw DP 0.
- *   - §17-1-3-2-1 (trash):  a battle-area Digimon at raw DP < 0 ("without DP").
  *   - §17-1-3-2-3 (trash):  a non-Digimon/non-DigiEgg card in the breeding slot.
  *   - §17-1-3-2-4 (trash):  a permanent whose TOP card is face-down.
  *   - §17-1-3-2-5 (trash):  linked cards beyond a Digimon's effective link limit.
@@ -50,16 +49,6 @@ export const rulePassCap = { max: 1000 };
  * `byRule`, keeping OnDeletion + leave-prevention (and the now-live `onDeletionOf` bus)
  * single-sourced (RESEARCH "Don't Hand-Roll"); the link-excess trim routes through the
  * `trash` primitive (a link card is trashed individually, not the whole permanent).
- *
- * PRECONDITION (invariant, not enforced here): the continuous DP tier must already be
- * current when engine runs. `doRuleProcess()` -> anyZeroDpDigimon()/anyNegativeDpToTrash()
- * read `modifiers.rawDp` directly and do NOT recompute first; they rely on the caller to
- * have refreshed the continuous layer (every wired caller reaches engine sandwiched inside a
- * `fireTiming` window, after `recomputeContinuousEffects`). A future DIRECT caller, or a
- * call reached outside a `fireTiming` window, MUST `await recomputeContinuousEffects()`
- * before entering, otherwise a stale `rawDp` could wrongly delete a Digimon a static
- * `[Your Turn] +N DP` would have lifted above 0, or miss one a cleared buff should drop to 0.
- * Do NOT call engine while the continuous ledger is mid-clear.
  *
  * §17-1-2 note: rule checks aren't performed during rule processing (§17-1-2-1) or
  * during effect processing (§17-1-2-2). The `ruleProcessing` latch below satisfies
@@ -216,13 +205,17 @@ export function collectDeletionPending(engine: GameEngine, pool: readonly Pooled
             }
             const response = await engine.decisions.request({
               seat,
-              kind: "selectCards",
-              promptText: "＜Ascension＞: place this card at the top of your security stack?",
+              kind: "optional",
+              promptText: "Activate ＜Ascension＞?",
               sourceCardId: card.cardId,
               sourceInstanceId: instanceId,
-              options: { candidateInstanceIds: [instanceId], min: 0, max: 1 },
+              options: {
+                timing: "Ascension",
+                effectText:
+                  "＜Ascension＞: When this card is deleted, you may place it at the top of your security stack.",
+              },
             });
-            if (response.kind === "selectCards" && response.instanceIds.includes(instanceId)) {
+            if (response.kind === "optional" && response.accept) {
               await engine.primitives.ascendToSecurity(instanceId);
             }
           },
@@ -269,9 +262,6 @@ export async function runRuleProcessFixpoint(engine: GameEngine): Promise<void> 
       // BT26-060 Q7082: peeling a Digimon stack down to a no-DP card trashes the invalid
       // remnant at rule-check timing; a normally played Tamer remains a legal permanent.
       await engine.ruleChecks.trashInvalidNoDpStackTops();
-      // §17-1-3-2-1 TrashNoDPPermanentProcess — raw DP < 0 ⇒ trash via deletePermanent(byRule).
-      await engine.ruleChecks.trashNoDpPermanents();
-      // §17-1-3-1-1 DigimonLackDPProcess — raw DP == 0 Digimon ⇒ delete via deletePermanent(byRule).
       await engine.ruleChecks.deleteZeroDpDigimon();
       // §17-1-3-2-3 TrashNonDigimonPermanentProcess — a non-Digimon/non-DigiEgg card in the
       // breeding slot (a Digi-Egg is NOT a violation — CR §4-2-1 treats it as a Digimon).
@@ -326,18 +316,38 @@ export async function runRuleProcessFixpoint(engine: GameEngine): Promise<void> 
  */
 export async function flushRuleTriggerPool(engine: GameEngine, pool: readonly PooledRuleDeletion[]): Promise<void> {
   const watcherEvents = engine.deferredRuleSubTriggers.splice(0);
-  if (pool.length === 0 && watcherEvents.length === 0) return;
+  const replacementPending = takeLeaveReplacementPending(engine);
+  if (pool.length === 0 && watcherEvents.length === 0 && replacementPending.length === 0) return;
   const armed = watcherEvents.flatMap(({ armed: eventArmed }) => eventArmed);
+  if (engine.optionResolutionDepth > 0 && engine.optionMainDepth === 0) {
+    engine.pendingNestedTimingEffects.push(
+      ...collectDeletionPending(engine, pool),
+      ...ruleWatchersAsPending(engine, uniqueOncePerTurnWatcherOccurrences(armed)),
+      ...replacementPending,
+    );
+    return;
+  }
   const enclosing = engine.pendingWindowSubTriggers;
   engine.pendingWindowSubTriggers = [...enclosing, ...armed];
   // Raised for both branches below so a watcher engine flush resolves is recorded as consumed
   // and the trailing bus fire does not run it twice.
   engine.subTriggerWindowDepth += 1;
   try {
-    if (pool.length === 0) {
+    if (pool.length === 0 && replacementPending.length === 0) {
       // No deletion window to fold them into, but they are still one simultaneous group and
       // must be ordered turn-player-first rather than drained in arrival order (§15-4-3-5).
       await withTriggeredMutations(engine, () => runSubTriggersInChosenOrder(engine, armed));
+    } else if (pool.length === 0) {
+      await runPendingTimingWindow(engine, [
+        ...ruleWatchersAsPending(engine, uniqueOncePerTurnWatcherOccurrences(armed)),
+        ...replacementPending,
+      ]);
+      await withTriggeredMutations(engine, () =>
+        runSubTriggersInChosenOrder(
+          engine,
+          armed.filter((item) => !engine.consumedSubTriggerKeys.has(subTriggerIdentity(item.sub, item.ctx.trigger))),
+        ),
+      );
     } else {
       const merged = mergeRuleDeletions(pool);
       const nestedWindowWatchers =
@@ -352,6 +362,7 @@ export async function flushRuleTriggerPool(engine: GameEngine, pool: readonly Po
           runTimingWindow(engine, EffectTiming.OnDestroyedAnyone, deletionTrigger, merged.transientCandidates, [
             ...simultaneousPending,
             ...nestedWindowWatchers,
+            ...replacementPending,
           ]),
         merged.transientCandidates,
         false,

@@ -198,7 +198,7 @@ describe("BT14-030", () => {
       {
         0: {
           battleArea: [
-            { card: "BT1-001", as: "ordinaryEgg", dp: 1000 },
+            { card: "BT1-001", as: "ordinaryEgg" },
             { card: "BT14-020", as: "validDigimon" },
           ],
           hand: [{ card: "BT14-030", as: "marine" }],
@@ -206,6 +206,7 @@ describe("BT14-030", () => {
       },
       { autoAcceptOptional: true },
     );
+    const eggPermanentId = s.perm("ordinaryEgg").permanentId;
     s.state.memory = 12;
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("marine").instanceId })).toEqual({
       ok: true,
@@ -216,7 +217,7 @@ describe("BT14-030", () => {
     const request = s.decisions.at(-1)?.req;
     if (request?.kind !== "chooseTargets") throw new Error("return-cost request was not captured");
     expect(request.options?.candidateInstanceIds).toContain(s.perm("validDigimon").permanentId);
-    expect(request.options?.candidateInstanceIds).not.toContain(s.perm("ordinaryEgg").permanentId);
+    expect(request.options?.candidateInstanceIds).not.toContain(eggPermanentId);
     assertNoLoudGap(s);
   });
 

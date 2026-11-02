@@ -25,7 +25,7 @@ describe("BT1-113 Forbidden Temptation", () => {
       dp: 0,
       evoCosts: [],
       effectText:
-        "[Main] Until the end of your opponent's next turn， 1 of your opponent's Digimon can't attack or block.",
+        "[Main] Until the end of your opponent's next turn, 1 of your opponent's Digimon can't attack or block.",
       securityEffectText: "[Security] Your opponent's Digimon don't unsuspend during their next unsuspend phase.",
       rarity: "C",
       maxCountInDeck: 4,
@@ -38,12 +38,16 @@ describe("BT1-113 Forbidden Temptation", () => {
         trigger: "Main",
         actions: [
           {
+            effectTextPart:
+              "[Main] Until the end of your opponent's next turn, 1 of your opponent's Digimon can't attack or block.",
             kind: "Restrict",
             target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
             restriction: "attack",
             duration: "untilOpponentTurnEnd",
           },
           {
+            effectTextPart:
+              "[Main] Until the end of your opponent's next turn, 1 of your opponent's Digimon can't attack or block.",
             kind: "Restrict",
             target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1, sameTarget: true },
             restriction: "block",

@@ -111,7 +111,7 @@ export interface DnaDigivolveDeps {
   dnaDigivolveInto(
     materialPermanentIds: string[],
     resultInstanceId: string,
-    opts?: { payCost?: boolean; costOverride?: number },
+    opts?: { payCost?: boolean; costOverride?: number; publicEntry?: boolean },
   ): Promise<Permanent | undefined>;
 }
 
@@ -218,7 +218,7 @@ export async function applyDnaDigivolve(
   const result = await deps.dnaDigivolveInto(
     check.materials.map((m) => m.permanentId),
     intent.instanceId,
-    { payCost: true, costOverride: finalCost },
+    { payCost: true, costOverride: finalCost, publicEntry: true },
   );
   if (result === undefined) {
     // The primitive re-validates atomically at apply time (materials/cost may have shifted

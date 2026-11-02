@@ -1,6 +1,11 @@
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { getTranslatedKeyword } from "@/i18n/getTranslatedKeyword";
+import { getTranslatedKeywordReminder } from "@/i18n/getTranslatedKeywordReminder";
 import { useTranslation } from "../../i18n";
 import { keywordReminder, keywordRuleHintLink } from "../keywordReminders";
-import { BadgeHint } from "./BadgeHint";
+import { BadgeHint, type BadgeHintText } from "./BadgeHint";
+
+type Annotation = { label: string; description: string };
 import type { PermanentKeywordEntry } from "./permanentKeywords";
 
 /** Never more pills than this, however wide the card is. */
@@ -14,7 +19,11 @@ const PILL_PADDING_PX = 8;
 const PILL_GAP_PX = 2;
 const MORE_CHIP_WIDTH_PX = 22;
 
-const pillWidth = (label: string) => label.length * CHARACTER_WIDTH_PX + PILL_PADDING_PX;
+const pillWidth = (label: string) =>
+  Array.from(label).reduce(
+    (width, character) => width + ((character.codePointAt(0) ?? 0) > 255 ? 9 : CHARACTER_WIDTH_PX),
+    PILL_PADDING_PX,
+  );
 
 /**
  * How many pills fit on the single line above a card of `cardWidth`, leaving room for the
@@ -40,33 +49,56 @@ export function PermanentKeywordBadges({
   keywords,
   securityAttackModifier,
   cardWidth,
+  annotations = [],
 }: {
   keywords: readonly PermanentKeywordEntry[];
   securityAttackModifier: number;
   cardWidth: number;
+  annotations?: readonly Annotation[];
 }) {
   const { t } = useTranslation();
+  const translations = useCardTranslations();
+  const displayedKeywords: { key: string; label: string; hint: BadgeHintText }[] = keywords.map((entry) => {
+    const label = getTranslatedKeyword({ keyword: entry.label, translations });
+    return {
+      key: entry.keyword,
+      label,
+      hint: {
+        title: `<${label}>`,
+        description: getTranslatedKeywordReminder({
+          keyword: entry.keyword,
+          fallback: keywordReminder(entry.keyword, t, securityAttackModifier),
+          translations,
+          modifier: securityAttackModifier,
+        }),
+        link: keywordRuleHintLink(entry.keyword),
+      },
+    };
+  });
+  for (const annotation of annotations) {
+    const label = annotation.label.trim();
+    if (!label || displayedKeywords.some((entry) => entry.label.toLocaleLowerCase() === label.toLocaleLowerCase())) {
+      continue;
+    }
+    displayedKeywords.push({
+      key: `annotation:${label}`,
+      label,
+      hint: { title: label, description: annotation.description },
+    });
+  }
   const shownCount = visibleKeywordCount(
-    keywords.map((entry) => entry.label),
+    displayedKeywords.map((entry) => entry.label),
     cardWidth,
   );
-  const visibleKeywords = keywords.slice(0, shownCount);
-  const hiddenKeywordCount = keywords.length - visibleKeywords.length;
+  const visibleKeywords = displayedKeywords.slice(0, shownCount);
+  const hiddenKeywordCount = displayedKeywords.length - visibleKeywords.length;
   return (
     <div
       className="game-keyword-badges"
-      aria-label={`Active keywords: ${keywords.map((entry) => entry.label).join(", ")}`}
+      aria-label={`Active keywords: ${displayedKeywords.map((entry) => entry.label).join(", ")}`}
     >
-      {visibleKeywords.map(({ keyword, label }) => (
-        <BadgeHint
-          key={keyword}
-          className="game-keyword-badge"
-          hint={{
-            title: `<${label}>`,
-            description: keywordReminder(keyword, t, securityAttackModifier),
-            link: keywordRuleHintLink(keyword),
-          }}
-        >
+      {visibleKeywords.map(({ key, label, hint }) => (
+        <BadgeHint key={key} className="game-keyword-badge" hint={hint}>
           {label}
         </BadgeHint>
       ))}
@@ -75,7 +107,7 @@ export function PermanentKeywordBadges({
           className="game-keyword-badge game-keyword-badge--more"
           aria-label={`${hiddenKeywordCount} more keywords`}
           hint={{
-            title: keywords
+            title: displayedKeywords
               .slice(shownCount)
               .map((entry) => entry.label)
               .join(" · "),

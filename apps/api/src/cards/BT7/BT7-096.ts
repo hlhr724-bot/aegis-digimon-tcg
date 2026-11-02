@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] You may play 1 Tamer card or 1 Digimon card with [Hybrid] in its traits from one of your Digimon's digivolution cards as a Tamer or another Digimon without paying its memory cost.",
           kind: "SelectBind",
           target: {
             filter: {
@@ -19,6 +21,8 @@ const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] You may play 1 Tamer card or 1 Digimon card with [Hybrid] in its traits from one of your Digimon's digivolution cards as a Tamer or another Digimon without paying its memory cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

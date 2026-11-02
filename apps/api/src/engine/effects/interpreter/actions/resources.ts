@@ -1,9 +1,15 @@
+import { effectProvenanceKinds } from "#api/engine/effects/effectProvenance";
 // Memory, deck draw, and cost modification.
+import type { CostModifierMatchParams } from "#api/engine/effects/interpreter/costModifiers/CostModifierMatchParams";
+import { CostModifierCallbackField } from "#api/engine/effects/interpreter/costModifiers/CostModifierCallbackField";
+import { createEvoCostMatch } from "#api/engine/effects/interpreter/costModifiers/createEvoCostMatch";
+import { createPlayCostDefinitionMatch } from "#api/engine/effects/interpreter/costModifiers/createPlayCostDefinitionMatch";
+import { createSuspendTamerConsume } from "#api/engine/effects/interpreter/costModifiers/createSuspendTamerConsume";
+import { trackCostModifierCallback } from "#api/engine/effects/interpreter/costModifiers/trackCostModifierCallback";
 
 import type { EffectContext } from "../../EffectContext.js";
 import { type ActionScope, runAction } from "../dispatch.js";
-import { DefinitionFacts, definitionMatches } from "../matching/definition.js";
-import { permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
+import { seatsForController } from "../matching/permanent.js";
 import { countMatching, scaleFactor } from "../scaling.js";
 import { toDuration } from "../duration.js";
 import { evaluateCondition } from "../conditions.js";
@@ -51,14 +57,7 @@ export async function runResourceAction(ctx: EffectContext, action: Action, scop
         ctx.fx.delayedGainMemory?.(seat, amount, ctx);
         return false;
       }
-      // A Tamer temporarily treated as a Digimon remains a Tamer for this exception
-      // (KB Q6381 / BT25-079). Read effective kinds from the live permanent when the
-      // source is on the field; loose/security sources fall back to printed kinds.
-      const sourcePermanent = ctx.source.permanent();
-      const effectiveSourceKinds =
-        sourcePermanent === undefined
-          ? ctx.source.definition.kinds
-          : (ctx.game.effectiveKinds?.(sourcePermanent.permanentId) ?? ctx.source.definition.kinds);
+      const effectiveSourceKinds = ctx.effectSourceKinds ?? effectProvenanceKinds(ctx);
       ctx.fx.gainMemoryForSeat(seat, amount, {
         isTamerEffect: effectiveSourceKinds.includes(CardKind.Tamer),
       });
@@ -96,7 +95,6 @@ export async function runResourceAction(ctx: EffectContext, action: Action, scop
       ctx.fx.setTurnEndMinMemory?.(ctx.source.ownerSeat, action.minimum);
       return false;
     case "TrashTopDeck": {
-      // No dedicated "mill" primitive; reveal then trash the revealed top N.
       const seats: Seat[] =
         action.controller === "both"
           ? [ctx.source.ownerSeat, ctx.game.opponentOf(ctx.source.ownerSeat)]
@@ -117,23 +115,36 @@ export async function runResourceAction(ctx: EffectContext, action: Action, scop
               ),
             ))
           : maximum;
-      for (const seat of seats) {
-        const revealed = await ctx.fx.reveal(seat, amount, ctx.source.cardId);
-        if (revealed.length > 0) {
-          const ids = revealed.map((c) => c.instanceId);
-          await ctx.fx.trash(ids, { byEffectSeat: ctx.source.ownerSeat });
-          totalTrashed += ids.length;
-          await ctx.fx.fireOnDiscardLibrary(seat, ids);
-          // Fire whenTrashedFromDeck once per trashed card so a card-specific watcher
-          // (BT19-097 "when THIS card is trashed from the deck") can match by card ID.
-          for (const card of revealed) {
-            await ctx.fx.fireWhenTrashedFromDeck(card.cardId, card.instanceId, ctx.source.cardId);
+      const finishAnnouncement =
+        action.effectTextPart !== undefined && ctx.activeTiming !== undefined
+          ? ctx.fx.announceEffect?.(ctx, {
+              effectKey: `${ctx.activeEffectKey ?? ctx.source.cardId}/processing/${action.kind}`,
+              description: action.effectTextPart,
+              effectTextPart: action.effectTextPart,
+              timing: ctx.activeTiming,
+            })
+          : undefined;
+      try {
+        for (const seat of seats) {
+          const revealed = [...ctx.game.player(seat).deck].slice(0, amount);
+          if (revealed.length > 0) {
+            const ids = revealed.map((c) => c.instanceId);
+            await ctx.fx.trash(ids, { byEffectSeat: ctx.source.ownerSeat });
+            totalTrashed += ids.length;
+            await ctx.fx.fireOnDiscardLibrary(seat, ids);
+            // Fire whenTrashedFromDeck once per trashed card so a card-specific watcher
+            // (BT19-097 "when THIS card is trashed from the deck") can match by card ID.
+            for (const card of revealed) {
+              await ctx.fx.fireWhenTrashedFromDeck(card.cardId, card.instanceId, ctx.source.cardId);
+            }
           }
         }
-      }
-      if (action.trackCount !== undefined) {
-        ctx.namedCounts ??= new Map();
-        ctx.namedCounts.set(action.trackCount, totalTrashed);
+        if (action.trackCount !== undefined) {
+          ctx.namedCounts ??= new Map();
+          ctx.namedCounts.set(action.trackCount, totalTrashed);
+        }
+      } finally {
+        finishAnnouncement?.();
       }
       return false;
     }
@@ -427,61 +438,28 @@ export async function runResourceAction(ctx: EffectContext, action: Action, scop
         //     permanent. Match the digivolve whose `into` card IS this source card.
         //   - ON-FIELD self (a permanent's own "reduce my digivolve cost"): match the
         //     permanent that contains this source.
-        const selfCardId = ctx.source.cardId;
-        const predicate = (m: { target: Permanent; into?: CardDefinition }): boolean => {
-          if (action.restriction === "suspendThisTamer") {
-            const tamer = ctx.source.permanent();
-            if (tamer === undefined || tamer.isSuspended || tamer.inBreeding) return false;
-          }
-          if (selfRef) {
-            const self = ctx.source.permanent();
-            if (self === undefined) {
-              // Hand-resident target: the digivolve must be INTO this card AND driven by
-              // the owner's own digivolve onto a permanent the owner controls (documented behavior
-              // battle area). Requiring a known, matching `into` removes the latent
-              // over-match where an unknown `into` clobbered unrelated digivolves; the live
-              // digivolve site always supplies `into`. Without the owner-seat gate, one
-              // player's installed hand-resident SET cost would corrupt the OTHER player's
-              // digivolve into the same card id (CR-01).
-              if (m.into === undefined || m.into.cardId !== selfCardId) return false;
-              if (m.target.controllerSeat !== ctx.source.ownerSeat) return false;
-              if (m.target.inBreeding && !setMode) return false;
-              // Some hand-resident reducers constrain the BASE as well as the destination.
-              // BT3-031, for example, reduces only when the Digimon being evolved is
-              // Paildramon/Dinobeemon. Its sourceFilter also gates effect installation, but
-              // that broad board-presence check alone would incorrectly let an unrelated
-              // level 5 receive the discount while a matching Digimon sat beside it.
-              if (
-                action.sourceFilter !== undefined &&
-                !permanentMatchesFilter(ctx, m.target, action.sourceFilter, ctx.source)
-              ) {
-                return false;
-              }
-              return true;
-            }
-            if (self.permanentId !== m.target.permanentId) return false;
-            if (action.into !== undefined) {
-              if (m.into === undefined) return false;
-              if (!definitionMatches(action.into, m.into as unknown as DefinitionFacts)) return false;
-            }
-            return true;
-          }
-          // `action.into` scopes the reduction to only those digivolves whose destination card
-          // (the card being digivolved into, still in hand) matches the filter (CAP-C-10,
-          // BT2-088: "when digivolving a battle-area Digimon INTO a Tyrannomon-named card").
-          // When `m.into` is absent (cost query without a known destination), conservatively
-          // decline the reduction — the live digivolve site always supplies it.
-          if (action.into !== undefined) {
-            if (m.into === undefined) return false;
-            if (!definitionMatches(action.into, m.into as unknown as DefinitionFacts)) return false;
-          }
-          return permanentMatchesFilter(ctx, m.target, filter, ctx.source);
+        const matchParams: CostModifierMatchParams = {
+          ctx,
+          action,
+          filter,
+          selfRef: selfRef === true,
+          setMode,
+          seats: [],
         };
+        const predicate = createEvoCostMatch(matchParams);
+        trackCostModifierCallback({
+          params: matchParams,
+          callback: predicate,
+          field: CostModifierCallbackField.EVO_COST_MATCH.value,
+        });
         if (modifierOpts !== undefined && action.restriction === "suspendThisTamer") {
-          modifierOpts.onConsume = () => {
-            const tamer = ctx.source.permanent();
-            if (tamer !== undefined) ctx.fx.payActivationCost?.(tamer.permanentId, "suspend");
-          };
+          const consume = createSuspendTamerConsume(matchParams);
+          trackCostModifierCallback({
+            params: matchParams,
+            callback: consume,
+            field: CostModifierCallbackField.SUSPEND_TAMER_CONSUME.value,
+          });
+          modifierOpts.onConsume = consume;
         }
         if (modifierOpts !== undefined && action.onConsume !== undefined) {
           modifierOpts.onConsume = (match) => {
@@ -534,7 +512,6 @@ export async function runResourceAction(ctx: EffectContext, action: Action, scop
       // affected card is still in hand when its cost is computed. The self form (this
       // card's own play/use cost) matches this source instance's card id for its owner.
       const seatsScope = seatsForController(ctx, filter);
-      const selfCardId = ctx.source.cardId;
       if (action.existingPermanent === true) {
         const selected = await resolvePermanentTargets(ctx, want);
         for (const permanentId of selected) {
@@ -545,13 +522,20 @@ export async function runResourceAction(ctx: EffectContext, action: Action, scop
         }
         return false;
       }
-      const predicate = (facts: { def: CardDefinition; controllerSeat: Seat }): boolean => {
-        if (!seatsScope.includes(facts.controllerSeat)) return false;
-        if (selfRef) {
-          return facts.controllerSeat === ctx.source.ownerSeat && facts.def.cardId === selfCardId;
-        }
-        return definitionMatches(filter, facts.def as unknown as DefinitionFacts);
+      const playMatchParams: CostModifierMatchParams = {
+        ctx,
+        action,
+        filter,
+        selfRef: selfRef === true,
+        setMode,
+        seats: seatsScope,
       };
+      const predicate = createPlayCostDefinitionMatch(playMatchParams);
+      trackCostModifierCallback({
+        params: playMatchParams,
+        callback: predicate,
+        field: CostModifierCallbackField.PLAY_COST_MATCH.value,
+      });
       ctx.fx.changePlayCost(predicate, delta, {
         ...(setMode ? { setFixed: true } : {}),
         ...(action.handResident === true && selfRef

@@ -14,7 +14,6 @@ const compiled: CompiledCard = {
               controller: "mine",
               or: [
                 {
-                  kind: ["Digimon"],
                   nameOrTrait: [{ tokens: ["Hybrid", "Ten Warriors"], match: "trait" }],
                 },
                 {

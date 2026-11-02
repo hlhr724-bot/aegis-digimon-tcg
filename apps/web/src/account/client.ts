@@ -1,3 +1,7 @@
+import type { AccountRole } from "@aegis/shared/account/AccountRole";
+import type { SpectatorAccess } from "@aegis/shared/account/SpectatorAccess";
+import type { UsedDeck } from "@aegis/shared/decks/UsedDeck";
+import type { CardImageLanguage } from "@aegis/shared/cards/CardImageLanguage";
 import type { DeckListing } from "../game/decks";
 import { dominantColor } from "../game/decks";
 import type {
@@ -9,6 +13,7 @@ import type {
   PlaytestMembership,
 } from "@aegis/shared";
 import type { DigimonWorldAvatarId } from "./avatars";
+import type { MatchHistoryExport } from "@aegis/shared/replays/MatchHistoryExport";
 
 // The match overlay imports this module, so it must also load where `location` is absent (Node tests).
 const fallbackHost = typeof location === "undefined" ? "localhost" : location.hostname;
@@ -20,12 +25,15 @@ export type RemoteAccount = {
   avatarUrl: string | null;
   avatarId: DigimonWorldAvatarId | null;
   avatarSource: AvatarSource;
+  roles: AccountRole[];
   isAdmin: boolean;
   /** Sent by `/auth/me` and the Discord avatar refresh; other account responses omit it. */
   discordLinked?: boolean;
 };
 export type AccountPreferences = {
+  cardImageLanguage?: CardImageLanguage;
   autoHatch?: boolean;
+  groupIdenticalTamers?: boolean;
   darkMode?: boolean;
   locale?: string;
   sleeve?: string;
@@ -34,6 +42,12 @@ export type AccountPreferences = {
   deckView?: "grid" | "list";
   deckSort?: string;
   profileStats?: boolean;
+  profileTrophies?: boolean;
+  shareProfileStats?: boolean;
+  shareDeckAfterMatch?: boolean;
+  listLiveMatches?: boolean;
+  spectatorAccess?: SpectatorAccess;
+  hideIdentityFromSpectators?: boolean;
   favoriteDeckIds?: string[];
 };
 export type AccountProfile = {
@@ -93,7 +107,15 @@ export const accountApi = {
   playtest: () => request<PlaytestMembership>("/account/playtest"),
   setPlaytest: (member: boolean) =>
     request<PlaytestMembership>("/account/playtest", { method: "PUT", body: JSON.stringify({ member }) }),
-  matches: ({ page, limit, result, mode, opponent }: { page: number; limit: number } & MatchHistoryFilter) =>
+  matches: ({
+    page,
+    limit,
+    result,
+    mode,
+    opponent,
+    deckId,
+    deckWindow,
+  }: { page: number; limit: number } & MatchHistoryFilter) =>
     request<MatchHistoryPage>(
       `/account/matches?${new URLSearchParams({
         page: String(page),
@@ -101,13 +123,23 @@ export const accountApi = {
         ...(result ? { result } : {}),
         ...(mode ? { mode } : {}),
         ...(opponent ? { opponent } : {}),
+        ...(deckId ? { deckId } : {}),
+        ...(deckWindow ? { deckWindow } : {}),
       })}`,
     ),
+  matchHistoryExport: () => request<MatchHistoryExport>("/account/matches/export"),
   updateProfile: (changes: { displayName: string; avatarId: AvatarChoice }) =>
     request<RemoteAccount>("/account/profile", { method: "PUT", body: JSON.stringify(changes) }),
   updateAvatar: (avatarId: AvatarChoice) =>
     request<RemoteAccount>("/account/profile/avatar", { method: "PUT", body: JSON.stringify({ avatarId }) }),
   refreshDiscordAvatar: () => request<RemoteAccount>("/account/avatar/discord", { method: "POST" }),
+  uploadAvatarImage: (image: Blob) =>
+    request<RemoteAccount>("/account/profile/avatar/image", {
+      method: "PUT",
+      body: image,
+      headers: { "Content-Type": image.type },
+    }),
+  clearAvatarImage: () => request<RemoteAccount>("/account/profile/avatar/image", { method: "DELETE" }),
   updateDisplayName: (displayName: string) =>
     request<RemoteAccount>("/account/profile/display-name", { method: "PUT", body: JSON.stringify({ displayName }) }),
   preferences: () => request<AccountPreferences>("/account/preferences"),
@@ -134,6 +166,9 @@ export const accountApi = {
         }>
       >("/account/decks")
     ).map((deck) => ({ ...deck, color: dominantColor([...deck.mainDeck, ...deck.eggDeck]), blurb: "deck.blurbSaved" })),
+  matchOwnDeck: (matchId: string) => request<UsedDeck>(`/account/matches/${encodeURIComponent(matchId)}/own-deck`),
+  matchOpponentDeck: (matchId: string) =>
+    request<UsedDeck>(`/account/matches/${encodeURIComponent(matchId)}/opponent-deck`),
   saveDeck: (deck: DeckListing) =>
     request(`/account/decks/${encodeURIComponent(deck.id)}`, {
       method: "PUT",

@@ -13,6 +13,7 @@
   --arena-vignette: color-mix(in srgb, var(--ds-accent) 12%, transparent);
   --arena-grid: color-mix(in srgb, var(--ds-accent) 7%, transparent);
   --arena-zone-fill: color-mix(in srgb, var(--ds-sheet) 60%, transparent);
+  --arena-overlay-fill: color-mix(in srgb, var(--ds-sheet) 85%, transparent);
   --arena-muted: var(--ds-text-3);
   --arena-fg: var(--ds-text);
   --arena-chip: var(--ds-fill);
@@ -26,6 +27,7 @@
   --arena-vignette: color-mix(in srgb, var(--ds-ink) 85%, black);
   --arena-grid: color-mix(in srgb, var(--ds-ink-accent) 9%, transparent);
   --arena-zone-fill: color-mix(in srgb, var(--ds-ink) 45%, transparent);
+  --arena-overlay-fill: color-mix(in srgb, var(--ds-ink) 85%, transparent);
   --arena-muted: var(--ds-on-ink-2);
   --arena-fg: var(--ds-on-ink);
   --arena-chip: color-mix(in srgb, var(--ds-on-ink) 12%, transparent);

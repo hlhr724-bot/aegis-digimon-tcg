@@ -8,15 +8,34 @@ import "../index.js";
 
 describe("BT24-049 Parrotmon", () => {
   it("gates the lowest-DP bounce on effect entry", () => {
-    for (const trigger of ["OnPlay", "WhenDigivolving"]) {
-      const effect = BT24_049.effects?.find((entry) => entry.trigger === trigger);
-      expect(effect?.actions?.[1]).toMatchObject({
-        kind: "Return",
-        to: "hand",
-        condition: { kind: "triggerEnteredByEffect" },
-        target: { filter: { controller: "opponent", suspended: true, superlative: "lowestDP" } },
-      });
-    }
+    const onPlay = BT24_049.effects?.find((entry) => entry.trigger === "OnPlay");
+    expect(onPlay?.actions?.[1]).toMatchObject({
+      kind: "Return",
+      to: "hand",
+      condition: { kind: "triggerEnteredByEffect" },
+      target: { filter: { controller: "opponent", suspended: true, superlative: "lowestDP" } },
+    });
+    expect(BT24_049.effects?.find((entry) => entry.trigger === "WhenDigivolving")?.actions).toHaveLength(1);
+  });
+
+  it("does not return a suspended Digimon when digivolved by an effect", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "BT24-049", as: "parrotmon" }] },
+        1: { battleArea: [{ card: "BT1-009", as: "lowest", suspended: true, dp: 2000 }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+
+    await advance(s.engine).fireForPermanent(EffectTiming.WhenDigivolving, s.perm("parrotmon"), {
+      enteredByEffect: 0,
+    });
+
+    expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard.instanceId)).toContain(
+      s.inst("lowest").instanceId,
+    );
+    expect(s.state.players[1]!.hand).toHaveLength(0);
   });
   it("trashes the opponent's top security after a battle deletion once per turn", () => {
     const inherited = BT24_049.effects?.find((entry) => entry.isInherited);

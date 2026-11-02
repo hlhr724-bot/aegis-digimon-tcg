@@ -28,7 +28,7 @@ import { decodeCardArts, encodeCardArts, serializeCardArts, sourceCardArts } fro
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CARDS_PATH = resolve(ROOT, "packages/shared/src/cards/data/cards.json");
 
-const NBSP = / /g;
+const NBSP = /\u00a0|&#160;|&nbsp;/gi;
 const clean = (s) => (typeof s === "string" ? s.replace(NBSP, " ") : s);
 const isBlank = (s) => s === undefined || s === null || s === "-" || s === "";
 // Card names are single-line. A few community-DB rows wrap the Japanese name

@@ -6,7 +6,7 @@ import { compiled } from "./BT26-079.js";
 import "../index.js";
 
 describe("BT26-079 compiled behavior", () => {
-  it("proves evolution, Assembly, Trash Main, keywords, Decode, and the shared delete cost", () => {
+  it("proves evolution, Assembly, Trash Main, keywords, Decode, and the repeatable delete cost", () => {
     expect(getCardDefinition("BT26-079")).toMatchObject({
       nameEn: "ZombiePlutomon",
       colors: ["Purple"],
@@ -60,9 +60,9 @@ describe("BT26-079 compiled behavior", () => {
       ],
     });
     for (const trigger of ["OnPlay", "WhenDigivolving", "WhenAttacking"]) {
-      expect(compiled.effects.find((effect) => effect.trigger === trigger)?.frequency).toBe("OncePerTurn");
+      expect(compiled.effects.find((effect) => effect.trigger === trigger)?.frequency).toBeUndefined();
+      expect(compiled.effects.find((effect) => effect.trigger === trigger)?.sharedUseKey).toBeUndefined();
       expect(compiled.effects.find((effect) => effect.trigger === trigger)).toMatchObject({
-        sharedUseKey: "bt26-079-trash-cost-delete",
         actions: [
           {
             kind: "CostGatedBlock",
@@ -80,6 +80,101 @@ describe("BT26-079 compiled behavior", () => {
       mode: "instead",
       actions: [{ kind: "PlayWithoutCost", fromOwnDigivolutionStack: true, payCost: false, playedByDecode: true }],
     });
+  });
+
+  it("pays and deletes again when attacking after its digivolution effect in the same turn", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT26-059", as: "plutomon" }],
+          hand: [{ card: "BT26-079", as: "zombie" }, "BT1-009", "BT1-009", "BT1-009"],
+          deck: ["BT1-009", "BT1-009"],
+        },
+        1: {
+          battleArea: [
+            { card: "BT1-010", as: "firstTarget" },
+            { card: "BT1-010", as: "secondTarget" },
+          ],
+          security: ["BT1-009", "BT1-009", "BT1-009"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("plutomon").permanentId,
+        instanceId: s.inst("zombie").instanceId,
+        alternateRequirementIndex: 0,
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.state.players[1]!.battleArea).toHaveLength(1);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("plutomon").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    expect(s.state.players[0]!.trash.filter((card) => card.cardId === "BT1-009")).toHaveLength(2);
+    expect(s.state.players[1]!.security).toHaveLength(1);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
+
+  it("pays the deletion cost on each attack after a public unsuspend in the same turn", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT26-079", as: "zombie" },
+            { card: "BT1-084", as: "royalKnight" },
+          ],
+          hand: ["BT1-009", "BT1-009", { card: "BT10-110", as: "unsuspend" }],
+        },
+        1: {
+          battleArea: [
+            { card: "BT1-010", as: "firstTarget" },
+            { card: "BT1-010", as: "secondTarget" },
+          ],
+          security: Array<string>(5).fill("BT1-009"),
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("zombie").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.state.players[1]!.battleArea).toHaveLength(1);
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("unsuspend").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle();
+    expect(s.perm("zombie").isSuspended).toBe(false);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("zombie").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    expect(s.state.players[0]!.trash.filter((card) => card.cardId === "BT1-009")).toHaveLength(2);
+    expect(s.state.players[1]!.security).toHaveLength(1);
+    expect(s.state.memory).toBe(7);
+    expect(s.state.pendingDecision).toBeUndefined();
   });
 
   it("digivolves from Plutomon for 1 and from an off-color level-5 TS Digimon for 3", async () => {
@@ -292,7 +387,7 @@ describe("BT26-079 compiled behavior", () => {
     expect(s.state.players[1]!.battleArea).toHaveLength(1);
   });
 
-  it("uses the printed Once Per Turn limit for the hand-trash deletion", async () => {
+  it("pays one hand card to delete through its public attack", async () => {
     const s = setupEngine(
       {
         0: {
@@ -467,6 +562,40 @@ describe("BT26-079 compiled behavior", () => {
     );
     expect(s.engine.applyIntent(1, { type: "surrender" })).toEqual({ ok: true });
     await loop;
+  });
+
+  it("keeps hand trimming once per turn when a later opposing play draws above four cards", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "BT26-079", as: "zombie" }], hand: Array<string>(6).fill("BT1-009") },
+        1: {
+          hand: [
+            { card: "BT1-009", as: "firstPlay" },
+            ...Array<string>(5).fill("BT1-009"),
+            { card: "BT1-041", as: "drawTwo" },
+          ],
+          deck: Array<string>(5).fill("BT1-009"),
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true, autoOrderTriggers: true },
+    );
+    s.state.turnSeat = 1;
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("firstPlay").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle();
+    expect(s.state.players[0]!.hand).toHaveLength(4);
+    expect(s.state.players[1]!.hand).toHaveLength(4);
+    expect(s.engine.applyIntent(1, { type: "playCard", instanceId: s.inst("drawTwo").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle();
+    expect(s.state.players[0]!.hand).toHaveLength(4);
+    expect(s.state.players[1]!.hand).toHaveLength(5);
+    expect(s.state.players[1]!.deck).toHaveLength(3);
+    expect(s.state.pendingDecision).toBeUndefined();
   });
 
   it("trims both hands through a public opponent play", async () => {

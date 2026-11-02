@@ -6,7 +6,7 @@
    Each is opened by `prePlayPrompt` (or by the drop itself) and answered here; the
    intent goes out only once the answer is in. */
 
-import { getCardDefinition, type AssemblyRequirement, type DigiXrosRequirement, type Permanent } from "@aegis/shared";
+import { type AssemblyRequirement, type DigiXrosRequirement, type Permanent } from "@aegis/shared";
 import { useTranslation } from "../../../i18n";
 import { DnaMaterialChoiceOverlay } from "../../DnaMaterialChoiceOverlay";
 import type { ProjectedDnaDigivolveRoute } from "../../digivolveModel";
@@ -25,6 +25,7 @@ import type { AppFusionRoute } from "../../AppFusionChoiceOverlay";
 import type { EvoCostOption } from "../../digivolveModel";
 import { DragKind } from "../enums";
 import type { PendingActionConfirmation } from "../types";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 
 export function PlayChoicePrompts({
   dualPlay,
@@ -43,6 +44,8 @@ export function PlayChoicePrompts({
   onConfirmAction,
   onDigivolveNormally,
   onConfirmCancel,
+  onPlayNormally,
+  canPlayNormally,
   onAppFusion,
   onAppFusionNormalEvolution,
   onAppFusionCancel,
@@ -94,6 +97,8 @@ export function PlayChoicePrompts({
   /** Only offered when the confirmed DNA play also has a normal digivolution. */
   onDigivolveNormally: (() => void) | undefined;
   onConfirmCancel: () => void;
+  onPlayNormally: () => void;
+  canPlayNormally: boolean;
   onAppFusion: (linkedInstanceId: string) => void;
   onAppFusionNormalEvolution: (() => void) | undefined;
   onAppFusionCancel: () => void;
@@ -107,14 +112,25 @@ export function PlayChoicePrompts({
   onDigiXrosCancel: () => void;
 }) {
   const { t } = useTranslation();
-  const cardName = (cardId: string) => getCardDefinition(cardId)?.nameEn ?? cardId;
+  const getCardName = useTranslatedCardName();
   return (
     <>
       {dualPlay ? (
         <DualPlayChoiceOverlay cardId={dualPlay.cardId} onChoose={onDualPlay} onCancel={onDualPlayCancel} />
       ) : null}
 
-      {actionConfirm?.kind === "dna" ? (
+      {actionConfirm?.kind === "negamon" ? (
+        <ActionConfirmationOverlay
+          cardId="EX9-005"
+          title={t("overlay.useNegamon")}
+          detail={t("overlay.negamonPlayDetail")}
+          confirmLabel={t("overlay.useNegamon")}
+          alternateLabel={canPlayNormally ? t("overlay.playNormally") : undefined}
+          onConfirm={() => onConfirmAction()}
+          onAlternate={onPlayNormally}
+          onCancel={onConfirmCancel}
+        />
+      ) : actionConfirm?.kind === "dna" ? (
         <DnaMaterialChoiceOverlay
           key={actionConfirm.instanceId}
           routes={dnaRoutes}
@@ -123,6 +139,7 @@ export function PlayChoicePrompts({
           disabled={actionBlocked}
           onConfirm={onConfirmAction}
           onNormalEvolution={onDigivolveNormally}
+          onNormalPlay={canPlayNormally ? onPlayNormally : undefined}
           onCancel={onConfirmCancel}
         />
       ) : actionConfirm ? (
@@ -131,10 +148,10 @@ export function PlayChoicePrompts({
           title={t("overlay.confirmActionTitle")}
           detail={
             actionConfirm.kind === DragKind.Play
-              ? t("overlay.confirmPlayDetail", { card: cardName(actionConfirm.cardId) })
+              ? t("overlay.confirmPlayDetail", { card: getCardName(actionConfirm.cardId) })
               : t("overlay.confirmDigivolveDetail", {
-                  card: cardName(actionConfirm.cardId),
-                  base: cardName(actionConfirm.baseCardId),
+                  card: getCardName(actionConfirm.cardId),
+                  base: getCardName(actionConfirm.baseCardId),
                 })
           }
           confirmLabel={actionConfirm.kind === DragKind.Play ? t("overlay.confirmPlay") : t("overlay.confirmDigivolve")}

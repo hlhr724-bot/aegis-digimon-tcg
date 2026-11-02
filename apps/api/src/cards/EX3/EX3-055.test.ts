@@ -68,10 +68,9 @@ describe("EX3-055 Wormmon", () => {
                 {
                   filter: {
                     controllerDefault: "mine",
-                    colors: ["Red", "Purple"],
-                    nameOrTrait: [
-                      { tokens: ["Free"], match: "trait" },
-                      { tokens: ["Imperialdramon"], match: "name" },
+                    or: [
+                      { colors: ["Red", "Purple"], nameOrTrait: [{ tokens: ["Free"], match: "trait" }] },
+                      { nameOrTrait: [{ tokens: ["Imperialdramon"], match: "name" }] },
                     ],
                   },
                   count: 1,
@@ -80,10 +79,9 @@ describe("EX3-055 Wormmon", () => {
                 {
                   filter: {
                     controllerDefault: "mine",
-                    colors: ["Red", "Purple"],
-                    nameOrTrait: [
-                      { tokens: ["Free"], match: "trait" },
-                      { tokens: ["Imperialdramon"], match: "name" },
+                    or: [
+                      { colors: ["Red", "Purple"], nameOrTrait: [{ tokens: ["Free"], match: "trait" }] },
+                      { nameOrTrait: [{ tokens: ["Imperialdramon"], match: "name" }] },
                     ],
                   },
                   count: 1,
@@ -224,56 +222,44 @@ describe("EX3-055 Wormmon", () => {
     ]);
   });
 
-  it("Q3424 rejects wrong-color Free and Imperialdramon cards from both hand and trash choices", async () => {
-    const s = setupEngine(
-      {
-        0: {
-          hand: [{ card: "EX3-055", as: "wormmon" }],
-          deck: [
-            { card: "BT1-027", as: "blueFree" },
-            { card: "BT3-031", as: "blueImperialdramon" },
-            { card: "BT1-010", as: "redWithoutNameOrTrait" },
-            { card: "BT1-012", as: "unrevealed" },
-          ],
-        },
+  it.each([true, false])("uses the errata to select blue/green Imperialdramon for hand=%s", async (imperialToHand) => {
+    const s = setupEngine({
+      0: {
+        hand: [{ card: "EX3-055", as: "wormmon" }],
+        deck: [
+          { card: "EX3-061", as: "redFree" },
+          { card: "BT3-031", as: "imperialdramon" },
+          { card: "BT1-027", as: "blueFree" },
+          { card: "BT1-012", as: "unrevealed" },
+        ],
       },
-      { autoOrderCards: false },
-    );
+    });
     s.state.memory = 3;
     await s.ready();
-
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("wormmon").instanceId })).toEqual({
       ok: true,
     });
-    await waitForDecision(s, "orderCards");
-    expect(payload(s)).toMatchObject({
-      candidateInstanceIds: [
-        s.inst("blueFree").instanceId,
-        s.inst("blueImperialdramon").instanceId,
-        s.inst("redWithoutNameOrTrait").instanceId,
-      ],
-      orderDestination: "deckBottom",
-      min: 3,
-      max: 3,
-    });
-    expect(s.decisions.filter(({ req }) => req.kind === "selectCards")).toHaveLength(0);
-    const order = [
-      s.inst("redWithoutNameOrTrait").instanceId,
-      s.inst("blueFree").instanceId,
-      s.inst("blueImperialdramon").instanceId,
-    ];
-    respond(s, { kind: "orderCards", order });
+    await waitForDecision(s, "selectCards");
+    expect(payload(s).candidateInstanceIds).toEqual([
+      s.inst("redFree").instanceId,
+      s.inst("imperialdramon").instanceId,
+    ]);
+    const handCard = s.inst(imperialToHand ? "imperialdramon" : "redFree").instanceId;
+    const trashCard = s.inst(imperialToHand ? "redFree" : "imperialdramon").instanceId;
+    respond(s, { kind: "selectCards", instanceIds: [handCard] });
+    await waitForDecision(s, "selectCards");
+    expect(payload(s).candidateInstanceIds).toEqual([trashCard]);
+    respond(s, { kind: "selectCards", instanceIds: [trashCard] });
     await settle(
       () =>
         s.state.pendingDecision === undefined &&
-        s.state.players[0]!.deck.at(-1)?.instanceId === s.inst("blueImperialdramon").instanceId,
+        s.state.players[0]!.trash.some((card) => card.instanceId === trashCard),
     );
-
-    expect(s.state.players[0]!.hand).toHaveLength(0);
-    expect(s.state.players[0]!.trash).toHaveLength(0);
-    expect(s.state.players[0]!.deck.map(({ instanceId }) => instanceId)).toEqual([
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([handCard]);
+    expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual([trashCard]);
+    expect(s.state.players[0]!.deck.map((card) => card.instanceId)).toEqual([
       s.inst("unrevealed").instanceId,
-      ...order,
+      s.inst("blueFree").instanceId,
     ]);
   });
 

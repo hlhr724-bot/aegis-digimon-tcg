@@ -1,3 +1,4 @@
+import { ArenaInputRegion } from "@/game/input/ArenaInputRegion";
 /* The strip along the bottom: the raising area on a wide screen, then the action bar
    and the hand, then the viewer's own counters. A portrait phone moves the raising
    area up into the field, so the dock takes it as a slot rather than rendering it. A
@@ -9,11 +10,13 @@ import { useTranslation } from "../../../i18n";
 import { ArenaCounters } from "../../ArenaCounters";
 import { Hand, type HandEntry } from "../../piece";
 import { Side } from "../../side";
+import { HandSortDirection } from "@/game/HandSortDirection";
 import { HandSortMode } from "../../handSortMode";
 import { ActionBar } from "./ActionBar";
 import { HandSortControl } from "./HandSortControl";
 import { PlayerLine } from "./PlayerLine";
 import type { EffectActivation } from "../../effectSource";
+import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
 
 export function PlayerDock({
   spectating = false,
@@ -21,6 +24,8 @@ export function PlayerDock({
   timer,
   playerName,
   playerAvatarId,
+  playerEquippedRankedTier,
+  playerBotPersonaId,
   actingLabel,
   breedingDock,
   pileDock,
@@ -31,6 +36,7 @@ export function PlayerDock({
   selectedInstanceId,
   effectSourceInstanceId,
   effectSource,
+  effectSourceMarks,
   selection,
   draggingInstanceId,
   shakeInstanceId,
@@ -44,13 +50,15 @@ export function PlayerDock({
   selectCard,
   onHoverChange,
   handSortMode = HandSortMode.Type,
+  handSortDirection = HandSortDirection.ASCENDING.value,
   onSortHand,
   onMoveHandCard,
   reorderDropBeforeInstanceId,
 }: {
   spectating?: boolean;
   handSortMode?: HandSortMode;
-  onSortHand?: (mode: HandSortMode) => void;
+  handSortDirection?: HandSortDirection;
+  onSortHand?: (mode: HandSortMode, direction: HandSortDirection) => void;
   /** Authorised replay cards can be inspected while every gameplay action stays disabled. */
   showRecordedHand?: boolean;
   onMoveHandCard?: (instanceId: string, direction: -1 | 1) => void;
@@ -59,6 +67,8 @@ export function PlayerDock({
   /** The viewer's name for the line over the tray, when the screen knows it. */
   playerName?: string;
   playerAvatarId?: string;
+  playerEquippedRankedTier?: string;
+  playerBotPersonaId?: string;
   actingLabel?: string;
   /** The raising area, when this screen puts it here rather than in the field. */
   breedingDock: ReactNode;
@@ -71,6 +81,7 @@ export function PlayerDock({
   selectedInstanceId?: string;
   effectSourceInstanceId?: string;
   effectSource?: EffectActivation;
+  effectSourceMarks?: ReadonlyMap<string, EffectSourceMark>;
   selection?: {
     selectableInstanceIds: readonly string[];
     pickedInstanceIds: readonly string[];
@@ -109,9 +120,22 @@ export function PlayerDock({
     >
       {breedingDock}
       {playerName ? (
-        <PlayerLine name={playerName} avatarId={playerAvatarId} side="player" timer={timer} actingLabel={actingLabel} />
+        <PlayerLine
+          name={playerName}
+          avatarId={playerAvatarId}
+          equippedRankedTier={playerEquippedRankedTier}
+          botPersonaId={playerBotPersonaId}
+          side="player"
+          timer={timer}
+          actingLabel={actingLabel}
+        />
       ) : null}
-      <div className="game-hand-dock" ref={handDockRef} style={{ flex: 1, minWidth: 0, padding: "8px 20px 12px" }}>
+      <div
+        className="game-hand-dock"
+        data-arena-region={ArenaInputRegion.HAND.value}
+        ref={handDockRef}
+        style={{ flex: 1, minWidth: 0, padding: "8px 20px 12px" }}
+      >
         {actionBar ? (
           <ActionBar
             selCardId={actionBar.selCardId}
@@ -139,6 +163,7 @@ export function PlayerDock({
               selectedInstanceId={selectedInstanceId}
               effectSourceInstanceId={effectSourceInstanceId}
               effectSource={effectSource}
+              effectSourceMarks={effectSourceMarks}
               selection={selection}
               startDrag={spectating ? (index) => selectCard(index) : startDrag}
               selectCard={selectCard}
@@ -150,6 +175,7 @@ export function PlayerDock({
           {!spectating && onSortHand ? (
             <HandSortControl
               mode={handSortMode}
+              direction={handSortDirection}
               disabled={cards.length < 2 || draggingInstanceId !== undefined}
               onSort={onSortHand}
             />

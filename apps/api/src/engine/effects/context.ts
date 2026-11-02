@@ -1,4 +1,9 @@
+import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
+import type { RuntimeCallbackRegistry } from "#api/engine/snapshot/RuntimeCallbackRegistry";
+import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
 import { isTimingActivationDisabled } from "./timingActivation.js";
+import { createTimingLockedEffect } from "#api/engine/effects/timingLock/createTimingLockedEffect";
+import { preparedCardLocation } from "#api/engine/effects/preparedCardLocation";
 import {
   CardKind,
   EffectTiming,
@@ -28,27 +33,10 @@ import { UseTracker, canTrigger } from "./kernel.js";
 import { onDeletion } from "./builders.js";
 import { linkMax } from "./mindLink.js";
 import { findPermanentInState } from "../state/access.js";
+import { fieldRevision } from "#api/engine/state/fieldRevision";
 import { effectiveKinds, effectiveNames, effectiveTraits, type ContinuousEffectLedger } from "./continuous.js";
 import type { DecisionApi, EffectContext, GameAccess, Primitives, TriggerInfo } from "./EffectContext.js";
 import { playEffectInstances } from "./interpreter/actions/effectPlayAssembly.js";
-
-/**
- * Does this permanent carry `instanceId` anywhere — as its top card, in its
- * digivolution stack, or among its linked cards? Mirrors what the source
- * `CardSource.PermanentOfThisCard()` resolves over (top + stack + linked).
- */
-function permanentHolds(permanent: Permanent, instanceId: string): boolean {
-  if (permanent.topCard !== undefined && permanent.topCard.instanceId === instanceId) {
-    return true;
-  }
-  for (const card of permanent.stack) {
-    if (card.instanceId === instanceId) return true;
-  }
-  for (const card of permanent.linked) {
-    if (card.instanceId === instanceId) return true;
-  }
-  return false;
-}
 
 /**
  * The live-state lookup a CardSource needs (engine/cards/CardSource.ts), bound to
@@ -59,26 +47,62 @@ function permanentHolds(permanent: Permanent, instanceId: string): boolean {
  * into GameState directly (card-module contract): the framework owns it.
  */
 export function createCardStateLookup(state: GameState): CardStateLookup {
-  const findPermanent = (
+  const holders = new Map<string, { permanent: Permanent; breedingSlot: boolean }>();
+  const indexedContainers: unknown[] = [];
+  let indexedRevision = -1;
+  const containersUnchanged = (): boolean => {
+    let position = 0;
+    for (const p of state.players) {
+      if (indexedContainers[position++] !== p) return false;
+      if (indexedContainers[position++] !== p.battleArea) return false;
+      if (indexedContainers[position++] !== p.breeding) return false;
+    }
+    return position === indexedContainers.length;
+  };
+  const holdersByInstance = (): Map<string, { permanent: Permanent; breedingSlot: boolean }> => {
+    if (indexedRevision === fieldRevision.value && containersUnchanged()) return holders;
+    holders.clear();
+    indexedContainers.length = 0;
+    const hold = (permanent: Permanent, breedingSlot: boolean): void => {
+      const entry = { permanent, breedingSlot };
+      const claim = (instanceId: string): void => {
+        if (!holders.has(instanceId)) holders.set(instanceId, entry);
+      };
+      if (permanent.topCard !== undefined) claim(permanent.topCard.instanceId);
+      for (const card of permanent.stack) claim(card.instanceId);
+      for (const card of permanent.linked) claim(card.instanceId);
+    };
+    for (const p of state.players) {
+      indexedContainers.push(p, p.battleArea, p.breeding);
+      for (const permanent of p.battleArea) hold(permanent, false);
+      if (p.breeding !== undefined) hold(p.breeding, true);
+    }
+    indexedRevision = fieldRevision.value;
+    return holders;
+  };
+  const findUncachedPermanent = (
     instanceId: string,
   ): { permanent: Permanent; inBattleArea: boolean; inBreedingArea: boolean } | undefined => {
-    for (const p of state.players) {
-      for (const permanent of p.battleArea) {
-        if (permanentHolds(permanent, instanceId)) {
-          // A permanent can be flagged inBreeding while listed in battleArea (a moved-back
-          // permanent); treat it as breeding-area, not battle-area, to match source.
-          return {
-            permanent,
-            inBattleArea: !permanent.inBreeding,
-            inBreedingArea: permanent.inBreeding,
-          };
-        }
-      }
-      if (p.breeding !== undefined && permanentHolds(p.breeding, instanceId)) {
-        return { permanent: p.breeding, inBattleArea: false, inBreedingArea: true };
-      }
+    const holder = holdersByInstance().get(instanceId);
+    if (holder === undefined) return undefined;
+    const { permanent, breedingSlot } = holder;
+    if (breedingSlot) return { permanent, inBattleArea: false, inBreedingArea: true };
+    // A permanent can be flagged inBreeding while listed in battleArea (a moved-back
+    // permanent); treat it as breeding-area, not battle-area, to match source.
+    return { permanent, inBattleArea: !permanent.inBreeding, inBreedingArea: permanent.inBreeding };
+  };
+
+  const findPermanent = (instanceId: string) => {
+    if (preparedCardLocation.state !== state) {
+      return findUncachedPermanent(instanceId);
     }
-    return undefined;
+    if (preparedCardLocation.instanceId === instanceId) {
+      return preparedCardLocation.location;
+    }
+    const location = findUncachedPermanent(instanceId);
+    preparedCardLocation.instanceId = instanceId;
+    preparedCardLocation.location = location;
+    return location;
   };
 
   const isInTrash = (instanceId: string): boolean =>
@@ -252,7 +276,7 @@ export function createEffectContext(parts: {
   conferralGranterInstanceId?: string;
   discardedStackSourceProof?: import("./EffectContext.js").DiscardedStackSourceProof;
 }): EffectContext {
-  return {
+  const context: EffectContext = {
     source: parts.source,
     sourcePermanentIdAtCreation: parts.source.permanent?.()?.permanentId,
     trigger: parts.trigger,
@@ -267,6 +291,8 @@ export function createEffectContext(parts: {
     conferralGranterInstanceId: parts.conferralGranterInstanceId,
     discardedStackSourceProof: parts.discardedStackSourceProof,
   };
+  parts.game.runtimeObjects?.track({ value: context, key: EngineRuntimeObjectKind.EFFECT_CONTEXT.value });
+  return context;
 }
 
 const refuse = (subsystem: string, verb: string): never => {
@@ -400,6 +426,8 @@ export function unimplementedDecisions(): DecisionApi {
  * the effect-primitives and effect-stack-resolution subsystems).
  */
 export interface EffectEnvironment {
+  runtimeObjects?: RuntimeObjectRegistry;
+  runtimeCallbacks?: RuntimeCallbackRegistry;
   state: GameState;
   fx: Primitives;
   /** Resolve effect verbs from the collected source's controller/owner context. */
@@ -509,7 +537,10 @@ export function gatherTriggeredEffects(
     (permanent, printedName) => effectiveNames(env.continuous, permanent, printedName),
     env.battleOpponentOf,
   );
+  game.runtimeObjects = env.runtimeObjects;
+  game.runtimeCallbacks = env.runtimeCallbacks;
   const lookup = createCardStateLookup(env.state);
+  lookup.runtimeObjects = env.runtimeObjects;
 
   const sources: CardSource[] = printedCandidates.map((instance) => createCardSource(instance, lookup));
 
@@ -548,16 +579,19 @@ export function gatherTriggeredEffects(
     for (const source of sources) {
       const target = env.triggerInfo.retaliationTargetsByInstanceId?.[source.instanceId];
       if (target === undefined || !env.triggerInfo.deletedInstanceIds?.includes(source.instanceId)) continue;
-      const effect = onDeletion({
-        source,
-        effectKey: "keyword/retaliation",
-        description: "＜Retaliation＞: delete the Digimon this Digimon battled.",
-        when: (ctx) => ctx.source.isInTrash?.() === true,
-        resolve: async (ctx) => {
-          await ctx.fx.deletePermanent([target], "byEffect");
-        },
-      });
-      if (canTrigger(effect, makeContext(source, effect), env.tracker)) retaliations.push({ source, effect, timing });
+      const count = env.triggerInfo.retaliationCountsByInstanceId?.[source.instanceId] ?? 1;
+      for (let index = 0; index < count; index++) {
+        const effect = onDeletion({
+          source,
+          effectKey: index === 0 ? "keyword/retaliation" : `keyword/retaliation/${index}`,
+          description: "＜Retaliation＞: delete the Digimon this Digimon battled.",
+          when: (ctx) => ctx.source.definition.isToken === true || ctx.source.isInTrash?.() === true,
+          resolve: async (ctx) => {
+            await ctx.fx.deletePermanent([target], "byEffect");
+          },
+        });
+        if (canTrigger(effect, makeContext(source, effect), env.tracker)) retaliations.push({ source, effect, timing });
+      }
     }
     base = [...retaliations, ...base];
   }
@@ -683,23 +717,21 @@ const TIMING_DISABLE_MASK: Partial<Record<EffectTiming, DisableTiming>> = {
   [EffectTiming.OnPlay]: "onPlay",
 };
 
-/**
- * Timing-effect disable consume site (the timing half of the source rule implementation
- * split). When the firing `timing` maps to a maskable window ([When Digivolving] /
- * [When Attacking] / [On Play]), drop any collected effect whose SOURCE permanent is
- * timing-disabled for that window — unless the source permanent carries the `beAffected`
- * O(active-disables): the disable lookup short-circuits once the timing is non-maskable.
- */
 function applyTimingEffectDisable(
   env: EffectEnvironment,
   timing: EffectTiming,
   collected: CollectedEffect[],
 ): CollectedEffect[] {
   const mask = TIMING_DISABLE_MASK[timing];
-  if (mask === undefined) return collected;
-  return collected.filter((c) => {
-    const permanent = c.source.permanent();
-    if (permanent === undefined) return true;
-    return !isTimingActivationDisabled(env.continuous, permanent.permanentId, mask);
-  });
+  if (mask === undefined) {
+    return collected;
+  }
+  return collected.map((collectedEffect) => ({
+    ...collectedEffect,
+    effect: createTimingLockedEffect({
+      payload: { effect: collectedEffect.effect, source: collectedEffect.source, mask },
+      continuous: env.continuous,
+      runtimeObjects: env.runtimeObjects,
+    }),
+  }));
 }

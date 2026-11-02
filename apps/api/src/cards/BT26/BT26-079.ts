@@ -1,4 +1,4 @@
-import type { Action, CardEffect, CompiledCard, Filter, Target } from "@aegis/shared";
+import type { Action, CompiledCard, Filter, Target } from "@aegis/shared";
 import { registerIrCard } from "../../engine/effects/interpreter.js";
 
 const self: Target = { filter: { isSelfRef: true }, count: 1, isSelf: true };
@@ -48,10 +48,6 @@ const trimHands: Action[] = [
     chooser: "opponent",
   },
 ];
-const shared = { sharedUseKey: "bt26-079-trash-cost-delete", actions: [deleteLevel6] } satisfies Pick<
-  CardEffect,
-  "sharedUseKey" | "actions"
->;
 
 export const compiled: CompiledCard = {
   keywords: [
@@ -87,9 +83,9 @@ export const compiled: CompiledCard = {
         },
       ],
     },
-    { trigger: "OnPlay", frequency: "OncePerTurn", ...shared },
-    { trigger: "WhenDigivolving", frequency: "OncePerTurn", ...shared },
-    { trigger: "WhenAttacking", frequency: "OncePerTurn", ...shared },
+    { trigger: "OnPlay", actions: [deleteLevel6] },
+    { trigger: "WhenDigivolving", actions: [deleteLevel6] },
+    { trigger: "WhenAttacking", actions: [deleteLevel6] },
     {
       trigger: "AllTurns",
       frequency: "OncePerTurn",

@@ -1,3 +1,6 @@
+import { Phase } from "@aegis/shared/schema/enums";
+import fixture from "#api/engine/scenarios/purge-places-bottom-source.fixture";
+import { setupScenario } from "#api/engine/testkit/scenario";
 import { describe, expect, it } from "vitest";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import { observe } from "../../engine/testkit/observe.js";
@@ -68,22 +71,10 @@ describe("BT13-110 Royal Knights of the Purge", () => {
     });
   });
 
-  it("draws, places any Digimon under a breeding King Drasil, and enters the battle area", async () => {
-    const s = setupEngine(
-      {
-        0: {
-          breeding: { card: "BT13-007", as: "drasil" },
-          hand: [
-            { card: "BT13-110", as: "option" },
-            { card: "BT1-045", as: "material" },
-          ],
-          deck: [],
-        },
-      },
-      { autoAcceptOptional: true, autoSelectCards: true },
-    );
-    s.state.memory = 10;
+  it("draws, places the hand Digimon below existing breeding sources, and enters the battle area", async () => {
+    const s = setupScenario(fixture, { autoAcceptOptional: true, autoSelectCards: true });
     await s.ready();
+    s.state.phase = Phase.Main;
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
       ok: true,
     });
@@ -94,7 +85,7 @@ describe("BT13-110 Royal Knights of the Purge", () => {
     );
 
     expect(s.state.players[0]!.hand.some((card) => card.cardId === "BT1-045")).toBe(false);
-    expect(s.perm("drasil").stack.some((card) => card.cardId === "BT1-045")).toBe(true);
+    expect(s.perm("drasil").stack.map((card) => card.cardId)).toEqual(["BT1-045", "BT13-040", "BT13-028"]);
     expect(s.state.players[0]!.battleArea.some((p) => p.topCard?.cardId === "BT13-110")).toBe(true);
   });
 

@@ -1,3 +1,5 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
+import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 /* One side's battle area as two lanes: Digimon, and a lane of grouped Tamers and
    Options. A player who chooses one lane, and every phone, gets a single lane with
    the groups after the Digimon. The outer element keeps the row's class, so every
@@ -15,6 +17,9 @@ import { reportFieldCardWidth, useFieldCardWidth } from "./fieldCardWidth";
 import { CARD_SUSPEND_MOTION } from "../../../design/cardMotion";
 import { BattleLanes } from "../../../design/battleLanes";
 import { useBattleLanes } from "../hooks/useBattleLanes";
+import { COARSE_POINTER_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
+import { twoRowsFit } from "./twoRowsFit";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 const CARD_ASPECT = 1.4;
 /** The design's --ds-touch-target minimum also applies to each permanent's button wrapper. */
@@ -29,17 +34,13 @@ const MIN_PORTRAIT_CARD_WIDTH = 65;
 /** Enough sources to reach the fan's cap, which `sourceFanStepLimit` holds at a quarter of the card width. */
 const FIXED_SIZE_SOURCE_RESERVE = 12;
 /** Each lane's horizontal padding, from fieldLayout.css. */
-const LANE_INLINE_PADDING = 12;
+const LANE_INLINE_PADDING = 16;
 const DIGIMON_GAP_SHARE = 0.25;
 const SUPPORT_GAP_SHARE = 0.3;
 /** One lane has the row's whole height, so its cards may grow past the layout's card width, up to this share. */
 const SINGLE_LANE_GROWTH = 1.2;
+const TWO_ROW_GUIDE_SLOTS = 5;
 
-/**
- * Stacked puts the support lane under the Digimon (above them for the opponent). A row
- * too short for two lanes puts the lanes side by side. Merged draws one lane, Digimon
- * first: the player's one-lane choice, and every phone.
- */
 export enum LanePlacement {
   Stacked = "stacked",
   SideBySide = "side-by-side",
@@ -196,7 +197,6 @@ function useFieldMotion(
   const heldOffsets = useRef(new Map<HTMLElement, FlightOffset>());
   const measuredSignature = useRef("");
   useEffect(() => {
-    const media = window.matchMedia?.("(prefers-reduced-motion: reduce)");
     const stop = () => {
       for (const [copy, { animation }] of returns.current) {
         animation.cancel();
@@ -220,11 +220,13 @@ function useFieldMotion(
       }
     };
     const changed = () => {
-      if (media?.matches) stop();
+      if (motionPreference.isReduced()) {
+        stop();
+      }
     };
-    media?.addEventListener("change", changed);
+    const unsubscribeMotion = motionPreference.subscribe(changed);
     return () => {
-      media?.removeEventListener("change", changed);
+      unsubscribeMotion();
       stop();
     };
   }, [rowRef]);
@@ -252,7 +254,7 @@ function useFieldMotion(
     measuredSignature.current = nextSignature;
     const size = { width: row.clientWidth, height: row.clientHeight };
     const resized = size.width !== sizeBefore.current.width || size.height !== sizeBefore.current.height;
-    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const reduceMotion = motionPreference.isReduced();
     const offsets = new Map<Element, FlightOffset>();
     for (const element of row.querySelectorAll<HTMLElement>("[data-field-key]")) {
       const art = element.querySelector<HTMLElement>(".game-card-enter > [data-state]");
@@ -494,6 +496,7 @@ interface LaneContent {
   fitWidth?: boolean;
   /** Draw one merged lane whatever the row's height. */
   singleLane?: boolean;
+  twoRows?: boolean;
 }
 
 /** What a card adds to its lane's width beyond the card itself. */
@@ -581,7 +584,7 @@ export function fitLanesToWidth(
 function laneMetrics(placement: LanePlacement, content: LaneContent, widths = { digimon: 0, support: 0 }): LaneMetrics {
   const base = LANE_METRICS[placement];
   const shadow = content.preferStacked ? 8 : 10;
-  const top = content.preferStacked ? 18 : 22;
+  const top = 22;
   const sourceBottom = (count = 0, width: number) =>
     count
       ? (content.sourceTop ?? 6) +
@@ -634,8 +637,7 @@ function laneHeight(width: number, padding: { top: number; bottom: number }) {
   return Math.max(MIN_PERMANENT_HEIGHT, Math.ceil(width * CARD_ASPECT)) + padding.top + padding.bottom;
 }
 
-/** Stacked widths, or undefined when stacking would shrink the Digimon past the floor. */
-function stackedLanes(rowHeight: number, layoutWidth: number, content: LaneContent): LaneLayout | undefined {
+function stackedWidths(rowHeight: number, layoutWidth: number, content: LaneContent): LaneLayout {
   const supportScale = content.supportScale ?? LANE_METRICS[LanePlacement.Stacked].supportScale;
   const supportWidth = (width: number) => Math.max(22, Math.floor(width * supportScale));
   const digimon = fittedWidth(layoutWidth, (width) => {
@@ -649,11 +651,16 @@ function stackedLanes(rowHeight: number, layoutWidth: number, content: LaneConte
       rowHeight
     );
   });
+  return { placement: LanePlacement.Stacked, digimon, support: supportWidth(digimon) };
+}
+
+/** Stacked widths, or undefined when stacking would shrink the Digimon past the floor. */
+function stackedLanes(rowHeight: number, layoutWidth: number, content: LaneContent): LaneLayout | undefined {
+  const stacked = stackedWidths(rowHeight, layoutWidth, content);
   const floor = content.preferStacked
     ? Math.min(layoutWidth, MIN_PORTRAIT_CARD_WIDTH)
     : layoutWidth * MIN_STACKED_SHRINK;
-  if (digimon < floor) return undefined;
-  return { placement: LanePlacement.Stacked, digimon, support: supportWidth(digimon) };
+  return stacked.digimon < floor ? undefined : stacked;
 }
 
 /** A merged lane holds both kinds of card, so it clears the larger source fan and links. */
@@ -719,6 +726,11 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
       support: Math.round(layoutWidth * (content.supportScale ?? LANE_METRICS[LanePlacement.Stacked].supportScale)),
     };
   }
+  if (content.twoRows !== undefined && !content.preferStacked) {
+    return content.twoRows
+      ? stackedWidths(row.height, layoutWidth, content)
+      : sideBySideLanes(row.height, layoutWidth, content);
+  }
   if (content.supportCount === 0 || content.digimonCount === 0) {
     const placement = LanePlacement.Stacked;
     const digimon = fittedWidth(
@@ -734,10 +746,13 @@ export function fitLanes(row: { width: number; height: number }, layoutWidth: nu
     return { placement, digimon, support };
   }
   const stacked = stackedLanes(row.height, layoutWidth, content);
-  if (stacked) return stacked;
-  return content.preferStacked
-    ? mergedLanes(row.height, layoutWidth, content)
-    : sideBySideLanes(row.height, layoutWidth, content);
+  if (stacked) {
+    return stacked;
+  }
+  if (content.preferStacked) {
+    return mergedLanes(row.height, layoutWidth, content);
+  }
+  return sideBySideLanes(row.height, layoutWidth, content);
 }
 
 /**
@@ -757,6 +772,68 @@ function fixedSizeContent(content: LaneContent): LaneContent {
     reserveSupport: true,
     fitWidth: false,
   };
+}
+
+function twoRowReferenceContent(content: LaneContent): LaneContent {
+  return {
+    ...content,
+    digimonCount: TWO_ROW_GUIDE_SLOTS,
+    supportCount: 1,
+    digimonSources: 0,
+    supportSources: 0,
+    digimonLinks: 0,
+    supportLinks: 0,
+    reserveSupport: true,
+    singleLane: false,
+    twoRows: undefined,
+  };
+}
+
+function twoRowCandidate(row: { width: number; height: number }, layoutWidth: number, reference: LaneContent): number {
+  const byHeight = stackedWidths(row.height, layoutWidth, reference).digimon;
+  const guides = REFERENCE_LANE_CARDS.digimon;
+  const step = reference.sourceStep ?? 4;
+  const preferStacked = reference.preferStacked ?? false;
+  return fittedWidth(
+    byHeight,
+    (width) => laneContentWidth(guides, width, DIGIMON_GAP_SHARE, step, preferStacked) <= row.width,
+  );
+}
+
+const GUIDE_CARD: LaneCard = { suspended: false, sources: 0, links: 0, copies: 1 };
+const REFERENCE_LANE_CARDS = {
+  digimon: Array.from({ length: TWO_ROW_GUIDE_SLOTS }, () => GUIDE_CARD),
+  support: [GUIDE_CARD],
+};
+
+function viewportTwoRows(
+  row: { width: number; height: number },
+  layoutWidth: number,
+  content: LaneContent,
+  coarsePointer: boolean,
+): boolean {
+  const reference = twoRowReferenceContent(content);
+  const step = reference.sourceStep ?? 4;
+  const preferStacked = reference.preferStacked ?? false;
+  const sideBySideScale = reference.supportScale ?? LANE_METRICS[LanePlacement.SideBySide].supportScale;
+  const sideBySideWidth = fittedWidth(
+    sideBySideLanes(row.height, layoutWidth, reference).digimon,
+    (width) =>
+      laneContentWidth(REFERENCE_LANE_CARDS.digimon, width, DIGIMON_GAP_SHARE, step, preferStacked) +
+        laneContentWidth(
+          REFERENCE_LANE_CARDS.support,
+          Math.max(22, Math.floor(width * sideBySideScale)),
+          SUPPORT_GAP_SHARE,
+          step,
+          preferStacked,
+        ) <=
+      row.width,
+  );
+  return twoRowsFit({
+    stackedWidth: twoRowCandidate(row, layoutWidth, reference),
+    sideBySideWidth,
+    coarsePointer,
+  });
 }
 
 function capLanes(lanes: LaneLayout, width: number): LaneLayout {
@@ -789,9 +866,11 @@ function useRowSize() {
     const overlapLanes = style.getPropertyValue("--field-overlap-lanes").trim() === "1";
     const fitWidth = style.getPropertyValue("--field-fit-width").trim() === "1";
     const fixedWidth = Number.parseFloat(style.getPropertyValue("--field-fixed-width")) || 0;
+    const width = row.clientWidth;
+    const height = row.clientHeight;
     setSize((previous) =>
-      previous.width === row.clientWidth &&
-      previous.height === row.clientHeight &&
+      previous.width === width &&
+      previous.height === height &&
       previous.sourceTop === sourceTop &&
       previous.sourceStep === sourceStep &&
       previous.preferStacked === preferStacked &&
@@ -802,8 +881,8 @@ function useRowSize() {
       previous.fixedWidth === fixedWidth
         ? previous
         : {
-            width: row.clientWidth,
-            height: row.clientHeight,
+            width,
+            height,
             sourceTop,
             sourceStep,
             preferStacked,
@@ -815,11 +894,14 @@ function useRowSize() {
           },
     );
   }
-  // Media-query renders can precede ResizeObserver delivery, especially in background tabs.
-  useLayoutEffect(measure);
+  useLayoutEffect(() => {
+    const frame = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(frame);
+  });
   useLayoutEffect(() => {
     const row = ref.current;
     if (!row) return;
+    measure();
     const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(measure);
     observer?.observe(row);
     window.addEventListener("resize", measure);
@@ -854,6 +936,8 @@ export function OrganizedBattleRow({
   isSuspended: (permanent: Permanent) => boolean;
 }) {
   const { ref, size } = useRowSize();
+  const { scale } = arenaAppearancePreference.useAppearance();
+  const scaleFactor = Object.values(ArenaUiScale).find((entry) => entry.value === scale)!.factor;
   const singleLane = useBattleLanes() === BattleLanes.One;
   const previous = useRef<PreviousPlacement>(new Map());
   // A card stays split-off for as long as it is drawn: dropping the flag on a later
@@ -902,21 +986,31 @@ export function OrganizedBattleRow({
     digimon: arrangement.digimon.map((permanent) => laneCard([permanent])),
     support: arrangement.support.map((group) => laneCard(group.members)),
   };
+  const coarsePointer = useMediaQuery(COARSE_POINTER_QUERY);
   const fixedSize = size.fixedWidth > 0;
-  const fittedContent = fixedSize ? fixedSizeContent(content) : content;
+  const viewportPlaced = !fixedSize && !size.preferStacked && size.reserveSupport && size.height > 0;
+  const twoRows = viewportPlaced ? viewportTwoRows(size, layoutWidth, content, coarsePointer) : undefined;
+  const fittedContent = fixedSize ? fixedSizeContent(content) : { ...content, twoRows };
   const fit = (fitted: LaneContent) => {
     const lanes = fitLanes(size, layoutWidth, fitted);
     return fixedSize && lanes.digimon > size.fixedWidth ? capLanes(lanes, size.fixedWidth) : lanes;
   };
   const heightFitted = fit(fittedContent);
-  const ownLanes = fitLanesToWidth(heightFitted, size.width, laneCards, fittedContent);
+  const scaledMinimum = fixedSize ? size.fixedWidth * scaleFactor : layoutWidth;
+  const ownLanes =
+    scaleFactor > 1
+      ? capLanes(heightFitted, Math.max(scaledMinimum, heightFitted.digimon))
+      : fitLanesToWidth(heightFitted, size.width, laneCards, fittedContent);
   // Raising and security keep the size two lanes would give them; only a single lane's own cards grow.
   const twoLaneContent = { ...fittedContent, singleLane: false };
   const twoLaneHeightFitted = singleLane ? fit(twoLaneContent) : heightFitted;
   const twoLanes = singleLane ? fitLanesToWidth(twoLaneHeightFitted, size.width, laneCards, twoLaneContent) : ownLanes;
   const rowKey = useId();
   const reports = size.reserveSupport && size.height > 0;
-  const reportedHeightFitted = reports ? twoLaneHeightFitted.digimon : undefined;
+  const stackedReferenceLanes = viewportPlaced
+    ? fit({ ...twoRowReferenceContent(fittedContent), twoRows: true, fitWidth: true })
+    : twoLaneHeightFitted;
+  const reportedHeightFitted = reports ? stackedReferenceLanes.digimon : undefined;
   const reportedWidth = reports ? ownLanes.digimon : undefined;
   const reportedBeside = reports ? twoLanes.digimon : undefined;
   useEffect(
@@ -925,13 +1019,18 @@ export function OrganizedBattleRow({
         rowKey,
         reportedHeightFitted === undefined || reportedWidth === undefined || reportedBeside === undefined
           ? undefined
-          : { heightFitted: reportedHeightFitted, drawn: reportedWidth, beside: reportedBeside },
+          : {
+              heightFitted: reportedHeightFitted / scaleFactor,
+              drawn: reportedWidth / scaleFactor,
+              beside: reportedBeside / scaleFactor,
+            },
       ),
-    [rowKey, reportedHeightFitted, reportedWidth, reportedBeside],
+    [rowKey, reportedHeightFitted, reportedWidth, reportedBeside, scaleFactor],
   );
   useEffect(() => () => reportFieldCardWidth(rowKey, undefined), [rowKey]);
   // Rows sharing one card size follow the narrowest of them.
-  const sharedWidth = useFieldCardWidth()?.drawn;
+  const reportedSharedWidth = useFieldCardWidth()?.drawn;
+  const sharedWidth = reportedSharedWidth === undefined ? undefined : reportedSharedWidth * scaleFactor;
   const lanes =
     reportedWidth !== undefined && sharedWidth !== undefined && sharedWidth < ownLanes.digimon
       ? {
@@ -992,7 +1091,7 @@ export function OrganizedBattleRow({
         minHeight: keepsDigimonSlot ? laneHeight(lanes.digimon, metrics.digimonPadding) : 0,
         display: "flex",
         gap: laneGap(lanes.digimon, size.preferStacked, DIGIMON_GAP_SHARE),
-        justifyContent: "safe center",
+        justifyContent: "flex-start",
         alignItems: "center",
         ...({
           "--field-lane-top": `${metrics.digimonPadding.top}px`,
@@ -1019,7 +1118,7 @@ export function OrganizedBattleRow({
         flex: "0 1 auto",
         display: "flex",
         gap: laneGap(lanes.support, size.preferStacked, SUPPORT_GAP_SHARE),
-        justifyContent: "safe center",
+        justifyContent: "flex-start",
         alignItems: "center",
         ...({
           "--field-lane-top": `${metrics.supportPadding.top}px`,

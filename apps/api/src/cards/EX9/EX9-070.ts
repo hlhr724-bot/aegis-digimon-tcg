@@ -36,20 +36,17 @@ export const compiled: CompiledCard = {
     {
       trigger: "Main",
       actions: [
-        {
-          kind: "Draw",
-          controller: "mine",
-          amount: 1,
-        },
-        {
-          kind: "PlaceInBattleAreaSelf",
-        },
+        { effectTextPart: "[Main] ＜Draw 1＞.", kind: "Draw", controller: "mine", amount: 1 },
+        { effectTextPart: "Then, place this card in the battle area.", kind: "PlaceInBattleAreaSelf" },
       ],
     },
     {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "By placing 1 card from your hand face down as any of your [DM] trait Digimon's bottom digivolution card, it may digivolve into a [DM] trait Digimon card in the hand with the digivolution cost reduced by 2.",
+          payCostBeforeOptional: false,
           kind: "Digivolve",
           target: {
             filter: {

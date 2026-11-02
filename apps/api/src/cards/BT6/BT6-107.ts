@@ -39,10 +39,7 @@ const compiled: CompiledCard = {
             isSelf: true,
           },
         },
-        {
-          kind: "GainMemory",
-          amount: 2,
-        },
+        { effectTextPart: "Gain 2 memory.", kind: "GainMemory", amount: 2 },
       ],
       keywords: [
         {

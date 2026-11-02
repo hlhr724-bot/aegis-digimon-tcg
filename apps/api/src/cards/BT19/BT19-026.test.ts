@@ -275,13 +275,25 @@ describe("BT19-026 ZeigGreymon", () => {
           deck: [...FILLER],
         },
       },
-      { autoSelectCards: true, autoChooseOption: true },
+      { autoChooseOption: true },
     );
     s.state.memory = 15;
     await s.ready();
     const level4InstanceId = s.perm("level4").topCard!.instanceId;
 
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("zeig").instanceId })).toEqual({ ok: true });
+    for (const alias of ["stack", "level4"]) {
+      await settle(() => s.state.pendingDecision?.kind === "chooseTargets");
+      const pending = s.state.pendingDecision!;
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: pending.decisionId,
+          response: { kind: "chooseTargets", instanceIds: [s.perm(alias).permanentId] },
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.state.pendingDecision?.decisionId !== pending.decisionId);
+    }
     await settle(() => s.state.players[1]!.hand.length === 1);
 
     expect(s.state.players[1]!.hand[0]!.instanceId).toBe(level4InstanceId);

@@ -53,6 +53,17 @@ describe("game reload routing", () => {
       { screen: "lobby" },
     );
   });
+
+  it("opens shared spectator links on the watch screen", () => {
+    expect(
+      initialAppRoute({
+        pathname: "/play",
+        invitedRoomCode: undefined,
+        spectatorCode: "ABCDEF",
+        hasReconnectSession: false,
+      }),
+    ).toEqual({ screen: "watch" });
+  });
 });
 
 describe("responsive application state", () => {
@@ -144,7 +155,7 @@ describe("responsive application state", () => {
     expect(screen.queryByRole("heading", { name: "Xros Heart" })).toBeNull();
   });
 
-  it("lands a first-time visitor straight on the home pitch", async () => {
+  it("lands a first-time visitor straight on the home dashboard", async () => {
     window.history.replaceState(null, "", "/");
     render(
       <I18nProvider>
@@ -162,7 +173,7 @@ describe("responsive application state", () => {
       </I18nProvider>,
     );
 
-    expect(await screen.findByRole("heading", { name: "Build a deck and play live. Free." })).toBeTruthy();
+    expect(await screen.findByRole("heading", { level: 1, name: "Home" })).toBeTruthy();
     expect(window.location.pathname).toBe("/");
   });
 
@@ -184,7 +195,7 @@ describe("responsive application state", () => {
       </I18nProvider>,
     );
 
-    await screen.findByRole("heading", { name: "Build a deck and play live. Free." });
+    await screen.findByRole("heading", { level: 1, name: "Home" });
     fireEvent.click(screen.getAllByRole("button", { name: "Sign in" })[0]!);
 
     expect(await screen.findByRole("heading", { name: "Sign in to Aegis" })).toBeTruthy();
@@ -208,7 +219,7 @@ describe("responsive application state", () => {
       </I18nProvider>,
     );
 
-    await screen.findByRole("heading", { name: "Build a deck and play live. Free." });
+    await screen.findByRole("heading", { level: 1, name: "Home" });
     fireEvent.click(screen.getAllByRole("button", { name: "Open the player menu" })[0]!);
 
     expect(await screen.findByRole("link", { name: "My profile" })).toBeTruthy();
@@ -224,6 +235,7 @@ describe("responsive application state", () => {
       avatarSource: "digimon",
       avatarUrl: "https://example.com/discord-avatar.png",
       isAdmin: false,
+      roles: [],
       discordLinked: true,
     };
     window.history.replaceState(null, "", "/profile/customize");
@@ -258,7 +270,9 @@ describe("responsive application state", () => {
       expect(menuButton.querySelector("img")?.getAttribute("src")).not.toBe(original.avatarUrl);
       expect(window.location.pathname).toBe("/profile");
       fireEvent.click(await screen.findByRole("button", { name: "Change avatar" }, { timeout: 5_000 }));
-      fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Use Discord avatar" }));
+      const avatarDialog = screen.getByRole("dialog");
+      fireEvent.click(within(avatarDialog).getByRole("tab", { name: "Discord" }));
+      fireEvent.click(within(avatarDialog).getByRole("button", { name: "Use Discord avatar" }));
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
       expect(updateAvatar).toHaveBeenCalledWith(null);
       expect(menuButton.querySelector("img")?.getAttribute("src")).toBe(original.avatarUrl);
@@ -299,7 +313,7 @@ describe("responsive application state", () => {
     window.history.replaceState(null, "", "/");
   }, 20_000);
 
-  it("stores the action confirmation preference from settings", async () => {
+  it("stores the card confirmation mode from settings", async () => {
     render(
       <I18nProvider>
         <AegisClient
@@ -317,13 +331,16 @@ describe("responsive application state", () => {
       </I18nProvider>,
     );
 
-    const confirmationSwitch = await screen.findByRole("switch", { name: /Confirm actions/ });
-    expect(confirmationSwitch.getAttribute("aria-checked")).toBe("true");
+    const confirmationModes = await screen.findByRole("group", { name: "Card confirmations" });
+    const always = within(confirmationModes).getByRole("button", { name: "Always ask" });
+    const playOnly = within(confirmationModes).getByRole("button", { name: "Skip play-only cards" });
+    expect(always.getAttribute("aria-pressed")).toBe("true");
 
-    fireEvent.click(confirmationSwitch);
+    fireEvent.click(playOnly);
 
-    expect(confirmationSwitch.getAttribute("aria-checked")).toBe("false");
-    expect(localStorage.getItem("aegis.action-confirmation.enabled")).toBe("false");
+    expect(playOnly.getAttribute("aria-pressed")).toBe("true");
+    expect(always.getAttribute("aria-pressed")).toBe("false");
+    expect(localStorage.getItem("aegis.card-confirmation.mode")).toBe("skip-play-only");
   });
 
   it("updates the URL during navigation and follows browser history events", async () => {

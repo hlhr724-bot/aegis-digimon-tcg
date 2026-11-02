@@ -2,7 +2,16 @@ import { createPortal } from "react-dom";
 import { useRef, type ButtonHTMLAttributes, type MouseEvent } from "react";
 import { useAnchoredTooltip } from "../../useAnchoredTooltip";
 
-export type TopbarTooltipId = "log" | "feedback" | "chat" | "fullscreen" | "skip" | "look" | "leave" | "reset";
+export type TopbarTooltipId =
+  | "log"
+  | "feedback"
+  | "chat"
+  | "friends"
+  | "fullscreen"
+  | "skip"
+  | "look"
+  | "leave"
+  | "reset";
 
 export function useTopbarTooltip() {
   const tooltip = useAnchoredTooltip<TopbarTooltipId>({ preferAbove: false });

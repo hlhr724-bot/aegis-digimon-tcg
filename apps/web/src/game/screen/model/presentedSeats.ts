@@ -24,6 +24,7 @@ import {
   phaseField,
   securityEffectField,
   trashArrivalField,
+  withTrashList,
   stackStripField,
   stackCostDpField,
 } from "./presentedBoard";
@@ -101,7 +102,7 @@ export function presentedSeats({
           player: blowField({
             player: securityEffectField({
               player: phaseField({
-                player: shownState.players[viewerSeat] ?? viewer,
+                player: withTrashList(shownState.players[viewerSeat] ?? viewer),
                 held: phaseHold?.players[viewerSeat],
               }),
               held: securityEffectHold?.players[viewerSeat],
@@ -123,7 +124,7 @@ export function presentedSeats({
           player: blowField({
             player: securityEffectField({
               player: phaseField({
-                player: shownState.players[otherSeat(viewerSeat)] ?? opponent,
+                player: withTrashList(shownState.players[otherSeat(viewerSeat)] ?? opponent),
                 held: phaseHold?.players[otherSeat(viewerSeat)],
               }),
               held: securityEffectHold?.players[otherSeat(viewerSeat)],

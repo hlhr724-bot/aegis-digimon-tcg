@@ -38,7 +38,7 @@ export interface SeriesRecord {
   results: GameResult[];
   seats: [SeriesSeat, SeriesSeat];
   /** Who goes first in the game being opened. */
-  firstSeat: Seat;
+  firstSeat?: Seat;
 }
 
 export interface SeriesDirectory {

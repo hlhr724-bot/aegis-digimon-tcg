@@ -1,4 +1,5 @@
 import { Permanent, Zone, CardInstance } from "@aegis/shared";
+import { requireCardDefinition } from "@aegis/shared/cards/registry";
 import {
   extractPermanentAt,
   insertCard,
@@ -37,7 +38,9 @@ export function createRelocateVerbs(pc: PrimitivesContext) {
     const dest =
       access.permanentById(destPermanentId) ??
       state.players.find((p) => p.breeding?.permanentId === destPermanentId)?.breeding;
-    if (dest === undefined || dest.topCard === undefined) return false;
+    if (dest === undefined || dest.topCard === undefined || requireCardDefinition(dest.topCard.cardId).isToken) {
+      return false;
+    }
 
     let source: Permanent | undefined;
     for (const owner of state.players) {
@@ -111,6 +114,7 @@ export function createRelocateVerbs(pc: PrimitivesContext) {
       source === undefined ||
       source.topCard === undefined ||
       destination?.topCard === undefined ||
+      requireCardDefinition(destination.topCard.cardId).isToken ||
       sourcePermanentId === destPermanentId ||
       isRestricted(sourcePermanentId, "leaveBattleAreaExceptByDeletion")
     )
@@ -185,7 +189,9 @@ export function createRelocateVerbs(pc: PrimitivesContext) {
     const destination =
       access.permanentById(destPermanentId) ??
       state.players.find((owner) => owner.breeding?.permanentId === destPermanentId)?.breeding;
-    if (destination?.topCard === undefined) return;
+    if (destination?.topCard === undefined || requireCardDefinition(destination.topCard.cardId).isToken) {
+      return;
+    }
     const destinationTopId = destination.topCard.instanceId;
     const sourceIds = orderedCards
       .flatMap((card) => (card.permanentId === undefined ? [] : [card.permanentId]))
@@ -262,7 +268,9 @@ export function createRelocateVerbs(pc: PrimitivesContext) {
     const destination =
       access.permanentById(destPermanentId) ??
       state.players.find((owner) => owner.breeding?.permanentId === destPermanentId)?.breeding;
-    if (destination?.topCard === undefined) return [];
+    if (destination?.topCard === undefined || requireCardDefinition(destination.topCard.cardId).isToken) {
+      return [];
+    }
 
     // Preflight the whole batch before calling the mutating primitive. This is the atomicity
     // seam for costs such as BT18-096: when source B is stale/protected/missing, source A is

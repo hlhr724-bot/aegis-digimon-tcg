@@ -59,7 +59,7 @@ export const compiled: CompiledCard = {
           kind: "Attack",
           target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
           attackTargetScope: "player",
-          mandatory: false,
+          optional: true,
           condition: {
             kind: "selfHasTrait",
             filter: {

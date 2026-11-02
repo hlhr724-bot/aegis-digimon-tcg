@@ -3,11 +3,6 @@
   font-size: 0.75rem;
   margin: 0;
 }
-.dna-material-choice__actions {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: var(--ds-space-2);
-}
 .game-permanent__material-order {
   position: absolute;
   z-index: 4;
@@ -25,11 +20,28 @@
   font-weight: 800;
   pointer-events: none;
 }
-.board-prompt.dna-material-choice[data-variant="field-selection"] .board-prompt__actions {
-  display: flex;
-  flex-direction: column;
+.board-prompt.dna-material-choice[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: var(--ds-space-2);
+  width: 100%;
+  max-width: 32rem;
 }
-/* The phone rail turns its actions into a two-column grid; Cancel and confirm are one row of it. */
-.board-prompt.dna-material-choice[data-variant="field-selection"] .dna-material-choice__actions {
+.board-prompt.dna-material-choice[data-prompt-surface][data-variant="field-selection"] .dna-material-choice__actions {
+  display: contents;
+}
+.board-prompt.dna-material-choice[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions button {
+  width: 100%;
+  max-width: none;
+  min-height: 44px;
+  height: auto;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  white-space: normal;
+  grid-column: auto;
+}
+.dna-material-choice__cost {
   grid-column: 1 / -1;
 }

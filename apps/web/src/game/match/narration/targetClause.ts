@@ -18,13 +18,20 @@ export function hasEarlierClauseResults(
       break;
     for (const event of batch.events) {
       if (!found) {
-        if (event.kind !== "effectTriggered" && event.kind !== "effectOptionChosen") continue;
+        if (
+          event.kind !== "effectTriggered" &&
+          event.kind !== "effectOptionChosen" &&
+          event.kind !== "effectClauseAdvanced"
+        ) {
+          continue;
+        }
         if (event.sourceCardId !== body.cardId) continue;
         if (body.sourceInstanceId && event.sourceInstanceId !== body.sourceInstanceId) continue;
         if (body.sourcePermanentId && event.sourcePermanentId !== body.sourcePermanentId) continue;
         found =
           body.effectTextPart !== undefined
-            ? event.kind === "effectOptionChosen" && event.clause === body.effectTextPart
+            ? (event.kind === "effectOptionChosen" || event.kind === "effectClauseAdvanced") &&
+              event.clause === body.effectTextPart
             : event.kind === "effectTriggered" && (!body.effectKey || event.effectKey === body.effectKey);
         continue;
       }

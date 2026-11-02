@@ -1,7 +1,8 @@
 import type { Permanent } from "../schema/Permanent.js";
+import type { CardInstance } from "../schema/CardInstance.js";
 import { getCardDefinition } from "./registry.js";
 
-type DigivolutionBase = Pick<Permanent, "inBreeding" | "stack" | "topCard">;
+type DigivolutionBase = Pick<Permanent, "inBreeding" | "topCard"> & { stack: readonly CardInstance[] };
 
 /**
  * Cost adjustments printed on the card being digivolved into that inspect the

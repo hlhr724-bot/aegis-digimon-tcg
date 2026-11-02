@@ -41,6 +41,16 @@ describe("splitPrintedClauses", () => {
     }
   });
 
+  it("shows only Davis Motomiya's memory clause at the start of the turn", () => {
+    const definition = definitionOf("BT3-093");
+    expect(printedClauseForEffect({ definition, effect: { trigger: "StartOfYourTurn", actions: [] } })).toBe(
+      "[Start of Your Turn] If you have 2 memory or less, set your memory to 3.",
+    );
+    expect(printedClauseForEffect({ definition, effect: { trigger: "OnPlay", actions: [] } })).toMatch(
+      /^\[On Play\] Reveal the top 3 cards of your deck\./,
+    );
+  });
+
   it("keeps Homeros's two referenced timings inside its end-of-turn clause", () => {
     const definition = definitionOf("BT24-102");
     const clause = definition.effectText!.split("\n").find((line) => line.startsWith("[End of Your Turn]"))!;

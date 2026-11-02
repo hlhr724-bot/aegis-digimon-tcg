@@ -1,3 +1,5 @@
+import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { normalizeKeywordBrackets } from "@/game/keywordReminders";
 import { openFixturePage, ScenarioPage } from "./scenario-page";
 import fixtureMobileInspection from "../../api/src/engine/scenarios/mobile-inspection.fixture";
 
@@ -169,6 +171,8 @@ test.use({
 
 for (const viewport of [
   { width: 2048, height: 1191 },
+  { width: 1366, height: 768 },
+  { width: 1920, height: 1080 },
   { width: 720, height: 700 },
   { width: 390, height: 844 },
 ]) {
@@ -182,7 +186,27 @@ for (const viewport of [
       await arena.hold(arena.alphamon());
       const inspector = page.getByRole("dialog", { name: "Alphamon", exact: true });
       await expect(inspector).toContainText("When any of your [Chronicle] trait Digimon would leave");
-      await inspector.getByRole("button", { name: "Enlarge card", exact: true }).tap();
+      if (viewport.width >= 768) {
+        const sources = inspector.getByRole("region", { name: "4 sources" });
+        await expect(sources).toBeInViewport();
+        await expect(sources.getByRole("button", { name: "Open Grademon" })).toBeInViewport();
+        expect(await sources.evaluate((element) => element.scrollTop)).toBe(0);
+        await expect
+          .poll(() => sources.evaluate((element) => element.scrollHeight - element.clientHeight))
+          .toBeLessThanOrEqual(1);
+        await expect(sources.getByRole("button", { name: "Open Bebydomon" })).toBeInViewport();
+      } else {
+        const strip = inspector.getByRole("group", { name: "4 sources" });
+        const second = strip.getByRole("button").nth(1);
+        await second.tap();
+        await expect(second).toHaveAttribute("aria-pressed", "true");
+        const selected = inspector.locator(".arena-permanent-inspector__strip-detail");
+        await expect(selected).toBeInViewport();
+        await expect(selected).toContainText(
+          normalizeKeywordBrackets(getCardDefinition("EX13-055")!.inheritedEffectText!),
+        );
+      }
+      await inspector.locator(".arena-permanent-inspector__art").tap();
       await expect(page.locator(".card-zoom")).toBeVisible();
       await page.locator(".card-zoom").getByRole("button", { name: "Close", exact: true }).tap();
       await inspector.getByRole("button", { name: "Close", exact: true }).tap();
@@ -236,6 +260,43 @@ test("holding an attack-capable own Digimon outside selection reads it without a
     await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
     await expect(coredramon).not.toHaveAttribute("data-suspended", "true");
     await expect(page.getByTestId("drag-ghost")).toHaveCount(0);
+  } finally {
+    await page.close();
+    await server.close();
+  }
+});
+
+test("keeps the room mounted when switching translated digivolution source effects", async ({ page }) => {
+  const server = await startBrowserServer();
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  try {
+    const arena = new MobileInspectionArena(page);
+    await arena.open(false);
+    await arena.hold(arena.alphamon());
+    const inspector = page.getByRole("dialog", { name: "Alphamon", exact: true });
+    const sources = inspector.getByRole("group", { name: "4 sources" }).getByRole("button");
+    const selected = inspector.locator(".arena-permanent-inspector__strip-detail");
+    await sources.nth(0).tap();
+    await expect(selected).toContainText(normalizeKeywordBrackets(getCardDefinition("EX13-057")!.inheritedEffectText!));
+    const marker = selected.locator("mark[data-kind=timing]").first();
+    await expect(marker).toBeVisible();
+    await marker.evaluate((element) => {
+      const translated = document.createElement("font");
+      translated.style.verticalAlign = "inherit";
+      element.replaceWith(translated);
+      translated.append(element);
+    });
+
+    await sources.nth(1).tap();
+
+    await expect(inspector).toBeVisible();
+    await expect(sources.nth(1)).toHaveAttribute("aria-pressed", "true");
+    await sources.nth(0).tap();
+    await expect(selected).toContainText(normalizeKeywordBrackets(getCardDefinition("EX13-057")!.inheritedEffectText!));
+    await inspector.getByRole("button", { name: "Close", exact: true }).tap();
+    await expect(page.getByRole("button", { name: /^end turn$/i })).toBeEnabled();
+    expect(errors).toEqual([]);
   } finally {
     await page.close();
     await server.close();

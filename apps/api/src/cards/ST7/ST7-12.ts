@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Choose any number of your opponent's Digimon whose total DP adds up to 8000 or less and delete them.",
           kind: "Delete",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: "all", totalDpCap: 8000 },
         },

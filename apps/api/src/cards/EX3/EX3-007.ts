@@ -35,6 +35,8 @@ export const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart:
+                "Add 1 Digimon card with [Rock Dragon], [Earth Dragon], [Bird Dragon], [Machine Dragon], or [Sky Dragon] in its traits",
               filter: {
                 kind: ["Digimon"],
                 nameOrTrait: [
@@ -47,7 +49,12 @@ export const compiled: CompiledCard = {
               count: 1,
               to: "hand",
             },
-            { filter: { nameOrTrait: [{ tokens: ["Hina Kurihara"], match: "nameExact" }] }, count: 1, to: "hand" },
+            {
+              effectTextPart: "1 [Hina Kurihara] among them to your hand.",
+              filter: { nameOrTrait: [{ tokens: ["Hina Kurihara"], match: "nameExact" }] },
+              count: 1,
+              to: "hand",
+            },
           ],
           rest: "deckBottom",
         },

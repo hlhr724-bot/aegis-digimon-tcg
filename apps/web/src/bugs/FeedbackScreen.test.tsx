@@ -50,15 +50,18 @@ type Handler = (url: string, init?: RequestInit) => Reply;
 
 const REPORTED_DECKS = "/admin/community/reports";
 const PLAYTEST = "/admin/playtest/";
+const REPORTED_TOURNAMENTS = "/account/admin/tournament-reports";
 
 function mockApi(handler: Handler, reportedDecks: unknown[] = []) {
   const fetchMock = vi.fn<typeof fetch>(async (input, init) => {
     const url = String(input);
     const [status, body] = url.endsWith(REPORTED_DECKS)
       ? [200, { decks: reportedDecks }]
-      : url.includes(PLAYTEST)
-        ? [200, url.endsWith("/members") ? { members: [] } : { open: [], past: [] }]
-        : handler(url, init);
+      : url.endsWith(REPORTED_TOURNAMENTS)
+        ? [200, { reports: [] }]
+        : url.includes(PLAYTEST)
+          ? [200, url.endsWith("/members") ? { members: [] } : { open: [], past: [] }]
+          : handler(url, init);
     return new Response(JSON.stringify(body), { status });
   });
   vi.stubGlobal("fetch", fetchMock);

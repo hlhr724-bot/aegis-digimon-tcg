@@ -7,6 +7,7 @@ import { kindOf } from "../design/theme";
 import type { DeckListing } from "../game/decks";
 import type { Translate } from "../i18n";
 import { sortCardIds } from "./cardSorting";
+import { deckSectionLevel } from "@/screens/deckSectionLevel";
 
 export interface DeckSectionEntry {
   cardId: string;
@@ -44,13 +45,14 @@ export function deckSections(deck: DeckListing, t: Translate): DeckSection[] {
   for (const cardId of mainCounts.keys()) {
     const definition = getCardDefinition(cardId);
     const kind = definition ? kindOf(definition) : undefined;
-    if (kind === "Tamer") tamers.push(cardId);
-    else if (kind === "Option") options.push(cardId);
-    else if (kind === "Digimon" && definition?.level != null) {
-      const cards = byLevel.get(definition.level) ?? [];
+    const level = definition ? deckSectionLevel(definition) : undefined;
+    if (level != null) {
+      const cards = byLevel.get(level) ?? [];
       cards.push(cardId);
-      byLevel.set(definition.level, cards);
-    } else other.push(cardId);
+      byLevel.set(level, cards);
+    } else if (kind === "Tamer") tamers.push(cardId);
+    else if (kind === "Option") options.push(cardId);
+    else other.push(cardId);
   }
 
   const eggEntries = toEntries(eggCounts, [...eggCounts.keys()]);

@@ -124,6 +124,16 @@ describe("ResolutionPlan", () => {
     expect(plan.nextOf(["a", "c"])).toBeUndefined();
   });
 
+  it("keeps answering from an ordered prefix until it runs out or a new key appears", () => {
+    const plan = new ResolutionPlan();
+    plan.adopt(["c", "b"], {}, ["a", "b", "c", "d"]);
+
+    expect(plan.nextOf(["a", "b", "c", "d"])).toBe("c");
+    expect(plan.nextOf(["a", "b", "d"])).toBe("b");
+    expect(plan.nextOf(["a", "d"])).toBeUndefined();
+    expect(plan.nextOf(["a", "b", "e"])).toBeUndefined();
+  });
+
   it("moves a newer answer to the front and keeps the earlier plan for the rest", () => {
     const plan = new ResolutionPlan();
     plan.adopt(["a", "b"], { a: true });
@@ -233,6 +243,23 @@ describe("resolution plan through the stack resolver", () => {
     expect(resolved).toEqual(["second", "third", "first"]);
   });
 
+  it("resolves a partially ordered window in that order before asking about the rest", async () => {
+    const effects = [pending("first"), pending("second"), pending("third"), pending("fourth")];
+    const { manager, requests } = scriptedSeat((request) => ({
+      kind: "orderTriggers",
+      order: requests.length === 1 ? [key("third"), key("second")] : [...(request.options?.triggerKeys ?? [])],
+    }));
+    const { env, resolved } = envFor(manager, () => effects);
+
+    await resolveTiming(EffectTiming.OnDeletion, env);
+
+    expect(requests.map((request) => request.options?.triggerKeys)).toEqual([
+      [key("first"), key("second"), key("third"), key("fourth")],
+      [key("first"), key("fourth")],
+    ]);
+    expect(resolved).toEqual(["third", "second", "first", "fourth"]);
+  });
+
   it("asks yes/no questions for effects the controller left on Ask", async () => {
     const effects = [pending("left-on-ask", { optional: true }), pending("other")];
     const { manager, requests } = scriptedSeat((request) =>
@@ -280,6 +307,41 @@ describe("DecisionManager resolution plan validation", () => {
     expect(
       await respondTo(plannable, { kind: "orderTriggers", order: ["c", "a", "b"], optionalAnswers: { b: false } }),
     ).toBe(true);
+  });
+
+  it("accepts indexed plans only when the pending decision advertises support", async () => {
+    const response: DecisionResponse = {
+      kind: "orderTriggers",
+      order: [],
+      orderIndexes: [2, 0],
+      optionalAnswersByIndex: [false, null, true],
+    };
+    expect(await respondTo(plannable, response)).toBe(false);
+    expect(await respondTo({ ...plannable, acceptsIndexedResolutionPlan: true }, response)).toBe(true);
+    expect(await respondTo({ ...offered, acceptsIndexedResolutionPlan: true }, response)).toBe(false);
+  });
+
+  it("keeps an invalid indexed answer pending and resolves a valid answer to named keys", async () => {
+    const state = gameWithSeats();
+    const manager = new DecisionManager(state, { requestDecision: () => {} });
+    const pending = manager.request({
+      seat: 0,
+      kind: "orderTriggers",
+      promptText: "order",
+      options: { ...plannable, acceptsIndexedResolutionPlan: true },
+    });
+    const decisionId = state.pendingDecision!.decisionId;
+    expect(manager.respond(0, decisionId, { kind: "orderTriggers", order: [], orderIndexes: [3] })).toBe(false);
+    expect(state.pendingDecision?.decisionId).toBe(decisionId);
+    expect(
+      manager.respond(0, decisionId, {
+        kind: "orderTriggers",
+        order: [],
+        orderIndexes: [2, 0],
+        optionalAnswersByIndex: [false, null, true],
+      }),
+    ).toBe(true);
+    expect(await pending).toEqual({ kind: "orderTriggers", order: ["c", "a"], optionalAnswers: { a: false, c: true } });
   });
 
   it("rejects repeated, unknown, or malformed plan entries", async () => {

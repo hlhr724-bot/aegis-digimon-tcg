@@ -1,3 +1,4 @@
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import {
   CardKind,
   Permanent,
@@ -73,6 +74,7 @@ export function createOptionEffectsVerbs(pc: PrimitivesContext) {
     if (engine.fireSubTrigger) {
       await engine.fireSubTrigger("whenTrashedFromDeck", {
         trashedFromDeckCardId: cardId,
+        ...(instanceId === undefined ? {} : { trashedFromDeckInstanceId: instanceId }),
         ...(byEffectCardId !== undefined ? { trashedFromDeckByEffectCardId: byEffectCardId } : {}),
       });
     }
@@ -151,6 +153,7 @@ export function createOptionEffectsVerbs(pc: PrimitivesContext) {
     // selected again by PlaceUnder and creates duplicate identity (BT25-083 Q6396).
     const usedCard = peekLooseInstance(state, usedInstanceId);
     const usedOwner = usedCard === undefined ? undefined : state.players.find((p) => p.seat === usedCard.ownerSeat);
+    const parentResolvingOption = usedOwner?.resolvingOption;
     // An Option's own "when you would use this card" reduction applies only while the card is
     // in hand. Capture that zone before removeLooseInstance and project it through the shared
     // GameAccess seam; Options used from trash, deck, or a digivolution stack keep the caller's
@@ -165,9 +168,9 @@ export function createOptionEffectsVerbs(pc: PrimitivesContext) {
     let activateOptionUsed: (() => Promise<void>) | undefined;
     let usedDefinition: CardDefinition | undefined;
     if (usedCard !== undefined && usedOwner !== undefined) {
-      // The schema has one transient slot per player. Do not overwrite an already-resolving
-      // Option if a nested effect attempts a second use; the nested use simply fails atomically.
-      if (usedOwner.resolvingOption !== undefined) return [];
+      if (parentResolvingOption?.instanceId === usedInstanceId) {
+        return [];
+      }
       try {
         usedDefinition = requireCardDefinition(usedCard.cardId);
       } catch {
@@ -242,10 +245,14 @@ export function createOptionEffectsVerbs(pc: PrimitivesContext) {
           };
           const optionCtx: EffectContext = {
             ...ctx,
+            presetOptionalAnswer: undefined,
+            pickingAcceptedOptional: false,
             // Using an Option starts that card's own effect, even when a Digimon
             // initiated the use. Do not carry the caller's effect category into it.
             effectSourceKinds: [CardKind.Option],
             activeTiming: "Main",
+            activeEffectTextPart: undefined,
+            activeEffectTextEmphasis: undefined,
             source: {
               instanceId: usedInstanceId,
               cardId: usedCard.cardId,
@@ -313,11 +320,15 @@ export function createOptionEffectsVerbs(pc: PrimitivesContext) {
       engine.emit({
         kind: "cardsMoved",
         instanceIds: [resolvingCard.instanceId],
-        from: "various",
+        from: CardMovePosition.RESOLVING_OPTION.value,
+        fromSeat: usedOwner.seat,
         to: Zone.Trash,
         optionUsed: true,
       });
       if (wasUnderCard) applyOverflow(engine.memory, [resolvingCard], state.turnSeat);
+    }
+    if (parentResolvingOption !== undefined && usedOwner !== undefined) {
+      setResolvingOption(usedOwner, parentResolvingOption);
     }
     if (activateOptionUsed !== undefined) await activateOptionUsed();
     else await fireOptionUsed(usedInstanceId, notifiedUseCost);

@@ -1,3 +1,4 @@
+import type { CounterChoice } from "@aegis/shared/protocol/CounterChoice";
 import { EffectTiming, type CardInstance, type IntentResult, type Seat } from "@aegis/shared";
 import { effectiveNames } from "../../effects/continuous.js";
 import { blastDnaChoices } from "../../actions/blastDnaDigivolve.js";
@@ -184,13 +185,10 @@ export function handleRespondCounter(engine: GameEngine, seat: Seat, intent: Res
  * `[Hand][Counter]` effects are eligible. Bound into `CombatController`'s
  * `counterEligible` hook so `runCounterWindow` can skip the round trip when nothing is eligible.
  */
-export function counterEligibleSources(
-  engine: GameEngine,
-  seat: Seat,
-): { instanceId: string; effectKey: string; description: string }[] {
+export function counterEligibleSources(engine: GameEngine, seat: Seat): CounterChoice[] {
   const player = engine.state.players[seat];
   if (player === undefined) return [];
-  const entries: { instanceId: string; effectKey: string; description: string }[] = [];
+  const entries: CounterChoice[] = [];
   for (const perm of player.battleArea) {
     const candidates = [perm.topCard, ...perm.stack, ...perm.linked].filter((c): c is CardInstance => c !== undefined);
     for (const instance of candidates) {
@@ -202,6 +200,8 @@ export function counterEligibleSources(
             instanceId: instance.instanceId,
             effectKey: effect.effectKey,
             description: effect.description,
+            sourceCardId: instance.cardId,
+            ...(effect.decisionSummary === undefined ? {} : { summary: effect.decisionSummary }),
           });
         }
       }
@@ -216,6 +216,8 @@ export function counterEligibleSources(
           instanceId: instance.instanceId,
           effectKey: effect.effectKey,
           description: effect.description,
+          sourceCardId: instance.cardId,
+          ...(effect.decisionSummary === undefined ? {} : { summary: effect.decisionSummary }),
         });
       }
     }
@@ -236,6 +238,7 @@ export function counterEligibleSources(
         instanceId: instance.instanceId,
         effectKey: `blast-digivolve:${permanent.permanentId}`,
         description: "＜Blast Digivolve＞",
+        sourceCardId: instance.cardId,
       });
     }
   }

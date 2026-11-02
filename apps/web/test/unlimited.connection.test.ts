@@ -70,10 +70,11 @@ describe("authoritative bot/private Unlimited over websockets", () => {
     const host = await create(type, { deck: bannedRestricted(), unlimited: true });
     expect(host.state.unlimited).toBe(true);
     const [listing] = await matchMaker.query({ roomId: host.roomId });
-    expect(listing?.metadata).toEqual({ unlimited: true, format: "unlimited" });
+    expect(listing?.metadata).toEqual({ unlimited: true, format: "unlimited", gameMode: "automatic" });
     expect(await matchMaker.remoteRoomCall(host.roomId, "privateRoomInfo", [])).toEqual({
       unlimited: true,
       format: "unlimited",
+      waiting: true,
     });
   });
 
@@ -172,18 +173,27 @@ describe("authoritative bot/private Unlimited over websockets", () => {
     await vi.waitFor(() => expect(host.state.players.length).toBe(2));
   });
 
-  it("preserves beta acceptance independently in private and beta bot rooms", async () => {
+  it("accepts beta decks in private and bot rooms without a beta flag", async () => {
     const betaDeck = deckWith("EX13-007", "BT5-109", "ST2-13", "ST2-13");
     const privateRoom = await create("aegis_private", { unlimited: true, deck: betaDeck });
     await join(privateRoom, { unlimited: true, deck: betaDeck });
+    const bot = await create("aegis_bot", { unlimited: true, deck: betaDeck, botDeck: betaDeck });
+    expect(await matchMaker.remoteRoomCall(bot.roomId, "addBot", [])).toBe(true);
+  });
+
+  it("accepts the deployed beta-bot room name with the unified bot boundaries", async () => {
+    const betaDeck = deckWith("EX13-007");
+    await expect(create("aegis_beta_bot", { betaBattleMode: true, deck: bannedRestricted() })).rejects.toThrow(
+      /illegal deck|auth/i,
+    );
     const bot = await create("aegis_beta_bot", {
-      unlimited: true,
       betaBattleMode: true,
       deck: betaDeck,
       botDeck: betaDeck,
     });
+    expect(bot.state.unlimited).toBe(false);
     expect(await matchMaker.remoteRoomCall(bot.roomId, "addBot", [])).toBe(true);
-    await expect(create("aegis_bot", { unlimited: true, deck: betaDeck })).rejects.toThrow(/illegal deck|auth/i);
+    await vi.waitFor(() => expect(bot.state.players.length).toBe(2));
   });
 
   it("keeps public, ranked and tournament registrations immutable and public Unlimited usable", async () => {

@@ -1,7 +1,7 @@
 import type { Locale } from "../i18n/locales";
 
 export const PRIVACY_CONTACT = "support@aegis-digi.online";
-export const PRIVACY_UPDATED = "2026-10-13";
+export const PRIVACY_UPDATED = "2026-10-29";
 
 export interface PrivacySection {
   id: string;
@@ -44,6 +44,15 @@ const en: PrivacyPolicy = {
         "If you make a replay public, Aegis sets that file to “anyone with the link can view” and our server delivers it to people who open the link. Making it private again removes that access.",
         "You can disconnect Google Drive in Settings, or revoke access in your Google account. Files already saved stay in your Drive until you delete them.",
         "Aegis's use and transfer of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.",
+      ],
+    },
+    {
+      id: "profile-pictures",
+      heading: "Profile pictures",
+      paragraphs: [
+        "When you upload a profile picture, our server sends the image to OpenAI's moderation service to check it for sexual or graphic violent content. Only the image is sent: no name, email, or account ID.",
+        "If OpenAI cannot answer, our own server checks the picture instead. If no check works, the upload is refused and your previous picture stays.",
+        "A refused picture is not stored. We keep only pictures that pass the check.",
       ],
     },
     {
@@ -105,6 +114,15 @@ const ptBR: PrivacyPolicy = {
       ],
     },
     {
+      id: "profile-pictures",
+      heading: "Fotos de perfil",
+      paragraphs: [
+        "Quando você envia uma foto de perfil, nosso servidor manda a imagem ao serviço de moderação da OpenAI para verificar se há conteúdo sexual ou de violência explícita. Só a imagem é enviada: sem nome, e-mail ou ID da conta.",
+        "Se a OpenAI não responder, nosso próprio servidor verifica a foto. Se nenhuma verificação funcionar, o envio é recusado e sua foto anterior continua.",
+        "Uma foto recusada não é guardada. Guardamos só as fotos aprovadas na verificação.",
+      ],
+    },
+    {
       id: "use",
       heading: "Como usamos",
       paragraphs: [
@@ -163,6 +181,15 @@ const es: PrivacyPolicy = {
       ],
     },
     {
+      id: "profile-pictures",
+      heading: "Fotos de perfil",
+      paragraphs: [
+        "Cuando subes una foto de perfil, nuestro servidor envía la imagen al servicio de moderación de OpenAI para comprobar si tiene contenido sexual o de violencia explícita. Solo se envía la imagen: sin nombre, correo ni ID de cuenta.",
+        "Si OpenAI no responde, nuestro propio servidor revisa la foto. Si ninguna revisión funciona, la subida se rechaza y tu foto anterior se mantiene.",
+        "Una foto rechazada no se guarda. Solo guardamos las fotos que pasan la revisión.",
+      ],
+    },
+    {
       id: "use",
       heading: "Cómo lo usamos",
       paragraphs: [
@@ -218,6 +245,15 @@ const it: PrivacyPolicy = {
         "Se rendi pubblico un replay, Aegis imposta il file come “chiunque abbia il link può visualizzarlo” e il nostro server lo consegna a chi apre il link. Renderlo di nuovo privato rimuove questo accesso.",
         "Puoi scollegare Google Drive nelle Impostazioni o revocare l’accesso dal tuo account Google. I file già salvati restano nel tuo Drive finché non li elimini.",
         "L’uso e il trasferimento da parte di Aegis delle informazioni ricevute dalle API di Google rispettano le Norme sui dati utente dei servizi API di Google, inclusi i requisiti di Uso limitato.",
+      ],
+    },
+    {
+      id: "profile-pictures",
+      heading: "Immagini del profilo",
+      paragraphs: [
+        "Quando carichi un’immagine del profilo, il nostro server invia l’immagine al servizio di moderazione di OpenAI per verificare se contiene contenuti sessuali o di violenza esplicita. Viene inviata solo l’immagine: nessun nome, email o ID dell’account.",
+        "Se OpenAI non risponde, il nostro server controlla l’immagine. Se nessun controllo funziona, il caricamento viene rifiutato e l’immagine precedente resta.",
+        "Un’immagine rifiutata non viene conservata. Conserviamo solo le immagini che superano il controllo.",
       ],
     },
     {

@@ -34,3 +34,13 @@ it("GitHub #5393: ZeigGreymon offers AD1-006 Shoutmon X7's [Blue Flare] digivolv
     expect.objectContaining({ type: "alternate", cost: 2 }),
   );
 });
+
+it("offers only the cost-two text route for BlackGatomon over red ToyAgumon", () => {
+  const toyAgumon = Object.assign(new Permanent(), {
+    permanentId: "toy-agumon",
+    topCard: Object.assign(new CardInstance(), { instanceId: "toy-agumon-top", cardId: "EX7-008" }),
+  });
+  expect(getDigivolveCostOptions("BT25-082", toyAgumon)).toEqual([
+    expect.objectContaining({ type: "alternate", cost: 2, alternateRequirementIndex: 2 }),
+  ]);
+});

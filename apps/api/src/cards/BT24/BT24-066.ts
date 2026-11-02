@@ -24,8 +24,22 @@ export const compiled: CompiledCard = {
           kind: "RevealAdd",
           revealCount: 3,
           add: [
-            { filter: qualifying, orFilters: [qualifyingTamer], count: 1, to: "hand" },
-            { filter: qualifying, orFilters: [qualifyingTamer], count: 1, to: "trash", requiresMinRevealed: 2 },
+            {
+              effectTextPart:
+                "add 1 [Evil], [Dark Dragon], [Evil Dragon] or [Dark Knight] trait card or purple Tamer card to the hand",
+              filter: qualifying,
+              orFilters: [qualifyingTamer],
+              count: 1,
+              to: "hand",
+            },
+            {
+              effectTextPart: "trash 1 such card.",
+              filter: qualifying,
+              orFilters: [qualifyingTamer],
+              count: 1,
+              to: "trash",
+              requiresMinRevealed: 2,
+            },
           ],
           rest: "deckBottom",
         },

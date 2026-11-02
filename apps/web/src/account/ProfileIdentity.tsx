@@ -1,12 +1,14 @@
-import { useId, useRef, useState, type FormEvent } from "react";
+import { useProfileTrophiesShown } from "@/achievements/useProfileTrophiesShown";
+import { setProfileTrophiesShown } from "@/achievements/setProfileTrophiesShown";
+import { useEffect, useId, useState, type FormEvent } from "react";
 import type { MatchHistorySummary, MatchWinRate } from "@aegis/shared";
-import { Avatar, Badge, type PlayerIdentity } from "../design/primitives";
+import { Avatar, Badge, Switch, type PlayerIdentity } from "../design/primitives";
 import { Icons } from "../design/icons";
 import { useTranslation, type TranslationKey } from "../i18n";
 import { AccountApiError, accountApi, type RemoteAccount } from "./client";
 import { AvatarMenu, avatarChoice, type AvatarSelection } from "./AvatarMenu";
 import type { DigimonWorldAvatarId } from "./avatars";
-import { useProfileStatsShown } from "./profileStats";
+import { setProfileStatsShown, useProfileStatsShown } from "./profileStats";
 
 const NAME_MIN = 3;
 const NAME_MAX = 32;
@@ -28,6 +30,7 @@ export function ProfileIdentity({
   onAccountChange,
   onGuestChange,
   onRefreshDiscordAvatar,
+  avatarMenuRequest,
 }: {
   account: RemoteAccount | null | undefined;
   player: PlayerIdentity;
@@ -36,16 +39,21 @@ export function ProfileIdentity({
   onAccountChange?: (account: RemoteAccount) => void;
   onGuestChange?: (name: string, avatarId: DigimonWorldAvatarId | null) => void;
   onRefreshDiscordAvatar?: () => Promise<void>;
+  avatarMenuRequest?: number;
 }) {
   const { t, locale } = useTranslation();
   const statsShown = useProfileStatsShown();
+  const trophiesShown = useProfileTrophiesShown();
   const hintId = useId();
-  const avatarButton = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
   const [nameError, setNameError] = useState<TranslationKey>();
+  const accountLoaded = account !== undefined;
+  useEffect(() => {
+    if (avatarMenuRequest !== undefined && accountLoaded) setMenuOpen(true);
+  }, [avatarMenuRequest, accountLoaded]);
   const name = account?.displayName ?? player.name;
   const guestAvatar = player.guestAvatarId ?? player.avatarId ?? null;
   const selected: AvatarSelection = account
@@ -98,6 +106,10 @@ export function ProfileIdentity({
     onAccountChange?.({ ...account, ...(await accountApi.updateAvatar(avatarChoice(selection, true))) });
   }
 
+  async function uploadAvatar(image: Blob) {
+    onAccountChange?.(await accountApi.uploadAvatarImage(image));
+  }
+
   const winRate = rate?.matches
     ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 }).format(
         rate.wins / (rate.wins + rate.losses + rate.draws),
@@ -113,7 +125,6 @@ export function ProfileIdentity({
     <section className="profile-identity" aria-label={t("profile.title")}>
       <div className="profile-identity__main">
         <button
-          ref={avatarButton}
           type="button"
           className="profile-identity__avatar"
           aria-label={t("profile.changeAvatar")}
@@ -201,6 +212,12 @@ export function ProfileIdentity({
           <Icons.Settings size={18} />
         </a>
       </div>
+      {account ? (
+        <div className="profile-stats-toggle">
+          <Switch checked={statsShown} label={t("profile.showStats")} onChange={setProfileStatsShown} />
+          <Switch checked={trophiesShown} label={t("achievements.trophies.show")} onChange={setProfileTrophiesShown} />
+        </div>
+      ) : null}
       {account && statsShown ? (
         <>
           <dl className="profile-stats">
@@ -216,12 +233,14 @@ export function ProfileIdentity({
       ) : null}
       {menuOpen ? (
         <AvatarMenu
-          anchor={avatarButton.current}
           name={name}
           color={player.color}
+          avatarId={account ? account.avatarId : guestAvatar}
+          avatarUrl={account?.avatarUrl ?? null}
           selected={selected}
           discordLinked={account?.discordLinked === true}
           onSelect={selectAvatar}
+          onUpload={account ? uploadAvatar : undefined}
           onRefreshDiscordAvatar={onRefreshDiscordAvatar}
           onClose={() => setMenuOpen(false)}
         />

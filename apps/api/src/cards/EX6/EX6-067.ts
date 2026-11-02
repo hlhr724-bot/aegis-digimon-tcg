@@ -7,6 +7,8 @@ export const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Unsuspend 1 of your Digimon with the [Angel]/[Archangel]/[Three Great Angels]\u00a0trait. If you have [Dominimon], unsuspend all of your Digimon with the [Angel]/[Archangel]/[Three Great Angels]\u00a0trait instead.",
           kind: "Unsuspend",
           target: {
             filter: {
@@ -36,6 +38,8 @@ export const compiled: CompiledCard = {
           },
         },
         {
+          effectTextPart:
+            "[Main] Unsuspend 1 of your Digimon with the [Angel]/[Archangel]/[Three Great Angels]\u00a0trait. If you have [Dominimon], unsuspend all of your Digimon with the [Angel]/[Archangel]/[Three Great Angels]\u00a0trait instead.",
           kind: "Unsuspend",
           target: {
             filter: {

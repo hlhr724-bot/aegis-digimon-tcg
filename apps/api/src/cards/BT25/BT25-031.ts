@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 [Angel], [Archangel], [Three Great Angels] or [Four Great Dragons] trait card",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [TS] trait card among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

@@ -209,6 +209,24 @@ describe("BT26-047 TyrantKabuterimon", () => {
 
     expect(s.perm("eligible").currentDP).toBe(14000);
     expect(s.perm("nonMatching").currentDP).toBe(4000);
+    expect(JSON.parse(s.state.players[0]!.fieldEffectsJson)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "restriction",
+          value: "beAffected",
+          sourceCardId: "BT26-047",
+          fromSourceKind: ["Option"],
+          byOpponentEffectsOnly: true,
+          effectText:
+            "Your opponent's Option card effects don't affect any of your suspended Digimon with the [Insectoid] or [Titan] trait.",
+        }),
+        expect.objectContaining({
+          kind: "dp",
+          sourceCardId: "BT26-047",
+          effectText: "All of your suspended Digimon with the [Insectoid] or [Titan] trait get +3000 DP.",
+        }),
+      ]),
+    );
     const continuous = (
       s.engine as unknown as { continuous: { hasRestriction: (id: string, kind: string, source?: string) => boolean } }
     ).continuous;

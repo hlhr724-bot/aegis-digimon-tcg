@@ -26,6 +26,38 @@ function autoOrderTriggers(s: EngineSetup, answered: Set<string>): void {
 }
 
 describe("EX6-073 [When Attacking] security trash is reduced by each card deleted", () => {
+  it("pays the second When Attacking effect with seven distinct Demon Lords placed by the first", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: OGUDOMON, as: "ogudomon" }],
+          trash: SGDL_IDS,
+          deck: ["BT1-009"],
+        },
+        1: {
+          battleArea: [{ card: OPP_DIGIMON, suspended: true, as: "target" }],
+          security: Array.from({ length: 8 }, () => "BT1-009"),
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoOrderTriggers: true },
+    );
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("ogudomon").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("target").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.perm("ogudomon").stack).toHaveLength(0);
+    expect(s.state.players[0]!.trash).toHaveLength(0);
+    expect(s.state.players[0]!.deck.slice(-7).map((card) => card.cardId)).toEqual([...SGDL_IDS].reverse());
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    expect(s.state.players[1]!.security).toHaveLength(1);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
+
   it("deleting 3 of 7 opponent Digimon trashes only 4 opponent security cards", async () => {
     const s = setupEngine(
       {

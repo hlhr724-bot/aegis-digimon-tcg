@@ -35,6 +35,7 @@ export const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart: "Add 1 Digimon card with [Beelzemon] in its name",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -49,6 +50,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Ai & Mako] among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

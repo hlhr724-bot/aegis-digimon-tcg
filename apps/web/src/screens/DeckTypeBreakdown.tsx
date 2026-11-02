@@ -15,8 +15,9 @@ export function DeckTypeBreakdown({ main, egg }: DeckTypeBreakdownProps) {
     { kind: "Digimon", label: t("library.kind.Digimon"), count: counts.Digimon },
     { kind: "Tamer", label: t("library.kind.Tamer"), count: counts.Tamer },
     { kind: "Option", label: t("library.kind.Option"), count: counts.Option },
+    { kind: "Dual", label: t("deck.kindDual"), count: counts.Dual },
     { kind: "DigiEgg", label: t("library.kind.DigiEgg"), count: counts.DigiEgg },
-  ];
+  ].filter((type) => type.kind !== "Dual" || type.count > 0);
   return (
     <div>
       <div className="deck-stat-label">{t("library.cardType")}</div>

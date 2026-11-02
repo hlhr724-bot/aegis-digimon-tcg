@@ -9,6 +9,7 @@ export interface AttackDecisionProvenance {
   effectText?: string;
   effectTextCardId?: string;
   effectTextPart?: string;
+  effectTextEmphasis?: string;
   isInherited?: boolean;
 }
 
@@ -17,6 +18,7 @@ export interface ForceAttackOptions {
   attackTargetScope?: AttackTargetScope;
   vortex?: boolean;
   attackMechanic?: string;
+  deleteAtEndOfAttack?: boolean;
   /** Resolve an attack-cost payload after attack declaration and before declaration-triggered effects. */
   afterAttackDeclaration?: () => Promise<void>;
   afterAttackTriggers?: () => Promise<void>;
@@ -53,6 +55,7 @@ export interface CombatPrimitives {
   blitzAttack?(attackerPermanentId: string, opts?: ForceAttackOptions): Promise<void>;
   /** Whether combat is currently resolving an attack. */
   isAttackResolving?(): boolean;
+  isAttackTargetLocked?(attackerPermanentId?: string): boolean;
   /**
    * Redirect the CURRENTLY-resolving attack onto a new target chosen by the source's
    * controller ("change the target of the attack to ..."). Consults the open attack

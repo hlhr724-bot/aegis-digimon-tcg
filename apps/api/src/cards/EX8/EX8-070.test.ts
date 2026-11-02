@@ -26,6 +26,8 @@ describe("EX8-070", () => {
   });
   it("selects a Mineral/Rock Digimon with digivolution cards and gives it Collision, Piercing, Reboot, +3000 DP, and return protection", () => {
     const actions = compiled.effects?.find((entry) => entry.trigger === "Main")?.actions ?? [];
+    const mainEffectTextPart =
+      "[Main] By trashing any 1 digivolution card of 1 of your Digimon with the [Mineral]/[Rock]\u00a0trait, until the end of your opponent's turn, that Digimon gains ＜Collision＞ , ＜Piercing＞ , ＜Reboot＞ , and your opponent's effects can't return it to hands or decks, and it gets +3000 DP.";
     expect(actions).toHaveLength(6);
     expect(actions[0]).toMatchObject({
       kind: "SelectBind",
@@ -55,18 +57,21 @@ describe("EX8-070", () => {
     });
     expect(actions[5]).toMatchObject({ kind: "ModifyDP", amount: 3000, duration: "untilOpponentTurnEnd" });
     expect(actions[1]).toEqual({
+      effectTextPart: mainEffectTextPart,
       kind: "GainKeyword",
       target: { fromSelectionRef: "thatDigimon", filter: {}, count: 1 },
       keyword: { keyword: "Collision", raw: "＜Collision＞" },
       duration: "untilOpponentTurnEnd",
     });
     expect(actions[2]).toEqual({
+      effectTextPart: mainEffectTextPart,
       kind: "GainKeyword",
       target: { fromSelectionRef: "thatDigimon", filter: {}, count: 1 },
       keyword: { keyword: "Piercing", raw: "＜Piercing＞" },
       duration: "untilOpponentTurnEnd",
     });
     expect(actions[3]).toEqual({
+      effectTextPart: mainEffectTextPart,
       kind: "GainKeyword",
       target: { fromSelectionRef: "thatDigimon", filter: {}, count: 1 },
       keyword: { keyword: "Reboot", raw: "＜Reboot＞" },

@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with [Undead] or [Dark Animal] in its traits among them to your hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "trash 1 card with [Undead] or [Dark Animal] in its traits among them.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

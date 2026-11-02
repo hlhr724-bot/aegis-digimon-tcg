@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with the [Angel]/[Archangel]/[Fallen Angel] trait",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Mirei Mikagura] among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -49,6 +51,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with the [Angel]/[Archangel]/[Fallen Angel] trait",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -62,6 +65,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Mirei Mikagura] among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

@@ -5,7 +5,6 @@
    one while a decision is unanswered — so at most one of these is ever on screen. */
 
 import type { GameState } from "@aegis/shared";
-import { BoardBlockPrompt } from "../../BoardDecisionRail";
 import { instanceCardId, instancePermanentId, permCardId } from "../../decisionModel";
 import { BarrierOverlay, BlockOverlay, CounterOverlay, EvadeOverlay } from "../../overlay";
 import { AllianceOverlay } from "../../overlay/combat/AllianceOverlay";
@@ -50,21 +49,25 @@ export function CombatWindowPrompts({
   return (
     <>
       {blockWindow ? (
-        blockWindow.eligibleBlockerIds.length ? (
-          <BoardBlockPrompt
-            attackerCardId={permCardId(state, blockWindow.attackerPermanentId)}
-            mustBlock={blockWindow.mustBlock}
-            onDecline={() => onBlock()}
-          />
-        ) : (
-          <BlockOverlay
-            attackerCardId={permCardId(state, blockWindow.attackerPermanentId)}
-            mustBlock={blockWindow.mustBlock}
-            blockers={[]}
-            onBlock={onBlock}
-            onDecline={() => onBlock()}
-          />
-        )
+        <BlockOverlay
+          attackerCardId={permCardId(state, blockWindow.attackerPermanentId)}
+          mustBlock={blockWindow.mustBlock}
+          blockers={blockWindow.eligibleBlockerIds.flatMap((permanentId) => {
+            const permanent = findPermanentInState(state, permanentId);
+            return permanent
+              ? [
+                  {
+                    permanentId,
+                    cardId: permanent.topCard.cardId,
+                    currentDP: permanent.currentDP,
+                    sourceCount: permanent.stack.length,
+                  },
+                ]
+              : [];
+          })}
+          onBlock={onBlock}
+          onDecline={() => onBlock()}
+        />
       ) : null}
 
       {counterWindow ? (
@@ -78,6 +81,13 @@ export function CombatWindowPrompts({
           fieldPermanentOf={(instanceId) => instancePermanentId(state, instanceId)}
           onActivate={(instanceId, effectKey) => onCounter(instanceId, effectKey)}
           onPass={() => onCounter()}
+          attack={{
+            attackerCardId: permCardId(state, counterWindow.attackerPermanentId),
+            attackerDp: findPermanentInState(state, counterWindow.attackerPermanentId)?.currentDP,
+            targetCardId: counterWindow.attackTargetPermanentId
+              ? permCardId(state, counterWindow.attackTargetPermanentId)
+              : undefined,
+          }}
         />
       ) : null}
 

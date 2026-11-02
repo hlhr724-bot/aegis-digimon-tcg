@@ -32,6 +32,7 @@ describe("EX5-042 Merukimon", () => {
       revealCount: 1,
       add: [
         {
+          effectTextPart: "a level 5 or lower Digimon card with ＜Fortitude＞, play it without paying the cost.",
           filter: {
             controllerDefault: "mine",
             kind: ["Digimon"],
@@ -41,7 +42,7 @@ describe("EX5-042 Merukimon", () => {
           count: 1,
           to: "play",
         },
-        { filter: {}, count: 1, to: "hand" },
+        { effectTextPart: "Add the rest to your hand.", filter: {}, count: 1, to: "hand" },
       ],
       rest: "deckBottom",
     };

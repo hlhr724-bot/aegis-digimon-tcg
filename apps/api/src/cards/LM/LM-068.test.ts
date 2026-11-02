@@ -8,6 +8,44 @@ import "../index.js";
 const FILLER = "BT1-010";
 
 describe("LM-068 HeavyMetaldramon / Black Sabbath", () => {
+  it("plays the trash Digimon into an empty breeding area when the printed field destination is chosen", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT7-076", as: "base" }],
+          hand: [{ card: "LM-068", as: "heavy" }, FILLER, FILLER, FILLER],
+          trash: [{ card: "BT11-079", as: "revived" }],
+          deck: [FILLER, FILLER],
+        },
+      },
+      {
+        autoAcceptOptional: true,
+        autoSelectCards: true,
+        autoChooseOption: true,
+        preferOptionIndex: 1,
+      },
+    );
+    s.state.memory = 4;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("heavy").instanceId,
+        alternateRequirementIndex: 0,
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () => s.state.players[0]!.breeding?.topCard.cardId === "BT11-079" && s.state.pendingDecision === undefined,
+    );
+
+    expect(s.state.players[0]!.breeding?.inBreeding).toBe(true);
+    expect(s.state.players[0]!.breeding?.stack).toHaveLength(0);
+    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.topCard.cardId)).toEqual(["LM-068"]);
+    expect(s.state.memory).toBe(0);
+  });
+
   it("matches the catalog record", () => {
     expect(getCardDefinition("LM-068")).toMatchObject({
       nameEn: "HeavyMetaldramon",

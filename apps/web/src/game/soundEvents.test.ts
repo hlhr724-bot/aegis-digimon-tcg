@@ -86,3 +86,7 @@ describe("shouldPlayCue", () => {
     expect(shouldPlayCue("digivolve", 1_000, { cardPlay: 999 })).toBe(true);
   });
 });
+
+it.each(["digivolutionCards", "linkedCards", "underTamer"])("plays the source-trash cue for %s origins", (from) => {
+  expect(soundForEvent({ kind: "cardsMoved", instanceIds: ["source"], from, to: "trash" }, 0)).toBe("sourceTrash");
+});

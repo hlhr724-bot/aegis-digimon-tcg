@@ -29,6 +29,7 @@ export const seriesPtBR: Record<keyof typeof seriesEn, string> = {
   "overlay.series.opponentChoosing": "{name} está escolhendo quem começa",
   "overlay.series.startingYou": "Partida {game} · Você começa",
   "overlay.series.startingOpponent": "Partida {game} · {name} começa",
+  "overlay.series.startingDrawn": "Partida {game} · Quem começa será sorteado",
   "overlay.series.joining": "Iniciando a próxima partida…",
   "overlay.series.leave": "Sair da série",
   "overlay.series.won": "Série vencida",

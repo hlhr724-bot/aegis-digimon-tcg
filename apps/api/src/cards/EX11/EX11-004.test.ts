@@ -25,11 +25,32 @@ describe("EX11-004 Kapurimon", () => {
     );
   });
 
-  it("draws when an attack flips the opponent's face-down security face up (Q5789)", async () => {
+  it("draws when an effect flips the opponent's face-down security card face up (Q5789)", async () => {
+    const s = setupEngine({
+      0: {
+        battleArea: [{ card: "EX11-039", as: "host", under: ["EX11-004"] }],
+        hand: [{ card: "EX11-064", as: "altea" }],
+        deck: [{ card: "BT1-009", as: "drawn" }],
+      },
+      1: { security: [{ card: "BT1-010", as: "flipped", faceUp: false }] },
+    });
+    await s.ready();
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("altea").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("drawn").instanceId));
+
+    expect(s.state.players[1]!.security[0]).toMatchObject({ instanceId: s.inst("flipped").instanceId, faceUp: true });
+    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(s.inst("drawn").instanceId);
+    assertNoLoudGap(s);
+  });
+
+  it("does not draw when an attack checks the opponent's face-down security card (CR 13-1-6)", async () => {
     const s = setupEngine({
       0: {
         battleArea: [{ card: "EX11-037", as: "host", under: ["EX11-004"] }],
-        deck: [{ card: "BT1-009", as: "drawn" }],
+        deck: [{ card: "BT1-009", as: "deckTop" }],
       },
       1: { security: [{ card: "BT1-009", as: "checked", faceUp: false }] },
     });
@@ -42,9 +63,11 @@ describe("EX11-004 Kapurimon", () => {
         target: { kind: "player" },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("drawn").instanceId));
+    await settle(() => s.events.some((event) => event.kind === "securityChecked"));
+    await settle(() => s.state.pendingDecision === undefined);
 
-    expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toContain(s.inst("drawn").instanceId);
+    expect(s.state.players[1]!.security).toHaveLength(0);
+    expect(s.state.players[0]!.deck.map((card) => card.instanceId)).toContain(s.inst("deckTop").instanceId);
     assertNoLoudGap(s);
   });
 

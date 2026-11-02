@@ -1577,3 +1577,123 @@ it.each([
     assertSettled();
   },
 );
+
+it("finishes a borrowed On Play presentation before the parent's then-discard", async () => {
+  const expiries: string[] = [];
+  onTestFinished(observeTitanGateExpiry(({ label }) => expiries.push(label)));
+  const view = renderOrderingCues(BOARD, anchors, 0, "sequential");
+  const effect = (kind: "effectTriggered" | "effectResolved", cardId: string, timing: string): ServerEvent => ({
+    kind,
+    seat: 0,
+    sourceCardId: cardId,
+    sourceInstanceId: "s0-27",
+    sourcePermanentId: "perm-3",
+    effectKey: `${cardId}/copy`,
+    timing,
+    description:
+      cardId === "BT15-102"
+        ? "[End of Your Turn] Activate 1 [On Play] effect. Then, trash the top 2 cards of your opponent's deck."
+        : "[On Play] Gain 1 memory.",
+  });
+  view.feedBatches([
+    [effect("effectTriggered", "BT15-102", "EndOfYourTurn")],
+    [effect("effectTriggered", "BT15-031", "OnPlay")],
+    [{ kind: "memoryChanged", from: 3, to: 4, reason: "gainMemory" }],
+    [effect("effectResolved", "BT15-031", "OnPlay")],
+    [{ kind: "cardsMoved", from: "deck", to: "trash", seat: 1, instanceIds: ["milled"], cardIds: ["ST1-03"] }],
+    [effect("effectResolved", "BT15-102", "EndOfYourTurn")],
+  ]);
+  const order = await firstSeenOrder(
+    {
+      copiedEffect: () =>
+        view.result.current.notices.some(
+          (notice) => notice.body.variant === "effect" && notice.body.cardId === "BT15-031",
+        ),
+      discard: () => view.result.current.sidePanels.some((panel) => panel.titleKey === "panel.trashedCards"),
+    },
+    12000,
+  );
+  expect(order).toEqual(["copiedEffect", "discard"]);
+  expect(expiries).toEqual([]);
+});
+
+it("keeps a borrowed effect's target on the field through its arrow before the Then notice", async () => {
+  const expiries: string[] = [];
+  onTestFinished(observeTitanGateExpiry(({ label }) => expiries.push(label)));
+  const view = renderOrderingCues(BOARD, anchors, 0, "sequential");
+  const source = {
+    seat: 0 as const,
+    sourceCardId: "BT15-102",
+    sourceInstanceId: "s0-27",
+    sourcePermanentId: "perm-3",
+    effectKey: "apocalymon",
+    timing: "EndOfYourTurn",
+    description: "Activate an On Play. Then, trash the deck.",
+  };
+  const copied = {
+    ...source,
+    sourceCardId: "BT15-031",
+    effectKey: "borrowed",
+    timing: "OnPlay",
+    description: "Return 1 opponent's Digimon to the hand.",
+  };
+  const continuation = {
+    ...source,
+    effectKey: "apocalymon/processing/TrashTopDeck",
+    description:
+      "Then, trash the top 2 cards of your opponent's deck for each of this Digimon's level 6 digivolution cards.",
+  };
+  const after = structuredClone(BOARD);
+  after.players[1]!.battleArea.splice(0);
+  view.feedBatches(
+    [
+      [{ kind: "effectTriggered", ...source }],
+      [{ kind: "effectTriggered", ...copied }],
+      [{ kind: "effectTargetsSelected", seat: 0, sourcePermanentId: "perm-3", targetPermanentIds: ["perm-1"] }],
+      [
+        {
+          kind: "cardsMoved",
+          from: "battleArea",
+          to: "hand",
+          seat: 1,
+          instanceIds: ["s1-17"],
+          returnedPermanents: [{ permanentId: "perm-1", instanceId: "s1-17", cardId: "BT18-015", seat: 1 }],
+        },
+      ],
+      [{ kind: "effectResolved", ...copied }],
+      [{ kind: "effectTriggered", ...continuation, effectTextPart: continuation.description }],
+      [{ kind: "cardsMoved", from: "deck", to: "trash", seat: 1, instanceIds: ["milled"], cardIds: ["ST1-03"] }],
+      [{ kind: "effectResolved", ...continuation }],
+      [{ kind: "effectResolved", ...source }],
+    ],
+    after,
+  );
+  const missingTarget: boolean[] = [];
+  const order = await firstSeenOrder(
+    {
+      copied: () =>
+        view.result.current.notices.some(
+          (notice) => notice.body.variant === "effect" && notice.body.effectKey === "borrowed",
+        ),
+      arrow: () =>
+        view.result.current.effectSources.some((activation) => activation.targetPermanentIds?.includes("perm-1")),
+      then: () =>
+        view.result.current.notices.some(
+          (notice) => notice.body.variant === "effect" && notice.body.effectTextPart === continuation.description,
+        ),
+      discard: () => view.result.current.sidePanels.some((panel) => panel.titleKey === "panel.trashedCards"),
+    },
+    16000,
+    () => {
+      if (view.result.current.effectSources.some((activation) => activation.targetPermanentIds?.includes("perm-1"))) {
+        missingTarget.push(
+          ![...view.result.current.heldDeletions.values()].some((held) => held.permanent.permanentId === "perm-1"),
+        );
+      }
+    },
+  );
+  expect(order).toEqual(["copied", "arrow", "then", "discard"]);
+  expect(missingTarget.length).toBeGreaterThan(0);
+  expect(missingTarget).not.toContain(true);
+  expect(expiries).toEqual([]);
+});

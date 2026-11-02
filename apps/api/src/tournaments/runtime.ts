@@ -46,7 +46,7 @@ seriesStore.addResolutionListener(async ({ matchId, tournamentId }) => {
   // the Top Cut appear the instant the Swiss phase ends rather than on the next worker tick; the
   // sweep still owns the guarantee, so a failure here is logged and left for it to retry.
   if (closed.value.kind !== "phase_frozen_for_top_cut") return;
-  const cut = await topCutProgram.startTopCut(tournamentId);
+  const cut = await topCutProgram.startTopCut(tournamentId, Date.now(), true);
   if (!cut.ok) console.error(`[tournaments] top cut for ${tournamentId} failed: ${cut.reason} ${cut.detail ?? ""}`);
 });
 

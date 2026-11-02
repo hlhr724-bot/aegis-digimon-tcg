@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart: "[Main] You may suspend 1 of your Digimon to suspend 1 of your opponent's Digimon or Tamers.",
+          payCostBeforeOptional: false,
           kind: "Suspend",
           target: {
             filter: {
@@ -30,6 +32,8 @@ const compiled: CompiledCard = {
           optional: true,
         },
         {
+          effectTextPart:
+            "Your opponent's cards suspended with this effect can't unsuspend until the end of their next turn.",
           kind: "Restrict",
           target: {
             fromSelectionRef: "samadhiSuspended",

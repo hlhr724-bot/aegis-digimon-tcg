@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 yellow",
               filter: {
                 controllerDefault: "mine",
                 colors: ["Yellow"],
@@ -29,6 +30,8 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart:
+                "1 purple card with [Angel], [Archangel], or [Fallen Angel] in their traits among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 colors: ["Purple"],

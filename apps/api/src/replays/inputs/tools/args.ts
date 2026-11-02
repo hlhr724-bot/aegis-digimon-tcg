@@ -7,7 +7,7 @@ export type ReplayCommand =
   | { command: "extract"; matchId: string; logDir?: string; out?: string }
   | { command: "run"; file: string; until?: number; json: boolean; export?: string }
   | { command: "inputs"; file: string; from?: number; to?: number }
-  | { command: "scaffold"; file: string; until: number; out: string; issue?: number };
+  | { command: "scaffold"; file: string; until: number; out: string; issue?: string };
 
 export type ReplayCommandName = Exclude<ReplayCommand["command"], "help">;
 
@@ -130,12 +130,16 @@ export function parseReplayArgs(argv: readonly string[]): ReplayCommand {
       command,
     );
   const subject = rest[0]!;
-  const index = (option: "until" | "from" | "to" | "issue") => {
+  const digits = (option: "until" | "from" | "to" | "issue") => {
     const value = values[option];
     if (value === undefined) return undefined;
     if (!/^\d+$/.test(value))
       throw new UsageError(`--${option} must be a non-negative integer, got "${value}".`, command);
-    return Number(value);
+    return value;
+  };
+  const index = (option: "until" | "from" | "to") => {
+    const value = digits(option);
+    return value === undefined ? undefined : Number(value);
   };
 
   switch (command) {
@@ -166,7 +170,7 @@ export function parseReplayArgs(argv: readonly string[]): ReplayCommand {
       if (!values.out) throw new UsageError(`"scaffold" needs --out <path.test.ts>.`, command);
       if (!values.out.endsWith(".test.ts"))
         throw new UsageError(`--out must end in .test.ts, got "${values.out}".`, command);
-      return { command, file: subject, until, out: values.out, ...defined({ issue: index("issue") }) };
+      return { command, file: subject, until, out: values.out, ...defined({ issue: digits("issue") }) };
     }
   }
 }

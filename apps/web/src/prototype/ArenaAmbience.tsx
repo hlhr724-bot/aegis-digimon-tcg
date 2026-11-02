@@ -3,6 +3,7 @@
    and while the tab is hidden. */
 
 import { useEffect, useRef } from "react";
+import { motionPreference } from "@/design/motion/motionPreference";
 
 interface Shard {
   x: number;
@@ -31,7 +32,7 @@ export function ArenaAmbience() {
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
     if (!canvas || !context) return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    if (motionPreference.isReduced()) return;
 
     let width = 0;
     let height = 0;

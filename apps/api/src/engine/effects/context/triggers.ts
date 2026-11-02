@@ -17,6 +17,7 @@ export type RemovalCause = "byEffect" | "byBattle" | "byRule";
 export interface DiscardedStackSourceProof {
   sourceInstanceId: string;
   hostPermanentId: string;
+  activatesFromDiscardedCard?: boolean;
 }
 
 /**
@@ -141,6 +142,7 @@ export interface TriggerInfo {
   battleOpponentPermanentIdByInstanceId?: Record<string, string>;
   /** Snapshot of effective battle-deletion Retaliation holders and their opponents. */
   retaliationTargetsByInstanceId?: Record<string, string>;
+  retaliationCountsByInstanceId?: Record<string, number>;
   /** Event-time Fortitude holders that had digivolution cards when deleted. */
   fortitudeInstanceIds?: string[];
   /** Deleted host top-card identity for every card moved with it; pending effects require that host in trash. */
@@ -155,6 +157,7 @@ export interface TriggerInfo {
   deletedByDpZeroInstanceIds?: string[];
   /** Security card currently being checked. */
   securityInstanceId?: string;
+  securityRemovalEventId?: number;
   /** Option permanent card instance that was trashed from the battle area. */
   trashedOptionInstanceId?: string;
   /** The checked security card was face-up before the check revealed it. */
@@ -307,6 +310,7 @@ export interface TriggerInfo {
   digivolvedFromZone?: ZoneRef;
   /** Physical card entering through this evolution, fixed before nested evolutions. */
   digivolvedInstanceId?: string;
+  digivolvedSubject?: Permanent;
   /**
    * True when the card the WhenDigivolving window's subject digivolved FROM is a Tamer
    * (BT23-101's "digivolve from a Tamer" requirement), read from the printed card kind so an
@@ -332,6 +336,7 @@ export interface TriggerInfo {
    * Carried alongside subjectPermanentId (the host permanent) so a watcher's sourceFilter can
    * gate on "THIS card specifically" (the isSelfRef pattern BT10-006 uses).
    */
+  trashedDigivolutionHost?: Permanent;
   trashedDigivolutionInstanceId?: string;
   /** All sources trashed simultaneously by one Digi-Burst cost payment. */
   trashedDigivolutionInstanceIds?: string[];
@@ -396,6 +401,7 @@ export interface TriggerInfo {
    * matching its own source card ID ("when THIS card is trashed from the deck").
    */
   trashedFromDeckCardId?: string;
+  trashedFromDeckInstanceId?: string;
   /** Card ID of the effect source that caused this deck trash, when known. */
   trashedFromDeckByEffectCardId?: string;
   /**

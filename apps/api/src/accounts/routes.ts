@@ -1,29 +1,53 @@
+import type { TournamentOwnDeck } from "@aegis/shared/tournaments/TournamentOwnDeck";
+import { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
+import { isTournamentRoundStartMode } from "@aegis/shared/tournaments/isTournamentRoundStartMode";
+import { isDeckStatsWindow } from "@aegis/shared/decks/isDeckStatsWindow";
+import { getMatchHistoryExport } from "#api/accounts/getMatchHistoryExport";
+import type { MatchHistoryExport } from "@aegis/shared/replays/MatchHistoryExport";
+import { getTournamentDiscordUrl } from "#api/tournaments/discord/getTournamentDiscordUrl";
+import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
+import { MAX_AVATAR_BYTES } from "@aegis/shared/account/maxAvatarBytes";
+import { TournamentCategory } from "@aegis/shared/tournaments/TournamentCategory";
+import { isTournamentCategory } from "@aegis/shared/tournaments/isTournamentCategory";
+import { installRankedRoutes } from "#api/ranked/installRankedRoutes";
+import { installAchievementRoutes } from "#api/achievements/installAchievementRoutes";
+import { getTournamentCatalogMemberships } from "#api/tournaments/catalog/getTournamentCatalogMemberships";
+import { hashTournamentPassword } from "#api/tournaments/access/hashTournamentPassword";
+import { installDirectMessageRoutes } from "#api/messages/installDirectMessageRoutes";
+import { installFriendDetailRoutes } from "#api/friends/installFriendDetailRoutes";
+import { publishSocialChange } from "#api/social/publishSocialChange";
+import { isSpectatorAccess } from "@aegis/shared/account/isSpectatorAccess";
+import { installFriendSpectatorRoutes } from "#api/social/installFriendSpectatorRoutes";
+import { installActiveMatchRoutes } from "#api/rooms/activeMatch/installActiveMatchRoutes";
+import { installSocialRoutes } from "#api/social/installSocialRoutes";
+import { FriendStore } from "#api/friends/FriendStore";
+import { installFriendRoutes } from "#api/friends/installFriendRoutes";
+import { BlockStore } from "#api/blocks/BlockStore";
+import { installBlockRoutes } from "#api/blocks/installBlockRoutes";
+import { resolveRoomOpponent } from "#api/friends/resolveRoomOpponent";
+import { isCardImageLanguage } from "@aegis/shared/cards/isCardImageLanguage";
+import { GAME_MESSAGE_LIMITS } from "@aegis/shared/protocol/gameMessageLimits";
+import { installStoryRoutes } from "#api/story/installStoryRoutes";
+import { StoryProgressStore } from "#api/story/StoryProgressStore";
 import { isDeckFormat, type DeckFormat } from "@aegis/shared";
 import { randomBytes } from "node:crypto";
 import { ReplayLibrary } from "../replays/ReplayLibrary.js";
 import { installReplayRoutes } from "../replays/routes.js";
 import {
-  latestReleasedProductLabel,
   isAvatarChoice,
   MATCH_MODES,
   MATCH_OPPONENT_SEARCH_MAX,
   MATCH_PAGE_SIZE,
   MATCH_RESULTS,
   MAX_MATCH_PAGE_SIZE,
-  type BanlistPolicy,
   type MatchHistoryFilter,
   type MatchHistoryPage,
-  type CreateTournamentInput,
   type SeriesScoreView,
   type TournamentSummary,
   type TournamentView,
 } from "@aegis/shared";
 import express, { type Express, type NextFunction, type Request, type Response } from "express";
-import {
-  defaultBanlistPolicy,
-  LEGACY_DEFAULT_PRESET_ID,
-  validateCreateTournament,
-} from "../tournaments/rules/index.js";
+import { validateCreateTournament } from "../tournaments/rules/index.js";
 import {
   ParticipantStore,
   WindowOrderError,
@@ -48,13 +72,14 @@ import { CommunityDeckStore } from "../community/CommunityDeckStore.js";
 import type { DeckReportTracker } from "../community/deckReports.js";
 import { installCommunityDeckRoutes } from "../community/routes.js";
 import { DeckReportStore } from "../community/DeckReportStore.js";
-import { openEliminationEvent } from "../tournaments/lifecycle/openEliminationEvent.js";
 import { TopCutProgram } from "../tournaments/topcut/index.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
+import { AvatarImageError, inspectAvatarImage } from "./avatarImage.js";
+import { moderateAvatarImage } from "#api/accounts/moderateAvatarImage";
 import { EmailQuotaExceededError, type Mailer } from "../email/mailer.js";
-import { TOURNAMENT_RULES_PRESETS, type TournamentRulesPreset } from "../tournaments/rules/index.js";
 import { type DiscordAvatarSource, discordAvatarUrl, refreshDiscordAvatarNow } from "./discordAvatars.js";
-import { MAGIC_LINK_PAGE_HEADERS, magicLinkPage } from "#api/accounts/magicLinkPage";
+import { magicLinkPage } from "#api/accounts/magicLinkPage";
+import { getMagicLinkPageHeaders } from "#api/accounts/getMagicLinkPageHeaders";
 import type { HumanVerifier } from "#api/accounts/turnstileVerifier";
 import {
   AccountStore,
@@ -70,10 +95,27 @@ import { installRoadmapRoutes } from "#api/roadmap/installRoadmapRoutes";
 import { installClientErrorRoutes } from "#api/clientErrors/installClientErrorRoutes";
 import { createClientErrorAlertsFromEnvironment } from "#api/clientErrors/createClientErrorAlertsFromEnvironment";
 import { RoadmapStore } from "#api/roadmap/RoadmapStore";
+import { installTournamentReportRoutes } from "#api/tournaments/reports/installTournamentReportRoutes";
+import { installOfficialTournamentRequestRoutes } from "#api/tournaments/officialRequests/installOfficialTournamentRequestRoutes";
+import { installAccountRoleRoutes } from "#api/accounts/roles/installAccountRoleRoutes";
+import { AccountRoleStore } from "#api/accounts/roles/AccountRoleStore";
+import { OfficialTournamentRequestStore } from "#api/tournaments/officialRequests/OfficialTournamentRequestStore";
+import { TournamentReportStore } from "#api/tournaments/reports/TournamentReportStore";
+import { startTournament } from "#api/tournaments/lifecycle/startTournament";
+import { parseCreateTournament } from "#api/tournaments/rules/parseCreateTournament";
+import { CHECK_IN_OPENS_BEFORE_START_MS } from "#api/tournaments/participants/CHECK_IN_OPENS_BEFORE_START_MS";
+import { installTournamentCircuitRoutes } from "#api/tournaments/circuits/installTournamentCircuitRoutes";
+import { installTournamentResultRoutes } from "#api/tournaments/results/installTournamentResultRoutes";
+import { installTournamentSpectatorRoutes } from "#api/tournaments/spectators/installTournamentSpectatorRoutes";
+import { canSpectateTournament } from "#api/tournaments/spectators/canSpectateTournament";
+import { TournamentSpectatorStore } from "#api/tournaments/spectators/TournamentSpectatorStore";
 
 const SESSION_COOKIE = "aegis_session";
 const DISPLAY_NAME_RATE_LIMIT: TokenBucketOptions = { capacity: 10, refillMs: 3_000 };
 const DISCORD_AVATAR_REFRESH_RATE_LIMIT: TokenBucketOptions = { capacity: 5, refillMs: 1_000 };
+/** Uploading writes a row-sized blob, so it is capped far below the display-name bucket. */
+const AVATAR_UPLOAD_RATE_LIMIT: TokenBucketOptions = { capacity: 5, refillMs: 60_000 };
+const MATCH_HISTORY_EXPORT_RATE_LIMIT: TokenBucketOptions = { capacity: 3, refillMs: 60_000 };
 
 // Rejections that are the caller asking for something that does not exist, rather than a conflict
 // with the tournament's current state.
@@ -105,7 +147,11 @@ export function installAccountRoutes(
   humanVerifier?: HumanVerifier,
 ): void {
   const sessionFromRequest = (req: Request) => store.session(cookie(req, SESSION_COOKIE));
+  const replayCapture = ReplayCapturer.fromEnvironment();
+  installRankedRoutes({ app, accounts: store, session: sessionFromRequest, replayCapture });
+  installAchievementRoutes({ app, accounts: store, session: sessionFromRequest });
   installReplayRoutes({ app, library: replays, session: sessionFromRequest });
+  installStoryRoutes({ app, store: new StoryProgressStore(store), session: sessionFromRequest });
   // The organizer's override surface, in its own module. See src/tournaments/arbitration.
   installArbitrationRoutes({
     app,
@@ -120,11 +166,23 @@ export function installAccountRoutes(
     store: new FeedbackStore(store),
     tracker: bugTracker,
     session: sessionFromRequest,
-    replayCapture: ReplayCapturer.fromEnvironment(),
+    replayCapture,
   });
   // The signed-in player's inbox; feedback triage is its first producer. See src/notifications.
   installNotificationRoutes({ app, store: new NotificationStore(store), session: sessionFromRequest });
   installPlaytestRoutes({ app, store: new PlaytestStore(store), session: sessionFromRequest });
+  installFriendSpectatorRoutes({ app, accounts: store, session: sessionFromRequest });
+  installActiveMatchRoutes({ app, session: sessionFromRequest });
+  installSocialRoutes({ app, accounts: store, session: sessionFromRequest });
+  installDirectMessageRoutes({ app, accounts: store, session: sessionFromRequest });
+  installFriendRoutes({ app, store: new FriendStore(store), session: sessionFromRequest });
+  installFriendDetailRoutes({ app, accounts: store, replays, session: sessionFromRequest });
+  installBlockRoutes({
+    app,
+    store: new BlockStore(store),
+    session: sessionFromRequest,
+    resolveOpponent: (roomId, accountId) => resolveRoomOpponent({ roomId, accountId }),
+  });
   installRoadmapRoutes({ app, store: new RoadmapStore(store), session: sessionFromRequest });
   installClientErrorRoutes({ app, session: sessionFromRequest, alerts: createClientErrorAlertsFromEnvironment() });
   // Public decks, likes and copies. See src/community.
@@ -135,6 +193,22 @@ export function installAccountRoutes(
     reportStore: new DeckReportStore(store),
     reports: deckReports,
   });
+  installTournamentReportRoutes({
+    app,
+    accounts: store,
+    store: new TournamentReportStore(store),
+    session: sessionFromRequest,
+  });
+  installOfficialTournamentRequestRoutes({
+    app,
+    store: new OfficialTournamentRequestStore(store),
+    session: sessionFromRequest,
+  });
+  installAccountRoleRoutes({ app, store: new AccountRoleStore(store), session: sessionFromRequest });
+  installTournamentResultRoutes({ app, accounts: store, session: sessionFromRequest });
+  installTournamentSpectatorRoutes({ app, accounts: store, series, session: sessionFromRequest });
+  const tournamentSpectators = new TournamentSpectatorStore(store);
+  installTournamentCircuitRoutes({ app, accounts: store, participants, session: sessionFromRequest });
   const get = (path: string, handler: AsyncHandler) => app.get(path, asyncRoute(handler));
   const post = (path: string, handler: AsyncHandler) => app.post(path, asyncRoute(handler));
   const put = (path: string, handler: AsyncHandler) => app.put(path, asyncRoute(handler));
@@ -146,6 +220,7 @@ export function installAccountRoutes(
   });
   // Every replica shares one Discord bot bucket of about 30 requests per window.
   const limitDiscordAvatarRefresh = tokenBucketLimiter(DISCORD_AVATAR_REFRESH_RATE_LIMIT);
+  const limitAvatarUpload = tokenBucketLimiter(AVATAR_UPLOAD_RATE_LIMIT);
   post("/account/avatar/discord", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
@@ -207,7 +282,7 @@ export function installAccountRoutes(
   });
   get("/auth/magic-link/consume", async (req, res) => {
     const token = typeof req.query.token === "string" ? req.query.token : "";
-    res.set(MAGIC_LINK_PAGE_HEADERS);
+    res.set(getMagicLinkPageHeaders({ homeUrl: webUrl() }));
     if (await store.magicLinkIsLive(token)) {
       res.type("html").send(magicLinkPage({ kind: "confirm", token }));
       return;
@@ -219,11 +294,11 @@ export function installAccountRoutes(
   });
   app.post(
     "/auth/magic-link/consume",
-    express.urlencoded({ extended: false, limit: "4kb" }),
+    express.urlencoded({ extended: false, limit: GAME_MESSAGE_LIMITS.maxMessageBytes }),
     asyncRoute(async (req, res) => {
       const token = typeof req.body?.token === "string" ? req.body.token : "";
       const account = await store.consumeMagicLink(token);
-      res.set(MAGIC_LINK_PAGE_HEADERS);
+      res.set(getMagicLinkPageHeaders({ homeUrl: webUrl() }));
       if (!account) {
         res
           .status(410)
@@ -363,7 +438,8 @@ export function installAccountRoutes(
       res.status(400).json({ error: "invalid_query" });
       return;
     }
-    const { matches, total, winRate } = await store.matchHistory(session.account.id, query);
+    const { matches, total, winRate, decks, deckStats, deckDetails, recentDeckResults, deckRecords } =
+      await store.matchHistory(session.account.id, query);
     const saved = await replays.forMatches(
       session.account.id,
       matches.map((match) => match.id),
@@ -373,10 +449,57 @@ export function installAccountRoutes(
       matches: matches.map((match) => ({ ...match, replay: saved.find((item) => item.matchId === match.id) ?? null })),
       total,
       winRate,
+      decks,
+      deckStats,
+      deckDetails,
+      deckRecords,
+      recentDeckResults,
       page: query.page,
       limit: query.limit,
       sharing: replays.sharing,
+      friendsSharing: true,
     } satisfies MatchHistoryPage);
+  });
+  const limitMatchHistoryExport = tokenBucketLimiter(MATCH_HISTORY_EXPORT_RATE_LIMIT);
+  get("/account/matches/export", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) return;
+    if (!limitMatchHistoryExport(session.account.id)) {
+      res.status(429).json({ error: "too_many_requests" });
+      return;
+    }
+    await store.ensureReady();
+    res.setHeader("Cache-Control", "private, no-store");
+    res.json({
+      exportedAt: Date.now(),
+      matches: await getMatchHistoryExport({ db: store.pool, accountId: session.account.id }),
+    } satisfies MatchHistoryExport);
+  });
+  get("/account/matches/:id/own-deck", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    res.setHeader("Cache-Control", "private, no-store");
+    const deck = await store.getMatchOwnDeck({ accountId: session.account.id, matchId: req.params.id! });
+    if (deck === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json(deck);
+  });
+  get("/account/matches/:id/opponent-deck", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    res.setHeader("Cache-Control", "private, no-store");
+    const deck = await store.getMatchOpponentDeck({ accountId: session.account.id, matchId: req.params.id! });
+    if (deck === undefined) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json(deck);
   });
   put("/account/profile", async (req, res) => {
     const session = await requireSession(req, res, store);
@@ -412,6 +535,63 @@ export function installAccountRoutes(
     }
     res.json(await store.updateAvatar(session.account.id, avatarId));
   });
+  // Uploaded pictures: bytes are validated, screened and stripped of metadata before they reach the
+  // row, and the account id comes from the session so one player can never write another's picture.
+  app.put(
+    "/account/profile/avatar/image",
+    express.raw({ type: ["image/png", "image/jpeg"], limit: MAX_AVATAR_BYTES }),
+    asyncRoute(async (req, res) => {
+      const session = await requireSession(req, res, store);
+      if (!session) return;
+      if (!limitAvatarUpload(session.account.id)) {
+        res.status(429).json({ error: "too_many_requests" });
+        return;
+      }
+      const body: unknown = req.body;
+      if (!Buffer.isBuffer(body)) {
+        res.status(400).json({ error: "invalid_image" });
+        return;
+      }
+      try {
+        const image = inspectAvatarImage(body);
+        const moderation = await moderateAvatarImage(image);
+        if (moderation === "nsfw") {
+          res.status(422).json({ error: "nsfw_image" });
+          return;
+        }
+        if (moderation === "unavailable") {
+          res.status(503).json({ error: "moderation_unavailable" });
+          return;
+        }
+        res.json(await store.setAvatarImage(session.account.id, image));
+      } catch (error) {
+        if (!(error instanceof AvatarImageError)) throw error;
+        res.status(error.reason === "too_large" ? 413 : 400).json({ error: error.reason });
+      }
+    }),
+  );
+  del("/account/profile/avatar/image", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) return;
+    res.json(await store.clearAvatarImage(session.account.id));
+  });
+  // Public, and immutable only when the caller pins the current version: a stale URL then 404s or
+  // revalidates instead of pinning an old picture in caches for a year.
+  get("/account/avatar/:accountId/image", async (req, res) => {
+    const { accountId } = req.params as { accountId: string };
+    const image = await store.avatarImage(accountId);
+    if (!image) {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
+    const requested = typeof req.query.v === "string" ? Number(req.query.v) : undefined;
+    res.setHeader("Content-Type", image.contentType);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
+    res.setHeader("Content-Disposition", 'inline; filename="avatar"');
+    res.setHeader("Cache-Control", requested === image.version ? "public, max-age=31536000, immutable" : "no-store");
+    res.end(image.bytes);
+  });
   get("/account/preferences", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (session) res.json(await store.preferences(session.account.id));
@@ -424,7 +604,9 @@ export function installAccountRoutes(
       res.status(400).json({ error: "invalid preferences" });
       return;
     }
-    res.json(await store.updatePreferences(session.account.id, changes));
+    const updated = await store.updatePreferences(session.account.id, changes);
+    await publishSocialChange([session.account.id]);
+    res.json(updated);
   });
   put("/account/profile/display-name", async (req, res) => {
     const session = await requireSession(req, res, store);
@@ -453,10 +635,20 @@ export function installAccountRoutes(
     }
   });
 
-  get("/tournaments", async (_req, res) => res.json((await store.tournaments()).map(toTournamentSummary)));
-  // Registered before `/tournaments/:id`, or the parameterised route would answer it with a 404 for
-  // a tournament named "presets".
-  get("/tournaments/presets", async (_req, res) => res.json(TOURNAMENT_RULES_PRESETS.map(toPresetView)));
+  get("/tournaments", async (req, res) => {
+    res.setHeader("Cache-Control", "private, no-store");
+    const session = await sessionFromRequest(req);
+    const tournaments = await store.tournaments();
+    const memberships = session
+      ? await getTournamentCatalogMemberships({ accounts: store, accountId: session.account.id })
+      : undefined;
+    res.json(
+      tournaments.map((tournament) => {
+        const myEntry = memberships?.get(tournament.id);
+        return { ...toTournamentSummary(tournament), ...(myEntry ? { myEntry } : {}) };
+      }),
+    );
+  });
   get("/tournaments/:id", async (req, res) => {
     const id = req.params.id!;
     const tournament = await store.tournament(id);
@@ -464,10 +656,20 @@ export function installAccountRoutes(
       res.sendStatus(404);
       return;
     }
+    res.setHeader("Cache-Control", "private, no-store");
+    const viewer = await sessionFromRequest(req);
+    const canSpectate = viewer
+      ? await canSpectateTournament({ tournament, account: viewer.account, spectators: tournamentSpectators })
+      : false;
     // `satisfies` rather than a cast: the shared `TournamentView` is the contract the web client
     // compiles against, so a field renamed there must fail here rather than at runtime.
     const payload = {
       ...toTournamentSummary(tournament),
+      discordUrl: await getTournamentDiscordUrl({
+        db: store.pool,
+        tournamentId: id,
+        guildId: process.env.AEGIS_TOURNAMENT_DISCORD_GUILD_ID,
+      }),
       rules: tournament.rules,
       banlistCards: tournament.banlistCards,
       participants: await participants.participantViews(id),
@@ -480,6 +682,8 @@ export function installAccountRoutes(
       // The client renders every deadline against this, never against its own clock: a browser
       // minutes ahead of the server would otherwise show a round as expired while it is still live.
       serverNow: Date.now(),
+      canSpectate,
+      ownDeck: viewer ? await participants.getOwnDeck({ tournamentId: id, accountId: viewer.account.id }) : null,
       // The legacy bracket's flat views. Kept alongside `phases` until the web client reads phases.
       matches: await store.tournamentMatches(id),
       series: await series.scoreViews(id),
@@ -489,13 +693,21 @@ export function installAccountRoutes(
   post("/tournaments", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
-    if (!session.account.isAdmin) {
-      res.status(403).json({ error: "admin_required" });
-      return;
-    }
     const parsed = parseCreateTournament(req.body as Record<string, unknown>);
     if (!parsed) {
       res.status(400).json({ error: "invalid tournament" });
+      return;
+    }
+    const organizesOfficialTournaments = hasAccountCapability({
+      roles: session.account.roles,
+      capability: "canOrganizeOfficialTournaments",
+    });
+    if (parsed.input.category === TournamentCategory.OFFICIAL.value && !organizesOfficialTournaments) {
+      res.status(403).json({ error: "official_tournament_requires_organizer" });
+      return;
+    }
+    if (!organizesOfficialTournaments && (await store.hasOpenTournamentCreatedBy(session.account.id))) {
+      res.status(409).json({ error: "tournament_limit_reached" });
       return;
     }
     const validated = validateCreateTournament(parsed.input, Date.now());
@@ -503,9 +715,13 @@ export function installAccountRoutes(
       res.status(400).json({ error: "invalid tournament", reasons: validated.errors });
       return;
     }
-    const { input, preset, rules, banlistCards } = validated.value;
+    const { input, rules, banlistCards } = validated.value;
     const tournament = await store.createTournament(session.account.id, {
+      category: input.category,
       name: input.name,
+      format: input.format,
+      description: input.description,
+      passwordHash: await hashTournamentPassword(input.password ?? ""),
       block: parsed.block,
       startsAt: input.startsAt,
       maxPlayers: input.maxPlayers,
@@ -513,33 +729,28 @@ export function installAccountRoutes(
       bestOf: input.bestOf,
       topCutEnabled: input.topCut,
       allowBots: input.allowBots,
-      rulesetPreset: preset.id,
+      randomBotStyles: input.randomBotStyles === true,
+      roundStartMode: input.roundStartMode,
       rules,
       banlistPolicy: input.banlist,
       banlistCards,
+      checkInOpensAt: input.startsAt - CHECK_IN_OPENS_BEFORE_START_MS,
     });
     res
       .status(201)
       .json({ ...toTournamentSummary(tournament), rules: tournament.rules, banlistCards: tournament.banlistCards });
   });
-  // Legacy casual registration. Kept as-is rather than redirected: it writes the
-  // `tournament_registrations` row the single-elimination bracket still seeds from, and it asks
-  // for no deck. Competitive entry is POST /tournaments/:id/participants; the two coexist until
-  // the bracket moves onto participants in a later slice.
-  post("/tournaments/:id/register", async (req, res) => {
+  post("/tournaments/:id/own-deck", async (req, res) => {
     const session = await requireSession(req, res, store);
-    if (session) res.sendStatus((await store.registerTournament(req.params.id!, session.account.id)) ? 204 : 409);
-  });
-
-  post("/tournaments/:id/participants", async (req, res) => {
-    const session = await requireSession(req, res, store);
-    if (!session) return;
-    const { savedDeckId } = req.body as { savedDeckId?: unknown };
+    if (!session) {
+      return;
+    }
+    const savedDeckId: unknown = req.body?.savedDeckId;
     if (typeof savedDeckId !== "string" || !savedDeckId) {
       res.status(400).json({ error: "savedDeckId is required" });
       return;
     }
-    const result = await participants.register({
+    const result = await participants.changeDeck({
       tournamentId: req.params.id!,
       accountId: session.account.id,
       savedDeckId,
@@ -548,8 +759,105 @@ export function installAccountRoutes(
       sendParticipantFailure(res, result.reason, result.violations);
       return;
     }
-    res.status(201).json(result.value);
+    res.json(await participants.getOwnDeck({ tournamentId: req.params.id!, accountId: session.account.id }));
   });
+  post("/tournaments/:id/round-start-mode", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    if (!(await participants.canArbitrate(req.params.id!, session.account.id))) {
+      res.sendStatus(403);
+      return;
+    }
+    const mode: unknown = req.body?.mode;
+    if (!isTournamentRoundStartMode(mode)) {
+      res.status(400).json({ error: "invalid_round_start_mode" });
+      return;
+    }
+    if (
+      !(await participants.setRoundStartMode({ tournamentId: req.params.id!, accountId: session.account.id, mode }))
+    ) {
+      res.status(409).json({ error: "tournament_finished" });
+      return;
+    }
+    if (mode === TournamentRoundStartMode.AUTOMATIC.value) {
+      await swiss.sweepTournament(req.params.id!, Date.now());
+      const phases = await swiss.phaseViews(req.params.id!);
+      if (phases.some((phase) => phase.kind === "swiss" && phase.status === "frozen")) {
+        await topCut.startTopCut(req.params.id!);
+      }
+      await elimination.startNextRound(req.params.id!, Date.now(), true);
+    }
+    res.json({ mode });
+  });
+  post("/tournaments/:id/next-round", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    const id = req.params.id!;
+    if (!(await participants.canArbitrate(id, session.account.id))) {
+      res.sendStatus(403);
+      return;
+    }
+    const tournament = await store.tournament(id);
+    if (!tournament || tournament.status !== "in_progress") {
+      res.status(409).json({ error: "round_not_ready" });
+      return;
+    }
+    if (tournament.structure === "swiss") {
+      const phases = await swiss.phaseViews(id);
+      const frozen = phases.some((phase) => phase.kind === "swiss" && phase.status === "frozen");
+      if (frozen) {
+        const result = await topCut.startTopCut(id);
+        if (!result.ok) {
+          res.status(409).json({ error: result.reason });
+          return;
+        }
+        await elimination.startNextRound(id);
+        res.json({ started: true });
+        return;
+      }
+      if (!phases.some((phase) => phase.kind === "top_cut")) {
+        const result = await swiss.startNextRound(id);
+        if (!result.ok) {
+          res.status(409).json({ error: result.reason });
+          return;
+        }
+        res.json({ roundNumber: result.value });
+        return;
+      }
+    }
+    if (!(await elimination.startNextRound(id))) {
+      res.status(409).json({ error: "round_not_ready" });
+      return;
+    }
+    res.json({ started: true });
+  });
+
+  const registerTournamentParticipant: AsyncHandler = async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) return;
+    const { savedDeckId, password } = req.body as { savedDeckId?: unknown; password?: unknown };
+    if (typeof savedDeckId !== "string" || !savedDeckId) {
+      res.status(400).json({ error: "savedDeckId is required" });
+      return;
+    }
+    const result = await participants.register({
+      tournamentId: req.params.id!,
+      accountId: session.account.id,
+      savedDeckId,
+      password,
+    });
+    if (!result.ok) {
+      sendParticipantFailure(res, result.reason, result.violations);
+      return;
+    }
+    res.status(201).json(result.value);
+  };
+  post("/tournaments/:id/participants", registerTournamentParticipant);
+  post("/tournaments/:id/register", registerTournamentParticipant);
   post("/tournaments/:id/check-in", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
@@ -563,7 +871,7 @@ export function installAccountRoutes(
   post("/tournaments/:id/drop", async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
-    const result = await participants.drop({ tournamentId: req.params.id!, accountId: session.account.id });
+    const result = await arbitration.dropParticipant({ tournamentId: req.params.id!, accountId: session.account.id });
     if (!result.ok) {
       sendParticipantFailure(res, result.reason);
       return;
@@ -585,7 +893,7 @@ export function installAccountRoutes(
       const value = (req.body as Record<string, unknown>)[key];
       if (value === undefined) continue;
       if (value !== null && !Number.isFinite(value)) {
-        res.status(400).json({ error: `${key} must be a timestamp or null` });
+        res.status(400).json({ error: "window_timestamp_invalid" });
         return;
       }
       windows[key] = value === null ? null : Number(value);
@@ -604,32 +912,27 @@ export function installAccountRoutes(
       throw error;
     }
   });
-  post("/tournaments/:id/close-check-in", async (req, res) => {
+  const closeTournamentCheckIn: AsyncHandler = async (req, res) => {
     const session = await requireSession(req, res, store);
     if (!session) return;
     if (!(await participants.isOrganizer(req.params.id!, session.account.id))) {
       res.sendStatus(403);
       return;
     }
-    // Closing check-in starts the event, and WHICH start that is depends on the structure. Both
-    // branches are idempotent, so a retried request neither re-freezes a field nor redraws a
-    // bracket, and neither branch can run the other's format: the dispatch here is the only place
-    // that decides, and each callee re-checks the structure for itself.
-    const tournament = await store.tournament(req.params.id!);
-    if (!tournament) {
+    const started = await startTournament({
+      tournamentId: req.params.id!,
+      accounts: store,
+      participants,
+      bots: botSeating,
+      elimination,
+      swiss,
+    });
+    if (started.kind === "not_found") {
       res.sendStatus(404);
       return;
     }
-    if (tournament.structure === "single_elimination") {
-      const opened = await openEliminationEvent({
-        tournamentId: req.params.id!,
-        participants,
-        bots: botSeating,
-        elimination,
-      });
-      // A cancellation is not a failure of the request — it is the correct outcome for a field that
-      // never reached the minimum — but it is emphatically not a running event either, so it
-      // answers 409 with the state the organizer must now see.
+    if (started.kind === "elimination") {
+      const { opened } = started;
       if (opened.kind === "cancel") {
         res.status(409).json({ status: "cancelled", error: opened.reason });
         return;
@@ -645,24 +948,57 @@ export function installAccountRoutes(
       });
       return;
     }
-    const result = await participants.closeCheckIn({ tournamentId: req.params.id! });
-    if (!result.ok) {
-      sendParticipantFailure(res, result.reason);
+    if (started.kind === "swiss_check_in_failed") {
+      sendParticipantFailure(res, started.reason);
       return;
     }
-    // Closing check-in IS the start of a Swiss event (implementation plan, "Criação e formação
-    // volátil" step 6): the confirmed field is what freezes the round count and the Top Cut size,
-    // and round 1 is published from it in the same breath. Idempotent, and a no-op for any other
-    // structure, so a retried request cannot re-freeze or double-publish.
-    const program = await swiss.startTournamentProgram(req.params.id!);
-    // The field is frozen either way — that write committed — but a Swiss event whose round 1 did
-    // not publish has NOT started, and answering 200 would tell the organizer it had.
+    const { program } = started;
     res.status(program.ok ? 200 : 409).json({
-      participants: result.value,
+      participants: started.participants,
       phase: program.ok ? program.value : null,
       error: program.ok ? undefined : program.reason,
     });
+  };
+  post("/tournaments/:id/category", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) {
+      return;
+    }
+    if (!session.account.isAdmin) {
+      res.status(403).json({ error: "official_tournament_requires_admin" });
+      return;
+    }
+    const category: unknown = req.body?.category;
+    if (!isTournamentCategory(category)) {
+      res.status(400).json({ error: "invalid_tournament_category" });
+      return;
+    }
+    if (!(await store.setTournamentCategory(req.params.id!, category))) {
+      res.status(404).json({ error: "tournament_not_found" });
+      return;
+    }
+    res.json({ category });
   });
+  post("/tournaments/:id/discord", async (req, res) => {
+    const session = await requireSession(req, res, store);
+    if (!session) return;
+    if (!session.account.isAdmin) {
+      res.sendStatus(403);
+      return;
+    }
+    const announce: unknown = req.body?.announce;
+    if (typeof announce !== "boolean") {
+      res.status(400).json({ error: "invalid_discord_announce" });
+      return;
+    }
+    if (!(await store.setTournamentDiscordAnnounce(req.params.id!, announce))) {
+      res.sendStatus(404);
+      return;
+    }
+    res.json({ discordAnnounce: announce });
+  });
+  post("/tournaments/:id/close-check-in", closeTournamentCheckIn);
+  post("/tournaments/:id/start", closeTournamentCheckIn);
   // The organizer's undo for an event that has not started. Deliberately unavailable from the
   // moment it starts: from then on the tournament is a record other players appear in.
   del("/tournaments/:id", async (req, res) => {
@@ -700,10 +1036,6 @@ export function installAccountRoutes(
     res.json({ advanced: advanced + (await topCut.sweepFrozenSwissPhases()) });
   });
 
-  post("/tournaments/:id/start", async (req, res) => {
-    const session = await requireSession(req, res, store);
-    if (session) res.sendStatus((await store.startTournament(req.params.id!, session.account.id)) ? 204 : 409);
-  });
   // The BO3 confrontation. Presence starts the shared clock; the authorization is what lets a
   // client create or enter the room for the next game. Neither endpoint advances anything — the
   // series module owns the score and the deadline, and the room only plays one game.
@@ -764,6 +1096,7 @@ type TournamentDetailExtras = {
   winnerAccountId: string | null;
   registrations: number;
   windows: TournamentWindows | undefined;
+  ownDeck: TournamentOwnDeck | null;
   matches: unknown[];
   series: SeriesScoreView[];
 };
@@ -779,88 +1112,31 @@ function toTournamentSummary(
   return {
     id: tournament.id,
     name: tournament.name,
+    format: tournament.format,
+    description: tournament.description,
+    passwordProtected: tournament.passwordProtected,
+    discordAnnounce: tournament.discordAnnounce,
+    spectatorPolicy: tournament.spectatorPolicy,
+    category: tournament.category,
     status: tournament.status === "in_progress" ? "running" : tournament.status,
     structure: tournament.structure,
     topCutEnabled: tournament.topCutEnabled,
     topCutSize: tournament.topCutSize,
     bestOf: tournament.bestOf,
     allowBots: tournament.allowBots,
-    rulesetPreset: tournament.rulesetPreset,
-    rulesetVersion: tournament.rulesetVersion,
+    randomBotStyles: tournament.randomBotStyles,
+    roundStartMode: tournament.roundStartMode,
     startsAt: tournament.startsAt,
     maxPlayers: tournament.maxPlayers,
     registeredCount: tournament.registrations,
     banlistPolicy: tournament.banlistPolicy,
+    circuitId: tournament.circuitId,
     block: tournament.block,
     createdBy: tournament.createdBy,
     winnerAccountId: tournament.winnerAccountId,
     // Deprecated alias for `registeredCount`. Remove once the web client reads the shared contract.
     registrations: tournament.registrations,
   };
-}
-
-/**
- * What the creation form needs to build itself: which structures, best-ofs and toggles each ruleset
- * admits, and the clocks it would impose. Derived from the presets module rather than duplicated in
- * the client, so a preset added or reclocked here reaches the form without a front-end release.
- *
- * `durations` is keyed by best-of and carries only the options the preset actually offers, so a
- * form cannot render a clock for a best-of the preset would reject.
- */
-function toPresetView(preset: TournamentRulesPreset) {
-  return {
-    id: preset.id,
-    name: preset.label,
-    origin: preset.origin,
-    structures: preset.structures,
-    bestOfOptions: preset.bestOfOptions,
-    supportsTopCut: preset.supportsTopCut,
-    supportsBots: preset.supportsBots,
-    supportsUnrestrictedBanlist: preset.supportsUnrestrictedBanlist,
-    durations: Object.fromEntries(preset.bestOfOptions.map((bestOf) => [bestOf, preset.clocks[bestOf]])),
-    attendance: preset.attendance,
-  };
-}
-
-/**
- * Shape-checks the request body into a `CreateTournamentInput`; the ruleset itself is judged by
- * `validateCreateTournament`, which owns the reason codes. Everything past `name`/`startsAt`/
- * `maxPlayers` is optional so the pre-program payload still creates the event it always created: a
- * single-elimination best-of-one lightning cup with no Top Cut, no bots and no banlist enforcement.
- * `block` is not part of the shared contract and defaults to the current card-pool label.
- */
-function parseCreateTournament(
-  body: Record<string, unknown>,
-): { input: CreateTournamentInput; block: string } | undefined {
-  const { name, block, startsAt, maxPlayers, structure, topCut, bestOf, allowBots, rulesetPreset, banlist } = body;
-  if (typeof name !== "string" || !Number.isFinite(startsAt) || !Number.isInteger(maxPlayers)) return undefined;
-  if (structure !== undefined && structure !== "swiss" && structure !== "single_elimination") return undefined;
-  if (bestOf !== undefined && bestOf !== 1 && bestOf !== 3) return undefined;
-  const preset = typeof rulesetPreset === "string" ? rulesetPreset : LEGACY_DEFAULT_PRESET_ID;
-  const policy = banlist === undefined ? defaultBanlistPolicy(preset) : parseBanlistPolicy(banlist);
-  if (!policy) return undefined;
-  return {
-    input: {
-      name,
-      structure: structure ?? "single_elimination",
-      topCut: topCut === true,
-      bestOf: bestOf ?? 1,
-      startsAt: Number(startsAt),
-      maxPlayers: Number(maxPlayers),
-      allowBots: allowBots === true,
-      rulesetPreset: preset,
-      banlist: policy,
-    },
-    block: typeof block === "string" && block.trim() ? block.trim() : latestReleasedProductLabel(),
-  };
-}
-
-function parseBanlistPolicy(value: unknown): BanlistPolicy | undefined {
-  if (typeof value !== "object" || value === null) return undefined;
-  const { mode, setId } = value as { mode?: unknown; setId?: unknown };
-  if (mode === "none" || mode === "current") return { mode };
-  if (mode === "as_of_set" && typeof setId === "string") return { mode, setId };
-  return undefined;
 }
 
 const MAX_PREFERENCE_LENGTH = 64;
@@ -883,10 +1159,14 @@ function parseMatchHistoryQuery(
   const limit = positiveInteger(query.limit, MATCH_PAGE_SIZE);
   if (page === undefined || page > MAX_MATCH_PAGE || limit === undefined || limit > MAX_MATCH_PAGE_SIZE)
     return undefined;
-  const { result, mode, opponent } = query;
+  const { result, mode, opponent, deckId, deckWindow } = query;
+  if (deckId !== undefined && (typeof deckId !== "string" || !deckId.trim() || deckId.length > 128)) {
+    return undefined;
+  }
   if (result !== undefined && !(MATCH_RESULTS as readonly unknown[]).includes(result)) return undefined;
   if (mode !== undefined && !(MATCH_MODES as readonly unknown[]).includes(mode)) return undefined;
   if (opponent !== undefined && typeof opponent !== "string") return undefined;
+  if (deckWindow !== undefined && !isDeckStatsWindow(deckWindow)) return undefined;
   const search = opponent?.trim();
   if (search && search.length > MATCH_OPPONENT_SEARCH_MAX) return undefined;
   return {
@@ -895,6 +1175,8 @@ function parseMatchHistoryQuery(
     ...(result ? { result: result as MatchHistoryFilter["result"] } : {}),
     ...(mode ? { mode: mode as MatchHistoryFilter["mode"] } : {}),
     ...(search ? { opponent: search } : {}),
+    ...(deckId ? { deckId: deckId as string } : {}),
+    ...(deckWindow ? { deckWindow } : {}),
   };
 }
 function positiveInteger(value: unknown, fallback: number): number | undefined {
@@ -905,7 +1187,9 @@ function positiveInteger(value: unknown, fallback: number): number | undefined {
 function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
   const {
+    cardImageLanguage,
     autoHatch,
+    groupIdenticalTamers,
     darkMode,
     locale,
     sleeve,
@@ -914,11 +1198,23 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     deckView,
     deckSort,
     profileStats,
+    profileTrophies,
+    shareProfileStats,
+    shareDeckAfterMatch,
+    listLiveMatches,
+    spectatorAccess,
+    hideIdentityFromSpectators,
     favoriteDeckIds,
     ...unknownKeys
   } = value as Record<string, unknown>;
   if (Object.keys(unknownKeys).length > 0) return undefined;
   const isShortText = (text: unknown) => typeof text === "string" && text.length <= MAX_PREFERENCE_LENGTH;
+  if (cardImageLanguage !== undefined && !isCardImageLanguage(cardImageLanguage)) {
+    return undefined;
+  }
+  if (groupIdenticalTamers !== undefined && typeof groupIdenticalTamers !== "boolean") {
+    return undefined;
+  }
   if (autoHatch !== undefined && typeof autoHatch !== "boolean") return undefined;
   if (darkMode !== undefined && typeof darkMode !== "boolean") return undefined;
   if (locale !== undefined && !isShortText(locale)) return undefined;
@@ -927,10 +1223,28 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
   if (deckShare !== undefined && !(typeof deckShare === "number" && deckShare > 0 && deckShare < 1)) return undefined;
   if (deckView !== undefined && deckView !== "grid" && deckView !== "list") return undefined;
   if (deckSort !== undefined && !isShortText(deckSort)) return undefined;
+  if (shareDeckAfterMatch !== undefined && typeof shareDeckAfterMatch !== "boolean") {
+    return undefined;
+  }
   if (profileStats !== undefined && typeof profileStats !== "boolean") return undefined;
+  if (profileTrophies !== undefined && typeof profileTrophies !== "boolean") {
+    return undefined;
+  }
+  if (shareProfileStats !== undefined && typeof shareProfileStats !== "boolean") {
+    return undefined;
+  }
+  if (hideIdentityFromSpectators !== undefined && typeof hideIdentityFromSpectators !== "boolean") {
+    return undefined;
+  }
+  if (listLiveMatches !== undefined && typeof listLiveMatches !== "boolean") return undefined;
+  if (spectatorAccess !== undefined && !isSpectatorAccess(spectatorAccess)) {
+    return undefined;
+  }
   if (favoriteDeckIds !== undefined && !isFavoriteDeckIdList(favoriteDeckIds)) return undefined;
   return {
+    ...(cardImageLanguage !== undefined && { cardImageLanguage }),
     ...(autoHatch !== undefined && { autoHatch }),
+    ...(groupIdenticalTamers !== undefined && { groupIdenticalTamers }),
     ...(darkMode !== undefined && { darkMode }),
     ...(locale !== undefined && { locale: locale as string }),
     ...(sleeve !== undefined && { sleeve: sleeve as string }),
@@ -939,6 +1253,12 @@ function parsePreferences(value: unknown): AccountPreferences | undefined {
     ...(deckView !== undefined && { deckView: deckView as "grid" | "list" }),
     ...(deckSort !== undefined && { deckSort: deckSort as string }),
     ...(profileStats !== undefined && { profileStats }),
+    ...(profileTrophies !== undefined && { profileTrophies }),
+    ...(shareProfileStats !== undefined && { shareProfileStats }),
+    ...(shareDeckAfterMatch !== undefined && { shareDeckAfterMatch }),
+    ...(listLiveMatches !== undefined && { listLiveMatches }),
+    ...(spectatorAccess !== undefined && { spectatorAccess }),
+    ...(hideIdentityFromSpectators !== undefined && { hideIdentityFromSpectators }),
     ...(favoriteDeckIds !== undefined && { favoriteDeckIds: favoriteDeckIds as string[] }),
   };
 }

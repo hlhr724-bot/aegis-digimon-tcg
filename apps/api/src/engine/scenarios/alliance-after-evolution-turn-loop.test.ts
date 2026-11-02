@@ -55,7 +55,7 @@ it("arena: gained Alliance survives Mococomon evolution and expires at turn end"
       }),
     ).toEqual({ ok: true });
     await settle(() => s.events.some((event) => event.kind === "alliancePrompt"));
-    expect(host.topCard.cardId).toBe("EX12-034");
+    expect(host.topCard.cardId).toBe("EX12-045");
     expect(host.keywords).toContain("Alliance");
     const ally = player.battleArea.find((permanent) => permanent.topCard.instanceId === cho.instanceId)!;
     expect(s.engine.applyIntent(0, { type: "respondAlliance", allyPermanentId: ally.permanentId })).toEqual({
@@ -63,6 +63,8 @@ it("arena: gained Alliance survives Mococomon evolution and expires at turn end"
     });
     await advance(s.engine).finishAttack();
     await settle(() => s.events.some((event) => event.kind === "attackEnded") && s.state.pendingDecision === undefined);
+    expect(host.topCard.cardId).toBe("EX12-034");
+    expect(host.keywords).toContain("Alliance");
     expect(ally.isSuspended).toBe(true);
     expect(s.state.players[1]!.security).toHaveLength(3);
     expect(s.events.filter((event) => event.kind === "securityChecked")).toHaveLength(2);

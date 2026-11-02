@@ -137,6 +137,35 @@ describe("BT25-067 Sealsdramon", () => {
     );
   });
 
+  it("digivolves after a D-Brigade-only Commandramon is played", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: CARD_ID, as: "seals" }],
+          hand: [
+            { card: "BT4-063", as: "commandramon" },
+            { card: "BT25-074", as: "tank" },
+          ],
+          deck: ["BT1-001", "BT1-001", "BT1-001", "BT1-001"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true, preferOptionIndex: 0 },
+    );
+    s.state.memory = 10;
+    await s.ready();
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("commandramon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.perm("seals").topCard?.cardId === "BT25-074" && s.state.pendingDecision === undefined);
+
+    expect(s.perm("seals").topCard?.cardId).toBe("BT25-074");
+    expect(s.perm("seals").stack.map((card) => card.cardId)).toEqual([CARD_ID]);
+    expect(s.perm("seals").currentDP).toBe(8000);
+    expect(s.state.memory).toBe(5);
+    expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard?.cardId === "BT4-063")).toBe(true);
+  });
+
   it.each([
     ["black", "BT10-058"],
     ["purple", "BT10-071"],

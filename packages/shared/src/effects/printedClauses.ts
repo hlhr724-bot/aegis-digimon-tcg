@@ -58,8 +58,8 @@ export const CONTINUOUS_TRIGGERS: ReadonlySet<EffectTrigger> = new Set<EffectTri
  * different events would pick the wrong clause, which is worse than showing the whole box.
  */
 const WATCHER_EVENT_PHRASES: Readonly<Partial<Record<SubTriggerEvent, RegExp>>> = {
-  whenSuspended: /\b(?:becomes?|is|are|would be) suspended\b/i,
-  whenUnsuspended: /\b(?:becomes?|is|are|would be) unsuspended\b/i,
+  whenSuspended: /\b(?:becomes?|is|are|would be) suspended\b|\bwhen\b[^.,]*\bsuspends?\b/i,
+  whenUnsuspended: /\b(?:becomes?|is|are|would be) unsuspended\b|\bwhen\b[^.,]*\bunsuspends?\b/i,
   whenAttacking: /\bwhen\b[^.]*\battacks?\b/i,
   whenOpponentAttacks: /\bwhen\b[^.]*opponent'?s?\b[^.]*\battacks?\b/i,
   whenBlocked: /\bblocked\b/i,
@@ -82,6 +82,7 @@ const WATCHER_EVENT_PHRASES: Readonly<Partial<Record<SubTriggerEvent, RegExp>>> 
   whenLinked: /\blink(?:s|ed)?\b/i,
   whenLeavesPlay: /\bleaves? the battle area\b/i,
   whenMovedFromBreeding: /\bbreeding area\b/i,
+  whenOpponentMovedFromBreeding: /\bbreeding area\b/i,
   whenOpponentDraws: /\bdraws?\b/i,
   whenBattleWon: /\bwins? (?:a|the) battle\b/i,
   whenDigivolutionTrashed: /\bdigivolution cards?\b[^.]*\btrashed\b/i,

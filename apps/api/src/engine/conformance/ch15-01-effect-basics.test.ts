@@ -348,9 +348,9 @@ describe("§15-1-8..15-1-10 Effects (comprehensive-0336)", () => {
     expect(s.state.players[1]!.trash.map((card) => card.instanceId)).toEqual([s.inst("securityDigimon").instanceId]);
   });
 
-  // BT4-031 MarinChimairamon: "[On Play] You may return 1 of your other Digimon to its owner's
+  // BT4-031 MarineChimairamon: "[On Play] You may return 1 of your other Digimon to its owner's
   // hand to return 1 of your opponent's Digimon with no digivolution cards to its owner's hand."
-  async function playMarinChimairamonReturning(ownCardId: string) {
+  async function playMarineChimairamonReturning(ownCardId: string) {
     const s = setup(
       {
         0: {
@@ -390,7 +390,7 @@ describe("§15-1-8..15-1-10 Effects (comprehensive-0336)", () => {
           "isn't actually placed there (BT4-031 cost, KB Q1198/Q1199)",
         COMPREHENSIVE_0336,
       );
-      const { s, ownInstanceId, ownPermanentId, targetInstanceId } = await playMarinChimairamonReturning(ownCardId);
+      const { s, ownInstanceId, ownPermanentId, targetInstanceId } = await playMarineChimairamonReturning(ownCardId);
       const mine = s.state.players[0]!;
 
       expect(mine.battleArea.some((permanent) => permanent.permanentId === ownPermanentId)).toBe(false);

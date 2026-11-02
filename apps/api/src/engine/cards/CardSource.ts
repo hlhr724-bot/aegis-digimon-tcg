@@ -1,3 +1,6 @@
+import { sourceRuntimeObjectRegistries } from "#api/engine/snapshot/context/sourceRuntimeObjectRegistries";
+import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
+import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
 import type { CardColor, CardDefinition, CardInstance, Permanent, Seat } from "@aegis/shared";
 import type { CardSource } from "../effects/CardSource.js";
 import { definitionOf, hasColor as defHasColor } from "./cardData.js";
@@ -13,6 +16,7 @@ import { definitionOf, hasColor as defHasColor } from "./cardData.js";
  * own runtime placement and turn ownership.
  */
 export interface CardStateLookup {
+  runtimeObjects?: RuntimeObjectRegistry;
   /** The Permanent this instance is the top card / in the stack of, or undefined. */
   permanentOf(instanceId: string): Permanent | undefined;
   /** source the effect runtime.IsExistOnBattleArea(card). */
@@ -56,7 +60,7 @@ export function createCardSource(instance: CardInstance, lookup: CardStateLookup
   const instanceId = instance.instanceId;
   const ownerSeat = instance.ownerSeat;
 
-  return {
+  const source: CardSource = {
     instanceId,
     cardId: instance.cardId,
     ownerSeat,
@@ -70,4 +74,9 @@ export function createCardSource(instance: CardInstance, lookup: CardStateLookup
     isOwnersTurn: (): boolean => lookup.isSeatsTurn(ownerSeat),
     hasColor: (color: CardColor): boolean => defHasColor(definition, color),
   };
+  if (lookup.runtimeObjects !== undefined) {
+    lookup.runtimeObjects.track({ value: source, key: EngineRuntimeObjectKind.CARD_SOURCE.value });
+    sourceRuntimeObjectRegistries.set(source, lookup.runtimeObjects);
+  }
+  return source;
 }

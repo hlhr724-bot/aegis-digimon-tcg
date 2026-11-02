@@ -7,6 +7,7 @@ import { MatchReplayLogWriter } from "#api/replays/inputs/MatchReplayLogWriter";
 import { REPLAY_LINE_NAMES } from "#api/replays/inputs/replayLineNames";
 
 const UNDER_TEST = process.env.VITEST !== undefined || process.env.NODE_ENV === "test";
+const INFO_TO_STDOUT = process.env.NODE_ENV !== "production";
 export const logDirectory = process.env.AEGIS_LOG_DIR ?? join(dirname(fileURLToPath(import.meta.url)), "..", "logs");
 const configuredMaxBytes = Number(process.env.AEGIS_LOG_MAX_BYTES);
 export const logMaxBytes =
@@ -88,7 +89,8 @@ function write(level: "INFO" | "ERROR", ...args: unknown[]): void {
   const line = record + "\n";
   if (replayMatchId !== undefined) for (const sink of matchReplaySinks) sink(replayMatchId, line);
   if (silenced) return;
-  process[level === "ERROR" ? "stderr" : "stdout"].write(line);
+  if (level === "ERROR") process.stderr.write(line);
+  else if (INFO_TO_STDOUT) process.stdout.write(line);
   writer?.write(line);
   if (level === "ERROR") errorAlerts?.report(args, line);
 }

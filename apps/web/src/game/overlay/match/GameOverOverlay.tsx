@@ -1,3 +1,4 @@
+import { AddFriendButton } from "@/friends/AddFriendButton";
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Button } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
@@ -6,6 +7,7 @@ import { gameOverSplash, type GameOverOutcome } from "../../gameOverSplash";
 import type { SeriesView } from "../../seriesModel";
 import { SeriesNextGame, SeriesScore } from "./SeriesStatus";
 import { ReplaySavePrompt, type ReplaySaveProps } from "../../../replays/ReplaySavePrompt";
+import { RematchPanel, type RematchProps } from "@/game/overlay/match/RematchPanel";
 
 /** The best-of-three this game belongs to, for a seated player. */
 export interface SeriesResultProps {
@@ -36,6 +38,12 @@ function seriesReason(t: ReturnType<typeof useTranslation>["t"], { view, opponen
   }
 }
 
+export interface PostGameChat {
+  open: boolean;
+  unread: number;
+  onToggle: () => void;
+}
+
 const HEADER_GAP_PX = 12;
 
 /** How much the bar spells out, from everything down to icons only. */
@@ -59,7 +67,7 @@ interface BarPlacement {
 function placeBar(bar: HTMLElement): BarPlacement | undefined {
   const container = (bar.offsetParent ?? document.body).getBoundingClientRect();
   const hand = document.querySelector(".game-opponent-hand")?.getBoundingClientRect();
-  const actions = document.querySelector(".game-topbar-actions")?.getBoundingClientRect();
+  const actions = document.querySelector(".game-topbar-actions, .game-mobile-menu")?.getBoundingClientRect();
   const header = document.querySelector(".game-opponent-bar")?.getBoundingClientRect();
   if (!hand || !actions || !header || actions.width === 0) return undefined;
   const room = actions.left - hand.right - 2 * HEADER_GAP_PX;
@@ -93,6 +101,9 @@ export function GameOverOverlay({
   spectatorResult,
   onDownloadReplay,
   usedDeckDialog,
+  usedDeckName,
+  opponentDeckName,
+  opponentDeckDialog,
   replayFile,
   replayStatus,
   signedIn,
@@ -104,9 +115,15 @@ export function GameOverOverlay({
   onRematch,
   returnsToRoom = false,
   series,
+  rematch,
+  friendMatchId,
+  chat,
 }: ReplaySaveProps & {
   spectatorResult?: string;
+  opponentDeckDialog?: (onClose: () => void) => ReactNode;
   usedDeckDialog?: (onClose: () => void) => ReactNode;
+  usedDeckName?: string;
+  opponentDeckName?: string;
   result: GameOverOutcome;
   reason: string;
   stats: { value: number | string; label: string }[];
@@ -118,9 +135,14 @@ export function GameOverOverlay({
   returnsToRoom?: boolean;
   /** Set in a best-of-three: the splash shows the series and, between games, the next one. */
   series?: SeriesResultProps;
+  rematch?: RematchProps;
+  friendMatchId?: string;
+  chat?: PostGameChat;
 }) {
   const { t } = useTranslation();
   const splash = gameOverSplash(result, reason);
+  const [opponentDeckOpen, setOpponentDeckOpen] = useState(false);
+  const [deckPickerOpen, setDeckPickerOpen] = useState(false);
   const [view, setView] = useState<ResultView>("splash");
   const reviewingBoard = view === "board";
   const barRef = useRef<HTMLDivElement>(null);
@@ -137,6 +159,8 @@ export function GameOverOverlay({
   }, [reviewingBoard]);
   const seriesOutcome = series?.view.outcome;
   const seriesRunning = series !== undefined && seriesOutcome === undefined;
+  const rematchStarting = rematch?.view.stage === "accepted";
+  const keepsMatchOpen = seriesRunning || rematchStarting;
   const title = spectatorResult
     ? t("spectator.finished")
     : seriesOutcome
@@ -148,6 +172,15 @@ export function GameOverOverlay({
       ? t("overlay.series.complete")
       : t("overlay.series.gameComplete", { game: series.view.gameNumber, bestOf: series.view.bestOf });
   const reasonText = spectatorResult ?? (series && seriesOutcome ? seriesReason(t, series) : t(splash.reasonKey));
+
+  const choosingDeck = rematch?.view.series?.stage === "deckSelection" && !rematch.view.series.viewerDeckReady;
+  if (deckPickerOpen && choosingDeck && rematch?.deckPicker) {
+    return rematch.deckPicker(() => setDeckPickerOpen(false));
+  }
+
+  if (opponentDeckOpen && opponentDeckDialog) {
+    return opponentDeckDialog(() => setOpponentDeckOpen(false));
+  }
 
   if (view === "usedDeck" && usedDeckDialog) return usedDeckDialog(() => setView("board"));
 
@@ -193,6 +226,22 @@ export function GameOverOverlay({
           {title}
         </h1>
         <p className="game-result__reason">{reasonText}</p>
+        {!spectatorResult && (usedDeckName || opponentDeckName) ? (
+          <dl className="game-result__decks">
+            {usedDeckName ? (
+              <div>
+                <dt>{t("profile.filter.deck")}</dt>
+                <dd>{usedDeckName}</dd>
+              </div>
+            ) : null}
+            {opponentDeckName ? (
+              <div>
+                <dt>{t("overlay.opponentDeck")}</dt>
+                <dd>{opponentDeckName}</dd>
+              </div>
+            ) : null}
+          </dl>
+        ) : null}
         {series ? (
           <SeriesScore series={series.view} opponentName={series.opponentName} />
         ) : (
@@ -212,7 +261,11 @@ export function GameOverOverlay({
             onChooseTurnOrder={series.onChooseTurnOrder}
           />
         ) : null}
-        {seriesRunning ? null : (
+        {friendMatchId && signedIn && !spectatorResult ? <AddFriendButton matchId={friendMatchId} /> : null}
+        {rematch && !spectatorResult ? (
+          <RematchPanel {...rematch} onChangeDeck={rematch.deckPicker ? () => setDeckPickerOpen(true) : undefined} />
+        ) : null}
+        {keepsMatchOpen ? null : (
           <div className="game-actions-row">
             <Button full autoFocus icon={returnsToRoom ? Icons.Link2 : Icons.Swords} onClick={onRematch}>
               {t(spectatorResult ? "spectator.back" : returnsToRoom ? "overlay.backToRoom" : "overlay.findRematch")}
@@ -222,43 +275,70 @@ export function GameOverOverlay({
             </Button>
           </div>
         )}
-        {usedDeckDialog ? (
+        <div className="game-result__links">
+          {opponentDeckDialog ? (
+            <Button
+              className="game-result__link"
+              variant="ghost"
+              size="sm"
+              icon={Icons.FileText}
+              onClick={() => setOpponentDeckOpen(true)}
+            >
+              {t("overlay.opponentDeck")}
+            </Button>
+          ) : null}
+          {usedDeckDialog ? (
+            <Button
+              className="game-result__link"
+              variant="ghost"
+              size="sm"
+              icon={Icons.FileText}
+              onClick={() => setView("usedDeck")}
+            >
+              {t("overlay.viewUsedDeck")}
+            </Button>
+          ) : null}
+          {chat ? (
+            <Button
+              className="game-result__link"
+              variant="ghost"
+              size="sm"
+              icon={Icons.MessageSquare}
+              aria-pressed={chat.open}
+              data-testid="game-result-chat"
+              onClick={chat.onToggle}
+            >
+              {chat.unread > 0 ? t("chat.openUnread", { count: chat.unread }) : t("chat.open")}
+            </Button>
+          ) : null}
           <Button
-            className="game-result__used-deck"
-            variant="secondary"
-            icon={Icons.FileText}
-            onClick={() => setView("usedDeck")}
+            className="game-result__link"
+            variant="ghost"
+            size="sm"
+            icon={Icons.Eye}
+            onClick={() => setView("board")}
           >
-            {t("overlay.viewUsedDeck")}
+            {t("overlay.viewBoard")}
           </Button>
-        ) : null}
+          {seriesRunning && series.view.stage === "choosing" ? (
+            <Button
+              className="game-result__link series-leave"
+              variant="ghost"
+              size="sm"
+              icon={Icons.LogOut}
+              onClick={series.onLeave}
+            >
+              {t("overlay.series.leave")}
+            </Button>
+          ) : null}
+        </div>
         <ReplaySavePrompt
           onDownloadReplay={onDownloadReplay}
           replayFile={replayFile}
           replayStatus={replayStatus}
           signedIn={signedIn}
-          keepsMatchOpen={seriesRunning}
+          keepsMatchOpen={keepsMatchOpen}
         />
-        <Button
-          className="game-result__view-board"
-          variant="ghost"
-          size="sm"
-          icon={Icons.Eye}
-          onClick={() => setView("board")}
-        >
-          {t("overlay.viewBoard")}
-        </Button>
-        {seriesRunning && series.view.stage === "choosing" ? (
-          <Button
-            className="game-result__view-board series-leave"
-            variant="ghost"
-            size="sm"
-            icon={Icons.LogOut}
-            onClick={series.onLeave}
-          >
-            {t("overlay.series.leave")}
-          </Button>
-        ) : null}
       </div>
     </div>
   );

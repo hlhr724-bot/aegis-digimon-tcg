@@ -20,6 +20,7 @@ const battleOrRecovery: Action = {
           kind: "return",
           target: { filter: { controller: "opponent", zone: "trash" }, count: 5 },
           to: "deckBottom",
+          optional: true,
           raw: "By returning 5 cards from your opponent's trash to the bottom of the deck",
         },
       },

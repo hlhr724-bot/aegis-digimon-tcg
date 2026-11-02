@@ -1,8 +1,11 @@
+import { Collection } from "@/screens/Collection";
 // @vitest-environment jsdom
 import {} from "./deckCounts";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getCardArts, isJapaneseArt } from "@aegis/shared";
+import { getCardArts } from "@aegis/shared";
+import { ArtRegion } from "@aegis/shared/cards/ArtRegion";
+import { artRegionOf } from "@aegis/shared/cards/artRegionOf";
 import { I18nProvider } from "../i18n";
 import { loadDecks, saveDecks } from "../identity";
 import { type DeckListing } from "../game/decks";
@@ -14,6 +17,8 @@ afterEach(() => {
   cleanup();
   localStorage.clear();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  window.history.replaceState({}, "", "/");
 });
 const cardId = "BT1-010";
 const alternate = () => getCardArts(cardId)[1]!.artId;
@@ -218,7 +223,11 @@ describe("card artwork choices", () => {
     expect(button.getAttribute("aria-pressed")).toBe("false");
   });
 
-  it("marks Japanese printings with a JP badge", () => {
+  it.each([
+    [ArtRegion.JAPANESE, "Japanese printing"],
+    [ArtRegion.KOREAN, "Korean printing"],
+    [ArtRegion.CHINESE, "Chinese printing"],
+  ])("marks a $badge printing with its region badge", (region, printing) => {
     render(
       <I18nProvider>
         <DeckBuilder
@@ -235,9 +244,64 @@ describe("card artwork choices", () => {
     fireEvent.click(screen.getByRole("button", { name: "Agumon, 2 in deck" }));
     fireEvent.click(screen.getByRole("button", { name: "Agumon · Choose artwork" }));
     const picker = within(screen.getByRole("dialog", { name: "Choose artwork" }));
-    const japaneseIndex = getCardArts(cardId).findIndex((art) => isJapaneseArt(art.artId));
-    const japanese = picker.getByRole("button", { name: `Alternate ${japaneseIndex}, Japanese printing` });
-    expect(within(japanese).getByText("JP")).toBeTruthy();
-    expect(within(picker.getByRole("button", { name: "Original" })).queryByText("JP")).toBeNull();
+    const regionalIndex = getCardArts(cardId).findIndex((art) => artRegionOf(art.artId)?.value === region.value);
+    const regional = picker.getByRole("button", { name: `Alternate ${regionalIndex}, ${printing}` });
+    expect(within(regional).getByText(region.badge)).toBeTruthy();
+    expect(within(picker.getByRole("button", { name: "Original" })).queryByText(region.badge)).toBeNull();
   });
+});
+
+it("uses the preferred card language in the collection after loading the page", () => {
+  localStorage.setItem("aegis:cardImageLanguage", "ja");
+  vi.stubGlobal(
+    "IntersectionObserver",
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
+  window.history.replaceState({}, "", "/collection?q=BT1-010");
+  render(
+    <I18nProvider>
+      <Collection />
+    </I18nProvider>,
+  );
+  expect(screen.getAllByAltText("Agumon")[0]?.getAttribute("src")).toContain("BT1-010-J");
+  window.history.replaceState({}, "", "/");
+});
+
+it("uses the preferred card language for new copies without changing existing copies", async () => {
+  localStorage.setItem("aegis:cardImageLanguage", "ja");
+  const onSave = vi.fn<(deck: DeckListing, setActive: boolean) => void>();
+  render(
+    <I18nProvider>
+      <DeckBuilder
+        decks={[deck()]}
+        activeDeckId="art-deck"
+        initialEditingDeck={deck()}
+        onDeleteDeck={() => undefined}
+        onSelectDeck={() => undefined}
+        onSaveDeck={onSave}
+        onNav={() => undefined}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Agumon, 2 in deck" }));
+  fireEvent.click(
+    within(screen.getByRole("dialog", { name: "Card detail" })).getByRole("button", { name: "Add Agumon" }),
+  );
+  await waitFor(() => expect(onSave.mock.lastCall?.[0].mainDeckArts).toEqual([cardId, alternate(), "BT1-010-J"]));
+});
+
+it("matches effect headings to the chosen face without changing the interface language", async () => {
+  render(
+    <I18nProvider>
+      <CardDetailDrawer cardId="BT1-010" initialArtId="BT1-010-J" onClose={() => undefined} />
+    </I18nProvider>,
+  );
+  await screen.findByText("効果");
+  expect(screen.getByRole("dialog", { name: "Card detail" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Original" }));
+  await screen.findByText("Main effect");
+  expect(screen.getByRole("button", { name: "Close" })).toBeTruthy();
 });

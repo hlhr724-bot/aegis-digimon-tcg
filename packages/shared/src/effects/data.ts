@@ -999,8 +999,11 @@ export const ALTERNATE_DIGIVOLUTION_OVERRIDES: Record<string, DigivolutionRequir
       controllerControls: { kind: ["Digimon", "Tamer"], namesExact: ["Shoto Kazama"], min: 1 },
     },
   ],
-  // BT12-081: Astamon's Save alternate path is restricted to yellow, green, or purple Lv.4 bases.
-  "BT12-081": [{ cost: 3, isAlternate: true, level: 4, texts: ["Save"], colors: ["Yellow", "Green", "Purple"] }],
+  // BT12-081: Astamon prints a [Psychemon] route and a Save route restricted to yellow, green, or purple Lv.4 bases.
+  "BT12-081": [
+    { namesExact: ["Psychemon"], cost: 5, isAlternate: true },
+    { cost: 3, isAlternate: true, level: 4, texts: ["Save"], colors: ["Yellow", "Green", "Purple"] },
+  ],
   // BT12-083: the Save alternate path is restricted to red, black, or purple Lv.4 bases.
   "BT12-083": [{ cost: 4, isAlternate: true, level: 4, texts: ["Save"], colors: ["Red", "Black", "Purple"] }],
   // RB1-009: a Gammamon with a Gammamon-named digivolution card may evolve into this

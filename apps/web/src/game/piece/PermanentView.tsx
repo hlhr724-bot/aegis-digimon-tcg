@@ -1,4 +1,11 @@
+import { ManualStatus } from "@aegis/shared/manual/ManualStatus";
+import "@/game/manual/manualFeatures.css";
+import { PermanentDpDeltaHint } from "@/game/piece/PermanentDpDeltaHint";
+import { CardAceBadge } from "@/design/CardAceBadge";
 import { useRef, type CSSProperties } from "react";
+import { useCardTranslations } from "@/i18n/useCardTranslations";
+import { useFieldReferenceVisible } from "@/design/fieldReference/useFieldReferenceVisible";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 import { getCardDefinition, type Permanent } from "@aegis/shared";
 import { CardMini } from "../../design/cards";
 import { Icons } from "../../design/icons";
@@ -35,6 +42,7 @@ import "./fieldBadges.css";
 export function PermanentView({
   perm,
   copies = 1,
+  fieldReferenceIds,
   entranceKey,
   quietEntrance = false,
   heldDeletion = false,
@@ -42,6 +50,7 @@ export function PermanentView({
   highlight,
   selectionOrder,
   candidate,
+  picked = false,
   dimmed,
   compact,
   burst,
@@ -64,10 +73,12 @@ export function PermanentView({
   onKeyboardActivate,
   onInspect,
   showInspect = false,
+  useSelectedSleeve = true,
 }: {
   perm: Permanent;
   /** Identical permanents drawn as this one card, itself included. */
   copies?: number;
+  fieldReferenceIds?: readonly string[];
   /**
    * What restarts the entrance, in place of the permanent id. A group passes its own
    * key, so a copy leaving it does not replay the entrance on the copies that stay.
@@ -81,6 +92,7 @@ export function PermanentView({
   highlight?: boolean;
   selectionOrder?: number;
   candidate?: boolean;
+  picked?: boolean;
   dimmed?: boolean;
   compact?: boolean;
   /** What an effect currently resolving is about to do to this permanent (server-projected). */
@@ -122,6 +134,7 @@ export function PermanentView({
   onInspect?: () => void;
   /** Show the magnifier while the board is being used to choose a card or effect. */
   showInspect?: boolean;
+  useSelectedSleeve?: boolean;
 }) {
   const stationaryDeparture =
     heldDeletion || fate?.fate === "delete" || fate?.fate === "trash" || fate?.fate === "effectTarget";
@@ -129,9 +142,15 @@ export function PermanentView({
   const isVisuallySuspended = heldSuspended || perm.isSuspended;
   const suspendedInlineMargin = Math.ceil(permanentWidth * 0.2);
   const { t } = useTranslation();
+  const translations = useCardTranslations();
   const beginInspection = usePermanentInspection(onInspect);
+  const fieldReferenceVisible = useFieldReferenceVisible();
   const movedEntrance = useRef<string | undefined>(undefined);
   const fieldIdentity = entranceKey ?? perm.permanentId;
+  const fieldReferences = (fieldReferenceIds ?? [perm.permanentId]).map((id) => `#${id.replace(/^perm-/, "")}`);
+  const fieldReference = fieldReferences.join(", ");
+  const shortFieldReference =
+    fieldReferences.length > 1 ? `${fieldReferences[0]} +${fieldReferences.length - 1}` : fieldReferences[0];
   const landingBurst = burst?.moveFromBreeding ? undefined : burst;
   if (burst?.moveFromBreeding) movedEntrance.current = fieldIdentity;
   else if (landingBurst) movedEntrance.current = undefined;
@@ -139,6 +158,7 @@ export function PermanentView({
   const entranceBurst = useRef<number | undefined>(undefined);
   if (landingBurst) entranceBurst.current = landingBurst.key;
   const topId = perm.topCard?.cardId;
+  const faceDown = perm.topCard?.faceUp === false;
   const faceRef = useFieldShatterOrigin(perm.permanentId, perm.topCard?.instanceId ?? perm.permanentId, refCb);
   const arrivalKey = `${fieldIdentity}:${entranceBurst.current ?? "first"}:${pending ? "held" : "shown"}`;
   // A departure hold can release before the presented board removes its face.
@@ -147,8 +167,8 @@ export function PermanentView({
   if (quietedEntrance.current.key !== arrivalKey) quietedEntrance.current = { key: arrivalKey, quiet: quietEntrance };
   else if (quietEntrance) quietedEntrance.current.quiet = true;
   const landingRef = useCardLanding(arrivalKey);
-  if (!topId) return null;
-  const def = getCardDefinition(topId);
+  if (!perm.topCard || (!topId && !faceDown)) return null;
+  const def = topId ? getCardDefinition(topId) : undefined;
   const delta = perm.currentDP - originalDP(perm);
   const hasDpDelta = delta !== 0;
   const activeKeywords = resolvePermanentKeywordEntries({ perm, keywordLabels });
@@ -165,13 +185,27 @@ export function PermanentView({
   // this position currently COUNTS AS after an effect rewrote its original card information.
   const transformation = permanentTransformation(perm);
 
-  const cardName = transformation?.name || def?.nameEn || topId;
+  const cardName = faceDown
+    ? t("game.faceDownSource")
+    : getTranslatedCardName({ name: transformation?.name || def?.nameEn || topId || "", translations });
+  const statuses = Object.values(ManualStatus).filter((entry) => perm.manualStatuses?.includes(entry.value));
+  const statusLabels = statuses.map((entry) => t(`manual.features.status.${entry.value}`));
+  const annotations = [...statusLabels, perm.manualMarker ?? ""].filter(Boolean).map((label) => ({
+    label,
+    description: t("manual.features.statusHint"),
+  }));
   const activate = onKeyboardActivate ?? onClick;
   const interactive = !!activate || !!onPointerDown;
   return (
     <div
       ref={faceRef}
-      onClick={onClick}
+      onClick={(event) => {
+        if (event.detail === 0 && activate) {
+          activate();
+        } else {
+          onClick?.();
+        }
+      }}
       onPointerDown={onPointerDown}
       onPointerDownCapture={beginInspection}
       onContextMenu={
@@ -196,9 +230,28 @@ export function PermanentView({
       // exposes the card name, and a second name on the wrapper reads twice.
       role={interactive ? "button" : undefined}
       tabIndex={interactive ? 0 : undefined}
+      aria-pressed={interactive && candidate ? picked : undefined}
       aria-label={
         interactive
-          ? permanentAriaLabel({ perm, heldSuspended, restrictions, fate, cardName, copies, delta, hasDpDelta, t })
+          ? permanentAriaLabel({
+              perm,
+              heldSuspended,
+              restrictions,
+              fate,
+              cardName: [
+                cardName,
+                topId ? `(${topId})` : undefined,
+                t("game.fieldReference", { reference: fieldReference }),
+                ...statusLabels,
+                perm.manualMarker,
+              ]
+                .filter(Boolean)
+                .join(", "),
+              copies,
+              delta,
+              hasDpDelta,
+              t,
+            })
           : undefined
       }
       className={permanentClassName({
@@ -207,6 +260,7 @@ export function PermanentView({
         effectSource,
         effectLinked,
         candidate,
+        picked,
         threatened: fate?.fate === "effectTarget",
       })}
       {...(drop ?? {})}
@@ -221,7 +275,7 @@ export function PermanentView({
         ...({ "--permanent-width": `${permanentWidth}px` } as CSSProperties),
         position: "relative",
         cursor: interactive ? "pointer" : "default",
-        touchAction: "none",
+        touchAction: "pan-x",
         opacity: dimmed ? 0.4 : 1,
         // The reference client hides the destination until the centre-screen
         // announcement is over, rather than flying the card across the board.
@@ -241,8 +295,24 @@ export function PermanentView({
           : "transform 160ms, opacity 160ms, margin-inline-start 200ms, margin-inline-end 200ms",
       }}
     >
+      {def || !fieldReferenceVisible ? null : (
+        <span
+          className="game-permanent__field-reference"
+          title={t("game.fieldReference", { reference: fieldReference })}
+          aria-label={t("game.fieldReference", {
+            reference: fieldReference,
+          })}
+        >
+          {shortFieldReference}
+        </span>
+      )}
       {copies > 1 ? (
-        <PermanentCopyEdges cardId={topId} copies={copies} width={permanentWidth} suspended={isVisuallySuspended} />
+        <PermanentCopyEdges
+          cardId={faceDown ? "" : (topId ?? "")}
+          copies={copies}
+          width={permanentWidth}
+          suspended={isVisuallySuspended}
+        />
       ) : null}
       {selectionOrder !== undefined ? (
         <span
@@ -251,9 +321,22 @@ export function PermanentView({
         >
           {selectionOrder}
         </span>
+      ) : picked && candidate ? (
+        <span className="game-permanent__picked-mark" aria-hidden="true">
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.4}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3.5 8.5 6.5 11.5 12.5 4.5" />
+          </svg>
+        </span>
       ) : null}
       <PermanentCardStack stack={perm.stack} width={permanentWidth} />
-      <PermanentLinkedCards linked={perm.linked} width={permanentWidth} />
+      <PermanentLinkedCards linked={perm.linked} width={permanentWidth} useSelectedSleeve={useSelectedSleeve} />
       {/* Re-keying on an accepted arrival remounts the wrapper, which is what
           restarts the CSS entrance: the card sparkles when it reaches the board
           and again on every digivolution. `pending` is part of the signature
@@ -286,6 +369,8 @@ export function PermanentView({
         ) : null}
         <CardMini
           cardId={topId}
+          faceDown={faceDown}
+          useSelectedSleeve={useSelectedSleeve}
           artId={perm.topCard?.artId}
           width={permanentWidth}
           suspended={isVisuallySuspended}
@@ -293,7 +378,14 @@ export function PermanentView({
           selected={highlight}
           attackable={candidate}
           dp={perm.currentDP}
+          dpDelta={hasDpDelta && !dpBadgeSuppressed ? delta : undefined}
+          renderDpDelta={(node) => (
+            <PermanentDpDeltaHint delta={delta} baseDp={originalDP(perm)}>
+              {node}
+            </PermanentDpDeltaHint>
+          )}
           identity={transformation}
+          reference={fieldReferenceVisible ? shortFieldReference : undefined}
           info
           zoomOnHover={false}
         />
@@ -305,29 +397,27 @@ export function PermanentView({
         {claw ? <ClawSlash key={`claw-${perm.permanentId}`} fixedFieldAnchor /> : null}
         {dpPulse ? <DpPulseParticles key={dpPulse.key} pulse={dpPulse} /> : null}
       </div>
+      <CardAceBadge cardId={topId} />
       {sources ? <PermanentSourceBadge sources={sources} /> : null}
       {copies > 1 ? <PermanentCopiesBadge copies={copies} /> : null}
       {blocker ? <PermanentBlockerBadge /> : null}
       {fate ? <PermanentFateBadge fate={fate} /> : null}
-      {activeKeywords.length > 0 ? (
+      {activeKeywords.length > 0 || annotations.length > 0 ? (
         <PermanentKeywordBadges
           keywords={activeKeywords}
+          annotations={annotations}
           securityAttackModifier={perm.securityAttackModifier}
           cardWidth={permanentWidth}
         />
       ) : null}
-      {restrictions.length > 0 || (hasDpDelta && !dpBadgeSuppressed) ? (
-        <PermanentRestrictionBadges
-          restrictions={restrictions}
-          forcedAttackGrants={forcedAttackGrants(perm)}
-          dpDelta={hasDpDelta && !dpBadgeSuppressed ? delta : undefined}
-          baseDp={originalDP(perm)}
-        />
+      {restrictions.length > 0 ? (
+        <PermanentRestrictionBadges restrictions={restrictions} forcedAttackGrants={forcedAttackGrants(perm)} />
       ) : null}
       {onInspect && showInspect ? (
         <button
           type="button"
           className="game-permanent__inspect"
+          data-arena-inspect
           aria-label={t("game.inspectCard", { card: cardName })}
           onPointerDown={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}

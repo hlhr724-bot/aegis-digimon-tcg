@@ -1,3 +1,7 @@
+import { createTrackedPermanentFilterMatch } from "#api/engine/effects/interpreter/matching/createTrackedPermanentFilterMatch";
+import { createTrackedTamerAsDigimonMatch } from "#api/engine/effects/interpreter/matching/createTrackedTamerAsDigimonMatch";
+import { createTrackedNoPermanentMatch } from "#api/engine/effects/interpreter/matching/createTrackedNoPermanentMatch";
+import { getFieldEffectText } from "#api/engine/effects/interpreter/getFieldEffectText";
 // Continuous prohibitions and immunities.
 
 import type { EffectContext, Restriction } from "../../EffectContext.js";
@@ -5,19 +9,14 @@ import type { ActionScope } from "../dispatch.js";
 import { toDuration } from "../duration.js";
 import { KIND_MAP } from "../maps.js";
 import { definitionMatches } from "../matching/definition.js";
-import {
-  isPermanentUnaffectable,
-  permanentMatchesFilter,
-  permanentMatchesFilterAs,
-  seatsForController,
-} from "../matching/permanent.js";
+import { permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
 import { resolvePermanentTargets } from "../targeting/permanents.js";
 import { candidateLooseInstances } from "../targeting/loose.js";
 import { evaluateCondition } from "../conditions.js";
 import { unsupported } from "../errors.js";
 import { extractCardById, insertCard } from "../../../state/access.js";
 import { Zone } from "@aegis/shared";
-import type { Action, CardDefinition, Seat } from "@aegis/shared";
+import type { Action, Seat } from "@aegis/shared";
 import { subscribeLaterEntrants } from "./laterEntrants.js";
 
 export async function runRestrictionAction(ctx: EffectContext, action: Action, scope: ActionScope): Promise<boolean> {
@@ -90,21 +89,16 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
       // when it attempts the digivolution.
       const locksTamersAsDigimon =
         restriction === "digivolve" && scaledTarget.count === "all" && filter?.kind?.includes("Digimon") === true;
-      const matchesAsDigimon = (seat: Seat, dynamic: boolean) => {
-        const present =
-          dynamic || ctx.continuousPass === true
-            ? undefined
-            : new Set(ctx.game.player(seat).battleArea.map(({ permanentId }) => permanentId));
-        return (permanentId: string, asDigimon: CardDefinition): boolean => {
-          const permanent = ctx.game.permanentById(permanentId);
-          return (
-            permanent !== undefined &&
-            (present === undefined || present.has(permanentId)) &&
-            permanentMatchesFilterAs(ctx, permanent, filter, ctx.source, asDigimon) &&
-            !isPermanentUnaffectable(ctx, ctx.source, permanent, sourceKinds)
-          );
-        };
-      };
+      const matchesAsDigimon = (seat: Seat, dynamic: boolean) =>
+        createTrackedTamerAsDigimonMatch({
+          ctx,
+          filter,
+          sourceKinds,
+          present:
+            dynamic || ctx.continuousPass === true
+              ? undefined
+              : new Set(ctx.game.player(seat).battleArea.map(({ permanentId }) => permanentId)),
+        });
       // Card IR spells this immunity using the printed-action vocabulary, while the engine's
       // legality layer consumes the normalized `beReturned` restriction for both hand and deck.
       // A deprecated kind has no consumer, so recording it would be a silent no-op. Drop it
@@ -128,17 +122,10 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
             seat,
             restriction,
             duration,
-            (permanentId) => {
-              const permanent = ctx.game.permanentById(permanentId);
-              return (
-                permanent !== undefined &&
-                permanentMatchesFilter(ctx, permanent, filter, ctx.source) &&
-                !isPermanentUnaffectable(ctx, ctx.source, permanent, sourceKinds)
-              );
-            },
+            createTrackedPermanentFilterMatch({ ctx, filter, sourceKinds }),
             {
               sourceCardId: ctx.source.definition.cardId,
-              effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+              effectText: getFieldEffectText({ action, ctx }),
               ...(locksTamersAsDigimon ? { matchesAsDigimon: matchesAsDigimon(seat, true) } : {}),
               fromSourceKind: action.fromSourceKind as string[] | undefined,
               byOpponentEffectsOnly: action.byOpponentEffectsOnly === true ? true : undefined,
@@ -150,7 +137,12 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
       }
       if (locksTamersAsDigimon && ctx.fx.restrictPlayer !== undefined) {
         for (const seat of seatsForController(ctx, filter)) {
-          ctx.fx.restrictPlayer(seat, restriction, duration, () => false, {
+          ctx.fx.restrictPlayer(seat, restriction, duration, createTrackedNoPermanentMatch(ctx), {
+            sourceCardId: ctx.source.definition.cardId,
+            effectText: getFieldEffectText({ action, ctx }),
+            fromSourceKind: action.fromSourceKind as string[] | undefined,
+            byOpponentEffectsOnly: action.byOpponentEffectsOnly === true ? true : undefined,
+            byEffectsOnly: action.byEffectsOnly === true ? true : undefined,
             matchesAsDigimon: matchesAsDigimon(seat, false),
           });
         }
@@ -226,8 +218,12 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
       // EX11-070 [All Turns]: "your opponent's effects can't trash this Digimon's stacked cards"
       // (KB Q5943). A persistent lock on the resolved target(s) (the inherited-effect host),
       // consulted at the digivolution-card trash sites. Re-derived each continuous pass (CR-01).
-      const ids = await resolvePermanentTargets(ctx, action.target);
       const duration = toDuration(action.duration);
+      if (action.includeLaterEntrants === true && coversEveryDigimonOfController(action.target)) {
+        for (const seat of seatsForController(ctx, action.target.filter)) ctx.fx.seatStackTrashLock?.(seat, duration);
+        return false;
+      }
+      const ids = await resolvePermanentTargets(ctx, action.target);
       const lock = (id: string): void => ctx.fx.stackTrashLock?.(id, duration);
       for (const id of ids) lock(id);
       if (action.includeLaterEntrants === true) {
@@ -271,7 +267,7 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
       for (const seat of seats)
         ctx.fx.restrictPlay(seat, ctx.source.ownerSeat, match, action.mode, duration, action.byEffectOnly, {
           sourceCardId: ctx.source.definition.cardId,
-          effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+          effectText: getFieldEffectText({ action, ctx }),
         });
       return false;
     }
@@ -344,4 +340,17 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
       // reports anything the Action union does not cover.
       return false;
   }
+}
+
+type StackTrashLockTarget = Extract<Action, { kind: "StackTrashLock" }>["target"];
+
+function coversEveryDigimonOfController(target: StackTrashLockTarget): boolean {
+  const { controller, kind, ...narrowing } = target.filter;
+  return (
+    target.count === "all" &&
+    controller !== undefined &&
+    kind?.length === 1 &&
+    kind[0] === "Digimon" &&
+    Object.keys(narrowing).length === 0
+  );
 }

@@ -1,7 +1,10 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
 import { CardKind, Zone, requireCardDefinition, CardInstance, type Seat } from "@aegis/shared";
+import { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 import { pushOnStack, takeTop, unshiftOnStack } from "../../state/access.js";
 import { digiXrosMatches, materialSaveCountOf } from "../../combat/keywords.js";
-import { peekLooseInstance, removeLooseInstance } from "../verbs/looseInstances.js";
+import { hostOfLinkedInstance, peekLooseInstance, removeLooseInstance } from "../verbs/looseInstances.js";
 
 import type { PrimitivesContext } from "./context.js";
 
@@ -10,7 +13,7 @@ import type { PrimitivesContext } from "./context.js";
  */
 
 export function createPlaceUnderVerbs(pc: PrimitivesContext) {
-  const { engine, access, continuous, effectSeatStack, player, state } = pc;
+  const { engine, access, continuous, effectSeatStack, player, state, ledger } = pc;
 
   const moveLooseCardsUnder = async (
     targetPermanentId: string,
@@ -20,7 +23,7 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
     const placed: CardInstance[] = [];
     const securitySources = new Set<Seat>();
     const permanent = access.permanentById(targetPermanentId);
-    if (permanent?.topCard === undefined) {
+    if (permanent?.topCard === undefined || requireCardDefinition(permanent.topCard.cardId).isToken) {
       return { placed, securitySources };
     }
     // Validate the complete physical batch before moving anything. A duplicate can
@@ -31,42 +34,44 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
     ) {
       return { placed, securitySources };
     }
-    const deckSources = new Map<Seat, number>();
+    const origins = locateMoveOrigins({ state, instanceIds });
     for (const instanceId of instanceIds) {
       for (const owner of state.players) {
         if (owner.security.some((card) => card.instanceId === instanceId)) securitySources.add(owner.seat);
       }
-      if (opts?.faceUp === false) {
-        for (const owner of state.players) {
-          if (owner.deck.some((card) => card.instanceId === instanceId)) {
-            deckSources.set(owner.seat as Seat, (deckSources.get(owner.seat as Seat) ?? 0) + 1);
-          }
-        }
-      }
+      const linkedHostId = hostOfLinkedInstance(state, instanceId);
       const instance = removeLooseInstance(state, instanceId);
       if (instance === undefined) continue;
+      if (linkedHostId !== undefined) {
+        ledger.recomputeDP(state, linkedHostId);
+      }
       instance.faceUp = opts?.faceUp ?? true;
       if (opts?.belowTop) pushOnStack(permanent, instance);
       else unshiftOnStack(permanent, instance);
       placed.push(instance);
     }
     if (placed.length > 0) {
-      engine.emit({
-        kind: "cardsMoved",
-        instanceIds: placed.map((c) => c.instanceId),
-        from: "various",
-        to: Zone.BattleArea,
-        placedUnder: { permanentId: targetPermanentId },
-        ...(deckSources.size === 1
-          ? {
-              deckToUnder: {
-                seat: [...deckSources.keys()][0]!,
-                permanentId: targetPermanentId,
-                count: [...deckSources.values()][0]!,
-              },
-            }
-          : {}),
-      });
+      for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: placed })) {
+        engine.emit({
+          kind: "cardsMoved",
+          instanceIds: cards.map((card) => card.instanceId),
+          ...origin,
+          to: Zone.BattleArea,
+          placedUnder: { permanentId: targetPermanentId },
+          ...(opts?.faceUp !== false
+            ? {
+                cardIds: cards.map((card) => card.cardId),
+                artIds: cards.map((card) => card.artId || card.cardId),
+                seat: cards[0]!.ownerSeat,
+              }
+            : {}),
+          ...(opts?.faceUp === false && origin.from === Zone.Deck && origin.fromSeat !== undefined
+            ? {
+                deckToUnder: { seat: origin.fromSeat, permanentId: targetPermanentId, count: cards.length },
+              }
+            : {}),
+        });
+      }
       // Continuous properties derived from the new stack must be live before
       // placement reactions and the next action read them (BT8-084 colors).
       await engine.recomputeContinuousEffects?.();
@@ -107,7 +112,9 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
 
   const placeUnderFromDeck = async (targetPermanentId: string, seat: Seat): Promise<CardInstance | undefined> => {
     const permanent = access.permanentById(targetPermanentId);
-    if (permanent === undefined) return undefined;
+    if (permanent?.topCard === undefined || requireCardDefinition(permanent.topCard.cardId).isToken) {
+      return undefined;
+    }
     const card = takeTop(player(seat), Zone.Deck);
     if (card === undefined) return undefined;
     card.faceUp = false;
@@ -154,12 +161,25 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
       .battleAreaPermanents(perm.controllerSeat)
       .filter((p) => p.topCard !== undefined && requireCardDefinition(p.topCard.cardId).kinds.includes(CardKind.Tamer));
     if (tamers.length === 0) return false;
+    const source = {
+      sourceCardId: perm.topCard.cardId,
+      sourceInstanceId: perm.topCard.instanceId,
+      sourcePermanentId: permanentId,
+      timing: "MaterialSave",
+      effectText: `＜Material Save ${n}＞: When this Digimon would be deleted, you may place up to ${n} of its specified digivolution cards under one of your Tamers.`,
+    };
     const accept = await engine.ask.selectInstances(
       perm.controllerSeat,
       [eligible[0]!.instanceId],
       0,
       1,
       `＜Material Save ${n}＞: place up to ${n} of this Digimon's specified digivolution cards under 1 of your Tamers?`,
+      {
+        ...source,
+        selectionContext: "materialSaveActivation",
+        visibleInstanceIds: eligible.map((card) => card.instanceId),
+        selectionGoal: DecisionSelectionGoal.PROTECT.value,
+      },
     );
     if (accept.length === 0) return false;
     let tamerId = tamers[0]!.permanentId;
@@ -170,6 +190,7 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
         1,
         1,
         "＜Material Save＞: place the cards under which Tamer?",
+        source,
       );
       const found = tamers.find((t) => t.topCard?.instanceId === chosenTamer[0]);
       if (found !== undefined) tamerId = found.permanentId;
@@ -186,6 +207,7 @@ export function createPlaceUnderVerbs(pc: PrimitivesContext) {
       requiredCount,
       requiredCount,
       `＜Material Save ${n}＞: choose ${requiredCount} specified digivolution card${requiredCount === 1 ? "" : "s"} to place under the Tamer, in order.`,
+      source,
     );
     const eligibleIds = new Set(eligible.map((card) => card.instanceId));
     if (

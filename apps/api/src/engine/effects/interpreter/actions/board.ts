@@ -1,3 +1,7 @@
+import { createTrackedPermanentFilterMatch } from "#api/engine/effects/interpreter/matching/createTrackedPermanentFilterMatch";
+import { getFieldEffectText } from "#api/engine/effects/interpreter/getFieldEffectText";
+import { runtimeCompiledCard } from "#api/engine/effects/interpreter/compiledCards";
+import { declaresExecuteKeyword } from "#api/engine/effects/interpreter/registration/keywords";
 // Suspend state, DP, keywords, and moving a permanent.
 
 import { requireOpponentAsk } from "../../../decisions/decisionApi.js";
@@ -7,7 +11,7 @@ import { type ActionScope, runAction } from "../dispatch.js";
 import { laterEntrantGrantClause } from "../describe.js";
 import { toDuration } from "../duration.js";
 import { ACTION_TYPE_KEYWORDS, unsupported } from "../errors.js";
-import { isPermanentUnaffectable, permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
+import { permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
 import { countMatching, scaleFactor } from "../scaling.js";
 import { candidateLooseInstances, looseCardsInZone, pickLoose } from "../targeting/loose.js";
 import { resolvePermanentTargets } from "../targeting/permanents.js";
@@ -20,6 +24,14 @@ import { playEffectInstances } from "./effectPlayAssembly.js";
 /** Seat and zone are enforced by the player ledger; kind still needs a live check. */
 const PLAYER_WIDE_SCOPE_KEYS: ReadonlySet<string> = new Set(["controller", "controllerDefault", "zone"]);
 
+function scaledDPAmount(action: Extract<Action, { kind: "ModifyDP" }>, scale: number | undefined): number {
+  if (scale === undefined) return action.amount;
+  const bonus = action.scaling?.bonus;
+  if (bonus === undefined) return action.amount * scale;
+  const adjusted = action.amount + bonus * scale;
+  return action.amount < 0 ? Math.min(0, adjusted) : Math.max(0, adjusted);
+}
+
 /**
  * A narrowed "all" target ("all of your opponent's suspended Digimon") is a live condition, not a
  * snapshot: a Digimon that starts matching during the duration is affected, and one that stops
@@ -30,10 +42,7 @@ function playerWideMatcher(
   filter: Target["filter"],
 ): ((permanentId: string) => boolean) | undefined {
   if (Object.keys(filter).every((key) => PLAYER_WIDE_SCOPE_KEYS.has(key))) return undefined;
-  return (permanentId) => {
-    const permanent = ctx.game.permanentById(permanentId);
-    return permanent !== undefined && permanentMatchesFilter(ctx, permanent, filter, ctx.source);
-  };
+  return createTrackedPermanentFilterMatch({ ctx, filter, sourceKinds: undefined });
 }
 
 /**
@@ -41,16 +50,9 @@ function playerWideMatcher(
  * a Digimon that can't be affected by this effect (BT13-108 Waltz's End, Q2361).
  */
 function playerWideKeywordMatcher(ctx: EffectContext, filter: Target["filter"]): (permanentId: string) => boolean {
-  const narrowed = playerWideMatcher(ctx, filter);
+  const narrowedFilter = Object.keys(filter).every((key) => PLAYER_WIDE_SCOPE_KEYS.has(key)) ? undefined : filter;
   const sourceKinds = [...(ctx.effectSourceKinds ?? ctx.source.definition.kinds)];
-  return (permanentId) => {
-    const permanent = ctx.game.permanentById(permanentId);
-    return (
-      permanent !== undefined &&
-      (narrowed === undefined || narrowed(permanentId)) &&
-      !isPermanentUnaffectable(ctx, ctx.source, permanent, sourceKinds)
-    );
-  };
+  return createTrackedPermanentFilterMatch({ ctx, filter: narrowedFilter, sourceKinds });
 }
 
 export async function runBoardAction(ctx: EffectContext, action: Action, scope: ActionScope): Promise<boolean> {
@@ -96,7 +98,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
         scale !== undefined && typeof action.target.count === "number"
           ? { ...action.target, count: action.target.count * scale }
           : action.target;
-      const ids = await resolvePermanentTargets(ctx, target);
+      const ids = await resolvePermanentTargets(ctx, target, { preserveUnaffectableSelection: true });
       const suspendResult =
         ids.length > 0
           ? await ctx.fx.suspend(ids, { byEffectSeat: ctx.source.ownerSeat, byEffectCardId: ctx.source.cardId })
@@ -148,10 +150,13 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
       // wasting the effect on a card whose orientation cannot change (BT15-063).
       // A chained sibling ("...; it gains <Blocker>", BT1-095) makes the choice matter
       // beyond the orientation, so the printed pool stands there (KB Q963).
+      const mandatoryReachesOpponent =
+        action.optional !== true &&
+        seatsForController(ctx, action.target.filter).includes(ctx.game.opponentOf(ctx.source.ownerSeat));
       const ids = await resolvePermanentTargets(
         ctx,
         action.target,
-        ctx.nextActionChainsSameTarget === true
+        ctx.nextActionChainsSameTarget === true || mandatoryReachesOpponent
           ? {}
           : { eligible: (permanentId) => ctx.game.permanentById(permanentId)?.isSuspended === true },
       );
@@ -233,7 +238,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
         const seats = seatsForController(ctx, action.target.filter);
         const matches = playerWideMatcher(ctx, action.target.filter);
         const keywordMatches = playerWideKeywordMatcher(ctx, action.target.filter);
-        const amount = scale === undefined ? action.amount : action.amount * scale;
+        const amount = scaledDPAmount(action, scale);
         const effectSourceKinds = ctx.effectSourceKinds ?? ctx.source.definition.kinds;
         const sourceProvenance =
           effectSourceKinds.length > 0
@@ -250,7 +255,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
             ctx.fx.modifyPlayerDP(seat, amount, duration, {
               ownerSeat: ctx.source.ownerSeat,
               sourceCardId: ctx.source.definition.cardId,
-              effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+              effectText: getFieldEffectText({ action, ctx }),
               ...sourceProvenance,
               ...(nextOpponentTurnDuration ? { skipsCurrentOpponentTurnEnd: !ctx.source.isOwnersTurn() } : {}),
               ...(matches === undefined ? {} : { matches }),
@@ -260,7 +265,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
             ctx.fx.grantPlayerKeyword(seat, keyword.keyword, duration, keyword.amount, {
               ownerSeat: ctx.source.ownerSeat,
               sourceCardId: ctx.source.definition.cardId,
-              effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+              effectText: getFieldEffectText({ action, ctx }),
               matches: keywordMatches,
             });
           }
@@ -291,7 +296,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
                   Math.max(1, action.scaling.per),
               )
             : scale;
-        const amount = targetScale === undefined ? action.amount : action.amount * targetScale;
+        const amount = scaledDPAmount(action, targetScale);
         if (amount === 0) continue;
         ctx.fx.modifyDP(
           id,
@@ -357,7 +362,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
       return false;
     }
     case "SetBaseDP": {
-      const ids = await resolvePermanentTargets(ctx, action.target);
+      const ids = await resolvePermanentTargets(ctx, action.target, { preserveUnaffectableSelection: true });
       const duration = toDuration(action.duration);
       for (const id of ids) ctx.fx.setBaseDP(id, action.value, duration);
       return false;
@@ -404,7 +409,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
             ownerSeat: ctx.source.ownerSeat,
             matches,
             sourceCardId: ctx.source.definition.cardId,
-            effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+            effectText: getFieldEffectText({ action, ctx }),
           });
         }
         // A player-wide grant is an activated effect even when no matching permanent is
@@ -446,6 +451,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
           event: "onEnterFieldAnyone",
           activationContext: ctx,
           once: false,
+          appliesOnEntry: true,
           ...(expiresOnTurnEndOf === undefined ? {} : { expiresOnTurnEndOf }),
           description: `GainKeyword later entrant from ${ctx.source.cardId}`,
           printedClause: laterEntrantGrantClause(ctx.activeEffectText, ctx.source.definition),
@@ -552,7 +558,7 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
         ctx.fx.grantPlayerKeyword(playerSeat, kw, duration, keyword.amount, {
           ownerSeat: ctx.source.ownerSeat,
           sourceCardId: ctx.source.definition.cardId,
-          effectText: action.effectTextPart ?? action.raw ?? ctx.source.definition.effectText,
+          effectText: getFieldEffectText({ action, ctx }),
         });
         return false;
       }
@@ -586,8 +592,13 @@ export async function runBoardAction(ctx: EffectContext, action: Action, scope: 
         // externally granted Execute instead installs the same two timing effects on the host.
         if (kw === "Execute") {
           const top = ctx.game.permanentById(id)?.topCard;
-          if (top !== undefined && top.instanceId !== ctx.source.instanceId) {
-            ctx.fx.grantCustomEffect?.(top.instanceId, top.ownerSeat, "Execute", duration);
+          if (top !== undefined) {
+            const compiled = runtimeCompiledCard(top.cardId);
+            const hasRegisteredExecute =
+              top.instanceId === ctx.source.instanceId && compiled !== undefined && declaresExecuteKeyword(compiled);
+            if (!hasRegisteredExecute) {
+              ctx.fx.grantCustomEffect?.(top.instanceId, top.ownerSeat, "Execute", duration);
+            }
           }
         }
       }

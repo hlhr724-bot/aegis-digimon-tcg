@@ -23,7 +23,17 @@ describe("BT1-097 Boring Storm", () => {
     });
     expect(compiled).toMatchObject({ coverage: "full", residual: [] });
     expect(compiled.effects).toEqual([
-      { trigger: "Main", actions: [{ kind: "Draw", controller: "mine", amount: 1 }] },
+      {
+        trigger: "Main",
+        actions: [
+          {
+            effectTextPart: "[Main] Trigger ＜Draw 1＞ (Draw 1 card from your deck).",
+            kind: "Draw",
+            controller: "mine",
+            amount: 1,
+          },
+        ],
+      },
       { trigger: "Security", actions: [{ kind: "Draw", controller: "mine", amount: 2 }], isSecurity: true },
     ]);
   });

@@ -1,0 +1,189 @@
+[data-arena-focused="true"],
+.game-hand-card--cursor {
+  outline: 3px solid #fff !important;
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--ds-accent, #70a8ff) 70%, transparent),
+    0 0 18px 6px color-mix(in srgb, var(--ds-accent, #70a8ff) 45%, transparent);
+  scroll-margin: 12px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-arena-focused="true"],
+  .game-hand-card--cursor {
+    animation: arena-input-cursor 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes arena-input-cursor {
+  50% {
+    outline-color: color-mix(in srgb, #fff 55%, var(--ds-accent, #70a8ff));
+  }
+}
+
+.game-hand-card[data-arena-focused="true"] {
+  z-index: 30 !important;
+}
+
+.game-hand-card[data-arena-focused="true"][data-hand-hover-covered="true"] {
+  outline: none !important;
+  box-shadow: none;
+  animation: none;
+}
+
+[data-arena-reordering="true"] {
+  background: var(--ds-accent-soft);
+  box-shadow: inset 0 0 0 2px var(--ds-accent);
+}
+
+.arena-input-hints {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(6px, env(safe-area-inset-bottom));
+  z-index: var(--ds-z-input-prompt);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px 14px;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #0b1218 78%, transparent);
+  color: #f3f6f8;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
+}
+
+.arena-input-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.arena-input-glyph {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid rgb(255 255 255 / 45%);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 12%);
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.arena-input-glyph[data-shape="face"] {
+  width: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f3f6f8;
+  color: #0b1218;
+}
+
+.arena-input-glyph[data-shape="pad"] {
+  border-radius: 999px;
+}
+
+[data-arena-input-layout="xbox"] .arena-input-glyph[data-button="confirm"] {
+  background: #3fae4a;
+  color: #fff;
+}
+
+[data-arena-input-layout="xbox"] .arena-input-glyph[data-button="cancel"] {
+  background: #e0453b;
+  color: #fff;
+}
+
+[data-arena-input-layout="xbox"] .arena-input-glyph[data-button="inspect"] {
+  background: #2f7fdc;
+  color: #fff;
+}
+
+[data-arena-input-layout="playstation"] .arena-input-glyph[data-shape="face"] {
+  background: #1d2630;
+}
+
+[data-arena-input-layout="playstation"] .arena-input-glyph[data-button="confirm"] {
+  color: #8fb4ff;
+}
+
+[data-arena-input-layout="playstation"] .arena-input-glyph[data-button="cancel"] {
+  color: #ff7a7a;
+}
+
+[data-arena-input-layout="playstation"] .arena-input-glyph[data-button="inspect"] {
+  color: #f59ad8;
+}
+
+@media (max-width: 760px) {
+  .arena-input-hints {
+    right: 50%;
+    translate: 50% 0;
+    justify-content: center;
+  }
+}
+
+@media (max-height: 520px), (max-width: 640px) {
+  .arena-input-hint[data-secondary] {
+    display: none;
+  }
+
+  .arena-input-hints {
+    flex-wrap: nowrap;
+    gap: 2px 9px;
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+
+  .arena-input-glyph {
+    min-width: 16px;
+    height: 16px;
+    font-size: 9px;
+  }
+
+  .arena-input-glyph[data-shape="face"] {
+    width: 16px;
+  }
+}
+
+.arena-input-prompts {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ds-z-input-prompt);
+  pointer-events: none;
+}
+
+.arena-input-prompt {
+  position: fixed;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 45%);
+  background: #0b1218;
+  border-color: rgb(255 255 255 / 70%);
+}
+
+.arena-input-prompt[data-shape="face"] {
+  background: #f3f6f8;
+}
+
+[data-arena-input-layout="xbox"] .arena-input-glyph[data-button="turn"] {
+  background: #f0b400;
+  color: #1b1300;
+}
+
+[data-arena-input-layout="playstation"] .arena-input-glyph[data-button="turn"] {
+  color: #5fd3a4;
+}
+
+[data-arena-input-layout="playstation"] .arena-input-prompt[data-shape="face"] {
+  background: #1d2630;
+}

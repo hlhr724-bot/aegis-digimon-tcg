@@ -1,3 +1,4 @@
+import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, renderHook } from "@testing-library/react";
@@ -59,11 +60,12 @@ beforeEach(() => {
   localStorage.clear();
   setBattleLanes(BattleLanes.Two);
   vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1200);
-  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(320);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(400);
 });
 
 afterEach(() => {
   cleanup();
+  arenaAppearancePreference.resetAppearance();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -114,6 +116,31 @@ describe("organized battle lanes", () => {
     expect(keys).toEqual(["digimon", "tamer"]);
   });
 
+  it.each([false, true])("keeps two separate lanes on short desktop rows (support first: %s)", (supportFirst) => {
+    mockViewport({ phone: false });
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(180);
+    const { container } = render(view([permanent("tamer"), permanent("option")], supportFirst));
+    expect(container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe("side-by-side");
+    expect(container.querySelectorAll(".game-battle-lane")).toHaveLength(2);
+    const cards = [...container.querySelectorAll<HTMLElement>(".game-battle-lane [data-field-key]")];
+    expect(cards.map((card) => card.getAttribute("data-field-key")).sort()).toEqual(["digimon", "option", "tamer"]);
+    expect(container.querySelector('.game-battle-lane--support [data-field-key="tamer"]')).not.toBeNull();
+    expect(new Set(cards.map((card) => card.style.width)).size).toBe(1);
+    expect(localStorage.getItem("aegis.battle-lanes")).toBe("two");
+
+    act(() => setBattleLanes(BattleLanes.One));
+    expect(container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe("merged");
+    expect(container.querySelectorAll(".game-battle-lane")).toHaveLength(1);
+    act(() => setBattleLanes(BattleLanes.Two));
+    expect(container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe("side-by-side");
+    expect(container.querySelectorAll(".game-battle-lane")).toHaveLength(2);
+
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(400);
+    act(() => window.dispatchEvent(new Event("resize")));
+    expect(container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe("stacked");
+    expect(container.querySelectorAll(".game-battle-lane")).toHaveLength(2);
+  });
+
   it("draws one lane on a phone and restores the saved two lanes on a wider screen", () => {
     const resize = mockViewport({ phone: true });
     const { container } = render(view([permanent("tamer")]));
@@ -138,6 +165,62 @@ describe("organized battle lanes", () => {
     expect(oneLane.drawn).toBeGreaterThan(twoLaneWidth.drawn);
     expect(oneLane.beside).toBe(twoLaneWidth.drawn);
     expect(oneLane.heightFitted).toBe(twoLaneWidth.heightFitted);
+  });
+
+  it("stacks the lanes only when the viewport keeps both rows at a readable size", () => {
+    mockViewport({ phone: false });
+    const placement = (width: number, height: number) => {
+      vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(width);
+      vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(height);
+      const { container, unmount } = render(view([permanent("tamer")], false, 116));
+      const lanes = container.querySelector("[data-field-layout]")!.getAttribute("data-lanes");
+      const digimon = Number.parseFloat(
+        container.querySelector<HTMLElement>('[data-field-key="digimon"]')!.style.width,
+      );
+      unmount();
+      return { lanes, digimon };
+    };
+    const tall = placement(1200, 420);
+    expect(tall.lanes).toBe("stacked");
+    expect(tall.digimon).toBeGreaterThanOrEqual(84);
+    expect(placement(1200, 260).lanes).toBe("side-by-side");
+    expect(placement(560, 420).lanes).toBe("stacked");
+  });
+
+  it("keeps the placement and shared size when the cards in play change", () => {
+    mockViewport({ phone: false });
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1200);
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(420);
+    const row = (digimon: Permanent[]) => (
+      <I18nProvider>
+        <OrganizedBattleRow
+          arrangement={{ digimon, support: [{ key: "tamer", members: [permanent("tamer")] }] }}
+          layoutWidth={116}
+          supportFirst={false}
+          digimonLabel="Digimon"
+          supportLabel="Support"
+          emptyLabel={null}
+          rowProps={{ style: { "--field-reserve-support": "1", "--field-support-scale": "1" } as React.CSSProperties }}
+          isSuspended={(member) => member.isSuspended}
+          renderCard={(card) => (
+            <div key={card.fieldKey} data-field-key={card.fieldKey} style={{ width: card.width }} />
+          )}
+        />
+      </I18nProvider>
+    );
+    const lone = render(row([permanent("lone")]));
+    const loneLanes = lone.container.querySelector("[data-field-layout]")!.getAttribute("data-lanes");
+    const loneShared = renderHook(useFieldCardWidth).result.current!.heightFitted;
+    lone.unmount();
+    const deep = permanent("deep");
+    for (let source = 0; source < 12; source++) {
+      const instance = new CardInstance();
+      instance.instanceId = `deep-source-${source}`;
+      deep.stack.push(instance);
+    }
+    const stacked = render(row([deep]));
+    expect(stacked.container.querySelector("[data-field-layout]")!.getAttribute("data-lanes")).toBe(loneLanes);
+    expect(renderHook(useFieldCardWidth).result.current!.heightFitted).toBe(loneShared);
   });
 
   it("keeps one card size on a fixed-size board whatever the row holds", () => {
@@ -189,4 +272,68 @@ describe("organized battle lanes", () => {
     expect(loneWidths).toEqual(["64px"]);
     expect(new Set(widths(full.container))).toEqual(new Set(["64px"]));
   });
+});
+
+it("keeps changing layout measurements out of the synchronous commit loop", () => {
+  mockViewport({ phone: false });
+  const frames = new Map<number, FrameRequestCallback>();
+  let frameId = 0;
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+    frames.set(++frameId, callback);
+    return frameId;
+  });
+  vi.stubGlobal("cancelAnimationFrame", (id: number) => frames.delete(id));
+  let measurements = 0;
+  let resizing = true;
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockImplementation(function (this: HTMLElement) {
+    if (this.hasAttribute("data-field-layout")) {
+      measurements += 1;
+      return resizing ? 1200 + measurements : 1200;
+    }
+    return 1200;
+  });
+  const screen = render(view([permanent("tamer")]));
+  expect(screen.container.querySelector("[data-field-layout]")).not.toBeNull();
+  expect(measurements).toBeLessThan(20);
+  for (let frame = 0; frame < 10; frame += 1) {
+    const callbacks = [...frames.values()];
+    frames.clear();
+    const before = measurements;
+    act(() => {
+      for (const callback of callbacks) {
+        callback(frame * 16);
+      }
+    });
+    expect(measurements - before).toBeLessThan(20);
+    expect(screen.container.querySelector("[data-field-layout]")).not.toBeNull();
+  }
+  resizing = false;
+  for (let frame = 0; frame < 5; frame += 1) {
+    const callbacks = [...frames.values()];
+    frames.clear();
+    act(() => {
+      for (const callback of callbacks) {
+        callback((frame + 10) * 16);
+      }
+    });
+  }
+  expect(frames.size).toBe(0);
+  screen.unmount();
+  expect(frames.size).toBe(0);
+});
+
+it("preserves the enlarged card size on crowded organized lanes instead of fitting it away", () => {
+  mockViewport({ phone: false });
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(280);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(300);
+  const supports = [permanent("first"), permanent("second"), permanent("third")];
+  const { container, rerender } = render(view(supports, false, 100));
+  const getWidth = () =>
+    Number.parseFloat(container.querySelector<HTMLElement>('[data-field-key="digimon"]')!.style.width);
+  const standard = getWidth();
+  act(() => arenaAppearancePreference.setAppearance({ scale: "larger", transparency: "opaque" }));
+  rerender(view(supports, false, 130));
+  expect(getWidth()).toBeGreaterThan(standard);
+  expect(getWidth()).toBeGreaterThanOrEqual(130);
+  expect(container.querySelector(".game-battle-lane")).not.toBeNull();
 });

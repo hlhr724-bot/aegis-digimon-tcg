@@ -124,6 +124,7 @@ export function CardActionMenu({
 
   return (
     <CardActionPopupMenu
+      cardId={cardId}
       x={x}
       y={y}
       onClose={onClose}

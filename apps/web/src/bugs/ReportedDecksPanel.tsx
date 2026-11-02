@@ -43,10 +43,13 @@ export function ReportedDecksPanel({ onOpenDeck }: { onOpenDeck: (deckId: string
               <span className="reported-decks__meta">
                 {t("community.byAuthor", { name: deck.authorName })} ·{" "}
                 {t("feedback.reportedDecks.reports", { count: deck.openReports })} ·{" "}
-                <time dateTime={new Date(deck.lastReportedAt).toISOString()}>
-                  {relativeTime({ at: deck.lastReportedAt, locale })}
+                <time dateTime={new Date(lastActivity(deck)).toISOString()}>
+                  {relativeTime({ at: lastActivity(deck), locale })}
                 </time>
               </span>
+              {deck.reviewRequestedAt === null ? null : (
+                <Badge tone="warning">{t("community.moderation.reviewRequestedBadge")}</Badge>
+              )}
               {deck.status === "hidden" ? <Badge tone="danger">{t("community.moderation.hiddenBadge")}</Badge> : null}
             </button>
           </li>
@@ -54,4 +57,8 @@ export function ReportedDecksPanel({ onOpenDeck }: { onOpenDeck: (deckId: string
       </ul>
     </details>
   );
+}
+
+function lastActivity({ lastReportedAt, reviewRequestedAt }: ReportedCommunityDeck): number {
+  return Math.max(lastReportedAt ?? 0, reviewRequestedAt ?? 0);
 }

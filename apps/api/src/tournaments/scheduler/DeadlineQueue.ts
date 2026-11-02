@@ -207,6 +207,14 @@ export class DeadlineQueue {
     );
   }
 
+  async postpone(id: string, dueAt: number): Promise<void> {
+    await this.accounts.ensureReady();
+    await this.accounts.pool.query(
+      "UPDATE tournament_deadlines SET due_at=$1, lease_expires_at=NULL, leased_by=NULL WHERE id=$2 AND executed_at IS NULL",
+      [dueAt, id],
+    );
+  }
+
   /** Extends this worker's hold before it starts a command, so the lease covers one command. */
   async renewLease(id: string, now: number, leasedBy: string): Promise<void> {
     await this.accounts.ensureReady();

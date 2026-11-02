@@ -68,9 +68,9 @@ describe("BT19-090 Meteor Rock Soul — catalog and IR", () => {
                 {
                   kind: "Attack",
                   attackTargetScope: "player",
-                  mandatory: true,
                   cost: {
                     kind: "unsuspendNamed",
+                    optional: true,
                     targets: [
                       { count: 1, filter: { nameOrTrait: [{ tokens: ["Shoutmon EX6"], match: "nameExact" }] } },
                       { count: 1, filter: { nameOrTrait: [{ tokens: ["ShootingStarmon"], match: "nameExact" }] } },

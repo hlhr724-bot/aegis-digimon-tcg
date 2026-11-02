@@ -13,6 +13,7 @@ const compiled: CompiledCard = {
           revealCount: 5,
           add: [
             {
+              effectTextPart: "add 1 card with the [Machine]/[Cyborg] trait to the hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -26,6 +27,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "trash 1 such card.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -52,6 +54,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "You may play 1 level 5 or higher Digimon card with the [Machine]/[Cyborg] trait from your hand with the play cost reduced by 3.",
           kind: "PlayWithoutCost",
           target: {
             filter: {
@@ -93,6 +97,7 @@ const compiled: CompiledCard = {
           revealCount: 5,
           add: [
             {
+              effectTextPart: "add 1 card with the [Machine]/[Cyborg] trait to the hand",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -106,6 +111,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "trash 1 such card.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

@@ -13,8 +13,15 @@ import { ArenaAudioSettings } from "./ArenaAudioSettings";
 import { ArenaBoardSettings } from "./ArenaBoardSettings";
 import { InterfaceThemePicker } from "../../../design/InterfaceThemePicker";
 import { setDarkMode, useDarkMode } from "../../../design/darkMode";
+import { DeviceHandoffSettings } from "@/game/handoff/DeviceHandoffSettings";
 
-export function ArenaLookDialog({ deckColors, onClose }: { deckColors: ArenaDeckColors; onClose: () => void }) {
+type ArenaLookDialogParams = {
+  deckColors: ArenaDeckColors;
+  onClose: () => void;
+  handoffUrl?: string;
+};
+
+export function ArenaLookDialog({ deckColors, onClose, handoffUrl }: ArenaLookDialogParams) {
   const { t } = useTranslation();
   const titleId = useId();
   const themeTitleId = useId();
@@ -26,10 +33,17 @@ export function ArenaLookDialog({ deckColors, onClose }: { deckColors: ArenaDeck
           <h2 id={titleId}>{t("redesign.arena.look.title")}</h2>
           <p>{t("redesign.arena.look.description")}</p>
         </div>
-        <button type="button" className="aegis-dialog__close" onClick={onClose} aria-label={t("common.close")}>
+        <button
+          type="button"
+          className="aegis-dialog__close"
+          data-arena-cancel
+          onClick={onClose}
+          aria-label={t("common.close")}
+        >
           <Icons.X size={18} />
         </button>
       </header>
+      {handoffUrl ? <DeviceHandoffSettings url={handoffUrl} /> : null}
       <ArenaAudioSettings />
       <ArenaBoardSettings />
       <section className="game-arena-theme-settings" aria-labelledby={themeTitleId}>

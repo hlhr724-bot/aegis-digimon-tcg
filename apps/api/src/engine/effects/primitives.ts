@@ -1,3 +1,4 @@
+import { primitivesRuntimeContexts } from "#api/engine/effects/verbs/snapshot/primitivesRuntimeContexts";
 import type { Primitives } from "./EffectContext.js";
 
 export { dnaDigivolveCostFor, matchingDnaDigivolveCost } from "./verbs/digivolveCost.js";
@@ -112,5 +113,6 @@ export function createPrimitives(engine: PrimitivesEngine): Primitives {
     ...createEngineBackedVerbs(pc),
   };
   pc.fx = fx;
+  primitivesRuntimeContexts.set(fx, pc);
   return fx;
 }

@@ -169,6 +169,13 @@ describe("AD1-021 Marcus Damon & Agumon", () => {
     await advance(s.engine).waitForMainPhase(1);
     expect(s.events.filter((event) => event.kind === "attackDeclared")).toHaveLength(2);
     expect(snapshots).toHaveLength(2);
+    const suspensionDraw = s.events.findIndex(
+      (event) =>
+        event.kind === "effectResolved" && event.sourceCardId === "AD1-021" && event.timing === "whenSuspended",
+    );
+    const firstSecurity = s.events.findIndex((event) => event.kind === "securityRevealed");
+    expect(suspensionDraw).toBeGreaterThanOrEqual(0);
+    expect(firstSecurity).toBeGreaterThan(suspensionDraw);
     expect(snapshots.every((snapshot) => snapshot.dp === 6000 && snapshot.rush && snapshot.restricted)).toBe(true);
     expect(snapshots.every((snapshot) => snapshot.attackerId === marcusPermanentId)).toBe(true);
     expect(s.engine.applyIntent(1, { type: "surrender" })).toEqual({ ok: true });

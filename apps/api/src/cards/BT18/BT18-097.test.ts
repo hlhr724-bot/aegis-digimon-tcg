@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { Phase } from "@aegis/shared";
+import { setupScenario } from "#api/engine/testkit/scenario";
+import boundaryFixture from "#api/engine/scenarios/magna-requires-five-tamer-sources.fixture";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import { compiled } from "./BT18-097.js";
 
@@ -95,33 +98,33 @@ describe("BT18-097 Dark to Light, Thunder to Gunfire", () => {
     expect(s.state.players[0]!.hand.some((card) => card.cardId === "BT18-063")).toBe(true);
   });
 
-  it("does not evolve a Tamer with fewer than five cards under it", async () => {
-    const s = setupEngine(
+  it.each([4, 5])("requires five sources before the Option evolves a Tamer with %i cards", async (sourceCount) => {
+    const s = setupScenario(
       {
-        0: {
-          battleArea: [{ card: "BT18-088", as: "tamer" }, "BT2-052", "BT2-067"],
-          hand: [
-            { card: "BT18-097", as: "option" },
-            { card: "BT18-063", as: "beetle" },
-            { card: "BT18-042", as: "magna" },
-          ],
+        ...boundaryFixture,
+        board: {
+          ...boundaryFixture.board,
+          0: {
+            ...boundaryFixture.board[0],
+            battleArea: [{ card: "AD1-023", as: "tamer", under: Array(sourceCount).fill("BT18-037") }],
+          },
         },
       },
-      { autoAcceptOptional: true, autoSelectCards: true },
+      { autoAcceptOptional: true, autoSelectCards: true, declinePrompts: ["Place"] },
     );
-    s.state.memory = 10;
     await s.ready();
-
+    s.state.phase = Phase.Main;
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
       ok: true,
     });
     await settle(() => s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("option").instanceId));
 
-    // The placement leaves the Tamer under five cards, so the [MagnaGarurumon] digivolution
-    // never resolves and the Tamer keeps its printed top card.
-    expect(s.perm("tamer").stack.length).toBeLessThan(5);
-    expect(s.perm("tamer").topCard?.cardId).toBe("BT18-088");
-    expect(s.state.players[0]!.battleArea.some(({ topCard }) => topCard?.cardId === "BT18-042")).toBe(false);
+    expect(s.perm("tamer").topCard?.cardId).toBe(sourceCount === 5 ? "BT18-042" : "AD1-023");
+    expect(s.perm("tamer").stack).toHaveLength(sourceCount);
+    expect(s.state.players[0]!.security).toHaveLength(sourceCount === 5 ? 4 : 3);
+    expect(s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("magna").instanceId)).toBe(
+      sourceCount === 4,
+    );
   });
 
   it("executes Security by playing an inherited-effect Tamer and returning this Option to hand through a real security check", async () => {

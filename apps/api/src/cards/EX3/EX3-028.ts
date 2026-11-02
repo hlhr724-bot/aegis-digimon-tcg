@@ -11,6 +11,8 @@ const compiled: CompiledCard = {
           revealCount: 4,
           add: [
             {
+              effectTextPart:
+                "Add 1 yellow card with [Angel], [Cherub], [Throne], [Authority], [Seraph] or [Virtue], other than [Three Great Angels], in one of its traits",
               filter: {
                 excludeNameOrTrait: [
                   {
@@ -31,6 +33,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 card with the [Four Great Dragons] trait among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

@@ -1,11 +1,3 @@
-export const MAGIC_LINK_PAGE_HEADERS = {
-  "Cache-Control": "no-store",
-  "Content-Security-Policy":
-    "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'",
-  "Referrer-Policy": "no-referrer",
-  "X-Content-Type-Options": "nosniff",
-} as const;
-
 export type MagicLinkPageState = { kind: "confirm"; token: string } | { kind: "unavailable"; homeUrl: string };
 
 export function magicLinkPage(state: MagicLinkPageState): string {

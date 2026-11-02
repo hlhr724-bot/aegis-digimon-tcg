@@ -43,12 +43,13 @@ export type FillableDeck = { deckVersion: string; name: string };
 export type BotFillInput = {
   allowBots: boolean;
   /** Whether the tournament's ruleset preset admits bots at all (`TournamentRulesPreset.supportsBots`). */
-  presetSupportsBots: boolean;
   confirmedHumans: number;
   maxPlayers: number;
   decks: readonly FillableDeck[];
   /** Anything stable per tournament. The draw of names, profiles and decks is derived from it. */
   seed: string;
+  randomStyles?: boolean;
+  drawStyle?: () => number;
 };
 
 /**
@@ -88,7 +89,7 @@ function nextPowerOfTwo(participants: number): number {
 
 export function planBotFill(input: BotFillInput): BotFillPlan {
   if (input.confirmedHumans < MINIMUM_ELIMINATION_FIELD) return { kind: "cancel", reason: "below_minimum" };
-  if (!input.allowBots || !input.presetSupportsBots) return { kind: "none", reason: "bots_not_allowed" };
+  if (!input.allowBots) return { kind: "none", reason: "bots_not_allowed" };
 
   const ceiling = capacityCeiling(input.maxPlayers);
   const targetSize = Math.min(nextPowerOfTwo(input.confirmedHumans), ceiling);
@@ -102,7 +103,7 @@ export function planBotFill(input: BotFillInput): BotFillPlan {
     bots.push({
       index,
       displayName: BOT_DISPLAY_NAMES[(offset + index) % BOT_DISPLAY_NAMES.length]!,
-      profile: BOT_PROFILE_NAMES[(offset + index) % BOT_PROFILE_NAMES.length]!,
+      profile: pickProfile({ input, rotation: offset + index }),
       deckVersion: input.decks[(offset + index) % input.decks.length]!.deckVersion,
     });
   }
@@ -114,6 +115,14 @@ export function planBotFill(input: BotFillInput): BotFillPlan {
  * same size do not field the identical line-up, and derived rather than random so one event always
  * fields the same one.
  */
+function pickProfile({ input, rotation }: { input: BotFillInput; rotation: number }): BotProfileName {
+  if (input.randomStyles && input.drawStyle) {
+    const index = Math.min(Math.floor(input.drawStyle() * BOT_PROFILE_NAMES.length), BOT_PROFILE_NAMES.length - 1);
+    return BOT_PROFILE_NAMES[index]!;
+  }
+  return BOT_PROFILE_NAMES[rotation % BOT_PROFILE_NAMES.length]!;
+}
+
 function rotationOffset(seed: string): number {
   const digest = createHash("sha256").update(`aegis-bot-fill:${seed}`).digest();
   return digest.readUInt32BE(0) % 2 ** 16;

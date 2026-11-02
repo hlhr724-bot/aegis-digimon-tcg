@@ -298,3 +298,69 @@ it("groups Ariemon's three levels into one public digivolution play event", asyn
   expect(batches.map((batch) => batch.length)).toEqual([3]);
   expect(s.state.pendingDecision).toBeUndefined();
 });
+
+describe("BT22-028 Ariemon — Yao Qinglan alternate digivolve route", () => {
+  async function digivolveAriemon(
+    board: { battleArea: { card: string; as: string }[] },
+    baseAlias: string,
+    opponentBattleArea: { card: string; as: string }[] = [],
+  ) {
+    const s = setupEngine({
+      0: { ...board, hand: [{ card: "BT22-028", as: "ariemon" }], deck: ["BT1-010", "BT1-011"] },
+      1: { battleArea: opponentBattleArea },
+    });
+    await s.ready();
+    s.state.memory = 6;
+    const result = s.engine.applyIntent(0, {
+      type: "digivolve",
+      permanentId: s.perm(baseAlias).permanentId,
+      instanceId: s.inst("ariemon").instanceId,
+    });
+    return { s, result };
+  }
+
+  it("digivolves from MarineBullmon for cost 6 while you have Yao Qinglan", async () => {
+    const { s, result } = await digivolveAriemon(
+      {
+        battleArea: [
+          { card: "BT22-024", as: "marineBullmon" },
+          { card: "BT19-082", as: "yao" },
+        ],
+      },
+      "marineBullmon",
+    );
+
+    expect(result).toEqual({ ok: true });
+    await settle(() => s.perm("marineBullmon").topCard?.cardId === "BT22-028");
+    expect(s.state.memory).toBe(0);
+  });
+
+  it("refuses to digivolve onto the Yao Qinglan Tamer itself", async () => {
+    const { s, result } = await digivolveAriemon(
+      {
+        battleArea: [
+          { card: "BT22-024", as: "marineBullmon" },
+          { card: "BT19-082", as: "yao" },
+        ],
+      },
+      "yao",
+    );
+
+    expect(result).toEqual({ ok: false, reason: "invalid-evolution" });
+    expect(s.perm("yao").topCard?.cardId).toBe("BT19-082");
+    expect(s.state.memory).toBe(6);
+    expect(s.state.players[0]!.hand.map((card) => card.cardId)).toEqual(["BT22-028"]);
+  });
+
+  it("refuses the MarineBullmon route without your own Yao Qinglan", async () => {
+    const { s, result } = await digivolveAriemon(
+      { battleArea: [{ card: "BT22-024", as: "marineBullmon" }] },
+      "marineBullmon",
+      [{ card: "BT19-082", as: "opponentYao" }],
+    );
+
+    expect(result).toEqual({ ok: false, reason: "invalid-evolution" });
+    expect(s.perm("marineBullmon").topCard?.cardId).toBe("BT22-024");
+    expect(s.state.memory).toBe(6);
+  });
+});

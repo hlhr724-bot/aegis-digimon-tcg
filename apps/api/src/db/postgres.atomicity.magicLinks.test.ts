@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { AccountStore } from "#api/accounts/AccountStore";
 
 const enabled = process.env.POSTGRES_TESTS === "1";
@@ -20,6 +20,10 @@ describe.skipIf(!enabled)("shared magic link limits under concurrent requests", 
     first = new AccountStore(new Pool({ connectionString: connection, options: `-c search_path=${schema}` }));
     second = new AccountStore(new Pool({ connectionString: connection, options: `-c search_path=${schema}` }));
     await Promise.all([first.ensureReady(), second.ensureReady()]);
+  });
+
+  beforeEach(async () => {
+    await first.pool.query("TRUNCATE magic_link_request_limits");
   });
 
   afterAll(async () => {
@@ -56,8 +60,18 @@ describe.skipIf(!enabled)("shared magic link limits under concurrent requests", 
     expect(results.filter(Boolean)).toHaveLength(10);
   });
 
-  it("resets one shared recipient window without admitting extra concurrent requests", async () => {
-    const now = Date.now() + 900_000;
+  it("resets the short recipient window while preserving the daily limit across replicas", async () => {
+    const initial = Date.now();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      expect(
+        await first.allowMagicLinkRequest({
+          ip: `initial-caller-${attempt}`,
+          email: "shared@example.com",
+          now: initial,
+        }),
+      ).toBe(true);
+    }
+    const now = initial + 900_000;
     const results = await Promise.all(
       Array.from({ length: 30 }, (_, attempt) =>
         (attempt % 2 === 0 ? first : second).allowMagicLinkRequest({
@@ -67,6 +81,6 @@ describe.skipIf(!enabled)("shared magic link limits under concurrent requests", 
         }),
       ),
     );
-    expect(results.filter(Boolean)).toHaveLength(3);
+    expect(results.filter(Boolean)).toHaveLength(2);
   });
 });

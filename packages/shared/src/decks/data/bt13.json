@@ -826,7 +826,7 @@
       "formatBlock": "BT13",
       "colors": ["Red", "Blue", "Yellow", "Green", "White", "Black", "Purple"],
       "sourceType": "community_tournament_deck",
-      "approximation": "Adapted to the current banlist: Royal Knights of the Purge BT13-110 to 1; the freed copies reinforce Leopardmon BT13-056 to 4, Marcus Damon BT13-095 to 4, LxF3nkhē Adistakto BT10-101 to 3.",
+      "approximation": "Adapted to the current banlist: Royal Knights of the Purge BT13-110 to 1; the freed copies reinforce Leopardmon BT13-056 to 4, Marcus Damon BT13-095 to 4, Lónkhē Adistakto BT10-101 to 3.",
       "tournament": {
         "name": "2023 Regionals",
         "date": "2023-08-13",
@@ -951,7 +951,7 @@
         },
         {
           "cardId": "BT10-101",
-          "name": "LxF3nkhē Adistakto",
+          "name": "Lónkhē Adistakto",
           "qty": 3,
           "type": "Option"
         }
@@ -1227,7 +1227,7 @@
         },
         {
           "cardId": "BT10-101",
-          "name": "LxF3nkhē Adistakto",
+          "name": "Lónkhē Adistakto",
           "qty": 1,
           "type": "Option"
         },

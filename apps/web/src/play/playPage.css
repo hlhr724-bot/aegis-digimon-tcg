@@ -1,0 +1,5 @@
+@container page (max-width: 640px) {
+  .play-page .aegis-page-header {
+    position: static;
+  }
+}

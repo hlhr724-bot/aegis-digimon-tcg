@@ -49,6 +49,7 @@ export interface DigivolutionRequirement {
    * `names`/`namesExact`, never used alone.
    */
   basePlayCost?: number;
+  baseWithoutPlayCost?: boolean;
   /** Minimum printed play cost of the base (BT20-101: "play cost 10 or higher"). */
   basePlayCostMin?: number;
   /** Maximum printed play cost of the base (BT16-048: "play cost 13 or less"). */

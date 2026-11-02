@@ -17,6 +17,7 @@ import { candidateLooseInstances, looseCardsInZone } from "../targeting/loose.js
 import { resolvePermanentTargets } from "../targeting/permanents.js";
 import { CardKind, EffectTiming } from "@aegis/shared";
 import { MemoryGauge } from "../../../MemoryGauge.js";
+import { createLenderCardSource } from "#api/engine/effects/interpreter/actions/createLenderCardSource";
 import type { Action, CardDefinition, CardEffect, EffectTrigger, Filter, Seat, ZoneRef } from "@aegis/shared";
 
 /** A foreign card eligible to lend a borrowed effect (its instance + the borrowable effects). */
@@ -131,7 +132,13 @@ function borrowableFromCompiled(args: {
   // Borrowed effects need the same printed provenance as ordinary registered effects.
   // A timing-only summary cannot distinguish two clauses with the same timing in the client.
   for (const effect of withPrintedClauses(args.sourceCardId, args.compiled).effects) {
-    if (!args.action.fromTriggers.includes(effect.trigger) || effect.isSecurity === true) continue;
+    if (
+      !args.action.fromTriggers.includes(effect.trigger) ||
+      effect.isSecurity === true ||
+      effect.isInherited === true
+    ) {
+      continue;
+    }
     if (args.trigger !== undefined && effect.trigger !== args.trigger) continue;
     const triggerOrdinal = ordinals.get(effect.trigger) ?? 0;
     ordinals.set(effect.trigger, triggerOrdinal + 1);
@@ -308,22 +315,19 @@ export async function runActivateForeignEffect(
         (action.asEffectOf === undefined && lenderPermanentId !== ctx.source.permanent()?.permanentId));
     let runCtx = ctx;
     if (lenderIsEffectiveSource) {
-      const permanentId = lenderPermanentId;
-      const definition = ctx.game.definitionOf({ cardId: chosen.cardId } as never);
       runCtx = {
         ...ctx,
-        sourcePermanentIdAtCreation: permanentId,
+        sourcePermanentIdAtCreation: lenderPermanentId,
         activeTiming: borrowed.effect.trigger,
-        source: {
-          instanceId: chosen.instanceId,
-          cardId: chosen.cardId,
-          ownerSeat: ctx.source.ownerSeat,
-          definition,
-          permanent: () => ctx.game.permanentById(permanentId),
-          isOnBattleArea: () => ctx.game.permanentById(permanentId) !== undefined,
-          isOwnersTurn: () => ctx.game.state.turnSeat === ctx.source.ownerSeat,
-          hasColor: (color) => definition.colors.includes(color),
-        },
+        source: createLenderCardSource({
+          game: ctx.game,
+          payload: {
+            instanceId: chosen.instanceId,
+            cardId: chosen.cardId,
+            ownerSeat: ctx.source.ownerSeat,
+            permanentId: lenderPermanentId,
+          },
+        }),
       };
       runCtx.effectSourceKinds = effectProvenanceKinds(runCtx);
     }
@@ -611,6 +615,36 @@ export async function canAttemptUseOptionWithoutCost(
   return affordability.some(Boolean);
 }
 
+const PRINTED_OPTION_USE =
+  /\b(?:you\s+may\s+)?(?:play\s+or\s+)?use\s+(?:up\s+to\s+)?(?:\d+|one|an?|this\s+card)\b[^.]*/i;
+
+function findPrintedOptionUse(effectText: string | undefined): string | undefined {
+  if (effectText === undefined) {
+    return undefined;
+  }
+  return PRINTED_OPTION_USE.exec(effectText)?.[0];
+}
+
+async function selectOptionToUse(
+  ctx: EffectContext,
+  action: Extract<Action, { kind: "UseOptionWithoutCost" }>,
+  candidates: string[],
+): Promise<string[]> {
+  const outerEffectTextPart = ctx.activeEffectTextPart;
+  const outerEffectTextEmphasis = ctx.activeEffectTextEmphasis;
+  const printedUse = action.effectTextPart === undefined ? findPrintedOptionUse(ctx.activeEffectText) : undefined;
+  if (printedUse !== undefined) {
+    ctx.activeEffectTextPart = ctx.activeEffectText;
+    ctx.activeEffectTextEmphasis = printedUse;
+  }
+  try {
+    return await ctx.ask.selectCards(ctx, { candidates, min: action.selectionRequired === true ? 1 : 0, max: 1 });
+  } finally {
+    ctx.activeEffectTextPart = outerEffectTextPart;
+    ctx.activeEffectTextEmphasis = outerEffectTextEmphasis;
+  }
+}
+
 export async function runUseOptionWithoutCost(
   ctx: EffectContext,
   action: Extract<Action, { kind: "UseOptionWithoutCost" }>,
@@ -625,7 +659,7 @@ export async function runUseOptionWithoutCost(
 
   // The controller picks WHICH eligible Option (the use is optional: min 0). The client can only
   // name an engine-offered candidate; it never injects an effect.
-  const picked = await ctx.ask.selectCards(ctx, { candidates, min: action.selectionRequired === true ? 1 : 0, max: 1 });
+  const picked = await selectOptionToUse(ctx, action, candidates);
   const chosenId = picked[0];
   if (chosenId === undefined || !candidates.includes(chosenId)) return;
 

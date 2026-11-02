@@ -18,6 +18,10 @@ import "./BT10-068.js";
 import "./BT10-110.js";
 import "./BT10-112.js";
 import { compiled } from "./BT10-042.js";
+import "#api/cards/BT21/BT21-071";
+import "#api/cards/BT25/BT25-083";
+import "#api/cards/BT25/BT25-092";
+import "#api/cards/EX7/EX7-070";
 
 describe("BT10-042 Venusmon", () => {
   it("encodes the global debuff and Security Attack-gated opponent-turn restrictions", () => {
@@ -100,6 +104,64 @@ describe("BT10-042 Venusmon", () => {
       }),
     ).toEqual({ ok: false, reason: "illegal-target" });
     assertNoLoudGap(s);
+  });
+
+  it("activates pending LadyDevimon effects after Der Blitz removes Venusmon during Asuna evolution", async () => {
+    const preferred: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT21-071", as: "scopemon", under: [{ card: "EX7-070", as: "derBlitz" }] },
+            { card: "BT25-092", as: "asuna" },
+          ],
+          hand: [{ card: "BT25-083", as: "ladyDevimon" }],
+          deck: ["BT1-010", "BT1-010", "BT1-010"],
+        },
+        1: {
+          battleArea: [{ card: "BT10-038", as: "venusBase" }],
+          hand: [{ card: "BT10-042", as: "venusmon" }],
+          deck: ["BT1-010", "BT1-010"],
+        },
+      },
+      {
+        autoAcceptOptional: true,
+        autoSelectCards: true,
+        autoChooseOption: true,
+        autoOrderTriggers: true,
+        preferInstanceIds: preferred,
+      },
+    );
+    s.state.turnSeat = 1;
+    s.state.memory = 10;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(1, {
+        type: "digivolve",
+        permanentId: s.perm("venusBase").permanentId,
+        instanceId: s.inst("venusmon").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    s.state.turnSeat = 0;
+    s.state.memory = 10;
+    await advance(s.engine).recompute();
+    expect(observe(s.engine).timingEffectDisabled(s.perm("scopemon"), "whenDigivolving")).toBe(true);
+    preferred.push(s.inst("derBlitz").instanceId, s.perm("scopemon").permanentId, s.inst("ladyDevimon").instanceId);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "activateEffect",
+        sourceInstanceId: s.inst("asuna").instanceId,
+        effectKey: "BT25-092/ir-27-0",
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.perm("venusBase").topCard.cardId).toBe("BT10-038");
+    expect(observe(s.engine).timingEffectDisabled(s.perm("scopemon"), "whenDigivolving")).toBe(false);
+    expect(s.perm("scopemon").topCard.cardId).toBe("BT25-083");
+    expect(s.state.players[0]!.deck).toHaveLength(1);
+    expect(s.events.some((event) => event.kind === "effectTriggered" && event.sourceCardId === "BT25-083")).toBe(true);
+    expect(s.state.pendingDecision).toBeUndefined();
   });
 
   it("does not affect a Digimon without active Security Attack and only protects Venusmon as an attack target", async () => {

@@ -85,7 +85,9 @@ export function useResultHold({
 
   useEffect(() => {
     if (!holding) return;
-    const timer = setTimeout(release, resultHoldCeilingMs());
+    const timer = setTimeout(() => {
+      if (!queue.isPaused()) release();
+    }, resultHoldCeilingMs());
     return () => clearTimeout(timer);
     // The ceiling starts once, when the hold does.
     // eslint-disable-next-line react-hooks/exhaustive-deps

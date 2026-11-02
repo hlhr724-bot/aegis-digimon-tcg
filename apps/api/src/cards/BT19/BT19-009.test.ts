@@ -223,7 +223,7 @@ describe("BT19-009 Growlmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    if (deletes) await settle(() => s.state.players[1]!.battleArea.length === 0, 20);
+    if (deletes) await settle(() => s.state.players[1]!.battleArea.length === 0);
     else await drainMicrotasks(20);
 
     expect(s.state.memory).toBe(deletes ? memory + 2 : memory);
@@ -290,7 +290,7 @@ describe("BT19-009 Growlmon", () => {
         instanceId: s.inst("host").instanceId,
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[1]!.battleArea.length === 1, 20);
+    await settle(() => s.state.players[1]!.battleArea.length === 1);
 
     expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard?.cardId)).toEqual(["BT1-010"]);
   });
@@ -317,7 +317,7 @@ describe("BT19-009 Growlmon", () => {
         target: { kind: "player" },
       }),
     ).toEqual({ ok: true });
-    await settle(() => false, 20);
+    await settle(() => false);
 
     expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard?.cardId)).toEqual(["BT1-009"]);
     expect(s.perm("host").currentDP).toBe(12_000);
@@ -360,7 +360,7 @@ describe("BT19-009 Growlmon — KB Q&A rulings", () => {
       await s.ready();
 
       expect(digivolveIntoGallantmon(s)).toEqual({ ok: true });
-      if (deletes) await settle(() => s.state.players[1]!.battleArea.length === 0, 20);
+      if (deletes) await settle(() => s.state.players[1]!.battleArea.length === 0);
       else await drainMicrotasks(20);
 
       expect(s.perm("base").topCard?.cardId).toBe("BT19-015");
@@ -384,7 +384,7 @@ describe("BT19-009 Growlmon — KB Q&A rulings", () => {
     await s.ready();
 
     expect(digivolveIntoGallantmon(s)).toEqual({ ok: true });
-    await settle(() => s.decisions.some(({ req }) => req.kind === "chooseTargets"), 20);
+    await settle(() => s.decisions.some(({ req }) => req.kind === "chooseTargets"));
     const decision = s.decisions.find(({ req }) => req.kind === "chooseTargets")!.req;
     const candidates = decision.options?.candidateInstanceIds ?? [];
     expect(candidates).toContain(s.perm("printed").permanentId);
@@ -398,7 +398,7 @@ describe("BT19-009 Growlmon — KB Q&A rulings", () => {
         response: { kind: "chooseTargets", instanceIds: [s.perm("raised").permanentId] },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.players[1]!.battleArea.length === 2, 20);
+    await settle(() => s.state.players[1]!.battleArea.length === 2);
 
     expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard?.cardId)).toEqual([
       "BT1-013",

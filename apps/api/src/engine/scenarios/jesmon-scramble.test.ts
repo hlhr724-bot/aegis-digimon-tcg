@@ -4,6 +4,7 @@ import { Phase } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import "../../cards/index.js";
 import { BLUE_DECK, RED_DECK } from "../testDecks.js";
+import { advance } from "#api/engine/testkit/advance";
 import { setupEngine, settle } from "../testkit/harness.js";
 
 describe("Jesmon Red Scramble arena scenarios", () => {
@@ -32,6 +33,8 @@ describe("Jesmon Red Scramble arena scenarios", () => {
 
       expect(s.engine.applyIntent(0, { type: "playCard", instanceId: option.instanceId })).toEqual({ ok: true });
       await settle(() => human.battleArea.some(({ topCard }) => topCard.cardId === "LM-027"));
+      await settle(() => s.state.pendingDecision === undefined);
+      await advance(s.engine).finishAttack();
       await settle(() => s.state.pendingDecision === undefined);
 
       expect(huckmon.topCard.cardId).toBe(allowed ? "BT23-013" : "EX13-009");

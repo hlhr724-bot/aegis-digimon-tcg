@@ -1,3 +1,4 @@
+import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
 import { useEffect, useRef } from "react";
 import { MATCH_EMOTES, type MatchEmote } from "@aegis/shared";
 import { useTranslation } from "../../i18n";
@@ -19,6 +20,13 @@ export function EmotePicker({
 }) {
   const { t } = useTranslation();
   const menuRef = useRef<HTMLDivElement>(null);
+  useArenaInputCancel({
+    ref: menuRef,
+    onCancel: () => {
+      onClose();
+      anchor?.focus();
+    },
+  });
 
   useEffect(() => {
     menuRef.current?.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus();
@@ -29,6 +37,7 @@ export function EmotePicker({
   return (
     <div
       ref={menuRef}
+      data-arena-surface
       className="match-chat-picker"
       role="group"
       aria-label={t("chat.emotes")}

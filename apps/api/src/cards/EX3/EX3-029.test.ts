@@ -1,5 +1,5 @@
 import { getCardDefinition, type DecisionResponse } from "@aegis/shared";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { setupEngine, settle, type EngineSetup } from "../../engine/testkit/harness.js";
 import { compiled } from "./EX3-029.js";
 
@@ -112,7 +112,6 @@ describe("EX3-029 Airdramon", () => {
   });
 
   it("privately searches all security, adds the chosen yellow card, recovers and shuffles", async () => {
-    const random = vi.spyOn(Math, "random").mockReturnValue(0);
     const s = setupEngine({
       0: {
         hand: [{ card: "EX3-029", as: "airdramon" }],
@@ -176,7 +175,7 @@ describe("EX3-029 Airdramon", () => {
     expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).toContain(yellowId);
     expect(s.state.players[0]!.hand.find(({ instanceId }) => instanceId === yellowId)?.faceUp).toBe(true);
     expect(s.state.players[0]!.security).toHaveLength(2);
-    expect(s.state.players[0]!.security.map(({ instanceId }) => instanceId)).toEqual([redId, recoveryId]);
+    expect(s.state.players[0]!.security.map(({ instanceId }) => instanceId).sort()).toEqual([redId, recoveryId].sort());
     expect(s.state.players[0]!.deck).toHaveLength(0);
     expect(s.state.players[0]!.security.every(({ faceUp }) => !faceUp)).toBe(true);
     expect(s.state.memory).toBe(5);
@@ -185,7 +184,6 @@ describe("EX3-029 Airdramon", () => {
     ]);
     expect(s.events).toContainEqual({ kind: "securityRecovered", seat: 0, amount: 1 });
     expect(s.events).not.toContainEqual(expect.objectContaining({ kind: "cardRevealed", cardId: "BT1-009" }));
-    random.mockRestore();
   });
 
   it("Mythical Beast family: a yellow multicolor card found in security still enables Recovery", async () => {

@@ -14,6 +14,24 @@
 export class DpDeleteBudgetLedger {
   private readonly bySourcePermanent = new Map<string, number>();
 
+  snapshot(): [string, number][] {
+    return [...this.bySourcePermanent];
+  }
+
+  restore(snapshot: [string, number][]): void {
+    const sources = new Map<string, number>();
+    for (const [id, delta] of snapshot) {
+      if (typeof id !== "string" || id.length === 0 || !Number.isFinite(delta) || sources.has(id)) {
+        throw new Error("Invalid deletion budget snapshot");
+      }
+      sources.set(id, delta);
+    }
+    this.clear();
+    for (const [id, delta] of sources) {
+      this.bySourcePermanent.set(id, delta);
+    }
+  }
+
   add(sourcePermanentId: string, delta: number): void {
     this.bySourcePermanent.set(sourcePermanentId, (this.bySourcePermanent.get(sourcePermanentId) ?? 0) + delta);
   }

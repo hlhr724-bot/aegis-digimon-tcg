@@ -556,3 +556,33 @@ describe("presentedSeats live projection", () => {
     expect(result.shownOpponent.trash).toHaveLength(0);
   });
 });
+
+/**
+ * The reported white screen ("GameScreen-27dEPKEy.js: Cannot read properties of undefined
+ * (reading 'length')" at `shownViewer.trash`): a seat arrives without a trash list, and the
+ * board reads `.length` on it. The presentation hands the board seats it can always read.
+ */
+it("gives the board a trash list when the seat arrived without one", () => {
+  const bare = (seat: 0 | 1) =>
+    ({ seat, battleArea: [], hand: [], handCount: 0, deckCount: 30 }) as unknown as PlayerState;
+  const shownState = { stateVersion: 3, players: [bare(0), bare(1)] } as unknown as GameState;
+
+  const result = presentedSeats({
+    shownState,
+    viewer: bare(0),
+    opponent: bare(1),
+    viewerSeat: 0,
+    heldPhaseState: undefined,
+    heldBlowState: undefined,
+    heldSecurityEffectState: undefined,
+    heldDrawState: undefined,
+    heldBreedingState: undefined,
+    heldDeletions: new Map(),
+    heldTrashArrivals: new Map(),
+    optimisticPlayedInstanceId: undefined,
+  });
+
+  expect(result.shownViewer.trash).toEqual([]);
+  expect(result.shownOpponent.trash).toEqual([]);
+  expect(result.breedingViewer.trash).toEqual([]);
+});

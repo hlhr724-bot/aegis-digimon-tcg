@@ -102,7 +102,14 @@ export function enqueueSecurityDestructions({
         replace:
           index === 0 &&
           pendingDestructionsRef.current === 0 &&
-          !queue.hasPendingStep((step) => step.track === CueTrack.CenterStage && step.id.startsWith("zone-change-")),
+          !queue.hasPendingStep(
+            (step) =>
+              step.track === CueTrack.CenterStage &&
+              (step.id.startsWith("zone-change-") ||
+                step.id.startsWith("security-clash-outcome-") ||
+                step.id.startsWith("security-presented-") ||
+                step.id.startsWith("security-notices-late-")),
+          ),
         causingEffectGate,
       }),
     );

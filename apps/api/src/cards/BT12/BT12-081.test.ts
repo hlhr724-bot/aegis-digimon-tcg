@@ -52,7 +52,7 @@ describe("BT12-081 Astamon", () => {
     expect(s.perm("astamon").topCard?.cardId).toBe("BT12-057");
   });
 
-  it("does not resolve Quartzmon after the optional Save play branch acts", async () => {
+  it("does not resolve Quartzmon when the Save play option is chosen instead", async () => {
     const s = setupEngine(
       {
         0: {
@@ -63,7 +63,7 @@ describe("BT12-081 Astamon", () => {
           hand: ["BT12-057"],
         },
       },
-      { autoAcceptOptional: true, autoSelectCards: true },
+      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true },
     );
     await advance(s.engine).fire(EffectTiming.WhenDigivolving, s.perm("astamon"));
     await settle(() => s.state.pendingDecision === undefined);

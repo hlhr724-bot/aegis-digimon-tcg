@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 5,
           add: [
             {
+              effectTextPart: "Add 1 [Menoa Bellucci]",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 Digimon card with [Eosmon] in its name among them to your hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],

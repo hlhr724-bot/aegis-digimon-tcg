@@ -1,3 +1,4 @@
+import { GameMode } from "@aegis/shared/manual/GameMode";
 // Test-only entry: production lobby with reproducible legal and incompatible decks.
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -41,6 +42,7 @@ const sakuyamon: DeckListing = {
 
 function FormatLobby() {
   const [activeDeckId, setActiveDeckId] = useState(eosmon.id);
+  const [gameMode, setGameMode] = useState<GameMode>(GameMode.AUTOMATIC.value);
   const [request, setRequest] = useState("");
   const [timerOptions, setTimerOptions] = useState(() => ({
     matchTimer: true,
@@ -57,6 +59,8 @@ function FormatLobby() {
         onSelectDeck={setActiveDeckId}
         onCopyDeck={() => {}}
         onNav={() => {}}
+        gameMode={gameMode}
+        onGameModeChange={setGameMode}
         timerOptions={timerOptions}
         onTimerOptionsChange={setTimerOptions}
         bestOf={bestOf}

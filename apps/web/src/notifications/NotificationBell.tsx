@@ -1,9 +1,8 @@
-import { relativeTime } from "@/i18n/relativeTime";
 import type { AccountNotification } from "@aegis/shared/feedback/types";
 import { useEffect, useId, useRef, useState } from "react";
-import { FEEDBACK_STATUS_TONE } from "@/bugs/feedbackStatus";
-import { Badge } from "@/design/primitives";
 import { Icons } from "@/design/icons";
+import { NotificationItem } from "@/notifications/NotificationItem";
+import { openNotification } from "@/notifications/openNotification";
 import { useTranslation } from "@/i18n/useTranslation";
 import type { NotificationInbox } from "@/notifications/useNotificationInbox";
 import "@/notifications/notificationBell.css";
@@ -13,10 +12,12 @@ const BADGE_CAP = 9;
 export function NotificationBell({
   inbox,
   onOpenFeedback,
+  onViewAll,
 }: {
   inbox: NotificationInbox;
   /** Opens the reporter's own feedback page, focused on one report when given. */
   onOpenFeedback: (feedbackId?: number) => void;
+  onViewAll: () => void;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -49,12 +50,7 @@ export function NotificationBell({
   const select = (notification: AccountNotification) => {
     void inbox.markRead([notification.id]);
     setOpen(false);
-    if (notification.kind === "playtest_study") {
-      if (notification.payload.closesAt <= Date.now()) return;
-      window.open(notification.payload.link, "_blank", "noopener");
-      return;
-    }
-    onOpenFeedback(notification.payload.feedbackId);
+    openNotification({ notification, onOpenFeedback });
   };
 
   return (
@@ -119,64 +115,15 @@ export function NotificationBell({
               className="aegis-notifications__text-button"
               onClick={() => {
                 setOpen(false);
-                onOpenFeedback();
+                onViewAll();
               }}
             >
-              {t("notifications.viewAllFeedback")}
+              {t("notifications.viewAll")}
               <Icons.ArrowRight size={14} />
             </button>
           </footer>
         </section>
       ) : null}
     </div>
-  );
-}
-
-function NotificationItem({ notification, onSelect }: { notification: AccountNotification; onSelect: () => void }) {
-  const { t, locale } = useTranslation();
-  const unread = notification.readAt === null;
-  const when = (
-    <time dateTime={new Date(notification.createdAt).toISOString()}>
-      {relativeTime({ at: notification.createdAt, locale })}
-    </time>
-  );
-  if (notification.kind === "playtest_study") {
-    const { payload } = notification;
-    return (
-      <button className="aegis-notifications__item" data-unread={unread || undefined} onClick={onSelect}>
-        <span className="aegis-notifications__dot" aria-hidden="true" />
-        <span className="aegis-notifications__copy">
-          <span className="aegis-notifications__headline">
-            {unread ? <span className="aegis-sr-only">{t("notifications.unread")} </span> : null}
-            {t(payload.closesAt <= Date.now() ? "notifications.playtest.closed" : "notifications.playtest.invite", {
-              title: payload.title,
-            })}
-          </span>
-          <span className="aegis-notifications__excerpt">{payload.blurb}</span>
-          {when}
-        </span>
-        <Badge tone="primary">{t("notifications.playtest.badge")}</Badge>
-      </button>
-    );
-  }
-  const { payload } = notification;
-  return (
-    <button className="aegis-notifications__item" data-unread={unread || undefined} onClick={onSelect}>
-      <span className="aegis-notifications__dot" aria-hidden="true" />
-      <span className="aegis-notifications__copy">
-        <span className="aegis-notifications__headline">
-          {unread ? <span className="aegis-sr-only">{t("notifications.unread")} </span> : null}
-          {payload.bugConfirmed && payload.previousStatus === payload.status
-            ? t("notifications.feedback.confirmed", { summary: payload.summary })
-            : t(`notifications.feedback.${payload.status}`, { summary: payload.summary })}
-        </span>
-        {payload.replyExcerpt ? <span className="aegis-notifications__excerpt">{payload.replyExcerpt}</span> : null}
-        {payload.bugConfirmed ? (
-          <span className="aegis-notifications__bonus">{t("notifications.bugConfirmedPoint")}</span>
-        ) : null}
-        {when}
-      </span>
-      <Badge tone={FEEDBACK_STATUS_TONE[payload.status]}>{t(`feedback.status.${payload.status}`)}</Badge>
-    </button>
   );
 }

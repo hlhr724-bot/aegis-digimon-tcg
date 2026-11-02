@@ -21,7 +21,7 @@ let harness: Harness;
 
 async function cookieFor({ accounts, name, isAdmin }: { accounts: AccountStore; name: string; isAdmin: boolean }) {
   const account = await accounts.accountForIdentity("discord", name, name);
-  if (isAdmin) await accounts.pool.query("UPDATE accounts SET is_admin=true WHERE id=$1", [account.id]);
+  if (isAdmin) await accounts.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [account.id]);
   return `aegis_session=${(await accounts.issueSession(account)).id}`;
 }
 

@@ -71,6 +71,7 @@ describe("BT24-003 Tsunomon", () => {
       useAlternateCost: true,
       reduceCost: 1,
       optional: true,
+      preserveOncePerTurnOnDecline: true,
       target: { filter: { isSelfRef: true } },
     });
   });

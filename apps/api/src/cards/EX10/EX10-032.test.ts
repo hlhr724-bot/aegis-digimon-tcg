@@ -158,16 +158,7 @@ describe("EX10-032 Proganomon", () => {
     );
     opponentHost.state.memory = 3;
     await opponentHost.ready();
-    const entries = JSON.parse(opponentHost.inst("proganomon").activatableEffectsJson || "[]") as Array<{
-      effectKey: string;
-    }>;
-    expect(entries).toHaveLength(1);
-    opponentHost.engine.applyIntent(0, {
-      type: "activateEffect",
-      sourceInstanceId: opponentHost.inst("proganomon").instanceId,
-      effectKey: entries[0]!.effectKey,
-    });
-    await settle(() => opponentHost.state.pendingDecision === undefined);
+    expect(JSON.parse(opponentHost.inst("proganomon").activatableEffectsJson || "[]")).toHaveLength(0);
     expect(opponentHost.perm("theirSuna").topCard.cardId).toBe("BT21-055");
     expect(opponentHost.perm("theirSuna").stack).toHaveLength(0);
     expect(opponentHost.state.players[1]!.battleArea).toHaveLength(1);

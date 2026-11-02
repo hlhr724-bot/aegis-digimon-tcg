@@ -1,3 +1,5 @@
+import type { RuntimeCallbackRegistry } from "#api/engine/snapshot/RuntimeCallbackRegistry";
+import type { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 import type { ModifierLedger } from "../modifiers.js";
 import type { CollectedEffect } from "../collect.js";
 import type { ContinuousEffectLedger } from "../continuous.js";
@@ -23,6 +25,7 @@ import type {
  */
 
 export interface PrimitivesEngine {
+  readonly runtimeCallbacks?: RuntimeCallbackRegistry;
   /** Replace a used DUAL Option's pending trash with its optional free digivolution. */
   artsDigivolve?(
     seat: Seat,
@@ -128,7 +131,12 @@ export interface PrimitivesEngine {
   /** Complete a rule check before an effect-driven digivolution's own timing window. */
   processRulesBeforeWhenDigivolving?: () => Promise<void>;
   /** Resolve the normal When Digivolving window for a public digivolution-like entry. */
-  fireWhenDigivolving?: (seat: Seat, permanent: Permanent, previousLevel?: number) => Promise<void>;
+  fireWhenDigivolving?: (
+    seat: Seat,
+    permanent: Permanent,
+    previousLevel?: number,
+    isDnaDigivolve?: boolean,
+  ) => Promise<void>;
   /** Run the would-digivolve and before-cost windows for effect-driven App Fusion. */
   prepareAppFusion?: (seat: Seat, target: Permanent, result: CardInstance, into: CardDefinition) => Promise<void>;
   /** Apply active ordinary-digivolution target restrictions to effect-driven App Fusion. */
@@ -147,6 +155,7 @@ export interface PrimitivesEngine {
     originZone?: ZoneRef,
     projectOnly?: boolean,
     simultaneousPlayCount?: number,
+    reservedInstanceIds?: readonly string[],
   ) => Promise<number>;
   /** Activate matching would-be-played replacements before an effect-driven DigiXros picker. */
   clearPreparedDigiXrosPlay?(instanceId: string): void;
@@ -232,6 +241,7 @@ export interface PrimitivesEngine {
     instanceId: string,
     ownerSeat: Seat,
     opts?: {
+      byEffect?: boolean;
       isDnaDigivolve?: boolean;
       digivolvedFromZone?: import("@aegis/shared").ZoneRef;
       baseWasDigimon?: boolean;
@@ -420,12 +430,14 @@ export interface SelectionPort {
       timing?: string;
       effectText?: string;
       effectTextPart?: string;
+      effectTextEmphasis?: string;
       sourceInstanceId?: string;
       sourcePermanentId?: string;
       isInherited?: boolean;
-      selectionContext?: "attackTarget" | "partitionActivation";
+      selectionContext?: "attackTarget" | "partitionActivation" | "materialSaveActivation";
       /** Preview the full group while a single candidate represents activating the keyword. */
       visibleInstanceIds?: string[];
+      selectionGoal?: DecisionSelectionGoal;
     },
   ): Promise<string[]>;
 }

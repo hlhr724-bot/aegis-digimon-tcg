@@ -36,9 +36,9 @@ function distinctPermanentButtons(container: HTMLElement, name: RegExp) {
 
 const BLUE_TARGET_DECK = replaceCopies(BLUE_DECK, "BT1-096", "BT2-095", 4);
 const BLUE_TRAINING_TARGET_DECK = replaceCopies(BLUE_DECK, "BT1-096", "BT26-023", 2);
-// Reorder only the fixture's existing Red deck instances so seed 614 deals all
-// four legal BT1-009 copies to the opponent's opening hand. This keeps the card
-// multiset unchanged while making the four-target maximum deterministic.
+// Reorder only the fixture's existing Red deck instances. Seed 5684466 then deals three
+// legal BT1-009 copies to the opponent's opening hand and the fourth as its first draw.
+// This keeps the card multiset unchanged while making the four-target maximum deterministic.
 const redTargetMainDeck = [...RED_DECK.mainDeck];
 [redTargetMainDeck[16], redTargetMainDeck[0]] = [redTargetMainDeck[0]!, redTargetMainDeck[16]!];
 [redTargetMainDeck[40], redTargetMainDeck[2]] = [redTargetMainDeck[2]!, redTargetMainDeck[40]!];
@@ -71,7 +71,7 @@ scenario("complex-decisions", () => {
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: BLUE_TARGET_DECK,
-      seed: 614,
+      seed: 5684466,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Blue" startMode="casual" onExit={() => {}} />);
@@ -87,7 +87,7 @@ scenario("complex-decisions", () => {
     opponent.ready();
     fireEvent.click(await screen.findByRole("button", { name: /keep hand/i }, { timeout: 10_000 }));
 
-    // Seat 0's seed-614 opening has a blue Digimon and two Rivers of Power. Play the
+    // Seat 0's seed-5684466 opening has a blue Digimon and two Rivers of Power. Play the
     // Digimon through the UI so the real blue Option color requirement is met.
     await endBreedingStep();
     const [blueDigimon] = within(screen.getByTestId("hand")).getAllByRole("img", { name: /armadillomon/i });
@@ -103,7 +103,7 @@ scenario("complex-decisions", () => {
       },
     );
 
-    // The opponent's seed-614 opening has two real BT1-009 Monodramon cards.
+    // The opponent's seed-5684466 opening has real BT1-009 Monodramon cards.
     // Playing them with the headless client uses ordinary room intents.
     await vi.waitFor(() => expect(opponent.room.state.turnSeat).toBe(1), { timeout: 10_000 });
     if (opponent.room.state.phase === "Breeding") opponent.endPhase();
@@ -217,12 +217,13 @@ scenario("complex-decisions", () => {
     expect(fourthCandidate).toBeDefined();
     tap(fourthCandidate!);
     expect(within(maximumPrompt).getByText(/^3 selected of 0–3$/i)).toBeTruthy();
-    // The field picker keeps the newest three when a fourth eligible target is
-    // clicked, replacing the oldest selection. This proves the cap while keeping
-    // the exact identities of the final selected set explicit.
-    const selectedIds = [...initialSelectedIds.slice(1), fourthCandidateId];
-    const survivorId = initialSelectedIds[0];
-    fireEvent.click(within(maximumPrompt).getByRole("button", { name: /confirm targets/i }));
+    // At the cap the field picker keeps the earlier three and ignores the fourth
+    // eligible target, so the fourth Monodramon is the one left on the field.
+    const selectedIds = initialSelectedIds;
+    const survivorId = fourthCandidateId;
+    const confirmMaximum = within(maximumPrompt).getByRole("button", { name: /confirm targets/i });
+    await vi.waitFor(() => expect(confirmMaximum.hasAttribute("disabled")).toBe(false), { timeout: 10_000 });
+    fireEvent.click(confirmMaximum);
 
     await vi.waitFor(
       () => {
@@ -258,7 +259,7 @@ scenario("complex-decisions", () => {
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: RED_WARGROWLMON_DECK,
-      seed: 3772,
+      seed: 19246,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Red" startMode="casual" onExit={() => {}} />);
@@ -285,7 +286,7 @@ scenario("complex-decisions", () => {
     opponent.ready();
     fireEvent.click(await screen.findByRole("button", { name: /keep hand/i }, { timeout: 10_000 }));
 
-    // Seed 3772 gives the protagonist BT1-016 and WarGrowlmon. Playing the printed
+    // Seed 19246 gives the protagonist BT1-016 and WarGrowlmon. Playing the printed
     // WarGrowlmon through the action bar creates the real When Attacking source.
     await endBreedingStep();
     const warGrowlmon = await screen.findByRole("img", { name: /wargrowlmon/i }, { timeout: 10_000 });

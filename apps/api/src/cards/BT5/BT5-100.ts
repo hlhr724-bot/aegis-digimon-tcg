@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Reveal 5 cards from the top of your deck. Add 1 Digimon card with ＜Digisorption＞ among them to your hand. Place the remaining cards at the bottom of your deck in any order.",
           kind: "RevealAdd",
           revealCount: 5,
           add: [

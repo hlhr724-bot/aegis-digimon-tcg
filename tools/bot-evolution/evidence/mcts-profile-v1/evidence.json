@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Diagnostic CPU profile of one real-engine bounded material-deck MCTS workload",
+  "runtimeRoot": "/dev/shm/aegis-fast-43ea0f94c4",
+  "sourceCommit": "43ea0f94c476eb272361877b2988b3ffb70eceee",
+  "relatedSourceEvidence": "../mcts-score-v1/evidence.json",
+  "profile": {
+    "path": "material-prefix-32.cpuprofile.gz",
+    "sha256": "c972cb8ff74da76639710a387e676dec0fe206907fecfdf53d58786a8ca527e7",
+    "uncompressedSha256": "1639dd32507d0078fbaed4245aca26896997ab42c065dfeee8ddbdf09e7c1444",
+    "uncompressedBytes": 2641128
+  },
+  "result": {
+    "path": "result.json",
+    "sha256": "b5419d82230f1b9542c6837b0ea952d41697a9cf1f879624ab3fa7fdd2251a7e"
+  },
+  "sampling": {
+    "sampleCount": 14820,
+    "sampledMs": 15426.796,
+    "topSelfFrames": [
+      {
+        "function": "get",
+        "url": "file:///mnt/wslg/distro/home/vinicius/aegis-bot-lab/checkouts/gepa-fast-43ea0f94c4/node_modules/.pnpm/@colyseus+schema@5.0.34_patch_hash=a1b3d6d5a61f63e49b979258dc8856db8baf7d9a30d88c9901eb2474a4e4e7a9_typescript@7.0.2/node_modules/@colyseus/schema/build/index.mjs",
+        "line": 7395,
+        "selfMs": 1212.914,
+        "inclusiveMs": 1212.914
+      },
+      {
+        "function": "get",
+        "url": "file:///mnt/wslg/distro/home/vinicius/aegis-bot-lab/checkouts/gepa-fast-43ea0f94c4/node_modules/.pnpm/@colyseus+schema@5.0.34_patch_hash=a1b3d6d5a61f63e49b979258dc8856db8baf7d9a30d88c9901eb2474a4e4e7a9_typescript@7.0.2/node_modules/@colyseus/schema/build/index.mjs",
+        "line": 4326,
+        "selfMs": 969.932,
+        "inclusiveMs": 988.236
+      },
+      {
+        "function": "build",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/builders.js",
+        "line": 30,
+        "selfMs": 601.463,
+        "inclusiveMs": 601.463
+      },
+      {
+        "function": "",
+        "url": "file:///mnt/wslg/distro/home/vinicius/aegis-bot-lab/checkouts/gepa-fast-43ea0f94c4/node_modules/.pnpm/@colyseus+schema@5.0.34_patch_hash=a1b3d6d5a61f63e49b979258dc8856db8baf7d9a30d88c9901eb2474a4e4e7a9_typescript@7.0.2/node_modules/@colyseus/schema/build/index.mjs",
+        "line": 5124,
+        "selfMs": 505.415,
+        "inclusiveMs": 698.31
+      },
+      {
+        "function": "permanentMatchesFilter",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/interpreter/matching/permanent.js",
+        "line": 232,
+        "selfMs": 391.617,
+        "inclusiveMs": 896.156
+      },
+      {
+        "function": "permanentHolds",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/context.js",
+        "line": 18,
+        "selfMs": 374.114,
+        "inclusiveMs": 1341.886
+      },
+      {
+        "function": "findPermanent",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/context.js",
+        "line": 41,
+        "selfMs": 361.741,
+        "inclusiveMs": 2035.649
+      },
+      {
+        "function": "(garbage collector)",
+        "url": "",
+        "line": 0,
+        "selfMs": 349.099,
+        "inclusiveMs": 349.099
+      },
+      {
+        "function": "compileSourceTextModule",
+        "url": "node:internal/modules/esm/utils",
+        "line": 338,
+        "selfMs": 282.581,
+        "inclusiveMs": 297.737
+      },
+      {
+        "function": "syncHandAffordances",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/gameEngine/projections.js",
+        "line": 503,
+        "selfMs": 265.023,
+        "inclusiveMs": 2474.68
+      },
+      {
+        "function": "derivePass",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/gameEngine/continuousPass.js",
+        "line": 127,
+        "selfMs": 250.674,
+        "inclusiveMs": 5988.805
+      },
+      {
+        "function": "runMicrotasks",
+        "url": "",
+        "line": 0,
+        "selfMs": 227.549,
+        "inclusiveMs": 14993.738
+      },
+      {
+        "function": "effectiveStaticTraits",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/packages/shared/dist/cards/effectiveTraits.js",
+        "line": 29,
+        "selfMs": 210.729,
+        "inclusiveMs": 387.864
+      },
+      {
+        "function": "runActionInner",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/interpreter/actions/runAction.js",
+        "line": 394,
+        "selfMs": 208.736,
+        "inclusiveMs": 1345.896
+      },
+      {
+        "function": "runAction",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/interpreter/actions/runAction.js",
+        "line": 186,
+        "selfMs": 182.62,
+        "inclusiveMs": 1481.544
+      },
+      {
+        "function": "countMatching",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/interpreter/scaling.js",
+        "line": 51,
+        "selfMs": 168.99,
+        "inclusiveMs": 1018.495
+      },
+      {
+        "function": "chooseFastHeuristic",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/bot/evolution/chooseFastHeuristic.js",
+        "line": 5,
+        "selfMs": 140.945,
+        "inclusiveMs": 180.081
+      },
+      {
+        "function": "scanStaticNameAliases",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/packages/shared/dist/cards/effectiveNames.js",
+        "line": 47,
+        "selfMs": 137.002,
+        "inclusiveMs": 218.35
+      },
+      {
+        "function": "validateDigivolve",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/actions/digivolve.js",
+        "line": 162,
+        "selfMs": 132.953,
+        "inclusiveMs": 1521.823
+      },
+      {
+        "function": "effectiveTraits",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/continuous/effective.js",
+        "line": 70,
+        "selfMs": 126.839,
+        "inclusiveMs": 156.141
+      },
+      {
+        "function": "parsedStaticNameAliases",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/packages/shared/dist/cards/effectiveNames.js",
+        "line": 38,
+        "selfMs": 124.425,
+        "inclusiveMs": 342.775
+      },
+      {
+        "function": "effectsForTiming",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/interpreter/registration/module.js",
+        "line": 223,
+        "selfMs": 123.178,
+        "inclusiveMs": 985.96
+      },
+      {
+        "function": "ruleTraitsOf",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/packages/shared/dist/cards/effectiveTraits.js",
+        "line": 21,
+        "selfMs": 121.358,
+        "inclusiveMs": 177.135
+      },
+      {
+        "function": "find",
+        "url": "file:///mnt/wslg/distro/home/vinicius/aegis-bot-lab/checkouts/gepa-fast-43ea0f94c4/node_modules/.pnpm/@colyseus+schema@5.0.34_patch_hash=a1b3d6d5a61f63e49b979258dc8856db8baf7d9a30d88c9901eb2474a4e4e7a9_typescript@7.0.2/node_modules/@colyseus/schema/build/index.mjs",
+        "line": 5072,
+        "selfMs": 104.062,
+        "inclusiveMs": 254.041
+      },
+      {
+        "function": "evaluateCondition",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/interpreter/conditions.js",
+        "line": 35,
+        "selfMs": 100.032,
+        "inclusiveMs": 1371.078
+      },
+      {
+        "function": "publishContinuousState",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/gameEngine/continuousPass.js",
+        "line": 101,
+        "selfMs": 98.091,
+        "inclusiveMs": 3727.019
+      },
+      {
+        "function": "effectiveDigivolutionBase",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/continuous/effective.js",
+        "line": 36,
+        "selfMs": 91.407,
+        "inclusiveMs": 279.963
+      },
+      {
+        "function": "traitKey",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/packages/shared/dist/cards/effectiveTraits.js",
+        "line": 7,
+        "selfMs": 89.428,
+        "inclusiveMs": 133.916
+      },
+      {
+        "function": "permanentOf",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/context.js",
+        "line": 64,
+        "selfMs": 88.696,
+        "inclusiveMs": 1453.315
+      },
+      {
+        "function": "runEffect",
+        "url": "file:///dev/shm/aegis-fast-43ea0f94c4/apps/api/dist/engine/effects/interpreter/effect.js",
+        "line": 622,
+        "selfMs": 86.49,
+        "inclusiveMs": 1556.033
+      }
+    ]
+  },
+  "analysisMethod": "Sum each sample timeDelta at its leaf for self time, and once per distinct frame on its recorded parent path for inclusive time.",
+  "limitations": [
+    "A single CPU-profiled execution including imports and startup; not an AB/BA speed measurement.",
+    "Inclusive frame durations overlap and cannot be added or interpreted as promised savings.",
+    "The result records exact 32 completed rollouts and zero invalid rollouts but is not a strength certificate.",
+    "No optimization or further acceleration is demonstrated by this profile."
+  ],
+  "nextMeasuredCandidate": "Repeated live permanent-location scans inside source lookups and continuous projections; any cache requires residency and mutation validation before acceptance."
+}

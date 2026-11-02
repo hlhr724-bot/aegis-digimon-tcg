@@ -1,7 +1,10 @@
+import { PermanentDpDeltaHint } from "@/game/piece/PermanentDpDeltaHint";
 import { CardMini } from "../design/cards";
 import type { RestrictionBadge } from "../game/fieldBadges";
 import { PermanentRestrictionBadges } from "../game/piece/PermanentRestrictionBadges";
-import "./badgeLayoutLab.css";
+import "@/game/piece/fieldBadges.css";
+import "@/game/game.css";
+import "@/dev/badgeLayoutLab.css";
 
 const protection: RestrictionBadge = {
   kind: "immuneToOpponentDigimonEffects",
@@ -54,7 +57,7 @@ export function BadgeLayoutLab() {
               <div className="badge-lab__security" aria-label="Opponent security clearance reference">
                 5
               </div>
-              <div className="badge-lab__permanent" data-suspended={item.suspended || undefined}>
+              <div className="badge-lab__permanent game-permanent" data-suspended={item.suspended || undefined}>
                 <CardMini
                   cardId="BT15-047"
                   width={116}
@@ -62,12 +65,14 @@ export function BadgeLayoutLab() {
                   info
                   zoomOnHover={false}
                   dp={SHOWN_DP}
-                />
-                <PermanentRestrictionBadges
-                  restrictions={item.restrictions}
                   dpDelta={item.dpDelta}
-                  baseDp={SHOWN_DP - (item.dpDelta ?? 0)}
+                  renderDpDelta={(node) => (
+                    <PermanentDpDeltaHint delta={item.dpDelta ?? 0} baseDp={SHOWN_DP - (item.dpDelta ?? 0)}>
+                      {node}
+                    </PermanentDpDeltaHint>
+                  )}
                 />
+                <PermanentRestrictionBadges restrictions={item.restrictions} />
               </div>
               <div className="badge-lab__memory" aria-label="Memory clearance reference">
                 {[1, 0, 1, 2, 3].map((value, index) => (

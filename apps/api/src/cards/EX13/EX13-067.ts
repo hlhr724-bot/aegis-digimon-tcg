@@ -12,6 +12,8 @@ const oneOrFewerOwnDigimon = {
 
 const playNamed = (name: string, triggerName: string): Action => ({
   kind: "PlayWithoutCost",
+  effectTextPart:
+    "you may play 1 [Gabumon] if that Digimon has [Greymon] in its name or 1 [Agumon] if it has [Garurumon] in its name from your hand or trash without paying the cost.",
   target: {
     filter: { controller: "mine", zone: ["hand", "trash"], nameOrTrait: [{ tokens: [name], match: "nameExact" }] },
     count: 1,
@@ -27,6 +29,7 @@ const playNamed = (name: string, triggerName: string): Action => ({
 
 const digivolutionWatcher: Action = {
   kind: "SubTrigger",
+  effectTextPart: "by suspending this Tamer",
   event: "whenOneOfYoursDigivolves",
   sourceFilter: { controller: "mine", kind: ["Digimon"] },
   condition: oneOrFewerOwnDigimon,

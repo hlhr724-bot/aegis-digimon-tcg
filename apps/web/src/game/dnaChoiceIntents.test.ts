@@ -3,6 +3,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { intents } from "../net/intents";
 import type { AegisRoom } from "../net/client";
 import { matchIntents } from "./screen/matchIntents";
+import { CardConfirmationMode } from "@/game/cardConfirmation/CardConfirmationMode";
 import { playChoiceAnswers } from "./screen/playChoiceAnswers";
 import type { HandEntry } from "./piece";
 
@@ -67,7 +68,7 @@ it("#5166: disabling action confirmations still opens material choice before sen
     events: [],
     digivolveRoutesOf: () => [],
     mainActionBlocked: false,
-    actionConfirmationsEnabled: false,
+    cardConfirmationMode: CardConfirmationMode.NEVER.value,
     playGameCue: vi.fn<() => void>(),
     lastPlayAttemptRef: { current: undefined },
     playAttemptEventSeqRef: { current: -1 },
@@ -116,5 +117,45 @@ it.each(["valid", "gone", "illegal", "unspecified"])(
     expect(vi.mocked(intents.dnaDigivolve).mock.calls).toEqual(
       kind === "valid" ? [[room, ["yellow", "purple-two"], entry.instanceId]] : [],
     );
+  },
+);
+
+it.each(["playable", "unplayable", "blocked", "missing"])(
+  "normal play from a DNA prompt rechecks the live hand (%s)",
+  (state) => {
+    const { viewer, entry, room, overlays, selection } = fixture();
+    entry.playableFromHand = state !== "unplayable";
+    const dispatchPlayCard = vi.fn<() => void>();
+    const answers = playChoiceAnswers({
+      room,
+      viewer,
+      handEntries: state === "missing" ? [] : [entry],
+      mainActionBlocked: state === "blocked",
+      appFusionAvailable: () => false,
+      dualPlay: null,
+      actionConfirm: {
+        kind: "dna",
+        instanceId: entry.instanceId,
+        cardId: entry.cardId,
+        materialPermanentIds: ["yellow", "purple-one"],
+      },
+      appFusionChoice: null,
+      appFusionRoutes: undefined,
+      evoCostChoice: null,
+      assemblyPick: null,
+      digiXrosPick: null,
+      overlays,
+      setAppFusionChoice: vi.fn<() => void>(),
+      clearSel: selection.clearSel,
+      playGameCue: vi.fn<() => void>(),
+      lastPlayAttemptRef: { current: undefined },
+      dispatchPlayCard,
+      digivolveWithChoice: vi.fn<() => void>(),
+      findPermanent: () => undefined,
+    });
+    answers.onPlayNormally();
+    expect(dispatchPlayCard.mock.calls).toEqual(state === "playable" ? [[room, entry.instanceId]] : []);
+    expect(intents.dnaDigivolve).not.toHaveBeenCalled();
+    expect(selection.clearSel).toHaveBeenCalledTimes(state === "blocked" ? 0 : 1);
   },
 );

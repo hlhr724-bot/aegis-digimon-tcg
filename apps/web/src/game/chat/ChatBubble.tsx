@@ -1,7 +1,10 @@
 import { useEffect, useState, type CSSProperties, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import type { ChatMessage } from "@aegis/shared";
+import { getCardDefinition } from "@aegis/shared/cards/registry";
 import { useTranslation } from "../../i18n";
+import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
+import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { EmoteIcon } from "./EmoteIcon";
 import type { ChatEntry } from "./useMatchChat";
 import "./matchChat.css";
@@ -19,7 +22,15 @@ function visibleMs(message: ChatMessage): number {
 
 export function useChatMessageText(): (message: ChatMessage) => string {
   const { t } = useTranslation();
-  return (message) => (message.kind === "emote" ? t(`chat.emote.${message.emote}`) : message.text);
+  const translations = useCardTranslations();
+  return (message) => {
+    if (message.kind === "emote") return t(`chat.emote.${message.emote}`);
+    if (message.kind === "botLine") {
+      const name = message.cardId ? getCardDefinition(message.cardId)?.nameEn : undefined;
+      return t(`bot.line.${message.line}`, { card: name ? getTranslatedCardName({ name, translations }) : "" });
+    }
+    return message.text;
+  };
 }
 
 /*
@@ -92,7 +103,7 @@ export function ChatBubble({
               {entry.message.kind === "emote" ? (
                 <EmoteIcon emote={entry.message.emote} size={24} />
               ) : (
-                <span>{entry.message.text}</span>
+                <span>{messageText(entry.message)}</span>
               )}
             </p>,
             document.body,

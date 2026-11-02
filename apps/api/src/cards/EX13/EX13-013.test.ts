@@ -459,6 +459,39 @@ describe("EX13-013 WarGrowlmon", () => {
     expect(s.state.pendingDecision).toBeUndefined();
   });
 
+  it.each([
+    { tamer: "EX2-056", shouldPlay: false },
+    { tamer: GUILMON_TAMER, shouldPlay: true },
+  ])("checks Guilmon text on $tamer after being deleted by a security battle", async ({ tamer, shouldPlay }) => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: CARD_ID, as: "war", under: ["EX13-007", "EX13-010"] }],
+          hand: [{ card: tamer, as: "takato" }],
+          trash: [GUILMON_DIGIMON],
+          deck: [LV3_RED],
+        },
+        1: { security: ["BT13-056"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoOrderTriggers: true },
+    );
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("war").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle();
+    expect(s.state.players[0]!.trash.some((card) => card.cardId === CARD_ID)).toBe(true);
+    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.topCard.cardId)).toEqual(
+      shouldPlay ? [tamer] : [],
+    );
+    expect(s.state.players[0]!.hand.map((card) => card.cardId)).toEqual(shouldPlay ? [] : [tamer]);
+    expect(s.state.pendingDecision).toBeUndefined();
+  });
+
   it("plays one [Guilmon] Tamer from the trash when it is deleted defending on the opponent's turn", async () => {
     const s = setupEngine(
       {

@@ -4,7 +4,7 @@ import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import "../EX2/EX2-007.js";
 import "./BT4-031.js";
 
-describe("BT4-031 MarinChimairamon", () => {
+describe("BT4-031 MarineChimairamon", () => {
   it("returns another own Digimon as cost and an opposing Digimon without sources", async () => {
     const s = setupEngine(
       {
@@ -87,7 +87,7 @@ describe("BT4-031 MarinChimairamon", () => {
   });
 });
 
-describe("BT4-031 MarinChimairamon — KB Q&A rulings", () => {
+describe("BT4-031 MarineChimairamon — KB Q&A rulings", () => {
   async function playReturningOwn(ownCard: string) {
     const s = setupEngine(
       {

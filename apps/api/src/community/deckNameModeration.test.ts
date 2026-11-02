@@ -3,12 +3,20 @@ import { describe, expect, it } from "vitest";
 import { reviewDeckName } from "./deckNameModeration.js";
 
 describe("reviewDeckName", () => {
-  it.each(["fuck combo", "Sh1t Deck", "Caralho Rush", "PORRA de deck", "Puta Aggro", "merdamon", "fdp burn"])(
-    "refuses %s",
-    (name) => {
-      expect(reviewDeckName(name).allowed).toBe(false);
-    },
-  );
+  it.each([
+    "fuck combo",
+    "Sh1t Deck",
+    "Caralho Rush",
+    "PORRA de deck",
+    "Puta Aggro",
+    "merdamon",
+    "fdp burn",
+    "Muerte a la Royal Base",
+    "cazzo deck",
+    "死亡",
+  ])("refuses %s", (name) => {
+    expect(reviewDeckName(name).allowed).toBe(false);
+  });
 
   it.each([
     "Jesmon Blitz",

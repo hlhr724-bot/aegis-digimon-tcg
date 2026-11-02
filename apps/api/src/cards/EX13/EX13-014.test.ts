@@ -410,6 +410,34 @@ describe("EX13-014 Jesmon", () => {
     expect(s.state.pendingDecision).toBeUndefined();
   });
 
+  it.each(["EX13-065", "EX13-066"])("uses the DUAL Option %s after digivolving", async (optionCard) => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "EX13-012", as: "base" }],
+          hand: [
+            { card: CARD_ID, as: "jesmon" },
+            { card: optionCard, as: "option" },
+          ],
+          deck: ["BT1-009", "BT1-010", "BT1-011"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true },
+    );
+    s.state.memory = 5;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("jesmon").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.trash.some(({ instanceId }) => instanceId === s.inst("option").instanceId));
+    await settle(() => s.state.pendingDecision === undefined);
+    expect(s.state.memory).toBe(2);
+  });
+
   it("Q7241 removes an Option used from its OWN digivolution cards", async () => {
     const s = setupEngine(
       {

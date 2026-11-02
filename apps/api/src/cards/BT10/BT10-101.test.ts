@@ -4,7 +4,7 @@ import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import "./BT10-101.js";
 
-describe("BT10-101 LxF3nkhē Adistakto", () => {
+describe("BT10-101 Lónkhē Adistakto", () => {
   it("at exactly 3 security, deletes one Digimon by DP and places another into security", async () => {
     const s = setupEngine(
       {
@@ -153,7 +153,7 @@ describe("BT10-101 LxF3nkhē Adistakto", () => {
   });
 });
 
-describe("BT10-101 LxF3nkhē Adistakto — KB Q&A rulings", () => {
+describe("BT10-101 Lónkhē Adistakto — KB Q&A rulings", () => {
   type Setup = ReturnType<typeof setupEngine>;
 
   async function chooseTarget(s: Setup, seat: 0 | 1, decisionIndex: number, permanentId: string) {

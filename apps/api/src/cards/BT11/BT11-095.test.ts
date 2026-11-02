@@ -18,8 +18,8 @@ describe("BT11-095 Taiki, Kiriha, & Nene", () => {
       {
         trigger: "StartOfYourMainPhase",
         actions: [
+          { kind: "Draw", amount: 1, cost: { kind: "place" }, optional: true, abortOnDecline: true },
           { kind: "GainMemory", amount: 1 },
-          { kind: "Draw", amount: 1 },
         ],
       },
       { trigger: "YourTurn", actions: [{ kind: "Replacement", event: "wouldBePlayed" }] },

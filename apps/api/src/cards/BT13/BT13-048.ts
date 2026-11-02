@@ -11,6 +11,8 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart:
+                "Add 1 Digimon card with [Beast], [Animal], or [Sovereign], other than [Sea Animal], in one of its traits",
               filter: {
                 excludeNameOrTrait: [
                   {
@@ -35,6 +37,7 @@ export const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 Digimon card with the [Royal Knight] trait among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],

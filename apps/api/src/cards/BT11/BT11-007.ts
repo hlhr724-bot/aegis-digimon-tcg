@@ -11,6 +11,7 @@ export const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 red Digimon card with [Vaccine] in its traits",
               filter: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
@@ -20,7 +21,12 @@ export const compiled: CompiledCard = {
               count: 1,
               to: "hand",
             },
-            { filter: { controllerDefault: "mine", kind: ["Tamer"], colors: ["Red"] }, count: 1, to: "hand" },
+            {
+              effectTextPart: "1 red Tamer card among them to your hand.",
+              filter: { controllerDefault: "mine", kind: ["Tamer"], colors: ["Red"] },
+              count: 1,
+              to: "hand",
+            },
           ],
           rest: "deckBottom",
         },

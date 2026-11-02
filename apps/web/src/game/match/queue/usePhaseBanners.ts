@@ -1,5 +1,7 @@
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { useLayoutEffect, useMemo, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
 import type { GameState, Seat, ServerEvent } from "@aegis/shared";
+import { Phase } from "@aegis/shared/schema/enums";
 import type { AnimationQueue, AnimationStep, AnimationStepContext } from "../../animationQueue";
 import type { SoundKind } from "../../../design/sound";
 import type { StateSnapshot } from "../../../net/presentedState";
@@ -74,7 +76,10 @@ export function releaseHandMoves({
     if ("stateVersion" in move && typeof move.stateVersion === "number" && move.stateVersion < held.stateVersion)
       continue;
     for (const instanceId of move.instanceIds) {
-      const seat = move.seat ?? heldSeats.get(instanceId) ?? liveSeats.get(instanceId);
+      const seat =
+        (move.to === "hand" ? move.seat : (move.fromSeat ?? move.seat)) ??
+        heldSeats.get(instanceId) ??
+        liveSeats.get(instanceId);
       if (seat === undefined) continue;
       const player = players[seat];
       if (!player) continue;
@@ -89,7 +94,7 @@ export function releaseHandMoves({
       } else {
         // An effect play names no origin ("various"): only a card the held hand still shows
         // left the hand. A named origin other than the hand never touches it.
-        if (move.from !== "hand" && (move.from !== "various" || !inHeldHand)) continue;
+        if (move.from !== "hand" && (move.from !== CardMovePosition.VARIOUS.value || !inHeldHand)) continue;
         if (!inHeldHand && handFullyVisible) continue;
         player.hand = player.hand.filter((card) => card.instanceId !== instanceId);
         player.handCount = Math.max(0, player.handCount - 1);
@@ -116,6 +121,7 @@ export function usePhaseBanners({
   previousDrawStateRef,
   phaseStateRef,
   state,
+  presentedStateVersion,
   setPendingPhaseBanners,
   setTurnTransition,
   setAnnouncedTurn,
@@ -154,6 +160,7 @@ export function usePhaseBanners({
   phaseStateRef: MutableRefObject<{ events: readonly ServerEvent[]; snapshots: readonly StateSnapshot[] | undefined }>;
   /** The live state, which names the cards a hand move put in the viewer's hand. */
   state: GameState | undefined;
+  presentedStateVersion: number | undefined;
   setPendingPhaseBanners: Dispatch<SetStateAction<number>>;
   setTurnTransition: Dispatch<SetStateAction<TurnTransitionCue | null>>;
   setAnnouncedTurn: Dispatch<SetStateAction<{ seat: Seat; count: number } | undefined>>;
@@ -611,4 +618,29 @@ export function usePhaseBanners({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phaseHistory]);
+
+  useLayoutEffect(() => {
+    if (unreleasedUnsuspendPhaseRef.current || !state) {
+      return;
+    }
+    const version = presentedStateVersion ?? state.stateVersion;
+    setHeldDrawState((held) => {
+      if (!held) {
+        return held;
+      }
+      const snapshot = phaseStateRef.current.snapshots
+        ?.filter(
+          (candidate) =>
+            candidate.stateVersion > held.state.stateVersion &&
+            candidate.stateVersion <= version &&
+            candidate.state.phase === Phase.Active &&
+            candidate.state.turnSeat === held.seat,
+        )
+        .at(-1);
+      if (!snapshot) {
+        return held;
+      }
+      return { seat: held.seat, state: snapshot.state };
+    });
+  });
 }

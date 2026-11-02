@@ -1,3 +1,6 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
+import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { Zone, EffectTiming, requireCardDefinition, CardInstance } from "@aegis/shared";
 import {
   applyOverflow,
@@ -54,6 +57,7 @@ export function createLinkingVerbs(pc: PrimitivesContext) {
     // Whole-permanent materials already include their attached cards; a loose
     // material inside another selected source cannot be paid independently again.
     if (new Set(movedPhysicalIds).size !== movedPhysicalIds.length) return [];
+    const origins = locateMoveOrigins({ state, instanceIds: movedPhysicalIds });
     const existingStack = [...host.stack];
     const existingIds = new Set([
       host.topCard.instanceId,
@@ -83,7 +87,15 @@ export function createLinkingVerbs(pc: PrimitivesContext) {
     }
     replaceStack(host, [...orderedCards, ...existingStack]);
     const addedIds = host.stack.filter((card) => !existingIds.has(card.instanceId)).map((card) => card.instanceId);
-    engine.emit({ kind: "cardsMoved", instanceIds: addedIds, from: "various", to: Zone.BattleArea });
+    for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: orderedCards })) {
+      engine.emit({
+        kind: "cardsMoved",
+        instanceIds: cards.map((card) => card.instanceId),
+        ...origin,
+        to: Zone.BattleArea,
+        placedUnder: { permanentId: hostId },
+      });
+    }
     await engine.recomputeContinuousEffects?.();
     await engine.fireSubTrigger?.("onAddDigivolutionCards", {
       subjectPermanentId: hostId,
@@ -224,6 +236,7 @@ export function createLinkingVerbs(pc: PrimitivesContext) {
     const permanent = access.permanentById(targetPermanentId);
     if (permanent === undefined) return [];
     const linked: CardInstance[] = [];
+    const origins = locateMoveOrigins({ state, instanceIds });
     for (const instanceId of instanceIds) {
       // Never detach the link's OWN target: no real card links a permanent onto itself, and
       // doing so would rip the recipient's own top card out from under the very `permanent`
@@ -246,14 +259,16 @@ export function createLinkingVerbs(pc: PrimitivesContext) {
       // CR 4-2-4: a linked card contributes its printed linkDp, so the DP tier must be
       // re-derived here the way digivolve does after it stacks a card.
       ledger.recomputeDP(state, permanent.permanentId);
-      engine.emit({
-        kind: "cardsMoved",
-        instanceIds: linked.map((c) => c.instanceId),
-        cardIds: linked.map((c) => c.cardId),
-        seat: permanent.controllerSeat,
-        from: "various",
-        to: "linkedCards",
-      });
+      for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: linked })) {
+        engine.emit({
+          kind: "cardsMoved",
+          instanceIds: cards.map((card) => card.instanceId),
+          cardIds: cards.map((card) => card.cardId),
+          seat: permanent.controllerSeat,
+          ...origin,
+          to: CardMovePosition.LINKED_CARDS.value,
+        });
+      }
       // Recompute after mutation so the newly linked cards can install their own
       // [When Linking] subscriptions. Publishing host and linked-card identities through ONE
       // SubTrigger dispatch makes those effects simultaneous with "this Digimon gets linked"

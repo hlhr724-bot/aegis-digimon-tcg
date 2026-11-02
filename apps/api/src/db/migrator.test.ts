@@ -78,7 +78,7 @@ describe("runMigrations", () => {
     expect(
       (
         await pool.query(
-          "SELECT structure, best_of, top_cut_enabled, top_cut_size, ruleset_version, rules_snapshot FROM tournaments WHERE id=$1",
+          "SELECT structure, best_of, top_cut_enabled, top_cut_size, rules_snapshot FROM tournaments WHERE id=$1",
           [EXISTING_TOURNAMENT_ID],
         )
       ).rows[0],
@@ -87,7 +87,6 @@ describe("runMigrations", () => {
       best_of: 1,
       top_cut_enabled: false,
       top_cut_size: null,
-      ruleset_version: null,
       rules_snapshot: null,
     });
   });
@@ -133,19 +132,17 @@ describe("runMigrations", () => {
     });
   });
 
-  it("backfills a legacy tournament as unrestricted under the lightning ruleset", async () => {
+  it("backfills a legacy tournament without banlist restrictions", async () => {
     const pool = createMemoryPool();
     await seedPreMigrationTournament(pool);
     await runMigrations(pool, migrations);
     expect(
       (
-        await pool.query(
-          "SELECT ruleset_preset, allow_bots, banlist_policy, banlist_cards FROM tournaments WHERE id=$1",
-          [EXISTING_TOURNAMENT_ID],
-        )
+        await pool.query("SELECT allow_bots, banlist_policy, banlist_cards FROM tournaments WHERE id=$1", [
+          EXISTING_TOURNAMENT_ID,
+        ])
       ).rows[0],
     ).toEqual({
-      ruleset_preset: "aegis_lightning",
       allow_bots: false,
       banlist_policy: { mode: "none" },
       banlist_cards: [],
@@ -160,9 +157,30 @@ describe("runMigrations", () => {
     await pool.query(`UPDATE tournaments SET ruleset_preset='bandai_general', banlist_policy='{"mode":"current"}'`);
     await runMigrations(pool, migrations);
     expect(
-      (await pool.query("SELECT ruleset_preset, banlist_policy FROM tournaments WHERE id=$1", [EXISTING_TOURNAMENT_ID]))
-        .rows[0],
-    ).toEqual({ ruleset_preset: "bandai_general", banlist_policy: { mode: "current" } });
+      (await pool.query("SELECT banlist_policy FROM tournaments WHERE id=$1", [EXISTING_TOURNAMENT_ID])).rows[0],
+    ).toEqual({ banlist_policy: { mode: "current" } });
+  });
+
+  it("removes preset metadata while preserving the frozen rules of existing tournaments", async () => {
+    const pool = createMemoryPool();
+    await seedPreMigrationTournament(pool);
+    await runMigrations(
+      pool,
+      migrations.filter((migration) => migration.id < "046-remove-tournament-presets"),
+    );
+    const rules = { version: "historical/1.0.0", match: { swissDurationMs: 123000 } };
+    await pool.query("UPDATE tournaments SET rules_snapshot=$1 WHERE id=$2", [
+      JSON.stringify(rules),
+      EXISTING_TOURNAMENT_ID,
+    ]);
+    await runMigrations(pool, migrations);
+    const row = (await pool.query("SELECT * FROM tournaments WHERE id=$1", [EXISTING_TOURNAMENT_ID])).rows[0];
+    expect(row.rules_snapshot).toEqual(rules);
+    const columns = (
+      await pool.query("SELECT column_name FROM information_schema.columns WHERE table_name='tournaments'")
+    ).rows.map((column) => column.column_name);
+    expect(columns).not.toContain("ruleset_preset");
+    expect(columns).not.toContain("ruleset_version");
   });
 
   it("applies only the pending tail when part of the history is already recorded", async () => {

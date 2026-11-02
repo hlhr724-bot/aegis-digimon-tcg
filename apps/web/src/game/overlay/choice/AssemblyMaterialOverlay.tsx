@@ -194,7 +194,7 @@ export function AssemblyMaterialOverlay({
               {t("overlay.assemblyPlayWithout")}
             </Button>
             {onCancel ? (
-              <Button full variant="ghost" onClick={onCancel}>
+              <Button full variant="ghost" data-arena-cancel onClick={onCancel}>
                 {t("common.cancel")}
               </Button>
             ) : null}

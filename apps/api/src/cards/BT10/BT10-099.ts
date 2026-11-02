@@ -7,6 +7,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 1 of your opponent's Digimon gains ＜Security Attack -1＞. (This Digimon checks 1 fewer security cards.) If you have a [Venusmon] in play, 3 of your opponent's Digimon gain it instead.",
           kind: "GainKeyword",
           target: {
             filter: {

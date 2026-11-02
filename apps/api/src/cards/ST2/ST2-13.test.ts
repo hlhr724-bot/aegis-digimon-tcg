@@ -23,7 +23,7 @@ describe("ST2-13 Hammer Spark", () => {
     expect(definition.effectText).toContain("Gain 1 memory");
     expect(definition.securityEffectText).toContain("Gain 2 memory");
     expect(compiled.effects).toEqual([
-      { trigger: "Main", actions: [{ kind: "GainMemory", amount: 1 }] },
+      { trigger: "Main", actions: [{ effectTextPart: "[Main] Gain 1 memory.", kind: "GainMemory", amount: 1 }] },
       { trigger: "Security", actions: [{ kind: "GainMemory", amount: 2 }], isSecurity: true },
     ]);
     expect(compiled.coverage).toBe("full");

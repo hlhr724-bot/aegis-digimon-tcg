@@ -16,6 +16,8 @@ describe("ST2-15 Kaiser Nail — [Main] play a Digimon digi-card from under your
         trigger: "Main",
         actions: [
           {
+            effectTextPart:
+              "[Main] Choose a Digimon digivolution card placed under 1 of your Digimon and play it as another Digimon without paying its memory cost.",
             kind: "SelectBind",
             target: {
               filter: { controller: "mine", kind: ["Digimon"], digivolutionStackKind: ["Digimon"] },
@@ -24,6 +26,8 @@ describe("ST2-15 Kaiser Nail — [Main] play a Digimon digi-card from under your
             },
           },
           {
+            effectTextPart:
+              "[Main] Choose a Digimon digivolution card placed under 1 of your Digimon and play it as another Digimon without paying its memory cost.",
             kind: "PlayWithoutCost",
             target: {
               filter: {

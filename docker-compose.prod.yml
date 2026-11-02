@@ -17,7 +17,8 @@
 # Every deployment-specific value comes from the environment. Required:
 # AEGIS_PUBLIC_URL, AEGIS_PUBLIC_WS_URL, AEGIS_EDGE_NETWORK, POSTGRES_PASSWORD,
 # RESEND_API_KEY, AEGIS_EMAIL_FROM, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET.
-# Optional: DISCORD_BOT_TOKEN (refreshes Discord avatars without a new sign-in),
+# Optional: DISCORD_BOT_TOKEN (refreshes Discord avatars without a new sign-in and
+# posts tournaments; see docs/TOURNAMENT_DISCORD.md for the AEGIS_TOURNAMENT_DISCORD_* values),
 # POSTGRES_DB, POSTGRES_USER, AEGIS_REVISION, AEGIS_DEPLOYMENT_MODE,
 # AEGIS_ALERT_EMAIL (server errors are emailed there through Resend),
 # BREVO_API_KEY, BREVO_EMAIL_FROM (sign-in emails fall back to Brevo once Resend
@@ -31,7 +32,9 @@
 # FEEDBACK_GITHUB_ENABLED and DECK_REPORTS_GITHUB_ENABLED (default false; "true" also
 # files player feedback and deck reports as GitHub issues; Postgres is always the record),
 # AEGIS_TRUSTED_PROXY_HOPS (proxies in
-# front of the API, which is how an anonymous reporter's address is read).
+# front of the API, which is how an anonymous reporter's address is read),
+# OPENAI_API_KEY (first avatar screening layer; the image's bundled model is the fallback),
+# AVATAR_NSFW_THRESHOLD and AVATAR_MODERATION_TIMEOUT_MS (default 0.7 and 8000).
 #
 # For local development use docker-compose.yml instead.
 
@@ -73,6 +76,10 @@ x-api: &api
     DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:?DISCORD_CLIENT_SECRET must be set}
     DISCORD_REDIRECT_URI: ${AEGIS_PUBLIC_URL}/auth/discord/callback
     DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+    AEGIS_TOURNAMENT_DISCORD_BOT_TOKEN: ${AEGIS_TOURNAMENT_DISCORD_BOT_TOKEN:-}
+    AEGIS_TOURNAMENT_DISCORD_CHANNEL_ID: ${AEGIS_TOURNAMENT_DISCORD_CHANNEL_ID:-}
+    AEGIS_TOURNAMENT_DISCORD_GUILD_ID: ${AEGIS_TOURNAMENT_DISCORD_GUILD_ID:-}
+    AEGIS_TOURNAMENT_DISCORD_ROLES: ${AEGIS_TOURNAMENT_DISCORD_ROLES:-}
     ADMIN_DISPLAY_NAME: ${ADMIN_DISPLAY_NAME:-}
     GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     GITHUB_BUG_REPOSITORY: ${GITHUB_BUG_REPOSITORY:-}
@@ -81,8 +88,13 @@ x-api: &api
     GITHUB_BUG_LABELS: ${GITHUB_BUG_LABELS:-}
     AEGIS_TRUSTED_PROXY_HOPS: ${AEGIS_TRUSTED_PROXY_HOPS:-2}
     AEGIS_WAITING_ROOM_TIMEOUT_SECONDS: ${AEGIS_WAITING_ROOM_TIMEOUT_SECONDS:-1800}
+    AEGIS_PROVIDER_SYNC_ENABLED: ${AEGIS_PROVIDER_SYNC_ENABLED:-true}
+    AEGIS_DIGILAB_API_KEY: ${AEGIS_DIGILAB_API_KEY:-}
     AEGIS_GOOGLE_API_KEY: ${AEGIS_GOOGLE_API_KEY:-}
     AEGIS_CLIENT_ERROR_WEBHOOK_URL: ${AEGIS_CLIENT_ERROR_WEBHOOK_URL:-}
+    OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    AVATAR_NSFW_THRESHOLD: ${AVATAR_NSFW_THRESHOLD:-0.7}
+    AVATAR_MODERATION_TIMEOUT_MS: ${AVATAR_MODERATION_TIMEOUT_MS:-8000}
   depends_on:
     postgres:
       condition: service_healthy

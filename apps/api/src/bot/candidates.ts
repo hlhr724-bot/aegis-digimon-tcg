@@ -21,6 +21,8 @@ import { isDigimonCard, isDigiEggCard, isOptionCard, isTamerCard, type BotUnit, 
 export type CandidateKind =
   | "attackPlayer"
   | "attackDigimon"
+  | "dnaDigivolve"
+  | "linkCard"
   | "digivolve"
   | "playDigimon"
   | "playTamer"
@@ -39,6 +41,7 @@ export interface Candidate {
   target?: BotUnit;
   base?: BotUnit;
   definition?: CardDefinition;
+  materials?: readonly BotUnit[];
 }
 
 /** Every action the bot may take in its own Main phase, including passing. */
@@ -92,10 +95,13 @@ function digivolveCandidates(view: BotView): Candidate[] {
     if (!isDigimonCard(card.definition)) continue;
     for (const base of bases) {
       if (base.cardId === undefined || base.cannotDigivolve) continue;
-      const cost = digivolveCost(card.cardId, base.cardId, {
-        inBreeding: base === view.breeding,
-        controlledUnits: view.board,
-      });
+      const cost =
+        card.digivolveCosts === undefined
+          ? digivolveCost(card.cardId, base.cardId, {
+              inBreeding: base === view.breeding,
+              controlledUnits: view.board,
+            })
+          : card.digivolveCosts[base.permanentId];
       if (cost === undefined || cost > view.maxAffordable) continue;
       candidates.push({
         kind: "digivolve",

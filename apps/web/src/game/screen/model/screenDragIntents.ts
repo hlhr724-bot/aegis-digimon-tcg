@@ -52,7 +52,7 @@ export function dragIntentAt(input: {
     kind: DragKind.Play as const,
     isOption: definition?.kinds.includes(CardKind.Option) ?? false,
     isDigiEgg: definition?.kinds.includes(CardKind.DigiEgg) ?? false,
-    playable: entry.playableFromHand,
+    playable: entry.playableFromHand || !!entry.negamonPlayEffectKey,
   };
   const base = hit.target === "perm-you" ? you.battleArea.find((p) => p.permanentId === hit.id) : undefined;
   const route = base

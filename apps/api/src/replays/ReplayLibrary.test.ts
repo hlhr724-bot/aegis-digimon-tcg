@@ -181,11 +181,12 @@ describe("replay routes", () => {
     const saved = await first.json();
     expect(await (await attach(ownerSession, FILE_ID)).json()).toEqual(saved);
     const list = await call("/account/replays", { session: ownerSession });
-    expect(await list.json()).toEqual({ replays: [saved], sharing: false });
+    expect(await list.json()).toEqual({ replays: [saved], sharing: false, friendsSharing: true });
     expect((await call("/account/replays?cursor=%%", { session: ownerSession })).status).toBe(400);
     expect(await (await call("/account/replays", { session: otherSession })).json()).toEqual({
       replays: [],
       sharing: false,
+      friendsSharing: true,
     });
     expect((await call(`/account/replays/${id}`, { method: "DELETE", session: otherSession })).status).toBe(404);
     expect((await call(`/account/replays/${id}`, { method: "DELETE", session: ownerSession })).status).toBe(200);

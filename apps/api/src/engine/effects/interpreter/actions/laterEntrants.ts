@@ -41,6 +41,7 @@ export function subscribeLaterEntrants(
     event: "onEnterFieldAnyone",
     activationContext: ctx,
     once: false,
+    appliesOnEntry: true,
     // A triggered, duration-scoped watcher: keep it out of the continuous tier even when a
     // concurrent recompute makes the ambient continuous flag look set.
     continuous: false,

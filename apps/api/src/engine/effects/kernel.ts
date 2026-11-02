@@ -1,3 +1,4 @@
+import type { UseTrackerSnapshot } from "#api/engine/effects/UseTrackerSnapshot";
 import { CardKind, type CardDefinition } from "@aegis/shared";
 import type { Effect } from "./Effect.js";
 import type { EffectContext } from "./EffectContext.js";
@@ -23,6 +24,30 @@ import type { EffectContext } from "./EffectContext.js";
  */
 export class UseTracker {
   private readonly counts = new Map<string, number>();
+
+  snapshot(): UseTrackerSnapshot {
+    return Array.from(this.counts, ([key, count]) => [key, count] as const);
+  }
+
+  restore(snapshot: UseTrackerSnapshot): void {
+    const restored = new Map<string, number>();
+    for (const [key, count] of snapshot) {
+      if (
+        typeof key !== "string" ||
+        !key.includes("\0") ||
+        !Number.isSafeInteger(count) ||
+        count < 1 ||
+        restored.has(key)
+      ) {
+        throw new Error("Invalid effect usage snapshot");
+      }
+      restored.set(key, count);
+    }
+    this.counts.clear();
+    for (const [key, count] of restored) {
+      this.counts.set(key, count);
+    }
+  }
 
   private static key(instanceId: string, effectKey: string): string {
     return `${instanceId}\0${effectKey}`;
@@ -58,6 +83,14 @@ export class UseTracker {
     for (const key of this.counts.keys()) {
       if (prefixes.some((prefix) => key.startsWith(prefix))) this.counts.delete(key);
     }
+  }
+
+  hasUsesFor(instanceId: string): boolean {
+    const prefixes = [`${instanceId}\0`, `${instanceId}/`];
+    for (const key of this.counts.keys()) {
+      if (prefixes.some((prefix) => key.startsWith(prefix))) return true;
+    }
+    return false;
   }
 
   /** Clear all use counts (called when a new turn begins). */
@@ -138,10 +171,8 @@ export function passesPlacementGuard(effect: Effect, ctx: EffectContext): boolea
     const recipient = ctx.source.permanent();
     return recipient?.permanentId === ctx.source.gainedOnPermanentId && ctx.source.isOnBattleArea();
   }
-  // This proof is captured for one discard event and remains on the deferred context. Once the
-  // source or host moves again, it is stale: do not let the ordinary inherited branch below
-  // reinterpret a reattached source as the original discarded card.
   const discardedProof = ctx.discardedStackSourceProof;
+  const discardedOption = discardedProof !== undefined && ctx.source.definition.kinds.includes(CardKind.Option);
   if (discardedProof !== undefined) {
     const host = ctx.game.permanentById(discardedProof.hostPermanentId);
     const proofIsLive =
@@ -149,19 +180,18 @@ export function passesPlacementGuard(effect: Effect, ctx: EffectContext): boolea
       discardedProof.sourceInstanceId === ctx.source.instanceId &&
       discardedProof.hostPermanentId === ctx.trigger?.subjectPermanentId &&
       ctx.source.isInTrash?.() === true &&
-      host?.inBreeding === false;
+      (host?.inBreeding === false || discardedOption || discardedProof.activatesFromDiscardedCard === true);
     if (!proofIsLive) return false;
   }
   const permanent = ctx.source.permanent();
   if (permanent === undefined) {
-    // A discarded digivolution card is not a deletion, so it must not borrow
-    // deletedWasStackInstanceIds. The engine supplies this explicit proof only
-    // for the exact discard event, source instance, and still-live host.
     if (
       effect.isInherited &&
       discardedProof?.sourceInstanceId === ctx.source.instanceId &&
       discardedProof.hostPermanentId === ctx.trigger?.subjectPermanentId &&
-      ctx.game.permanentById(discardedProof.hostPermanentId) !== undefined
+      (ctx.game.permanentById(discardedProof.hostPermanentId) !== undefined ||
+        discardedOption ||
+        discardedProof.activatesFromDiscardedCard === true)
     ) {
       return true;
     }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getCardDefinition } from "@aegis/shared";
+import { EffectTiming, getCardDefinition } from "@aegis/shared";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import { identityVisibility } from "../ST24/tamerStack.testSupport.js";
@@ -269,4 +269,67 @@ describe("BT26-100 Dark Field — KB Q&A rulings", () => {
       expect(s.perm("titan").keywords.includes("Blocker")).toBe(blocker);
     },
   );
+});
+
+describe("Dark Field used from trash", () => {
+  it.each([0, 1])("places itself face up after Cerberusmon uses it with %s security cards", async (securityCount) => {
+    const preferred: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          hand: [
+            { card: "BT26-074", as: "cerberusmon" },
+            { card: "BT1-009", as: "cost" },
+          ],
+          trash: [{ card: "BT26-100", as: "darkField" }],
+          security: Array<string>(securityCount).fill("BT1-010"),
+          deck: ["BT1-011"],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },
+    );
+    preferred.push(s.inst("cost").instanceId, s.inst("darkField").instanceId);
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("cerberusmon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "BT26-074"));
+    expect(s.state.players[0]!.security).toHaveLength(1);
+    expect(s.state.players[0]!.security.at(-1)).toMatchObject({
+      instanceId: s.inst("darkField").instanceId,
+      faceUp: true,
+    });
+    expect(s.state.players[0]!.trash.map((card) => card.instanceId)).not.toContain(s.inst("darkField").instanceId);
+  });
+});
+
+describe("Dark Field after a Kongou security check", () => {
+  it("cannot place itself into empty security while Kongou prohibits security additions", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [
+            { card: "BT26-074", as: "cerberusmon" },
+            { card: "BT1-009", as: "cost" },
+          ],
+          trash: [{ card: "BT26-100", as: "darkField" }],
+          deck: ["BT1-011"],
+        },
+        1: { security: [{ card: "BT9-103", as: "kongou" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    await advance(s.engine).fireForInstance(EffectTiming.SecuritySkill, s.inst("kongou"));
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("cerberusmon").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "BT26-074"));
+    expect(s.state.players[0]!.security).toHaveLength(0);
+    expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toContain(s.inst("darkField").instanceId);
+    expect(s.state.players[0]!.resolvingOption).toBeUndefined();
+    expect(s.events).toContainEqual(expect.objectContaining({ kind: "effectResolved", sourceCardId: "BT26-100" }));
+  });
 });

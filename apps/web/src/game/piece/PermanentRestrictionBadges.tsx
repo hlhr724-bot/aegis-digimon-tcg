@@ -2,7 +2,7 @@ import { Icons } from "../../design/icons";
 import { forcedAttackGrantText, type ForcedAttackGrant, type RestrictionBadge } from "../fieldBadges";
 import { useTranslation } from "../../i18n";
 import { BadgeHint } from "./BadgeHint";
-import { formatDpDelta } from "./formatDpDelta";
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 
 function BadgeIcon({ restriction }: { restriction: RestrictionBadge }) {
   if (restriction.action) return <Icons.Swords size={12} />;
@@ -24,36 +24,25 @@ function BadgeIcon({ restriction }: { restriction: RestrictionBadge }) {
   return <Icons.Ban size={12} />;
 }
 
-/**
- * The standing debuff chips for the blanket restrictions an effect has imposed
- * on a permanent (server truth: `Permanent.cannotAttack` and friends), as a column
- * of status icons down the card's right edge, and the DP change beside its DP.
- * Spoken through the wrapper's own state list, so the chips themselves stay out of
- * the accessibility tree rather than repeating it; a tap explains each one.
- */
 export function PermanentRestrictionBadges({
   restrictions,
   forcedAttackGrants = [],
-  dpDelta,
-  baseDp,
 }: {
   restrictions: readonly RestrictionBadge[];
-  /** What forces the attack behind an `attacksAtStartOfMainPhase` chip, and which card granted it. */
   forcedAttackGrants?: readonly ForcedAttackGrant[];
-  dpDelta?: number;
-  /** The original DP (printed, or rewritten by an effect) the DP badge's explanation compares the change against. */
-  baseDp?: number;
 }) {
   const { t } = useTranslation();
+  const getCardName = useTranslatedCardName();
   const maxVisibleBadges = 3;
-  const visibleRestrictions = restrictions.slice(0, maxVisibleBadges);
-  const hiddenRestrictions = restrictions.slice(visibleRestrictions.length);
+  const orderedRestrictions = [...restrictions].sort(
+    (a, b) => Number(Boolean(a.protection)) - Number(Boolean(b.protection)),
+  );
+  const visibleRestrictions = orderedRestrictions.slice(0, maxVisibleBadges);
+  const hiddenRestrictions = orderedRestrictions.slice(visibleRestrictions.length);
   const describe = (restriction: RestrictionBadge) =>
     restriction.kind === "attacksAtStartOfMainPhase" && forcedAttackGrants.length > 0
-      ? forcedAttackGrants.map((grant) => forcedAttackGrantText(grant, t)).join(" ")
+      ? forcedAttackGrants.map((grant) => forcedAttackGrantText(grant, t, getCardName)).join(" ")
       : t(`redesign.arena.restriction.${restriction.kind}`);
-  const dpLabel =
-    dpDelta === undefined ? undefined : `DP ${dpDelta < 0 ? "−" : "+"}${formatDpDelta(Math.abs(dpDelta))}`;
   return (
     <div className="game-restriction-badges" aria-hidden="true">
       {visibleRestrictions.map((restriction) => (
@@ -74,28 +63,6 @@ export function PermanentRestrictionBadges({
           </i>
         </BadgeHint>
       ))}
-      {dpDelta !== undefined && dpLabel ? (
-        <BadgeHint
-          className="game-restriction-badge game-dp-delta-badge"
-          data-dp={dpDelta < 0 ? "down" : "up"}
-          data-label={dpLabel}
-          title={dpLabel}
-          hint={
-            baseDp === undefined
-              ? { title: dpLabel, description: t("redesign.arena.badge.dpChanged") }
-              : {
-                  title: t("redesign.arena.badge.dpTitle", { dp: (baseDp + dpDelta).toLocaleString() }),
-                  description: t(dpDelta < 0 ? "redesign.arena.badge.dpDown" : "redesign.arena.badge.dpUp", {
-                    base: baseDp.toLocaleString(),
-                    amount: Math.abs(dpDelta).toLocaleString(),
-                  }),
-                }
-          }
-        >
-          {dpDelta < 0 ? "−" : "+"}
-          {formatDpDelta(Math.abs(dpDelta))}
-        </BadgeHint>
-      ) : null}
       {hiddenRestrictions.length > 0 ? (
         <BadgeHint
           className="game-restriction-badge game-restriction-badge--overflow"

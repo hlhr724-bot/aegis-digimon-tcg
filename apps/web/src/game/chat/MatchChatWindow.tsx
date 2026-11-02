@@ -70,19 +70,24 @@ export function MatchChatWindow({
 
   return createPortal(
     <section
+      data-arena-surface
       ref={windowRef}
       className="match-chat-window"
       data-moved={position ? true : undefined}
       data-expanded={expanded || undefined}
       style={position ? { left: position.left, top: position.top } : undefined}
-      aria-label={t("chat.title")}
+      aria-label={t(spectating ? "chat.titleSpectators" : "chat.title")}
       onKeyDown={(event) => {
-        if (event.key === "Escape") onClose();
+        if (event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          onClose();
+        }
       }}
     >
       <header className="match-chat-window__title" {...handleProps}>
         <Icons.MessageSquare size={14} aria-hidden="true" />
-        <h2>{t("chat.title")}</h2>
+        <h2>{t(spectating ? "chat.titleSpectators" : "chat.title")}</h2>
         <button
           ref={settingsButtonRef}
           type="button"
@@ -104,7 +109,13 @@ export function MatchChatWindow({
         >
           {expanded ? <Icons.Minimize size={15} /> : <Icons.Maximize size={15} />}
         </button>
-        <button type="button" className="match-chat-window__control" onClick={onClose} aria-label={t("chat.close")}>
+        <button
+          type="button"
+          className="match-chat-window__control"
+          data-arena-cancel
+          onClick={onClose}
+          aria-label={t("chat.close")}
+        >
           <Icons.X size={16} />
         </button>
       </header>
@@ -136,7 +147,7 @@ export function MatchChatWindow({
                   <EmoteIcon emote={entry.message.emote} size={24} />
                 </span>
               ) : (
-                <span>{entry.message.text}</span>
+                <span>{messageText(entry.message)}</span>
               )}
             </li>
           ))}

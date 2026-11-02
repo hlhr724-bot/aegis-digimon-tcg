@@ -13,6 +13,7 @@ const compiled: CompiledCard = {
           revealCount: 2,
           add: [
             {
+              effectTextPart: "Place 1 of them on top of your security stack face down.",
               filter: {
                 controllerDefault: "mine",
               },
@@ -22,6 +23,7 @@ const compiled: CompiledCard = {
               faceDown: true,
             },
             {
+              effectTextPart: "Add the remaining card to your hand.",
               filter: {
                 controllerDefault: "mine",
               },
@@ -50,10 +52,7 @@ const compiled: CompiledCard = {
             isSelf: true,
           },
         },
-        {
-          kind: "GainMemory",
-          amount: 3,
-        },
+        { effectTextPart: "Gain 3 memory.", kind: "GainMemory", amount: 3 },
       ],
       keywords: [
         {

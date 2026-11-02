@@ -38,6 +38,7 @@ export function combatTriggerInfo(engine: GameEngine, trigger: CombatTrigger): T
     fortitudeInstanceIds: trigger.fortitudeInstanceIds,
     deletedHostInstanceByInstanceId: trigger.deletedHostInstanceByInstanceId,
     customEffectGrantsSnapshot: trigger.customEffectGrantsSnapshot,
+    stackEffectConferralsSnapshot: trigger.stackEffectConferralsSnapshot,
     battleOpponentPermanentIdByInstanceId: trigger.battleOpponentPermanentIdByInstanceId,
   };
 }

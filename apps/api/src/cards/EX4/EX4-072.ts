@@ -27,13 +27,14 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Choose 1 of your [Gallantmon], [Sakuyamon] or [MegaGargomon]. From your hand, ignoring digivolution requirements and without paying the cost, it may digivolve into a level 6 Digimon card with a different name that includes the chosen Digimon's name.",
           kind: "Digivolve",
           target: {
             filter: {
               controllerDefault: "mine",
               kind: ["Digimon"],
-              levels: [6],
-              nameOrTrait: [{ tokens: ["Gallantmon", "Sakuyamon", "MegaGargomon"], match: "name" }],
+              nameOrTrait: [{ tokens: ["Gallantmon", "Sakuyamon", "MegaGargomon"], match: "nameExact" }],
             },
             count: 1,
             bindAs: "chosenBase",

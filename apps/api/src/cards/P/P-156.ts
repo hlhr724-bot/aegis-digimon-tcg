@@ -20,10 +20,14 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Choose 1 Tamer. You may play 1 Digimon card with the same color as the chosen tamer with a play cost of 3 or less from your hand or trash without paying the cost.",
           kind: "SelectBind",
           target: { filter: { controller: "mine", kind: ["Tamer"] }, count: 1, bindAs: "chosenTamer" },
         },
         {
+          effectTextPart:
+            "[Main] Choose 1 Tamer. You may play 1 Digimon card with the same color as the chosen tamer with a play cost of 3 or less from your hand or trash without paying the cost.",
           kind: "PlayWithoutCost",
           target: {
             filter: {

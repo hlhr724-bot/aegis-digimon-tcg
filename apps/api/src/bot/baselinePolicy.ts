@@ -94,7 +94,10 @@ export function createBaselinePolicy(): BotPolicy {
       if (request.kind === "mulligan") return { type: "mulligan", keep: true };
       if (request.kind === "selectCards" || request.kind === "chooseTargets") {
         const min = request.options?.min ?? 0;
-        const instanceIds = (request.options?.candidateInstanceIds ?? []).slice(0, min);
+        const instanceIds =
+          request.kind === "chooseTargets" && request.options?.allowedTargetCombinations !== undefined
+            ? (request.options.allowedTargetCombinations[0] ?? [])
+            : (request.options?.candidateInstanceIds ?? []).slice(0, min);
         return {
           type: "respondDecision",
           decisionId: request.decisionId,

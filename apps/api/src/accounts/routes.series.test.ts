@@ -53,7 +53,7 @@ async function buildHarness(pool: Pool): Promise<Harness> {
     const account = await store.accountForIdentity("discord", name, name);
     accounts[name] = account.id;
     // Alice runs the event: creating a tournament is an admin-only endpoint.
-    if (name === "alice") await store.pool.query("UPDATE accounts SET is_admin=true WHERE id=$1", [account.id]);
+    if (name === "alice") await store.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [account.id]);
     cookies[name] = `aegis_session=${(await store.issueSession(account)).id}`;
   }
   return {
@@ -97,7 +97,6 @@ async function seedMatch(): Promise<void> {
     bestOf: 3,
     startsAt: Date.now() + 86_400_000,
     maxPlayers: 64,
-    rulesetPreset: "bandai_general",
   });
   tournamentId = created.body.id;
   matchId = randomUUID();
@@ -216,6 +215,8 @@ describe("GET /tournaments/:id", () => {
         matchId,
         seriesId: null,
         status: "scheduled",
+        participantIds: [null, null],
+        winnerSeat: null,
         participant0Id: accounts.alice,
         participant1Id: accounts.bob,
         wins0: 0,

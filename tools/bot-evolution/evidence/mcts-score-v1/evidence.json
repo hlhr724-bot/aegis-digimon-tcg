@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Descriptive performance evidence for public indexed score-only rollout chooser plus guarded prefix acceleration",
+  "sourceCommit": "43ea0f94c476eb272361877b2988b3ffb70eceee",
+  "engineSha256": "047ebdad7dce121aed9d523758f078568e831e6f7d2f13c884fcebb89b8022c0",
+  "proof": {
+    "path": "proof.tgz",
+    "sha256": "581a33ebf8e7122b8a292d5fd54c5d964426cfe95f1aed1a84cbc89fa8e90c00"
+  },
+  "results": {
+    "full-game-8": {
+      "mode": "full-game",
+      "simulations": 8,
+      "seed": 42,
+      "learnerSeat": 0,
+      "repetitions": 2,
+      "decks": [
+        {
+          "id": "random-1-2c90313d9fbbdd72",
+          "name": "random-1-2c90313d9fbbdd72",
+          "sha256": "2c90313d9fbbdd725bfa72502d81285dd15584ef075abb2213cce6d0baacf491"
+        },
+        {
+          "id": "random-2-099e429908eb8a63",
+          "name": "random-2-099e429908eb8a63",
+          "sha256": "099e429908eb8a63a624f7922c213e3c0165fd18c186ad8b19d67c6d69780e91"
+        }
+      ],
+      "equivalent": true,
+      "speedup": 1.0394946834848888,
+      "savedWallTimeFraction": 0.03799411782702289,
+      "cpuSpeedup": 1.053843029315043,
+      "savedCpuTimeFraction": 0.05109207710947128
+    },
+    "material-prefix-32": {
+      "mode": "single-search-after-prefix",
+      "simulations": 32,
+      "seed": 42,
+      "learnerSeat": 0,
+      "repetitions": 2,
+      "decks": [
+        {
+          "id": "bt26-dgo-2026-08-28-1-toho-braves@1",
+          "name": "BT26 Toho Braves",
+          "sha256": "70b218bfa02fca93798e843a498065c7f7672bd06797433707dd3ff2a69e6259"
+        },
+        {
+          "id": "bt10-xros-heart@1",
+          "name": "Xros Heart",
+          "sha256": "74653e60c8e13782a64876725d7aa67eef4504f94e80f20a4f9c21b7df582de1"
+        }
+      ],
+      "equivalent": true,
+      "speedup": 1.019799060008794,
+      "savedWallTimeFraction": 0.01941466783527268,
+      "cpuSpeedup": 1.0108681963174395,
+      "savedCpuTimeFraction": 0.010751348550713025
+    }
+  },
+  "meaningfulAccelerationDemonstrated": false,
+  "limitations": [
+    "Only two fixed-seed workloads; descriptive timing without a population confidence claim.",
+    "Observed wall savings remain modest (approximately 3.8% full game, 1.9% bounded material search).",
+    "No proof of affordable 256-simulation full games.",
+    "No engine snapshots or changes to requested rollout budgets."
+  ]
+}

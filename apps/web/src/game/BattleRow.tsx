@@ -29,10 +29,10 @@ export function BattleRow({
   const [edges, setEdges] = useState({ left: false, right: false, x: 0, y: 0, end: 0 });
   const [emptySlots, setEmptySlots] = useState(0);
   const measureRef = useRef<() => void>(undefined);
-  // A sibling lane appearing can move this one without resizing it, so every render
-  // re-reads where the paging controls belong. Reading is cheap; re-creating the
-  // observers below on every render was not.
-  useLayoutEffect(() => measureRef.current?.());
+  useLayoutEffect(() => {
+    const frame = requestAnimationFrame(() => measureRef.current?.());
+    return () => cancelAnimationFrame(frame);
+  });
   useLayoutEffect(() => {
     const row = rowRef.current;
     if (!row) return;

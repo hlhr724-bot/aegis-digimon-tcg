@@ -8,6 +8,7 @@ const compiled: CompiledCard = {
       actions: [
         {
           kind: "ModifyDP",
+          effectTextPart: "All of your Digimon with ＜Reboot＞ get +1000 DP.",
           playerWide: true,
           target: {
             filter: {
@@ -22,6 +23,7 @@ const compiled: CompiledCard = {
         },
         {
           kind: "GainKeyword",
+          effectTextPart: "All of your Digimon with ＜Reboot＞ gain ＜Blocker＞.",
           playerWide: true,
           target: {
             filter: {

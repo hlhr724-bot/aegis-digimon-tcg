@@ -9,8 +9,8 @@ import "#api/cards/index";
 
 const PLACE_CLAUSE =
   "[On Play] [When Digivolving] You may place 1 [Witchelny] text card from your hand as the bottom security card.";
-const ATTACK_CLAUSE = "Then, by trashing your top security card, 1 of your Digimon may attack.";
-const TRASH_COST = "by trashing your top security card";
+const ATTACK_CLAUSE = "1 of your Digimon may attack";
+const TRASH_COST = "Then, by trashing your top security card";
 
 async function answer(s: EngineSetup, emphasis: string, response: DecisionResponse): Promise<void> {
   await settle(() => s.state.pendingDecision !== undefined);

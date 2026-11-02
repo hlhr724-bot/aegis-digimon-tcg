@@ -1,3 +1,5 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
+import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { getCardDefinition } from "@aegis/shared";
@@ -11,6 +13,8 @@ import { CardArt } from "../CardArt";
 import { cardEffectClausesForTiming } from "../effectText";
 import { EffectText } from "../../EffectText";
 import { CardZoomOverlay } from "./CardZoomOverlay";
+import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
+import { getEffectSourceMarkLabelKey } from "@/game/effectMarks/getEffectSourceMarkLabelKey";
 
 /**
  * Modal listing every card in a player's trash (public information). Cards are
@@ -23,6 +27,7 @@ export function TrashViewerOverlay({
   artIds,
   instanceIds,
   effects,
+  effectSourceMarks,
   title,
   sheet,
   countLabel,
@@ -36,6 +41,7 @@ export function TrashViewerOverlay({
   instanceIds?: string[];
   /** Server-projected `[Trash] [Main]` activations per card, aligned with `cardIds`. */
   effects?: readonly (readonly ActivatableEntry[])[];
+  effectSourceMarks?: ReadonlyMap<string, EffectSourceMark>;
   preserveOrder?: boolean;
   title: string;
   /** Render as a bottom sheet with one scrollable row (touch layouts). */
@@ -47,7 +53,9 @@ export function TrashViewerOverlay({
   onActivateEffect?: (effect: ActivatableEntry) => void;
   onClose: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
+  const translateCardText = useTranslatedCardText();
   const [sort, setSort] = useState<"recent" | "name">("recent");
   const countText = countLabel ?? t("overlay.trashCount", { count: cardIds.length });
   const emptyText = emptyLabel ?? t("overlay.trashEmpty");
@@ -68,6 +76,11 @@ export function TrashViewerOverlay({
   const ordered = entries.map((entry) => entry.cardId);
   const orderedArts = entries.map((entry) => artIds?.[entry.index]);
   const orderedEffects = entries.map((entry) => effects?.[entry.index] ?? []);
+  const orderedMarkLabels = entries.map((entry) => {
+    const instanceId = instanceIds?.[entry.index];
+    const mark = instanceId === undefined ? undefined : effectSourceMarks?.get(instanceId);
+    return mark ? t(getEffectSourceMarkLabelKey(mark)) : undefined;
+  });
   const totals = new Map<string, number>();
   for (const cardId of cardIds) totals.set(cardId, (totals.get(cardId) ?? 0) + 1);
   const copyLabels = entries.map((entry) => {
@@ -121,7 +134,7 @@ export function TrashViewerOverlay({
     const cardId = ordered[index];
     const cardEffects = orderedEffects[index] ?? [];
     if (!onActivateEffect || !cardId || cardEffects.length === 0) return null;
-    const name = getCardDefinition(cardId)?.nameEn ?? cardId;
+    const name = getCardName(cardId);
     return (
       <div
         className="trash-viewer__activations"
@@ -132,7 +145,7 @@ export function TrashViewerOverlay({
             key={`${effect.instanceId}:${effect.effectKey}`}
             size="md"
             full
-            title={effect.description}
+            title={translateCardText({ text: effect.description, cardId })}
             aria-label={`${t("game.activateMainEffect")}: ${name}`}
             onClick={() => {
               setMenuKey(null);
@@ -150,7 +163,7 @@ export function TrashViewerOverlay({
   const confirmDialog = (index: number) => {
     const cardId = ordered[index];
     if (!cardId) return null;
-    const name = getCardDefinition(cardId)?.nameEn ?? cardId;
+    const name = getCardName(cardId);
     return (
       <div className="trash-viewer__confirm" onClick={() => setMenuKey(null)}>
         <div
@@ -166,7 +179,7 @@ export function TrashViewerOverlay({
             <div className="trash-viewer__effect">
               {trashClauses(cardId).map((clause) => (
                 <p key={clause}>
-                  <EffectText text={clause} />
+                  <EffectText text={clause} cardId={cardId} timing="Trash" surface="trash-confirm" allowContext />
                 </p>
               ))}
             </div>
@@ -226,13 +239,16 @@ export function TrashViewerOverlay({
                     ) : (
                       <CardBack width={96} useSelectedSleeve={false} />
                     )}
-                    <figcaption>
-                      {cardId ? (getCardDefinition(cardId)?.nameEn ?? cardId) : t("game.hiddenCard")}
-                    </figcaption>
+                    <figcaption>{cardId ? getCardName(cardId) : t("game.hiddenCard")}</figcaption>
                     {!preserveOrder && copyLabels[i] ? (
                       <span className="trash-viewer__label">{copyLabels[i]}</span>
                     ) : null}
                     {isActivatable(i) ? <span className="trash-viewer__label">{t("overlay.trashEffect")}</span> : null}
+                    {orderedMarkLabels[i] ? (
+                      <span className="trash-viewer__label" data-effect-mark>
+                        {orderedMarkLabels[i]}
+                      </span>
+                    ) : null}
                     {preserveOrder && cardId
                       ? securityCardEffects(cardId).map((effect) => (
                           <span className="security-viewer__effect" key={effect.text}>
@@ -246,7 +262,7 @@ export function TrashViewerOverlay({
             )}
             {menuIndex !== null ? confirmDialog(menuIndex) : null}
             <div className="card-action-sheet__actions">
-              <Button size="sm" full variant="ghost" onClick={onClose} autoFocus>
+              <Button size="sm" full variant="ghost" data-arena-cancel onClick={onClose} autoFocus>
                 {t("common.close")}
               </Button>
             </div>
@@ -353,8 +369,10 @@ export function TrashViewerOverlay({
                         onMouseEnter={() => setActiveKey(entries[i]?.key)}
                         aria-haspopup={activatable ? "dialog" : undefined}
                         onClick={() => openCard(i)}
-                        title={cardId ? (def?.nameEn ?? cardId) : t("game.hiddenCard")}
-                        aria-label={cardId ? (def?.nameEn ?? cardId) : t("game.hiddenCard")}
+                        title={cardId ? getCardName(cardId) : t("game.hiddenCard")}
+                        aria-label={[cardId ? getCardName(cardId) : t("game.hiddenCard"), orderedMarkLabels[i]]
+                          .filter(Boolean)
+                          .join(", ")}
                         onFocus={() => setActiveKey(entries[i]?.key)}
                         className="trash-viewer__card"
                         data-selected={sel || undefined}
@@ -365,7 +383,9 @@ export function TrashViewerOverlay({
                           <CardBack width={96} useSelectedSleeve={false} />
                         )}
                         {preserveOrder ? (
-                          <span className="security-viewer__name">{def?.nameEn ?? t("game.hiddenCard")}</span>
+                          <span className="security-viewer__name">
+                            {def ? getCardName(def.cardId) : t("game.hiddenCard")}
+                          </span>
                         ) : null}
                         {!preserveOrder && copyLabels[i] ? (
                           <span className="trash-viewer__label">{copyLabels[i]}</span>
@@ -379,6 +399,11 @@ export function TrashViewerOverlay({
                           : null}
                         {isActivatable(i) ? (
                           <span className="trash-viewer__label">{t("overlay.trashEffect")}</span>
+                        ) : null}
+                        {orderedMarkLabels[i] ? (
+                          <span className="trash-viewer__label" data-effect-mark>
+                            {orderedMarkLabels[i]}
+                          </span>
                         ) : null}
                       </button>
                     </div>
@@ -411,7 +436,7 @@ export function TrashViewerOverlay({
                   </p>
                 ))
               : null}
-            <Button size="md" variant="ghost" full onClick={onClose}>
+            <Button size="md" variant="ghost" full data-arena-cancel onClick={onClose}>
               {t("common.close")}
             </Button>
           </div>

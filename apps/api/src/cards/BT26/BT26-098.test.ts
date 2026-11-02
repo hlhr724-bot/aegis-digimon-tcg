@@ -28,7 +28,7 @@ describe("BT26-098 compiled fidelity", () => {
           target: {
             filter: {
               kind: ["Digimon", "Tamer"],
-              orFilters: [
+              or: [
                 { nameOrTrait: [{ tokens: ["Lalamon"], match: "nameExact" }] },
                 { nameOrTrait: [{ tokens: ["Yoshino Fujieda"], match: "nameExact" }] },
               ],
@@ -189,6 +189,37 @@ describe("BT26-098 compiled fidelity", () => {
       s.state.players[0]!.battleArea.some(({ topCard }) => topCard.instanceId === s.inst("yoshino").instanceId),
     ).toBe(true);
     expect(s.state.players[0]!.hand.map(({ cardId }) => cardId)).toContain("BT26-098");
+  });
+
+  it("offers only its owner's Lalamon or Yoshino Fujieda to the Security play", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          security: [{ card: "BT26-098", as: "option", faceUp: true }],
+          hand: [
+            { card: "BT1-009", as: "otherDigimon" },
+            { card: "BT26-036", as: "lalamon" },
+          ],
+          trash: [{ card: "BT1-009", as: "otherTrashDigimon" }],
+        },
+        1: { trash: [{ card: "BT26-036", as: "opponentLalamon" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+
+    await advance(s.engine).fireForInstance(EffectTiming.SecuritySkill, s.inst("option"));
+    await settle(() =>
+      s.state.players[0]!.battleArea.some(({ topCard }) => topCard.instanceId === s.inst("lalamon").instanceId),
+    );
+
+    const offered = s.decisions
+      .filter(({ req }) => req.kind === "selectCards")
+      .flatMap(({ req }) => req.options?.candidateInstanceIds ?? []);
+    expect(offered).not.toContain(s.inst("otherDigimon").instanceId);
+    expect(offered).not.toContain(s.inst("otherTrashDigimon").instanceId);
+    expect(offered).not.toContain(s.inst("opponentLalamon").instanceId);
+    expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId)).toEqual(["BT26-036"]);
   });
 
   it("adds itself to hand when the optional Security play has no eligible card", async () => {

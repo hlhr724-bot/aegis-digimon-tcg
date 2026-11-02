@@ -40,8 +40,13 @@ export interface RevealedZoneView {
 }
 
 // The hidden zones of both players, which the server sends once the match is over.
-export function revealedZones(input: { events: readonly ServerEvent[]; viewerSeat: Seat }): RevealedZones | undefined {
-  const { events, viewerSeat } = input;
+export function revealedZones(input: {
+  events: readonly ServerEvent[];
+  viewerSeat: Seat;
+  resultShown: boolean;
+}): RevealedZones | undefined {
+  const { events, viewerSeat, resultShown } = input;
+  if (!resultShown) return undefined;
   for (let i = events.length - 1; i >= 0; i -= 1) {
     const e = events[i]!;
     if (e.kind !== "finalReveal") continue;

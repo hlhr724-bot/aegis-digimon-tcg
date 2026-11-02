@@ -1,3 +1,4 @@
+import { InputSurfaceEvent } from "@/design/InputSurfaceEvent";
 import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 import { Icons } from "@/design/icons";
 import { MUSIC_TRACK_LABEL_KEYS, MUSIC_TRACKS, type MusicTrack } from "@/design/musicTracks";
@@ -51,9 +52,19 @@ export function MusicMenu({ onOpenSoundSettings }: MusicMenuProps) {
       setOpen(false);
       button.current?.focus();
     };
+    const surface = panel.current;
+    const cancelInput = (event: Event) => {
+      event.preventDefault();
+      setOpen(false);
+      button.current?.focus();
+    };
+    surface?.setAttribute("data-arena-cancelable", "");
+    surface?.addEventListener(InputSurfaceEvent.CANCEL.value, cancelInput);
     document.addEventListener("pointerdown", closeOnOutside);
     document.addEventListener("keydown", closeOnEscape);
     return () => {
+      surface?.removeAttribute("data-arena-cancelable");
+      surface?.removeEventListener(InputSurfaceEvent.CANCEL.value, cancelInput);
       document.removeEventListener("pointerdown", closeOnOutside);
       document.removeEventListener("keydown", closeOnEscape);
     };

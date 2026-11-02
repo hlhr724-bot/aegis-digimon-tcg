@@ -24,6 +24,7 @@ export interface FieldArrangement {
 }
 
 export interface FieldArrangementOptions {
+  groupIdenticalTamers?: boolean;
   /** Whether the card is drawn turned, including the hold before an unsuspend sweep. */
   isSuspended: (permanent: Permanent) => boolean;
   /**
@@ -47,6 +48,13 @@ function appearanceKey(permanent: Permanent, suspended: boolean): string | undef
   if (permanent.stack.length > 0 || permanent.linked.length > 0) return undefined;
   return JSON.stringify([
     permanent.topCard.cardId,
+    permanent.topCard.artId,
+    permanent.topCard.faceUp,
+    permanent.manualMarker,
+    [...(permanent.manualStatuses ?? [])].sort(),
+    [...permanent.originalColorsOverride].sort(),
+    permanent.securityAttackModifier,
+    permanent.summoningSick,
     suspended,
     permanent.currentDP,
     permanent.originalNameOverride,
@@ -73,7 +81,7 @@ function compareBy<T>(...keys: ((item: T) => number | string)[]) {
 
 export function arrangeField(
   permanents: readonly Permanent[],
-  { isSuspended, isSingledOut }: FieldArrangementOptions,
+  { isSuspended, isSingledOut, groupIdenticalTamers = true }: FieldArrangementOptions,
 ): FieldArrangement {
   const playOrder = new Map(permanents.map((permanent, index) => [permanent.permanentId, index]));
   const indexOf = (permanent: Permanent) => playOrder.get(permanent.permanentId) ?? 0;
@@ -98,7 +106,9 @@ export function arrangeField(
   const groups: { key: string; members: Permanent[] }[] = [];
   const openGroups = new Map<string, { key: string; members: Permanent[] }>();
   for (const permanent of support) {
-    const appearance = isSingledOut(permanent) ? undefined : appearanceKey(permanent, isSuspended(permanent));
+    const isUngroupedTamer = !groupIdenticalTamers && supportKindRank(permanent) === 0;
+    const appearance =
+      isSingledOut(permanent) || isUngroupedTamer ? undefined : appearanceKey(permanent, isSuspended(permanent));
     const open = appearance === undefined ? undefined : openGroups.get(appearance);
     if (open) {
       open.members.push(permanent);

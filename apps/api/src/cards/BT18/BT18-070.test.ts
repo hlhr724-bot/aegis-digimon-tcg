@@ -132,19 +132,8 @@ describe("BT18-070 RhinoKabuterimon", () => {
     );
     s.state.memory = 10;
     await s.ready();
-    const effects = JSON.parse(s.inst("rhino").activatableEffectsJson || "[]") as { effectKey: string }[];
+    expect(JSON.parse(s.inst("rhino").activatableEffectsJson || "[]")).toHaveLength(0);
     const trashBefore = s.state.players[0]!.trash.map(({ instanceId }) => instanceId);
-
-    s.state.phase = Phase.Main;
-    await s.engine.recomputeContinuousEffects();
-    expect(
-      s.engine.applyIntent(0, {
-        type: "activateEffect",
-        sourceInstanceId: s.inst("rhino").instanceId,
-        effectKey: effects[0]!.effectKey,
-      }),
-    ).toEqual({ ok: true });
-    await s.ready();
 
     expect(s.perm("tamer").topCard?.cardId).toBe("BT18-091");
     expect(s.state.players[0]!.hand.map(({ cardId }) => cardId)).toContain("BT18-070");

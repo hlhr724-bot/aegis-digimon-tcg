@@ -58,6 +58,7 @@ export function describeInput(input: ReplayInput, index: number, indexWidth?: nu
     case "expireMulliganWindow":
       parts.push(`seat ${input.seat}`, "kept the hand");
       break;
+    case "expireRankedRound":
     case "startMatch":
     case "expireCombatWindow":
       break;

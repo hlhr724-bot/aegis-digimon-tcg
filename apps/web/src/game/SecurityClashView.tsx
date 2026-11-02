@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 /* The centre-stage security check the reference client plays: the attacking Digimon
    faces the card that was just revealed, their DP is compared, and the outcome
    resolves between them. Decoration only — it never takes pointer input, and the
@@ -69,8 +70,9 @@ function ClashCard({
   destroyed: boolean;
   lightOwner?: SecurityClashScene["lightOwner"] & { id: string };
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
-  const cardName = getCardDefinition(fighter.cardId)?.nameEn ?? fighter.cardId;
+  const fighterName = getCardName(fighter.cardId);
   return (
     <figure
       className="battle-clash__card"
@@ -104,9 +106,9 @@ function ClashCard({
       {destroyed ? null : (
         <figcaption className="battle-clash__caption">
           <span className="battle-clash__role">
-            {role === "attacker" ? t("overlay.isAttacking", { name: cardName }) : t("overlay.revealedFromSecurity")}
+            {role === "attacker" ? t("overlay.isAttacking", { name: fighterName }) : t("overlay.revealedFromSecurity")}
           </span>
-          <strong className="battle-clash__name">{cardName}</strong>
+          <strong className="battle-clash__name">{fighterName}</strong>
           {fighter.dp === undefined ? null : <span className="battle-clash__dp">{fighter.dp.toLocaleString()} DP</span>}
         </figcaption>
       )}
@@ -143,11 +145,8 @@ function clashShatterColor(cardId: string): ColorName {
   return colorKey(getCardDefinition(cardId)?.colors[0]);
 }
 
-function revealedName(scene: SecurityClashScene): string {
-  return getCardDefinition(scene.revealed.cardId)?.nameEn ?? scene.revealed.cardId;
-}
-
 export function SecurityClash({ scene }: { scene: SecurityClashScene }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const lightOwners = useMemo(
     () => ({
@@ -186,7 +185,7 @@ export function SecurityClash({ scene }: { scene: SecurityClashScene }) {
       }
       role="status"
       aria-live="assertive"
-      aria-label={destroyed ? `${t(DESTRUCTION_ROLE_KEY)}: ${revealedName(scene)}` : undefined}
+      aria-label={destroyed ? `${t(DESTRUCTION_ROLE_KEY)}: ${getCardName(scene.revealed.cardId)}` : undefined}
     >
       {destroyed ? null : (
         <p className="battle-clash__badge">
@@ -257,6 +256,7 @@ export function SecurityEdgeFlash({ scene }: { scene: SecurityBreakScene }) {
  * mirrored to the same half by `noticeAnchor`, so the two are one moment).
  */
 export function SecurityBranch({ scene, compact = false }: { scene: SecurityBranchScene; compact?: boolean }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const rootRef = useRef<HTMLDivElement>(null);
   const artRef = useRef<HTMLDivElement>(null);
@@ -284,7 +284,7 @@ export function SecurityBranch({ scene, compact = false }: { scene: SecurityBran
     );
     // A closing state retains the completed transfer rather than measuring a new origin.
   }, [scene.key, scene.source, scene.state]);
-  const cardName = getCardDefinition(scene.cardId)?.nameEn ?? scene.cardId;
+  const revealedName = getCardName(scene.cardId);
   return (
     <div
       className="battle-security-branch"
@@ -307,7 +307,7 @@ export function SecurityBranch({ scene, compact = false }: { scene: SecurityBran
         <figcaption className="battle-security-branch__caption">
           {scene.source === "option" ? t("overlay.optionResolving") : t("overlay.securityResolving")}
           <br />
-          {cardName}
+          {revealedName}
         </figcaption>
       </figure>
     </div>

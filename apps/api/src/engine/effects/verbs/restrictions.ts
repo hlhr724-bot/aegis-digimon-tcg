@@ -1,7 +1,10 @@
+import { PrimitiveCallbackKind } from "#api/engine/effects/verbs/snapshot/PrimitiveCallbackKind";
+import { createDelayedMemoryBody } from "#api/engine/effects/verbs/snapshot/createDelayedMemoryBody";
 import { EffectDuration, type CardDefinition, type Seat } from "@aegis/shared";
 import type { Primitives } from "../EffectContext.js";
 
 import type { PrimitivesContext } from "./context.js";
+import { emitEffectTargetsSelected } from "./emitEffectTargetsSelected.js";
 
 /**
  * The static-continuous prohibitions: what a permanent or player cannot do,
@@ -36,6 +39,9 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
       continuous?: boolean;
     },
   ): void => {
+    if (opts?.continuous !== true && continuousOpt() === undefined) {
+      emitEffectTargetsSelected({ pc, permanentIds: [permanentId] });
+    }
     continuous.addRestriction(permanentId, restriction, durationForTarget(permanentId, duration), {
       ...(opts?.continuous === true ? { continuous: true } : continuousOpt()),
       fromSourceKind: opts?.fromSourceKind,
@@ -84,6 +90,9 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
     targetPermanentId: string,
     duration: EffectDuration,
   ): void => {
+    if (continuousOpt() === undefined) {
+      emitEffectTargetsSelected({ pc, permanentIds: [attackerPermanentId] });
+    }
     continuous.addAttackTargetRestriction(
       attackerPermanentId,
       targetPermanentId,
@@ -169,6 +178,10 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
     continuous.addStackTrashLock(permanentId, durationForTarget(permanentId, duration), continuousOpt());
   };
 
+  const seatStackTrashLock = (ownerSeat: Seat, duration: EffectDuration): void => {
+    continuous.addSeatStackTrashLock(ownerSeat, duration, continuousOpt());
+  };
+
   const stackCardTrashLock = (instanceId: string, ownerSeat: Seat, duration: EffectDuration): void => {
     continuous.addStackCardTrashLock(instanceId, ownerSeat, duration, continuousOpt());
   };
@@ -191,25 +204,17 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
     // their owner's turn end; BT23-048 explicitly schedules the opponent's turn end (Q5567/Q5568).
     const ownerSeat = access.permanentById(playedPermanentId)?.controllerSeat;
     const currentTurnSeat = state.turnSeat;
-    const expiresOnTurnEndOf =
-      timing === "endOfCurrentTurn"
-        ? currentTurnSeat
-        : ownerSeat === undefined
-          ? undefined
-          : timing === "endOfOpponentTurn"
-            ? access.opponentOf(ownerSeat)
-            : ownerSeat;
-    // "Delete this Digimon" does nothing once the permanent is no longer a Digimon, e.g. a
-    // De-Digivolve left a Tamer on top (KB Q2729/Q2760).
+    const turnEndWindowSeat = engine.turnEndWindowSeat?.();
+    let expiresOnTurnEndOf = ownerSeat;
+    if (timing === "endOfCurrentTurn") {
+      expiresOnTurnEndOf = turnEndWindowSeat === currentTurnSeat ? access.opponentOf(currentTurnSeat) : currentTurnSeat;
+    } else if (timing === "endOfOpponentTurn" && ownerSeat !== undefined) {
+      expiresOnTurnEndOf = access.opponentOf(ownerSeat);
+    }
     const isStillDigimon = (): boolean =>
       access.isBattleAreaDigimon(access.permanentById(playedPermanentId), continuous);
-    // Scheduled while that very turn end is resolving (an effect attack at the end of the
-    // opponent's turn, say): that timing has passed, so the deletion waits for the opponent's
-    // NEXT turn end, two turns later, instead of expiring unfired (KB P-165 Q4275).
     const deferredToTurnCount =
-      timing === "endOfOpponentTurn" &&
-      expiresOnTurnEndOf !== undefined &&
-      engine.turnEndWindowSeat?.() === expiresOnTurnEndOf
+      timing === "endOfOpponentTurn" && expiresOnTurnEndOf !== undefined && turnEndWindowSeat === expiresOnTurnEndOf
         ? state.turnCount + 2
         : undefined;
     subTriggers.subscribe({
@@ -223,11 +228,7 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
       ...(expiresOnTurnEndOf !== undefined && deferredToTurnCount === undefined ? { expiresOnTurnEndOf } : {}),
       matches: (subCtx) =>
         (deferredToTurnCount === undefined || state.turnCount === deferredToTurnCount) &&
-        (timing === "endOfCurrentTurn"
-          ? state.turnSeat === currentTurnSeat
-          : timing === "endOfOpponentTurn"
-            ? !subCtx.source.isOwnersTurn()
-            : subCtx.source.isOwnersTurn()) &&
+        (timing === "endOfCurrentTurn" || expiresOnTurnEndOf === undefined || state.turnSeat === expiresOnTurnEndOf) &&
         subCtx.source.isOnBattleArea() &&
         isStillDigimon(),
       description:
@@ -248,7 +249,6 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
     });
   };
 
-  let delayedMemorySequence = 0;
   const delayedGainMemory: NonNullable<Primitives["delayedGainMemory"]> = (seat, amount, activationContext) => {
     // BT1-021 "at the end of your turn, lose 3 memory": a one-shot `endOfTurn` watcher with
     // NO source anchor — per KB Q882/Q883 the delayed loss still fires if the installing
@@ -265,10 +265,12 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
       // a contextless watcher would bypass the pending pool and fire only afterwards.
       activationContext,
       expiresOnTurnEndOf: seat,
-      description: `At end of turn, ${amount >= 0 ? "gain" : "lose"} ${Math.abs(amount)} memory (delayed one-shot #${++delayedMemorySequence}).`,
-      run: async () => {
-        engine.memory.addMemoryForSeat(seat, amount, "gainMemory", { isTamerEffect: false });
-      },
+      description: `At end of turn, ${amount >= 0 ? "gain" : "lose"} ${Math.abs(amount)} memory (delayed one-shot #${++pc.sequences.delayedMemorySequence}).`,
+      run:
+        engine.runtimeCallbacks?.create({
+          key: PrimitiveCallbackKind.DELAYED_MEMORY.value,
+          payload: { seat, amount },
+        }) ?? createDelayedMemoryBody({ memory: engine.memory, seat, amount }),
     });
   };
 
@@ -303,6 +305,7 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
     restrictDigivolveInto,
     minDpFloor,
     stackTrashLock,
+    seatStackTrashLock,
     stackCardTrashLock,
     securityAttackInvert,
     delayedDeletePlayed,

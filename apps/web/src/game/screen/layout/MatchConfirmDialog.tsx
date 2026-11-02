@@ -44,7 +44,7 @@ export function MatchConfirmDialog({
       <p className="game-confirm-dialog__body">{body}</p>
       {children}
       <div className="game-confirm-dialog__actions">
-        <Button variant="secondary" onClick={onClose}>
+        <Button variant="secondary" data-arena-cancel onClick={onClose}>
           {cancelLabel ?? t("common.cancel")}
         </Button>
         <Button variant={tone} className="game-confirm-dialog__confirm" onClick={onConfirm}>

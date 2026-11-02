@@ -293,7 +293,8 @@ describe("BT17-067 DexDoruGreymon", () => {
       expect.objectContaining({
         kind: "cardsMoved",
         instanceIds: expect.arrayContaining([s.inst("dexDoruGreymon").instanceId]),
-        from: "various",
+        from: "trash",
+        fromSeat: 0,
         to: "battleArea",
       }),
     );

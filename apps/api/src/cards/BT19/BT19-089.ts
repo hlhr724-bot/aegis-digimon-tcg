@@ -22,6 +22,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 1 of your Digimon isn't affected by the effects of your opponent's Option cards and it can't have its DP reduced.",
           kind: "Restrict",
           target: { filter: ownDigimon, count: 1 },
           restriction: "beAffected",
@@ -30,6 +32,8 @@ const compiled: CompiledCard = {
           duration: "untilOpponentTurnEnd",
         },
         {
+          effectTextPart:
+            "[Main] Until the end of your opponent's turn, 1 of your Digimon isn't affected by the effects of your opponent's Option cards and it can't have its DP reduced.",
           kind: "Restrict",
           target: { filter: ownDigimon, count: 1, sameTarget: true },
           restriction: "dpImmune",

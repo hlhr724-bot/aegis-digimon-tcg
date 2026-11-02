@@ -1,0 +1,18 @@
+export const achievementsZhCn = {
+  "achievements.trophies.description": "社区赛事成就。",
+  "achievements.trophies.show": "显示奖杯",
+  "achievements.trophies.title": "奖杯",
+  "achievements.trophies.empty": "暂无奖杯。在社区赛事中进入前8名即可获得。",
+  "achievements.trophies.error": "无法加载你的奖杯。请刷新页面后重试。",
+  "achievements.trophies.awardedOn": "{date} 获得",
+  "achievements.tier.bronze": "铜奖杯",
+  "achievements.tier.silver": "银奖杯",
+  "achievements.tier.gold": "金奖杯",
+  "achievements.tier.rainbow": "彩虹奖杯",
+  "achievements.award.tournament_champion": "冠军",
+  "achievements.award.tournament_top_four": "前 4 名",
+  "achievements.award.tournament_top_eight": "前 8 名",
+  "achievements.award.circuit_champion": "巡回赛冠军",
+  "achievements.award.circuit_top_four": "巡回赛前 4 名",
+  "achievements.award.circuit_top_eight": "巡回赛前 8 名",
+} as const;

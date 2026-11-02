@@ -9,7 +9,15 @@ import { linkCardSlots } from "../boardModel";
  * decorative: pointer events pass through to the host so selection/attack
  * targeting on the permanent is unaffected.
  */
-export function PermanentLinkedCards({ linked, width }: { linked: readonly CardInstance[]; width: number }) {
+export function PermanentLinkedCards({
+  linked,
+  width,
+  useSelectedSleeve,
+}: {
+  linked: readonly CardInstance[];
+  width: number;
+  useSelectedSleeve: boolean;
+}) {
   return (
     <>
       {linked.map((ci, i) => {
@@ -39,7 +47,15 @@ export function PermanentLinkedCards({ linked, width }: { linked: readonly CardI
                 transform: "rotate(-90deg) translateX(-100%)",
               }}
             >
-              <CardMini cardId={ci.cardId} artId={ci.artId} width={slot.height} info zoomOnHover={false} />
+              <CardMini
+                cardId={ci.cardId}
+                artId={ci.artId}
+                width={slot.height}
+                faceDown={ci.faceUp === false}
+                useSelectedSleeve={useSelectedSleeve}
+                info
+                zoomOnHover={false}
+              />
             </div>
           </div>
         );

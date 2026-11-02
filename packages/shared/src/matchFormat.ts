@@ -7,6 +7,7 @@ export type MatchBestOf = (typeof MATCH_BEST_OF_OPTIONS)[number];
 
 /** How long the loser of a game has to pick who goes first in the next one. */
 export const SERIES_TURN_ORDER_SECONDS = 20;
+export const SERIES_DECK_SELECTION_SECONDS = 90;
 /** How long a seat has to arrive in the next game's room before it forfeits the series. */
 export const SERIES_NEXT_GAME_JOIN_SECONDS = 60;
 /** A drawn game counts for nobody, so a run of draws ends the series here instead of never. */

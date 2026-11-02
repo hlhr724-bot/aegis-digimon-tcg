@@ -1,3 +1,5 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
 import { CardKind, Zone, requireCardDefinition, CardInstance } from "@aegis/shared";
 import { applyOverflow, insertCard, replaceStack, setTopCard } from "../../state/access.js";
 import type { Primitives } from "../EffectContext.js";
@@ -109,6 +111,15 @@ export function createReturnStacksVerbs(pc: PrimitivesContext) {
   /** Return loose cards to the bottom of their owners' Digi-Egg decks. */
   const returnToEggDeck = async (instanceIds: string[]): Promise<CardInstance[]> => {
     await fireWhenReturnedPermanentsLeave(instanceIds);
+    const physicalIds = instanceIds.flatMap((id) => {
+      const permanent = [...state.players]
+        .flatMap((owner) => [...owner.battleArea, ...(owner.breeding ? [owner.breeding] : [])])
+        .find((candidate) => candidate.topCard?.instanceId === id);
+      return permanent
+        ? [id, ...permanent.stack.map((card) => card.instanceId), ...permanent.linked.map((card) => card.instanceId)]
+        : [id];
+    });
+    const origins = locateMoveOrigins({ state, instanceIds: physicalIds });
     const moved: CardInstance[] = [];
     for (const instanceId of instanceIds) {
       const collected = collectForReturn(state, instanceId, dropPermanentLedgers);
@@ -119,11 +130,11 @@ export function createReturnStacksVerbs(pc: PrimitivesContext) {
         moved.push(card);
       }
     }
-    if (moved.length > 0) {
+    for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: moved })) {
       engine.emit({
         kind: "cardsMoved",
-        instanceIds: moved.map((card) => card.instanceId),
-        from: "various",
+        instanceIds: cards.map((card) => card.instanceId),
+        ...origin,
         to: Zone.EggDeck,
       });
     }

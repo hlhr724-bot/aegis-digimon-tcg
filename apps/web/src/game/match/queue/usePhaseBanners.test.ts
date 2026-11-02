@@ -45,10 +45,11 @@ function heldHand(instanceIds: readonly string[]): GameState {
 }
 
 describe("releaseHandMoves with an effect play from hand", () => {
-  it("drops a held hand card an effect played to the field (Discord 1555487329328693248)", () => {
+  it.each(["various", "hand"])("drops a held hand card played from %s", (from) => {
     const moves: ServerEvent[] = ["first", "second"].map((instanceId) => ({
       kind: "cardsMoved",
-      from: "various",
+      from,
+      fromSeat: 0,
       to: "battleArea",
       instanceIds: [instanceId],
     }));
@@ -67,4 +68,15 @@ describe("releaseHandMoves with an effect play from hand", () => {
     expect(released.players[0]!.hand.map((card) => card.instanceId)).toEqual(["kept"]);
     expect(released.players[0]!.handCount).toBe(1);
   });
+});
+
+it("uses the origin owner when a hidden hand card moves to another player's zone", () => {
+  const held = concealedState(0);
+  const released = releaseHandMoves({
+    held,
+    live: undefined,
+    moves: [{ kind: "cardsMoved", instanceIds: ["hidden"], from: "hand", fromSeat: 0, to: "security", seat: 1 }],
+  });
+  expect(released.players[0]!.handCount).toBe(4);
+  expect(released.players[1]!.handCount).toBe(held.players[1]!.handCount);
 });

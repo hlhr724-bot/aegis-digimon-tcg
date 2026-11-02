@@ -31,13 +31,18 @@ describe("EX11-050 Loudmon", () => {
       expect(compiled.effects.find((candidate) => candidate.trigger === trigger)?.actions).toMatchObject([
         { kind: "Trash", target: { filter: { zone: "hand" }, count: 2 } },
         {
+          kind: "SelectBind",
+          target: {
+            filter: { controller: "mine", nameOrTrait: [{ tokens: ["Dark Dragon", "Evil Dragon"], match: "trait" }] },
+            bindAs: "dragonDpReference",
+          },
+        },
+        {
           kind: "Delete",
           target: {
             filter: {
-              dp: {
-                op: "lte",
-                relativeToFilter: { nameOrTrait: [{ tokens: ["Dark Dragon", "Evil Dragon"], match: "trait" }] },
-              },
+              controller: "opponent",
+              relativeTo: { attr: "dp", op: "lte", selectionRef: "dragonDpReference" },
             },
           },
         },

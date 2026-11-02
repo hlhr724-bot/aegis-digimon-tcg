@@ -9,7 +9,14 @@ import {
   unimplementedPrimitives,
 } from "./context.js";
 import { candidatePermanents } from "./interpreter/targeting/permanents.js";
-import { extractCardById } from "../state/access.js";
+import {
+  extractCardById,
+  extractLinkedById,
+  linkCard,
+  popFromStack,
+  pushOnStack,
+  setTopCard,
+} from "../state/access.js";
 import { setupEngine } from "../testkit/harness.js";
 
 function selfTargetIds(ctx: Parameters<typeof candidatePermanents>[0]): string[] {
@@ -43,8 +50,8 @@ describe("self-target permanent identity", () => {
     const destination = s.perm("newHost");
     const ctx = sourceContext(s, "source");
     const sourceCard = original.topCard!;
-    original.topCard = original.stack.pop()!;
-    destination.stack.push(sourceCard);
+    setTopCard(original, popFromStack(original)!);
+    pushOnStack(destination, sourceCard);
 
     expect(ctx.source.permanent()?.permanentId).toBe(destination.permanentId);
     expect(selfTargetIds(ctx)).toEqual([original.permanentId]);
@@ -63,8 +70,8 @@ describe("self-target permanent identity", () => {
     const oldTop = host.topCard!;
     const newTop = s.inst("newTop");
     extractCardById(s.state.players[0]!, Zone.Hand, newTop.instanceId);
-    host.stack.push(oldTop);
-    host.topCard = newTop;
+    pushOnStack(host, oldTop);
+    setTopCard(host, newTop);
 
     expect(ctx.source.permanent()?.permanentId).toBe(host.permanentId);
     expect(host.topCard.instanceId).toBe(newTop.instanceId);
@@ -93,9 +100,12 @@ describe("self-target permanent identity", () => {
     const original = s.perm("original");
     const destination = s.perm("newHost");
     const ctx = sourceContext(s, "source");
-    const sourceInstance = placement === "stack" ? original.stack.pop()! : original.linked.pop()!;
-    if (placement === "stack") destination.stack.push(sourceInstance);
-    else destination.linked.push(sourceInstance);
+    const sourceInstance =
+      placement === "stack"
+        ? popFromStack(original)!
+        : extractLinkedById(original, original.linked.at(-1)!.instanceId)!;
+    if (placement === "stack") pushOnStack(destination, sourceInstance);
+    else linkCard(destination, sourceInstance, "bottom");
 
     expect(ctx.source.permanent()?.permanentId).toBe(destination.permanentId);
     expect(selfTargetIds(ctx)).toEqual([original.permanentId]);
@@ -111,7 +121,7 @@ describe("self-target permanent identity", () => {
     const original = s.perm("source");
     const ctx = sourceContext(s, "source");
     const sourceCard = original.topCard!;
-    original.topCard = original.stack.pop()!;
+    setTopCard(original, popFromStack(original)!);
     s.state.players[0]!.trash.push(sourceCard);
 
     expect(ctx.source.permanent()).toBeUndefined();

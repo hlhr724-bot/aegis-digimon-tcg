@@ -47,7 +47,8 @@ const compiled: CompiledCard = {
       trigger: "Main",
       actions: [
         {
-          effectTextPart: "[Main] Delete your opponent's Digimon until they have as many as the number of your security cards.",
+          effectTextPart:
+            "[Main] Delete your opponent's Digimon until they have as many as the number of your security cards.",
           kind: "DeleteUntilCount",
           target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: "all" },
           untilCountSource: "mineSecurityCount",

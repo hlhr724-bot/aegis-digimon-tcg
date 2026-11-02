@@ -40,8 +40,14 @@ describe("parseReplayArgs", () => {
       file: "r.json",
       until: 7,
       out: "x.test.ts",
-      issue: 88,
+      issue: "88",
     });
+  });
+
+  it("keeps every digit of a Discord-sized issue id", () => {
+    expect(
+      parseReplayArgs(["scaffold", "r.json", "--until", "7", "--out", "x.test.ts", "--issue", "1562378958815887410"]),
+    ).toMatchObject({ issue: "1562378958815887410" });
   });
 
   it("answers help in every spelling", () => {

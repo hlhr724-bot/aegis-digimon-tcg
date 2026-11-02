@@ -41,9 +41,11 @@ export type NoticeBody =
       /** Resolving clause identity, shared with the decision that asks for its targets. */
       effectKey?: string;
       beforeRemoval?: boolean;
+      isContinuation?: boolean;
       description?: string;
       /** The chosen bullet of an "activate 1 of the effects below" clause; shown in place of the clause. */
       effectTextPart?: string;
+      manualSignalText?: string;
       isInherited?: boolean;
       sourceInstanceId?: string;
       sourcePermanentId?: string;
@@ -128,7 +130,7 @@ export function effectNoticeFromEvent(
   fromSecurity = false,
   artOfInstance?: (instanceId: string) => string | undefined,
 ): MatchNotice | null {
-  if (event.kind === "effectOptionChosen") {
+  if (event.kind === "effectOptionChosen" || event.kind === "effectClauseAdvanced") {
     const optionArtId = event.sourceInstanceId ? artOfInstance?.(event.sourceInstanceId) : undefined;
     return {
       id,
@@ -140,6 +142,7 @@ export function effectNoticeFromEvent(
         ...(optionArtId && optionArtId !== event.sourceCardId ? { artId: optionArtId } : {}),
         timing: event.timing,
         effectTextPart: event.clause,
+        ...(event.kind === "effectClauseAdvanced" ? { isContinuation: true, effectKey: event.effectKey } : {}),
         isInherited: event.isInherited,
         ...(event.sourceInstanceId ? { sourceInstanceId: event.sourceInstanceId } : {}),
         ...(event.sourcePermanentId ? { sourcePermanentId: event.sourcePermanentId } : {}),
@@ -162,6 +165,7 @@ export function effectNoticeFromEvent(
       effectKey: event.effectKey,
       ...(event.beforeRemoval === true ? { beforeRemoval: true } : {}),
       description: event.description,
+      ...(event.effectTextPart !== undefined ? { effectTextPart: event.effectTextPart } : {}),
       isInherited: event.isInherited,
       ...(event.sourceInstanceId ? { sourceInstanceId: event.sourceInstanceId } : {}),
       ...(event.sourcePermanentId ? { sourcePermanentId: event.sourcePermanentId } : {}),

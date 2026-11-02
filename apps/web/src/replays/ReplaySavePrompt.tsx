@@ -11,7 +11,6 @@ import "./savePrompt.css";
 
 export interface ReplaySaveProps {
   onDownloadReplay?: () => void;
-  /** This participant's finished replay file; spectators never get one. */
   replayFile?: ReadyReplay;
   replayStatus?: "preparing" | "unavailable";
   /** A signed-in player's Drive copy also joins their replay library on every device. */

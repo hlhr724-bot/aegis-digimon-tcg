@@ -12,6 +12,7 @@ let close: (() => Promise<void>) | undefined;
 afterEach(async () => {
   await close?.();
   close = undefined;
+  vi.unstubAllEnvs();
 });
 
 async function startServer({
@@ -158,6 +159,18 @@ describe("magic link human check", () => {
 });
 
 describe("magic link consumption", () => {
+  it("allows the configured app origin when redirecting after confirmation", async () => {
+    vi.stubEnv("AEGIS_WEB_URL", "http://localhost:5173/play");
+    const { store, url } = await startServer({});
+    const { token } = await store.createMagicLink("redirect@example.com");
+    const opened = await fetch(`${url}/auth/magic-link/consume?token=${token}`);
+    expect(opened.headers.get("content-security-policy")).toContain("form-action 'self' http://localhost:5173;");
+    const confirmed = await postToken(url, token);
+    expect(confirmed.status).toBe(303);
+    expect(confirmed.headers.get("location")).toBe("http://localhost:5173/play");
+    expect(confirmed.headers.get("content-security-policy")).toContain("form-action 'self' http://localhost:5173;");
+  });
+
   it("keeps the link usable when an email scanner opens it", async () => {
     const { store, url } = await startServer({});
     const { token } = await store.createMagicLink("tamer@example.com");

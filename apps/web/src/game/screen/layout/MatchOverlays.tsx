@@ -1,3 +1,4 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import type { ReplaySaveProps } from "../../../replays/ReplaySavePrompt";
 /* Everything the board can put over itself, in the order it stacks.
 
@@ -15,7 +16,7 @@ import { canMoveFromBreeding, canUseBreedingAction, displayMemory, parseActivata
 import type { GameState, DecisionRequest, Permanent, PlayerState, Seat } from "@aegis/shared";
 import type { RevealedZones } from "../model/gameOutcome";
 import { useTranslation } from "../../../i18n";
-import { ActionConfirmationOverlay, MulliganOverlay, printedCardName } from "../../overlay";
+import { ActionConfirmationOverlay, MulliganOverlay } from "../../overlay";
 import { HandCardPreview } from "./HandCardPreview";
 import { DecisionPrompts, type SourceHostStep } from "./DecisionPrompts";
 import { CombatWindowPrompts } from "./CombatWindowPrompts";
@@ -28,9 +29,12 @@ import { PermanentStackView } from "./PermanentStackView";
 import { PileViewers } from "./PileViewers";
 import { Side } from "../../side";
 import type { GameOverOutcome } from "../../gameOverSplash";
-import type { SeriesResultProps } from "../../overlay/match/GameOverOverlay";
+import type { PostGameChat, SeriesResultProps } from "../../overlay/match/GameOverOverlay";
+import type { RematchProps } from "@/game/overlay/match/RematchPanel";
 import type { TurnOrder } from "../../overlay";
-import type { LogLine } from "../../matchLog";
+import type { LogTurnGroup } from "@/game/log/LogEntry";
+import type { SeatNames } from "@/game/log/SeatNames";
+import type { SeatAvatars } from "@/game/log/SeatAvatars";
 import type { PendingFateBadge } from "../../pendingFate";
 import type { HandEntry } from "../../piece";
 import type { AppFusionRoute } from "../../AppFusionChoiceOverlay";
@@ -48,6 +52,7 @@ import type { CombatWindows } from "../model/combatWindows";
 import type { DecisionView } from "../model/decisionView";
 import type { TriggerDetail } from "../../overlay";
 import type { ArenaDeckColors } from "../../../design/arenaPalette";
+import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
 
 export function MatchOverlays({
   state,
@@ -67,13 +72,20 @@ export function MatchOverlays({
   sourceHost,
   counterSelection,
   combatWindowAnswers,
+  blockConfirmationPermanentId,
+  onConfirmBlock,
+  onCancelBlockConfirmation,
   allianceConfirmationPermanentId,
   onConfirmAlliance,
   onCancelAllianceConfirmation,
   scenes,
   collapseNotices,
-  log,
+  logTurns,
+  seatNames,
+  seatAvatars,
+  logViewerSeat,
   signedIn,
+  handoffUrl,
   opponentDropped,
   gameOver,
   overlays,
@@ -94,6 +106,7 @@ export function MatchOverlays({
   linkTargetsOfPermanent,
   handEntries,
   shownHandEntries,
+  effectSourceMarks,
   viewerTurnOrder,
   boardRef,
   permanentRefs,
@@ -131,6 +144,9 @@ export function MatchOverlays({
     handInstanceIds: readonly string[];
   };
   combatWindowAnswers: ReturnType<typeof combatAnswers>;
+  blockConfirmationPermanentId?: string;
+  onConfirmBlock: () => void;
+  onCancelBlockConfirmation: () => void;
   allianceConfirmationPermanentId?: string;
   onConfirmAlliance: () => void;
   onCancelAllianceConfirmation: () => void;
@@ -143,20 +159,30 @@ export function MatchOverlays({
     revealShowcase: RevealShowcaseCue | null;
   };
   collapseNotices: boolean;
-  log: LogLine[];
+  logTurns: readonly LogTurnGroup[];
+  seatNames: SeatNames;
+  seatAvatars: SeatAvatars;
+  logViewerSeat?: Seat;
   signedIn: boolean;
+  handoffUrl?: string;
   opponentDropped: boolean;
   gameOver:
     | (ReplaySaveProps & {
         spectatorResult?: string;
         onDownloadReplay?: () => void;
+        opponentDeckDialog?: (onClose: () => void) => ReactNode;
         usedDeckDialog?: (onClose: () => void) => ReactNode;
+        usedDeckName?: string;
+        opponentDeckName?: string;
         replayStatus?: "preparing" | "unavailable";
         result: GameOverOutcome;
         reason: string;
         /** Every hidden zone, once the server reveals them; absent in a tournament set. */
         revealed?: RevealedZones;
         series?: SeriesResultProps;
+        rematch?: RematchProps;
+        friendMatchId?: string;
+        chat?: PostGameChat;
       })
     | undefined;
   overlays: ReturnType<typeof useOverlayState>;
@@ -186,6 +212,7 @@ export function MatchOverlays({
   linkTargetsOfPermanent: (perm: Permanent) => readonly string[];
   handEntries: HandEntry[];
   shownHandEntries: HandEntry[];
+  effectSourceMarks?: ReadonlyMap<string, EffectSourceMark>;
   viewerTurnOrder: TurnOrder | undefined;
   boardRef: RefObject<HTMLDivElement | null>;
   permanentRefs: RefObject<Record<string, HTMLDivElement | null>>;
@@ -197,6 +224,7 @@ export function MatchOverlays({
   /** Each side's main card color, for the board look settings' deck-color palette. */
   arenaDeckColors: ArenaDeckColors;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const { cardMenu } = overlays;
   const presentedCardMenuPermanent = cardMenuPermanent
@@ -204,6 +232,9 @@ export function MatchOverlays({
     : undefined;
   const presentedStackPermanent = stackViewPermanent
     ? (actions.findPresentedPermanent(stackViewPermanent.permanentId) ?? stackViewPermanent)
+    : undefined;
+  const blockConfirmationPermanent = blockConfirmationPermanentId
+    ? allPermanents.find((permanent) => permanent.permanentId === blockConfirmationPermanentId)
     : undefined;
   const allianceConfirmationPermanent = allianceConfirmationPermanentId
     ? allPermanents.find((permanent) => permanent.permanentId === allianceConfirmationPermanentId)
@@ -228,11 +259,16 @@ export function MatchOverlays({
               handDockRef.current?.querySelectorAll<HTMLElement>(".game-hand-card")[
                 shownHandEntries.findIndex((entry) => entry.instanceId === handPreviewEntry.instanceId)
               ],
+            keepsOpen: (target) =>
+              target.closest<HTMLElement>("[data-hand-instance-id]")?.dataset.handInstanceId ===
+                handPreviewEntry.instanceId ||
+              target.closest<HTMLElement>("[data-hand-hover-instance-id]")?.dataset.handHoverInstanceId ===
+                handPreviewEntry.instanceId,
           }}
           cardId={handPreviewEntry.cardId}
           artId={handPreviewEntry.artId}
           activatableEffects={parseActivatable(handPreviewActions?.activatableEffectsJson ?? "")}
-          canPlay={handPreviewActions?.playableFromHand === true}
+          canPlay={handPreviewActions?.playableFromHand === true || !!handPreviewActions?.negamonPlayEffectKey}
           canDigivolve={
             (handPreviewActions?.digivolveTargetPermanentIds.length ?? 0) > 0 ||
             (handPreviewActions?.dnaDigivolveRoutes?.length ?? 0) > 0 ||
@@ -285,7 +321,7 @@ export function MatchOverlays({
       {combatPromptsHeld ? null : (
         <CombatWindowPrompts
           state={state}
-          blockWindow={combatWindows.blockWindow}
+          blockWindow={blockConfirmationPermanent ? null : combatWindows.blockWindow}
           counterWindow={combatWindows.counterWindow}
           counterSelection={counterSelection}
           allianceWindow={allianceConfirmationPermanent ? null : combatWindows.allianceWindow}
@@ -295,12 +331,23 @@ export function MatchOverlays({
         />
       )}
 
+      {blockConfirmationPermanent ? (
+        <ActionConfirmationOverlay
+          cardId={blockConfirmationPermanent.topCard.cardId}
+          title={t("overlay.confirmBlockTitle")}
+          detail={t("overlay.confirmBlockDetail", { name: getCardName(blockConfirmationPermanent.topCard.cardId) })}
+          confirmLabel={t("overlay.confirmBlock")}
+          onConfirm={onConfirmBlock}
+          onCancel={onCancelBlockConfirmation}
+        />
+      ) : null}
+
       {allianceConfirmationPermanent ? (
         <ActionConfirmationOverlay
           cardId={allianceConfirmationPermanent.topCard.cardId}
           title={t("overlay.confirmAllianceTitle")}
           detail={t("overlay.confirmAllianceDetail", {
-            name: printedCardName(allianceConfirmationPermanent.topCard.cardId),
+            name: getCardName(allianceConfirmationPermanent.topCard.cardId),
             dp: allianceConfirmationPermanent.currentDP.toLocaleString(),
           })}
           showSummary={false}
@@ -313,14 +360,17 @@ export function MatchOverlays({
       {!gameOver ? <SecurityScenes {...scenes} compact={collapseNotices} /> : null}
 
       <MatchStatusOverlays
-        log={log}
+        turns={logTurns}
+        playerNames={seatNames}
+        playerAvatars={seatAvatars}
+        viewerSeat={logViewerSeat}
         historyOpen={overlays.historyOpen}
         zoomCardId={overlays.zoomCardId}
         zoomArtId={overlays.zoomArtId}
         bugReportOpen={overlays.bugReportOpen}
         arenaLook={
           overlays.arenaLookOpen
-            ? { deckColors: arenaDeckColors, onClose: () => overlays.setArenaLookOpen(false) }
+            ? { deckColors: arenaDeckColors, onClose: () => overlays.setArenaLookOpen(false), handoffUrl }
             : undefined
         }
         matchLogId={state.matchLogId}
@@ -453,6 +503,7 @@ export function MatchOverlays({
         revealedZoneView={overlays.revealedZoneView}
         sheet={narrowGameLayout}
         trashActivatable={isMyTurn && !mainActionBlocked}
+        effectSourceMarks={effectSourceMarks}
         onActivateTrashEffect={(effect) => {
           overlays.setTrashView(null);
           intents.activateEffect(effect.instanceId, effect.effectKey);

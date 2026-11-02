@@ -231,7 +231,7 @@ describe("EX11-031 Vespamon", () => {
     s.state.turnSeat = 1;
     const loop = s.engine.startTurnLoop();
     await advance(s.engine).waitForMainPhase(1);
-    expect(await advance(s.engine).verb.deletePermanent([s.perm("firstProtected").permanentId], "byEffect")).toBe(0);
+    expect(await advance(s.engine).verb.deletePermanent([s.perm("firstProtected").permanentId], "byBattle")).toBe(0);
     expect(s.state.players[0]!.security[0]).toMatchObject({
       instanceId: s.inst("firstPayment").instanceId,
       faceUp: false,
@@ -241,7 +241,7 @@ describe("EX11-031 Vespamon", () => {
     advance(s.engine).endMainPhaseIfOpen(0);
     await advance(s.engine).waitForMainPhase(1);
     expect(s.perm("carrier").topCard.cardId).toBe("EX11-032");
-    expect(await advance(s.engine).verb.deletePermanent([s.perm("secondProtected").permanentId], "byEffect")).toBe(0);
+    expect(await advance(s.engine).verb.deletePermanent([s.perm("secondProtected").permanentId], "byBattle")).toBe(0);
     expect(s.state.players[0]!.battleArea.map(({ permanentId }) => permanentId)).toEqual(
       expect.arrayContaining([s.perm("secondProtected").permanentId]),
     );

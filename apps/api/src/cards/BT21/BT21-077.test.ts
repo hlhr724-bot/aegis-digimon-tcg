@@ -28,7 +28,7 @@ describe("BT21-077 Regulusmon", () => {
       kind: "PlayWithoutCost",
       target: {
         filter: {
-          orFilters: expect.arrayContaining([{ nameOrTrait: [{ tokens: ["Canoweissmon"], match: "nameExact" }] }]),
+          or: expect.arrayContaining([{ nameOrTrait: [{ tokens: ["Canoweissmon"], match: "nameExact" }] }]),
         },
       },
     });
@@ -177,7 +177,7 @@ describe("BT21-077 Regulusmon", () => {
   });
 
   it.each([
-    ["Canoweissmon", "BT21-078"],
+    ["Canoweissmon", "BT21-022"],
     ["level-4 Gammamon-text", "BT21-069"],
   ])("main deletion plays %s from trash", async (_label, card) => {
     const s = setupEngine(
@@ -194,12 +194,47 @@ describe("BT21-077 Regulusmon", () => {
     );
   });
 
+  it("main deletion offers only Canoweissmon or level-4-or-lower Gammamon-text Digimon from its owner's trash", async () => {
+    const preferred: string[] = [];
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT21-077", as: "regulusmon" }],
+          trash: [
+            { card: "BT21-077", as: "levelFiveRegulusmon" },
+            { card: "BT1-009", as: "noGammamonText" },
+            { card: "BT21-022", as: "canoweissmon" },
+            { card: "BT21-069", as: "levelFourGammamonText" },
+          ],
+        },
+        1: { trash: [{ card: "BT1-009", as: "opponentTrashDigimon" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },
+    );
+    await s.ready();
+    preferred.push(s.inst("levelFourGammamonText").instanceId);
+
+    expect(await advance(s.engine).verb.deletePermanent([s.perm("regulusmon").permanentId], "byEffect")).toBe(1);
+    await settle(() =>
+      s.state.players[0]!.battleArea.some(
+        (permanent) => permanent.topCard.instanceId === s.inst("levelFourGammamonText").instanceId,
+      ),
+    );
+
+    const offered = s.decisions
+      .filter(({ req }) => req.kind === "selectCards" && req.options?.effectKey === "BT21-077/ir-11-0")
+      .flatMap(({ req }) => req.options?.candidateInstanceIds ?? []);
+    expect([...offered].sort()).toEqual(
+      [s.inst("canoweissmon").instanceId, s.inst("levelFourGammamonText").instanceId].sort(),
+    );
+  });
+
   it("publicly deletes Regulusmon in battle and plays Canoweissmon from trash", async () => {
     const s = setupEngine(
       {
         0: {
           battleArea: [{ card: "BT21-077", as: "regulusmon" }],
-          trash: [{ card: "BT21-078", as: "canoweissmon" }],
+          trash: [{ card: "BT21-022", as: "canoweissmon" }],
         },
         1: { battleArea: [{ card: "AD1-002", as: "blocker", suspended: true }] },
       },
@@ -218,13 +253,13 @@ describe("BT21-077 Regulusmon", () => {
     await settle(
       () =>
         s.events.some((event) => event.kind === "combatResolved") &&
-        s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT21-078") &&
+        s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT21-022") &&
         !observe(s.engine).isAttacking(),
     );
 
     expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT21-077")).toBe(false);
-    expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT21-078")).toBe(true);
-    expect(s.state.players[0]!.trash.some((card) => card.cardId === "BT21-078")).toBe(false);
+    expect(s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.cardId === "BT21-022")).toBe(true);
+    expect(s.state.players[0]!.trash.some((card) => card.cardId === "BT21-022")).toBe(false);
   });
 
   it("publicly deletes a host and resolves the inherited Gammamon-text recovery", async () => {
@@ -268,7 +303,7 @@ describe("BT21-077 Regulusmon", () => {
           battleArea: [{ card: "BT21-078", as: "host", under: [{ card: "BT21-077", as: "source" }] }],
           trash: [
             { card: "BT21-069", as: "gulus" },
-            { card: "BT21-078", as: "canoweissmon" },
+            { card: "BT21-022", as: "canoweissmon" },
           ],
         },
       },

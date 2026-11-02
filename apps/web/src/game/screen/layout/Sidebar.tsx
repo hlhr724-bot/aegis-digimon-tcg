@@ -3,7 +3,7 @@ import { useTranslation } from "../../../i18n";
 import { Badge, Button, Logo } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
 import { canUseBreedingAction } from "../../boardModel";
-import { type LogLine } from "../../matchLog";
+import type { LogLine } from "@/game/log/LogEntry";
 import { PHASES } from "../constants";
 
 /** Exported for its own test; the match screen is the only place that renders it. */

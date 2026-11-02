@@ -53,14 +53,14 @@ describe("BT20-095 Fellowship of Hope's Keepers", () => {
     expect(compiled.effects.find((entry) => entry.trigger === "AllTurns")?.actions).toHaveLength(1);
   });
 
-  it("restricts the Security play to Chronicle Digimon, not Chronicle Options", () => {
+  it("restricts the Security play to Chronicle Digimon and Tamers, not Options", () => {
     const security = compiled.effects.find((entry) => entry.trigger === "Security");
     const play = security?.actions.find((action) => action.kind === "PlayWithoutCost");
     expect(play).toMatchObject({
       kind: "PlayWithoutCost",
       target: {
         filter: {
-          kind: ["Digimon"],
+          kind: ["Digimon", "Tamer"],
           playCostLte: 5,
           nameOrTrait: [{ tokens: ["Chronicle"], match: "trait" }],
         },

@@ -1,3 +1,5 @@
+import type { CounterChoice } from "@aegis/shared/protocol/CounterChoice";
+import type { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 import type { AttackTarget, CardColor, CardInstance, EffectTiming, Seat, ServerEvent } from "@aegis/shared";
 import type { RemovalCause, SubTriggerEventName, TriggerInfo } from "../effects/EffectContext.js";
 import type { ContinuousLegalityReader } from "./legality.js";
@@ -113,12 +115,14 @@ export interface CombatTrigger {
   battleOpponentPermanentIdByInstanceId?: Record<string, string>;
   /** Retaliation holders actually deleted in battle, paired with their battled opponent. */
   retaliationTargetsByInstanceId?: Record<string, string>;
+  retaliationCountsByInstanceId?: Record<string, number>;
   /** Event-time Fortitude holders that had digivolution cards when deleted. */
   fortitudeInstanceIds?: string[];
   /** Deleted host top-card identity for every card moved with it; pending effects require that host in trash. */
   deletedHostInstanceByInstanceId?: Record<string, string>;
   /** Event-time custom grants, captured before battle deletion drops recipient availability. */
   customEffectGrantsSnapshot?: TriggerInfo["customEffectGrantsSnapshot"];
+  stackEffectConferralsSnapshot?: TriggerInfo["stackEffectConferralsSnapshot"];
 }
 
 /**
@@ -215,6 +219,9 @@ export interface CombatHooks {
    * raw state access and would pay a prevention cost without actually saving the Digimon.
    */
   keywordReactionsInLeavePrevention?: boolean;
+  resolveAvertedBattleReactions?: (
+    resolveBattleWon?: (options?: { deferIntoDeletionWindow?: boolean }) => Promise<void>,
+  ) => Promise<void>;
   consultLeavePrevention?: (
     permanentIds: string[],
     opts?: { insteadOnly?: boolean; keywordPreventions?: { interruptsEffect: boolean } },
@@ -230,6 +237,7 @@ export interface CombatHooks {
   dropPermanentSubscriptions?: (permanentId: string) => void;
   /** Capture custom named-effect grants while battle recipients are still live. */
   snapshotCustomEffectGrants?: (departingInstanceIds: readonly string[]) => TriggerInfo["customEffectGrantsSnapshot"];
+  snapshotStackEffectConferrals?: () => TriggerInfo["stackEffectConferralsSnapshot"];
   /**
    * Resolve a successful, unblocked player-directed attack against `defenderSeat`
    * by running the security check (subsystem: security-and-win-check). The engine
@@ -257,6 +265,7 @@ export interface CombatHooks {
    * combat unit tests (which pass a minimal hooks object) need no change.
    */
   sweepEndOfAttack?: () => void | Promise<void>;
+  afterAttackEnded?: () => Promise<void>;
   /**
    * Queue the End of Attack timing behind the effect that is ending the attack, so its
    * [End of Attack] effects activate as derived triggers ahead of the effects still pending
@@ -310,6 +319,7 @@ export interface CombatHooks {
     candidateInstanceIds: string[],
     promptText: string,
     source?: DecisionSource,
+    selectionGoal?: DecisionSelectionGoal,
   ) => Promise<string | undefined>;
   /**
    * Ask `seat` to optionally choose exactly `count` of `candidateInstanceIds`, or decline
@@ -323,6 +333,7 @@ export interface CombatHooks {
     count: number,
     promptText: string,
     source?: DecisionSource,
+    selectionGoal?: DecisionSelectionGoal,
   ) => Promise<string[] | undefined>;
   /**
    * Pay ＜Armor Purge＞'s cost on an already-accepted decision: trash this permanent's own
@@ -365,5 +376,5 @@ export interface CombatHooks {
    * blocker" shortcut). Optional so the combat unit tests (minimal hooks) keep the
    * base "nothing eligible" behavior.
    */
-  counterEligible?: (seat: Seat) => { instanceId: string; effectKey: string; description: string }[];
+  counterEligible?: (seat: Seat) => CounterChoice[];
 }

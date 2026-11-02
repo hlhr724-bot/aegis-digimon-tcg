@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import "../BT11/BT11-072.js";
+import "../BT18/BT18-073.js";
 import "../EX3/EX3-013.js";
 import "./BT12-072.js";
 
@@ -190,5 +191,43 @@ describe("BT12-072 Chaosdramon (X Antibody) — KB Q&A rulings", () => {
       [topSecurityId],
       levelFiveIds,
     ]);
+  });
+});
+
+describe("BT12-072 Chaosdramon (X Antibody) gained effects", () => {
+  it("does not grant a Machinedramon source's inherited effect a second time", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT12-072", as: "chaosX", under: ["BT18-073"] }] },
+      1: { battleArea: [{ card: "BT1-009", as: "attacker" }] },
+    });
+    s.state.turnSeat = 1;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    const offeredRedirects: string[] = [];
+    while (true) {
+      await settle(() => s.state.pendingDecision !== undefined || s.state.combatWindow === undefined);
+      const decision = s.state.pendingDecision;
+      if (decision === undefined) break;
+      offeredRedirects.push(decision.kind);
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: decision.decisionId,
+          response:
+            decision.kind === "orderTriggers"
+              ? { kind: "orderTriggers", order: [], orderIndexes: [0, 1] }
+              : { kind: "optional", accept: false },
+        }),
+      ).toEqual({ ok: true });
+    }
+
+    expect(offeredRedirects).toEqual(["optional"]);
   });
 });

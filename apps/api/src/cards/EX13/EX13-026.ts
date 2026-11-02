@@ -11,11 +11,13 @@ const revealAddAndSave = (): Action => ({
   revealCount: 3,
   add: [
     {
+      effectTextPart: "add 1 [Holy Beast], [Royal Knight] or [DATA SQUAD] trait card to the hand",
       filter: TRAIT_UNION,
       count: 1,
       to: "hand",
     },
     {
+      effectTextPart: "place 1 such card face down under any of your [DATA SQUAD] trait Tamers.",
       filter: TRAIT_UNION,
       count: 1,
       to: "underTamer",

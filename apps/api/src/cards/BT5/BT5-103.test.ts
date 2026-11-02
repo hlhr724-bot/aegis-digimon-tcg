@@ -32,6 +32,21 @@ describe("BT5-103 A Blazing Storm of Metal!", () => {
         observe(s.engine).hasKeyword(s.perm("second"), "Blocker"),
     );
     expect(s.perm("first").currentDP).toBe(s.perm("first").baseDP + 1000);
+    expect(JSON.parse(s.state.players[0]!.fieldEffectsJson)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "dp",
+          sourceCardId: "BT5-103",
+          effectText: "All of your Digimon with ＜Reboot＞ get +1000 DP.",
+        }),
+        expect.objectContaining({
+          kind: "keyword",
+          value: "Blocker",
+          sourceCardId: "BT5-103",
+          effectText: "All of your Digimon with ＜Reboot＞ gain ＜Blocker＞.",
+        }),
+      ]),
+    );
     expect(s.perm("second").currentDP).toBe(s.perm("second").baseDP + 1000);
     expect(s.perm("normal").currentDP).toBe(s.perm("normal").baseDP);
     expect(s.perm("opponent").currentDP).toBe(s.perm("opponent").baseDP);

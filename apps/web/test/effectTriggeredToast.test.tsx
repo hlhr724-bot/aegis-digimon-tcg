@@ -194,7 +194,7 @@ it("shows a non-blocking notice when the viewer's mandatory effect resolves", as
   );
 
   const notice = await screen.findByRole("status");
-  expect(within(notice).getByText("From Master to Disciple")).toBeDefined();
+  expect(within(notice).getByText("From Master to Disciple (ST12-15)")).toBeDefined();
   // The clause is rendered as linked fragments, so it is read off the notice as a whole.
   expect(notice.textContent).toContain(clause);
   expect(notice.getAttribute("data-variant")).toBe("effect");

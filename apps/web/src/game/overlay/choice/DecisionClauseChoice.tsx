@@ -14,14 +14,18 @@ import { DecisionViewBoardButton } from "./DecisionViewBoardButton";
 export function DecisionClauseChoice({
   choices,
   choiceClauses,
+  cardId,
   declineIndex,
+  activation,
   onRespond,
   onOpenBoard,
 }: {
   choices: readonly string[];
   /** Aligned to `choices`; an empty entry has no printed bullet and falls back to its label. */
   choiceClauses: readonly string[];
+  cardId?: string;
   declineIndex?: number;
+  activation?: { index: number; total: number };
   onRespond: (response: DecisionResponse) => void;
   onOpenBoard: () => void;
 }) {
@@ -29,6 +33,11 @@ export function DecisionClauseChoice({
   const hasDecline = declineIndex !== undefined && declineIndex >= 0 && declineIndex < choices.length;
   return (
     <div className="decision-overlay__choice-layout">
+      {activation && activation.total > 1 ? (
+        <p className="effect-choice__activation">
+          {t("overlay.activationProgress", { index: activation.index, total: activation.total })}
+        </p>
+      ) : null}
       <ol className="effect-choice" aria-label={t("overlay.chooseEffectPrompt")}>
         {choices.map((label, index) => {
           if (hasDecline && index === declineIndex) return null;
@@ -44,7 +53,11 @@ export function DecisionClauseChoice({
                   {index + 1}
                 </span>
                 <span className="effect-choice__clause">
-                  {clause ? <EffectText text={clause} /> : choiceLabel({ choice: label, t })}
+                  {clause ? (
+                    <EffectText text={clause} cardId={cardId} surface="clause-choice" allowContext />
+                  ) : (
+                    choiceLabel({ choice: label, t })
+                  )}
                 </span>
                 <span className="effect-choice__go" aria-hidden="true">
                   <Icons.ChevronRight />

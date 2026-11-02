@@ -1,3 +1,4 @@
+import { getCardTextField } from "@/i18n/getCardTextField";
 import { EffectText } from "./EffectText";
 /* The framed notice of the reference client: a blue corner-bracketed panel
    carrying the clause that just resolved next to the art of the card that
@@ -61,6 +62,7 @@ function EffectNoticeBody({
   timing,
   description,
   effectTextPart,
+  manualSignalText,
   isInherited,
   count,
 }: {
@@ -68,17 +70,21 @@ function EffectNoticeBody({
   timing?: string;
   description?: string;
   effectTextPart?: string;
+  manualSignalText?: string;
   isInherited?: boolean;
   count?: number;
 }) {
   const { t } = useTranslation();
-  const clause = noticeEffectClause({ cardId, timing, description, effectTextPart, isInherited });
-  const label = (timing ? TIMING_LABELS[timing] : undefined) ?? t("overlay.effect");
+  const clause = manualSignalText ?? noticeEffectClause({ cardId, timing, description, effectTextPart, isInherited });
+  let label = (timing ? TIMING_LABELS[timing] : undefined) ?? t("overlay.effect");
+  if (manualSignalText) {
+    label = t("manual.signal.title");
+  }
   /* The clause prints its own timing in brackets and the art says which card raised it, so
      with a clause on screen the label and the name only repeat what is already there. They
      stay in the DOM — the name is how a keyboard and a screen reader open the card — and a
      notice with no clause still shows both, because then they are all it has. */
-  const restated = Boolean(clause);
+  const restated = Boolean(clause) && !manualSignalText;
   return (
     <div className="match-notice__copy">
       <span className="match-notice__label" data-quiet={restated || undefined}>
@@ -92,7 +98,14 @@ function EffectNoticeBody({
           prose this client cannot resolve to ids, so it stays unlinked. */}
       {clause ? (
         <p className="match-notice__text">
-          <EffectText text={clause} />
+          <EffectText
+            text={clause}
+            cardId={cardId}
+            field={getCardTextField({ cardId, timing, isInherited, text: clause })}
+            surface="notice"
+            timing={timing}
+            allowContext
+          />
         </p>
       ) : null}
     </div>
@@ -263,6 +276,7 @@ export function NoticeStack({
               timing={body.timing}
               description={body.description}
               effectTextPart={body.effectTextPart}
+              manualSignalText={body.manualSignalText}
               isInherited={body.isInherited}
               {...(body.count !== undefined ? { count: body.count } : {})}
             />

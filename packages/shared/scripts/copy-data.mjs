@@ -18,6 +18,7 @@ const packageRoot = resolve(here, "..");
 const jsonAssets = [
   "cards/data/cards.json",
   "cards/data/arts.json",
+  "cards/data/regional-arts.json",
   "effects/effects.json",
   "effects/generated-digivolve-overrides.json",
 ];

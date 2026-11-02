@@ -11,6 +11,7 @@ const compiled: CompiledCard = {
           revealCount: 3,
           add: [
             {
+              effectTextPart: "Add 1 card with the [Dragonkin]/[Cyborg] trait",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [
@@ -24,6 +25,7 @@ const compiled: CompiledCard = {
               to: "hand",
             },
             {
+              effectTextPart: "1 [Ryo Akiyama] or 1 [Device] trait Option card among them to the hand.",
               filter: {
                 controllerDefault: "mine",
                 nameOrTrait: [

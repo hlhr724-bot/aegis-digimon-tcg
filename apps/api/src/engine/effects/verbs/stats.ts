@@ -5,6 +5,7 @@ import { normalizeCost } from "../verbs/cardPlacement.js";
 import { looseZoneOfInstance, ownerSeatOfLoose, peekLooseInstance } from "../verbs/looseInstances.js";
 
 import type { PrimitivesContext } from "./context.js";
+import { emitEffectTargetsSelected } from "./emitEffectTargetsSelected.js";
 
 /**
  * DP, keywords and cost adjustments held for a duration.
@@ -30,6 +31,9 @@ export function createStatsVerbs(pc: PrimitivesContext) {
     // reduction while `dpImmune` holds rather than dropping it, so it applies for the rest
     // of its duration once the protection ends.
     const byOpponentEffect = pc.helpers.isOpponentEffectAgainst(permanentId);
+    if (opts?.continuous !== true && (opts?.continuous === false || continuousOpt() === undefined)) {
+      emitEffectTargetsSelected({ pc, permanentIds: [permanentId] });
+    }
     ledger.addDpModifier(state, permanentId, delta, durationForTarget(permanentId, duration), {
       byOpponentEffect,
       ...(opts?.continuous === undefined ? continuousOpt() : { continuous: opts.continuous }),

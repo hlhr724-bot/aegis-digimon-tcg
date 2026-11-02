@@ -18,7 +18,7 @@ for (const viewport of [
     await builder.open();
     await builder.edit();
     if (viewport.width < 960) {
-      await page.getByRole("button", { name: "Toque para ver mais sobre o deck", exact: true }).tap();
+      await page.getByRole("button", { name: /^Ver deck/ }).tap();
       await builder.sheet().getByRole("button", { name: "Ampliar painel do deck" }).tap();
     }
     const sheet = builder.sheet();
@@ -86,7 +86,7 @@ for (const viewport of [
       const actions = page.getByRole("button", { name: "Novo deck", exact: true });
       const importing = page.getByRole("button", { name: "Importar", exact: true });
       expect((await actions.boundingBox())!.y).toEqual((await importing.boundingBox())!.y);
-      expect((await page.locator(".deck-list-hero").boundingBox())!.height).toBeLessThan(250);
+      expect((await page.locator(".deck-list-summary").boundingBox())!.height).toBeLessThan(250);
       await expect(page.getByRole("heading", { name: "Novo deck", exact: true })).toBeInViewport();
     }
     await page.screenshot({ path: test.info().outputPath(`decks-header-${viewport.width}.png`) });
@@ -100,7 +100,7 @@ for (const viewport of [
     await pool.selectOption("BT13");
     await rules.selectOption("unlimited");
     await page.screenshot({ path: test.info().outputPath(`deck-pool-${viewport.width}.png`) });
-    const trigger = page.getByRole("button", { name: "Toque para ver mais sobre o deck", exact: true });
+    const trigger = page.getByRole("button", { name: /^Ver deck/ });
     await trigger.tap();
     await expect(page.getByRole("navigation")).not.toBeVisible();
     const sheet = builder.sheet();

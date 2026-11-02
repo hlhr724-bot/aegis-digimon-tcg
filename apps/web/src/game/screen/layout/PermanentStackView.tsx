@@ -1,8 +1,9 @@
+import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 /* The whole stack under one permanent, opened from the card itself or from its menu.
    The detail is read off the presented permanent, so what it prints matches the card
    the board is showing rather than a state the narration has not reached. */
 
-import { getCardDefinition, type Permanent, type Seat } from "@aegis/shared";
+import { type Permanent, type Seat } from "@aegis/shared";
 import { useTranslation } from "../../../i18n";
 import { StackViewerOverlay } from "../../overlay";
 import { canAttackWith, canVortexAttackWith } from "../../boardModel";
@@ -40,11 +41,12 @@ export function PermanentStackView({
   onVortex: () => void;
   onClose: () => void;
 }) {
+  const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   return (
     <StackViewerOverlay
       arenaInspection={{ side, container, returnFocusTo }}
-      title={getCardDefinition(permanent.topCard?.cardId ?? "")?.nameEn ?? t("game.stack")}
+      title={getCardName(permanent.topCard?.cardId ?? "") || t("game.stack")}
       cards={cards}
       detail={buildPermanentDetail(presentedPermanent, { keywordLabels, viewerSeat })}
       fate={fate}

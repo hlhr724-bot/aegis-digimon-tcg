@@ -22,7 +22,7 @@ const compiled: CompiledCard = {
         {
           kind: "SecurityManipulation",
           effectTextPart:
-            "If you have 2 or fewer, you may place 1 yellow Digimon card with the [Vaccine]&#160;trait from your hand at the top or bottom of your security stack.",
+            "If you have 2 or fewer, you may place 1 yellow Digimon card with the [Vaccine] trait from your hand at the top or bottom of your security stack.",
           op: "placeAsSecurity",
           controller: "mine",
           source: {
@@ -56,7 +56,7 @@ const compiled: CompiledCard = {
         {
           kind: "SubTrigger",
           event: "whenSecurityRemoved",
-          sourceFilter: { controller: "opponent" },
+          sourceFilter: { controller: "mine" },
           actions: [
             {
               kind: "ModifyDP",

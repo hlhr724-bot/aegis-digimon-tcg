@@ -1,5 +1,5 @@
-import type { CompiledCard } from "@aegis/shared";
-import { registerIrCard } from "../../engine/effects/interpreter.js";
+import type { CompiledCard } from "@aegis/shared/effects/ir/card";
+import { registerIrCard } from "#api/engine/effects/interpreter/registration/module";
 
 export const compiled: CompiledCard = {
   effects: [
@@ -34,6 +34,7 @@ export const compiled: CompiledCard = {
               kind: ["Digimon"],
               nameOrTrait: [{ tokens: ["Appmon"], match: "trait" }],
               hasLinkRequirement: true,
+              hostFilter: { controller: "mine", kind: ["Digimon"], zone: "battleArea" },
             },
             count: 1,
           },

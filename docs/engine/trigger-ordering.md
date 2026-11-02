@@ -1,9 +1,71 @@
 ---
 title: Trigger ordering audit
-updated: 2026-09-27
+updated: 2026-10-15
 ---
 
 # Trigger ordering
+
+## Derived trigger exhaustion (2026-10-15)
+
+Issue: https://github.com/vinicius3333/aegis-digimon-tcg/issues/5600
+
+The reported match `0ac032b7-a4f0-4d4c-a942-0cd3e5fb5b0b` (report 293,
+server `416fc9bdbaeb8c9ebb3ccc9e0005d4b6234ff044`) replays all 40 inputs
+without divergence on the development baseline. The committed replay stops at
+Kakkinmon's end-turn suspension choice. The report's reference to EX11-062 is
+inconsistent with the recording: the relevant security card is EX11-041 Oblivimon.
+
+P-245 suspends EX13-062 Craniamon while the opponent has no Digimon. Craniamon's
+reaction must finish without deleting anything before the older EX11-041
+end-of-opponent-turn security effect plays Oblivimon. Previously, activation tiers
+were assigned only to effects with a legal outcome. This allowed the unavailable
+reaction to become newly activatable after Oblivimon entered the battle area.
+
+Comprehensive rules 15-4-5-2 and 15-4-5-3 require derived triggers to resolve before
+older pending effects, regardless of their controller. `effects/stack.ts` now
+assigns tiers when effects become pending and retires exhausted higher tiers
+before returning to older effects. Simultaneous effects can still enable one
+another. Reentrant drains retain unavailable effects at an enclosing effect’s tier while
+that effect is still processing, but retire exhausted newer derived tiers.
+
+Proof lives in `effects/stack.test.ts` and
+`scenarios/end-turn-suspension-before-security.test.ts`. Card definitions and
+effect snapshots are unchanged. This is a resolver correction, not a full audit
+of the cards' unrelated printed clauses.
+
+The two derived-trigger conformance fakes now add their derived effect to
+`collect()` only when its event occurs, rather than using `canActivate()` to
+simulate a new trigger. Their expected ordering assertions are unchanged.
+The Gallantmon replay's state-version and event-count expectations are refreshed
+because exhausted-trigger narration now precedes the next pending decision;
+its inputs and behavioral assertions are unchanged. A baseline/fixed event
+comparison at the first affected decision produced identical event payloads
+and ordering, with only the narration batch boundary changing.
+
+Validation includes the exact replay, minimal live-turn scenarios with and
+without a pre-existing opposing Digimon, resolver tests for both controllers,
+reentrant attack drains, simultaneous enabling effects, and affected conformance
+and card suites. Reverting only the resolver makes six new regression assertions
+fail. Browser/manual UI checks were not performed for this engine-only change.
+
+The broad suite also exposes 18 pre-existing failures, reproduced with the
+unchanged `develop` resolver, in these scenario files:
+
+- `alliance-after-evolution-turn-loop.test.ts`
+- `alliance-after-evolution.test.ts`
+- `apocalymon-security-kari.test.ts`
+- `cool-boy-king-drasil-reduced-royal-knight-play.test.ts`
+- `effect-attack-suspend-trigger-order.test.ts`
+- `evolution-and-inherited-effects.test.ts`
+- `evolution-and-removal-interactions.test.ts`
+- `evolution-cost-and-protection.test.ts`
+- `interrupting-dna-defers-when-digivolving.test.ts`
+- `jesmon-scramble.test.ts`
+- `opponent-derived-delay-before-pending-when-digivolving.test.ts`
+- `ruin-mode-on-play.test.ts`
+- `self-deletion-effect-continuation.test.ts`
+- `turn-player-block-triggers-resolve-first-replay.test.ts`
+- `would-leave-play-replacement-when-played-triggers.test.ts`
 
 ## Evolution watcher entry snapshot (2026-09-27)
 

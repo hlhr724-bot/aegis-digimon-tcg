@@ -516,6 +516,13 @@ raising areas. View board removes the shade until Return to decision; desktop
 side rails retain their clear field. `node tools/diagnostics/probe-decision-backdrop.mjs`
 checks production decision/ordering components over Arena and live Effects Lab boards.
 
+While the board is in view, the Return to decision bar opens on the left edge, level
+with the View board button that was pressed. The grip handle moves it by pointer or
+arrow keys. The moved position is saved in `localStorage`
+(`aegis.decisionReturn.position`) and reused, clamped to the viewport, every time the
+bar opens. Home clears the saved position. Phones keep the full-width strip below the
+opponent bar.
+
 Field return-to-deck now moves the whole upright physical stack for 250 ms with
 OutQuad easing, keeps its responsive size constant, then hides field chrome and
 fades the printed face for 160 ms. It targets the owner's actual Aegis pile.
@@ -816,3 +823,34 @@ only card arrivals. An end-of-turn effect that moves no card no longer lets "You
 play before its clause. `resultHold.test.tsx` and `turnHandoffHold.test.tsx` cover both;
 `/dev/arena?scenario=arena-issue-5065-lethal-attack-order` and
 `/dev/arena?scenario=arena-issue-5065-opponent-turn-end` reproduce them on a real server.
+
+## Effect targets, status pulses and phone prompts, 2026-10-14
+
+The API now emits `effectTargetsSelected` from every core targeting verb, not only
+from deletion: restrictions, attack-target locks, suspend and unsuspend, DP changes,
+keyword grants and returns to hand or deck. `verbs/emitEffectTargetsSelected.ts` owns
+the emission. It skips the resolving source itself, continuous auras and anything
+outside an effect resolution, and it emits each target once per resolution frame, so a
+clause that grants two keywords to one Digimon draws one amber arrow. The client needs
+no change: `presentBatch.ts` already turns the event into the tracking arrow and the
+target glow. Replay records that predate the event were re-baselined on their
+`stateVersion` and `engineEvents` counters only.
+
+The summoning-sickness ring now hangs from the lane's badge strip
+(`--field-lane-top`) instead of a percentage of the card, so its top star stays inside
+the lane's clip on phones and on tall desktop cards. The server projects
+`summoningSick` only for permanents whose effective kinds include Digimon, so a Tamer
+or Option played this turn wears no ring and reads no "can't attack yet" label.
+
+`useRestrictionPulses.ts` now reads `readStatusFlags.ts` and raises a generic
+`buff` or `debuff` pulse beside the attack and block jolt. A buff is a granted
+keyword, an immunity, a protection or Security Attack gained; a debuff is any other
+restriction or Security Attack lost. The card lifts in a warm glow or sinks in a cold
+red one for `statusPulse` (600 ms), on the same track and causing-clause gate as the
+jolt, and sounds the DP pulse's buff or debuff cue. Reduced motion drops the motion.
+
+Phone activation prompts keep their bottom dock. The source-clear placement only caps
+the sheet to the room under the source card when that room holds eight clause lines
+(`MINIMUM_PROMPT_SPACE_PX`); otherwise the usual full sheet shows. The board decision
+rail carries the same move handle as the activation dialog (`PromptMoveHandle.tsx`),
+out of the Tab cycle, and a dragged sheet keeps the viewport gutters.

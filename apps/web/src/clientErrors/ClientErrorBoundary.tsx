@@ -2,20 +2,23 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 import { ClientErrorKind } from "@aegis/shared/clientErrors/ClientErrorKind";
 import { ClientErrorFallback } from "@/clientErrors/ClientErrorFallback";
 import { clientErrorReporter } from "@/clientErrors/clientErrorReporter";
+import { isChunkLoadError } from "@/clientErrors/isChunkLoadError";
 
 type ClientErrorBoundaryProps = {
   children: ReactNode;
+  fallback?: ReactNode;
 };
 
 type ClientErrorBoundaryState = {
   failed: boolean;
+  loadFailed: boolean;
 };
 
 export class ClientErrorBoundary extends Component<ClientErrorBoundaryProps, ClientErrorBoundaryState> {
-  override state: ClientErrorBoundaryState = { failed: false };
+  override state: ClientErrorBoundaryState = { failed: false, loadFailed: false };
 
-  static getDerivedStateFromError(): ClientErrorBoundaryState {
-    return { failed: true };
+  static getDerivedStateFromError(error: unknown): ClientErrorBoundaryState {
+    return { failed: true, loadFailed: isChunkLoadError(error) };
   }
 
   override componentDidCatch(error: unknown, info: ErrorInfo) {
@@ -27,6 +30,12 @@ export class ClientErrorBoundary extends Component<ClientErrorBoundaryProps, Cli
   }
 
   override render() {
-    return this.state.failed ? <ClientErrorFallback /> : this.props.children;
+    if (!this.state.failed) {
+      return this.props.children;
+    }
+    if (this.props.fallback !== undefined) {
+      return this.props.fallback;
+    }
+    return <ClientErrorFallback loadFailed={this.state.loadFailed} />;
   }
 }

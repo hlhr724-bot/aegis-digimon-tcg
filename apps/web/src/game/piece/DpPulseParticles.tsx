@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { DpPulse } from "../dpPulse";
 import { TIMINGS } from "../timings";
-import { formatDpDelta } from "./formatDpDelta";
+import { formatDp } from "@/design/formatDp";
 
 /** Where each DP particle leaves from, spread across the card rather than stacked. */
 const DP_PARTICLE_OFFSETS = [-34, -20, -7, 7, 20, 34];
@@ -30,7 +30,7 @@ export function DpPulseParticles({ pulse }: { pulse: DpPulse }) {
       {DP_PARTICLE_OFFSETS.map((offset, index) => (
         <i key={index} style={{ "--dp-particle-x": `${offset}px`, "--dp-particle-index": index } as CSSProperties} />
       ))}
-      <em>{formatDpDelta(Math.abs(pulse.to - pulse.from))}</em>
+      <em>{formatDp(Math.abs(pulse.to - pulse.from))}</em>
     </span>
   );
 }

@@ -1,3 +1,4 @@
+import type { MulliganCoordinatorState } from "#api/engine/turns/MulliganCoordinatorState";
 import { PendingDecision, type DecisionRequest, type GameState, type Seat } from "@aegis/shared";
 
 /**
@@ -31,6 +32,32 @@ export class MulliganCoordinator {
     private readonly state: GameState,
     private readonly transport: MulliganTransport,
   ) {}
+
+  getRuntimeState(): MulliganCoordinatorState {
+    this.assertSnapshotBoundary();
+    return { sequence: this.seq };
+  }
+
+  restoreRuntimeState(state: unknown): void {
+    this.assertSnapshotBoundary();
+    if (
+      state === null ||
+      typeof state !== "object" ||
+      !("sequence" in state) ||
+      typeof state.sequence !== "number" ||
+      !Number.isSafeInteger(state.sequence) ||
+      state.sequence < 0
+    ) {
+      throw new Error("Invalid mulligan sequence state");
+    }
+    this.seq = state.sequence;
+  }
+
+  private assertSnapshotBoundary(): void {
+    if (this.open !== undefined || this.state.pendingDecision !== undefined) {
+      throw new Error("Cannot snapshot or restore an open mulligan request");
+    }
+  }
 
   /** Is a mulligan window currently open (awaiting a `mulligan` intent)? */
   get isOpen(): boolean {

@@ -1,3 +1,5 @@
+import { locateMoveOrigins } from "#api/engine/effects/verbs/locateMoveOrigins";
+import { groupCardsByOrigin } from "#api/engine/effects/verbs/groupCardsByOrigin";
 import { Permanent, Zone, EffectTiming, CardInstance, type Seat, type ServerEvent } from "@aegis/shared";
 import {
   applyOverflow,
@@ -113,14 +115,16 @@ export function createTrashVerbs(pc: PrimitivesContext) {
     // can gate on its own hand.
     const handTrashedSeats = new Set<Seat>();
     const fromHand: { instanceId: string; cardId: string; seat: Seat }[] = [];
-    if (engine.fireSubTrigger) {
-      for (const p of state.players) {
-        if (p === undefined) continue;
-        for (const card of p.hand) {
-          if (!instanceIds.includes(card.instanceId)) continue;
-          handTrashedSeats.add(p.seat);
-          fromHand.push({ instanceId: card.instanceId, cardId: card.cardId, seat: p.seat });
+    for (const p of state.players) {
+      if (p === undefined) {
+        continue;
+      }
+      for (const card of p.hand) {
+        if (!instanceIds.includes(card.instanceId)) {
+          continue;
         }
+        handTrashedSeats.add(p.seat);
+        fromHand.push({ instanceId: card.instanceId, cardId: card.cardId, seat: p.seat });
       }
     }
     // "When an effect trashes this card in your battle area" (BT19-093, BT19-098, P-159) reads
@@ -137,6 +141,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
         }
       }
     }
+    const origins = locateMoveOrigins({ state, instanceIds });
     for (const instanceId of instanceIds) {
       // Options placed in the battle area are permanents, but their printed
       // trash cost names the Option card itself. Remove that permanent as a
@@ -183,18 +188,28 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       moved.filter((c) => underCard.has(c.instanceId)),
       state.turnSeat,
     );
-    if (moved.length > 0) {
+    for (const { cards, ...origin } of groupCardsByOrigin({ origins, cards: moved })) {
+      const fieldTrashes = trashedPermanents.filter((permanent) =>
+        cards.some((card) => card.instanceId === permanent.instanceId),
+      );
       engine.emit({
         kind: "cardsMoved",
-        instanceIds: moved.map((c) => c.instanceId),
-        from: "various",
+        instanceIds: cards.map((card) => card.instanceId),
+        ...origin,
         to: Zone.Trash,
-        ...(trashedPermanents.length > 0 ? { trashedPermanents } : {}),
+        ...(origin.from === Zone.Deck || origin.from === Zone.Hand
+          ? {
+              cardIds: cards.map((card) => card.cardId),
+              artIds: cards.map((card) => card.artId || card.cardId),
+              seat: cards[0]!.ownerSeat,
+            }
+          : {}),
+        ...(fieldTrashes.length > 0 ? { trashedPermanents: fieldTrashes } : {}),
         ...(opts?.trashedSources !== undefined
           ? {
-              cardIds: moved.map((c) => c.cardId),
-              artIds: moved.map((c) => c.artId || c.cardId),
-              seat: moved[0]!.ownerSeat,
+              cardIds: cards.map((card) => card.cardId),
+              artIds: cards.map((card) => card.artId || card.cardId),
+              seat: cards[0]!.ownerSeat,
               trashedSources: opts.trashedSources,
             }
           : {}),
@@ -247,22 +262,26 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       }
       await engine.fireDiscardedFromSecurity?.(discardedFromSecurity);
     }
-    // Fire once per seat whose hand actually lost a card (the move may have skipped some ids).
-    for (const seat of handTrashedSeats) {
-      const handTrashedInstanceIds = fromHand
+    const handTrashedInstanceIdsOf = (seat: Seat): string[] =>
+      fromHand
         .filter((entry) => entry.seat === seat && movedIds.has(entry.instanceId))
         .map((entry) => entry.instanceId);
-      if (handTrashedInstanceIds.length > 0)
-        await engine.fireSubTrigger!("whenHandTrashed", {
+    // Fire once per seat whose hand actually lost a card (the move may have skipped some ids).
+    for (const seat of handTrashedSeats) {
+      const handTrashedInstanceIds = handTrashedInstanceIdsOf(seat);
+      if (handTrashedInstanceIds.length > 0) {
+        await engine.fireSubTrigger?.("whenHandTrashed", {
           handTrashedSeat: seat,
           handTrashedInstanceIds,
           ...(opts?.byEffectSeat !== undefined ? { byEffectSeat: opts.byEffectSeat } : {}),
         });
+      }
     }
     for (const entry of fromHand) {
       if (!movedIds.has(entry.instanceId)) continue;
-      await engine.fireSubTrigger!("whenTrashedFromHand", {
+      await engine.fireSubTrigger?.("whenTrashedFromHand", {
         handTrashedSeat: entry.seat,
+        handTrashedInstanceIds: handTrashedInstanceIdsOf(entry.seat),
         trashedFromHandCardId: entry.cardId,
         trashedFromHandInstanceId: entry.instanceId,
         ...(opts?.byEffectSeat !== undefined ? { byEffectSeat: opts.byEffectSeat } : {}),
@@ -336,6 +355,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
           [...seat.battleArea].map(({ permanentId, currentDP }) => ({ permanentId, currentDP })),
         )
       : undefined;
+    const discardedHostSnapshot = hostBeforeTrash.clone();
     const topStackCardInstanceId = hostBeforeTrash?.stack.at(-1)?.instanceId;
     const faceDownBeforeTrash = new Set(
       hostBeforeTrash?.stack.filter((card) => !card.faceUp).map((card) => card.instanceId) ?? [],
@@ -362,6 +382,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       if (opts?.isDigiBurst === true) {
         await engine.fireSubTrigger("onDigiBurstCardDiscarded", {
           subjectPermanentId: hostPermanentId,
+          trashedDigivolutionHost: discardedHostSnapshot,
           trashedDigivolutionInstanceIds: moved.map((card) => card.instanceId),
           ...(opts.byEffectSeat !== undefined ? { byEffectSeat: opts.byEffectSeat } : {}),
           ...(opts.byEffectCardId !== undefined ? { byEffectCardId: opts.byEffectCardId } : {}),
@@ -373,6 +394,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
       // the other just-trashed sources' subscriptions.
       await engine.fireSubTrigger("onDigivolutionCardsDiscardedBatch", {
         subjectPermanentId: hostPermanentId,
+        trashedDigivolutionHost: discardedHostSnapshot,
         trashedDigivolutionInstanceIds: moved.map((card) => card.instanceId),
         trashedFaceDownDigivolutionInstanceIds: moved
           .filter((card) => faceDownBeforeTrash.has(card.instanceId))
@@ -391,6 +413,7 @@ export function createTrashVerbs(pc: PrimitivesContext) {
         // permanent (the host / another card), so they are order-insensitive.
         await engine.fireSubTrigger("onDigivolutionCardDiscarded", {
           subjectPermanentId: hostPermanentId,
+          trashedDigivolutionHost: discardedHostSnapshot,
           trashedDigivolutionInstanceId: trashedCard.instanceId,
           ...(opts?.byEffectSeat !== undefined ? { byEffectSeat: opts.byEffectSeat } : {}),
           ...(opts?.byEffectCardId !== undefined ? { byEffectCardId: opts.byEffectCardId } : {}),

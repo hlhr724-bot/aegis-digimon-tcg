@@ -1,3 +1,6 @@
+import { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
+import { grantTournamentTrophies } from "#api/achievements/grantTournamentTrophies";
+import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
 import { randomUUID } from "node:crypto";
 import type {
   LedgerEntry,
@@ -15,7 +18,7 @@ import type { Queryable } from "../../db/migrator.js";
 import { appendTournamentEvent } from "../audit/index.js";
 import { pairSwissRound, type PairingParticipant, type SwissPairingResult } from "../pairing/index.js";
 import { type AcquireTournamentLock, inProcessTournamentLock } from "../participants/index.js";
-import { BANDAI_GENERAL_PRESET, freezeStructure } from "../rules/index.js";
+import { freezeStructure } from "../rules/index.js";
 import type { SeriesStore } from "../series/index.js";
 import { computeStandings } from "../standings/index.js";
 
@@ -26,6 +29,7 @@ export type SwissFailure =
   | "participant_without_account"
   | "pairing_failed"
   | "round_not_found"
+  | "round_not_ready"
   | "round_has_open_matches"
   | "round_already_published"
   | "match_needs_organizer_decision";
@@ -36,6 +40,7 @@ export type SwissResult<T> = { ok: true; value: T } | { ok: false; reason: Swiss
 export type RoundCloseOutcome =
   | { kind: "not_complete" }
   | { kind: "already_closed" }
+  | { kind: "awaiting_manual_start" }
   | { kind: "next_round_published"; roundNumber: number }
   | { kind: "phase_frozen_for_top_cut"; topCutSize: number }
   | { kind: "tournament_finished"; winnerParticipantId: string | null };
@@ -115,8 +120,12 @@ export class SwissProgram {
         [phaseId, tournamentId, frozen.swissRounds, now],
       );
 
-      const published = await this.publishRound(client, tournament, phaseId, 1, now);
-      if (!published.ok) return published;
+      if (tournament.roundStartMode !== TournamentRoundStartMode.MANUAL.value) {
+        const published = await this.publishRound(client, tournament, phaseId, 1, now);
+        if (!published.ok) {
+          return published;
+        }
+      }
       const phase = (await readPhase(client, tournamentId))!;
       return ok(await this.phaseView(client, tournament, phase));
     });
@@ -146,6 +155,9 @@ export class SwissProgram {
       if (round.status === "closed") return ok({ kind: "already_closed" } as const);
       const tournament = await lockTournament(client, context.tournamentId);
       if (!tournament) return failure("tournament_not_found");
+      if (tournament.status !== "in_progress") {
+        return failure("round_not_ready");
+      }
       const phase = (await readPhaseById(client, round.phaseId))!;
 
       const results = await this.roundResults(client, tournament.id, roundId);
@@ -175,6 +187,9 @@ export class SwissProgram {
 
       const plannedRounds = phase.plannedRounds ?? round.number;
       if (round.number < plannedRounds) {
+        if (tournament.roundStartMode === TournamentRoundStartMode.MANUAL.value) {
+          return ok({ kind: "awaiting_manual_start" } as const);
+        }
         const published = await this.publishRound(client, tournament, phase.id, round.number + 1, now);
         if (!published.ok) return published;
         return ok({ kind: "next_round_published", roundNumber: round.number + 1 } as const);
@@ -214,6 +229,12 @@ export class SwissProgram {
         phaseId: phase.id,
         participantId: winner?.participantId ?? null,
         after: { winnerParticipantId: winner?.participantId ?? null, winnerAccountId },
+        now,
+      });
+      await grantTournamentTrophies({
+        db: client,
+        tournamentId: tournament.id,
+        standings: async () => standings,
         now,
       });
       return ok({ kind: "tournament_finished", winnerParticipantId: winner?.participantId ?? null } as const);
@@ -277,9 +298,13 @@ export class SwissProgram {
   }
 
   /** One tournament's share of {@link sweepOpenTournaments}. True when it actually moved. */
-  private async sweepTournament(tournamentId: string, now: number): Promise<boolean> {
+  async sweepTournament(tournamentId: string, now: number): Promise<boolean> {
     const phase = await readPhase(this.accounts.pool, tournamentId);
     if (!phase || phase.status !== "running") return false;
+    const tournament = await readTournament(this.accounts.pool, tournamentId);
+    if (!tournament || tournament.status === "cancelled" || tournament.status === "finished") {
+      return false;
+    }
     const rounds = await readRounds(this.accounts.pool, phase.id);
     const open = rounds.find((round) => round.status !== "closed");
 
@@ -295,6 +320,9 @@ export class SwissProgram {
     // No open round at all. Either the event is done, or a publication failed and rolled back.
     const closedRounds = rounds.filter((round) => round.status === "closed").length;
     if (phase.plannedRounds === null || closedRounds >= phase.plannedRounds) return false;
+    if (tournament.roundStartMode === TournamentRoundStartMode.MANUAL.value) {
+      return false;
+    }
     const republished = await this.republishNextRound(tournamentId, phase.id, closedRounds + 1, now);
     if (!republished.ok)
       console.error(
@@ -309,10 +337,21 @@ export class SwissProgram {
     phaseId: string,
     roundNumber: number,
     now: number,
+    manual = false,
   ): Promise<SwissResult<number>> {
     return this.mutate(tournamentId, async (client) => {
       const tournament = await lockTournament(client, tournamentId);
       if (!tournament) return failure("tournament_not_found");
+      if (
+        tournament.status !== "in_progress" ||
+        (!manual && tournament.roundStartMode === TournamentRoundStartMode.MANUAL.value)
+      ) {
+        return failure("round_not_ready");
+      }
+      const rounds = await readRounds(client, phaseId);
+      if (rounds.some((round) => round.status !== "closed") || roundNumber !== rounds.length + 1) {
+        return failure("round_not_ready");
+      }
       // Re-checked under the lock: another worker may have published it since the scan.
       const existing = await client.query("SELECT 1 FROM tournament_rounds WHERE phase_id=$1 AND number=$2", [
         phaseId,
@@ -323,6 +362,20 @@ export class SwissProgram {
       if (!published.ok) return published;
       return ok(roundNumber);
     });
+  }
+
+  async startNextRound(tournamentId: string, now = Date.now()): Promise<SwissResult<number>> {
+    await this.accounts.ensureReady();
+    const phase = await readPhase(this.accounts.pool, tournamentId);
+    if (!phase || phase.status !== "running") {
+      return failure("round_not_ready");
+    }
+    const rounds = await readRounds(this.accounts.pool, phase.id);
+    const next = rounds.length + 1;
+    if (next > (phase.plannedRounds ?? 0)) {
+      return failure("round_not_ready");
+    }
+    return this.republishNextRound(tournamentId, phase.id, next, now, true);
   }
 
   /** Every phase of a tournament as the wire shape the detail view renders. */
@@ -369,6 +422,7 @@ export class SwissProgram {
       ledger,
       standings: standingsConfig(tournament.rules, tournament.id),
       participants: roster.map((participant) => ({ id: participant.id, seed: participant.seed })),
+      drawSeed: tournament.id,
     });
   }
 
@@ -779,6 +833,8 @@ type MatchOutcomeRow = {
 
 type TournamentContext = {
   id: string;
+  status: string;
+  roundStartMode: TournamentRoundStartMode;
   structure: string;
   topCutEnabled: boolean;
   topCutSize: number | null;
@@ -846,7 +902,7 @@ export function standingsConfig(
   rules: TournamentRules | null,
   tournamentId = "unknown-tournament",
 ): TournamentRules["standings"] {
-  const standings = rules?.standings ?? BANDAI_GENERAL_PRESET.standings;
+  const standings = rules?.standings ?? buildTournamentRules({ bestOf: 3 }).standings;
   const translated = standings.tiebreakers.map((tiebreaker) => TIEBREAKER_ALIASES[tiebreaker] ?? tiebreaker);
   const usable = translated.filter((tiebreaker) => KNOWN_TIEBREAKERS.has(tiebreaker));
   if (usable.length !== translated.length && !reportedUnknownTiebreakers.has(tournamentId)) {
@@ -860,7 +916,7 @@ export function standingsConfig(
 }
 
 function joinGraceMs(rules: TournamentRules | null): number {
-  return rules?.attendance.joinGraceMs ?? BANDAI_GENERAL_PRESET.attendance.joinGraceMs;
+  return rules?.attendance.joinGraceMs ?? buildTournamentRules({ bestOf: 3 }).attendance.joinGraceMs;
 }
 
 /**
@@ -901,7 +957,7 @@ function pairingParticipants(
   }));
 }
 
-const TOURNAMENT_COLUMNS = "id, structure, top_cut_enabled, top_cut_size, rules_snapshot";
+const TOURNAMENT_COLUMNS = "id, status, round_start_mode, structure, top_cut_enabled, top_cut_size, rules_snapshot";
 
 async function readTournament(db: Queryable, id: string): Promise<TournamentContext | undefined> {
   const row = (await db.query<TournamentRow>(`SELECT ${TOURNAMENT_COLUMNS} FROM tournaments WHERE id=$1`, [id]))
@@ -918,6 +974,8 @@ async function lockTournament(client: PoolClient, id: string): Promise<Tournamen
 
 type TournamentRow = {
   id: string;
+  status: string;
+  round_start_mode: TournamentRoundStartMode;
   structure: string;
   top_cut_enabled: boolean | null;
   top_cut_size: string | number | null;
@@ -928,6 +986,8 @@ function toTournamentContext(row: TournamentRow): TournamentContext {
   return {
     id: row.id,
     structure: row.structure,
+    status: row.status,
+    roundStartMode: row.round_start_mode,
     topCutEnabled: row.top_cut_enabled === true,
     topCutSize: row.top_cut_size === null ? null : Number(row.top_cut_size),
     rules: typeof row.rules_snapshot === "string" ? JSON.parse(row.rules_snapshot) : row.rules_snapshot,

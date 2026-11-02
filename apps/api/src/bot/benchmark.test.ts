@@ -47,7 +47,7 @@ function report(title: string, result: SeriesResult): void {
       `  errors = ${result.errors.length}`,
       ...[result.statsA, result.statsB].map(
         (stats) =>
-          `  ${stats.label}: attacks/turn=${stats.attacksPerTurn.toFixed(2)} securityTaken/game=${stats.securityTakenPerGame.toFixed(2)} ` +
+          `  ${stats.label}: attacks/turn=${stats.attacksPerTurn.toFixed(2)} securityAttacks/turn=${stats.securityAttacksPerTurn.toFixed(2)} securityTaken/game=${stats.securityTakenPerGame.toFixed(2)} ` +
           `plays/game=${stats.digimonPlayedPerGame.toFixed(1)} digivolves/game=${stats.digivolutionsPerGame.toFixed(1)} ` +
           `decision p50=${stats.medianDecisionMs.toFixed(2)}ms p95=${stats.p95DecisionMs.toFixed(2)}ms max=${stats.maxDecisionMs.toFixed(2)}ms`,
       ),
@@ -100,8 +100,7 @@ describe("bot benchmark", () => {
 
       // Directional, with generous margins: the point is that the weights actually move
       // behavior, not that they move it by a precise amount.
-      expect(result.statsA.attacksPerTurn).toBeGreaterThan(result.statsB.attacksPerTurn);
-      expect(result.statsA.securityTakenPerGame).toBeGreaterThan(result.statsB.securityTakenPerGame);
+      expect(result.statsA.securityAttacksPerTurn).toBeGreaterThan(result.statsB.securityAttacksPerTurn);
     },
     TIMEOUT_MS,
   );

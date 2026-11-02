@@ -11,6 +11,7 @@ import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
 import { registeredCompiledCards } from "../../engine/effects/interpreter/compiledCards.js";
 import { compiled } from "./EX12-064.js";
+import "#api/cards/BT20/BT20-037";
 
 describe("EX12-064 Megadramon", () => {
   it("maps the catalog, evolution, delete fallback, trait watcher, and inherited cost", () => {
@@ -177,6 +178,54 @@ describe("EX12-064 Megadramon", () => {
 
     expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard?.cardId)).toEqual(["BT1-009"]);
     expect(s.perm("high").stack).toHaveLength(0);
+  });
+
+  it("reactivates When Digivolving after Assembly while Valdur Arm disables On Play", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT20-035", as: "base", under: ["BT20-036"] }],
+          hand: [{ card: "BT20-037", as: "valdur" }],
+          deck: ["BT1-010", "BT1-010"],
+        },
+        1: {
+          battleArea: [{ card: "BT1-010", as: "target" }],
+          hand: [{ card: "EX12-064", as: "megadramon" }],
+          trash: [{ card: "EX12-054", as: "material" }],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, autoOrderTriggers: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("valdur").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("base").topCard.cardId === "BT20-037");
+    await settle();
+    s.state.turnSeat = 1;
+    s.state.memory = 10;
+    expect(
+      s.engine.applyIntent(1, {
+        type: "playCard",
+        instanceId: s.inst("megadramon").instanceId,
+        assembly: { materialInstanceIds: [s.inst("material").instanceId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("base").topCard.cardId === "BT20-035");
+    expect(s.perm("base").stack.map((card) => card.cardId)).toEqual(["BT20-036"]);
+    expect(s.state.players[0]!.trash.map((card) => card.cardId)).toEqual(["BT20-037"]);
+    expect(
+      s.state.players[1]!.battleArea.find((permanent) => permanent.topCard.cardId === "EX12-064")!.stack.map(
+        (card) => card.cardId,
+      ),
+    ).toEqual(["EX12-054"]);
+    expect(s.state.memory).toBe(5);
+    expect(s.state.pendingDecision).toBeUndefined();
   });
 
   it("Q6862 must delete an available level 4 or lower Digimon instead of taking the De-Digivolve branch", async () => {

@@ -294,8 +294,9 @@ describe("BT23-071 Dullahamon", () => {
           hand: [{ card: "BT23-071", as: "dullahamon" }],
           deck: ["BT1-010", "BT1-011", "BT1-012"],
         },
+        1: { security: Array(5).fill("BT1-010") },
       },
-      { autoAcceptOptional: true, autoSelectCards: true },
+      { autoDeclineOptional: true, autoSelectCards: true },
     );
     await s.ready();
     s.state.memory = 6;
@@ -310,7 +311,9 @@ describe("BT23-071 Dullahamon", () => {
     await settle(() => s.perm("phantomon").currentDP === 19000);
     expect(s.perm("phantomon").currentDP).toBe(19000);
 
+    expect(s.state.gameOver).toBe(false);
     await advance(s.engine).runTurn(s.state.turnSeat);
+    expect(s.state.gameOver).toBe(false);
     expect(s.perm("phantomon").currentDP).toBe(14000);
   });
 

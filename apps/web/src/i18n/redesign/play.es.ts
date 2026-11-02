@@ -16,4 +16,7 @@ export const playEs: Record<keyof typeof playEn, string> = {
   "redesign.play.collection": "Colección",
   "redesign.play.allCollections": "Todas las colecciones",
   "redesign.play.collectionOption": "{collection} ({count})",
+  "redesign.play.tab.match": "Partida",
+  "redesign.play.tab.ranked": "Clasificatoria",
+  "redesign.play.tab.rooms": "Salas",
 };

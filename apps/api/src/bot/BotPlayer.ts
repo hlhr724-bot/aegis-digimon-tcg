@@ -1,3 +1,6 @@
+import type { BotThinkRange } from "#api/bot/BotThinkRange";
+import type { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
+import { performance } from "node:perf_hooks";
 import {
   Phase,
   CARD_ARRIVAL_NARRATION_MS,
@@ -22,6 +25,7 @@ import { createEvaluationPolicy, type BotPolicy } from "./policy.js";
 import { resolveBotProfile, type BotProfile, type BotProfileName } from "./profiles.js";
 import { createBotRandom } from "./rng.js";
 import { buildBotView, type BotView } from "./view.js";
+import type { LiveSearchFallbackCounts } from "#api/bot/search/LiveSearchFallback";
 
 /* Default think-time window (ms). It is a window rather than a fixed beat so a
    run of actions does not tick out metronomically, and it is this long because
@@ -60,6 +64,7 @@ const PRESENTATION_POLL_MS = 50;
 const MAX_MAIN_PHASE_ACTIONS = 40;
 
 export interface BotOptions {
+  difficulty?: BotDifficulty;
   minThinkMs?: number;
   maxThinkMs?: number;
   /** Personality. Weights only — every profile runs the same evaluation. */
@@ -71,7 +76,8 @@ export interface BotOptions {
   /** Maximum time for an asynchronous policy answer, before using the heuristic. */
   policyTimeoutMs?: number;
   /** Replaces the think delay. The headless benchmark passes a microtask yield. */
-  thinkDelay?: () => Promise<void>;
+  thinkDelay?: (range: BotThinkRange) => Promise<void>;
+  getLegalCandidateCount?: () => number;
   /** Headless training waits for engine continuations before requesting a move. */
   canChooseMainAction?: () => boolean;
   /** Training can use Infinity and enforce an explicit episode truncation externally. */
@@ -116,6 +122,7 @@ export class BotPlayer {
   private readonly fallbackPolicy: BotPolicy;
   private readonly policyTimeoutMs: number;
   private readonly fallbackCounts = { timeout: 0, error: 0 };
+  private readonly policyDecisionLatenciesMs: number[] = [];
   private pendingPolicyDecisions = 0;
   private eventRevision = 0;
   /** Narration the opposing client still owes the last attack, in milliseconds. */
@@ -162,7 +169,7 @@ export class BotPlayer {
     const injected = options.thinkDelay;
     this.usesRealTimePacing = injected === undefined;
     this.pause = injected
-      ? () => injected()
+      ? (minMs, maxMs) => injected({ minMs, maxMs })
       : (minMs, maxMs) =>
           new Promise<void>((resolve) => setTimeout(resolve, minMs + Math.floor(random.next() * (maxMs - minMs + 1))));
   }
@@ -203,6 +210,31 @@ export class BotPlayer {
   /** Counts fallback selections separately from successful inference and discarded stale requests. */
   get inferenceFallbacks(): Readonly<{ timeout: number; error: number }> {
     return { ...this.fallbackCounts };
+  }
+
+  get searchFallbacks(): Readonly<LiveSearchFallbackCounts> | undefined {
+    return this.policy.searchFallbacks?.();
+  }
+
+  get searchErrors(): Readonly<Record<string, number>> | undefined {
+    return this.policy.searchErrors?.();
+  }
+
+  get policyDecisionLatencySummary(): {
+    decisions: number;
+    p50Ms: number | null;
+    p95Ms: number | null;
+    maxMs: number | null;
+  } {
+    const sorted = [...this.policyDecisionLatenciesMs].sort((left, right) => left - right);
+    const quantile = (fraction: number): number | null =>
+      sorted.length === 0 ? null : sorted[Math.max(0, Math.ceil(sorted.length * fraction) - 1)]!;
+    return {
+      decisions: sorted.length,
+      p50Ms: quantile(0.5),
+      p95Ms: quantile(0.95),
+      maxMs: sorted.at(-1) ?? null,
+    };
   }
 
   /** Minimal scheduler state for headless stall diagnostics. */
@@ -266,18 +298,26 @@ export class BotPlayer {
       // A decision can finish a combat or effect that also ends the turn. The new
       // phaseChanged event owns the next turn; this stale callback must not act in it.
       if (this.state.turnCount !== requestedTurnCount || this.state.turnSeat !== this.seat) return;
+      if (
+        request.options?.promptKey === "activateBlitz" &&
+        intent.type === "respondDecision" &&
+        intent.response.kind === "optional" &&
+        intent.response.accept
+      ) {
+        this.declareBlitzAttack();
+        return;
+      }
       if (this.state.phase === Phase.Breeding) this.runBreedingPhase();
       else if (this.state.phase === Phase.Main) this.startMainPhaseLoop();
-      else if (request.options?.promptKey === "activateBlitz") this.declareBlitzAttackOutsideMain();
     });
   }
 
   /**
    * An activated ＜Blitz＞ attacks inside the effect that processed it, and that effect can
-   * resolve outside Main ([End of Your Turn]). It waits for this seat's attack declaration,
-   * which the Main loop is not running to send.
+   * resolve inside or outside Main. Declare its attack directly: the ordinary Main
+   * readiness gate waits for that effect to finish and cannot drive this declaration.
    */
-  private declareBlitzAttackOutsideMain(): void {
+  private declareBlitzAttack(): void {
     const view = this.view();
     const attack = view === undefined ? undefined : attackCandidates(view)[0];
     if (attack !== undefined) this.act(attack.intent);
@@ -469,9 +509,20 @@ export class BotPlayer {
     fallback: () => Intent,
     current: () => boolean,
   ): Intent | Promise<Intent | undefined> {
+    const startedAt = performance.now();
+    const recordLatency = () => this.policyDecisionLatenciesMs.push(performance.now() - startedAt);
     const controller = new AbortController();
-    const answer = choose(controller.signal);
-    if (!(answer instanceof Promise)) return answer;
+    let answer: Intent | Promise<Intent>;
+    try {
+      answer = choose(controller.signal);
+    } catch (error) {
+      recordLatency();
+      throw error;
+    }
+    if (!(answer instanceof Promise)) {
+      recordLatency();
+      return answer;
+    }
     this.pendingPolicyDecisions++;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<{ reason: "timeout" }>((resolve) => {
@@ -499,6 +550,7 @@ export class BotPlayer {
         return fallback();
       })
       .finally(() => {
+        recordLatency();
         this.cancelPolicyDecisions.delete(cancel);
         this.pendingPolicyDecisions--;
       });
@@ -712,7 +764,8 @@ export class BotPlayer {
    */
   private async nextActionDelay(): Promise<void> {
     const narration = Math.max(0, this.narrationUntil - Date.now());
-    await this.pause(Math.max(this.minThinkMs, narration), Math.max(this.maxThinkMs, narration));
+    const range = this.getActionDelayRange({ minMs: this.minThinkMs, maxMs: this.maxThinkMs });
+    await this.pause(Math.max(range.minMs, narration), Math.max(range.maxMs, narration));
     // More checks can arrive while this seat is already waiting to act.
     while (!this.disposed && this.usesRealTimePacing && this.narrationUntil > Date.now()) {
       const remaining = this.narrationUntil - Date.now();
@@ -724,11 +777,26 @@ export class BotPlayer {
    * The beat before a breeding or main-phase action of this seat's own. Decision answers keep
    * the estimate: a client can hold a dock open until that very answer arrives.
    */
+  private getActionDelayRange({ minMs, maxMs }: BotThinkRange): BotThinkRange {
+    const count = this.options.getLegalCandidateCount?.();
+    if (count === undefined || !Number.isSafeInteger(count) || count < 1) {
+      return { minMs, maxMs };
+    }
+    if (count === 1) {
+      return { minMs: Math.round(minMs * 0.2), maxMs: Math.round(maxMs * 0.2) };
+    }
+    return { minMs, maxMs: minMs + Math.round((maxMs - minMs) * Math.min(1, (count - 1) / 7)) };
+  }
+
   private async nextOwnActionDelay(): Promise<void> {
     const deadline = Date.now() + PRESENTATION_WAIT_CEILING_MS;
     if (!(await this.waitForOpponentPresentation(deadline))) return this.nextActionDelay();
     do {
-      await this.pause(PRESENTED_ACTION_BEAT_MIN_MS, PRESENTED_ACTION_BEAT_MAX_MS);
+      const range = this.getActionDelayRange({
+        minMs: PRESENTED_ACTION_BEAT_MIN_MS,
+        maxMs: PRESENTED_ACTION_BEAT_MAX_MS,
+      });
+      await this.pause(range.minMs, range.maxMs);
       // A turn change can reach the client during the beat, starting its ribbons.
     } while (
       !this.presentationSettled() &&

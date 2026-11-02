@@ -39,13 +39,13 @@ scenario("modal-choice", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 0: seat 0 (protagonist) goes first and its dealt opening hand includes
+    // Seed 284: seat 0 (protagonist) goes first and its dealt opening hand includes
     // BT10-095 — found by exhaustively searching seeds for the swapped RED_DECK,
     // mirroring mulligan.scenario.test.tsx's seed-4 search.
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: PROTAGONIST_DECK.mainDeck, eggDeck: PROTAGONIST_DECK.eggDeck },
-      seed: 0,
+      seed: 284,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Red" startMode="casual" onExit={() => {}} />);
@@ -73,6 +73,8 @@ scenario("modal-choice", () => {
     const [rookieImg] = within(screen.getByTestId("hand")).getAllByRole("img", { name: /monodramon|biyomon/i });
     tap(rookieImg!);
     fireEvent.click(yourBreedingSlot());
+    const confirmation = await screen.findByRole("dialog", { name: "Confirm action" });
+    fireEvent.click(within(confirmation).getByRole("button", { name: /^digivolve$/i }));
     await vi.waitFor(
       () => expect(within(yourBreedingSlot()).getByRole("img", { name: /monodramon|biyomon/i })).toBeTruthy(),
       { timeout: 10_000 },

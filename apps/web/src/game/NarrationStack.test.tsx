@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { I18nContext } from "@/i18n/I18nContext";
+import { translator } from "@/i18n/translator";
 import { afterEach, expect, it, vi } from "vitest";
 import { I18nProvider } from "../i18n";
 import { CardOpenerProvider } from "./cardLinks";
@@ -10,6 +12,66 @@ import { Side } from "./side";
 import { TIMINGS } from "./timings";
 
 afterEach(cleanup);
+
+it("translates the folded card name without nesting a card-opening button", async () => {
+  const shown: NarrationItem = {
+    ...item("translated-name"),
+    notice: {
+      id: "translated-name",
+      side: Side.Viewer,
+      fromSecurity: false,
+      createdAt: 0,
+      body: { variant: "effect", cardId: "ST18-05", timing: "OnPlay", count: 2 },
+    },
+  };
+  const onOpenCard = vi.fn<(cardId: string) => void>();
+  const { container } = render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <CardOpenerProvider onOpenCard={onOpenCard}>
+        <NarrationStack
+          narration={new Map([[shown.id, shown]])}
+          compact
+          nowMs={0}
+          rejection={null}
+          onAdvance={() => undefined}
+          onDismissRejection={() => undefined}
+        />
+      </CardOpenerProvider>
+    </I18nContext.Provider>,
+  );
+  await waitFor(() => expect(container.querySelector(".narration-peek__name")?.textContent).toBe("五彩兽 ×2"));
+  expect(container.querySelector(".narration-peek button")).toBeNull();
+  expect(onOpenCard).not.toHaveBeenCalled();
+});
+
+it("translates the folded resolving clause using the notice card", async () => {
+  const shown: NarrationItem = {
+    ...item("translated-effect"),
+    notice: {
+      id: "translated-effect",
+      side: Side.Viewer,
+      fromSecurity: false,
+      createdAt: 0,
+      body: { variant: "effect", cardId: "LM-034", timing: "Main" },
+    },
+  };
+  const { container } = render(
+    <I18nContext.Provider value={{ locale: "zh-CN", t: translator("zh-CN"), setLocale: () => undefined }}>
+      <NarrationStack
+        narration={new Map([[shown.id, shown]])}
+        compact
+        nowMs={0}
+        rejection={null}
+        onAdvance={() => undefined}
+        onDismissRejection={() => undefined}
+      />
+    </I18nContext.Provider>,
+  );
+  await waitFor(() =>
+    expect(container.querySelector(".narration-peek__clause")?.textContent).toContain("蓝色/红色数码宝贝卡牌"),
+  );
+  expect(container.querySelector(".narration-peek__clause")?.textContent).not.toContain("内存值");
+});
 
 // The dock holds the upper right, which is the card column's corner — so that is the
 // column that steps out of its way.
@@ -484,7 +546,7 @@ it("draws a deletion as a titled panel, keeping the art the card was deleted in"
   // The same frame the trashed-cards list uses, rather than a second one beside it.
   expect(container.querySelector(".match-notice")).toBeNull();
   expect(panel.querySelector('img[src*="BT1-010_P2"]')).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Open Agumon" }));
+  fireEvent.click(screen.getByRole("button", { name: "Open Agumon (BT1-010)" }));
   expect(opened).toEqual([["BT1-010", "BT1-010_P2"]]);
 });
 

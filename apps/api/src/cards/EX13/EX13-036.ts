@@ -28,6 +28,7 @@ const dpDrop = (): Action[] => [
   {
     kind: "ModifyDP",
     playerWide: true,
+    effectTextPart: "All of your opponent's Digimon get -7000 DP.",
     target: { filter: theirDigimon, count: "all" },
     amount: -7000,
     duration: "forTheTurn",

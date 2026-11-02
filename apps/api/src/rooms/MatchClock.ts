@@ -1,8 +1,10 @@
+import { MatchInactivity } from "@aegis/shared/MatchInactivity";
 import {
   type GameState,
   type Seat,
   matchTimerSettings,
   type MatchTimerOptions,
+  MATCH_TIMER_OPPONENT_REFILL_SECONDS,
   MATCH_TIMER_DECISION_BONUS_SECONDS,
   MATCH_TIMER_DECISION_BONUS_MAX_SECONDS_PER_TURN,
   MULLIGAN_TIMER_SECONDS,
@@ -45,6 +47,8 @@ export class MatchClock {
   private presentEnd: [number, number] = [0, 0];
   private lastTurn = 0;
   private bonusTurn = 0;
+  private inactivityRemaining = MatchInactivity.decisionSeconds * 1000;
+  private inactivityKey: string | undefined;
   private bonusGranted: [number, number] = [0, 0];
 
   constructor(
@@ -52,6 +56,7 @@ export class MatchClock {
     options: Partial<MatchTimerOptions>,
     privateRoom: boolean,
     now: number,
+    private readonly inactivityEnabled = false,
   ) {
     const settings = matchTimerSettings(options, privateRoom);
     state.matchTimer = settings.enabled;
@@ -75,10 +80,16 @@ export class MatchClock {
     this.publish();
   }
 
-  update(now: number, inputSeat: Seat | undefined, mode: ClockMode = "match"): ClockExpiry | undefined {
+  update(
+    now: number,
+    inputSeat: Seat | undefined,
+    mode: ClockMode = "match",
+    inputKey?: string,
+  ): ClockExpiry | undefined {
     if (!this.state.matchTimer || this.state.gameOver) {
       this.running = undefined;
       this.state.timerActiveSeat = -1;
+      this.state.inactivitySeat = -1;
       this.lastTime = now;
       return;
     }
@@ -87,28 +98,53 @@ export class MatchClock {
       const bank = this.bank(charged.mode);
       const elapsed = Math.max(0, now - Math.max(this.lastTime, this.presentEnd[charged.seat]));
       bank[charged.seat] = Math.max(0, bank[charged.seat] - elapsed);
+      if (this.inactivityEnabled && charged.mode === "match") {
+        this.inactivityRemaining = Math.max(0, this.inactivityRemaining - elapsed);
+      }
       this.lastTime = now;
       // Expiry wins over a turn bonus or an answer arriving at the deadline.
-      if (bank[charged.seat] === 0) {
+      if (
+        bank[charged.seat] === 0 ||
+        (this.inactivityEnabled && charged.mode === "match" && this.inactivityRemaining === 0)
+      ) {
         this.running = undefined;
         this.publish();
         this.state.timerActiveSeat = -1;
+        this.state.inactivitySeat = -1;
         return { seat: charged.seat, clock: charged.mode };
       }
     }
     this.lastTime = now;
     if (this.state.turnCount > this.lastTurn) {
-      // Feedback #37: each turn has a fresh thinking window for both players,
-      // including the opponent's counters and effect choices. Time cannot be banked.
+      // The opening turn uses the initial reserve; later turns grant both seats their bonuses.
       if (this.lastTurn > 0) {
-        this.remaining = [this.state.timerStartSeconds * 1000, this.state.timerStartSeconds * 1000];
+        const owner = this.state.turnSeat;
+        const opponent = (1 - owner) as Seat;
+        this.addTime(owner, this.state.timerRefillSeconds * 1000);
+        this.addTime(opponent, MATCH_TIMER_OPPONENT_REFILL_SECONDS * 1000);
       }
       this.lastTurn = this.state.turnCount;
+    }
+    if (inputSeat !== undefined && inputKey !== undefined && inputKey !== this.inactivityKey) {
+      this.inactivityKey = inputKey;
+      this.inactivityRemaining = MatchInactivity.decisionSeconds * 1000;
     }
     this.running = inputSeat === undefined ? undefined : { seat: inputSeat, mode };
     this.publish();
     this.state.timerActiveSeat =
       inputSeat !== undefined && mode !== "frozen" && now >= this.presentEnd[inputSeat] ? inputSeat : -1;
+    this.state.inactivitySeat =
+      this.inactivityEnabled &&
+      inputSeat !== undefined &&
+      mode !== "mulligan" &&
+      this.state.pendingDecision?.kind !== "mulligan"
+        ? inputSeat
+        : -1;
+  }
+
+  resetInactivity(): void {
+    this.inactivityRemaining = MatchInactivity.decisionSeconds * 1000;
+    this.publish();
   }
 
   /**
@@ -162,6 +198,8 @@ export class MatchClock {
   }
 
   private publish(): void {
+    this.state.inactivityRemainingSeconds =
+      this.inactivityEnabled && this.state.matchTimer ? Math.ceil(this.inactivityRemaining / 1000) : 0;
     this.state.timerRemaining0 = Math.ceil(this.remaining[0] / 1000);
     this.state.timerRemaining1 = Math.ceil(this.remaining[1] / 1000);
     this.state.mulliganTimerRemaining0 = Math.ceil(this.mulliganRemaining[0] / 1000);

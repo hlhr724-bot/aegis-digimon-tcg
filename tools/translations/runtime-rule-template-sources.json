@@ -1,0 +1,33 @@
+{
+  "apps/api/src/engine/actions/blastDnaDigivolve.ts": [
+    "`＜Blast DNA Digivolve＞ ${fieldDefinition.nameEn} + ${handDefinition.nameEn} (hand)`"
+  ],
+  "apps/api/src/engine/combat/controller.ts": [
+    "`＜Fragment (${n})＞: trash ${n} of this Digimon's digivolution cards to prevent its deletion?`"
+  ],
+  "apps/api/src/engine/effects/detach.ts": [
+    "`＜Detach${traits.length > 0 ? \" (\" + traits.map((trait) => \"[\" + trait + \"] trait\").join(\"/\") + \")\" : \"\"}＞: trash 1 link card so ${name} doesn't leave the battle area.`"
+  ],
+  "apps/api/src/engine/effects/fragmentLeaveReplacements.ts": [
+    "`＜Fragment (${liveCount})＞: choose ${liveCount} of this Digimon's digivolution cards to trash.`",
+    "`＜Fragment (${liveCount})＞: trash ${liveCount} of this Digimon's digivolution cards to prevent its deletion?`"
+  ],
+  "apps/api/src/engine/effects/interpreter/actions/effectPlayDigiXros.ts": ["`＜DigiXros＞: ${text}`"],
+  "apps/api/src/engine/effects/interpreter/describe.ts": ["`＜Recovery +${amount}＞`"],
+  "apps/api/src/engine/effects/interpreter/matching/definition.ts": ["`＜${token}`"],
+  "apps/api/src/engine/effects/interpreter/registration/keywords.ts": [
+    "`＜Overclock [${trait}]＞: at the end of this turn, by deleting 1 of your Tokens or other [${trait}] trait Digimon, this Digimon attacks a player without suspending.`"
+  ],
+  "apps/api/src/engine/effects/verbs/deletion.ts": [
+    "`＜Fragment (${n})＞: trash ${n} of this Digimon's digivolution cards to prevent its deletion?`"
+  ],
+  "apps/api/src/engine/effects/verbs/placeUnder.ts": [
+    "`＜Material Save ${n}＞: When this Digimon would be deleted, you may place up to ${n} of its specified digivolution cards under one of your Tamers.`",
+    "`＜Material Save ${n}＞: choose ${requiredCount} specified digivolution card${requiredCount === 1 ? \"\" : \"s\"} to place under the Tamer, in order.`",
+    "`＜Material Save ${n}＞: place up to ${n} of this Digimon's specified digivolution cards under 1 of your Tamers?`"
+  ],
+  "apps/api/src/engine/gameEngine/digivolveSupport.ts": [
+    "`＜Arts Digivolve＞: digivolve one of your Digimon into [${definition.nameEn}] (${definition.cardId}) instead of trashing it?`",
+    "`＜Digisorption -${amount}＞: suspend 1 Digimon to reduce the digivolution cost by ${amount}?`"
+  ]
+}

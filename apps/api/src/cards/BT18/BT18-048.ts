@@ -69,6 +69,7 @@ export const compiled: CompiledCard = {
                   kind: ["Tamer"],
                 },
                 count: 1,
+                source: "thisDigimon",
               },
               from: ["digivolutionCards"],
               payCost: false,

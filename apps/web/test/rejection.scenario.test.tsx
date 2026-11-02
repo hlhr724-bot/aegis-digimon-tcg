@@ -33,13 +33,13 @@ scenario("rejection", () => {
     vi.stubEnv("VITE_AEGIS_API_URL", server.endpoint);
     const { GameScreen } = await import("../src/game/GameScreen");
 
-    // Seed 396 gives seat 0 BT1-025 WarGreymon (play cost 12). At memory 0 the
+    // Seed 6 gives seat 0 BT1-025 WarGreymon (play cost 12). At memory 0 the
     // server projection correctly marks it unavailable because the gauge bottoms
     // out at -10.
     const joinOptions: AegisJoinOptions & { seed?: number } = {
       displayName: "Protagonist",
       deck: { mainDeck: RED_DECK.mainDeck, eggDeck: RED_DECK.eggDeck },
-      seed: 396,
+      seed: 6,
     };
 
     render(<GameScreen joinOptions={joinOptions} identityColor="Red" startMode="casual" onExit={() => {}} />);

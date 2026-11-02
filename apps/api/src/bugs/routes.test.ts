@@ -281,7 +281,7 @@ describe("submitting a bug report", () => {
 describe("feedback persistence and administrator access", () => {
   async function adminCookie() {
     const admin = await harness.store.accountForIdentity("discord", "admin", "Vn");
-    await harness.store.pool.query("UPDATE accounts SET is_admin=true WHERE id=$1", [admin.id]);
+    await harness.store.pool.query("UPDATE accounts SET roles=ARRAY['admin'] WHERE id=$1", [admin.id]);
     const session = await harness.store.issueSession(admin);
     return `aegis_session=${session.id}`;
   }
@@ -333,7 +333,7 @@ describe("feedback persistence and administrator access", () => {
   it("rechecks the administrator permission on every read", async () => {
     const cookie = await adminCookie();
     expect((await list(cookie)).status).toBe(200);
-    await harness.store.pool.query("UPDATE accounts SET is_admin=false WHERE display_name='Vn'");
+    await harness.store.pool.query("UPDATE accounts SET roles=ARRAY[]::text[] WHERE display_name='Vn'");
     expect((await list(cookie)).status).toBe(403);
   });
 

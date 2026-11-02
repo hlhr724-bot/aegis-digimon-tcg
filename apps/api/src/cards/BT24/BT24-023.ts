@@ -81,22 +81,6 @@ export const compiled: CompiledCard = {
           },
           to: "deckBottom",
         },
-        {
-          kind: "Restrict",
-          target: {
-            filter: {
-              controller: "opponent",
-              kind: ["Digimon", "Tamer"],
-            },
-            count: 1,
-          },
-          restriction: "suspend",
-          duration: "untilOpponentTurnEnd",
-          condition: {
-            kind: "triggerEnteredByEffect",
-            raw: "played by effects",
-          },
-        },
       ],
     },
     {
