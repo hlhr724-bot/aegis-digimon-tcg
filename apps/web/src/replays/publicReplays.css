@@ -131,10 +131,19 @@
 
 .public-replays-screen {
   display: grid;
+  align-content: start;
   gap: var(--ds-space-4);
-  width: min(100%, 1120px);
-  margin: 0 auto;
-  padding: var(--ds-space-6) var(--ds-space-4);
+  width: 100%;
+  height: calc(100% - var(--ds-nav-height-wide));
+  overflow-y: auto;
+  padding: var(--ds-space-6) max(var(--ds-space-4), calc((100% - 1120px) / 2 + var(--ds-space-4)));
+}
+
+@media (max-width: 959px) {
+  .public-replays-screen {
+    height: 100%;
+    padding-bottom: calc(var(--ds-nav-height-narrow) + env(safe-area-inset-bottom) + var(--ds-space-6));
+  }
 }
 
 .public-replays-screen__header {
