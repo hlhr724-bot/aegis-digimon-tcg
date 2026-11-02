@@ -178,6 +178,7 @@ export default defineConfig({
             "src/game/piece/handEffectSourceMarks.test.tsx",
             "src/game/overlay/viewer/trashEffectSourceMarks.test.tsx",
             "src/game/log/**/*.test.tsx",
+            "src/game/noticeSize/**/*.test.tsx",
             "src/deckProviders/**/*.test.tsx",
             "src/learn/**/*.test.tsx",
             "src/game/tutorial/**/*.test.tsx",
@@ -200,6 +201,10 @@ export default defineConfig({
       {
         extends: true,
         test: { name: "match-log-ui", include: ["src/game/log/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
+        test: { name: "notice-size-ui", include: ["src/game/noticeSize/**/*.test.tsx"], environment: "jsdom" },
       },
       {
         extends: true,

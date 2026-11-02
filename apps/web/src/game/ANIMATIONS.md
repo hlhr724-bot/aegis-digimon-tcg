@@ -698,6 +698,36 @@ progress bar, and the stacked-clause cap in `supersedeEffectClauses`. The refusa
 keeps its fixed clock, because it answers the viewer's own action rather than narrating
 an effect.
 
+## Notice size
+
+The Notice size setting (`noticeSize/NoticeSize.ts`) makes effect notices and card
+panels smaller so they cover less of the board. Each entry carries two factors:
+
+| Option  | Geometry (`scale`) | Text (`textScale`) |
+| ------- | ------------------ | ------------------ |
+| Normal  | 1                  | 1                  |
+| Compact | 0.75               | 0.85               |
+
+`NarrationStack` sets both factors on every `.narration-slot` as `--notice-scale` and
+`--notice-text-scale`. The notice and panel stylesheets multiply their column widths,
+panel row widths, paddings, gaps, minimum heights and icon boxes by `--notice-scale`.
+`NoticeStack` and `SidePanelStack` multiply the `CardMini` widths by the same factor,
+because those widths are numeric props rather than CSS.
+
+Text shrinks less than geometry, and it has a floor. Clause text and titles use
+`max(var(--ds-text-xs), …)` on narrow boards and `max(var(--ds-text-sm), …)` on
+pointer-sized boards, so compact text is never below 12 px or 14 px and still follows
+the player's text size. Labels, keyword pills, close buttons and their 44 px touch
+areas keep their normal size.
+
+Measured in `/dev/arena` with the split-toasts demo:
+
+| Board      | Notice (normal → compact) | Card panel (normal → compact) | Clause text  |
+| ---------- | ------------------------- | ----------------------------- | ------------ |
+| 1440 × 900 | 532 × 180 → 399 × 172     | 416 × 258 → 312 × 201         | 16.3 → 14 px |
+| 1100 × 800 | 416 wide → 312 wide       | 416 × 258 → 312 × 201         | 16.3 → 14 px |
+| 390 × 844  | 374 × 134 → 374 × 121     | 374 × 218 → 374 × 171         | 12.8 → 12 px |
+
 ## Real attack and grouping checkpoint, 2026-10-05
 
 Rush, Raid acceptance/refusal and inherited/accumulated Security Attack now have

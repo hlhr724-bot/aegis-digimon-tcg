@@ -1082,6 +1082,10 @@ const interfaceMessages = {
   "settings.noticeDurationNormal": "Biasa",
   "settings.noticeDurationLong": "Panjang",
   "settings.noticeDurationLongest": "Terpanjang",
+  "settings.noticeSize": "Ukuran notifikasi",
+  "settings.noticeSizeDesc": "Seberapa besar notifikasi efek dan panel kartu. Ringkas menutupi lebih sedikit papan.",
+  "settings.noticeSizeNormal": "Biasa",
+  "settings.noticeSizeCompact": "Ringkas",
   "settings.groupIdenticalTamers": "Kelompokkan Tamer identik",
   "settings.groupIdenticalTamersDesc":
     "Tampilkan Tamer identik bersama di field tertata. Nonaktifkan untuk menampilkan setiap salinan secara terpisah.",

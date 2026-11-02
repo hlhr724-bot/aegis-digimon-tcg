@@ -974,6 +974,11 @@ const interfaceMessages = {
   "settings.noticeDurationNormal": "Normale",
   "settings.noticeDurationLong": "Lunga",
   "settings.noticeDurationLongest": "Più lunga",
+  "settings.noticeSize": "Dimensione degli avvisi",
+  "settings.noticeSizeDesc":
+    "Quanto sono grandi gli avvisi degli effetti e i pannelli delle carte. Compatta copre meno il campo.",
+  "settings.noticeSizeNormal": "Normale",
+  "settings.noticeSizeCompact": "Compatta",
   "settings.groupIdenticalTamers": "Raggruppa i Tamer identici",
   "settings.groupIdenticalTamersDesc":
     "Mostra insieme i Tamer identici nel campo ordinato. Disattiva per mostrare ogni copia separatamente.",

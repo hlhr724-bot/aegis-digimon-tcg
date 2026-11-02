@@ -1072,6 +1072,10 @@ const interfaceMessages = {
   "settings.noticeDurationNormal": "보통",
   "settings.noticeDurationLong": "길게",
   "settings.noticeDurationLongest": "가장 길게",
+  "settings.noticeSize": "알림 크기",
+  "settings.noticeSizeDesc": "효과 알림과 카드 패널의 크기입니다. 작게 하면 필드를 덜 가립니다.",
+  "settings.noticeSizeNormal": "보통",
+  "settings.noticeSizeCompact": "작게",
   "settings.groupIdenticalTamers": "동일한 테이머 묶기",
   "settings.groupIdenticalTamersDesc":
     "정리된 필드에서 동일한 테이머를 묶어 표시합니다. 끄면 각 카드를 개별적으로 표시합니다.",

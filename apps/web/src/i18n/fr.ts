@@ -1097,6 +1097,11 @@ const interfaceMessages = {
   "settings.noticeDurationNormal": "Normale",
   "settings.noticeDurationLong": "Longue",
   "settings.noticeDurationLongest": "Très longue",
+  "settings.noticeSize": "Taille des notifications",
+  "settings.noticeSizeDesc":
+    "Taille des notifications d'effet et des panneaux de cartes. Compacte masque moins le terrain.",
+  "settings.noticeSizeNormal": "Normale",
+  "settings.noticeSizeCompact": "Compacte",
   "settings.groupIdenticalTamers": "Regrouper les Tamers identiques",
   "settings.groupIdenticalTamersDesc":
     "Regroupe les Tamers identiques sur le terrain organisé. Désactivez pour afficher chaque exemplaire séparément.",

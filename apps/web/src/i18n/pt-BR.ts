@@ -831,6 +831,10 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Longa",
   "settings.noticeDurationLongest": "Mais longa",
+  "settings.noticeSize": "Tamanho dos avisos",
+  "settings.noticeSizeDesc": "O tamanho dos avisos de efeito e dos painéis de cartas. Compacto cobre menos o campo.",
+  "settings.noticeSizeNormal": "Normal",
+  "settings.noticeSizeCompact": "Compacto",
   "settings.groupIdenticalTamers": "Agrupar Tamers idênticos",
   "settings.groupIdenticalTamersDesc":
     "Mostra Tamers idênticos juntos no campo organizado. Desative para exibir cada cópia separadamente.",
