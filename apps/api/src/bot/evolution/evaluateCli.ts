@@ -32,6 +32,8 @@ type EvaluationInput = {
   mctsMaxSearchTimeMs?: number;
   mctsRolloutTurns?: number;
   mctsMoveOrderingProgram?: unknown;
+  mctsRolloutProgram?: unknown;
+  mctsRootWidening?: { coefficient: number; exponent: number };
   mctsStartAfterDecisions?: number;
   searchSeed?: number;
   turnLimit?: number;
@@ -83,6 +85,17 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
     const opponentProgram = input.opponentProgram === undefined ? undefined : parseHeuristic(input.opponentProgram);
     const moveOrderingProgram =
       input.mctsMoveOrderingProgram === undefined ? undefined : parseHeuristic(input.mctsMoveOrderingProgram);
+    const rolloutProgram =
+      input.mctsRolloutProgram === undefined ? undefined : parseHeuristic(input.mctsRolloutProgram);
+    if (
+      input.mctsRootWidening !== undefined &&
+      (typeof input.mctsRootWidening !== "object" ||
+        input.mctsRootWidening === null ||
+        typeof input.mctsRootWidening.coefficient !== "number" ||
+        typeof input.mctsRootWidening.exponent !== "number")
+    ) {
+      throw new Error("Invalid evaluation configuration");
+    }
     const decks = input.decks.map((source) =>
       typeof source === "number" ? randomDeck(source) : evolutionDeck(source),
     );
@@ -101,7 +114,9 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
       !residualSearch &&
       (input.mctsExploration !== undefined ||
         input.mctsMaxSearchTimeMs !== undefined ||
-        moveOrderingProgram !== undefined)
+        moveOrderingProgram !== undefined ||
+        rolloutProgram !== undefined ||
+        input.mctsRootWidening !== undefined)
     ) {
       throw new Error("Search tuning requires residual MCTS");
     }
@@ -136,6 +151,8 @@ async function evaluate(input: EvaluationInput, engineSha256: string) {
             maxSearchTimeMs: input.mctsMaxSearchTimeMs,
             rolloutTurns: input.mctsRolloutTurns,
             moveOrderingProgram,
+            rolloutProgram,
+            rootWidening: input.mctsRootWidening,
             startAfterDecisions: input.mctsStartAfterDecisions,
           }
         : {}),

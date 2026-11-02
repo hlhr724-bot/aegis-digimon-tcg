@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { performance } from "node:perf_hooks";
 import type { Seat } from "@aegis/shared";
 import type { TrainingWindow } from "../training/policy.js";
+import type { RootWidening } from "#api/bot/evolution/RootWidening";
 
 export interface SearchEdge {
   attempts: number;
@@ -56,6 +57,7 @@ export async function searchMcts(options: {
   signal?: AbortSignal;
   rolloutChoose: (window: TrainingWindow) => number;
   rootPriors?: readonly number[];
+  rootWidening?: RootWidening;
   simulate: (
     choose: (window: TrainingWindow) => number,
     simulation: number,
@@ -67,6 +69,16 @@ export async function searchMcts(options: {
   if (!Number.isFinite(exploration) || exploration < 0) throw new Error("Invalid UCT exploration constant");
   if (options.maxDurationMs !== undefined && (!Number.isFinite(options.maxDurationMs) || options.maxDurationMs <= 0)) {
     throw new Error("MCTS time budget must be positive and finite");
+  }
+  if (
+    options.rootWidening !== undefined &&
+    (!Number.isFinite(options.rootWidening.coefficient) ||
+      options.rootWidening.coefficient < 1 ||
+      !Number.isFinite(options.rootWidening.exponent) ||
+      options.rootWidening.exponent < 0 ||
+      options.rootWidening.exponent > 1)
+  ) {
+    throw new Error("Invalid MCTS root widening");
   }
   const started = performance.now();
   const timeExhausted = () =>
@@ -101,7 +113,15 @@ export async function searchMcts(options: {
       let bestIndex = -1;
       let bestScore = -Infinity;
       const rootPrior = key === rootKey ? options.rootPriors : undefined;
-      for (let index = 0; index < window.actions.length; index++) {
+      const widening = key === rootKey ? options.rootWidening : undefined;
+      const considered =
+        widening === undefined
+          ? window.actions.length
+          : Math.min(
+              window.actions.length,
+              Math.floor(widening.coefficient * Math.pow(node.visits + 1, widening.exponent)),
+            );
+      for (let index = 0; index < considered; index++) {
         const action = actionKey(window, index);
         let edge = node.edges.get(action);
         if (edge === undefined) {

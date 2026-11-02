@@ -184,6 +184,12 @@ the development pool, Master reached 0.65 against legacy only in Aggressive, wit
 a lower bound above 0.60, and it was not clearly stronger than Expert. More rollouts in this root-only search have not shown a measurable gain. A stronger Master needs a better
 evaluator or search beyond Main decisions.
 
+The residual MCTS used for training and evaluation (`runMctsResidualMatch`) gained two
+opt-in options in November 2026: a heuristic rollout program and root progressive
+widening. Together they scored +0.11 at an equal time budget in a 142-task screen. They
+do not touch the paired root search of Expert and Master, and no level default changed.
+See [rollout program and root widening](../../apps/api/src/bot/evolution/README.md#rollout-program-and-root-widening).
+
 Difficulty is resolved in `apps/api/src/bot/levels/createLevelBotOptions.ts` and the
 configuration table lives in `BOT_LEVEL_CONFIGS.ts`. Style preserves the existing
 serialized `balanced`, `aggressive` and `defensive` values. Residual scoring starts

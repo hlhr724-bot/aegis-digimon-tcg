@@ -16,7 +16,7 @@ import type { MctsResidualMatchOptions } from "#api/bot/evolution/MctsResidualMa
 import type { RecordedResidualChoice } from "#api/bot/evolution/RecordedResidualChoice";
 import { SEED_RESIDUAL } from "#api/bot/evolution/residualPolicy";
 import { orderMctsActions } from "#api/bot/evolution/orderMctsActions";
-import type { HeuristicProgram } from "#api/bot/evolution/heuristic";
+import { chooseHeuristic, type HeuristicProgram } from "#api/bot/evolution/heuristic";
 import { runReplayContinuation } from "#api/bot/evolution/runReplayContinuation";
 
 function searchWindow(choice: RecordedResidualChoice, seed: number, program?: HeuristicProgram): TrainingWindow {
@@ -36,6 +36,11 @@ function searchWindow(choice: RecordedResidualChoice, seed: number, program?: He
     actions: [{ intent: choice.baseline, label: "Current residual policy" }, ...alternatives],
   };
   return program === undefined ? window : orderMctsActions({ window, program });
+}
+
+function rolloutChooser(program: HeuristicProgram | undefined, seed: number): (window: TrainingWindow) => number {
+  if (program === undefined) return () => 0;
+  return (window) => chooseHeuristic(program, window, seed);
 }
 
 function searchable(choice: RecordedResidualChoice): boolean {
@@ -182,7 +187,8 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
           exploration: options.exploration,
           maxDurationMs: options.maxSearchTimeMs,
           signal,
-          rolloutChoose: () => 0,
+          rootWidening: options.rootWidening,
+          rolloutChoose: rolloutChooser(options.rolloutProgram, options.searchSeed + transcript.length),
           simulate: async (choose, simulation) => {
             const result = await simulate(
               engineSnapshot,

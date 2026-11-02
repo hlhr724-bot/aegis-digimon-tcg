@@ -105,6 +105,49 @@ projected action scores. Supply an explicit program; there is no default learned
 ordering and no claim that the seed heuristic improves strength. The complete
 program must be included in experiment manifests alongside search parameters.
 
+### Rollout program and root widening
+
+Two `runMctsResidualMatch` options change search quality. Both are off by default, so
+existing callers, campaigns and the live bot levels keep their behavior.
+
+| Option           | Effect                                                                                                                                                                                               |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rolloutProgram` | After the tree, the searching seat's Main decisions follow `chooseHeuristic` with this program. Without it, they take the first offered action, which is always "End main phase".                    |
+| `rootWidening`   | `{ coefficient, exponent }`. The root considers only its first `floor(coefficient × (visits + 1)^exponent)` actions. The root order is the baseline first, then the `mctsMoveOrderingProgram` order. |
+
+`searchMcts` rejects a coefficient below 1 and an exponent outside 0 to 1. Widening
+only helps when the root is ordered, so pair it with `moveOrderingProgram`. The
+evaluation worker accepts them as `mctsRolloutProgram` (a heuristic program) and
+`mctsRootWidening`, for residual MCTS only.
+
+Without a rollout program, a one-turn rollout that leaves the tree ends the searching
+seat's turn at once. Most rollouts in a small budget leave the tree after the root
+action, so the search compared root actions followed by an immediate pass. At small
+budgets, plain UCT also spends one rollout on every root action before it repeats one,
+so a 6-rollout search over 8 to 12 actions picked from single samples.
+
+**Screen (November 2026).** 160 paired tasks: 20 ordered deck pairs from the test and
+bot decks, both seats, seeds 50000 to 50159. The learner is `SEED_RESIDUAL` with search
+(`SEED_HEURISTIC` move ordering, one-turn rollouts, 300 ms soft budget, up to 400
+rollouts). The opponent is `SEED_RESIDUAL` without search. Every arm played the same
+tasks; 142 tasks had a valid game in every arm. The shared 10-core machine had load
+averages of 20 to 30, so searches completed about 3 rollouts each.
+
+| Arm                                  | Score | 95% Wilson interval | Paired difference from baseline | Rollouts per search |
+| ------------------------------------ | ----- | ------------------- | ------------------------------- | ------------------- |
+| Baseline (first action, no widening) | 0.430 | 0.351–0.512         |                                 | 2.9                 |
+| `rolloutProgram: SEED_HEURISTIC`     | 0.465 | 0.385–0.547         | +0.035 (−0.039 to +0.110)       | 2.9                 |
+| `rootWidening: { 2, 0.5 }`           | 0.415 | 0.338–0.498         | −0.014 (−0.079 to +0.051)       | 3.3                 |
+| Both                                 | 0.535 | 0.453–0.615         | +0.106 (+0.036 to +0.175)       | 3.1                 |
+
+Neither option helps on its own in this screen. Together they gained about 11 points
+at the same time budget. Widening concentrates the few rollouts on the leading ordered
+actions, and the rollout program makes each of those rollouts play out the turn. The
+interval for the combination does not include zero, but three arms were compared, so a
+confirmation on reserved seeds is required before any default changes. 31 of 640 games
+were invalid because a search had an invalid rollout; they are spread over all arms and
+excluded with their whole task.
+
 ## Local experimental evidence
 
 The October 2026 local screens are exploratory, with no production activation.
