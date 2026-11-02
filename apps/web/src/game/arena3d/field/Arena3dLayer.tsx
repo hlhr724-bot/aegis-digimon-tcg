@@ -159,7 +159,7 @@ function Arena3dLayerScene(props: Props) {
   const opponentEffects = summarizeArenaFieldEffects(props.opponentFieldEffects);
   const fieldEffects = useMemo<Record<Side, ArenaFieldEffectState>>(
     () => ({ [Side.Viewer]: viewerEffects, [Side.Opponent]: opponentEffects }),
-    [viewerEffects.active, viewerEffects.harmful, opponentEffects.active, opponentEffects.harmful],
+    [viewerEffects.signature, opponentEffects.signature],
   );
 
   const opponentBreedingId = props.opponentBreeding?.permanentId;

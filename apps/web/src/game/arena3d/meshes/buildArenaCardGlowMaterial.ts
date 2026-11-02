@@ -1,18 +1,22 @@
 import { AdditiveBlending, Color, ShaderMaterial, Vector2 } from "three";
 import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
+import { ARENA_NOISE_GLSL } from "@/game/arena3d/arenaNoiseGlsl";
 import { ARENA_CARD_GLOW_MARGIN } from "@/game/arena3d/meshes/arenaCardGeometry";
 
 const CORNER_RADIUS = 3.2 / CARD_DIMENSIONS.widthMillimeters;
 
 const VERTEX_SHADER = `
   varying vec2 vUv;
+  varying float vSeed;
   void main() {
     vUv = uv;
+    vSeed = fract(dot(modelMatrix[3].xz, vec2(0.37, 0.61)));
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
 
 const FRAGMENT_SHADER = `
+  ${ARENA_NOISE_GLSL}
   uniform vec3 uColor;
   uniform float uStrength;
   uniform float uOutline;
@@ -21,7 +25,26 @@ const FRAGMENT_SHADER = `
   uniform vec2 uCard;
   uniform float uMargin;
   uniform float uCornerRadius;
+  uniform float uFlow;
   varying vec2 vUv;
+  varying float vSeed;
+
+  vec2 rotate(vec2 point, float angle) {
+    float c = cos(angle);
+    float s = sin(angle);
+    return vec2(c * point.x - s * point.y, s * point.x + c * point.y);
+  }
+
+  vec2 getAuraFlow(vec2 centered, float distanceOut) {
+    float time = uTime * uFlow;
+    vec2 direction = normalize(centered + vec2(1e-4));
+    vec2 swirl = rotate(direction, time * 0.18 + vSeed * 6.2831);
+    vec2 drift = direction * (distanceOut * 5.5 - time * 0.85);
+    float wisps = fbm(swirl * 2.6 + drift + vSeed * 13.0);
+    float flame = smoothstep(0.32, 0.78, wisps);
+    float grain = valueNoise(centered * 26.0 + vec2(time * 0.7, -time * 0.5) + vSeed * 31.0);
+    return vec2(flame, grain);
+  }
 
   void main() {
     vec2 size = uCard + vec2(uMargin * 2.0);
@@ -33,7 +56,12 @@ const FRAGMENT_SHADER = `
     }
     float smoothing = max(fwidth(distanceOut), 0.002);
     float outline = (1.0 - smoothstep(0.022, 0.022 + smoothing * 1.5, distanceOut)) * uOutline;
-    float halo = exp(-distanceOut * mix(6.5, 11.0, uOutline)) * 0.55;
+    vec2 flow = uOutline < 1.0 ? getAuraFlow(centered, distanceOut) : vec2(0.5);
+    float ambientReach = mix(8.5, 4.2, flow.x);
+    float ambientBody = 0.45 + flow.x * 1.05 + (flow.y - 0.5) * 0.35;
+    float ambientHalo = exp(-distanceOut * ambientReach) * ambientBody;
+    float outlineHalo = exp(-distanceOut * 11.0);
+    float halo = mix(ambientHalo, outlineHalo, uOutline) * 0.55;
     float pulse = mix(1.0, 0.85 + 0.15 * sin(uTime * 2.4), uOutline);
     float haloBoost = mix(1.0, 2.2, uLight * (1.0 - uOutline));
     float alpha = (outline + halo * pulse * haloBoost) * uStrength;
@@ -60,6 +88,7 @@ export function buildArenaCardGlowMaterial(): ShaderMaterial {
       uCard: { value: new Vector2(CARD_DIMENSIONS.width, CARD_DIMENSIONS.height) },
       uMargin: { value: ARENA_CARD_GLOW_MARGIN },
       uCornerRadius: { value: CORNER_RADIUS },
+      uFlow: { value: 1 },
     },
   });
 }

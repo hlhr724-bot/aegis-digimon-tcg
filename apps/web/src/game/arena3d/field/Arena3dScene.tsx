@@ -28,6 +28,7 @@ import { ArenaLayoutSync } from "@/game/arena3d/field/ArenaLayoutSync";
 import type { ArenaFieldStore } from "@/game/arena3d/field/createArenaFieldStore";
 import { ArenaLayoutVariant } from "@/game/arena3d/field/ArenaLayoutVariant";
 import { createArenaFrameCamera } from "@/game/arena3d/field/createArenaFrameCamera";
+import { ArenaFieldEffectAura } from "@/game/arena3d/fieldEffects/ArenaFieldEffectAura";
 import type { ArenaFieldCard, ArenaZoneCard } from "@/game/arena3d/field/ArenaFieldCard";
 import { createArenaTrackedField } from "@/game/arena3d/field/createArenaTrackedField";
 import { skipUnchangedPixelRatio } from "@/game/arena3d/field/skipUnchangedPixelRatio";
@@ -143,6 +144,13 @@ function ArenaSceneContents(props: Props) {
         reducedMotion={reducedMotion}
         pulses={pulses}
       />
+      <ArenaFieldEffectAura
+        colors={colors}
+        layout={layout}
+        fieldEffects={props.fieldEffects}
+        quality={quality}
+        reducedMotion={reducedMotion}
+      />
       <ArenaSlotTiles
         rows={snapshot.rows}
         lanes={layout.lanes}
@@ -152,15 +160,17 @@ function ArenaSceneContents(props: Props) {
         fieldEffects={props.fieldEffects}
         reducedMotion={reducedMotion}
       />
-      <ArenaMemoryTrack
-        memory={props.memory}
-        prediction={props.memoryPrediction}
-        scale={layout.memoryScale}
-        colors={colors}
-        ripples={ripples}
-        activity={activity}
-        reducedMotion={reducedMotion}
-      />
+      {layout.value === ArenaLayoutVariant.TALL.value ? null : (
+        <ArenaMemoryTrack
+          memory={props.memory}
+          prediction={props.memoryPrediction}
+          scale={layout.memoryScale}
+          colors={colors}
+          ripples={ripples}
+          activity={activity}
+          reducedMotion={reducedMotion}
+        />
+      )}
       {permanentIds.map((id) => {
         const card = cards.get(id);
         return card ? (
@@ -236,6 +246,7 @@ function ArenaSceneContents(props: Props) {
       <ArenaQualityGovernor
         automatic={props.automaticQuality}
         canDowngrade={quality.rank > 0}
+        lowestTier={quality.rank === 0}
         frameRate={quality.frameRate}
         activity={activity}
         onDowngrade={props.onDowngrade}

@@ -205,6 +205,7 @@ function ArenaZoneMeshView({ zoneKey, zone, field, cache, colors, activeSide, re
         auraColor: auraColors[tracked.side],
         aura: aura.current,
         time,
+        flowing: !reducedMotion,
       });
     }
   });
