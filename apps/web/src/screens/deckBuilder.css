@@ -1650,3 +1650,67 @@
   color: var(--ds-text);
   font-family: var(--ds-font-mono);
 }
+
+.deck-matchup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+.deck-matchup__games {
+  flex: 0 1 8rem;
+}
+
+.deck-matchup__result {
+  display: grid;
+  gap: var(--ds-space-1);
+  color: var(--ds-text);
+  font-size: var(--ds-text-xs);
+}
+
+.deck-matchup__result p {
+  margin: 0;
+}
+
+.deck-matchup__score {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  font-family: var(--ds-font-display);
+  font-size: var(--ds-text-md, 1rem);
+  font-weight: 600;
+}
+
+.deck-matchup__score span {
+  color: var(--ds-text-3);
+  font-family: var(--ds-font-body);
+  font-size: var(--ds-text-xs);
+  font-weight: 400;
+}
+
+.deck-matchup__band {
+  position: relative;
+  height: 10px;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-fill);
+}
+
+.deck-matchup__band-range {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: var(--ds-radius-pill);
+  background: color-mix(in srgb, var(--ds-accent) 35%, transparent);
+}
+
+.deck-matchup__band-point {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 3px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background: var(--ds-accent);
+}

@@ -195,6 +195,32 @@ from the series record. Spectators cannot request another seat's deck. The
 post-duel viewer copies this snapshot through the ordinary personal-deck save
 workflow; source edits, unpublishing and moderation cannot change that copy.
 
+## Deck simulation matchups
+
+`POST /account/deck-simulations/matchups` needs a session. The body is
+`{ deck: { mainDeck, eggDeck }, opponent, games, format? }`. `opponent` is
+`{ mirror: true }`, `{ famousDeckId }` (a `VALIDATED_FAMOUS_DECKS` id) or
+`{ deck, name? }`. `games` is one of `MATCHUP_GAME_COUNTS` (10, 20 or 40). The server
+validates both decks with `validateDecklist` for `format`. It answers `202` with a
+`MatchupJob` (`@aegis/shared/deckSimulation/MatchupJob`).
+
+`GET /account/deck-simulations/matchups/:id` returns the caller's `MatchupJob`, or
+`404` for an unknown, expired or foreign job. Clients poll it until `status` is
+`completed`, `timed-out` or `failed`. `score` counts a draw as half a win, and
+`interval` is the 95% Wilson interval of that score. Games that end on an engine
+error count in `invalidGames`, not in the score.
+
+| Status | Error               | Meaning                                         |
+| ------ | ------------------- | ----------------------------------------------- |
+| 400    | `invalid_*`         | Bad game count, format, deck or opponent        |
+| 401    |                     | No session                                      |
+| 409    | `job_in_progress`   | The account already has a queued or running job |
+| 429    | `too_many_requests` | Read or start rate limit                        |
+| 503    | `queue_full`        | The process queue is full                       |
+
+Jobs live only in API process memory. A restart or a blue/green switch loses them.
+See [deck simulation](DECK_SIMULATION.md) for limits.
+
 ## Optional match timer
 
 Casual (`aegis` and `aegis_beta`) join options include `matchTimer: boolean`.

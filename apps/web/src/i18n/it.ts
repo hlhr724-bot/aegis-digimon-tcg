@@ -1,3 +1,4 @@
+import { deckMatchupIt } from "@/i18n/deckMatchup.it";
 import { deckOddsIt } from "@/i18n/deckOdds.it";
 import { tournamentCircuitsIt } from "@/i18n/tournamentCircuits.it";
 import { tournamentOfficialRequestIt } from "@/i18n/tournamentOfficialRequest.it";
@@ -2669,6 +2670,7 @@ const interfaceMessages = {
   ...tournamentCircuitsIt,
   ...tournamentOfficialRequestIt,
   ...matchQueueIt,
+  ...deckMatchupIt,
   ...deckOddsIt,
   ...staffRolesIt,
   ...achievementsIt,

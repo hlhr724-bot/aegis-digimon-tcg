@@ -1,3 +1,4 @@
+import { deckMatchupEn } from "@/i18n/deckMatchup.en";
 import { deckOddsEn } from "@/i18n/deckOdds.en";
 import { tournamentCircuitsEn } from "@/i18n/tournamentCircuits.en";
 import { tournamentOfficialRequestEn } from "@/i18n/tournamentOfficialRequest.en";
@@ -2169,6 +2170,7 @@ export const en = {
   ...tournamentCircuitsEn,
   ...tournamentOfficialRequestEn,
   ...matchQueueEn,
+  ...deckMatchupEn,
   ...deckOddsEn,
   ...staffRolesEn,
   ...achievementsEn,

@@ -1,3 +1,4 @@
+import { deckMatchupKo } from "@/i18n/deckMatchup.ko";
 import { deckOddsKo } from "@/i18n/deckOdds.ko";
 import { tournamentCircuitsKo } from "@/i18n/tournamentCircuits.ko";
 import { tournamentOfficialRequestKo } from "@/i18n/tournamentOfficialRequest.ko";
@@ -2875,6 +2876,7 @@ const interfaceMessages = {
   ...tournamentCircuitsKo,
   ...tournamentOfficialRequestKo,
   ...matchQueueKo,
+  ...deckMatchupKo,
   ...deckOddsKo,
   ...staffRolesKo,
   ...achievementsKo,

@@ -49,3 +49,48 @@ rows.
 - The panel measures cards seen, not cards that can be played. It does not check memory,
   digivolution lines or colors.
 - Key cards are not saved with the deck.
+
+## Bot matchup
+
+The **Bot matchup** panel runs bot games between the deck being edited and an opponent:
+the same deck (mirror) or a validated famous deck. The player picks 10, 20 or 40
+games. The server plays them and the panel polls the job. It shows the win rate (a
+draw counts as half), the 95% Wilson interval as a number and as a band, the record,
+and up to three sample games.
+
+Both seats use the Standard bot (`createLevelBotOptions` at `standard`, with the
+deck's inferred style). Expert and Master are not offered: they use the live search
+worker pool that real matches share. Games alternate who goes first. The turn limit is
+60; a game that reaches it is a draw. A game with an engine error, a rejected intent or
+a policy fallback is reported as invalid and left out of the score.
+
+### Where the games run
+
+`MatchupSimulator` (`apps/api/src/deckSimulation/`) owns the jobs. It runs games in one
+`worker_threads` worker (`matchupWorker.ts`), never on the game loop. The worker plays
+games one after another through `runBotMatch`, the same harness as the battle fuzzer
+and the level panels, and posts each result as it finishes. The worker loads the card
+registry once and stops after 60 seconds without work.
+
+### Limits
+
+The limits live in `MATCHUP_LIMITS.ts` and fit a one-CPU host.
+
+| Limit                       | Value                           | Why                                                |
+| --------------------------- | ------------------------------- | -------------------------------------------------- |
+| Workers per API process     | 1                               | One game at a time for the whole process           |
+| Unfinished jobs per account | 1                               | One player cannot fill the queue                   |
+| Queued jobs per process     | 2                               | Bounded wait; more requests get `queue_full`       |
+| Games per job               | 10, 20 or 40                    | Fixed choices keep the cost predictable            |
+| Time budget per job         | 120 s                           | Checked between games; the job ends as `timed-out` |
+| Hung worker grace           | 15 s past the budget            | The worker is terminated and replaced              |
+| Worker heap                 | 512 MB                          | `resourceLimits.maxOldGenerationSizeMb`            |
+| Job starts per account      | 6, one more every 10 minutes    | Token bucket                                       |
+| Busy host                   | 1-minute load above 1.5 × cores | Queued jobs wait and retry every 2 s               |
+| Finished job lifetime       | 15 minutes                      | Results and sample replays then disappear          |
+
+A local run of 10 Standard games against a famous deck took 7.6 s on a development
+machine. A 40-game job should fit the 120 s budget on the production host; if not, it
+ends as `timed-out` with the games it finished.
+
+Results are not stored. A process restart loses running and finished jobs.

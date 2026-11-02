@@ -53,6 +53,7 @@ import { DeckArtworkPicker } from "./DeckArtworkPicker";
 import { useTranslation } from "../i18n";
 import { ColorBalance } from "./ColorBalance";
 import { DeckDrawOdds } from "@/screens/deckSimulation/DeckDrawOdds";
+import { DeckMatchup } from "@/screens/deckSimulation/DeckMatchup";
 import { DeckCostCurve } from "@/screens/DeckCostCurve";
 import { DeckTypeBreakdown } from "@/screens/DeckTypeBreakdown";
 import { CountChip } from "./CountChip";
@@ -464,6 +465,7 @@ export function DeckEditor({
                 <DeckCostCurve main={main} />
                 <ColorBalance main={main} />
                 <DeckDrawOdds main={main} />
+                <DeckMatchup main={main} egg={egg} format={format} />
               </div>
             </div>
 
