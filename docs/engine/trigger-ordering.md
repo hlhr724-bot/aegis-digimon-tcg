@@ -5,6 +5,30 @@ updated: 2026-10-15
 
 # Trigger ordering
 
+## Turn-player step hand-off
+
+CR 15-4-3-5 resolves simultaneous effects in two steps: the turn player activates all
+of theirs, then the non-turn player activates theirs. Q3551 rules that a triggered
+effect activates even when it has no target; it does not wait for one to appear.
+
+`effects/stack.ts` keeps an effect with no legal outcome pending, because another
+effect of the same player may still enable it. When the next effect in the active tier
+belongs to the non-turn player, and no effect of that tier is still resolving, the
+turn player's remaining unactivatable effects in that tier lapse. They are reported as
+having no effect, retired from the window, and removed from the engine's parked pools
+through `ResolutionEnv.onLapsed`. A later drain, such as `drainPendingAttackTriggers`
+after an effect-directed attack, therefore cannot revive them.
+
+Proof:
+
+- `scenarios/turn-player-unactivatable-trigger-lapses-before-opponent-triggers.test.ts`
+  replays the reported match. SeitenGokuumon's On Play attack and its -DP deletion
+  trigger Gokuumon's inherited [When Attacking] and the opponent's [On Deletion]
+  effects together. Gokuumon's effect has no target, so it lapses. It no longer
+  deletes the Solarmon that the opponent's SkullMeramon inherited effect plays.
+- `effects/stack.test.ts` covers both sides: a non-turn-player sibling does not revive
+  the effect, and a same-player sibling still enables it.
+
 ## Derived trigger exhaustion (2026-10-15)
 
 Issue: https://github.com/vinicius3333/aegis-digimon-tcg/issues/5600
@@ -24,8 +48,10 @@ reaction to become newly activatable after Oblivimon entered the battle area.
 Comprehensive rules 15-4-5-2 and 15-4-5-3 require derived triggers to resolve before
 older pending effects, regardless of their controller. `effects/stack.ts` now
 assigns tiers when effects become pending and retires exhausted higher tiers
-before returning to older effects. Simultaneous effects can still enable one
-another. Reentrant drains retain unavailable effects at an enclosing effect’s tier while
+before returning to older effects. One player's simultaneous effects can still enable
+each other. A turn-player effect that cannot activate lapses once the non-turn player
+starts on the same simultaneous group (see "Turn-player step hand-off" below).
+Reentrant drains retain unavailable effects at an enclosing effect’s tier while
 that effect is still processing, but retire exhausted newer derived tiers.
 
 Proof lives in `effects/stack.test.ts` and

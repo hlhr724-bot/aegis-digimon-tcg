@@ -156,7 +156,7 @@ describe("derived activation tiers", () => {
     },
   );
 
-  it("keeps an unavailable derived effect pending while its simultaneous sibling enables it", async () => {
+  it("lapses the turn player's unavailable derived effect once the non-turn player's simultaneous sibling starts", async () => {
     let derived = false;
     let targetExists = false;
     const order: string[] = [];
@@ -181,6 +181,44 @@ describe("derived activation tiers", () => {
     );
     const sibling = collected(
       1,
+      "sibling",
+      fakeEffect("sibling", {
+        onResolve: () => {
+          targetExists = true;
+          order.push("sibling");
+        },
+      }),
+    );
+    const { env } = envOver([], { collect: () => [parent, older, ...(derived ? [child, sibling] : [])] });
+    await resolveTiming(EffectTiming.OnEndTurn, env);
+    expect(order).toEqual(["parent", "sibling", "older"]);
+  });
+
+  it("keeps an unavailable derived effect pending while the same player's simultaneous sibling enables it", async () => {
+    let derived = false;
+    let targetExists = false;
+    const order: string[] = [];
+    const parent = collected(
+      0,
+      "parent",
+      fakeEffect("parent", {
+        onResolve: () => {
+          derived = true;
+          order.push("parent");
+        },
+      }),
+    );
+    const older = collected(0, "older", fakeEffect("older", { onResolve: () => order.push("older") }));
+    const child = collected(
+      0,
+      "child",
+      fakeEffect("child", {
+        canActivate: () => targetExists,
+        onResolve: () => order.push("child"),
+      }),
+    );
+    const sibling = collected(
+      0,
       "sibling",
       fakeEffect("sibling", {
         onResolve: () => {

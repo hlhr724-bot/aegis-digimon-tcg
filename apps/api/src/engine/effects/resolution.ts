@@ -61,6 +61,7 @@ export interface ResolutionDeps {
 
   /** Observability seam: a triggered effect is about to resolve (see ResolutionEnv.onResolving). */
   onResolving?: ResolutionEnv["onResolving"];
+  onLapsed?: ResolutionEnv["onLapsed"];
   onActivating?: ResolutionEnv["onActivating"];
   onWithoutLegalOutcome?: ResolutionEnv["onWithoutLegalOutcome"];
 
@@ -180,6 +181,7 @@ export function buildResolutionEnv(
     askOptional: deps.askOptional,
     onResolved: deps.onResolved,
     onResolving: deps.onResolving,
+    onLapsed: deps.onLapsed,
     onActivating: deps.onActivating,
     onWithoutLegalOutcome: deps.onWithoutLegalOutcome,
     betweenEffects: deps.betweenEffects,
