@@ -3,7 +3,6 @@ import { Icons } from "@/design/icons";
 import { BoardStyle } from "@/game/arena3d/boardStyle/BoardStyle";
 import { boardStylePreference } from "@/game/arena3d/boardStyle/boardStylePreference";
 import { isWebGlAvailable } from "@/game/arena3d/isWebGlAvailable";
-import { BOARD_STYLE_NOTICE_END, BOARD_STYLE_NOTICE_START } from "@/game/screen/layout/boardStyleNoticeWindow";
 import { useTranslation } from "@/i18n/useTranslation";
 import "./matchBoardStyleNotice.css";
 
@@ -27,20 +26,11 @@ function markNoticeSeen(): void {
   }
 }
 
-function isInsideNoticeWindow(now: number): boolean {
-  return now >= BOARD_STYLE_NOTICE_START && now < BOARD_STYLE_NOTICE_END;
-}
-
 function shouldShowNotice(): boolean {
   if (shownThisPage) {
     return true;
   }
-  return (
-    isInsideNoticeWindow(Date.now()) &&
-    boardStylePreference.getStyle() !== BoardStyle.ARENA_3D.value &&
-    !hasSeenNotice() &&
-    isWebGlAvailable()
-  );
+  return boardStylePreference.getStyle() !== BoardStyle.ARENA_3D.value && !hasSeenNotice() && isWebGlAvailable();
 }
 
 export function MatchBoardStyleNotice() {

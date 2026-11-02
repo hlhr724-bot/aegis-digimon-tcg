@@ -1,4 +1,0 @@
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-export const BOARD_STYLE_NOTICE_START = Date.parse("2026-11-03T00:00:00Z");
-export const BOARD_STYLE_NOTICE_END = BOARD_STYLE_NOTICE_START + 7 * DAY_MS;

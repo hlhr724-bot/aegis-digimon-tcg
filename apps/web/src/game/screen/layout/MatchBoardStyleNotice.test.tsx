@@ -3,7 +3,6 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BoardStyle } from "@/game/arena3d/boardStyle/BoardStyle";
 import { boardStylePreference } from "@/game/arena3d/boardStyle/boardStylePreference";
-import { BOARD_STYLE_NOTICE_END, BOARD_STYLE_NOTICE_START } from "@/game/screen/layout/boardStyleNoticeWindow";
 import { MatchBoardStyleNotice } from "@/game/screen/layout/MatchBoardStyleNotice";
 import { I18nProvider } from "@/i18n/I18nProvider";
 
@@ -26,13 +25,10 @@ beforeEach(() => {
   webGl.available = true;
   boardStylePreference.setStyle(BoardStyle.CLASSIC.value);
   localStorage.clear();
-  vi.useFakeTimers({ toFake: ["Date"] });
-  vi.setSystemTime(BOARD_STYLE_NOTICE_START);
 });
 
 afterEach(() => {
   cleanup();
-  vi.useRealTimers();
 });
 
 describe("the Arena 3D board notice", () => {
@@ -55,17 +51,6 @@ describe("the Arena 3D board notice", () => {
     fireEvent.click(screen.getByRole("button", { name: "Close the Arena 3D notice" }));
     remounted.view.unmount();
 
-    renderNotice();
-    expect(screen.queryByRole("status")).toBeNull();
-  });
-
-  it("stays hidden before the campaign starts and after it ends", () => {
-    vi.setSystemTime(BOARD_STYLE_NOTICE_START - 1);
-    const before = renderNotice();
-    expect(screen.queryByRole("status")).toBeNull();
-    before.view.unmount();
-
-    vi.setSystemTime(BOARD_STYLE_NOTICE_END);
     renderNotice();
     expect(screen.queryByRole("status")).toBeNull();
   });
