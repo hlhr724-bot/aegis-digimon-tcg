@@ -353,6 +353,7 @@ export interface ReplacementSubscriptionInstead extends ReplacementSubscriptionB
    * `ReplacementSubscriptionPrevent`).
    */
   apply: (ctx: EffectContext) => Promise<void | boolean>;
+  activationDeferred?: boolean;
   /** Does this reaction apply to `leavingPermanentId`? Absent => applies whenever the event
    * fires for the anchored source (self-reaction shape, e.g. ＜Decode＞). */
   appliesTo?: (ctx: EffectContext, leavingPermanentId: string) => boolean;
