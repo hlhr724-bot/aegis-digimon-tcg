@@ -5,9 +5,11 @@ const compiled: CompiledCard = {
   effects: [
     {
       trigger: "YourTurn",
+      optional: true,
       actions: [
         {
           kind: "SubTrigger",
+          optional: true,
           event: "whenOneOfYoursDigivolves",
           sourceFilter: {
             controllerDefault: "mine",
