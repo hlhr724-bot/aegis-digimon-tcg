@@ -2426,8 +2426,7 @@ const interfaceMessages = {
   "redesign.foundation.arena3dQuality.medium": "中",
   "redesign.foundation.arena3dQuality.high": "高",
   "redesign.foundation.cardViewer3d.title": "3Dカード表示",
-  "redesign.foundation.cardViewer3d.description":
-    "拡大したカードをホイル加工付きの3Dで表示します。ドラッグするとカードを裏返せます。",
+  "redesign.foundation.cardViewer3d.description": "拡大したカードを3Dで表示します。ドラッグするとカードを裏返せます。",
   "redesign.shell.playNow": "今すぐプレイ",
   "redesign.shell.theme.useLight": "ライトテーマを使用",
   "redesign.shell.theme.useDark": "ダークテーマを使用",

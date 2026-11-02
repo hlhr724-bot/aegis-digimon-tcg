@@ -2404,7 +2404,7 @@ const interfaceMessages = {
   "redesign.foundation.arena3dQuality.high": "높음",
   "redesign.foundation.cardViewer3d.title": "3D 카드 보기",
   "redesign.foundation.cardViewer3d.description":
-    "확대한 카드를 호일 효과가 있는 3D로 표시합니다. 카드를 드래그하면 뒤집을 수 있습니다.",
+    "확대한 카드를 3D로 표시합니다. 카드를 드래그하면 뒤집을 수 있습니다.",
   "redesign.shell.playNow": "지금 플레이",
   "redesign.shell.theme.useLight": "라이트 테마 사용",
   "redesign.shell.theme.useDark": "다크 테마 사용",

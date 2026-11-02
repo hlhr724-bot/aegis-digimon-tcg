@@ -57,6 +57,5 @@ export const foundationEn = {
   "redesign.foundation.arena3dQuality.medium": "Medium",
   "redesign.foundation.arena3dQuality.high": "High",
   "redesign.foundation.cardViewer3d.title": "3D card view",
-  "redesign.foundation.cardViewer3d.description":
-    "Show enlarged cards as 3D cards with foil. Drag a card to turn it over.",
+  "redesign.foundation.cardViewer3d.description": "Show enlarged cards as 3D cards. Drag a card to turn it over.",
 } as const;

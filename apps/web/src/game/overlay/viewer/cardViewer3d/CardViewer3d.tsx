@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Group, MathUtils, type ShaderMaterial, type Texture } from "three";
+import { Group, MathUtils, type PerspectiveCamera, type ShaderMaterial, type Texture } from "three";
+import { buildCardAuraMaterial } from "@/design/webglCard/buildCardAuraMaterial";
 import { buildCardFaceMaterial } from "@/design/webglCard/buildCardFaceMaterial";
 import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
 import { CardFinish, type CardFinishEntry } from "@/design/webglCard/CardFinish";
 import type { CardGrip } from "@/design/webglCard/createCardGrip";
 import { disposeCardTexture } from "@/design/webglCard/disposeCardTexture";
+import { getCardAuraRayStrength } from "@/design/webglCard/getCardAuraRayStrength";
 import { loadCardBitmapTexture } from "@/design/webglCard/loadCardBitmapTexture";
-import { CARD_VIEWER_3D_MARGIN } from "@/game/overlay/viewer/cardViewer3d/cardViewer3dMargin";
 import type { CardViewerPointer } from "@/game/overlay/viewer/cardViewer3d/CardViewerPointer";
 
 type Props = {
@@ -17,9 +18,12 @@ type Props = {
   reducedMotion: boolean;
   grip: CardGrip;
   pointer: RefObject<CardViewerPointer>;
+  frame: RefObject<HTMLDivElement | null>;
   onReady: () => void;
   onFail: () => void;
 };
+
+type CameraProps = Pick<Props, "frame">;
 
 type ModelProps = Pick<Props, "finish" | "reducedMotion" | "grip" | "pointer" | "onReady"> & {
   front: Texture;
@@ -40,8 +44,6 @@ type Offset = {
 
 const TEXTURE_WIDTH = 1024;
 const FIELD_OF_VIEW = 30;
-const CAMERA_DISTANCE =
-  (CARD_DIMENSIONS.height * (1 + CARD_VIEWER_3D_MARGIN * 2)) / (2 * Math.tan(MathUtils.degToRad(FIELD_OF_VIEW / 2)));
 const FACE_OFFSET = 0.002;
 const HOVER_YAW = 0.28;
 const HOVER_PITCH = 0.2;
@@ -52,6 +54,10 @@ const SETTLE_VELOCITY = 0.6;
 const SETTLE_RATE = 5;
 const TILT_RATE = 6;
 const REVEAL_SWEEP_SECONDS = 1.1;
+const BURST_SECONDS = 1;
+const AURA_SIZE = 6;
+const AURA_OFFSET = -0.03;
+const AURA_HALO = 0.6;
 const REDUCED_MOTION_FOIL_TIME = 2;
 const SETTLED_EPSILON = 0.0005;
 const WAKE_EVENTS = ["pointermove", "pointerdown", "pointerup", "blur"] as const;
@@ -132,12 +138,48 @@ function ViewerWake() {
     for (const name of WAKE_EVENTS) {
       window.addEventListener(name, wake);
     }
+    window.addEventListener("scroll", wake, true);
+    window.addEventListener("resize", wake);
     return () => {
       for (const name of WAKE_EVENTS) {
         window.removeEventListener(name, wake);
       }
+      window.removeEventListener("scroll", wake, true);
+      window.removeEventListener("resize", wake);
     };
   }, [invalidate]);
+
+  return null;
+}
+
+function FrameCamera({ frame }: CameraProps) {
+  const camera = useThree((state) => state.camera) as PerspectiveCamera;
+  const canvas = useThree((state) => state.gl.domElement);
+
+  useFrame(() => {
+    const frameRect = frame.current?.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    if (!frameRect || frameRect.height === 0 || canvasRect.width === 0 || canvasRect.height === 0) {
+      return;
+    }
+    const centerX = frameRect.left + frameRect.width / 2 - canvasRect.left;
+    const centerY = frameRect.top + frameRect.height / 2 - canvasRect.top;
+    const fullWidth = 2 * Math.max(centerX, canvasRect.width - centerX, 1);
+    const fullHeight = 2 * Math.max(centerY, canvasRect.height - centerY, 1);
+    const halfAngle = Math.tan(MathUtils.degToRad(FIELD_OF_VIEW / 2));
+    camera.fov = FIELD_OF_VIEW;
+    camera.aspect = fullWidth / fullHeight;
+    camera.position.set(0, 0, (CARD_DIMENSIONS.height * fullHeight) / (2 * halfAngle * frameRect.height));
+    camera.setViewOffset(
+      fullWidth,
+      fullHeight,
+      fullWidth / 2 - centerX,
+      fullHeight / 2 - centerY,
+      canvasRect.width,
+      canvasRect.height,
+    );
+    camera.updateProjectionMatrix();
+  }, -1);
 
   return null;
 }
@@ -156,9 +198,21 @@ function CardModel({ front, back, finish, reducedMotion, grip, pointer, onReady 
     () => buildCardFaceMaterial({ finishShaderIndex: CardFinish.NONE.shaderIndex, glowColor: undefined }),
     [],
   );
+  const auraMaterial = useMemo(
+    () =>
+      buildCardAuraMaterial({
+        glowColor: finish.glowColor,
+        prismatic: finish.value === CardFinish.PRISMATIC.value,
+        size: AURA_SIZE,
+        transparentCanvas: true,
+      }),
+    [finish],
+  );
+  const rayStrength = getCardAuraRayStrength(finish);
 
   useEffect(() => () => frontMaterial.dispose(), [frontMaterial]);
   useEffect(() => () => backMaterial.dispose(), [backMaterial]);
+  useEffect(() => () => auraMaterial.dispose(), [auraMaterial]);
   useEffect(() => applyTexture(frontMaterial, front), [front, frontMaterial]);
   useEffect(() => applyTexture(backMaterial, back), [back, backMaterial]);
 
@@ -209,11 +263,20 @@ function CardModel({ front, back, finish, reducedMotion, grip, pointer, onReady 
     const revealProgress = (time - openedAt.current) / REVEAL_SWEEP_SECONDS;
     uniforms.uReveal!.value = foiled && motion > 0 && revealProgress < 1 ? revealProgress : -1;
 
+    const auraUniforms = auraMaterial.uniforms;
+    const openAge = time - openedAt.current;
+    auraUniforms.uTime!.value = reducedMotion ? 0 : time;
+    auraUniforms.uHalo!.value = approach(auraUniforms.uHalo!.value, foiled ? AURA_HALO : 0, tilt);
+    auraUniforms.uRays!.value = approach(auraUniforms.uRays!.value, rayStrength, Math.min(1, delta * 3));
+    auraUniforms.uBurst!.value = foiled && motion > 0 && openAge < BURST_SECONDS ? openAge / BURST_SECONDS : -1;
+
     if (!reported.current) {
       reported.current = true;
       onReady();
     }
-    const settled = motion === 0 && isGripSettled(grip) && isOffsetSettled(current, target);
+    const auraSettled =
+      isNear(auraUniforms.uHalo!.value, foiled ? AURA_HALO : 0) && isNear(auraUniforms.uRays!.value, rayStrength);
+    const settled = motion === 0 && auraSettled && isGripSettled(grip) && isOffsetSettled(current, target);
     if (!settled) {
       state.invalidate();
     }
@@ -221,6 +284,11 @@ function CardModel({ front, back, finish, reducedMotion, grip, pointer, onReady 
 
   return (
     <group ref={root}>
+      {foiled ? (
+        <mesh position-z={AURA_OFFSET} material={auraMaterial}>
+          <planeGeometry args={[AURA_SIZE, AURA_SIZE]} />
+        </mesh>
+      ) : null}
       <mesh position-z={FACE_OFFSET} material={frontMaterial}>
         <planeGeometry args={[CARD_DIMENSIONS.width, CARD_DIMENSIONS.height]} />
       </mesh>
@@ -231,7 +299,17 @@ function CardModel({ front, back, finish, reducedMotion, grip, pointer, onReady 
   );
 }
 
-export function CardViewer3d({ frontUrls, backUrl, finish, reducedMotion, grip, pointer, onReady, onFail }: Props) {
+export function CardViewer3d({
+  frontUrls,
+  backUrl,
+  finish,
+  reducedMotion,
+  grip,
+  pointer,
+  frame,
+  onReady,
+  onFail,
+}: Props) {
   const backUrls = useMemo(() => (backUrl ? [backUrl] : []), [backUrl]);
   const front = useLoadedTexture(frontUrls);
   const back = useLoadedTexture(backUrls);
@@ -252,7 +330,7 @@ export function CardViewer3d({ frontUrls, backUrl, finish, reducedMotion, grip, 
       frameloop="demand"
       dpr={[1, 2]}
       gl={{ alpha: true, antialias: true }}
-      camera={{ fov: FIELD_OF_VIEW, near: 0.1, far: 20, position: [0, 0, CAMERA_DISTANCE] }}
+      camera={{ fov: FIELD_OF_VIEW, near: 0.1, far: 20, manual: true }}
       style={{ pointerEvents: "none" }}
       onCreated={({ gl }) => {
         gl.setClearColor(0x000000, 0);
@@ -260,6 +338,7 @@ export function CardViewer3d({ frontUrls, backUrl, finish, reducedMotion, grip, 
       }}
     >
       <ViewerWake />
+      <FrameCamera frame={frame} />
       <CardModel
         front={front.texture}
         back={back.texture}

@@ -2345,7 +2345,7 @@ const interfaceMessages = {
   "redesign.foundation.arena3dQuality.medium": "中",
   "redesign.foundation.arena3dQuality.high": "高",
   "redesign.foundation.cardViewer3d.title": "3D 卡牌檢視",
-  "redesign.foundation.cardViewer3d.description": "以帶閃卡效果的 3D 形式顯示放大的卡牌。拖曳卡牌即可翻面。",
+  "redesign.foundation.cardViewer3d.description": "以 3D 形式顯示放大的卡牌。拖曳卡牌即可翻面。",
   "redesign.shell.playNow": "立即對戰",
   "redesign.shell.theme.useLight": "使用淺色主題",
   "redesign.shell.theme.useDark": "使用深色主題",

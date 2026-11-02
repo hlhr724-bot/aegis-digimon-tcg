@@ -2477,7 +2477,7 @@ const interfaceMessages = {
   "redesign.foundation.arena3dQuality.high": "Haute",
   "redesign.foundation.cardViewer3d.title": "Vue des cartes en 3D",
   "redesign.foundation.cardViewer3d.description":
-    "Affiche les cartes agrandies en 3D avec un effet holographique. Faites glisser une carte pour la retourner.",
+    "Affiche les cartes agrandies en 3D. Faites glisser une carte pour la retourner.",
   "redesign.shell.playNow": "Jouer maintenant",
   "redesign.shell.theme.useLight": "Utiliser le thème clair",
   "redesign.shell.theme.useDark": "Utiliser le thème sombre",

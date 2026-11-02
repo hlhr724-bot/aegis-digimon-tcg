@@ -6,6 +6,7 @@ type Params = {
   glowColor: string | undefined;
   prismatic: boolean;
   size: number;
+  transparentCanvas: boolean;
 };
 
 const VERTEX_SHADER = `
@@ -25,6 +26,7 @@ const FRAGMENT_SHADER = `
   uniform float uHalo;
   uniform float uRays;
   uniform float uBurst;
+  uniform float uTransparentCanvas;
   varying vec2 vUv;
 
   ${FOIL_SHADER_CHUNK}
@@ -47,17 +49,20 @@ const FRAGMENT_SHADER = `
 
     vec3 tint = mix(uColor, foilSpectrum(angle / 6.28318 + radius * 0.18 - uTime * 0.12), uPrismatic);
     vec3 glow = tint * (halo * uHalo * 1.1 + rays * uRays * 0.9) + mix(vec3(1.0), tint, 0.5) * ring * 2.2;
-    gl_FragColor = vec4(glow * edgeFade, 1.0);
+    vec3 color = glow * edgeFade;
+    float coverage = clamp(max(color.r, max(color.g, color.b)), 0.0, 1.0);
+    gl_FragColor = vec4(color, mix(1.0, coverage, uTransparentCanvas));
   }
 `;
 
-export function buildCardAuraMaterial({ glowColor, prismatic, size }: Params): ShaderMaterial {
+export function buildCardAuraMaterial({ glowColor, prismatic, size, transparentCanvas }: Params): ShaderMaterial {
   return new ShaderMaterial({
     vertexShader: VERTEX_SHADER,
     fragmentShader: FRAGMENT_SHADER,
     transparent: true,
     depthWrite: false,
     blending: AdditiveBlending,
+    premultipliedAlpha: transparentCanvas,
     uniforms: {
       uColor: { value: new Color(glowColor ?? "#ffffff") },
       uPrismatic: { value: prismatic ? 1 : 0 },
@@ -67,6 +72,7 @@ export function buildCardAuraMaterial({ glowColor, prismatic, size }: Params): S
       uHalo: { value: 0 },
       uRays: { value: 0 },
       uBurst: { value: -1 },
+      uTransparentCanvas: { value: transparentCanvas ? 1 : 0 },
     },
   });
 }

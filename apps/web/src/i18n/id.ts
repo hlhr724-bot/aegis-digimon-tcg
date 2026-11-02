@@ -2439,7 +2439,7 @@ const interfaceMessages = {
   "redesign.foundation.arena3dQuality.high": "Tinggi",
   "redesign.foundation.cardViewer3d.title": "Tampilan kartu 3D",
   "redesign.foundation.cardViewer3d.description":
-    "Tampilkan kartu yang diperbesar dalam 3D dengan kilau foil. Seret kartu untuk membaliknya.",
+    "Tampilkan kartu yang diperbesar dalam 3D. Seret kartu untuk membaliknya.",
   "redesign.shell.playNow": "Main sekarang",
   "redesign.shell.theme.useLight": "Gunakan tema terang",
   "redesign.shell.theme.useDark": "Gunakan tema gelap",

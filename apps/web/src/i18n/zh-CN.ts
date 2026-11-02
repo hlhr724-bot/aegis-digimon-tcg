@@ -2339,7 +2339,7 @@ const interfaceMessages = {
   "redesign.foundation.arena3dQuality.medium": "中",
   "redesign.foundation.arena3dQuality.high": "高",
   "redesign.foundation.cardViewer3d.title": "3D 卡牌视图",
-  "redesign.foundation.cardViewer3d.description": "以带闪卡效果的 3D 形式显示放大的卡牌。拖动卡牌可将其翻面。",
+  "redesign.foundation.cardViewer3d.description": "以 3D 形式显示放大的卡牌。拖动卡牌可将其翻面。",
   "redesign.shell.playNow": "马上开始",
   "redesign.shell.theme.useLight": "使用浅色主题",
   "redesign.shell.theme.useDark": "使用深色主题",

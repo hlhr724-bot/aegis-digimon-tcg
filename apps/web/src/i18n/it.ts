@@ -2341,8 +2341,7 @@ const interfaceMessages = {
   "redesign.foundation.arena3dQuality.medium": "Media",
   "redesign.foundation.arena3dQuality.high": "Alta",
   "redesign.foundation.cardViewer3d.title": "Vista carta in 3D",
-  "redesign.foundation.cardViewer3d.description":
-    "Mostra le carte ingrandite in 3D con effetto olografico. Trascina una carta per girarla.",
+  "redesign.foundation.cardViewer3d.description": "Mostra le carte ingrandite in 3D. Trascina una carta per girarla.",
   "redesign.shell.playNow": "Gioca ora",
   "redesign.shell.theme.useLight": "Usa il tema chiaro",
   "redesign.shell.theme.useDark": "Usa il tema scuro",

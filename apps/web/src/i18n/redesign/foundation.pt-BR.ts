@@ -59,6 +59,5 @@ export const foundationPtBR: Record<keyof typeof foundationEn, string> = {
   "redesign.foundation.arena3dQuality.medium": "Média",
   "redesign.foundation.arena3dQuality.high": "Alta",
   "redesign.foundation.cardViewer3d.title": "Visualização de carta em 3D",
-  "redesign.foundation.cardViewer3d.description":
-    "Mostra as cartas ampliadas em 3D com brilho holográfico. Arraste uma carta para virá-la.",
+  "redesign.foundation.cardViewer3d.description": "Mostra as cartas ampliadas em 3D. Arraste uma carta para virá-la.",
 };

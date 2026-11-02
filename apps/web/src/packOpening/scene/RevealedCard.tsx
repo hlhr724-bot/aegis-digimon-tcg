@@ -2,12 +2,13 @@ import { useEffect, useMemo, useRef, type RefObject } from "react";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { Group, Mesh, Vector3, type Texture } from "three";
 import { CardFinish, type CardFinishEntry } from "@/design/webglCard/CardFinish";
-import { buildCardAuraMaterial } from "@/packOpening/scene/buildCardAuraMaterial";
+import { buildCardAuraMaterial } from "@/design/webglCard/buildCardAuraMaterial";
 import { buildCardFaceMaterial } from "@/design/webglCard/buildCardFaceMaterial";
 import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
 import { CardRevealState } from "@/packOpening/scene/CardRevealState";
 import type { CardGrip } from "@/design/webglCard/createCardGrip";
 import { dragCardGrip } from "@/design/webglCard/dragCardGrip";
+import { getCardAuraRayStrength } from "@/design/webglCard/getCardAuraRayStrength";
 
 type Vector = [number, number, number];
 
@@ -116,14 +117,12 @@ export function RevealedCard({
         glowColor,
         prismatic: finish.value === CardFinish.PRISMATIC.value,
         size: AURA_SIZE,
+        transparentCanvas: false,
       }),
     [finish, glowColor],
   );
   const restTurn = foiled ? -FULL_TURN : 0;
-  const rayStrength =
-    finish.shaderIndex >= CardFinish.STARLIGHT.shaderIndex
-      ? 0.25 + (finish.shaderIndex - CardFinish.STARLIGHT.shaderIndex) * 0.08
-      : 0;
+  const rayStrength = getCardAuraRayStrength(finish);
 
   useEffect(() => () => backMaterial.dispose(), [backMaterial]);
   useEffect(() => () => frontMaterial.dispose(), [frontMaterial]);

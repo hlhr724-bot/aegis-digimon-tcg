@@ -16,9 +16,8 @@ import { DEFAULT_CARD_SLEEVE, useCardSleeve } from "@/design/sleeve";
 import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
 import { createCardGrip } from "@/design/webglCard/createCardGrip";
 import { dragCardGrip } from "@/design/webglCard/dragCardGrip";
-import { getCardFinish } from "@/design/webglCard/getCardFinish";
 import { isWebGlAvailable } from "@/game/arena3d/isWebGlAvailable";
-import { CARD_VIEWER_3D_MARGIN } from "@/game/overlay/viewer/cardViewer3d/cardViewer3dMargin";
+import { getCardDetailFinish } from "@/game/overlay/viewer/cardFoil/getCardDetailFinish";
 import type { CardViewerPointer } from "@/game/overlay/viewer/cardViewer3d/CardViewerPointer";
 import { useCardViewer3dEnabled } from "@/game/overlay/viewer/cardViewer3d/useCardViewer3dEnabled";
 import { createLazyComponent } from "@/net/createLazyComponent";
@@ -57,7 +56,7 @@ function CardZoomArtStage({ cardId, artId, width }: Props) {
   const frontUrls = useCardImageUrls({ cardId, artId });
   const backUrl = useCardSleeve().src ?? DEFAULT_CARD_SLEEVE.src;
   const definition = getCardDefinition(cardId);
-  const finish = getCardFinish({ rarity: definition?.rarity, artId });
+  const finish = getCardDetailFinish({ cardId, artId });
   const grip = useMemo(createCardGrip, []);
   const pointer = useRef<CardViewerPointer>({ x: 0, y: 0, active: false });
   const frame = useRef<HTMLDivElement>(null);
@@ -156,7 +155,7 @@ function CardZoomArtStage({ cardId, artId, width }: Props) {
     >
       <CardFull cardId={cardId} artId={artId} width={width} zoomOnHover={!showing3d} />
       {viewerAllowed ? (
-        <div className="card-zoom-art__stage" aria-hidden="true" style={{ inset: `${-CARD_VIEWER_3D_MARGIN * 100}%` }}>
+        <div className="card-zoom-art__stage" aria-hidden="true">
           <ClientErrorBoundary fallback={<ReportFailure onFail={markFailed} />}>
             <Suspense fallback={null}>
               <CardViewer3d
@@ -166,6 +165,7 @@ function CardZoomArtStage({ cardId, artId, width }: Props) {
                 reducedMotion={reducedMotion}
                 grip={grip}
                 pointer={pointer}
+                frame={frame}
                 onReady={markReady}
                 onFail={markFailed}
               />

@@ -61,5 +61,5 @@ export const foundationEs: Record<keyof typeof foundationEn, string> = {
   "redesign.foundation.arena3dQuality.high": "Alta",
   "redesign.foundation.cardViewer3d.title": "Vista de carta en 3D",
   "redesign.foundation.cardViewer3d.description":
-    "Muestra las cartas ampliadas en 3D con brillo holográfico. Arrastra una carta para darle la vuelta.",
+    "Muestra las cartas ampliadas en 3D. Arrastra una carta para darle la vuelta.",
 };
