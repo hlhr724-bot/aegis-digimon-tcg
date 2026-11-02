@@ -847,10 +847,30 @@
   align-self: flex-start;
 }
 
-.tournaments-tree__card > .tournaments-watch-button {
-  align-self: stretch;
-  justify-content: center;
-  margin: var(--ds-space-1) 0 0;
+.tournaments-tree__card[data-watchable] {
+  position: relative;
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+
+.tournaments-tree__card[data-watchable]:hover,
+.tournaments-tree__card[data-watchable]:focus-within {
+  border-color: var(--ds-accent);
+}
+
+.tournaments-tree__watch {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tournaments-tree__watch:focus-visible {
+  outline: 2px solid var(--ds-accent);
+  outline-offset: 2px;
 }
 
 .tournaments-bracket__match[data-mine] > .tournaments-tree__card {

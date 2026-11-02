@@ -6,7 +6,6 @@ import { useTranslation } from "@/i18n/useTranslation";
 import { isTournamentSeriesLive } from "@/tournaments/isTournamentSeriesLive";
 import { TournamentBotPortrait } from "@/tournaments/TournamentBotPortrait";
 import type { TournamentBracketSpectating } from "@/tournaments/TournamentBracketSpectating";
-import { TournamentWatchButton } from "@/tournaments/TournamentWatchButton";
 import { pairingReasonKey, topCutRoundKey } from "@/tournaments/labels";
 
 type Params = {
@@ -48,15 +47,23 @@ export function TournamentBracket({ phase, participants, accountId, spectating }
     );
   }
 
-  function renderWatchButton(match: SeriesScoreView) {
+  function isWatchable(match: SeriesScoreView): boolean {
+    return spectating !== undefined && isTournamentSeriesLive(match);
+  }
+
+  function renderWatchOverlay(match: SeriesScoreView) {
     if (!spectating || !isTournamentSeriesLive(match)) {
       return null;
     }
+    const target = { tournamentId: spectating.tournamentId, matchId: match.matchId };
     return (
-      <TournamentWatchButton
-        target={{ tournamentId: spectating.tournamentId, matchId: match.matchId }}
-        players={`${getSeatName(match, 0)} · ${getSeatName(match, 1)}`}
-        onWatch={spectating.onWatch}
+      <button
+        type="button"
+        className="tournaments-tree__watch"
+        aria-label={t("tournaments.spectators.watchMatch", {
+          players: `${getSeatName(match, 0)} · ${getSeatName(match, 1)}`,
+        })}
+        onClick={() => spectating.onWatch(target)}
       />
     );
   }
@@ -115,7 +122,7 @@ export function TournamentBracket({ phase, participants, accountId, spectating }
                       className="tournaments-bracket__match"
                       data-mine={isOwnMatch(match) || undefined}
                     >
-                      <div className="tournaments-tree__card">
+                      <div className="tournaments-tree__card" data-watchable={isWatchable(match) || undefined}>
                         {renderSeat(match, 0)}
                         {renderSeat(match, 1)}
                         {isFinalRound({ round, phase }) && match.seriesDeadlineAt === null ? (
@@ -124,7 +131,7 @@ export function TournamentBracket({ phase, participants, accountId, spectating }
                         {pairingReasonKey(match.pairingReason) ? (
                           <Badge tone="neutral">{t(pairingReasonKey(match.pairingReason)!)}</Badge>
                         ) : null}
-                        {renderWatchButton(match)}
+                        {renderWatchOverlay(match)}
                       </div>
                     </li>
                   ))}
