@@ -59,6 +59,7 @@ const BENCH_EFFECTS = [
   "evolve",
   "arrival",
   "arrival-burst",
+  "finale",
 ];
 const CAPTURE_OFFSETS = [0.12, 0.3, 0.55, 0.9];
 const DEVICES = {
@@ -1274,6 +1275,44 @@ async function installEffectBench() {
     }
     emitPulses(pulses);
   };
+  const playFinaleLayer = () => {
+    const host = board();
+    const boardRect = host.getBoundingClientRect();
+    const point = center(security("opp"));
+    const layer = document.createElement("div");
+    layer.className = "game-finale";
+    layer.dataset.finaleKey = nextKey("finale-layer");
+    layer.dataset.finaleTone = "victory";
+    layer.dataset.finaleBoard = "arena3d";
+    layer.setAttribute("aria-hidden", "true");
+    layer.style.setProperty("--finale-x", `${point.x - boardRect.left}px`);
+    layer.style.setProperty("--finale-y", `${point.y - boardRect.top}px`);
+    for (const part of [
+      "vignette",
+      "burst",
+      "shockwave",
+      "chroma game-finale__chroma--warm",
+      "chroma game-finale__chroma--cool",
+      "flash",
+    ]) {
+      const span = document.createElement("span");
+      span.className = `game-finale__${part}`;
+      layer.append(span);
+    }
+    const punched = [host.querySelector(":scope > .game-field"), host.querySelector(":scope > .arena-3d-scene")];
+    for (const element of punched) {
+      const rect = element?.getBoundingClientRect();
+      element?.style.setProperty("--finale-origin", `${point.x - rect.left}px ${point.y - rect.top}px`);
+    }
+    host.append(layer);
+    host.dataset.finale = "victory";
+    bench.timers.push(
+      setTimeout(() => {
+        layer.remove();
+        delete host.dataset.finale;
+      }, 1900),
+    );
+  };
   const plans = {
     delete: () => [{ at: 0, run: () => emitDeletes(pickProxies(1)) }],
     wipe: () => [{ at: 0, run: () => emitDeletes(pickProxies(6)) }],
@@ -1345,6 +1384,26 @@ async function installEffectBench() {
     ],
     arrival: () => [{ at: 0, run: () => land(proxies("you").slice(0, 1)) }],
     "arrival-burst": () => [{ at: 0, run: () => land(proxies("you").slice(0, 5)) }],
+    finale: () => [
+      {
+        at: 0,
+        run: () => {
+          const attacker = proxies("you")[0];
+          const pulse = {
+            key: nextKey("finale"),
+            kind: "finale",
+            color: "#ffd666",
+            side: "you",
+            screenPoint: center(attacker),
+            targetPoint: center(security("opp")),
+            permanentId: idOf(attacker),
+          };
+          emitPulses([pulse]);
+          override("ArenaActiveSideAura", "pulses", [pulse]);
+          playFinaleLayer();
+        },
+      },
+    ],
   };
   const summarize = (samples) => {
     const sorted = [...samples].sort((a, b) => a - b);
@@ -1494,6 +1553,16 @@ function summarizeProfile(profile) {
   };
 }
 
+function getPeakDelay({ name, lastStepMs }) {
+  if (name === "security-chain") {
+    return lastStepMs + 250;
+  }
+  if (name === "finale") {
+    return 770;
+  }
+  return 250;
+}
+
 async function measureEffect({ page, session, name }) {
   const lastStepMs = await page.evaluate((effect) => window.arenaEffectBench.plan(effect), name);
   const span = lastStepMs + 2200;
@@ -1515,7 +1584,7 @@ async function measureEffect({ page, session, name }) {
   ]);
   const warmFrames = await page.evaluate(() => window.arenaEffectBench.collect());
   await page.waitForTimeout(500);
-  const peakDelay = name === "security-chain" ? lastStepMs + 250 : 250;
+  const peakDelay = getPeakDelay({ name, lastStepMs });
   await trigger();
   await page.waitForTimeout(peakDelay);
   const peak = (await collectScenes(page)).find((scene) => scene.canvas && !scene.canvas.contextLost);

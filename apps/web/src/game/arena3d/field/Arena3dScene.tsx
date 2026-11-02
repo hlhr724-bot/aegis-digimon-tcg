@@ -148,6 +148,7 @@ function ArenaSceneContents(props: Props) {
         activeSide={activeSide}
         quality={quality}
         reducedMotion={reducedMotion}
+        pulses={pulses}
       />
       <ArenaSlotTiles
         rows={snapshot.rows}
@@ -227,7 +228,6 @@ function ArenaSceneContents(props: Props) {
         shardCount={quality.shardCount}
         reducedMotion={reducedMotion}
       />
-      <Arena3dCameraRig base={cameraBase} impulse={impulse} store={props.store} reducedMotion={reducedMotion} />
       <ArenaBreedingFocus
         active={props.breedingFocus}
         layout={layout}
@@ -235,6 +235,7 @@ function ArenaSceneContents(props: Props) {
         activity={activity}
         reducedMotion={reducedMotion}
       />
+      <Arena3dCameraRig base={cameraBase} impulse={impulse} store={props.store} reducedMotion={reducedMotion} />
       <EnergyDecay energy={energy} />
       <ArenaFrameDriver
         activity={activity}

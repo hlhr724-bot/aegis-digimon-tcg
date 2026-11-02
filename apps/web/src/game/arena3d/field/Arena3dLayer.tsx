@@ -24,6 +24,8 @@ import type { ArenaFieldEffectState } from "@/game/arena3d/slots/ArenaFieldEffec
 import { summarizeArenaFieldEffects } from "@/game/arena3d/slots/summarizeArenaFieldEffects";
 import type { FieldClashScene } from "@/game/fieldClash";
 import type { DeleteBurst, TurnTransitionCue } from "@/game/match/types";
+import type { MatchFinale } from "@/game/match/finale/MatchFinale";
+import type { MatchFinaleTone } from "@/game/match/finale/MatchFinaleTone";
 import type { PermanentBurst } from "@/game/showcases";
 import type { AttackAnnouncement } from "@/game/sidePanels";
 import { createLazyComponent } from "@/net/createLazyComponent";
@@ -46,6 +48,8 @@ type Props = {
   permanentBursts: ReadonlyMap<string, PermanentBurst>;
   deleteBursts: readonly DeleteBurst[];
   securityHitSeat: number | null;
+  finale: MatchFinale | null;
+  finaleTone: MatchFinaleTone | undefined;
   fieldClash: FieldClashScene | null;
   viewerBattleArea: readonly Permanent[];
   opponentBattleArea: readonly Permanent[];
@@ -55,11 +59,11 @@ type Props = {
   opponentZones: ArenaSideZones;
   viewerFieldEffects: readonly FieldEffectView[];
   opponentFieldEffects: readonly FieldEffectView[];
+  breedingFocus: boolean;
 };
 
 const DEFAULT_SLEEVE = "/sleeves/digimon-standard.webp";
 
-  breedingFocus: boolean;
 const Arena3dScene = createLazyComponent({
   load: () => import("@/game/arena3d/field/Arena3dScene"),
   pick: (module) => module.Arena3dScene,
@@ -128,6 +132,8 @@ function Arena3dLayerScene(props: Props) {
     permanentBursts: props.permanentBursts,
     deleteBursts: props.deleteBursts,
     securityHitSeat: props.securityHitSeat,
+    finale: props.finale,
+    finaleTone: props.finaleTone,
     pileCounts: {
       viewerDeck: props.viewerZones.deckCount,
       opponentDeck: props.opponentZones.deckCount,
@@ -194,13 +200,13 @@ function Arena3dLayerScene(props: Props) {
             memory={props.memory}
             memoryPrediction={props.memoryPrediction}
             fieldEffects={fieldEffects}
+            breedingFocus={props.breedingFocus}
             onDowngrade={handleDowngrade}
             onContextLost={handleContextLost}
           />
         </Suspense>
       </ClientErrorBoundary>
     </div>
-            breedingFocus={props.breedingFocus}
   );
 }
 

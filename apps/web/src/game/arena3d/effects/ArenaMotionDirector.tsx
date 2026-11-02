@@ -7,7 +7,9 @@ import { ArenaCardMotionKind, type ArenaCardMotionKindEntry } from "@/game/arena
 import type { ArenaCardMotionRegistry } from "@/game/arena3d/effects/createArenaCardMotionRegistry";
 import type { ArenaTrackedField } from "@/game/arena3d/field/ArenaTrackedField";
 import { createArenaFloorProjector } from "@/game/arena3d/field/createArenaFloorProjector";
+import { getOppositeSide } from "@/game/arena3d/getOppositeSide";
 import { Side } from "@/game/side";
+import { FINALE_IMPACT_AT_MS } from "@/game/timings";
 
 type Props = {
   pulses: readonly ArenaPulse[];
@@ -30,6 +32,8 @@ const HOP_DELAY_SECONDS = 0.25;
 const HOP_STAGGER_SECONDS = 0.07;
 const KNOCKBACK_DISTANCE = 0.55;
 const ANNOUNCED_LUNGE_DISTANCE = 1.8;
+const FINALE_IMPACT_SECONDS = FINALE_IMPACT_AT_MS / 1000;
+const FINALE_RECOIL_DISTANCE = 0.7;
 
 const BURST_MOTIONS: Partial<Record<ArenaPulseKind, ArenaCardMotionKindEntry>> = {
   [ArenaPulseKind.EVOLVE.value]: ArenaCardMotionKind.EVOLVE,
@@ -95,6 +99,40 @@ export function ArenaMotionDirector({ pulses, field, motions, projectionCamera, 
             startedAt: now,
             from: to,
             to: to.clone().add(away),
+          });
+        }
+        continue;
+      }
+      if (pulse.kind === ArenaPulseKind.FINALE.value) {
+        const impact = new Vector3();
+        const hasImpact = pulse.targetPoint
+          ? projector.project(pulse.targetPoint.x, pulse.targetPoint.y, impact)
+          : false;
+        if (pulse.permanentId) {
+          addMotion(motions, {
+            permanentId: pulse.permanentId,
+            kind: ArenaCardMotionKind.FINALE_LUNGE,
+            startedAt: now,
+            from: findPosition(field, pulse.permanentId),
+            to: hasImpact ? impact : undefined,
+          });
+        }
+        const loser = getOppositeSide(pulse.side);
+        for (const tracked of field.permanents.values()) {
+          if (tracked.side !== loser) {
+            continue;
+          }
+          const origin = new Vector3(tracked.top.x, 0, tracked.top.z);
+          const away = hasImpact ? new Vector3().subVectors(origin, impact).setY(0) : new Vector3();
+          if (away.lengthSq() < 0.0001) {
+            away.set(0, 0, loser === Side.Viewer ? 1 : -1);
+          }
+          addMotion(motions, {
+            permanentId: tracked.id,
+            kind: ArenaCardMotionKind.KNOCKBACK,
+            startedAt: now + FINALE_IMPACT_SECONDS - ArenaCardMotionKind.KNOCKBACK.delaySeconds,
+            from: origin,
+            to: origin.clone().add(away.setLength(FINALE_RECOIL_DISTANCE)),
           });
         }
         continue;

@@ -295,6 +295,7 @@ Calm rules: lifts are 0.1 to 0.2 units, the flash peaks at 0.3, the spotlight di
 | Summon | Short settle from 0.34 units while the card materializes. The summon pulse has no ring, pillar, or ripple.         |
 | Delete | Tilt and sink.                                                                                                     |
 | Turn   | Staggered hop for the active side's cards.                                                                         |
+| Finale | Slow-motion lunge into the loser's security stack (`FINALE_LUNGE`); the loser's cards recoil at the impact.        |
 
 - `createArenaCardMotionRegistry` samples keyframes with smoothstep easing and reports when motions are busy.
 - `ArenaFrameDriver` renders on demand: every frame while busy, at the tier's paced frame rate while a settled cue animates, otherwise at the tier's idle frame rate (10 fps on Low, 20 fps on Medium and High). Pulses, cue transitions, the memory marker, and `ArenaLayoutSync` mark the scene busy; a settled cue marks it paced. `ArenaLayoutSync` marks it busy for 250 ms whenever a tracked card, zone, rim, cue, drop target, or focus changes, so DOM-driven fades and moves render at full rate while a still board idles.
@@ -312,6 +313,20 @@ Effects aim for clean, readable impacts, not fireworks:
 - The lunge reaches 62% of the way to its target, or 1.8 units without one. Knockback travels 0.55 units.
 - `ArenaPulseKind.ts` pillars, rings, durations, and camera shake are about half of the first version. The impact burst is 3.6 units wide and lasts 0.55 s. The camera keeps only the shake; there is no punch or side lean.
 - Floor ripples last 1.6 s, travel slower, and are dimmer. The turn sweep is dimmer and barely moves the floor.
+
+### Match finale
+
+The blow that wins a match on security plays a short finale before the result screen. The match layer detects it and drives both boards; see [the match finale in ANIMATIONS.md](../ANIMATIONS.md#match-finale). In 3D, `BoardStage` passes `cues.finale` and its tone to `Arena3dLayer`, and `useArenaPulses` emits one `FINALE` pulse: from the attacker's proxy to the loser's security stack, on the winner's side, in the tone color (victory gold, defeat red-violet, spectator slate).
+
+| Time (`FINALE_IMPACT_AT_MS` = 520 ms) | 3D                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 to 520 ms                           | `ArenaMotionDirector` plays `FINALE_LUNGE` (1.25 s): the attacker winds back and rises for 0.2 s, creeps forward in slow motion, then strikes 74% of the way to the security stack at 520 ms with a 1.14 scale and a short flash.                                                                                |
+| 520 ms                                | `ArenaPulseLayer` (`startFinale`): a burst 2.2 times the impact burst, three times the tier's shards, a 3.6-unit pillar, a 6.4-unit shockwave ring, a security-sized echo ring 140 ms later, three floor ripples (1.5, 1, 0.6) and a 0.26 camera shake. The loser's cards recoil 0.7 units away from the impact. |
+| 520 ms to about 2.6 s                 | `ArenaActiveSideAura` surges on the winner's side: the region brightens (`uSurge`) and a fast crest line runs out at 7.5 units per second (`uSurgeStart`), then decays.                                                                                                                                          |
+
+- The DOM finale layer (`overlay/match/MatchFinaleLayer.tsx`) adds the flash, the chromatic rings, and the vignette on top of the canvas. It also scales `.game-board > .arena-3d-scene` and `.game-field` together about the security stack (up to 1.095, `battle-finale-punch`), so the GL board and the DOM proxies zoom as one image. A camera move would have left the DOM chips behind (see [World layout and camera](#world-layout-and-camera)). The DOM burst and shockwave are hidden in 3D; the GL burst, ring, and ripples replace them.
+- No new shader program: the finale reuses the ring, pillar, burst, and shard materials with new parameters (`burstScale`, `shardScale`, `calm` on the active effect), and the aura gains two uniforms in its existing program. The program count stays at 25.
+- Reduced motion: no lunge, recoil, shake, burst, shards, pillar, or surge crest. The finale is one soft ring and ripple at the security stack and a calm aura brightening (45%).
 
 ## Environments
 
@@ -410,6 +425,8 @@ These are the desktop budgets. Phones and tablets use the touch budgets below. "
 - `field/computeArenaCameraFrame.test.ts`
 - `field/ArenaLayoutVariant.test.ts`
 - `field/arena3dBreedingFocus.test.ts`
+- `breeding/computeArenaBreedingSpotlight.test.ts`
+- `breeding/stepArenaBreedingFocus.test.ts`
 - `field/computeArenaRowSlots.test.ts`
 - `field/selectArenaLayoutVariant.test.ts`
 - `slots/computeArenaSlotTiles.test.ts`
@@ -425,8 +442,6 @@ These are the desktop budgets. Phones and tablets use the touch budgets below. "
 - `field/skipUnchangedPixelRatio.test.ts`
 - `field/createArenaDomWatch.test.ts`
 
-- `breeding/computeArenaBreedingSpotlight.test.ts`
-- `breeding/stepArenaBreedingFocus.test.ts`
 No E2E test selects the 3D style. Playwright runs on the classic board by default.
 
 ## Performance
@@ -439,25 +454,25 @@ Start `pnpm dev`, then run the harness from the repository root. It drives headl
 node tools/diagnostics/measure-arena-3d-performance.mjs --scenario crowded --gl metal --output .local/perf/crowded-metal.json
 ```
 
-| Option                | Values                                                                                                                      | Default                 |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| `--scenario`          | `crowded`, `classic`, `bot`, `viewer`, `mount`, `mobile`, `effects`, `decision`, `landing`, `rotate`                        | `crowded`               |
-| `--board`             | `arena3d`, `classic`: board style for `decision`, so the classic board can serve as a control                               | `arena3d`               |
-| `--gl`                | `swiftshader`, `metal`                                                                                                      | `swiftshader`           |
-| `--quality`           | `auto`, `low`, `medium`, `high`                                                                                             | `auto`                  |
-| `--reduced`           | flag: emulate reduced motion                                                                                                | off                     |
-| `--seconds`           | idle window in seconds                                                                                                      | `6`                     |
-| `--turns`             | bot match windows of 15 s                                                                                                   | `6`                     |
-| `--cycles`            | classic and 3D switches in `mount`                                                                                          | `8`                     |
-| `--base`              | web origin                                                                                                                  | `http://localhost:5173` |
-| `--device`            | `desktop`, `phone-landscape`, `phone-landscape-mouse`, `phone-portrait`, `tablet-landscape`                                 | `desktop`               |
-| `--throttle`          | CPU slowdown through `Emulation.setCPUThrottlingRate`                                                                       | `1`                     |
-| `--gpu-name`          | renderer name the probe reads                                                                                               | real renderer           |
-| `--cores`, `--memory` | `hardwareConcurrency` and `deviceMemory` the probe reads                                                                    | real values             |
-| `--effect`            | `all` or a list of `delete`, `wipe`, `impact`, `attack`, `security`, `security-chain`, `evolve`, `arrival`, `arrival-burst` | `all`                   |
-| `--repeat`            | effect cycles in the leak check of `effects`                                                                                | `20`                    |
-| `--capture`           | folder for `effects` frame captures at fixed clock offsets                                                                  | off                     |
-| `--seed`              | seeds `Math.random` so captures repeat                                                                                      | off                     |
+| Option                | Values                                                                                                                                | Default                 |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `--scenario`          | `crowded`, `classic`, `bot`, `viewer`, `mount`, `mobile`, `effects`, `decision`, `landing`, `rotate`                                  | `crowded`               |
+| `--board`             | `arena3d`, `classic`: board style for `decision`, so the classic board can serve as a control                                         | `arena3d`               |
+| `--gl`                | `swiftshader`, `metal`                                                                                                                | `swiftshader`           |
+| `--quality`           | `auto`, `low`, `medium`, `high`                                                                                                       | `auto`                  |
+| `--reduced`           | flag: emulate reduced motion                                                                                                          | off                     |
+| `--seconds`           | idle window in seconds                                                                                                                | `6`                     |
+| `--turns`             | bot match windows of 15 s                                                                                                             | `6`                     |
+| `--cycles`            | classic and 3D switches in `mount`                                                                                                    | `8`                     |
+| `--base`              | web origin                                                                                                                            | `http://localhost:5173` |
+| `--device`            | `desktop`, `phone-landscape`, `phone-landscape-mouse`, `phone-portrait`, `tablet-landscape`                                           | `desktop`               |
+| `--throttle`          | CPU slowdown through `Emulation.setCPUThrottlingRate`                                                                                 | `1`                     |
+| `--gpu-name`          | renderer name the probe reads                                                                                                         | real renderer           |
+| `--cores`, `--memory` | `hardwareConcurrency` and `deviceMemory` the probe reads                                                                              | real values             |
+| `--effect`            | `all` or a list of `delete`, `wipe`, `impact`, `attack`, `security`, `security-chain`, `evolve`, `arrival`, `arrival-burst`, `finale` | `all`                   |
+| `--repeat`            | effect cycles in the leak check of `effects`                                                                                          | `20`                    |
+| `--capture`           | folder for `effects` frame captures at fixed clock offsets                                                                            | off                     |
+| `--seed`              | seeds `Math.random` so captures repeat                                                                                                | off                     |
 
 - `mobile` opens the crowded board on `--device`, records the resolved tier every second for 16 s (pixel ratio, drawing buffer, antialias, floor segments, card texture width, renderers created), then measures idle, draw calls, triangles, and texture memory, forces a render on every frame for 4 s, and resizes the viewport 31 times to count `WebGLRenderer.setSize` calls. Phone presets use `isMobile` and `hasTouch`, so `(pointer: coarse)` matches. `phone-landscape-mouse` is the same screen without touch, which resolves desktop budgets. `--gpu-name`, `--cores`, and `--memory` let SwiftShader stand in for a phone in the probe; `--gpu-name "Adreno (TM) 740" --cores 8 --memory 8` probes Medium.
 - `effects` opens the crowded board in 3D and plays burst effects without the presentation queue. It finds the scene's `ArenaPulseLayer`, `ArenaMotionDirector`, and `ArenaCardDepartures` fibers and sets their `pulses` and `deleteBursts` props through the React DevTools `overrideProps` hook of the R3F reconciler. Pulses use the centres of the real DOM proxies, as `useArenaPulses` does. Arrivals add a `.game-card-landing` child to the proxy. This needs the development build. The demo preview tools remount `GameScreen`, so they cannot measure an effect alone.
@@ -559,6 +574,20 @@ Findings:
 - No tier cap was added. With instancing, a 6-card wipe on Low costs about 8 ms in its worst frame and 3 ms in the median, so the existing `shardCount` per tier is enough.
 - Frame captures at fixed clock offsets match before and after. Evolve and arrival are identical to within 0.005% of pixels. Effects with shards differ in 0.1% to 0.8% of pixels, because the shards fly in random directions; their number, size, color, and spread match. The burst ray spin still advances 0.02 per rendered frame, so it depends on the frame rate, as before.
 - The `effects` scenario cannot measure GPU time. SwiftShader runs fragments on the CPU, and Metal hides GPU time from the main thread. Real phones still need a profile, especially for the floor ripple loop (8 slots) during a board wipe.
+
+#### Match finale
+
+The `finale` effect emits one `FINALE` pulse to `ArenaPulseLayer`, `ArenaMotionDirector`, and `ArenaActiveSideAura` and mounts a copy of the DOM finale layer, so the zoom punch and the CSS layers run too. Measured on 2026-11-01 with 3 to 5 repeat cycles, one run per configuration, on a loaded machine; the other effects ran in the same runs as controls.
+
+| Effect         | Worst warm frame, desktop High (Metal) | Touch Medium, 4x (SwiftShader) | Touch Low, 6x (SwiftShader) | First use, desktop / Medium / Low | Draw calls at peak, desktop |
+| -------------- | -------------------------------------- | ------------------------------ | --------------------------- | --------------------------------- | --------------------------- |
+| Finale         | 1.6 ms                                 | 3.1 ms                         | 8.1 ms                      | 5.0 / 12.5 / 17.7 ms              | 258                         |
+| Security check | 1.1 ms                                 | 3.7 ms                         | 12.0 ms                     | 14.2 / 15.1 / 19.8 ms             | 260                         |
+| Impact         | 0.7 ms                                 | 6.1 ms                         | 9.6 ms                      | 4.0 / 9.4 / 19.6 ms               | 254                         |
+
+- No effect compiled a program; the count stayed at 25 on desktop and 20 on touch Medium and Low before and after the repeats.
+- Peak transparent coverage is 3.2 screens, against 2.6 to 2.8 for the other bursts, because of the 15-unit shockwave ring.
+- Median frame script did not change: 0.6 ms on desktop, 1.8 ms on Medium, 3.7 ms on Low.
 
 ### Budgets
 

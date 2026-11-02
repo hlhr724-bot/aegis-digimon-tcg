@@ -36,6 +36,7 @@ export enum CueTrack {
   OptionDock = "optionDock",
   OptionDockHold = "optionDockHold",
   SecurityHold = "securityHold",
+  Finale = "finale",
 }
 
 /** The attack orientation relative to the viewer’s side of the board. */

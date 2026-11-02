@@ -3,16 +3,33 @@ import { useFrame } from "@react-three/fiber";
 import { AdditiveBlending, Color, NormalBlending, ShaderMaterial, Vector2, type Mesh } from "three";
 import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
 import { ARENA_NOISE_GLSL } from "@/game/arena3d/arenaNoiseGlsl";
+import type { ArenaPulse } from "@/game/arena3d/ArenaPulse";
+import { ArenaPulseKind } from "@/game/arena3d/ArenaPulseKind";
 import type { ArenaSideColors } from "@/game/arena3d/ArenaSideColors";
 import type { ArenaLayoutVariantEntry } from "@/game/arena3d/field/ArenaLayoutVariant";
 import { ARENA_ROW_LAYOUT } from "@/game/arena3d/field/arenaWorldLayout";
 import type { Arena3dQualityEntry } from "@/game/arena3d/quality/Arena3dQuality";
+import { Side } from "@/game/side";
+import { FINALE_IMPACT_AT_MS } from "@/game/timings";
 
 type Props = {
   colors: ArenaSideColors;
   layout: ArenaLayoutVariantEntry;
   activeSide: number;
   quality: Arena3dQualityEntry;
+  reducedMotion: boolean;
+  pulses: readonly ArenaPulse[];
+};
+
+type Surge = {
+  side: Side | undefined;
+  startedAt: number;
+};
+
+type SurgeStrengthParams = {
+  surge: Surge;
+  side: Side;
+  time: number;
   reducedMotion: boolean;
 };
 
@@ -40,6 +57,10 @@ const CARD_DEPTH = ARENA_ROW_LAYOUT.cardWidth * CARD_DIMENSIONS.height;
 const AURA_MARGIN_X = 1.5;
 const AURA_MARGIN_Z = 0.55;
 const BOUNDS_OVERSHOOT = 0.5;
+const SURGE_RISE_SECONDS = 0.12;
+const SURGE_DECAY_RATE = 1.4;
+const SURGE_SECONDS = 2.6;
+const CALM_SURGE_PEAK = 0.45;
 
 function measureAuraRegion({ lanes }: ArenaLayoutVariantEntry): AuraRegion {
   const gridHalfWidth = ((ARENA_ROW_LAYOUT.columns - 1) / 2) * lanes.columnPitch + ARENA_ROW_LAYOUT.cardWidth / 2;
@@ -53,6 +74,16 @@ function measureAuraRegion({ lanes }: ArenaLayoutVariantEntry): AuraRegion {
 
 function easeTowardTarget({ current, target, delta }: EaseParams): number {
   return current + (target - current) * (1 - Math.exp(-CROSSFADE_RATE * delta));
+}
+
+function getSurgeStrength({ surge, side, time, reducedMotion }: SurgeStrengthParams): number {
+  const age = time - surge.startedAt;
+  if (surge.side !== side || age < 0 || age > SURGE_SECONDS) {
+    return 0;
+  }
+  const rise = Math.min(1, age / SURGE_RISE_SECONDS);
+  const decay = Math.exp(-Math.max(0, age - SURGE_RISE_SECONDS) * SURGE_DECAY_RATE);
+  return rise * decay * (reducedMotion ? CALM_SURGE_PEAK : 1);
 }
 
 const VERTEX_SHADER = `
@@ -75,6 +106,8 @@ const FRAGMENT_SHADER = `
   uniform float uLight;
   uniform float uFacing;
   uniform float uWeight;
+  uniform float uSurge;
+  uniform float uSurgeStart;
   uniform vec3 uColor;
   uniform vec3 uSurface;
   uniform vec2 uHalfSize;
@@ -92,6 +125,8 @@ const FRAGMENT_SHADER = `
   const float CREST_SPEED = 1.3;
   const float CREST_WIDTH = 0.24;
   const float CREST_REACH = 6.0;
+  const float SURGE_SPEED = 7.5;
+  const float SURGE_WIDTH = 0.7;
 
   float getRoundedBoxDistance(vec2 local, vec2 halfSize, float corner) {
     vec2 edge = abs(local) - (halfSize - corner);
@@ -145,7 +180,10 @@ const FRAGMENT_SHADER = `
     }
     float travel = depth + sway * 0.8;
     float crest = uFlow > 0.0 ? getCrest(travel, time) : 0.0;
-    return envelope * (0.42 + getBands(point, travel, time) + crest);
+    float surgeBehind = (uTime - uSurgeStart) * SURGE_SPEED - 0.4 - travel;
+    float surgeLine = exp(-(surgeBehind * surgeBehind) / (SURGE_WIDTH * SURGE_WIDTH)) * uFlow;
+    float surge = uSurge * (0.7 + surgeLine * 1.6);
+    return envelope * (0.42 + getBands(point, travel, time) + crest + surge);
   }
 
   vec3 getMutedColor(vec3 color) {
@@ -185,6 +223,8 @@ function buildActiveSideAuraMaterial(facing: number): ShaderMaterial {
       uLight: { value: 0 },
       uFacing: { value: facing },
       uWeight: { value: 0 },
+      uSurge: { value: 0 },
+      uSurgeStart: { value: -100 },
       uColor: { value: new Color() },
       uSurface: { value: new Color() },
       uHalfSize: { value: new Vector2(1, 1) },
@@ -203,12 +243,15 @@ function applySideColors({ material, color, colors }: SideMaterialParams) {
   material.needsUpdate = true;
 }
 
-export function ArenaActiveSideAura({ colors, layout, activeSide, quality, reducedMotion }: Props) {
+export function ArenaActiveSideAura({ colors, layout, activeSide, quality, reducedMotion, pulses }: Props) {
   const viewerMaterial = useMemo(() => buildActiveSideAuraMaterial(1), []);
   const opponentMaterial = useMemo(() => buildActiveSideAuraMaterial(-1), []);
   const viewerMesh = useRef<Mesh>(null);
   const opponentMesh = useRef<Mesh>(null);
   const crestPending = useRef(true);
+  const surge = useRef<Surge>({ side: undefined, startedAt: -100 });
+  const surgePending = useRef<Side | undefined>(undefined);
+  const seenFinales = useRef(new Set<string>());
   const halfWidth = layout.bounds.halfWidth + BOUNDS_OVERSHOOT;
   const halfDepth = layout.bounds.halfDepth + BOUNDS_OVERSHOOT;
 
@@ -247,16 +290,37 @@ export function ArenaActiveSideAura({ colors, layout, activeSide, quality, reduc
     }
   }, [activeSide]);
 
+  useEffect(() => {
+    for (const pulse of pulses) {
+      if (pulse.kind !== ArenaPulseKind.FINALE.value || seenFinales.current.has(pulse.key)) {
+        continue;
+      }
+      seenFinales.current.add(pulse.key);
+      surgePending.current = pulse.side;
+    }
+  }, [pulses]);
+
   useFrame((state, rawDelta) => {
     const delta = reducedMotion ? 1 : Math.min(rawDelta, 1 / 15);
     const time = state.clock.elapsedTime;
+    if (surgePending.current) {
+      surge.current = {
+        side: surgePending.current,
+        startedAt: time + (reducedMotion ? 0 : FINALE_IMPACT_AT_MS / 1000),
+      };
+      surgePending.current = undefined;
+    }
     const sides = [
-      { material: viewerMaterial, mesh: viewerMesh.current, target: activeSide > 0 ? 1 : 0 },
-      { material: opponentMaterial, mesh: opponentMesh.current, target: activeSide < 0 ? 1 : 0 },
+      { material: viewerMaterial, mesh: viewerMesh.current, side: Side.Viewer, active: activeSide > 0 },
+      { material: opponentMaterial, mesh: opponentMesh.current, side: Side.Opponent, active: activeSide < 0 },
     ];
-    for (const { material, mesh, target } of sides) {
+    for (const { material, mesh, side, active } of sides) {
       const uniforms = material.uniforms;
+      const surgeStrength = getSurgeStrength({ surge: surge.current, side, time, reducedMotion });
+      const target = active || surgeStrength > 0 ? 1 : 0;
       uniforms.uTime!.value = time;
+      uniforms.uSurge!.value = surgeStrength;
+      uniforms.uSurgeStart!.value = surge.current.startedAt;
       uniforms.uWeight!.value = easeTowardTarget({ current: uniforms.uWeight!.value, target, delta });
       if (crestPending.current && target === 1) {
         uniforms.uStart!.value = time;

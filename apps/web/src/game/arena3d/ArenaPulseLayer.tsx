@@ -33,6 +33,7 @@ import { getOppositeSide } from "@/game/arena3d/getOppositeSide";
 import { pushArenaRipple } from "@/game/arena3d/pushArenaRipple";
 import { SIDE_DEPTH } from "@/game/arena3d/arenaSceneLayout";
 import { Side } from "@/game/side";
+import { FINALE_IMPACT_AT_MS } from "@/game/timings";
 
 type Props = {
   pulses: readonly ArenaPulse[];
@@ -53,12 +54,28 @@ type ActiveEffect = {
   position: Vector3;
   target?: Vector3;
   burst?: boolean;
+  burstScale?: number;
+  shardScale?: number;
+  calm?: boolean;
   startedAt: number;
 };
 
 type BurstProps = {
   color: string;
   startedAt: number;
+  scale: number;
+};
+
+type FinaleParams = {
+  pulse: ArenaPulse;
+  entry: ArenaPulseKindEntry;
+  target: Vector3;
+  now: number;
+  ripples: ArenaRippleBuffer;
+  impulse: RefObject<ArenaCameraImpulse>;
+  energy: { current: number };
+  activity: RefObject<ArenaActivity>;
+  reducedMotion: boolean;
 };
 
 type BeamProps = {
@@ -81,6 +98,7 @@ type PulseMaterialParams = {
   entry: ArenaPulseKindEntry;
   color: string;
   isLight: boolean;
+  calm: boolean;
 };
 
 type PulseMaterials = {
@@ -188,6 +206,13 @@ const BURST_FRAGMENT_SHADER = `
 
 const BURST_SECONDS = 0.55;
 const BURST_SIZE = 3.6;
+const FINALE_IMPACT_SECONDS = FINALE_IMPACT_AT_MS / 1000;
+const FINALE_ECHO_SECONDS = 0.14;
+const FINALE_RIPPLES = [
+  { delay: 0, strength: 1.5 },
+  { delay: 0.16, strength: 1 },
+  { delay: 0.38, strength: 0.6 },
+];
 
 function createBurstMaterial(color: string, spin: number): ShaderMaterial {
   return new ShaderMaterial({
@@ -205,7 +230,7 @@ function createBurstMaterial(color: string, spin: number): ShaderMaterial {
   });
 }
 
-function ImpactBurst({ color, startedAt }: BurstProps) {
+function ImpactBurst({ color, startedAt, scale }: BurstProps) {
   const camera = useThree((state) => state.camera);
   const mesh = useRef<Mesh>(null);
   const material = useMemo(() => createBurstMaterial(color, Math.random() * 6), [color]);
@@ -214,19 +239,20 @@ function ImpactBurst({ color, startedAt }: BurstProps) {
 
   useFrame((state) => {
     const age = state.clock.elapsedTime - startedAt;
-    material.uniforms.uProgress!.value = Math.min(1, Math.max(0, age / BURST_SECONDS));
+    const seconds = BURST_SECONDS * Math.sqrt(scale);
+    material.uniforms.uProgress!.value = Math.min(1, Math.max(0, age / seconds));
     material.uniforms.uSpin!.value += 0.02;
     if (mesh.current) {
       mesh.current.quaternion.copy(camera.quaternion);
-      mesh.current.visible = age >= 0 && age < BURST_SECONDS;
+      mesh.current.visible = age >= 0 && age < seconds;
     }
   });
 
   return (
     <mesh
       ref={mesh}
-      position-y={1.4}
-      scale={BURST_SIZE}
+      position-y={1.4 * scale}
+      scale={BURST_SIZE * scale}
       geometry={ARENA_PULSE_PLANE_GEOMETRY}
       material={material}
       renderOrder={10}
@@ -298,15 +324,19 @@ function hasHelix(entry: ArenaPulseKindEntry): boolean {
 }
 
 function hasShards(entry: ArenaPulseKindEntry): boolean {
-  return entry.value === ArenaPulseKind.DELETE.value || entry.value === ArenaPulseKind.IMPACT.value;
+  return (
+    entry.value === ArenaPulseKind.DELETE.value ||
+    entry.value === ArenaPulseKind.IMPACT.value ||
+    entry.value === ArenaPulseKind.FINALE.value
+  );
 }
 
-function createPulseMaterials({ entry, color, isLight }: PulseMaterialParams): PulseMaterials {
+function createPulseMaterials({ entry, color, isLight, calm }: PulseMaterialParams): PulseMaterials {
   return {
     ring: entry.hasRing ? createRingMaterial(color, isLight) : undefined,
-    pillar: entry.pillarHeight > 0 ? createPillarMaterial(color, isLight) : undefined,
-    helix: hasHelix(entry) ? createHelixMaterial(color) : undefined,
-    shard: hasShards(entry) ? createShardMaterial(color) : undefined,
+    pillar: !calm && entry.pillarHeight > 0 ? createPillarMaterial(color, isLight) : undefined,
+    helix: !calm && hasHelix(entry) ? createHelixMaterial(color) : undefined,
+    shard: !calm && hasShards(entry) ? createShardMaterial(color) : undefined,
   };
 }
 
@@ -364,14 +394,28 @@ function getRingRadius(entry: ArenaPulseKindEntry, progress: number): number {
 }
 
 function PulseEffect({ effect, isLight, shardCount, onDone }: EffectProps) {
-  const { entry, color, position, target, burst, startedAt, key } = effect;
+  const {
+    entry,
+    color,
+    position,
+    target,
+    burst,
+    burstScale = 1,
+    shardScale = 1,
+    calm = false,
+    startedAt,
+    key,
+  } = effect;
   const root = useRef<Group>(null);
   const pillar = useRef<Group>(null);
   const helix = useRef<Group>(null);
   const shards = useRef<InstancedMesh>(null);
   const finished = useRef(false);
-  const materials = useMemo(() => createPulseMaterials({ entry, color, isLight }), [entry, color, isLight]);
-  const shardDirections = useMemo(() => buildShardDirections(shardCount), [shardCount]);
+  const materials = useMemo(() => createPulseMaterials({ entry, color, isLight, calm }), [entry, color, isLight, calm]);
+  const shardDirections = useMemo(
+    () => buildShardDirections(Math.round(shardCount * shardScale)),
+    [shardCount, shardScale],
+  );
   const ringSize = entry.ringRadius * 2.4;
 
   useEffect(() => () => disposePulseMaterials(materials), [materials]);
@@ -439,7 +483,7 @@ function PulseEffect({ effect, isLight, shardCount, onDone }: EffectProps) {
         />
       ) : null}
       <group position={position}>
-        {burst ? <ImpactBurst color={color} startedAt={startedAt} /> : null}
+        {burst ? <ImpactBurst color={color} startedAt={startedAt} scale={burstScale} /> : null}
         {materials.ring ? (
           <mesh
             rotation-x={-Math.PI / 2}
@@ -517,6 +561,63 @@ function PulseShaderKeepers() {
   );
 }
 
+function startFinale({
+  pulse,
+  entry,
+  target,
+  now,
+  ripples,
+  impulse,
+  energy,
+  activity,
+  reducedMotion,
+}: FinaleParams): ActiveEffect[] {
+  const impactAt = now + (reducedMotion ? 0 : FINALE_IMPACT_SECONDS);
+  const waves = reducedMotion ? FINALE_RIPPLES.slice(0, 1) : FINALE_RIPPLES;
+  for (const wave of waves) {
+    pushArenaRipple({
+      buffer: ripples,
+      x: target.x,
+      z: target.z,
+      startedAt: impactAt + wave.delay,
+      strength: reducedMotion ? 0.6 : wave.strength,
+      color: pulse.color,
+    });
+  }
+  if (!reducedMotion) {
+    impulse.current = { strength: entry.shake, startedAt: impactAt };
+  }
+  energy.current = 1.5;
+  activity.current.busyUntil = Math.max(
+    activity.current.busyUntil,
+    performance.now() + (impactAt - now + entry.durationSeconds + 1.2) * 1000,
+  );
+  const finale: ActiveEffect = {
+    key: pulse.key,
+    entry,
+    color: pulse.color,
+    position: target,
+    burst: !reducedMotion,
+    burstScale: 2.2,
+    shardScale: 3,
+    calm: reducedMotion,
+    startedAt: impactAt,
+  };
+  if (reducedMotion) {
+    return [finale];
+  }
+  return [
+    finale,
+    {
+      key: `${pulse.key}:echo`,
+      entry: findArenaPulseKind(ArenaPulseKind.SECURITY.value),
+      color: pulse.color,
+      position: target,
+      startedAt: impactAt + FINALE_ECHO_SECONDS,
+    },
+  ];
+}
+
 function getSideAnchor(side: Side): Vector3 {
   return new Vector3(0, 0, side === Side.Viewer ? SIDE_DEPTH : -SIDE_DEPTH);
 }
@@ -564,6 +665,22 @@ export function ArenaPulseLayer({
       const now = clock.elapsedTime;
       const position = projectToFloor(pulse.screenPoint, pulse.side);
       const target = pulse.targetPoint ? projectToFloor(pulse.targetPoint, getOppositeSide(pulse.side)) : undefined;
+      if (entry.value === ArenaPulseKind.FINALE.value) {
+        fresh.push(
+          ...startFinale({
+            pulse,
+            entry,
+            target: target ?? getSideAnchor(getOppositeSide(pulse.side)),
+            now,
+            ripples,
+            impulse,
+            energy,
+            activity,
+            reducedMotion,
+          }),
+        );
+        continue;
+      }
       if (entry.hasRing) {
         pushArenaRipple({
           buffer: ripples,

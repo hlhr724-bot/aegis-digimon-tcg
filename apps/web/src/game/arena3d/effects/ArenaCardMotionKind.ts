@@ -29,6 +29,21 @@ export const ArenaCardMotionKind = {
       frame({ at: 1 }),
     ],
   },
+  FINALE_LUNGE: {
+    name: "FINALE_LUNGE",
+    value: "finaleLunge",
+    durationSeconds: 1.25,
+    delaySeconds: 0,
+    keyframes: [
+      frame({ at: 0 }),
+      frame({ at: 0.16, along: -0.12, lift: 0.5, tilt: -0.34, scale: 1.08 }),
+      frame({ at: 0.36, along: 0.08, lift: 0.62, tilt: -0.22, scale: 1.1 }),
+      frame({ at: 0.416, along: 0.74, lift: 0.38, tilt: 0.24, scale: 1.14, flash: 0.45 }),
+      frame({ at: 0.56, along: 0.68, lift: 0.32, tilt: 0.12, scale: 1.1, flash: 0.15 }),
+      frame({ at: 0.84, along: 0.1, lift: 0.1, tilt: -0.02, scale: 1.02 }),
+      frame({ at: 1 }),
+    ],
+  },
   KNOCKBACK: {
     name: "KNOCKBACK",
     value: "knockback",

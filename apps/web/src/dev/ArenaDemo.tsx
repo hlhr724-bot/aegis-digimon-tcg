@@ -646,13 +646,28 @@ export function ArenaDemo() {
     ]);
   }
   function previewResult(outcome: "win" | "loss" | "draw") {
+    const winnerSeat: Seat = outcome === "loss" ? 1 : 0;
+    const battleArea = state.players[winnerSeat]?.battleArea ?? [];
+    const attacker =
+      outcome === "draw" ? undefined : (battleArea.find((permanent) => permanent.currentDP > 0) ?? battleArea[0]);
     setPreviewOutcome(outcome);
     setBatches((previous) => [
       ...previous,
       singleServerBatch([
+        ...(attacker
+          ? [
+              {
+                kind: "attackDeclared" as const,
+                seat: winnerSeat,
+                attackerPermanentId: attacker.permanentId,
+                attackerCardId: attacker.topCard.cardId,
+                target: { kind: "player" as const },
+              },
+            ]
+          : []),
         {
           kind: "gameOver",
-          result: outcome === "draw" ? { outcome: "draw" } : { outcome: "win", winnerSeat: outcome === "win" ? 0 : 1 },
+          result: outcome === "draw" ? { outcome: "draw" } : { outcome: "win", winnerSeat },
           reason: "security",
         },
       ]),

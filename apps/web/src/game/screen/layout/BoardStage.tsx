@@ -78,6 +78,8 @@ import type { boardActions } from "../boardActions";
 import type { matchIntents } from "../matchIntents";
 import type { actionGuards } from "../model/actionGuards";
 import { AttackArrowLayer } from "./AttackArrowLayer";
+import { MatchFinaleLayer } from "@/game/overlay/match/MatchFinaleLayer";
+import { resolveMatchFinaleTone } from "@/game/match/finale/resolveMatchFinaleTone";
 import { FieldEffectsIndicator } from "./FieldEffectsIndicator";
 import { readFieldEffects } from "@/game/readFieldEffects";
 import { BattleZones } from "./BattleZones";
@@ -358,6 +360,9 @@ export function BoardStage({
   );
   const opponentBreeding = opponent.breeding;
   const resultShown = state.gameOver && !cues.resultPending;
+  const finaleTone = cues.finale
+    ? resolveMatchFinaleTone({ winnerSeat: cues.finale.winnerSeat, viewerSeat, spectating })
+    : undefined;
   let opponentStatus = opponentStatusKey(state, viewerSeat);
   if (
     manualState.gameMode === GameMode.MANUAL.value &&
@@ -661,6 +666,8 @@ export function BoardStage({
               permanentBursts={cues.permanentBursts}
               deleteBursts={cues.deleteBursts}
               securityHitSeat={cues.securityHitSeat}
+              finale={cues.finale}
+              finaleTone={finaleTone}
               fieldClash={cues.fieldClash}
               viewerBattleArea={shownViewer.battleArea}
               opponentBattleArea={shownOpponent.battleArea}
@@ -680,6 +687,7 @@ export function BoardStage({
               }}
               viewerFieldEffects={readFieldEffects(shownViewer.fieldEffectsJson)}
               opponentFieldEffects={readFieldEffects(shownOpponent.fieldEffectsJson)}
+              breedingFocus={guards.breedingActionsOpen}
             />
           ) : null}
           <OpponentBar
@@ -687,7 +695,6 @@ export function BoardStage({
             spectatorCode={!state.gameOver ? state.spectatorCode : undefined}
             spectatorNamesJson={!spectating ? state.players[viewerSeat]?.spectatorNamesJson : undefined}
             anonymousSpectatorCount={state.players[viewerSeat]?.anonymousSpectatorCount}
-              breedingFocus={guards.breedingActionsOpen}
             onResetScenario={onResetScenario}
             timer={
               (state.series?.bestOf ?? 1) > 1 ? (
@@ -908,6 +915,18 @@ export function BoardStage({
             drawBursts={cues.drawBursts}
             drawFlights={cues.drawFlights}
           />
+
+          {cues.finale && finaleTone ? (
+            <MatchFinaleLayer
+              finale={cues.finale}
+              tone={finaleTone}
+              board={anchors.board}
+              field={anchors.field}
+              defender={cues.finale.winnerSeat === viewerSeat ? anchors.opponentSecurity : anchors.viewerSecurity}
+              permanents={anchors.permanents}
+              arena3d={arena3d}
+            />
+          ) : null}
         </div>
 
         {/* Desktop plays without the sidebar — its controls moved to the header

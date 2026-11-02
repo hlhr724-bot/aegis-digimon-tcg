@@ -71,6 +71,15 @@ export const ArenaPulseKind = {
     ringRadius: 0.96,
     hasRing: true,
   },
+  FINALE: {
+    name: "FINALE",
+    value: "finale",
+    durationSeconds: 1.3,
+    shake: 0.26,
+    pillarHeight: 3.6,
+    ringRadius: 6.4,
+    hasRing: true,
+  },
   TURN: {
     name: "TURN",
     value: "turn",

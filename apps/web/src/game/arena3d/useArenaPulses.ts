@@ -12,6 +12,9 @@ import { getElementCenter } from "@/game/arena3d/getElementCenter";
 import { getOppositeSide } from "@/game/arena3d/getOppositeSide";
 import type { FieldClashScene } from "@/game/fieldClash";
 import type { DeleteBurst, TurnTransitionCue } from "@/game/match/types";
+import type { MatchFinale } from "@/game/match/finale/MatchFinale";
+import type { MatchFinaleTone } from "@/game/match/finale/MatchFinaleTone";
+import { findMatchFinaleTone } from "@/game/match/finale/findMatchFinaleTone";
 import type { BurstVariant, PermanentBurst } from "@/game/showcases";
 import type { AttackAnnouncement } from "@/game/sidePanels";
 import { Side } from "@/game/side";
@@ -37,6 +40,8 @@ type Params = {
   permanentBursts: ReadonlyMap<string, PermanentBurst>;
   deleteBursts: readonly DeleteBurst[];
   securityHitSeat: number | null;
+  finale: MatchFinale | null;
+  finaleTone: MatchFinaleTone | undefined;
   pileCounts: PileCounts;
 };
 
@@ -117,6 +122,8 @@ export function useArenaPulses({
   permanentBursts,
   deleteBursts,
   securityHitSeat,
+  finale,
+  finaleTone,
   pileCounts,
 }: Params): readonly ArenaPulse[] {
   const [pulses, setPulses] = useState<readonly ArenaPulse[]>([]);
@@ -275,6 +282,26 @@ export function useArenaPulses({
       ),
     });
   }, [securityHitSeat, viewerSeat, board, emit, getSideColor]);
+
+  useEffect(() => {
+    if (!finale) {
+      return;
+    }
+    const side = finale.winnerSeat === viewerSeat ? Side.Viewer : Side.Opponent;
+    const attackerId = finale.attacker?.permanentId;
+    const attacker = attackerId ? permanents.current?.[attackerId] : undefined;
+    emit({
+      key: `finale:${finale.key}`,
+      kind: ArenaPulseKind.FINALE.value,
+      color: finaleTone ? findMatchFinaleTone(finaleTone).tint : getSideColor(side),
+      side,
+      screenPoint: getElementCenter(attacker),
+      targetPoint: getElementCenter(
+        findArenaZoneElement({ board: board.current, side: getOppositeSide(side), zone: ArenaZone.SECURITY.value }),
+      ),
+      permanentId: attackerId,
+    });
+  }, [finale, finaleTone, viewerSeat, board, permanents, emit, getSideColor]);
 
   const { viewerDeck, opponentDeck, viewerTrash, opponentTrash } = pileCounts;
   useEffect(() => {

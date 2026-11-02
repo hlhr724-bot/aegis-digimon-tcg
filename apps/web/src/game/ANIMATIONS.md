@@ -256,7 +256,7 @@ and rest for 100 ms afterwards. This brings a common field effect's lead-in near
 | Reveals and zone movement                | `revealShowcases.ts`, side panels, public face flights                                        | Card effect fixtures; production Titan cascade; reveal and hand presentation tests                           |
 | Memory                                   | `memoryHold.ts`, `MemoryGauge`, sweep, arc and prediction                                     | Effects lab; visual Training/Digisorption; `/dev/board` specimens                                            |
 | DP and restrictions                      | `useDpPulses.ts`, `useRestrictionPulses.ts`, `CardMini`, persistent badges                    | Effects lab; visual Alliance/Reboot; DP, restriction and permanent tests                                     |
-| Refusal and result                       | `useMatchCues.ts`, hand shake, rejection notice, `GameOverOverlay`                            | Rejected intent/live match end; `pnpm motion:probe:result`; rejection/result tests                           |
+| Refusal and result                       | `useMatchCues.ts`, hand shake, rejection notice, `useMatchFinale.ts`, `GameOverOverlay`       | Rejected intent/live match end; `pnpm motion:probe:result`; rejection/result tests                           |
 | Shuffle                                  | `deckRiffles.ts`, `deckRiffleStep.ts`, `deckRiffleClock.ts`, deck layers                      | Engine `deckShuffled`; `pnpm motion:probe:shuffle`; Arena shuffle tools; queue and pile tests                |
 | Local selection and inspection           | `Hand`, `PermanentView`, spotlight, inspector, card zoom, drag ghost                          | `/dev/board`, `/dev/mobile`, visual arena; keyboard and responsive browser checks                            |
 
@@ -823,6 +823,67 @@ only card arrivals. An end-of-turn effect that moves no card no longer lets "You
 play before its clause. `resultHold.test.tsx` and `turnHandoffHold.test.tsx` cover both;
 `/dev/arena?scenario=arena-issue-5065-lethal-attack-order` and
 `/dev/arena?scenario=arena-issue-5065-opponent-turn-end` reproduce them on a real server.
+
+## Match finale
+
+The blow that wins on security plays a short finale before the result screen, on both boards,
+for the winner, the loser, spectators and replays.
+
+### Detection
+
+The client only presents synchronized state. The server ends a security win with
+`gameOver { reason: "security", result: { outcome: "win", winnerSeat } }` as the last event of
+the batch that holds the lethal attack; `attackEnded` is not sent. `findLethalBlow` reads the
+closed batches: it takes that `gameOver` and the winner's last `attackDeclared` of the same
+turn (attacker permanent, card and art). Any other reason, a draw, or no `gameOver` plays no
+finale. A blow on the last security card does not end the match; the next direct attack does.
+
+### Pacing
+
+`match/queue/useMatchFinale.ts` runs in `useMatchCues` after the batch layout effect and
+enqueues one step on `CueTrack.Finale`:
+
+1. It waits until no other finite playback step is pending (`isFinitePlaybackStep`, the same
+   rule as `playbackPending`), so the attack arrow, banner and earlier beats finish first.
+2. It publishes `cues.finale`, which mounts `MatchFinaleLayer` with
+   `data-finale-key`.
+3. It waits `FINALE_TOTAL_MS` (1700 ms), then the painted `battle-finale-clock` CSS animation
+   on that layer (`waitForPaintedAnimation`).
+
+The step keeps `playbackPending` true, so `useResultHold` keeps the result back with no timer
+of its own. `queue.skip()` (Skip animations, the hold's stall clock or its ceiling) ends the
+wait at once; the CSS finishes under the result. A reconnect or late spectator that joins an
+ended match plays nothing, like the result hold. In drain mode (reduced motion or a hidden
+tab) the step shows the calm finale without waiting, so the result is not delayed.
+`timings.ts` owns `FINALE_IMPACT_AT_MS` (520), `FINALE_TOTAL_MS` (1700) and `FINALE_CALM_MS`
+(600) and publishes them as `--t-finale-impact-at`, `--t-finale` and `--t-finale-calm`.
+
+### Sequence
+
+`resolveMatchFinaleTone` picks the tone: victory for the winner, defeat for the loser, witness
+for a spectator. `MatchFinaleTone` holds the GL tint; `matchFinale.css` holds the DOM colors
+(gold, red-violet, slate, matching the result splash).
+
+| Time            | Classic (`MatchFinaleLayer`, `matchFinale.css`)                                                                                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 to 520 ms     | Slow motion: the vignette closes on the loser's security stack and the field pushes in to 1.035. A `CardFull` ghost of the attacker winds back, creeps, then strikes 60% of the way to the stack. |
+| 520 ms          | Impact: tone flash, conic burst, shockwave ring, two offset chromatic rings, a 1.095 zoom punch and a decaying shake of the field.                                                                |
+| 520 to 1100 ms  | The burst and rings fade, the ghost returns, the zoom settles.                                                                                                                                    |
+| 1100 to 1700 ms | Hold: the vignette stays (darker for defeat), then the result appears.                                                                                                                            |
+
+- The ghost is drawn in the finale layer because rows clip their cards. The real card is
+  hidden only while the ghost plays and shows again on `animationend` or unmount.
+- The field zoom and shake scale `.game-field` about the security stack
+  (`--finale-origin`); in 3D the canvas scales with it. See
+  [Match finale in ARENA_3D.md](arena3d/ARENA_3D.md#match-finale) for the GL part.
+- Defeat uses a weaker flash and a darker vignette. Light mode uses normal blending and a
+  lighter shade.
+- Reduced motion: no ghost, zoom, shake, burst, shockwave or rings; the vignette fades in
+  and a soft flash fades out over 600 ms.
+- `/dev/arena` Tools, "Preview result: win/loss", now sends an `attackDeclared` from the
+  winner's first Digimon before `gameOver`, so the preview plays the full finale.
+- Tests: `findLethalBlow.test.ts`, `resolveMatchFinaleTone.test.ts`, `useMatchFinale.test.ts`
+  (holds for the clock, waits for earlier beats, skip, drain, already-ended match).
 
 ## Effect targets, status pulses and phone prompts, 2026-10-14
 
