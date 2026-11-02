@@ -130,6 +130,11 @@ export function ArenaActiveSideAura({ colors, layout, activeSide, quality, reduc
       material.uniforms.uHalfSize!.value.copy(region.halfSize);
       material.uniforms.uBounds!.value.set(halfWidth, halfDepth);
       material.uniforms.uCenterDepth!.value = region.centerDepth;
+      material.uniforms.uStrength!.value = layout.aura.strength;
+      material.uniforms.uCenterFade!.value = layout.aura.centerFade;
+      material.uniforms.uBoundsFade!.value = layout.aura.boundsFade;
+      material.uniforms.uScreenFade!.value.x = layout.aura.screenFadeX;
+      material.uniforms.uWash!.value = layout.aura.wash ? 1 : 0;
     }
   }, [viewerMaterial, opponentMaterial, layout, halfWidth, halfDepth]);
 
