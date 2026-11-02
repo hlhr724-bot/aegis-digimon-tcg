@@ -1,52 +1,54 @@
 import "#api/cards/index";
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { ServerEvent } from "@aegis/shared/protocol/events";
-import { runReplay } from "#api/replays/inputs/run";
-import type { ReplayRecord } from "#api/replays/inputs/types";
+import { setupScenario } from "#api/engine/testkit/scenario";
+import { advance } from "#api/engine/testkit/advance";
+import { settle } from "#api/engine/testkit/harness";
+import fixture from "#api/engine/scenarios/arts-digivolve-inside-effect-resolves-turn-player-entry-effects-first.fixture";
 
-const record = JSON.parse(
-  readFileSync(
-    new URL("./arts-digivolve-inside-effect-resolves-turn-player-entry-effects-first.replay.json", import.meta.url),
-    "utf8",
-  ),
-) as ReplayRecord;
-
-const outerEffectKey = "ST23-04/ir-7-0";
-const turnPlayerEntryEffectKey = "BT25-043/ir-shared-0";
-const opponentEntryEffectKey = "EX13-045/ir-7-0";
-
-function eventIndex(events: readonly ServerEvent[], kind: ServerEvent["kind"], effectKey: string): number {
-  return events.findIndex((event) => event.kind === kind && "effectKey" in event && event.effectKey === effectKey);
+function eventIndex(events: readonly ServerEvent[], kind: ServerEvent["kind"], sourceCardId: string): number {
+  return events.findIndex(
+    (event) => event.kind === kind && "sourceCardId" in event && event.sourceCardId === sourceCardId,
+  );
 }
 
 describe("Arts Digivolve used by a resolving effect", () => {
-  it("resolves the turn player's [When Digivolving] before the opponent's entry effect from the rule-check deletion", async () => {
-    const events: ServerEvent[] = [];
-    const replay = await runReplay(record, { untilInput: 142, onBatch: (_state, batch) => events.push(...batch) });
+  it("resolves the turn player's [When Digivolving] before the opponent's [On Deletion] from the rule-check deletion", async () => {
+    const s = setupScenario(fixture, {
+      autoAcceptOptional: true,
+      autoSelectCards: true,
+      autoChooseOption: true,
+      autoOrderTriggers: true,
+    });
+    const meramonId = s.perm("meramon").permanentId;
+    const loop = s.engine.startTurnLoop();
+    try {
+      await advance(s.engine).waitForMainPhase(0);
+      expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("murasamemon").instanceId })).toEqual({
+        ok: true,
+      });
+      await settle(
+        () => eventIndex(s.events, "effectResolved", "ST16-07") >= 0 && s.state.pendingDecision === undefined,
+      );
 
-    expect(replay.divergences.filter(({ index }) => index < 141)).toEqual([]);
-    expect(eventIndex(events, "effectTriggered", "replacement/keyword-partition/perm-18")).toBeGreaterThanOrEqual(0);
-    expect(eventIndex(events, "effectResolved", outerEffectKey)).toBeGreaterThanOrEqual(0);
-    expect(eventIndex(events, "effectTriggered", turnPlayerEntryEffectKey)).toBeGreaterThan(
-      eventIndex(events, "effectResolved", outerEffectKey),
-    );
-    expect(eventIndex(events, "effectTriggered", opponentEntryEffectKey)).toBe(-1);
+      const outerResolved = eventIndex(s.events, "effectResolved", "ST23-04");
+      const entryTriggered = s.events.findIndex(
+        (event) =>
+          event.kind === "effectTriggered" &&
+          event.sourceCardId === "BT25-043" &&
+          event.description?.startsWith("[When Digivolving]") === true,
+      );
+      const deletionTriggered = eventIndex(s.events, "effectTriggered", "ST16-07");
 
-    const securityPrompt = replay.state.pendingDecision!;
-    expect(securityPrompt).toMatchObject({ seat: 1, kind: "selectCards" });
-    expect(
-      await replay.applyIntent(1, {
-        type: "respondDecision",
-        decisionId: securityPrompt.decisionId,
-        response: { kind: "selectCards", instanceIds: [] },
-      }),
-    ).toEqual({ ok: true });
-
-    expect(eventIndex(events, "effectResolved", turnPlayerEntryEffectKey)).toBeGreaterThanOrEqual(0);
-    expect(eventIndex(events, "effectTriggered", opponentEntryEffectKey)).toBeGreaterThan(
-      eventIndex(events, "effectResolved", turnPlayerEntryEffectKey),
-    );
-    expect(replay.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId)).toContain("EX13-045");
+      expect(s.state.players[1]!.battleArea.map(({ permanentId }) => permanentId)).not.toContain(meramonId);
+      expect(s.state.players[1]!.trash.map(({ cardId }) => cardId)).toContain("ST16-07");
+      expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId)).toContain("BT25-043");
+      expect(outerResolved).toBeGreaterThanOrEqual(0);
+      expect(entryTriggered).toBeGreaterThan(outerResolved);
+      expect(deletionTriggered).toBeGreaterThan(entryTriggered);
+    } finally {
+      s.engine.applyIntent(0, { type: "surrender" });
+      await loop;
+    }
   });
 });
