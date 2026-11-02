@@ -52,15 +52,19 @@ export function WatchScreen({
     }
     if (failed) {
       return (
-        <p className="live-matches__error" role="alert">
-          {t("spectator.liveError")}
-        </p>
+        <Panel pad={0}>
+          <p className="live-matches__error" role="alert">
+            {t("spectator.liveError")}
+          </p>
+        </Panel>
       );
     }
     return (
-      <p className="live-matches__loading" aria-busy="true">
-        {t("common.loading")}
-      </p>
+      <Panel pad={0}>
+        <p className="live-matches__loading" aria-busy="true">
+          {t("common.loading")}
+        </p>
+      </Panel>
     );
   }
 
@@ -93,9 +97,7 @@ export function WatchScreen({
                 </Button>
               </div>
             </header>
-            <Panel className="live-matches" pad={0}>
-              {getLiveMatchesContent()}
-            </Panel>
+            {getLiveMatchesContent()}
           </section>
           <Panel className="watch-code-panel">
             <SpectatorCodeForm initialCode={initialCode} onWatch={onWatch} />
