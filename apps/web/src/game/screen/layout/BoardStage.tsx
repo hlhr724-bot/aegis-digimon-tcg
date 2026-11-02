@@ -800,6 +800,7 @@ export function BoardStage({
             handSortMode={handDock.handSortMode}
             handSortDirection={handDock.handSortDirection}
             showRecordedHand={replayMode && seats.shownHandEntries.length > 0}
+            revealedHand={spectating ? seats.revealed?.viewer.hand : undefined}
             onSortHand={handDock.onSortHand}
             onMoveHandCard={handDock.onMoveHandCard}
             reorderDropBeforeInstanceId={handDock.reorderDropBeforeInstanceId}
