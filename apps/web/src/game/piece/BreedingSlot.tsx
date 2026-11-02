@@ -122,6 +122,7 @@ export function BreedingSlot({
           />
         ) : (
           <span
+            className="game-breeding-slot__empty"
             style={{
               fontSize: compact ? 8 : 10,
               color: "var(--ds-text-off)",

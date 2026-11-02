@@ -370,7 +370,7 @@ export function showcaseBurst(
   variant: PermanentBurst["variant"],
   overrides: Partial<PermanentBurst> = {},
 ): PermanentBurst {
-  return { key: 1, permanentId: "p-burst", variant, color: "Blue", inBreeding: false, ...overrides };
+  return { key: 1, permanentId: "p-burst", seat: 0, variant, color: "Blue", inBreeding: false, ...overrides };
 }
 
 export const ZONE_SHOWCASES: { label: string; showcase: ZoneShowcaseModel }[] = [

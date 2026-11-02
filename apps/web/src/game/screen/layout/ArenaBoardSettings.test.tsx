@@ -1,6 +1,7 @@
 import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
 import { ArenaAppearanceControls } from "@/design/arenaAppearance/ArenaAppearanceControls";
 import { setTamerGroupingEnabled } from "@/design/tamerGrouping/setTamerGroupingEnabled";
+import { cardViewer3dPreference } from "@/game/overlay/viewer/cardViewer3d/cardViewer3dPreference";
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it } from "vitest";
@@ -66,4 +67,21 @@ it("shares board scale and effect transparency between settings controls and res
   fireEvent.click(screen.getAllByRole("button", { name: "Reset board appearance" })[0]!);
   expect((scales[1] as HTMLSelectElement).value).toBe("default");
   expect((transparencies[0] as HTMLSelectElement).value).toBe("opaque");
+});
+
+it("shows enlarged cards in 3D by default and lets the player turn it off during a match", () => {
+  localStorage.setItem("aegis.locale", "en");
+  cardViewer3dPreference.setEnabled(true);
+  render(
+    <I18nProvider>
+      <ArenaBoardSettings />
+    </I18nProvider>,
+  );
+  const toggle = screen.getByRole("switch", { name: /^3D card view/ });
+  expect(toggle.getAttribute("aria-checked")).toBe("true");
+  fireEvent.click(toggle);
+  expect(toggle.getAttribute("aria-checked")).toBe("false");
+  expect(cardViewer3dPreference.isEnabled()).toBe(false);
+  expect(localStorage.getItem("aegis.card-viewer-3d")).toBe("false");
+  cardViewer3dPreference.setEnabled(true);
 });

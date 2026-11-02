@@ -25,7 +25,7 @@ import { createDiscardedSourcePanels } from "./match/narration/presentableNarrat
    (ARCHITECTURE.md §4). */
 
 import { CueTrack, OpeningDealState } from "./match/enums";
-import { holdsTheBoard, OPTION_DOCK_TRACKS } from "./match/tracks";
+import { holdsTheBoard } from "./match/tracks";
 import { liveMode } from "./match/environment";
 import { buildCardSiteIndex } from "./match/cardSiteIndex";
 import { presentServerBatch } from "./match/present/presentBatch";
@@ -37,6 +37,8 @@ import { traceCueStep } from "./cueTrace";
 import { cueFlights } from "./match/flights";
 import { useDecisionBarrier } from "./match/queue/useDecisionBarrier";
 import { useResultHold } from "./match/queue/useResultHold";
+import { isFinitePlaybackStep } from "@/game/match/queue/isFinitePlaybackStep";
+import { useMatchFinale } from "@/game/match/queue/useMatchFinale";
 import { usePhaseBanners } from "./match/queue/usePhaseBanners";
 import { useDpPulses } from "./match/watchers/useDpPulses";
 import { useDrawWatcher } from "./match/watchers/useDrawWatcher";
@@ -405,15 +407,7 @@ export function useMatchCues({
       ),
     );
     // The open-ended docks and holds wait for an answer a finished match never sends.
-    setPlaybackPending(
-      queue.hasPendingStep(
-        (step) =>
-          step.track !== "sound" &&
-          step.track !== CueTrack.SecurityDock &&
-          step.track !== CueTrack.SecurityHold &&
-          !OPTION_DOCK_TRACKS.includes(step.track ?? ""),
-      ),
-    );
+    setPlaybackPending(queue.hasPendingStep(isFinitePlaybackStep));
     setQueueActivity((count) => count + 1);
   };
   // Assigned on every render so the queue's bookkeeping always reaches the current setter.
@@ -1216,6 +1210,8 @@ export function useMatchCues({
     queue,
   });
 
+  const finale = useMatchFinale({ batches, gameOver: state?.gameOver === true, queue, board: anchors.board });
+
   useDecisionBarrier({
     pendingEffectUnits: () => effectSequence.pendingCount(),
     decisionPending,
@@ -1646,6 +1642,7 @@ export function useMatchCues({
     presentedStateVersion,
     presenting: presentedStateVersion !== undefined || pendingPhaseBanners > 0,
     resultPending,
+    finale,
     unsuspendSweep,
     deleteBursts,
     zoneShowcase,

@@ -790,7 +790,7 @@ export function BoardShowcase() {
         <Case label="landing bounce + dust">
           <PermanentView
             perm={PERMANENTS.champion}
-            burst={{ key: 1, permanentId: "p-you-1", variant: "play", color: "Red", inBreeding: false }}
+            burst={{ key: 1, permanentId: "p-you-1", seat: 0, variant: "play", color: "Red", inBreeding: false }}
             compact
           />
         </Case>

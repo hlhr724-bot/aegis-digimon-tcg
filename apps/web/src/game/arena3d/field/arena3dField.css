@@ -1,0 +1,741 @@
+.game-board[data-board-style="arena3d"] {
+  isolation: isolate;
+}
+
+.game-board[data-board-style="arena3d"] > .arena-3d-scene {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.game-board[data-board-style="arena3d"] > .arena-3d-scene canvas {
+  display: block;
+}
+
+.game-board[data-board-style="arena3d"] > .arena-3d-scene::after {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 58%, rgb(0 0 0 / 50%) 100%);
+  content: "";
+  pointer-events: none;
+}
+
+:root:not(.dark) .game-board[data-board-style="arena3d"] > .arena-3d-scene::after {
+  background: radial-gradient(ellipse at 50% 50%, transparent 62%, rgb(40 30 60 / 16%) 100%);
+}
+
+.aegis-arena .game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) {
+  background: transparent !important;
+}
+
+.arena-3d-field {
+  position: absolute;
+  inset: 0;
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field
+  :is(.game-pile-column, .game-pile-column > div:not([class]), .game-opponent-breeding, .game-viewer-piles) {
+  display: contents !important;
+}
+
+.arena-3d-field [data-arena-3d-row] {
+  background: none !important;
+  box-shadow: none !important;
+  overflow: visible;
+}
+
+.arena-3d-field .arena-3d-slot {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent {
+  margin: 0 !important;
+  touch-action: none !important;
+}
+
+.arena-3d-row__empty {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+[data-arena-3d-row="opp"] .arena-3d-row__empty {
+  top: 65%;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-memory-band {
+  position: absolute !important;
+  top: var(--arena-3d-band-y) !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: auto !important;
+  width: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) var(--arena-3d-memory-width) minmax(0, 1fr);
+  align-items: center;
+  column-gap: clamp(0.5rem, 1.2vw, 1.25rem);
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  translate: 0 -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-memory-band > .game-memory-gauge {
+  display: contents !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-memory-gauge__phase {
+  display: none !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-memory-gauge__track {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  width: var(--arena-3d-memory-width) !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  --memory-track-pad-x: 0px;
+  --memory-track-pad-y: 0px;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-memory-coin {
+  max-width: none !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-phase-rail {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+  display: flex !important;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-end-turn-orb {
+  position: relative !important;
+  inset: auto !important;
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: start;
+  width: auto !important;
+  min-width: 6.5rem;
+  height: 2.375rem !important;
+  margin: 0 !important;
+  padding: 0 1rem !important;
+  border-radius: var(--ds-radius-md) !important;
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  transform: none !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-end-turn-orb__ring {
+  display: none;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-memory-gauge__track {
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  :is(.game-memory-coin, .game-memory-arc, .game-memory-prediction, .game-memory-prediction__marker) {
+  opacity: 0 !important;
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field
+  :is(
+    .game-utility-slot--opp-deck,
+    .game-utility-slot--opp-trash,
+    .game-utility-slot--opp-eggs,
+    .game-utility-slot--opp-raising,
+    .game-utility-slot--you-deck,
+    .game-utility-slot--you-trash,
+    .game-pile-column--left .game-security-pile,
+    .game-pile-column--right .game-security-pile
+  ) {
+  position: absolute !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--opp-deck {
+  --arena-3d-zone-scale: var(--arena-3d-opp-deck-scale);
+  top: var(--arena-3d-opp-deck-y) !important;
+  left: var(--arena-3d-opp-deck-x) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--opp-trash {
+  --arena-3d-zone-scale: var(--arena-3d-opp-trash-scale);
+  top: var(--arena-3d-opp-trash-y) !important;
+  left: var(--arena-3d-opp-trash-x) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--opp-eggs {
+  --arena-3d-zone-scale: var(--arena-3d-opp-eggs-scale);
+  top: var(--arena-3d-opp-eggs-y) !important;
+  left: var(--arena-3d-opp-eggs-x) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--opp-raising {
+  --arena-3d-zone-scale: var(--arena-3d-opp-raising-scale);
+  top: var(--arena-3d-opp-raising-y) !important;
+  left: var(--arena-3d-opp-raising-x) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--you-deck {
+  --arena-3d-zone-scale: var(--arena-3d-you-deck-scale);
+  top: var(--arena-3d-you-deck-y) !important;
+  left: var(--arena-3d-you-deck-x) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--you-trash {
+  --arena-3d-zone-scale: var(--arena-3d-you-trash-scale);
+  top: var(--arena-3d-you-trash-y) !important;
+  left: var(--arena-3d-you-trash-x) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile-column--left .game-security-pile {
+  --arena-3d-zone-width: var(--arena-3d-you-security-w);
+  top: var(--arena-3d-you-security-y) !important;
+  left: var(--arena-3d-you-security-x) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile-column--right .game-security-pile {
+  --arena-3d-zone-width: var(--arena-3d-opp-security-w);
+  top: var(--arena-3d-opp-security-y) !important;
+  left: var(--arena-3d-opp-security-x) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot {
+  scale: var(--arena-3d-zone-scale, 1) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile-column--left .game-security-pile {
+  --arena-3d-zone-height: var(--arena-3d-you-security-h);
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile-column--right .game-security-pile {
+  --arena-3d-zone-height: var(--arena-3d-opp-security-h);
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-security-pile,
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-security-shield-wrap > .game-security-shield {
+  width: var(--arena-3d-zone-width) !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: var(--arena-3d-zone-height) !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-security-shield {
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  clip-path: none !important;
+  filter: none !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-security-shield::before,
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-security-shield::after,
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-security-shield__label {
+  display: none !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-security-shield__count {
+  position: absolute !important;
+  inset: auto auto -0.5rem 50% !important;
+  translate: -50% 0 !important;
+  display: grid !important;
+  place-items: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  margin: 0 !important;
+  padding: 0 0.35rem;
+  color: var(--ds-on-ink) !important;
+  border-radius: var(--ds-radius-pill);
+  background: color-mix(in srgb, var(--ds-ink) 82%, transparent) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--arena-side, var(--ds-ink-accent)) 55%, transparent) !important;
+  font: 700 0.8rem / 1 var(--ds-font-display) !important;
+  transform: none !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) {
+  background: transparent !important;
+}
+
+.arena-3d-field {
+  position: absolute;
+  inset: 0;
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field
+  :is(.game-pile-column, .game-pile-column > div:not([class]), .game-opponent-breeding, .game-viewer-piles) {
+  display: contents !important;
+}
+
+.arena-3d-field [data-arena-3d-row] {
+  background: none !important;
+  box-shadow: none !important;
+  overflow: visible;
+}
+
+.arena-3d-field .arena-3d-slot {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent {
+  margin: 0 !important;
+  touch-action: none !important;
+}
+
+.arena-3d-row__empty {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+[data-arena-3d-row="opp"] .arena-3d-row__empty {
+  top: 65%;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-memory-band {
+  position: absolute !important;
+  top: var(--arena-3d-band-y) !important;
+  left: var(--arena-3d-band-x) !important;
+  width: var(--arena-3d-band-width) !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--opp-deck {
+  position: absolute !important;
+  top: var(--arena-3d-opp-deck-y) !important;
+  left: var(--arena-3d-opp-deck-x) !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--opp-trash {
+  position: absolute !important;
+  top: var(--arena-3d-opp-trash-y) !important;
+  left: var(--arena-3d-opp-trash-x) !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--opp-eggs {
+  position: absolute !important;
+  top: var(--arena-3d-opp-eggs-y) !important;
+  left: var(--arena-3d-opp-eggs-x) !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--opp-raising {
+  position: absolute !important;
+  top: var(--arena-3d-opp-raising-y) !important;
+  left: var(--arena-3d-opp-raising-x) !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--you-deck {
+  position: absolute !important;
+  top: var(--arena-3d-you-deck-y) !important;
+  left: var(--arena-3d-you-deck-x) !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--you-trash {
+  position: absolute !important;
+  top: var(--arena-3d-you-trash-y) !important;
+  left: var(--arena-3d-you-trash-x) !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile-column--left .game-security-pile {
+  position: absolute !important;
+  top: var(--arena-3d-you-security-y) !important;
+  left: var(--arena-3d-you-security-x) !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile-column--right .game-security-pile {
+  position: absolute !important;
+  top: var(--arena-3d-opp-security-y) !important;
+  left: var(--arena-3d-opp-security-x) !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-security-shield-wrap {
+  position: absolute !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+  transform: none !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile-column--left .game-security-shield-wrap {
+  top: var(--arena-3d-you-security-y) !important;
+  left: var(--arena-3d-you-security-x) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile-column--right .game-security-shield-wrap {
+  top: var(--arena-3d-opp-security-y) !important;
+  left: var(--arena-3d-opp-security-x) !important;
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field
+  .game-pile-column
+  .game-security-shield-wrap
+  > .game-security-pile {
+  position: relative !important;
+  inset: auto !important;
+  translate: none !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-security-shield-wrap > .game-security-shield__dp-label {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile-column--left .game-security-shield__dp-label {
+  bottom: calc(100% + 0.25rem);
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile-column--right .game-security-shield__dp-label {
+  top: calc(100% + 0.25rem);
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  :is(.game-permanent, .game-breeding-slot)
+  .game-card-enter
+  > :is([data-state], [data-card-back]),
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-pile__top,
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  .game-pile__top
+  > :is([data-state], [data-card-back]) {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  :is(.game-permanent, .game-breeding-slot, .game-pile__top)
+  :is([data-state], [data-card-back])
+  > :is(img, svg),
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  :is(.game-permanent__source, .game-permanent__link, .game-copy-edge),
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  :is(.game-pile__layer, .game-pile__shuffle-face, .game-security-cards) {
+  opacity: 0 !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  :is(.game-utility-slot, .game-breeding-slot__box, .game-pile:not(:has(.game-pile__top))) {
+  border-color: transparent !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile__label {
+  display: none;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-breeding-slot > :not(.game-breeding-slot__box),
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  :is(.game-breeding-slot__empty, .arena-3d-row__empty) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  .game-security-shield--opp
+  .game-security-shield__count {
+  inset: -0.5rem auto auto 50% !important;
+}
+
+@media (min-width: 1024px) and (min-height: 760px) {
+  .game-board[data-board-style="arena3d"] .game-hand-sort {
+    top: 0;
+    right: auto;
+    bottom: auto;
+    left: calc(100% + var(--ds-space-2));
+    max-width: none;
+    white-space: nowrap;
+  }
+
+  .game-board[data-board-style="arena3d"] .game-hand-dock {
+    padding-left: 18rem !important;
+  }
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent[data-suspended] {
+  width: calc(var(--permanent-width) * 1.4);
+  height: var(--permanent-width);
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent[data-suspended] > .game-card-enter {
+  display: flow-root;
+  height: 100%;
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent[data-suspended] > .game-card-enter > [data-state],
+.arena-3d-field .arena-3d-slot > .game-permanent[data-suspended] > .game-permanent__source {
+  margin: calc(var(--permanent-width) * -0.2) 0 0 calc(var(--permanent-width) * 0.2);
+}
+
+.arena-3d-field .arena-3d-slot > .game-permanent[data-suspended] > .game-card-enter > [data-card-back] {
+  pointer-events: none;
+}
+
+.game-board[data-board-style="arena3d"] .game-field:has(> .arena-3d-field)::before,
+.game-board[data-board-style="arena3d"] .game-field:has(> .arena-3d-field)::after {
+  display: none;
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field
+  :is(.game-breeding-dock, .game-breeding-dock > div:nth-child(2)) {
+  display: contents !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-breeding-dock > div:first-child {
+  display: none !important;
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field
+  :is(.game-utility-slot--you-eggs, .game-utility-slot--you-raising) {
+  position: absolute !important;
+  margin: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  translate: -50% -50% !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--you-eggs {
+  --arena-3d-zone-scale: var(--arena-3d-you-eggs-scale);
+  top: var(--arena-3d-you-eggs-y) !important;
+  left: var(--arena-3d-you-eggs-x) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-utility-slot--you-raising {
+  --arena-3d-zone-scale: var(--arena-3d-you-raising-scale);
+  top: var(--arena-3d-you-raising-y) !important;
+  left: var(--arena-3d-you-raising-x) !important;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-breeding-dock > .game-breeding-hint {
+  position: absolute;
+  z-index: 8;
+  top: var(--arena-3d-you-raising-y);
+  left: 1rem;
+  right: 1rem;
+  bottom: auto;
+  translate: 0 calc(-100% - var(--arena-3d-you-raising-w, 2.5rem) * 0.7 - 1.25rem);
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field:is([data-arena-layout="wide"], [data-arena-layout="short"])
+  .game-breeding-dock
+  > .game-breeding-hint {
+  z-index: 22;
+  right: auto;
+  width: max-content;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--arena-player, var(--ds-ink-accent)) 60%, transparent);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-on-ink);
+  background: color-mix(in srgb, var(--ds-ink) 88%, transparent);
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field[data-arena-layout="wide"]
+  .game-breeding-dock
+  > .game-breeding-hint {
+  top: var(--arena-3d-you-raising-y);
+  left: calc(var(--arena-3d-you-raising-x) - var(--arena-3d-you-raising-w) / 2);
+  max-width: calc(var(--arena-3d-you-raising-w) * 2.4);
+  translate: 0 calc(-100% - var(--arena-3d-you-raising-w) * 0.7 - 0.75rem);
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field[data-arena-layout="short"]
+  .game-breeding-dock
+  > .game-breeding-hint {
+  top: calc(var(--arena-3d-you-raising-y) + var(--arena-3d-you-raising-w) * 0.7);
+  left: calc(var(--arena-3d-you-raising-x) + var(--arena-3d-you-raising-w) / 2 + 0.75rem);
+  max-width: min(26rem, calc(100% - var(--arena-3d-you-raising-x) - var(--arena-3d-you-raising-w) / 2 - 1.75rem));
+  padding: 0.375rem 0.625rem;
+  font-size: var(--ds-text-xs);
+  line-height: 1.35;
+  translate: 0 -100%;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field {
+  --arena-pile-width: var(--arena-field-pile-width);
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="tall"] .game-memory-band {
+  column-gap: 0.375rem;
+}
+
+@media (max-width: 599px) {
+  .game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="tall"] .game-phase-rail__step {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.5625rem;
+    letter-spacing: 0.04em;
+  }
+
+  .game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="tall"] .game-end-turn-orb {
+    display: grid !important;
+    place-items: center;
+    width: 2.75rem !important;
+    min-width: 0;
+    height: 2.75rem !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    font-size: 0.5rem;
+    line-height: 1.05;
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+@media (max-height: 520px) {
+  .game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="short"] .game-end-turn-orb {
+    min-width: 5rem;
+    height: 1.875rem !important;
+    padding: 0 0.75rem !important;
+    font-size: var(--ds-text-xs);
+  }
+
+  .game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="short"] .game-phase-rail__step {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.5625rem;
+  }
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field > .game-breeding-mode {
+  display: none;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  :is(
+    .game-opponent-bar,
+    .game-player-dock,
+    .arena-3d-field .arena-3d-slot,
+    .arena-3d-field .game-field-effects,
+    .arena-3d-field .game-utility-slot:not(.game-utility-slot--you-eggs, .game-utility-slot--you-raising)
+  ) {
+  transition: filter var(--t-dialog-in, 180ms) ease-out;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas):has(.arena-3d-field > .game-breeding-mode)
+  :is(
+    .game-opponent-bar,
+    .game-player-dock,
+    .arena-3d-field .arena-3d-slot,
+    .arena-3d-field .game-field-effects,
+    .arena-3d-field .game-security-pile,
+    .arena-3d-field .game-utility-slot:not(.game-utility-slot--you-eggs, .game-utility-slot--you-raising)
+  ) {
+  filter: brightness(0.38) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+    :is(
+      .game-opponent-bar,
+      .game-player-dock,
+      .arena-3d-field .arena-3d-slot,
+      .arena-3d-field .game-field-effects,
+      .arena-3d-field .game-security-pile,
+      .arena-3d-field .game-utility-slot
+    ) {
+    transition: none;
+  }
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  :is(.game-egg-deck--hatchable .game-pile__top, .game-breeding-slot--focus .game-breeding-slot__box):not(
+    :focus-visible
+  ) {
+  outline: none !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  .game-security-pile
+  :is(.game-security-cards, .game-security-cards *) {
+  pointer-events: none !important;
+}

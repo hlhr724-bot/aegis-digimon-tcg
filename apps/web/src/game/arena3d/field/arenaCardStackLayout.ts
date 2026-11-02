@@ -1,0 +1,1 @@
+export const ARENA_VISIBLE_SOURCE_LIMIT = 3;

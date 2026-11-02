@@ -1,0 +1,9 @@
+export const SIDE_DEPTH = 3.4;
+export const RIPPLE_SLOTS = 8;
+export const RIPPLE_LIFETIME_SECONDS = 1.6;
+export const SWEEP_SECONDS = 1.8;
+export const CAMERA_FOV_DEGREES = 30;
+export const CAMERA_DEFAULT_DISTANCE = 17;
+export const CAMERA_MIN_DISTANCE = 9;
+export const CAMERA_MAX_DISTANCE = 42;
+export const CARD_FLOOR_HEIGHT = 0.04;

@@ -1,0 +1,121 @@
+.card-zoom-art {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+}
+
+.card-zoom-art > :first-child {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.card-zoom-art[data-viewer="3d"] {
+  touch-action: none;
+  cursor: grab;
+}
+
+.card-zoom-art[data-viewer="3d"]:active {
+  cursor: grabbing;
+}
+
+.card-zoom-art[data-viewer="3d"] > :first-child {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.card-zoom-art__stage {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.card-zoom-art[data-viewer="flat"]:not([data-finish="none"])::before,
+.card-zoom-art[data-viewer="flat"]:not([data-finish="none"])::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.card-zoom-art[data-viewer="flat"]:not([data-finish="none"])::after {
+  background: linear-gradient(115deg, transparent 40%, #ffffff55 48%, transparent 56%) no-repeat;
+  background-size: 300% 100%;
+  background-position: 50% 0;
+}
+
+.card-zoom-art[data-viewer="flat"][data-finish="starlight"]::before {
+  background:
+    radial-gradient(circle at 22% 30%, #ffffffcc 0 1px, transparent 2px),
+    radial-gradient(circle at 70% 18%, #ffffffaa 0 1px, transparent 2px),
+    radial-gradient(circle at 58% 44%, #ffffffbb 0 1px, transparent 2px);
+  background-size:
+    37px 41px,
+    53px 47px,
+    29px 33px;
+  box-shadow: 0 0 28px -8px var(--card-zoom-art-glow);
+}
+
+.card-zoom-art[data-viewer="flat"][data-finish="starlight"]::after {
+  background-image: linear-gradient(
+    115deg,
+    transparent 38%,
+    #bfe6ff55 45%,
+    #ffffff88 49%,
+    #ffd9f055 53%,
+    transparent 60%
+  );
+}
+
+.card-zoom-art[data-viewer="flat"][data-finish="gold"]::before {
+  background: linear-gradient(160deg, #ffc96b22, transparent 45%, #ffc96b1a);
+  box-shadow:
+    0 0 0 1px #ffc96b88,
+    0 0 32px -8px var(--card-zoom-art-glow);
+}
+
+.card-zoom-art[data-viewer="flat"][data-finish="gold"]::after {
+  background-image: linear-gradient(
+    115deg,
+    transparent 34%,
+    #ffc96b44 43%,
+    #fff2c8aa 49%,
+    #ffc96b44 55%,
+    transparent 64%
+  );
+}
+
+.card-zoom-art[data-viewer="flat"][data-finish="prismatic"]::before {
+  background: linear-gradient(
+    125deg,
+    #ff6ad533 0%,
+    #ffd36a2b 20%,
+    #8bff9a2b 40%,
+    #6ad8ff33 60%,
+    #b28bff2b 80%,
+    #ff6ad533 100%
+  );
+  box-shadow:
+    0 0 0 1px #ff6ad588,
+    0 0 36px -8px var(--card-zoom-art-glow);
+}
+
+.card-zoom-art[data-viewer="flat"][data-finish="prismatic"]::after {
+  background-image: linear-gradient(115deg, transparent 36%, #ffffffaa 48%, transparent 60%);
+}
+
+:root[data-motion="full"] .card-zoom-art[data-viewer="flat"]:not([data-finish="none"])::after {
+  animation: card-zoom-art-foil-sweep 5s ease-in-out infinite;
+}
+
+@keyframes card-zoom-art-foil-sweep {
+  0%,
+  20% {
+    background-position: 100% 0;
+  }
+  65%,
+  100% {
+    background-position: 0% 0;
+  }
+}

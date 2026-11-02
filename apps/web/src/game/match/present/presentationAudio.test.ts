@@ -84,7 +84,7 @@ describe("painted presentation audio", () => {
     expect(first).toMatchObject([{ kind: "cardPlay", details: { cost: getCardDefinition("BT1-010")?.playCost } }]);
     const landing = cues({
       permanentBursts: new Map([
-        ["p1", { key: 42, permanentId: "p1", variant: "play", color: "Red", inBreeding: false }],
+        ["p1", { key: 42, permanentId: "p1", seat: 0, variant: "play", color: "Red", inBreeding: false }],
       ]),
     });
     expect(takeNewPresentationSounds(soundsForPresentation(landing), seen)).toEqual([]);
@@ -131,6 +131,7 @@ describe("painted presentation audio", () => {
             {
               key: 70,
               permanentId: "painted",
+              seat: 0,
               variant: "evolve",
               color: "Red",
               inBreeding: false,
@@ -170,6 +171,7 @@ describe("painted presentation audio", () => {
             {
               key: 71,
               permanentId: "breeding",
+              seat: 0,
               variant: "evolve",
               color: "Red",
               inBreeding: true,
@@ -198,7 +200,7 @@ describe("painted presentation audio", () => {
       cues({
         zoneShowcase: { key: 72, cardId: "ST1-08", seat: 1, mine: true, kind: "digivolve", color: "Red" },
         permanentBursts: new Map([
-          ["field", { key: 72, permanentId: "field", variant: "evolve", color: "Red", inBreeding: false }],
+          ["field", { key: 72, permanentId: "field", seat: 0, variant: "evolve", color: "Red", inBreeding: false }],
         ]),
       }),
       audioBoardFromPresentedSeats(seats, 1),
@@ -298,9 +300,17 @@ describe("painted presentation audio", () => {
         permanentBursts: new Map([
           [
             "p1",
-            { key: 1, permanentId: "p1", variant: "play", color: "Blue", inBreeding: false, moveFromBreeding: true },
+            {
+              key: 1,
+              permanentId: "p1",
+              seat: 0,
+              variant: "play",
+              color: "Blue",
+              inBreeding: false,
+              moveFromBreeding: true,
+            },
           ],
-          ["p2", { key: 2, permanentId: "p2", variant: "hatch", color: "Blue", inBreeding: true }],
+          ["p2", { key: 2, permanentId: "p2", seat: 0, variant: "hatch", color: "Blue", inBreeding: true }],
         ]),
         drawFlights: [{ key: 3, x: 0, y: 0, dx: 0, dy: 0, duration: 100 }],
         deckRiffles: new Map([["0:deck", 4]]),

@@ -61,7 +61,7 @@ function fixture(mode: "live" | "drain" | "replay" = "live") {
             },
         ...(options.waitFor ? { waitFor: options.waitFor } : {}),
         ...(options.track ? { track: options.track } : {}),
-        burst: { key, permanentId, variant: "play", color: "Red", inBreeding: false },
+        burst: { key, permanentId, seat: 0, variant: "play", color: "Red", inBreeding: false },
         presentation,
       }),
     );

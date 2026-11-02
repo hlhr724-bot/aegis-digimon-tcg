@@ -68,6 +68,12 @@ export const SECURITY_BRANCH_TOTAL_MS =
 /** The centre-screen showcase, end to end: how long it stays mounted. */
 export const SHOWCASE_TOTAL_MS = TIMINGS.showcaseIn + TIMINGS.showcaseFace + TIMINGS.showcaseHold + TIMINGS.showcaseOut;
 
+export const FINALE_IMPACT_AT_MS = 520;
+
+export const FINALE_TOTAL_MS = 1700;
+
+export const FINALE_CALM_MS = 600;
+
 /**
  * The ceiling on how long the beats that explain a play may hold back what the play
  * caused: the deletions it dealt out, and the viewer's own prompt.
@@ -217,6 +223,9 @@ export const BATTLE_TIMING_VARIABLES: Readonly<Record<string, number>> = {
   "--t-stack-strip-peel": TIMINGS.stackStripPeel,
   "--t-deck-return": TIMINGS.deckReturn,
   "--t-hand-return": TIMINGS.handReturn,
+  "--t-finale": FINALE_TOTAL_MS,
+  "--t-finale-impact-at": FINALE_IMPACT_AT_MS,
+  "--t-finale-calm": FINALE_CALM_MS,
 };
 
 /**

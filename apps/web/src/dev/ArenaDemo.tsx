@@ -1,3 +1,5 @@
+import { boardStylePreference } from "@/game/arena3d/boardStyle/boardStylePreference";
+import { findBoardStyleEntry } from "@/game/arena3d/boardStyle/findBoardStyleEntry";
 /* Visual preview of the current arena, using the real match screen without a server. */
 import { PHASES } from "../game/screen/constants";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
@@ -255,6 +257,12 @@ export function createArenaDemoState(
 
 export function ArenaDemo() {
   const { locale, t } = useTranslation();
+  useEffect(() => {
+    const requested = findBoardStyleEntry(new URLSearchParams(window.location.search).get("board"));
+    if (requested) {
+      boardStylePreference.setStyle(requested.value);
+    }
+  }, []);
   const portuguese = locale === "pt-BR";
   const securityScenario = new URLSearchParams(window.location.search).get("scenario") === "security";
   const hatchScenario = new URLSearchParams(window.location.search).get("scenario") === "hatch";
@@ -638,13 +646,28 @@ export function ArenaDemo() {
     ]);
   }
   function previewResult(outcome: "win" | "loss" | "draw") {
+    const winnerSeat: Seat = outcome === "loss" ? 1 : 0;
+    const battleArea = state.players[winnerSeat]?.battleArea ?? [];
+    const attacker =
+      outcome === "draw" ? undefined : (battleArea.find((permanent) => permanent.currentDP > 0) ?? battleArea[0]);
     setPreviewOutcome(outcome);
     setBatches((previous) => [
       ...previous,
       singleServerBatch([
+        ...(attacker
+          ? [
+              {
+                kind: "attackDeclared" as const,
+                seat: winnerSeat,
+                attackerPermanentId: attacker.permanentId,
+                attackerCardId: attacker.topCard.cardId,
+                target: { kind: "player" as const },
+              },
+            ]
+          : []),
         {
           kind: "gameOver",
-          result: outcome === "draw" ? { outcome: "draw" } : { outcome: "win", winnerSeat: outcome === "win" ? 0 : 1 },
+          result: outcome === "draw" ? { outcome: "draw" } : { outcome: "win", winnerSeat },
           reason: "security",
         },
       ]),

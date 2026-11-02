@@ -1,0 +1,335 @@
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import type { Permanent } from "@aegis/shared";
+import { COLORS } from "@/design/theme";
+import type { ArenaPulse, ScreenPoint } from "@/game/arena3d/ArenaPulse";
+import { ArenaPulseKind } from "@/game/arena3d/ArenaPulseKind";
+import type { ArenaSideColors } from "@/game/arena3d/ArenaSideColors";
+import { ArenaZone } from "@/game/arena3d/ArenaZone";
+import { getArenaDeleteBurstCenter } from "@/game/arena3d/cues/getArenaDeleteBurstCenter";
+import { findArenaZoneElement } from "@/game/arena3d/findArenaZoneElement";
+import { findAttackerPermanentId } from "@/game/arena3d/findAttackerPermanentId";
+import { getElementCenter } from "@/game/arena3d/getElementCenter";
+import { getOppositeSide } from "@/game/arena3d/getOppositeSide";
+import { resolveArenaBurstAnchor } from "@/game/arena3d/resolveArenaBurstAnchor";
+import type { FieldClashScene } from "@/game/fieldClash";
+import type { DeleteBurst, TurnTransitionCue } from "@/game/match/types";
+import type { MatchFinale } from "@/game/match/finale/MatchFinale";
+import type { MatchFinaleTone } from "@/game/match/finale/MatchFinaleTone";
+import { findMatchFinaleTone } from "@/game/match/finale/findMatchFinaleTone";
+import type { BurstVariant, PermanentBurst } from "@/game/showcases";
+import type { AttackAnnouncement } from "@/game/sidePanels";
+import { Side } from "@/game/side";
+
+type PileCounts = {
+  viewerDeck: number;
+  opponentDeck: number;
+  viewerTrash: number;
+  opponentTrash: number;
+};
+
+type Params = {
+  board: RefObject<HTMLElement | null>;
+  viewerSeat: number;
+  sideColors: ArenaSideColors;
+  permanents: RefObject<Record<string, HTMLDivElement | null>>;
+  viewerBattleArea: Iterable<Permanent> | undefined;
+  opponentBattleArea: Iterable<Permanent> | undefined;
+  attackAnnouncement: AttackAnnouncement | null;
+  fieldClash: FieldClashScene | null;
+  turnTransition: TurnTransitionCue | null;
+  combatImpactIds: ReadonlySet<string>;
+  permanentBursts: ReadonlyMap<string, PermanentBurst>;
+  deleteBursts: readonly DeleteBurst[];
+  securityHitSeat: number | null;
+  finale: MatchFinale | null;
+  finaleTone: MatchFinaleTone | undefined;
+  pileCounts: PileCounts;
+};
+
+type PileWatch = {
+  count: number;
+  side: Side;
+  zone: ArenaZone;
+  kind: ArenaPulseKind;
+  grows: boolean;
+};
+
+const MAX_PULSES = 24;
+function getPointSide(board: HTMLElement | null, point: ScreenPoint): Side {
+  const rect = board?.getBoundingClientRect();
+  return rect && point.y < rect.top + rect.height / 2 ? Side.Opponent : Side.Viewer;
+}
+
+function getBurstKind(variant: BurstVariant): ArenaPulseKind {
+  if (variant === "evolve") {
+    return ArenaPulseKind.EVOLVE.value;
+  }
+  if (variant === "delete") {
+    return ArenaPulseKind.DELETE.value;
+  }
+  return ArenaPulseKind.SUMMON.value;
+}
+
+function getElementSide(element: HTMLElement | null | undefined): Side {
+  return element?.closest(".game-battle-row--opp, .game-opponent-breeding, [class*='--opp']")
+    ? Side.Opponent
+    : Side.Viewer;
+}
+
+function buildPileWatches(counts: PileCounts): PileWatch[] {
+  return [
+    {
+      count: counts.viewerDeck,
+      side: Side.Viewer,
+      zone: ArenaZone.DECK.value,
+      kind: ArenaPulseKind.DRAW.value,
+      grows: false,
+    },
+    {
+      count: counts.opponentDeck,
+      side: Side.Opponent,
+      zone: ArenaZone.DECK.value,
+      kind: ArenaPulseKind.DRAW.value,
+      grows: false,
+    },
+    {
+      count: counts.viewerTrash,
+      side: Side.Viewer,
+      zone: ArenaZone.TRASH.value,
+      kind: ArenaPulseKind.TRASH.value,
+      grows: true,
+    },
+    {
+      count: counts.opponentTrash,
+      side: Side.Opponent,
+      zone: ArenaZone.TRASH.value,
+      kind: ArenaPulseKind.TRASH.value,
+      grows: true,
+    },
+  ];
+}
+
+export function useArenaPulses({
+  board,
+  viewerSeat,
+  sideColors,
+  permanents,
+  viewerBattleArea,
+  opponentBattleArea,
+  attackAnnouncement,
+  fieldClash,
+  turnTransition,
+  combatImpactIds,
+  permanentBursts,
+  deleteBursts,
+  securityHitSeat,
+  finale,
+  finaleTone,
+  pileCounts,
+}: Params): readonly ArenaPulse[] {
+  const [pulses, setPulses] = useState<readonly ArenaPulse[]>([]);
+  const seenImpacts = useRef(new Set<string>());
+  const seenBursts = useRef(new Set<number>());
+  const seenDeletions = useRef(new Set<number>());
+  const previousPiles = useRef<PileWatch[] | null>(null);
+  const colors = useRef(sideColors);
+  colors.current = sideColors;
+  const battleAreas = useRef({ viewer: viewerBattleArea, opponent: opponentBattleArea });
+  battleAreas.current = { viewer: viewerBattleArea, opponent: opponentBattleArea };
+
+  const emit = useCallback((pulse: ArenaPulse) => {
+    setPulses((current) => [...current, pulse].slice(-MAX_PULSES));
+  }, []);
+
+  const getSideColor = useCallback((side: Side) => {
+    return side === Side.Viewer ? colors.current.player : colors.current.opponent;
+  }, []);
+
+  useEffect(() => {
+    if (!attackAnnouncement) {
+      return;
+    }
+    const side = attackAnnouncement.side;
+    const area = side === Side.Viewer ? battleAreas.current.viewer : battleAreas.current.opponent;
+    const attackerId = findAttackerPermanentId({ battleArea: area, cardId: attackAnnouncement.cardId });
+    const attacker = attackerId ? permanents.current?.[attackerId] : undefined;
+    const security = findArenaZoneElement({
+      board: board.current,
+      side: getOppositeSide(side),
+      zone: ArenaZone.SECURITY.value,
+    });
+    emit({
+      key: `attack:${attackAnnouncement.id}`,
+      kind: ArenaPulseKind.ATTACK.value,
+      color: getSideColor(side),
+      side,
+      screenPoint: getElementCenter(attacker),
+      targetPoint: getElementCenter(security),
+      permanentId: attackerId,
+    });
+  }, [attackAnnouncement, board, permanents, emit, getSideColor]);
+
+  useEffect(() => {
+    if (!fieldClash) {
+      return;
+    }
+    const attacker = permanents.current?.[fieldClash.attacker.permanentId];
+    const defender = permanents.current?.[fieldClash.defender.permanentId];
+    const side = getElementSide(attacker);
+    emit({
+      key: `clash:${fieldClash.key}`,
+      kind: ArenaPulseKind.ATTACK.value,
+      color: getSideColor(side),
+      side,
+      screenPoint: getElementCenter(attacker),
+      targetPoint: getElementCenter(defender),
+      permanentId: fieldClash.attacker.permanentId,
+      targetPermanentId: fieldClash.defender.permanentId,
+    });
+  }, [fieldClash, permanents, emit, getSideColor]);
+
+  useEffect(() => {
+    if (!turnTransition) {
+      return;
+    }
+    const side = turnTransition.nextSeat === viewerSeat ? Side.Viewer : Side.Opponent;
+    emit({
+      key: `turn:${turnTransition.turnCount}:${turnTransition.nextSeat}`,
+      kind: ArenaPulseKind.TURN.value,
+      color: getSideColor(side),
+      side,
+    });
+  }, [turnTransition, viewerSeat, emit, getSideColor]);
+
+  useEffect(() => {
+    for (const permanentId of combatImpactIds) {
+      if (seenImpacts.current.has(permanentId)) {
+        continue;
+      }
+      seenImpacts.current.add(permanentId);
+      const element = permanents.current?.[permanentId];
+      const side = getElementSide(element);
+      emit({
+        key: `impact:${permanentId}:${Date.now()}`,
+        kind: ArenaPulseKind.IMPACT.value,
+        color: getSideColor(getOppositeSide(side)),
+        side,
+        screenPoint: getElementCenter(element),
+        permanentId,
+      });
+    }
+    for (const permanentId of seenImpacts.current) {
+      if (!combatImpactIds.has(permanentId)) {
+        seenImpacts.current.delete(permanentId);
+      }
+    }
+  }, [combatImpactIds, permanents, emit, getSideColor]);
+
+  useEffect(() => {
+    for (const burst of permanentBursts.values()) {
+      if (seenBursts.current.has(burst.key) || burst.moveFromBreeding) {
+        continue;
+      }
+      seenBursts.current.add(burst.key);
+      const { side, anchor } = resolveArenaBurstAnchor({
+        board: board.current,
+        burst,
+        viewerSeat,
+        element: permanents.current?.[burst.permanentId],
+      });
+      emit({
+        key: `burst:${burst.key}`,
+        kind: getBurstKind(burst.variant),
+        color: COLORS[burst.color].base,
+        side,
+        screenPoint: getElementCenter(anchor),
+        permanentId: burst.permanentId,
+      });
+    }
+  }, [permanentBursts, permanents, board, viewerSeat, emit]);
+
+  useEffect(() => {
+    for (const burst of deleteBursts) {
+      if (seenDeletions.current.has(burst.key) || burst.stackStrip) {
+        continue;
+      }
+      seenDeletions.current.add(burst.key);
+      const point = getArenaDeleteBurstCenter({ board: board.current, burst });
+      if (!point) {
+        continue;
+      }
+      const side = getPointSide(board.current, point);
+      emit({
+        key: `field-delete:${burst.key}`,
+        kind: ArenaPulseKind.DELETE.value,
+        color: burst.color ? COLORS[burst.color].base : getSideColor(side),
+        side,
+        screenPoint: point,
+      });
+    }
+  }, [deleteBursts, board, emit, getSideColor]);
+
+  useEffect(() => {
+    if (securityHitSeat === null) {
+      return;
+    }
+    const side = securityHitSeat === viewerSeat ? Side.Viewer : Side.Opponent;
+    emit({
+      key: `security:${securityHitSeat}:${Date.now()}`,
+      kind: ArenaPulseKind.SECURITY.value,
+      color: getSideColor(getOppositeSide(side)),
+      side,
+      screenPoint: getElementCenter(
+        findArenaZoneElement({ board: board.current, side, zone: ArenaZone.SECURITY.value }),
+      ),
+    });
+  }, [securityHitSeat, viewerSeat, board, emit, getSideColor]);
+
+  useEffect(() => {
+    if (!finale) {
+      return;
+    }
+    const side = finale.winnerSeat === viewerSeat ? Side.Viewer : Side.Opponent;
+    const attackerId = finale.attacker?.permanentId;
+    const attacker = attackerId ? permanents.current?.[attackerId] : undefined;
+    emit({
+      key: `finale:${finale.key}`,
+      kind: ArenaPulseKind.FINALE.value,
+      color: finaleTone ? findMatchFinaleTone(finaleTone).tint : getSideColor(side),
+      side,
+      screenPoint: getElementCenter(attacker),
+      targetPoint: getElementCenter(
+        findArenaZoneElement({ board: board.current, side: getOppositeSide(side), zone: ArenaZone.SECURITY.value }),
+      ),
+      permanentId: attackerId,
+    });
+  }, [finale, finaleTone, viewerSeat, board, permanents, emit, getSideColor]);
+
+  const { viewerDeck, opponentDeck, viewerTrash, opponentTrash } = pileCounts;
+  useEffect(() => {
+    const watches = buildPileWatches({ viewerDeck, opponentDeck, viewerTrash, opponentTrash });
+    const previous = previousPiles.current;
+    previousPiles.current = watches;
+    if (!previous) {
+      return;
+    }
+    watches.forEach((watch, index) => {
+      const before = previous[index]!.count;
+      const changed = watch.grows ? watch.count > before : watch.count < before;
+      if (!changed) {
+        return;
+      }
+      emit({
+        key: `${watch.zone}:${watch.side}:${watch.count}:${Date.now()}`,
+        kind: watch.kind,
+        color: getSideColor(watch.side),
+        side: watch.side,
+        screenPoint: getElementCenter(
+          findArenaZoneElement({ board: board.current, side: watch.side, zone: watch.zone }),
+        ),
+      });
+    });
+  }, [viewerDeck, opponentDeck, viewerTrash, opponentTrash, board, emit, getSideColor]);
+
+  return pulses;
+}

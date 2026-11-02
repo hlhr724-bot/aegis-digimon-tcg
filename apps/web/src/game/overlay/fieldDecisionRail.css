@@ -161,13 +161,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--ds-space-2);
   }
-
-  /* An odd count leaves one button over: it takes the full top row. */
-  .board-prompt--target-selection[data-variant="field-selection"]
-    .board-prompt__actions
-    > button:first-child:nth-last-child(odd) {
-    grid-column: 1 / -1;
-  }
 }
 
 /* On a narrow phone the board is more valuable than repeating which card is

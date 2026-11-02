@@ -25,6 +25,7 @@ export function PermanentLinkedCards({
         return (
           <div
             key={ci.instanceId}
+            className="game-permanent__link"
             style={{
               position: "absolute",
               left: slot.left,

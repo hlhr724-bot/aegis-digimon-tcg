@@ -18,6 +18,7 @@ import type { ColorName } from "../../design/theme";
 import type { SoundKind } from "../../design/sound";
 import { SecurityBreakPhase } from "./enums";
 import type { Side } from "../side";
+import type { MatchFinale } from "@/game/match/finale/MatchFinale";
 
 /**
  * Card back sent from a deck pile to the hand that just grew, in board coordinates.
@@ -272,6 +273,7 @@ export interface MatchCues {
    * result waits for it, bounded by `useResultHold`'s clocks; legality does not.
    */
   resultPending: boolean;
+  finale: MatchFinale | null;
   /** The player whose board the unsuspend phase is currently sweeping. */
   unsuspendSweep: UnsuspendSweep | null;
   /** Bursts left where permanents were deleted, in board coordinates. */

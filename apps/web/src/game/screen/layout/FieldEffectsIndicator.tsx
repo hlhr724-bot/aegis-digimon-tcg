@@ -51,7 +51,9 @@ export function FieldEffectsIndicator({
         document.body,
     );
     const field = anchor.current?.closest(".game-field");
-    const row = field?.querySelector(ownField ? ".game-battle-row--you" : ".game-battle-row--opp");
+    const row =
+      field?.querySelector(`[data-field-effects-anchor="${ownField ? "you" : "opp"}"]`) ??
+      field?.querySelector(ownField ? ".game-battle-row--you" : ".game-battle-row--opp");
     if (!row || !field) return;
     function measure() {
       const bounds = row!.getBoundingClientRect();

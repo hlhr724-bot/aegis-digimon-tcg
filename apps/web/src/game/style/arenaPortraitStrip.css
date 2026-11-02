@@ -224,7 +224,9 @@
 
   /* Raising stays lit during its own step; the field input lock still covers it. */
   .game-field > .game-breeding-dock .game-utility-slot,
-  .game-field > .game-breeding-dock .game-breeding-hint {
+  .game-field > .game-breeding-dock .game-breeding-hint,
+  .game-field > .arena-3d-field > .game-breeding-dock .game-utility-slot,
+  .game-field > .arena-3d-field > .game-breeding-dock .game-breeding-hint {
     z-index: 6;
   }
 }
