@@ -77,7 +77,7 @@ The canvas uses `pointer-events: none` and `aria-hidden`.
 | Opponent slots  | deck (-7.75, -1.9), trash (-7.75, -3.75), security (7.75, -1.9), eggs (7.75, -4), raising (6.4, -4) |
 
 - Each side's eggs and raising slots are point-symmetric: the viewer's sit at the bottom left, under the viewer's security stack, and the opponent's at the top right, above theirs. This follows the classic board, where the viewer's breeding area is at the bottom left near the security stack. In portrait they sit in the pile rows.
-- The egg deck comes before the raising slot in reading order, as in the classic breeding dock (`BreedingDock.tsx`: eggs, then raising). On the wide and tall layouts the viewer's egg deck is on the outer side, left of the raising slot. On the short layout the two are stacked outside the security stack, so the egg deck is on top and the raising slot below it. The opponent's slots mirror the viewer's through the centre. `ArenaLayoutVariant.test.ts` checks the order on every layout. The first version had the raising slot on the outer side, which reversed the classic order.
+- The egg deck comes before the raising slot in reading order, as in the classic breeding dock (`BreedingDock.tsx`: eggs, then raising). On the wide and tall layouts the viewer's egg deck is on the outer side, left of the raising slot. On the short layout the two are stacked between the security stack and the first field column, so the egg deck is on top and the raising slot below it. The opponent's slots mirror the viewer's through the centre. `ArenaLayoutVariant.test.ts` checks the order on every layout. The first version had the raising slot on the outer side, which reversed the classic order.
 - The egg pile sits 0.37 units below the security stack on the wide layout. The security stacks moved from z = ±2 to ±1.9, and the breeding slots from ±3.85 to ±4, so the security count badge clears the raising card's source badge on a 1024 x 768 screen. The world depth grew from 9.3 to 9.7 units to keep the raising card inside the fit rectangle; cards are about 4% smaller on height-bound screens.
 - Digimon, Tamers, and Options use the same card size. Each side has two rows of 5 columns, a Digimon row and a support row, on the same x positions (`getArenaColumnX`).
 - `computeArenaRowSlots` takes the lanes of the current layout and puts up to 5 cards on the columns, centered: the viewer starts at column `floor((5 - n) / 2)` and the opponent at the mirrored column, so the two sides are point-symmetric. Each slot records its `column`.
@@ -105,26 +105,27 @@ The canvas uses `pointer-events: none` and `aria-hidden`.
 
 `Arena3dField` picks one world layout from `ArenaLayoutVariant` each time it measures the field (`selectArenaLayoutVariant`). The layout travels in the camera frame (`frame.layout`), so the DOM rows, the slot tiles, the aura, the memory track, and the zone meshes all read the same one.
 
-| Layout | Chosen when                                                         | Typical screens                                 | Shape                                                                                                                                                                                             |
-| ------ | ------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tall   | `portraitArena` (`(max-width: 1023px) and (orientation: portrait)`) | 390 x 844, 360 x 740, 768 x 1024                | Lanes 1.5 apart, overflow half width 3.6. Both pile rows sit behind the support lanes at z = ±4.95: eggs, raising, security, deck, trash, point-symmetric. Pitch 66°. Memory track at half scale. |
-| Short  | not portrait, and the fit rectangle is 2.75 times wider than tall   | 844 x 390, 740 x 360, 1280 x 720                | Bounds 19.9 x 8.8. Lanes at 1.32 and 3.26. Piles closer to the center line. Each side's eggs (z = ±1.55) and raising slot (z = ±3.25) sit outside its security stack (x = ±9.3).                  |
-| Wide   | everything else                                                     | 1024 x 768, 1180 x 820, 1440 x 900, 1920 x 1080 | The desktop layout.                                                                                                                                                                               |
+| Layout | Chosen when                                                         | Typical screens                                 | Shape                                                                                                                                                                                                |
+| ------ | ------------------------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tall   | `portraitArena` (`(max-width: 1023px) and (orientation: portrait)`) | 390 x 844, 360 x 740, 768 x 1024                | Lanes 1.5 apart, overflow half width 3.6. Both pile rows sit behind the support lanes at z = ±4.95: eggs, raising, security, deck, trash, point-symmetric. Pitch 66°. Memory track at half scale.    |
+| Short  | not portrait, and the fit rectangle is 2.75 times wider than tall   | 844 x 390, 740 x 360, 1280 x 720                | Bounds 19.9 x 8.8. Lanes at 1.32 and 3.26. Piles closer to the center line. Each side's eggs (z = ±1.38) and raising slot (z = ±3.2) sit between its security stack and the first column (x = ±5.3). |
+| Wide   | everything else                                                     | 1024 x 768, 1180 x 820, 1440 x 900, 1920 x 1080 | The desktop layout.                                                                                                                                                                                  |
 
 - The fit rectangle is the field minus the opponent overlay inset. The camera always fits the layout's bounds into it, so the binding axis decides the card size: width in tall, height in short.
 - Short exists because a wide field is height-bound: compressing the lanes makes the cards about 9% larger on landscape phones and on 1280 x 720, where the dock leaves a 3.5 : 1 field.
 - Tall replaces the classic portrait pile strips. The CSS hides the strip frames (`.game-field::before` and `::after`) when the field holds the 3D overlay.
 - Every layout places the viewer's eggs and raising slots at their projected points. `Arena3dLayer` passes both raising permanents; `Arena3dScene` mounts a breeding mesh for each layout slot. The viewer's raising card is a GL card like the opponent's: face-up top card, up to 3 evolution sources, the side-colored frame and aura, and the DOM badges on its proxy. An empty raising slot shows the same DOM placeholder as the opponent's.
 - The short layout grew from 8.4 to 8.8 units deep. On a 740 x 360 phone, the card at the viewer's near left corner (now the raising slot) is the largest on screen through perspective, and at 8.4 units it reached into the hand strip.
+- The short layout first put the viewer's eggs and raising slot outside the security stack (x = -9.3), next to the left bound. On 844 x 390 and 740 x 360 the breeding pad and its halo touched the left edge of the canvas and met the hand cards. The slots moved to x = -5.3, between the security stack and the first column; the opponent's slots moved with them to stay point-symmetric.
 - On the desktop breakpoint (`(min-width: 1024px) and (min-height: 760px)`), the hand tray gets an 18 rem left padding in 3D, equal to its right padding. The classic breeding dock used to take that space, so without it the hand slid left under the breeding slots.
 - The breeding step dims the board in the GL scene and leaves the viewer's eggs and raising card lit. See [Breeding focus](#breeding-focus).
 - The breeding hint is a panel placed from the projected slot variables (`--arena-3d-you-raising-*`, where `-w` is the projected card width):
 
-| Layout | Hint placement                                                                                                                                                 |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tall   | Full width, above the raising slot.                                                                                                                            |
-| Wide   | Above the raising slot, left-aligned with it, at most 2.4 raising widths wide. That space lies between the security stack and the first field column.          |
-| Short  | Right of the raising slot, bottom-aligned with it, at most 26 rem wide, in the small text size. One line fits under the security stack, so it never covers it. |
+| Layout | Hint placement                                                                                                                                        |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tall   | Full width, above the raising slot.                                                                                                                   |
+| Wide   | Above the raising slot, left-aligned with it, at most 2.4 raising widths wide. That space lies between the security stack and the first field column. |
+| Short  | Right of the raising slot, bottom-aligned with it, at most 26 rem wide, in the small text size. It covers the near edge of the dimmed support row.    |
 
 - The field effects anchor is clamped to the canvas, so the indicator stays on screen when the grid reaches the screen edge.
 - Every card type keeps one size and each side keeps 5 + 5 columns in every layout.
@@ -141,9 +142,11 @@ During the breeding step the board dims and the viewer's egg deck and raising ca
 `breeding/ArenaBreedingFocus.tsx` draws one transparent plane over the whole floor (160 x 160 units at y = 0.05). `BoardStage` passes `guards.breedingActionsOpen` as `breedingFocus` through `Arena3dLayer` to `Arena3dScene`.
 
 - The plane uses `renderOrder` 20 and no depth test, so it draws after the floor, the aura, the cards, the cues, and the pulses, and darkens all of them.
-- `buildArenaBreedingFocusMaterial` computes a rounded-rectangle signed distance to each of the two slots and joins them with a smooth minimum, so the lit area is one soft shape around both cards. The dim rises from 0 at the padded card edge to full over 0.8 units, with a smoothstep, so there is no hard edge.
-- `computeArenaBreedingSpotlight` takes the slot centres from the current layout (`ArenaLayoutVariant`) and pads each card by 0.16 units. The lit area covers the egg pile and the raising card on every layout and stays clear of the security stack (`computeArenaBreedingSpotlight.test.ts`).
-- The dim color is the classic `.game-breeding-mode` color (`#040912`) at 62%. On High, bloom renders the scene into a linear half-float target, so blending happens in linear light and 62% looked like about 35%. The plane then uses `1 - 0.38^2.2` (about 88%) instead. Sampled floor pixels match the classic dim to within a few levels on High and on the tiers without bloom.
+- `buildArenaBreedingFocusMaterial` lights one rounded rectangle that bounds both slots, like a pad on the floor. The dim edge is crisp (0.05 units), so it reads as a frame and not as a blurred cut-out.
+- The frame has a thin rim and a soft outer halo in the player's accent color (`colors.playerAccent`). A highlight travels around the rim. An inset outline marks the raising slot, so an empty slot still shows where the egg lands. The plane has no depth test, so the outline would paint over a raising card; `readArenaRaisingSocket` sets `uSocket` to 0 while the viewer's raising slot holds a card, and the outline is hidden. In the 3D scene, the DOM outlines on the hatchable egg pile and the raising box are hidden, except for `:focus-visible`.
+- While the focus is on, the plane keeps `activity.pacedUntil` ahead, so the highlight moves at the paced frame rate. Reduced motion freezes the highlight.
+- `computeArenaBreedingSpotlight` takes the slot centres from the current layout (`ArenaLayoutVariant`) and pads each card by 0.1 units. The lit area covers the egg pile and the raising card on every layout and stays clear of the security stack (`computeArenaBreedingSpotlight.test.ts`). On the short layout the test also keeps the pad and its 0.25-unit halo at least 1 unit inside the left bound, inside the near bound, and off the field columns, the memory track, and the security stack.
+- The dim color is the classic `.game-breeding-mode` color (`#040912`) at 55%. On High, bloom renders the scene into a linear half-float target, so blending happens in linear light and 55% looks lighter. The plane then uses `1 - 0.45^2.2` (about 83%) instead. Sampled floor pixels match the classic dim to within a few levels on High and on the tiers without bloom.
 - `stepArenaBreedingFocus` fades the dim in and out over 180 ms, the classic `--t-dialog-in`, and caps a frame gap at 1/30 s so an idle scene still shows the fade. While it fades, the plane keeps `activity.busyUntil` ahead, so the scene renders every frame. Reduced motion switches it at once.
 - The plane is hidden while the dim is 0, so outside the breeding step it costs no draw call. During the step it adds 1 draw call. Its program is compiled at mount with the rest of the scene, so the first breeding step compiles nothing; it brings the board to 25 programs, the budget limit.
 
@@ -247,13 +250,13 @@ One frame after each DOM mutation, `ArenaLayoutSync` reads a typed `ArenaCardCue
 
 `applyArenaCardCue` adds the lift, flash, and jitter to the card's motion sample and returns the shade and tint for `ArenaPermanentMesh`. `collectArenaCueDecals` turns cue states into floor decals and prisms. Every decal follows the card's rounded-rectangle outline through a signed distance in `buildArenaCueDecalMaterial`; none is a plain circle. `buildArenaCardMaterial` has a `uMaterialize` uniform: 0 to 1 builds the card, 1 to 1.6 sweeps light across it, and 1.6 is the resting card. `ArenaCardDepartures` starts each departure on its first rendered frame, so a canvas remount (for example a quality downgrade) cannot skip it. `ArenaCardCueLayer` draws the decals in three draw calls: one instanced decal mesh (up to 48), one instanced prism mesh (up to 12), and one spotlight plane. `resolveArenaCuePace` sets the frame rate the layer asks for (`ArenaCuePace`):
 
-| Pace       | When                                                                                                                 | Frame rate                                    |
-| ---------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| Transition | A cue rises, flashes, tints, shakes, or lands (`ARENA_CUE_TIMING` windows), or the effect focus fades                | every frame (`activity.busyUntil`)            |
-| Settled    | A channel cue (source or linked) is lit and nothing changes; its edge light and light column still move with `uTime` | the tier's paced rate (`activity.pacedUntil`) |
-| Idle       | No lit cue, or reduced motion once the focus has settled                                                             | the tier's idle rate                          |
+| Pace       | When                                                                                                                 | Frame rate                                         |
+| ---------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Transition | A cue rises, flashes, tints, shakes, or lands (`ARENA_CUE_TIMING` windows), or the effect focus fades                | the tier's frame rate (`activity.busyUntil`)       |
+| Settled    | A channel cue (source or linked) is lit and nothing changes; its edge light and light column still move with `uTime` | the tier's frame rate (`activity.pacedUntil`)      |
+| Idle       | No lit cue, or reduced motion once the focus has settled                                                             | the tier's frame rate; 10 fps under reduced motion |
 
-The settled cue animations are slow and driven by the clock, not by the frame count, so they look the same at 20 or 30 fps, only less fluid. A long decision with a lit card used to render at 60 fps for as long as it stayed open. Under reduced motion a cue is static once it has risen, so the scene idles, as before.
+The paces only matter under reduced motion, where a still scene drops to 10 fps. With motion on, the scene always renders at the tier's steady frame rate (see [Steady cadence](#steady-cadence)), so a cue starting or settling never changes the cadence.
 
 Text the player reads stays visible: DP and level chips, the DP change figure, keyword, restriction, fate, blocker, source, and copy badges.
 
@@ -298,7 +301,7 @@ Calm rules: lifts are 0.1 to 0.2 units, the flash peaks at 0.3, the spotlight di
 | Finale | Slow-motion lunge into the loser's security stack (`FINALE_LUNGE`); the loser's cards recoil at the impact.        |
 
 - `createArenaCardMotionRegistry` samples keyframes with smoothstep easing and reports when motions are busy.
-- `ArenaFrameDriver` renders on demand: every frame while busy, at the tier's paced frame rate while a settled cue animates, otherwise at the tier's idle frame rate (10 fps on Low, 20 fps on Medium and High). Pulses, cue transitions, the memory marker, and `ArenaLayoutSync` mark the scene busy; a settled cue marks it paced. `ArenaLayoutSync` marks it busy for 250 ms whenever a tracked card, zone, rim, cue, drop target, or focus changes, so DOM-driven fades and moves render at full rate while a still board idles.
+- `ArenaFrameDriver` renders every frame itself at one steady frame rate per tier (60 or 30 fps). Effects do not change the rate. See [Steady cadence](#steady-cadence). Pulses, cue transitions, the memory marker, and `ArenaLayoutSync` still mark the scene busy (`activity.busyUntil`) and settled cues mark it paced (`activity.pacedUntil`); the driver reads these marks only under reduced motion, to wake a still scene.
 - `ArenaPostEffects` adds bloom and a vignette on High only.
 - Security renders as a stack of landscape tiles in `ArenaZoneMesh`. The step between tiles shrinks so the stack never exceeds the security depth.
 - Impact and delete shards use `shardCount` from the quality tier. Each effect draws its shards as one instanced mesh.
@@ -322,7 +325,7 @@ The blow that wins a match on security plays a short finale before the result sc
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0 to 520 ms                           | `ArenaMotionDirector` plays `FINALE_LUNGE` (1.25 s): the attacker winds back and rises for 0.2 s, creeps forward in slow motion, then strikes 74% of the way to the security stack at 520 ms with a 1.14 scale and a short flash.                                                                                |
 | 520 ms                                | `ArenaPulseLayer` (`startFinale`): a burst 2.2 times the impact burst, three times the tier's shards, a 3.6-unit pillar, a 6.4-unit shockwave ring, a security-sized echo ring 140 ms later, three floor ripples (1.5, 1, 0.6) and a 0.26 camera shake. The loser's cards recoil 0.7 units away from the impact. |
-| 520 ms to about 2.6 s                 | `ArenaActiveSideAura` surges on the winner's side: the region brightens (`uSurge`) and a fast crest line runs out at 7.5 units per second (`uSurgeStart`), then decays.                                                                                                                                          |
+| 520 ms to about 2.6 s                 | `ArenaActiveSideAura` surges on the winner's side: the region and its swells brighten, the shimmer triples (`uSurge`), and a double crest line rolls in from the baseline at 8 units per second (`uSurgeStart`), then decays.                                                                                    |
 
 - The DOM finale layer (`overlay/match/MatchFinaleLayer.tsx`) adds the flash, the chromatic rings, and the vignette on top of the canvas. It also scales `.game-board > .arena-3d-scene` and `.game-field` together about the security stack (up to 1.095, `battle-finale-punch`), so the GL board and the DOM proxies zoom as one image. A camera move would have left the DOM chips behind (see [World layout and camera](#world-layout-and-camera)). The DOM burst and shockwave are hidden in 3D; the GL burst, ring, and ripples replace them.
 - No new shader program: the finale reuses the ring, pillar, burst, and shard materials with new parameters (`burstScale`, `shardScale`, `calm` on the active effect), and the aura gains two uniforms in its existing program. The program count stays at 25.
@@ -339,20 +342,26 @@ The active side's field glows with a soft energy wave, like the turn wash in Dig
 - The layer is two transparent half planes, one per side, at y = 0.004 with `renderOrder` -5. Each plane covers that side of the layout's world bounds plus 0.5 units (`frame.layout.bounds`), so it shrinks to about 9 x 6.75 units in the tall layout. It draws after the floor (`ArenaShaderFloor`: no depth write, `renderOrder` -10) and before the sigils (y = 0.012), the slot tiles (y = 0.022, `renderOrder` 1), the card shadows (`renderOrder` -1), and the cards. It writes no depth.
 - The region is centered on that side's 2 x 5 slot grid, derived from the layout's lanes through the `uHalfSize` and `uCenterDepth` uniforms (grid plus 1.5 units on x and 0.55 units on z, corner radius 2.4). Outside it the strength falls off as a gaussian over about 2 units, and its outer edge sways slowly.
 - Three fades keep every edge soft. Each one uses `smoothstep`, so the strength reaches zero with a flat slope and never shows a line:
-  - toward the center line over 1.4 units, so the other side stays calm;
+  - toward the center line over 2 units, so the other side stays calm;
   - toward the plane edge (bounds plus 0.5) over 1.4 units, with rounded corners;
   - toward the canvas edge over the outer 12% (x) and 10% (y) of clip space.
 - Why the bounds fade: the camera fits the layout's bounds into the field rectangle, so the binding axis ends exactly at the field edge. Before, the region and its tail were sized only from the grid, with a fixed 22 x 7.5 plane and an arena-radius fade. In the tall layout the grid plus margin (±5.1 units) is wider than the visible floor (±3.95), so the aura met the screen sides and the opponent header bar at nearly full strength, which read as straight cuts. In the short and wide layouts the tail ran past the floor rim and the top of the canvas. Fading to the bounds and to the canvas edges fixes both at every size.
-- Motion is a travelling wave from the center line toward the player's edge, in one shader pass:
-  - two low-frequency bands (about 3.7 and 7.8 units long) drift outward at different speeds, so their crests slide over each other;
-  - a slow sideways sway bends the bands and the outer edge, so the leading edge undulates;
-  - a thin brighter crest line runs out from the center line every 5.5 s at 1.3 units per second, with a short wake behind it, and fades out as it travels; the first crest starts when the side becomes active, so a turn change sends a wave across the new side;
-  - on Medium and High (`floorEnergy`), one large value-noise cell warps the band phase, so the bands are not perfectly straight.
-- The bands change the strength between 0.42 and 0.88 of full; the crest adds up to 0.55 on its line. The average stays close to the old static tint.
+- `buildActiveSideAuraMaterial.ts` owns the shader. Both sides share one program (the same source), so the aura adds no program.
+- A "shore" factor lowers the strength to 72% near the center line, so the glow is strongest at the player's baseline.
+- Motion is a wave that rolls in from the player's baseline toward the center line, in one shader pass. `inward` is the distance from the baseline (`uBounds.y - depth`):
+  - a warp field bends every layer: one slow sine across the board plus, on Medium and High (`floorEnergy`), one large value-noise cell; Low uses a second sine instead of the noise;
+  - three swell layers (about 4.7, 2.7, and 9 units long) roll inward at different speeds. Each is a cubed sine, so it has a narrow crest and a wide trough. They add 0 to 0.68 to the strength;
+  - a caustic shimmer: two crossing sines whose zero lines form thin bright ridges. The swells displace its coordinates, so the ridges bend like refraction. It is strongest on the swell crests;
+  - soft scanlines every 0.3 units drift inward at 0.25 lines per second. They fade out when a line gets closer than about 2 pixels (`fwidth`), so they never alias or shimmer on small screens;
+  - a crest line (gaussian, width 0.2) rolls in every 5.2 s at 1.6 units per second, with a 0.8-unit glow and a short wake, and fades out before the center line. At the 10 fps idle rate it moves less than its own width per frame, so it does not step;
+  - the shimmer and scanlines run only where the strength is above 0.03, which skips the faint tail.
+- Crest highlights mix toward the side's accent color (`playerAccent` or `opponentAccent`), lifted 18% toward white in dark mode and 50% in light mode, so a crest reads as a sheen and not a dark smear on the light floor. Light mode also draws highlights at 70% strength.
+- The base strength is 0.3. The average strength stays close to the earlier tint, so the aura is no stronger, only more structured.
 - The side color is muted before use: it moves 35% (dark) or 40% (light) toward its own grey, then 20% (dark) or 12% (light) toward the floor tone (`colors.surface`).
 - Dark mode adds the muted color at 0.24 strength with additive blending, so it reads as a calm glow. Light mode uses normal blending with alpha up to 0.5. On screen it reads as a soft tint, not a solid patch. `colors.isLight` picks the mode.
-- Each side has its own weight that eases toward 1 or 0, so a turn change crossfades the region between sides in about 2 s, with the turn sweep on top. A side's half plane is hidden while its weight is below 0.001. A side's glow is already zero on the other half (center-line fade), so the split changes no pixels and skips about half of the aura's fragments at rest.
-- Every tier draws the wave. Low skips only the noise warp. Reduced motion freezes the bands, hides the crest line, and snaps the crossfade.
+- Turn change is a sweep. When a side's target changes, `uActive` flips and `uSweepStart` records the time. A front then runs from the baseline toward the center line at 6.5 units per second, with a 1.8-unit soft edge and a thin bright line on it. On the new active side the region fills in behind the front; on the old side it drains away ahead of it, toward the center. The first crest line follows the sweep.
+- Each side also has a weight: it rises fast (rate 6) and falls slowly (rate 1.2). A side's half plane is hidden once its weight drops below 0.001, or 2.2 s after it turned inactive, when the sweep has cleared it. A side's glow is already zero on the other half (center-line fade), so the split changes no pixels and skips about half of the aura's fragments at rest.
+- Every tier draws the wave. Low skips only the noise warp. Reduced motion freezes the swells, shimmer, and scanlines, hides the crest line, and makes the sweep instant.
 - The floors no longer draw the region. `ArenaHologramFloor` keeps only its base look. The other floors keep their own small active-side accents.
 - The sigils turn very slowly. The hologram environment shows only a sparse, slow set of 40 motes, and only on High; other environments still use the tier mote count.
 
@@ -360,13 +369,13 @@ The active side's field glows with a soft energy wave, like the turn wash in Dig
 
 The quality choice is stored under `aegis.arena-3d-quality`. The default is `auto`.
 
-| Tier   | Max DPR | Antialias | Idle fps | Paced fps | Texture width | Texture budget | Floor wave | Floor energy | Bloom | Motes | Shards |
-| ------ | ------- | --------- | -------- | --------- | ------------- | -------------- | ---------- | ------------ | ----- | ----- | ------ |
-| Low    | 1       | No        | 10       | 10        | 384 px        | 48 MB          | No         | No           | No    | 0     | 3      |
-| Medium | 1.5     | Yes       | 20       | 30        | 512 px        | 96 MB          | Yes        | Yes          | No    | 140   | 5      |
-| High   | 2       | Yes       | 20       | 30        | 768 px        | 160 MB         | Yes        | Yes          | Yes   | 260   | 8      |
+| Tier   | Max DPR | Antialias | Frame rate | Texture width | Texture budget | Floor wave | Floor energy | Bloom | Motes | Shards |
+| ------ | ------- | --------- | ---------- | ------------- | -------------- | ---------- | ------------ | ----- | ----- | ------ |
+| Low    | 1       | No        | 30         | 384 px        | 48 MB          | No         | No           | No    | 0     | 3      |
+| Medium | 1.5     | Yes       | 60         | 512 px        | 96 MB          | Yes        | Yes          | No    | 140   | 5      |
+| High   | 2       | Yes       | 60         | 768 px        | 160 MB         | Yes        | Yes          | Yes   | 260   | 8      |
 
-These are the desktop budgets. Phones and tablets use the touch budgets below. "Paced fps" is the rate while a settled cue animates, for example during a decision with a lit card (see [Card cues in 3D](#card-cues-in-3d)). Low keeps its idle rate, because Low is picked for software renderers and weak devices.
+These are the desktop budgets. Phones and tablets use the touch budgets below. "Frame rate" is the steady target for idle and animated frames alike; see [Steady cadence](#steady-cadence).
 
 ### Touch budgets
 
@@ -374,11 +383,11 @@ These are the desktop budgets. Phones and tablets use the touch budgets below. "
 
 `resolveArena3dQuality` swaps every tier for its entry in `ARENA_3D_TOUCH_QUALITY` on a phone or tablet, for both `auto` and a tier the player picked. The entries are module constants, so the memoized scene keeps the same `quality` object between renders.
 
-| Tier   | Max DPR | Antialias | Idle fps | Paced fps | Texture width | Texture budget | Floor segments | Floor wave | Bloom | Shards |
-| ------ | ------- | --------- | -------- | --------- | ------------- | -------------- | -------------- | ---------- | ----- | ------ |
-| Low    | 1.5     | No        | 10       | 10        | 384 px        | 32 MB          | 1 (2 tris)     | No         | No    | 3      |
-| Medium | 2       | No        | 15       | 20        | 512 px        | 64 MB          | 64 (8,192)     | Yes        | No    | 4      |
-| High   | 2       | Yes       | 15       | 20        | 768 px        | 112 MB         | 96 (18,432)    | Yes        | Yes   | 6      |
+| Tier   | Max DPR | Antialias | Frame rate | Texture width | Texture budget | Floor segments | Floor wave | Bloom | Shards |
+| ------ | ------- | --------- | ---------- | ------------- | -------------- | -------------- | ---------- | ----- | ------ |
+| Low    | 1.5     | No        | 30         | 384 px        | 32 MB          | 1 (2 tris)     | No         | No    | 3      |
+| Medium | 2       | No        | 30         | 512 px        | 64 MB          | 64 (8,192)     | Yes        | No    | 4      |
+| High   | 2       | Yes       | 30         | 768 px        | 112 MB         | 96 (18,432)    | Yes        | Yes   | 6      |
 
 - Desktop Low renders at DPR 1. On a DPR 3 phone that is a third of the native resolution, so touch Low uses 1.5 instead. Fill cost is still about a quarter of native.
 - Touch Medium has no MSAA. At DPR 2 the edges are already fine, the card and floor shaders antialias their own edges, and MSAA costs bandwidth on tile-based mobile GPUs. Low and Medium then share the same antialias setting, so an automatic downgrade from Medium to Low keeps the canvas and its GL context.
@@ -399,10 +408,13 @@ These are the desktop budgets. Phones and tablets use the touch budgets below. "
 
 - Apple GPUs skip the memory and core checks, because Safari reports no `deviceMemory` and a capped core count. Before this, every iPhone and iPad probed as Low through the core check.
 - Chrome rounds `deviceMemory` to a power of two and caps it at 8, so an Android phone needs to report 8 to reach Medium.
-- On `auto`, `ArenaQualityGovernor` waits 2.5 s, then marks the scene busy until it has 90 frame gaps, for at most 7 s. It samples only gaps between consecutive busy frames, so the idle frame rate never counts as a slow frame. It ignores gaps over 250 ms (a hidden tab or a long stall). It asks for one downgrade when the median is over 24 ms, then calibrates again on the new tier, and stops at Low. `resolveArena3dQuality` lowers one tier per downgrade. A tier the player picks is never downgraded.
-- The governor used to calibrate for a fixed 2 s and drop gaps over 60 ms. A device at 25 fps collected only about 50 samples in that window and never reached a verdict, so a slow phone stayed on Medium. In an interleaved A/B on SwiftShader with 6x CPU throttling and a spoofed Adreno 740, the old governor stayed on Medium in both runs; the new one dropped to Low after about 4.5 s.
-- An earlier governor sampled idle frames too: the idle gap (about 50 ms) was always over 24 ms, so every device, including an Apple M4, fell to Low within seconds.
-- A display capped at 30 Hz (iOS Low Power Mode, Android battery saver) gives 33 ms gaps, so the governor moves that device to Low. This is intended: the player asked to save battery.
+- `ArenaQualityGovernor` judges the cadence, not the median frame gap. `ArenaFrameDriver` counts rendered frames and late frames (a frame that came one or more vsyncs after its slot). After 2.5 s the governor takes windows of 120 rendered frames and calls `judgeArenaFrameCadence`. When more than 10% of a window is late:
+  1. above 30 fps, it halves the frame rate (`activity.frameRateCap`): 60 becomes a steady 30;
+  2. at 30 fps on `auto`, it asks for a tier downgrade, then judges again on the new tier;
+  3. at 30 fps when the tier cannot drop (Low, or a tier the player picked), it halves to a steady 15.
+- The cap never goes back up while the canvas lives, so the rate cannot oscillate. A tier the player picks is never downgraded, but its frame rate can still halve: the player chose the look, not the frame rate.
+- The old governor asked for a downgrade when the median gap of busy frames was over 24 ms. A device that held 45 fps (alternating 16 and 33 ms gaps at 60 fps) passed that test and stuttered forever. The late-frame share catches it.
+- A display capped at 30 Hz (iOS Low Power Mode, Android battery saver) gives 33 ms rAF gaps. The driver renders every rAF there, no frame is late, and the tier stays.
 - Changing antialias remounts the canvas.
 
 ## Fallbacks
@@ -420,6 +432,8 @@ These are the desktop budgets. Phones and tablets use the touch budgets below. "
 
 - `boardStyle/resolveBoardStyle.test.ts`
 - `quality/resolveArena3dQuality.test.ts`
+- `quality/judgeArenaFrameCadence.test.ts`
+- `createArenaFramePacer.test.ts`
 - `quality/probeArena3dQuality.test.ts`
 - `quality/getArena3dDeviceClass.test.ts`
 - `field/computeArenaCameraFrame.test.ts`
@@ -456,7 +470,7 @@ node tools/diagnostics/measure-arena-3d-performance.mjs --scenario crowded --gl 
 
 | Option                | Values                                                                                                                                | Default                 |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| `--scenario`          | `crowded`, `classic`, `bot`, `viewer`, `mount`, `mobile`, `effects`, `decision`, `landing`, `rotate`                                  | `crowded`               |
+| `--scenario`          | `crowded`, `classic`, `bot`, `viewer`, `mount`, `mobile`, `effects`, `decision`, `landing`, `rotate`, `cadence`                       | `crowded`               |
 | `--board`             | `arena3d`, `classic`: board style for `decision`, so the classic board can serve as a control                                         | `arena3d`               |
 | `--gl`                | `swiftshader`, `metal`                                                                                                                | `swiftshader`           |
 | `--quality`           | `auto`, `low`, `medium`, `high`                                                                                                       | `auto`                  |
@@ -473,6 +487,7 @@ node tools/diagnostics/measure-arena-3d-performance.mjs --scenario crowded --gl 
 | `--repeat`            | effect cycles in the leak check of `effects`                                                                                          | `20`                    |
 | `--capture`           | folder for `effects` frame captures at fixed clock offsets                                                                            | off                     |
 | `--seed`              | seeds `Math.random` so captures repeat                                                                                                | off                     |
+| `--trace`             | flag: trace long tasks (over 40 ms) in each `cadence` window and list their top events                                                | off                     |
 
 - `mobile` opens the crowded board on `--device`, records the resolved tier every second for 16 s (pixel ratio, drawing buffer, antialias, floor segments, card texture width, renderers created), then measures idle, draw calls, triangles, and texture memory, forces a render on every frame for 4 s, and resizes the viewport 31 times to count `WebGLRenderer.setSize` calls. Phone presets use `isMobile` and `hasTouch`, so `(pointer: coarse)` matches. `phone-landscape-mouse` is the same screen without touch, which resolves desktop budgets. `--gpu-name`, `--cores`, and `--memory` let SwiftShader stand in for a phone in the probe; `--gpu-name "Adreno (TM) 740" --cores 8 --memory 8` probes Medium.
 - `effects` opens the crowded board in 3D and plays burst effects without the presentation queue. It finds the scene's `ArenaPulseLayer`, `ArenaMotionDirector`, and `ArenaCardDepartures` fibers and sets their `pulses` and `deleteBursts` props through the React DevTools `overrideProps` hook of the R3F reconciler. Pulses use the centres of the real DOM proxies, as `useArenaPulses` does. Arrivals add a `.game-card-landing` child to the proxy. This needs the development build. The demo preview tools remount `GameScreen`, so they cannot measure an effect alone.
@@ -481,12 +496,66 @@ node tools/diagnostics/measure-arena-3d-performance.mjs --scenario crowded --gl 
 - `decision` opens the crowded board, measures idle, then opens the "Select cards from hand and trash" demo decision, which lights one card with `game-permanent--effect-linked`. It measures 3 rounds with the arena running and, as a control, paused through `cardZoomPresence`: rendered fps, rAF fps, task, script, and style time per second, and scene script per rendered frame. Use `--seconds` for the window and `--board classic` for the classic control.
 - `landing` adds a `.game-card-landing` child to one proxy without a pulse, 4 rounds with the arena running and paused, and traces style and layout time inside and outside animation frames. The R3F scene script per frame comes from the same `addEffect` bracket as `effects`.
 - `rotate` opens the board at 390 x 844 and rotates it 6 times 700 ms apart (each rotation settles), then 12 times 60 ms apart. It counts `WebGLRenderer.setSize` calls (also those `setPixelRatio` makes), the drawing buffer sizes, and render target resizes, then compares every proxy and pile rectangle, the drawing buffer, and the camera with a fresh page at the same size.
+- `cadence` opens the crowded board like `effects`, records the vsync time (`document.timeline.currentTime`) and the scene work of every rendered frame, and measures idle, then two passes of play, digivolve, attack, security, delete, wipe, finale, turn change (a turn pulse plus `activeSide` flipped on every scene component), and the breeding focus (`ArenaBreedingFocus.active`). Each window reports rendered fps, interval p50/p95/p99/max, intervals counted in vsyncs, intervals over 1.5 times the typical one, the slowest frame, long tasks, and programs compiled. Overriding a prop on `ArenaSceneContents` does not stick: its parent re-renders and restores it, so the toggles target the leaf components.
 - `crowded` opens `/dev/arena?scenario=crowded`. `classic` is the same board on the classic style, as a control. `bot` starts Practice vs AI, keeps the hand, and advances turns. `viewer` opens the full-screen card zoom. `mount` switches the board style back and forth.
 - The default headless shell renders with SwiftShader, so the probe picks Low. `--gl metal` passes `--use-angle=metal --enable-gpu --ignore-gpu-blocklist`; on macOS this gives hardware Metal in headless mode (an Apple M4 probes as High). The new headless mode (`channel: "chromium"`) also works with these flags.
 - The report has rAF intervals (median, p95, p99), long tasks, script, task, layout, and style time per second, rendered arena frames per second, a CPU profile by file (inclusive milliseconds per rendered frame), forced layouts from a trace, React renders per component, draw calls, triangles, programs, texture memory, transparent screen coverage, and console errors.
 - The init script sets `window.__THREE_DEVTOOLS__` to catch every `WebGLRenderer` and `Scene`, and installs a `__REACT_DEVTOOLS_GLOBAL_HOOK__` that counts commits. Draw calls are summed over one frame with `info.autoReset` off, so post-processing passes are included. Transparent coverage is a bounding-box estimate, not a true overdraw count.
 - The demo's preview tools re-key `GameScreen` (`ArenaDemo`), so every preview remounts the whole match screen, the canvas, and its GL context. Their long tasks (300 to 600 ms) appear on the classic board too. Use them for mount cost only. A bot match keeps one renderer for the whole match.
 - Run on an idle machine. Other heavy processes shift the absolute numbers, especially under SwiftShader. Compare two builds with interleaved runs (A, B, A, B) and medians.
+
+### Steady cadence
+
+Goal: one steady frame rate per tier, aligned to vsync, that animations never change.
+
+How it works:
+
+- The `<Canvas>` uses `frameloop="never"`. `ArenaFrameDriver` runs its own `requestAnimationFrame` loop and calls R3F `advance(seconds)` on the frames it renders, so it decides every frame. With `demand`, any React prop change on a three object called `invalidate()` and rendered one off-cadence frame, often exactly when a card arrived or an effect started.
+- `createArenaFramePacer` estimates the vsync interval as the median of the last 15 rAF gaps and renders every Nth vsync, N = `round(1000 / frameRate / vsync)`, never 0. It counts elapsed vsyncs since the last render with rounding, so ±2 ms of rAF jitter cannot produce the uneven 2-and-3-vsync gaps that the old `now - last >= 1000 / rate - 4` test produced (29.3 ms on a 120 Hz screen is 3.5 vsyncs). After a dropped vsync it renders on the next tick and keeps the stride from there; that frame counts as late.
+- 60 fps targets render every second vsync on 120 Hz, so a fast display never burns 120 fps. N rounds to the nearest stride: 144 Hz gives 72 fps, 90 Hz gives 45 fps, 75 Hz gives 75 fps. A strict ceiling (48 fps on 144 Hz, 37.5 on 75 Hz) was judged worse.
+- The rAF timestamp is the clock: `clock.autoStart` is off and `advance` sets `clock.elapsedTime` to seconds since the driver started. R3F's `never` mode calls `clock.getDelta()` first, which would otherwise add a wall-clock difference in mixed units. Motion is sampled at the vsync time, not at whatever moment the render started.
+- `invalidate` on the R3F store is replaced by a flag. With motion on it changes nothing, because every Nth vsync renders anyway.
+- Reduced motion: the floor, aura, and sigils stand still, so a still scene renders at 10 fps (an exact divisor of 30 and 60) and returns to the full rate on the next vsync when `busyUntil`, `pacedUntil`, or an invalidation marks a change. The switch is invisible because the still frames are identical.
+- With motion on there is no idle drop: the floor, aura wave (a crest every 5.2 s), sigils, and settled cues always move, and the old 20 fps idle made them step visibly.
+- Card zoom and hidden tabs pause rendering as before. After a pause the first rAF renders immediately.
+- `ArenaShaderWarmup` compiles the scene with `compileAsync` on the first frame, then draws the scene once with every hidden object forced visible and unculled, into the same target the real frame uses (the canvas, or a half-float target when bloom is on), inside a `useFrame` so the real render overwrites it before it is shown. Compiling links programs, but ANGLE on Metal builds the pipeline state on the first draw, and three.js reads `getProgramInfoLog` on first use. Drawing into both targets doubled the programs (25 to 46), because a render target uses no tone mapping and a linear output color space; it now draws only into the one the frame uses.
+
+Results. Apple M4, Metal, development build, crowded board, cadence scenario. Desktop is 1440 x 900, High. Phone is the 844 x 390 preset at DPR 3, touch Medium, 4x CPU throttle. Headless Chromium runs rAF at 60 Hz. The machine was loaded by two other agents (load average 8 to 30), so single long tasks vary between runs. "Before" turn change and breeding focus come from a second run with the old driver restored, because the first harness version toggled a prop that did not stick.
+
+| Window, first use | Desktop before: fps, intervals in vsyncs | Desktop after | Phone before                    | Phone after                            |
+| ----------------- | ---------------------------------------- | ------------- | ------------------------------- | -------------------------------------- |
+| Idle              | 20, all 3                                | 60, all 1     | 15, all 4                       | 30, all 2                              |
+| Play              | 53, 127 x1 + 8 x3 (60 then 20)           | 60, all 1     | 54, 132 x1 + 5 x4               | 29.4, 75 x2 + 1 x5 (75 ms long task)   |
+| Digivolve         | 59.6, 1 x2                               | 60, all 1     | 58.9, worst frame 43.8 ms, 1 x4 | 30, worst frame 8.3 to 12.1 ms         |
+| Attack            | 59.6, 1 x2                               | 60, all 1     | 59.2, worst frame 23.1 ms       | 30 (one run 1 x4)                      |
+| Security          | 58.4, 2 x3                               | 60, all 1     | 58.4, 1 x3 + 1 x4               | 30                                     |
+| Delete, wipe      | 59.6, 1 x2                               | 60, all 1     | 59.2, 1 x3                      | 30, all 2                              |
+| Finale            | 60                                       | 60, all 1     | 39.6, one 833 ms gap            | 28.6 to 30, one 81 to 131 ms long task |
+| Turn change       | 60 (busy for the whole 2.6 s), then 20   | 60, all 1     | 60, then 15                     | 30                                     |
+| Breeding focus    | 32: 60 while fading, then 30             | 60, all 1     | 23: 60 while fading, then 20    | 30, all 2                              |
+
+- Before, every effect switched the rate: 20 to 60 and back on desktop (20 to 120 on a 120 Hz screen), 15 to 60 to 20 on a phone. After, intervals are one stride on desktop in every window of two runs except one 50 ms blip in a second-pass delete. The effects scenario's cold digivolve frame fell from 168 ms to 8 ms on the phone preset, and the cold 1.6 to 1.8 s rAF stalls (GPU process building Metal pipelines on first draw) did not recur.
+- No window compiled a program. Desktop High: 25 programs, 123 draw calls, 51,511 triangles, as before.
+- `effects` and `crowded` sample draw calls with one synchronous `advance` when the canvas uses `frameloop="never"`. At 60 fps the old rAF-based sample summed two frames.
+
+Cost of the higher idle rate, same build, the cap set from the page (`activity.frameRateCap`), main-thread task time, 2 to 3 rounds:
+
+| Device                           | Steady rate                  | Old idle rate           |
+| -------------------------------- | ---------------------------- | ----------------------- |
+| Desktop High, Metal              | 60 fps: 46 to 66 ms/s        | 20 fps: 21 to 41 ms/s   |
+| Phone touch Medium, Metal, 4x    | 30 fps: 91 to 117 ms/s       | 15 fps: 63 to 65 ms/s   |
+| Phone touch Low, SwiftShader, 6x | 30 fps: 994 ms/s (saturated) | 10 fps: 312 to 326 ms/s |
+
+- About 25 ms/s more on desktop and 30 to 50 ms/s more on the throttled phone. GPU time is not visible from headless Chromium; on a phone it is the larger cost and needs a real device.
+- SwiftShader cannot hold 30 fps on the phone preset. The governor then halves to 15 (Low cannot drop). SwiftShader rasterizes on the main thread, so this overstates a phone with a GPU.
+
+Remaining hitches (phone preset, 4x throttle; desktop showed none):
+
+- Play: 56 to 101 ms long task when `.game-card-landing` is added: 30 ms of style recalculation (`UpdateLayoutTree`) plus React. DOM, outside the scene.
+- Finale: 81 to 131 ms long task at the trigger: 63 ms of style recalculation for the DOM finale layer (`MatchFinaleLayer`) plus 33 ms of React. DOM, outside the scene.
+- Turn change: about 50 ms of React work when `activeSide` changes every scene component.
+- Delete: one 68 to 70 ms major GC in one run; the scene does not allocate per frame, so the source is elsewhere in the page.
+- Card textures still upload on first draw. `renderer.initTexture` on a 512 px card costs 1 to 2 ms on the phone preset (Metal), so uploading ahead was not added; recheck on a real phone.
 
 ### Results
 
@@ -540,7 +609,7 @@ Unchanged, for reference (crowded board, High): 120 draw calls (123 since the vi
 - The Metal phone and tablet keep 58 fps under forced rendering even with 6x CPU throttling, and the governor keeps Medium. Main-thread task time at idle: 27 ms/s, or 98 ms/s with 6x throttling.
 - The glows and shadows are still separate draw calls (102 on touch tiers, 120 on desktop High). With 6x CPU throttling, the whole arena frame costs about 3 ms of script per rendered frame, so instancing them would save well under 1 ms. They stay separate, because one instanced transparent mesh sorts as a single object and would change how glows overlap cards.
 - Resize storm: 31 viewport changes caused 40 to 60 `WebGLRenderer.setSize` calls through six drawing buffer sizes, on every tier. R3F measures the canvas with no resize debounce. Each call reallocates the drawing buffer, and on High also the bloom render targets. The `<Canvas>` in `field/Arena3dScene.tsx` now passes `resize={{ debounce: { scroll: 50, resize: 150 } }}`. The [evaluation](#evaluation) measured 0 reallocations for the same storm.
-- Hidden tab: `ArenaFrameDriver` invalidates only from `requestAnimationFrame`, which browsers pause in a hidden tab, so a hidden arena renders nothing. Headless Chromium keeps every page visible, so this was not measured.
+- Hidden tab: `ArenaFrameDriver` renders only from `requestAnimationFrame`, which browsers pause in a hidden tab, so a hidden arena renders nothing. Headless Chromium keeps every page visible, so this was not measured.
 
 ### Burst effects
 
