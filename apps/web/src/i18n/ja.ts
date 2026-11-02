@@ -1079,9 +1079,14 @@ const interfaceMessages = {
   "settings.noticeDuration": "通知の表示時間",
   "settings.noticeDurationDesc":
     "効果の通知とカードパネルを画面に表示しておく時間です。通知にマウスを重ねると表示されたままになります。",
+  "settings.noticeDurationShort": "短い",
   "settings.noticeDurationNormal": "普通",
   "settings.noticeDurationLong": "長い",
   "settings.noticeDurationLongest": "最長",
+  "settings.noticeSize": "通知のサイズ",
+  "settings.noticeSizeDesc": "効果の通知とカードパネルの大きさです。コンパクトにすると盤面が隠れにくくなります。",
+  "settings.noticeSizeNormal": "普通",
+  "settings.noticeSizeCompact": "コンパクト",
   "settings.groupIdenticalTamers": "同じテイマーをまとめる",
   "settings.groupIdenticalTamersDesc":
     "整理された場で同じテイマーをまとめて表示します。オフにすると各カードを個別に表示します。",

@@ -12,6 +12,7 @@ import { useTranslation } from "../i18n";
 import { CardLink, CardLinkedText, cardDisplayName, useCardOpener } from "./cardLinks";
 import { ErodeRing } from "./ErodeRing";
 import { type AttackAnnouncement, type SidePanel, type SidePanelCard } from "./sidePanels";
+import { useNoticeSize } from "@/game/noticeSize/useNoticeSize";
 
 /* The panel is read at a glance, so the art carries it: big enough to recognise a card
    without hovering, which is the whole job now that the names are out of the picture. */
@@ -27,13 +28,14 @@ const PANEL_CARD_WIDTH = 128;
  */
 function SidePanelCardView({ card, numbered }: { card: SidePanelCard; numbered: boolean }) {
   const openCard = useCardOpener();
+  const { scale } = useNoticeSize();
   return (
     <li className="side-panel__card">
       <span className="side-panel__art" aria-hidden="true">
         <CardMini
           cardId={card.cardId}
           artId={card.artId}
-          width={PANEL_CARD_WIDTH}
+          width={Math.round(PANEL_CARD_WIDTH * scale)}
           zoomOnHover={false}
           onClick={openCard ? () => openCard(card.cardId, card.artId) : undefined}
         />

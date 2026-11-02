@@ -18,7 +18,7 @@
   }
   .narration-slot[data-slot="narration-text"],
   .narration-slot[data-slot="narration"] {
-    width: min(33.25rem, calc(100% - var(--ds-space-8)));
+    width: min(calc(33.25rem * var(--notice-scale, 1)), calc(100% - var(--ds-space-8)));
   }
 
   /* The column runs from just under the top-bar buttons to just above the corner counters,
@@ -26,7 +26,7 @@
      before it scrolls. The width fits the row below plus its 1.8rem of padding, so no card
      is clipped. */
   .narration-slot[data-slot="narration-cards"] {
-    width: min(26rem, calc(100% - var(--ds-space-8)));
+    width: min(calc(26rem * var(--notice-scale, 1)), calc(100% - var(--ds-space-8)));
     height: min(34rem, calc(100dvh - 15.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)));
     top: calc(4.5rem + env(safe-area-inset-top, 0px));
     overflow-x: hidden;
@@ -37,31 +37,33 @@
   /* A deletion often takes several Digimon at once (Gate of Deadly Sins takes the whole
      field), so its fan gets a wider row and each deleted card shows more of its art. */
   .narration-slot[data-slot="narration-cards"]:has(.side-panel[data-kind="deletion"]) {
-    width: min(32rem, calc(100% - var(--ds-space-8)));
+    width: min(calc(32rem * var(--notice-scale, 1)), calc(100% - var(--ds-space-8)));
   }
 
   .narration-slot[data-slot="narration-cards"] .side-panel__cards {
-    --panel-row-w: 24rem;
+    --panel-row-w: calc(24rem * var(--notice-scale, 1));
   }
 
   .narration-slot[data-slot="narration-cards"] .side-panel[data-kind="deletion"] .side-panel__cards {
-    --panel-row-w: 30rem;
+    --panel-row-w: calc(30rem * var(--notice-scale, 1));
   }
 
   .match-notice {
-    min-height: 6.5rem;
-    padding: 1.05rem 2.9rem 1.05rem 1.05rem;
-    gap: 1rem;
+    min-height: calc(6.5rem * var(--notice-scale, 1));
+    padding: calc(1.05rem * var(--notice-scale, 1)) 2.9rem calc(1.05rem * var(--notice-scale, 1))
+      calc(1.05rem * var(--notice-scale, 1));
+    gap: calc(1rem * var(--notice-scale, 1));
   }
 
   /* The variant rule outweighs the one above, so it repeats the desktop padding. */
   .match-notice[data-variant="effect"] {
-    padding: 1.05rem 2.9rem 1.05rem 1.05rem;
+    padding: calc(1.05rem * var(--notice-scale, 1)) 2.9rem calc(1.05rem * var(--notice-scale, 1))
+      calc(1.05rem * var(--notice-scale, 1));
   }
 
   .match-notice__icon {
-    width: 3.4rem;
-    height: 3.4rem;
+    width: calc(3.4rem * var(--notice-scale, 1));
+    height: calc(3.4rem * var(--notice-scale, 1));
   }
 
   .match-notice__label {
@@ -69,11 +71,11 @@
   }
 
   .match-notice__title {
-    font-size: 1.22rem;
+    font-size: max(var(--ds-text-sm), calc(1.22rem * var(--notice-text-scale, 1)));
   }
 
   .match-notice__text {
-    font-size: 1.02rem;
+    font-size: max(var(--ds-text-sm), calc(1.02rem * var(--notice-text-scale, 1)));
     line-height: 1.5;
   }
 

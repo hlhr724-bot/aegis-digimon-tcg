@@ -820,9 +820,15 @@ export const es: Record<keyof typeof en, string> = {
   "settings.noticeDuration": "Duración de los avisos",
   "settings.noticeDurationDesc":
     "Cuánto tiempo permanecen en pantalla los avisos de efecto y los paneles de cartas. Pasa el ratón sobre un aviso para mantenerlo abierto.",
+  "settings.noticeDurationShort": "Corta",
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Larga",
   "settings.noticeDurationLongest": "Más larga",
+  "settings.noticeSize": "Tamaño de los avisos",
+  "settings.noticeSizeDesc":
+    "El tamaño de los avisos de efecto y de los paneles de cartas. Compacto tapa menos el campo.",
+  "settings.noticeSizeNormal": "Normal",
+  "settings.noticeSizeCompact": "Compacto",
   "settings.groupIdenticalTamers": "Agrupar Tamers idénticos",
   "settings.groupIdenticalTamersDesc":
     "Muestra juntos los Tamers idénticos en el campo ordenado. Desactívalo para mostrar cada copia por separado.",

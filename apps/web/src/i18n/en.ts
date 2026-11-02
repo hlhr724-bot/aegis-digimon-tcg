@@ -826,9 +826,14 @@ export const en = {
   "settings.noticeDuration": "Notice duration",
   "settings.noticeDurationDesc":
     "How long effect notices and card panels stay on screen. Hover over a notice to keep it open.",
+  "settings.noticeDurationShort": "Short",
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Long",
   "settings.noticeDurationLongest": "Longest",
+  "settings.noticeSize": "Notice size",
+  "settings.noticeSizeDesc": "How large effect notices and card panels are. Compact covers less of the board.",
+  "settings.noticeSizeNormal": "Normal",
+  "settings.noticeSizeCompact": "Compact",
   "settings.groupIdenticalTamers": "Group identical Tamers",
   "settings.groupIdenticalTamersDesc":
     "Show identical Tamers together in the organized field. Turn off to display each copy separately.",

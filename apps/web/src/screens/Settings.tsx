@@ -59,6 +59,10 @@ import { NOTICE_DURATION_LABELS, NOTICE_DURATIONS, setNoticeDuration, useNoticeD
 import { MatchLogDisplay } from "@/game/log/MatchLogDisplay";
 import { matchLogDisplayPreference } from "@/game/log/matchLogDisplayPreference";
 import { useMatchLogDisplay } from "@/game/log/useMatchLogDisplay";
+import { NoticeSize } from "@/game/noticeSize/NoticeSize";
+import { getNoticeSizeEntry } from "@/game/noticeSize/getNoticeSizeEntry";
+import { noticeSizePreference } from "@/game/noticeSize/noticeSizePreference";
+import { useNoticeSize } from "@/game/noticeSize/useNoticeSize";
 import { SOUND_SETTINGS_SECTION_ID } from "@/screens/soundSettingsSectionId";
 import { LOCALES, LOCALE_LABELS, useTranslation, type TranslationKey } from "../i18n";
 import type { RemoteAccount } from "../account/client";
@@ -308,6 +312,7 @@ export function Settings({
   const handAutoSort = useHandAutoSort();
   const effectPromptPosition = useEffectPromptPosition();
   const noticeDuration = useNoticeDuration();
+  const noticeSize = useNoticeSize();
   const matchLogDisplay = useMatchLogDisplay();
   const profileStatsShown = useProfileStatsShown();
   const hasCloudReplays = useCloudReplays().provider !== undefined;
@@ -653,6 +658,19 @@ export function Settings({
                   labelledBy="settings-notice-duration-label"
                   label={(duration) => t(NOTICE_DURATION_LABELS[duration])}
                   onSelect={setNoticeDuration}
+                />
+              </SettingRow>
+              <SettingRow
+                label={t("settings.noticeSize")}
+                labelId="settings-notice-size-label"
+                description={t("settings.noticeSizeDesc")}
+              >
+                <OptionList
+                  options={Object.values(NoticeSize).map((entry) => entry.value)}
+                  selected={noticeSize.value}
+                  labelledBy="settings-notice-size-label"
+                  label={(size) => t(getNoticeSizeEntry(size).labelKey)}
+                  onSelect={noticeSizePreference.set}
                 />
               </SettingRow>
               <SettingRow

@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { setNoticeDuration } from "@/game/noticeDuration";
 import type { GameState, Seat, ServerEvent } from "@aegis/shared";
 import { buildCardSiteIndex } from "./match/cardSiteIndex";
 import {
@@ -338,6 +339,8 @@ describe("rejectionNotice", () => {
 });
 
 describe("notice lifetimes", () => {
+  afterEach(() => setNoticeDuration("normal"));
+
   it("gives every notice the same reading time, whatever else is on screen", () => {
     expect(noticeRemaining(notice({ createdAt: 0 }), 0)).toBe(NOTICE_LIFETIME_MS);
     expect(noticeRemaining(notice({ createdAt: 0 }), 200)).toBe(NOTICE_LIFETIME_MS - 200);
@@ -352,6 +355,18 @@ describe("notice lifetimes", () => {
 
   it("never reports a negative remainder", () => {
     expect(noticeRemaining(notice({ createdAt: 0 }), NOTICE_LIFETIME_MS + 500)).toBe(0);
+  });
+
+  it("shortens a low-time warning at short duration", () => {
+    const warning: MatchNotice = {
+      id: "warning",
+      side: Side.Viewer,
+      fromSecurity: false,
+      body: { variant: "timeWarning", seconds: 30 },
+      createdAt: 0,
+    };
+    setNoticeDuration("short");
+    expect(noticeRemaining(warning, 0)).toBe(Math.round(REJECTION_LIFETIME_MS * 0.6));
   });
 });
 

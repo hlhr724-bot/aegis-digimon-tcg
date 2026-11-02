@@ -1102,9 +1102,14 @@ const interfaceMessages = {
   "settings.noticeDuration": "Anzeigedauer von Hinweisen",
   "settings.noticeDurationDesc":
     "Wie lange Effekthinweise und Kartenfenster auf dem Bildschirm bleiben. Bewegen Sie den Mauszeiger über einen Hinweis, um ihn offen zu halten.",
+  "settings.noticeDurationShort": "Kurz",
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Lang",
   "settings.noticeDurationLongest": "Am längsten",
+  "settings.noticeSize": "Größe von Hinweisen",
+  "settings.noticeSizeDesc": "Wie groß Effekthinweise und Kartenfenster sind. Kompakt verdeckt weniger vom Spielfeld.",
+  "settings.noticeSizeNormal": "Normal",
+  "settings.noticeSizeCompact": "Kompakt",
   "settings.groupIdenticalTamers": "Identische Tamer gruppieren",
   "settings.groupIdenticalTamersDesc":
     "Zeigt identische Tamer im geordneten Feld zusammen. Ausschalten, um jede Kopie einzeln anzuzeigen.",
