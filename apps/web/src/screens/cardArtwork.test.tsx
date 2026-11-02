@@ -103,7 +103,7 @@ describe("card artwork choices", () => {
     expect(screen.getAllByAltText("Agumon")[0]!.getAttribute("src")).toContain(getCardArts(cardId)[1]!.imageId);
   });
 
-  it("changes one existing copy, persists and reopens its artwork", async () => {
+  it("applies artwork to every copy by default and still edits one copy on request", async () => {
     const onSave = vi.fn<(deck: DeckListing, setActive: boolean) => void>();
     render(
       <I18nProvider>
@@ -123,16 +123,17 @@ describe("card artwork choices", () => {
     opener.focus();
     fireEvent.click(opener);
     const picker = within(screen.getByRole("dialog", { name: "Choose artwork" }));
-    fireEvent.click(picker.getByRole("button", { name: "Alternate 1" }));
-    await waitFor(() => expect(onSave.mock.lastCall?.[0].mainDeckArts).toEqual([alternate(), alternate()]));
-    fireEvent.click(picker.getByRole("button", { name: "Copy 2" }));
+    expect(picker.getByRole("button", { name: "All copies" }).getAttribute("aria-pressed")).toBe("true");
+    expect(picker.getByRole("button", { name: "Original" }).getAttribute("aria-pressed")).toBe("false");
     fireEvent.click(picker.getByRole("button", { name: "Original" }));
-    await waitFor(() => expect(onSave.mock.lastCall?.[0].mainDeckArts).toEqual([alternate(), cardId]));
-    fireEvent.click(picker.getByRole("button", { name: "Use on all copies" }));
     await waitFor(() => expect(onSave.mock.lastCall?.[0].mainDeckArts).toEqual([cardId, cardId]));
+    fireEvent.click(picker.getByRole("button", { name: "Copy 2" }));
     fireEvent.click(picker.getByRole("button", { name: "Alternate 1" }));
-    fireEvent.click(picker.getByRole("button", { name: "Use on all copies" }));
+    await waitFor(() => expect(onSave.mock.lastCall?.[0].mainDeckArts).toEqual([cardId, alternate()]));
+    fireEvent.click(picker.getByRole("button", { name: "All copies" }));
+    fireEvent.click(picker.getByRole("button", { name: "Alternate 1" }));
     await waitFor(() => expect(onSave.mock.lastCall?.[0].mainDeckArts).toEqual([alternate(), alternate()]));
+    expect(picker.getByRole("button", { name: "Alternate 1" }).getAttribute("aria-pressed")).toBe("true");
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByRole("dialog", { name: "Choose artwork" })).toBeNull();
     expect(document.activeElement).toBe(opener);

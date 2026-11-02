@@ -27,7 +27,9 @@ export function statusKey(status: TournamentStatus): TranslationKey {
 }
 
 export function structureKey(structure: TournamentStructure): TranslationKey {
-  return structure === "swiss" ? "tournaments.structure.swiss" : "tournaments.structure.singleElimination";
+  if (structure === "swiss") return "tournaments.structure.swiss";
+  if (structure === "round_robin") return "tournaments.structure.roundRobin";
+  return "tournaments.structure.singleElimination";
 }
 
 export function participantStatusKey(status: RegistrationStatus): TranslationKey {
@@ -70,7 +72,7 @@ export function topCutRoundKey(round: number, plannedRounds: number | null): Tra
  * row) is likewise nothing to say.
  */
 export function pairingReasonKey(reason: PairingReason | null | undefined): TranslationKey | undefined {
-  if (!reason || reason === "same_score") return undefined;
+  if (!reason || reason === "same_score" || reason === "round_robin_schedule") return undefined;
   return `tournaments.pairing.${camelCase(reason)}` as TranslationKey;
 }
 

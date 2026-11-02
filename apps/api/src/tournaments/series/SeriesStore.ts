@@ -1195,6 +1195,7 @@ function toScoreView(match: MatchDetails, series: SeriesRecord | undefined): Ser
     currentGameIndex: currentGame?.gameIndex ?? null,
     joinDeadlineAt: match.joinDeadlineAt,
     seriesDeadlineAt: series?.seriesDeadlineAt ?? null,
+    presentAt: match.presentAt,
     winnerParticipantId: winnerOf(match, series),
     pairingReason: match.pairingReason,
   };

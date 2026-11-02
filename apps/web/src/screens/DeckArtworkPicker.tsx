@@ -31,12 +31,14 @@ export function DeckArtworkPicker({
 }) {
   const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
-  const [copy, setCopy] = useState(0);
+  const [target, setTarget] = useState<number | "all">(count > 1 ? "all" : 0);
   const panel = useRef<HTMLDivElement>(null);
   const close = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
-  const selected = resolveCardArt(cardId, arts[copy]).artId;
+  const copyArtIds = Array.from({ length: count }, (_, index) => resolveCardArt(cardId, arts[index]).artId);
+  const sharedArtId = copyArtIds.every((artId) => artId === copyArtIds[0]) ? copyArtIds[0] : undefined;
+  const selected = target === "all" ? sharedArtId : copyArtIds[target];
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     close.current?.focus();
@@ -92,14 +94,19 @@ export function DeckArtworkPicker({
           </button>
         </div>
         <div className="deck-art-picker__copies" role="group" aria-label={t("deck.artCopyPrompt")}>
+          {count > 1 ? (
+            <button type="button" aria-pressed={target === "all"} onClick={() => setTarget("all")}>
+              {t("deck.artAllCopies")}
+            </button>
+          ) : null}
           {Array.from({ length: count }, (_, index) => (
-            <button key={index} type="button" aria-pressed={copy === index} onClick={() => setCopy(index)}>
+            <button key={index} type="button" aria-pressed={target === index} onClick={() => setTarget(index)}>
               {t("deck.copyArtwork", { number: index + 1 })}
             </button>
           ))}
         </div>
         <p className="deck-art-picker__hint" role="status">
-          {t("deck.artEditingCopy", { number: copy + 1 })}
+          {target === "all" ? t("deck.artEditingAllCopies") : t("deck.artEditingCopy", { number: target + 1 })}
         </p>
         <div className="deck-art-picker__grid" role="group" aria-label={t("library.artworks")}>
           {getCardArts(cardId).map((art, index) => {
@@ -112,7 +119,7 @@ export function DeckArtworkPicker({
                 type="button"
                 aria-label={region ? t(REGION_LABEL_KEYS[region.value], { label }) : label}
                 aria-pressed={art.artId === selected}
-                onClick={() => onChoose(art.artId, copy)}
+                onClick={() => onChoose(art.artId, target)}
               >
                 <CardFull cardId={cardId} artId={art.artId} width={140} zoomOnHover={false} />
                 {region ? (
@@ -126,11 +133,6 @@ export function DeckArtworkPicker({
           })}
         </div>
         <div className="deck-art-picker__footer">
-          {count > 1 ? (
-            <Button variant="secondary" onClick={() => onChoose(selected, "all")}>
-              {t("deck.artApplyAll")}
-            </Button>
-          ) : null}
           <Button onClick={onClose}>{t("common.done")}</Button>
         </div>
       </div>

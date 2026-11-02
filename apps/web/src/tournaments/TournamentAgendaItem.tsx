@@ -6,7 +6,8 @@ import { useTranslation } from "@/i18n/useTranslation";
 import { deckFormatLabel } from "@/screens/deckFormatLabel";
 import { formatTournamentTime } from "@/tournaments/formatTournamentTime";
 import { isTournamentClosed } from "@/tournaments/isTournamentClosed";
-import { banlistModeKey, statusKey, structureKey } from "@/tournaments/labels";
+import { banlistModeKey, statusKey } from "@/tournaments/labels";
+import { describeTournamentStructure } from "@/tournaments/describeTournamentStructure";
 import { serverNow } from "@/tournaments/serverClock";
 import type { TournamentListing } from "@/tournaments/types";
 
@@ -41,15 +42,7 @@ export function TournamentAgendaItem({ tournament, onOpen }: TournamentAgendaIte
           </div>
           <p className="tournaments-facts">
             <span>{deckFormatLabel(tournament.format ?? "standard", t)}</span>
-            <span>
-              <span>{t(structureKey(tournament.structure))}</span>
-              {tournament.topCutEnabled ? (
-                <>
-                  {" "}
-                  + <span>{t("tournaments.badge.topCut")}</span>
-                </>
-              ) : null}
-            </span>
+            <span>{describeTournamentStructure({ detail: tournament, t })}</span>
             <span>{t("tournaments.bestOf", { count: tournament.bestOf })}</span>
             {tournament.allowBots ? <span>{t("tournaments.badge.bots")}</span> : null}
             <span>
@@ -64,6 +57,12 @@ export function TournamentAgendaItem({ tournament, onOpen }: TournamentAgendaIte
         </div>
         <div className="tournaments-row__status">
           <Badge tone={closed ? "neutral" : "success"}>{t(statusKey(tournament.status))}</Badge>
+          {tournament.status === "finished" && tournament.winnerDisplayName ? (
+            <span className="tournaments-row__winner">
+              <Icons.Trophy size={13} aria-hidden="true" />
+              {t("tournaments.catalog.winner", { player: tournament.winnerDisplayName })}
+            </span>
+          ) : null}
           <span className="tournaments-row__slots">
             {t("tournaments.slots", { registered: tournament.registeredCount, max: tournament.maxPlayers })}
           </span>

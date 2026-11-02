@@ -3,6 +3,12 @@ import { isTournamentClockSettings } from "@aegis/shared/tournaments/isTournamen
 import type { BanlistPolicy, CreateTournamentInput, TournamentBanlistCard, TournamentRules } from "@aegis/shared";
 import { banlistDateForSet, normalizeBanlistPolicy, resolveBanlistPolicy } from "./banlistPolicy.js";
 import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
+import { isTournamentTiebreaker } from "@aegis/shared/tournaments/isTournamentTiebreaker";
+import { isTournamentPoints } from "@aegis/shared/tournaments/isTournamentPoints";
+import { isTournamentTopCutSize } from "@aegis/shared/tournaments/isTournamentTopCutSize";
+import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
+import { tiebreakersForStructure } from "@aegis/shared/tournaments/tiebreakersForStructure";
+import { MAX_SWISS_ROUNDS } from "@aegis/shared/tournaments/TournamentTopCutSize";
 
 export type TournamentValidationCode =
   | "name_too_short"
@@ -14,6 +20,10 @@ export type TournamentValidationCode =
   | "structure_invalid"
   | "best_of_invalid"
   | "top_cut_requires_swiss"
+  | "top_cut_size_invalid"
+  | "rounds_invalid"
+  | "tiebreakers_invalid"
+  | "points_invalid"
   | "banlist_mode_unknown"
   | "banlist_set_unknown"
   | "max_players_out_of_range"
@@ -79,9 +89,10 @@ export function validateCreateTournament(input: CreateTournamentInput, createdAt
     errors.push({ code: "top_cut_requires_swiss", field: "topCut" });
   }
 
-  if (input.structure !== "swiss" && input.structure !== "single_elimination") {
+  if (input.structure !== "swiss" && input.structure !== "round_robin" && input.structure !== "single_elimination") {
     errors.push({ code: "structure_invalid", field: "structure" });
   }
+  errors.push(...programErrors(input));
   if (input.bestOf !== 1 && input.bestOf !== 3) {
     errors.push({ code: "best_of_invalid", field: "bestOf" });
   }
@@ -89,7 +100,14 @@ export function validateCreateTournament(input: CreateTournamentInput, createdAt
 
   if (errors.length > 0) return { ok: false, errors };
   const banlist = normalizeBanlistPolicy(input.banlist);
-  const rules = buildTournamentRules({ bestOf: input.bestOf });
+  const rules = buildTournamentRules({
+    bestOf: input.bestOf,
+    structure: input.structure,
+    tiebreakers: input.tiebreakers ?? null,
+    points: input.points ?? null,
+    rounds: input.rounds ?? null,
+    topCutSize: input.topCut ? (input.topCutSize ?? null) : null,
+  });
   if (input.clocks) {
     rules.match.swissDurationMs = input.clocks.roundMinutes * 60_000;
     rules.match.topCutDurationMs = input.clocks.eliminationMinutes * 60_000;
@@ -104,6 +122,39 @@ export function validateCreateTournament(input: CreateTournamentInput, createdAt
       banlistCards: resolveBanlistPolicy(banlist, createdAt),
     },
   };
+}
+
+function programErrors(input: CreateTournamentInput): TournamentValidationError[] {
+  const errors: TournamentValidationError[] = [];
+  const topCutSize = input.topCutSize ?? null;
+  if (topCutSize !== null && (!input.topCut || !isTournamentTopCutSize(topCutSize))) {
+    errors.push({ code: "top_cut_size_invalid", field: "topCutSize" });
+  }
+  const rounds = input.rounds ?? null;
+  if (
+    rounds !== null &&
+    (input.structure !== "swiss" || !Number.isInteger(rounds) || rounds < 1 || rounds > MAX_SWISS_ROUNDS)
+  ) {
+    errors.push({ code: "rounds_invalid", field: "rounds" });
+  }
+  const tiebreakers = input.tiebreakers ?? null;
+  if (tiebreakers !== null) {
+    const allowed = new Set<string>(tiebreakersForStructure(input.structure));
+    const valid =
+      playsScoredRounds(input.structure) &&
+      Array.isArray(tiebreakers) &&
+      tiebreakers.length > 0 &&
+      tiebreakers.every((tiebreaker) => isTournamentTiebreaker(tiebreaker) && allowed.has(tiebreaker)) &&
+      new Set(tiebreakers).size === tiebreakers.length;
+    if (!valid) {
+      errors.push({ code: "tiebreakers_invalid", field: "tiebreakers" });
+    }
+  }
+  const points = input.points ?? null;
+  if (points !== null && (!playsScoredRounds(input.structure) || !isTournamentPoints(points))) {
+    errors.push({ code: "points_invalid", field: "points" });
+  }
+  return errors;
 }
 
 function banlistErrors(policy: BanlistPolicy): TournamentValidationError[] {

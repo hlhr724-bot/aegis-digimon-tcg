@@ -1,6 +1,7 @@
 import { tournamentCircuitsKo } from "@/i18n/tournamentCircuits.ko";
 import { tournamentOfficialRequestKo } from "@/i18n/tournamentOfficialRequest.ko";
 import { matchQueueKo } from "@/i18n/matchQueue.ko";
+import { matchIntroKo } from "@/i18n/matchIntro.ko";
 import { staffRolesKo } from "@/i18n/staffRoles.ko";
 import { tournamentDetailKo } from "@/i18n/tournamentDetail.ko";
 import { tournamentSpectatorsKo } from "@/i18n/tournamentSpectators.ko";
@@ -2089,7 +2090,31 @@ const interfaceMessages = {
   "tournaments.reason.passwordInvalid": "Use at most 128 characters for the event password.",
   "tournaments.reason.incorrectPassword": "The event password is incorrect.",
   "tournaments.play.join": "Enter game",
-  "tournaments.play.ready": "I am ready",
+  "tournaments.play.ready": "Ready",
+  "tournaments.presence.label": "Ready",
+  "tournaments.presence.at": "{player}: {time}",
+  "tournaments.presence.notYet": "{player}: not yet",
+  "tournaments.history.ready": "Ready: {times}",
+  "tournaments.schedule.roundStarted": "Round {round} started",
+  "tournaments.schedule.phaseRoundStarted": "{round} started",
+  "tournaments.structure.roundRobin": "리그전",
+  "tournaments.reason.topCutSizeInvalid": "목록에서 탑 컷 인원을 고르고, 먼저 탑 컷을 켜세요.",
+  "tournaments.reason.roundsInvalid": "라운드 수는 1~10 중에서 고르세요. 스위스 드로만 설정할 수 있습니다.",
+  "tournaments.reason.tiebreakersInvalid": "이 방식에서 쓸 수 있는 타이브레이커를 중복 없이 하나 이상 고르세요.",
+  "tournaments.standings.tiebreakOrder":
+    "승점이 같으면 다음 순서로 정합니다: {order}. 그래도 같으면 추첨으로 정합니다.",
+  "tournaments.reason.pointsInvalid": "0~10의 정수를 쓰세요. 승은 무보다 커야 하고, 무는 패 이상이어야 합니다.",
+  "tournaments.badge.noTopCut": "No Top Cut (too few players)",
+  "tournaments.standings.rank": "Rank",
+  "tournaments.standings.player": "Player",
+  "tournaments.standings.points": "Points",
+  "tournaments.standings.record": "W-L-D",
+  "tournaments.standings.matchWinRate": "MW%",
+  "tournaments.standings.opponentMatchWinRate": "OMW%",
+  "tournaments.standings.byes": "+{count} bye",
+  "tournaments.standings.tiebreakNote":
+    "Ties on points are broken by match win rate (MW%), then opponents' match win rate (OMW%), then head-to-head.",
+  "tournaments.catalog.winner": "Winner: {player}",
   "tournaments.play.waitingGame": "Waiting for your assigned opponent to enter this tournament game.",
   "tournaments.play.waiting": "Waiting for the opponent to confirm presence.",
   "tournaments.pairings.title": "Adjust pairings",
@@ -2108,7 +2133,7 @@ const interfaceMessages = {
   "tournaments.create.structure": "진행 방식",
   "tournaments.create.bestOf": "대전 방식",
   "tournaments.create.topCut": "탑 컷",
-  "tournaments.create.topCutDesc": "스위스 라운드가 끝나면 상위 플레이어가 토너먼트(녹아웃) 대진표로 진출합니다.",
+  "tournaments.create.topCutDesc": "라운드가 끝나면 상위 플레이어가 토너먼트 대진표로 진출합니다.",
   "tournaments.create.allowBots": "봇 허용",
   "tournaments.create.allowBotsDesc": "체크인이 끝났을 때 빈자리를 봇으로 채웁니다.",
   "tournaments.create.banlist": "금지 카드",
@@ -2196,7 +2221,7 @@ const interfaceMessages = {
   "tournaments.reason.nameTooLong": "이름이 너무 깁니다.",
   "tournaments.reason.structureInvalid": "스위스 또는 싱글 엘리미네이션을 선택하세요.",
   "tournaments.reason.bestOfInvalid": "단판 또는 3판 2선승제를 선택하세요.",
-  "tournaments.reason.topCutRequiresSwiss": "탑 컷은 스위스 드로 대회에서만 사용할 수 있습니다.",
+  "tournaments.reason.topCutRequiresSwiss": "탑 컷은 스위스 드로나 리그전에서만 쓸 수 있습니다.",
   "tournaments.reason.banlistModeUnknown": "알 수 없는 금지 카드 옵션입니다.",
   "tournaments.reason.banlistSetUnknown": "그 세트의 확정된 발매일이 없습니다.",
   "tournaments.reason.maxPlayersOutOfRange": "최대 인원은 2명에서 1024명 사이로 정하세요.",
@@ -2343,7 +2368,8 @@ const interfaceMessages = {
   "deck.kindDual": "듀얼",
   "deck.artCopyPrompt": "카드를 선택하세요",
   "deck.artEditingCopy": "{number}번째 카드를 편집 중입니다. 일러스트를 선택하면 바로 저장됩니다.",
-  "deck.artApplyAll": "모든 카드에 적용",
+  "deck.artAllCopies": "모든 카드",
+  "deck.artEditingAllCopies": "모든 카드를 편집 중입니다. 일러스트를 선택하면 바로 저장됩니다.",
   "deck.artDoubleClickHint": "일러스트를 더블클릭하면 이 덱의 같은 카드 전부에 적용됩니다.",
   "common.done": "완료",
   "redesign.foundation.arena.preview": "내 색상과 배경으로 본 보드 미리보기",
@@ -2876,6 +2902,7 @@ const interfaceMessages = {
   ...tournamentCircuitsKo,
   ...tournamentOfficialRequestKo,
   ...matchQueueKo,
+  ...matchIntroKo,
   ...staffRolesKo,
   ...achievementsKo,
   "profile.filter.deck": "덱",

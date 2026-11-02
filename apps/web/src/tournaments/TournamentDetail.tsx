@@ -5,7 +5,6 @@ import { TournamentCategorySwitch } from "@/tournaments/TournamentCategorySwitch
 import { isCheckInOpen } from "@/tournaments/isCheckInOpen";
 import { serverNow } from "@/tournaments/serverClock";
 import { TournamentMatchHistory } from "@/tournaments/TournamentMatchHistory";
-import { deckFormatLabel } from "@/screens/deckFormatLabel";
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
 import { TournamentPairingControls } from "@/tournaments/TournamentPairingControls";
 import { TournamentSpectatingPanel } from "@/tournaments/TournamentSpectatingPanel";
@@ -24,6 +23,9 @@ import { TournamentReportButton } from "@/tournaments/TournamentReportButton";
 import { TournamentCopyLinkButton } from "@/tournaments/TournamentCopyLinkButton";
 import { TournamentCrumb } from "@/tournaments/TournamentCrumb";
 import { TournamentScheduleTimeline } from "@/tournaments/TournamentScheduleTimeline";
+import { TournamentStandingsTable } from "@/tournaments/TournamentStandingsTable";
+import { TournamentFormatPanel } from "@/tournaments/TournamentFormatPanel";
+import { describeTournamentStructure } from "@/tournaments/describeTournamentStructure";
 import { isTournamentClosed } from "@/tournaments/isTournamentClosed";
 import { Alert, Badge, Button, Panel } from "../design/primitives";
 import type { DeckListing } from "../game/decks";
@@ -42,7 +44,7 @@ import { TournamentSignupFlow } from "@/tournaments/TournamentSignupFlow";
 import { ownParticipant } from "@/tournaments/ownParticipant";
 import { TournamentCloseCheckIn } from "@/tournaments/TournamentCloseCheckIn";
 import { usePolledRequest } from "./hooks";
-import { banlistModeKey, participantStatusKey, restrictionKey, statusKey, structureKey, windowKey } from "./labels";
+import { participantStatusKey, restrictionKey, statusKey, windowKey } from "./labels";
 import { MyMatchPanel } from "./MyMatchPanel";
 import { TopCutBracket } from "./TopCutBracket";
 import type { TournamentDetail as TournamentDetailPayload, TournamentWindows } from "./types";
@@ -136,10 +138,6 @@ export function TournamentDetail({
   const own = ownParticipant({ participants: detail.participants, accountId });
   const isActiveParticipant = own !== undefined && own.status !== "dropped" && own.status !== "disqualified";
   const actions = entryActions({ detail, own, signedIn: accountId !== undefined });
-  const banlistLabel =
-    detail.banlistPolicy.mode === "as_of_set"
-      ? t("tournaments.banlist.asOfSet", { set: detail.banlistPolicy.setId })
-      : t(banlistModeKey(detail.banlistPolicy));
   const isElimination = detail.structure === "single_elimination";
   const eliminationPhase = detail.phases?.find((phase) => phase.kind === "single_elimination");
   const visibleTabs = Object.values(TournamentTab).filter((entry) => !entry.organizerOnly || canOrganize);
@@ -172,30 +170,12 @@ export function TournamentDetail({
     </Panel>
   ) : null;
 
-  const formatPanel = (
-    <Panel>
-      <h3>{t("tournaments.detail.format")}</h3>
-      <dl>
-        <dt>{t("tournaments.create.structure")}</dt>
-        <dd>{t(structureKey(detail.structure))}</dd>
-        <dt>{t("tournaments.detail.cardPool")}</dt>
-        <dd>{deckFormatLabel(detail.format ?? "standard", t)}</dd>
-        <dt>{t("tournaments.create.bestOf")}</dt>
-        <dd>{t("tournaments.bestOf", { count: detail.bestOf })}</dd>
-        <dt>{t("tournaments.create.banlist")}</dt>
-        <dd>{banlistLabel}</dd>
-      </dl>
-      <div className="tournaments-badges">
-        {detail.topCutEnabled ? <Badge tone="success">{t("tournaments.badge.topCut")}</Badge> : null}
-        {detail.allowBots ? <Badge tone="warning">{t("tournaments.badge.bots")}</Badge> : null}
-      </div>
-    </Panel>
-  );
+  const formatPanel = <TournamentFormatPanel detail={detail} />;
 
   const schedulePanel = (
     <Panel>
       <h3>{t("tournaments.detail.schedule")}</h3>
-      <TournamentScheduleTimeline startsAt={detail.startsAt} windows={detail.windows} />
+      <TournamentScheduleTimeline startsAt={detail.startsAt} windows={detail.windows} phases={detail.phases} />
       <dl className="tournaments-detail__kv">
         <dt>{t("tournaments.slotsLabel")}</dt>
         <dd>{t("tournaments.slots", { registered: detail.registeredCount, max: detail.maxPlayers })}</dd>
@@ -269,14 +249,15 @@ export function TournamentDetail({
     />
   ) : null;
 
+  const listedParticipants = detail.participants.filter((participant) => participant.status !== "dropped");
   const playersPanel = (
     <Panel>
       <h3>{t("tournaments.detail.participants")}</h3>
-      {detail.participants.length === 0 ? (
+      {listedParticipants.length === 0 ? (
         <p>{t("tournaments.detail.noParticipants")}</p>
       ) : (
         <ul className="tournaments-participants">
-          {detail.participants.map((participant) => (
+          {listedParticipants.map((participant) => (
             <li key={participant.id} data-bot={participant.kind === "bot" || undefined}>
               {participant.kind === "bot" ? (
                 <TournamentBotPortrait size="small" />
@@ -332,17 +313,11 @@ export function TournamentDetail({
     <Panel>
       <h3>{t("tournaments.detail.standings")}</h3>
       {detail.standings?.length ? (
-        <ol className="tournaments-standings">
-          {detail.standings.map((row) => (
-            <li key={row.participantId}>
-              <span>#{row.rank}</span>
-              <span>
-                {detail.participants.find((p) => p.id === row.participantId)?.displayName ?? row.participantId}
-              </span>
-              <span>{t("tournaments.detail.points", { points: row.points })}</span>
-            </li>
-          ))}
-        </ol>
+        <TournamentStandingsTable
+          standings={detail.standings}
+          participants={detail.participants}
+          rules={detail.rules}
+        />
       ) : (
         <p>{t("tournaments.detail.standingsPending")}</p>
       )}
@@ -387,8 +362,7 @@ export function TournamentDetail({
           </span>
           <span>
             <Icons.LayoutGrid size={14} aria-hidden="true" />
-            {t(structureKey(detail.structure))}
-            {detail.topCutEnabled ? ` + ${t("tournaments.badge.topCut")}` : ""}
+            {describeTournamentStructure({ detail, t })}
           </span>
           <span>
             <Icons.Swords size={14} aria-hidden="true" />
@@ -398,6 +372,12 @@ export function TournamentDetail({
             <Icons.Users size={14} aria-hidden="true" />
             {t("tournaments.slots", { registered: detail.registeredCount, max: detail.maxPlayers })}
           </span>
+          {detail.status === "finished" && detail.winnerDisplayName ? (
+            <span>
+              <Icons.Trophy size={14} aria-hidden="true" />
+              {t("tournaments.catalog.winner", { player: detail.winnerDisplayName })}
+            </span>
+          ) : null}
         </div>
         {detail.description ? <p className="tournaments-description">{detail.description}</p> : null}
       </header>

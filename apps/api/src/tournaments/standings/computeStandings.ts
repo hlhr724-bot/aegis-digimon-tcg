@@ -31,6 +31,12 @@ export type StandingsTiebreaker =
   // Average of the opponents' OMW% (OOMW%), used by the World Championship ruleset.
   | "opponent_opponent_match_win_rate"
   | "head_to_head"
+  | "match_wins"
+  | "game_win_rate"
+  | "game_difference"
+  | "opponent_points"
+  | "defeated_opponent_points"
+  | "last_opponent_rank"
   | "judge_random_draw"
   | "extra_match";
 
@@ -40,6 +46,12 @@ const RESOLVABLE_TIEBREAKERS = new Set<StandingsTiebreaker>([
   "opponent_match_win_rate",
   "opponent_opponent_match_win_rate",
   "head_to_head",
+  "match_wins",
+  "game_win_rate",
+  "game_difference",
+  "opponent_points",
+  "defeated_opponent_points",
+  "last_opponent_rank",
   "judge_random_draw",
 ]);
 
@@ -104,6 +116,11 @@ export type StandingsDetailRow = StandingsRow & {
   // raised to the ruleset floor -- what the opponents' averages consume.
   flooredMatchWinRate: number;
   opponentOpponentMatchWinRate: number;
+  gameWinRate: number;
+  gameDifference: number;
+  opponentPoints: number;
+  defeatedOpponentPoints: number;
+  lastOpponentRank: number | null;
   // Matches against `kind: "bot"` opponents. Whether they fed the rates above
   // is `botOpponentsIncluded` on the report.
   botOpponentMatches: number;
@@ -135,6 +152,9 @@ type Accumulator = {
   // Opponents of rated (non-bye) matches, one entry per match played: an
   // opponent met twice is listed twice and therefore weighs twice in OMW%.
   ratedOpponents: RatedOpponent[];
+  defeatedOpponentIds: string[];
+  gamesWon: number;
+  gamesLost: number;
   botOpponentMatches: number;
 };
 
@@ -180,6 +200,9 @@ function emptyAccumulator(id: string, seed: number | null): Accumulator {
     ratedRounds: 0,
     ratedPoints: 0,
     ratedOpponents: [],
+    defeatedOpponentIds: [],
+    gamesWon: 0,
+    gamesLost: 0,
     botOpponentMatches: 0,
   };
 }
@@ -214,6 +237,9 @@ function collectAccumulators(input: ComputeStandingsInput): Map<string, Accumula
       accumulator.botOpponentMatches += 1;
     }
 
+    accumulator.gamesWon += entry.gamesWon ?? 0;
+    accumulator.gamesLost += entry.gamesLost ?? 0;
+    if (entry.outcome === "win" && entry.opponentId !== null) accumulator.defeatedOpponentIds.push(entry.opponentId);
     if (entry.outcome === "win") accumulator.wins += 1;
     else if (entry.outcome === "draw") accumulator.draws += 1;
     else if (isLossOutcome(entry.outcome)) accumulator.losses += 1;
@@ -235,6 +261,23 @@ function rawMatchWinRate(accumulator: Accumulator, scoring: TournamentRules["sta
   const maximumPerRound = scoring.winPoints;
   if (accumulator.ratedRounds === 0 || maximumPerRound <= 0) return 0;
   return accumulator.ratedPoints / (accumulator.ratedRounds * maximumPerRound);
+}
+
+function lastOpponentOf(ledger: readonly LedgerEntry[]): Map<string, string> {
+  const latest = new Map<string, { round: number; opponentId: string }>();
+  for (const entry of ledger) {
+    if (entry.opponentId === null) continue;
+    const current = latest.get(entry.participantId);
+    if (!current || entry.roundNumber > current.round) {
+      latest.set(entry.participantId, { round: entry.roundNumber, opponentId: entry.opponentId });
+    }
+  }
+  return new Map([...latest].map(([participantId, { opponentId }]) => [participantId, opponentId]));
+}
+
+function gameWinRate(accumulator: Accumulator): number {
+  const games = accumulator.gamesWon + accumulator.gamesLost;
+  return games === 0 ? 0 : accumulator.gamesWon / games;
 }
 
 type OpponentAverage = { rate: number; unratedMatches: number };
@@ -311,6 +354,7 @@ export function computeStandingsReport(input: ComputeStandingsInput): StandingsR
     );
   }
 
+  const pointsOf = (id: string) => accumulators.get(id)?.points ?? 0;
   const rows = [...accumulators.values()].map((accumulator) => ({
     participantId: accumulator.id,
     rank: 0,
@@ -319,6 +363,11 @@ export function computeStandingsReport(input: ComputeStandingsInput): StandingsR
     flooredMatchWinRate: flooredRates.get(accumulator.id) ?? floor,
     opponentMatchWinRate: opponentMatchWinRates.get(accumulator.id) ?? floor,
     opponentOpponentMatchWinRate: opponentOpponentMatchWinRates.get(accumulator.id) ?? floor,
+    gameWinRate: gameWinRate(accumulator),
+    gameDifference: accumulator.gamesWon - accumulator.gamesLost,
+    opponentPoints: accumulator.ratedOpponents.reduce((total, opponent) => total + pointsOf(opponent.id), 0),
+    defeatedOpponentPoints: accumulator.defeatedOpponentIds.reduce((total, id) => total + pointsOf(id), 0),
+    lastOpponentRank: null as number | null,
     wins: accumulator.wins,
     losses: accumulator.losses,
     draws: accumulator.draws,
@@ -330,6 +379,20 @@ export function computeStandingsReport(input: ComputeStandingsInput): StandingsR
     unratedOpponentMatches: unratedOpponentMatches.get(accumulator.id) ?? 0,
   }));
 
+  if (tiebreakers.includes("last_opponent_rank")) {
+    const provisional = rankStandingsRows({
+      rows,
+      ledger: input.ledger,
+      tiebreakers: tiebreakers.filter((tiebreaker) => tiebreaker !== "last_opponent_rank"),
+      drawSeed: input.drawSeed ?? "",
+    });
+    const provisionalRank = new Map(provisional.map((row, index) => [row.participantId, index + 1]));
+    const lastOpponents = lastOpponentOf(input.ledger);
+    for (const row of rows) {
+      const opponentId = lastOpponents.get(row.participantId);
+      row.lastOpponentRank = opponentId === undefined ? null : (provisionalRank.get(opponentId) ?? null);
+    }
+  }
   const ranked = rankStandingsRows({ rows, ledger: input.ledger, tiebreakers, drawSeed: input.drawSeed ?? "" });
   ranked.forEach((row, index) => {
     row.rank = index + 1;
@@ -353,5 +416,11 @@ export function computeStandings(input: ComputeStandingsInput): StandingsRow[] {
     losses: row.losses,
     draws: row.draws,
     byes: row.byes,
+    gameWinRate: row.gameWinRate,
+    opponentOpponentMatchWinRate: row.opponentOpponentMatchWinRate,
+    opponentPoints: row.opponentPoints,
+    defeatedOpponentPoints: row.defeatedOpponentPoints,
+    gameDifference: row.gameDifference,
+    ...(row.lastOpponentRank === null ? {} : { lastOpponentRank: row.lastOpponentRank }),
   }));
 }

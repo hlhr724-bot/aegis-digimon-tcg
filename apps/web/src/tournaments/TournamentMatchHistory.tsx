@@ -1,5 +1,6 @@
 import { Badge, Panel } from "@/design/primitives";
 import { useTranslation } from "@/i18n/useTranslation";
+import { describePresence } from "@/tournaments/describePresence";
 import { matchStatusKey } from "@/tournaments/labels";
 import { isTournamentSeriesLive } from "@/tournaments/isTournamentSeriesLive";
 import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
@@ -13,7 +14,7 @@ type Props = {
 };
 
 export function TournamentMatchHistory({ detail, onWatchMatch }: Props) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   return (
     <Panel>
       <h3>{t("tournaments.detail.matches")}</h3>
@@ -40,6 +41,7 @@ export function TournamentMatchHistory({ detail, onWatchMatch }: Props) {
                 : undefined;
             const winnerAccountId = series?.winnerParticipantId ?? match.winnerAccountId;
             const live = isTournamentSeriesLive(series);
+            const presentAt = match.status === "bye" ? undefined : series?.presentAt;
             const winner = detail.participants.find(
               (participant) =>
                 participant.id === winnerId || (winnerAccountId !== null && participant.accountId === winnerAccountId),
@@ -61,6 +63,15 @@ export function TournamentMatchHistory({ detail, onWatchMatch }: Props) {
                   <Badge>{t(matchStatusKey(match.status))}</Badge>
                 )}
                 {winner ? <strong>{t("tournaments.history.winner", { player: winner.displayName })}</strong> : null}
+                {presentAt?.some((at) => at !== null) ? (
+                  <small className="tournaments-match-presence">
+                    {t("tournaments.history.ready", {
+                      times: names
+                        .map((player, seat) => describePresence({ player, at: presentAt[seat] ?? null, locale, t }))
+                        .join(" · "),
+                    })}
+                  </small>
+                ) : null}
                 {live && detail.id && detail.canSpectate && onWatchMatch ? (
                   <TournamentWatchButton
                     target={{ tournamentId: detail.id, matchId: match.id }}

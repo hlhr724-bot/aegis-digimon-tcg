@@ -1,6 +1,7 @@
 import { tournamentCircuitsFr } from "@/i18n/tournamentCircuits.fr";
 import { tournamentOfficialRequestFr } from "@/i18n/tournamentOfficialRequest.fr";
 import { matchQueueFr } from "@/i18n/matchQueue.fr";
+import { matchIntroFr } from "@/i18n/matchIntro.fr";
 import { staffRolesFr } from "@/i18n/staffRoles.fr";
 import { tournamentDetailFr } from "@/i18n/tournamentDetail.fr";
 import { tournamentSpectatorsFr } from "@/i18n/tournamentSpectators.fr";
@@ -2143,7 +2144,34 @@ const interfaceMessages = {
   "tournaments.reason.passwordInvalid": "Use at most 128 characters for the event password.",
   "tournaments.reason.incorrectPassword": "The event password is incorrect.",
   "tournaments.play.join": "Enter game",
-  "tournaments.play.ready": "I am ready",
+  "tournaments.play.ready": "Ready",
+  "tournaments.presence.label": "Ready",
+  "tournaments.presence.at": "{player}: {time}",
+  "tournaments.presence.notYet": "{player}: not yet",
+  "tournaments.history.ready": "Ready: {times}",
+  "tournaments.schedule.roundStarted": "Round {round} started",
+  "tournaments.schedule.phaseRoundStarted": "{round} started",
+  "tournaments.structure.roundRobin": "Toutes rondes",
+  "tournaments.reason.topCutSizeInvalid":
+    "Choisissez une taille de Top Cut dans la liste, et activez d'abord le Top Cut.",
+  "tournaments.reason.roundsInvalid": "Choisissez de 1 à 10 rondes. Seuls les événements suisses peuvent le régler.",
+  "tournaments.reason.tiebreakersInvalid":
+    "Choisissez au moins un critère de départage, sans doublon, parmi ceux de cette structure.",
+  "tournaments.standings.tiebreakOrder":
+    "Les égalités de points sont départagées dans cet ordre : {order}. Un tirage au sort règle toute égalité restante.",
+  "tournaments.reason.pointsInvalid":
+    "Utilisez des nombres entiers de 0 à 10. Une victoire doit valoir plus qu'un nul, et un nul au moins autant qu'une défaite.",
+  "tournaments.badge.noTopCut": "No Top Cut (too few players)",
+  "tournaments.standings.rank": "Rank",
+  "tournaments.standings.player": "Player",
+  "tournaments.standings.points": "Points",
+  "tournaments.standings.record": "W-L-D",
+  "tournaments.standings.matchWinRate": "MW%",
+  "tournaments.standings.opponentMatchWinRate": "OMW%",
+  "tournaments.standings.byes": "+{count} bye",
+  "tournaments.standings.tiebreakNote":
+    "Ties on points are broken by match win rate (MW%), then opponents' match win rate (OMW%), then head-to-head.",
+  "tournaments.catalog.winner": "Winner: {player}",
   "tournaments.play.waitingGame": "Waiting for your assigned opponent to enter this tournament game.",
   "tournaments.play.waiting": "Waiting for the opponent to confirm presence.",
   "tournaments.pairings.title": "Adjust pairings",
@@ -2162,8 +2190,7 @@ const interfaceMessages = {
   "tournaments.create.structure": "Structure",
   "tournaments.create.bestOf": "Durée du match",
   "tournaments.create.topCut": "Top Cut",
-  "tournaments.create.topCutDesc":
-    "À la fin, les meilleurs joueurs des rondes suisses accèdent à un tableau à élimination directe.",
+  "tournaments.create.topCutDesc": "À la fin, les meilleurs joueurs passent dans un tableau à élimination.",
   "tournaments.create.allowBots": "Autoriser les bots",
   "tournaments.create.allowBotsDesc": "Remplit les places vides avec des bots à la clôture du check-in.",
   "tournaments.create.banlist": "Cartes interdites",
@@ -2253,7 +2280,7 @@ const interfaceMessages = {
   "tournaments.reason.nameTooLong": "Ce nom est trop long.",
   "tournaments.reason.structureInvalid": "Choisissez les rondes suisses ou l’élimination directe.",
   "tournaments.reason.bestOfInvalid": "Choisissez une ou trois manches.",
-  "tournaments.reason.topCutRequiresSwiss": "Le Top Cut ne fonctionne qu'avec un tournoi en rondes suisses.",
+  "tournaments.reason.topCutRequiresSwiss": "Le Top Cut ne fonctionne qu'avec le système suisse ou toutes rondes.",
   "tournaments.reason.banlistModeUnknown": "Nous ne reconnaissons pas cette option de cartes interdites.",
   "tournaments.reason.banlistSetUnknown": "Nous n'avons pas de date de sortie confirmée pour cette extension.",
   "tournaments.reason.maxPlayersOutOfRange": "Choisissez une limite de joueurs entre 2 et 1024.",
@@ -2415,7 +2442,9 @@ const interfaceMessages = {
   "deck.artCopyPrompt": "Choisissez un exemplaire",
   "deck.artEditingCopy":
     "Modification de l'exemplaire {number}. Choisissez une illustration pour l'enregistrer immédiatement.",
-  "deck.artApplyAll": "Utiliser sur tous les exemplaires",
+  "deck.artAllCopies": "Tous les exemplaires",
+  "deck.artEditingAllCopies":
+    "Modification de tous les exemplaires. Choisissez une illustration pour l'enregistrer immédiatement.",
   "deck.artDoubleClickHint": "Double-cliquez sur une illustration pour l'utiliser sur tous les exemplaires de ce deck.",
   "common.done": "Terminé",
   "redesign.foundation.arena.preview": "Aperçu du plateau avec vos couleurs et votre champ de bataille",
@@ -2966,6 +2995,7 @@ const interfaceMessages = {
   ...tournamentCircuitsFr,
   ...tournamentOfficialRequestFr,
   ...matchQueueFr,
+  ...matchIntroFr,
   ...staffRolesFr,
   ...achievementsFr,
   "profile.filter.deck": "Deck",
