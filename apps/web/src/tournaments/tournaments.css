@@ -1274,9 +1274,10 @@
 }
 
 .tournaments-standings-table tbody th {
+  min-width: 8rem;
   font-weight: 500;
   white-space: normal;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .tournaments-standings-table td:first-child {
