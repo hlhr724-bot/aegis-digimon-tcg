@@ -495,10 +495,22 @@
   box-shadow: none !important;
 }
 
-.game-board[data-board-style="arena3d"]
-  .arena-3d-field
-  :is(.game-pile__label, .game-breeding-slot > :not(.game-breeding-slot__box)) {
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-pile__label {
   display: none;
+}
+
+.game-board[data-board-style="arena3d"] .arena-3d-field .game-breeding-slot > :not(.game-breeding-slot__box),
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  :is(.game-breeding-slot__empty, .arena-3d-row__empty) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
@@ -711,4 +723,19 @@
     ) {
     transition: none;
   }
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  :is(.game-egg-deck--hatchable .game-pile__top, .game-breeding-slot--focus .game-breeding-slot__box):not(
+    :focus-visible
+  ) {
+  outline: none !important;
+}
+
+.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .arena-3d-field
+  .game-security-pile
+  :is(.game-security-cards, .game-security-cards *) {
+  pointer-events: none !important;
 }

@@ -63,10 +63,6 @@
   box-shadow: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-row__empty {
-  display: none;
-}
-
 .arena-3d-row__effects-anchor {
   position: absolute;
   height: 1px;
