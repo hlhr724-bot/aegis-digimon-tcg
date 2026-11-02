@@ -194,6 +194,15 @@
   font-variant-numeric: tabular-nums;
 }
 
+.tournaments-row__winner {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ds-text-2);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
 .tournaments-row__status .tournaments-progress {
   width: 100%;
 }

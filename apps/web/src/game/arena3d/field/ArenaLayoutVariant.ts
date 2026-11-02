@@ -10,6 +10,23 @@ type ArenaLayoutVariantShape = {
   zones: ArenaZoneSlots;
   memoryScale: number;
   pitchDegrees: number;
+  aura: ArenaAuraTuning;
+};
+
+type ArenaAuraTuning = {
+  strength: number;
+  centerFade: number;
+  boundsFade: number;
+  screenFadeX: number;
+  wash: boolean;
+};
+
+const ROOMY_AURA: ArenaAuraTuning = {
+  strength: 1,
+  centerFade: 2,
+  boundsFade: 1.4,
+  screenFadeX: 0.12,
+  wash: false,
 };
 
 const WIDE_ZONES: ArenaZoneSlots = {
@@ -64,6 +81,7 @@ export const ArenaLayoutVariant = {
     zones: WIDE_ZONES,
     memoryScale: 1,
     pitchDegrees: 62,
+    aura: ROOMY_AURA,
   },
   SHORT: {
     name: "SHORT",
@@ -73,6 +91,7 @@ export const ArenaLayoutVariant = {
     zones: SHORT_ZONES,
     memoryScale: 1,
     pitchDegrees: 62,
+    aura: ROOMY_AURA,
   },
   TALL: {
     name: "TALL",
@@ -82,6 +101,7 @@ export const ArenaLayoutVariant = {
     zones: TALL_ZONES,
     memoryScale: 0.5,
     pitchDegrees: 66,
+    aura: { strength: 1, centerFade: 0.9, boundsFade: 0.6, screenFadeX: 0.04, wash: true },
   },
 } as const satisfies Record<string, ArenaLayoutVariantShape>;
 

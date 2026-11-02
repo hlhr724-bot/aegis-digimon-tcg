@@ -1,3 +1,4 @@
+import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
 import type { ParticipantRecord, ParticipantResult } from "#api/tournaments/participants/ParticipantStore";
 import { swapTournamentPairings } from "#api/tournaments/pairing/swapTournamentPairings";
 import { randomUUID } from "node:crypto";
@@ -638,5 +639,7 @@ function reasonCodeOf(decision: SeriesDecision): string {
 function seriesDurationMs(tournament: Tournament): number | null {
   const match = tournament.rules?.match;
   if (!match) return null;
-  return tournament.structure === "swiss" ? match.swissDurationMs : (match.topCutDurationMs ?? match.finalDurationMs);
+  return playsScoredRounds(tournament.structure)
+    ? match.swissDurationMs
+    : (match.topCutDurationMs ?? match.finalDurationMs);
 }

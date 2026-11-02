@@ -7,6 +7,7 @@ import { ARENA_CADENCE_WINDOW_FRAMES, judgeArenaFrameCadence } from "@/game/aren
 type Props = {
   automatic: boolean;
   canDowngrade: boolean;
+  lowestTier: boolean;
   frameRate: number;
   activity: RefObject<ArenaActivity>;
   onDowngrade: () => void;
@@ -24,6 +25,7 @@ const WARMUP_MILLISECONDS = 2500;
 export function ArenaQualityGovernor({
   automatic,
   canDowngrade,
+  lowestTier,
   frameRate,
   activity,
   onDowngrade,
@@ -66,6 +68,7 @@ export function ArenaQualityGovernor({
       lateFrames: scene.lateFrames - current.lateFrames,
       frameRate: target,
       canDowngrade: automatic && canDowngrade,
+      lowestTier,
     });
     if (verdict === ArenaCadenceVerdict.KEEP.value) {
       cadenceWindow.current = { startedAt: now, renderedFrames: scene.renderedFrames, lateFrames: scene.lateFrames };

@@ -7,11 +7,13 @@ type Params = {
   auraColor: Color;
   aura: number;
   time: number;
+  flowing: boolean;
 };
 
-export function applyArenaCardGlow({ material, rim, auraColor, aura, time }: Params): void {
+export function applyArenaCardGlow({ material, rim, auraColor, aura, time, flowing }: Params): void {
   const uniforms = material.uniforms;
   uniforms.uTime!.value = time;
+  uniforms.uFlow!.value = flowing ? 1 : 0;
   if (rim) {
     uniforms.uColor!.value.set(rim.color);
     uniforms.uStrength!.value = rim.strength;

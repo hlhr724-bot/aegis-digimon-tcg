@@ -667,3 +667,85 @@ function replayTournament(trail: readonly TournamentEvent[]): ReplayedTournament
   }
   return replayed;
 }
+
+describe("a round robin event with organizer settings", () => {
+  it("pairs everyone once, keeps the chosen tiebreakers, and cuts to the chosen Top 2", async () => {
+    const field = PLAYERS.slice(0, 5);
+    const created = await request("POST", "/tournaments", "organizer", {
+      name: "League Night",
+      structure: "round_robin",
+      bestOf: 1,
+      topCut: true,
+      topCutSize: 2,
+      tiebreakers: ["head_to_head", "game_difference"],
+      startsAt: Date.now() + 30 * 60_000,
+      maxPlayers: field.length,
+      banlist: { mode: "current" },
+    });
+    expect(created.status).toBe(201);
+    tournamentId = created.body.id;
+
+    for (const name of field) {
+      const deck = await request("PUT", "/account/decks", name, {
+        name: "Competitive",
+        mainDeck: [...RED_DECK.mainDeck],
+        eggDeck: [...RED_DECK.eggDeck],
+      });
+      expect(
+        (await request("POST", `/tournaments/${tournamentId}/participants`, name, { savedDeckId: deck.body.id }))
+          .status,
+      ).toBe(201);
+      expect((await request("POST", `/tournaments/${tournamentId}/check-in`, name)).status).toBe(200);
+    }
+
+    const closed = await request("POST", `/tournaments/${tournamentId}/close-check-in`, "organizer");
+    expect(closed.status).toBe(200);
+    expect(closed.body.phase.plannedRounds).toBe(5);
+
+    for (let round = 1; round <= 5; round += 1) {
+      const pending = await openMatches();
+      expect(pending).toHaveLength(2);
+      for (const match of pending) {
+        const conceded = await request(
+          "POST",
+          `/tournaments/${tournamentId}/arbitration/matches/${match.matchId}/concede`,
+          match.seats[1],
+          { reason: "cannot continue the event" },
+        );
+        expect(conceded.status).toBe(200);
+      }
+    }
+
+    const ledger = await accounts.pool.query<{ participant_id: string; opponent_id: string | null; outcome: string }>(
+      "SELECT participant_id, opponent_id, outcome FROM tournament_result_ledger WHERE tournament_id=$1",
+      [tournamentId],
+    );
+    const meetings = ledger.rows
+      .filter((row) => row.opponent_id !== null && row.participant_id < row.opponent_id)
+      .map((row) => `${row.participant_id}-${row.opponent_id}`);
+    expect(meetings).toHaveLength(10);
+    expect(new Set(meetings).size).toBe(10);
+    const byes = ledger.rows.filter((row) => row.outcome === "bye").map((row) => row.participant_id);
+    expect(new Set(byes).size).toBe(5);
+
+    const detail = await request("GET", `/tournaments/${tournamentId}`, "organizer");
+    expect(detail.body.structure).toBe("round_robin");
+    expect(detail.body.topCutSize).toBe(2);
+    expect(detail.body.rules.standings.tiebreakers).toEqual(["head_to_head", "game_difference", "judge_random_draw"]);
+    const cutPhase = detail.body.phases.find((phase: Wire) => phase.kind === "top_cut");
+    expect(cutPhase.status).toBe("running");
+
+    const finals = await openMatches();
+    expect(finals).toHaveLength(1);
+    const conceded = await request(
+      "POST",
+      `/tournaments/${tournamentId}/arbitration/matches/${finals[0]!.matchId}/concede`,
+      finals[0]!.seats[1],
+      { reason: "cannot continue the event" },
+    );
+    expect(conceded.status).toBe(200);
+    const finished = await accounts.tournament(tournamentId);
+    expect(finished?.status).toBe("finished");
+    expect(finished?.winnerAccountId).toBe(finals[0]!.seats[0]);
+  }, 120_000);
+});

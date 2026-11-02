@@ -8,7 +8,8 @@ three aligned.
 
 Aegis is a calm, precise card table. The color comes from the cards. The
 **bits backdrop** (`PixelBackdrop`) is the brand: mirrored 4×4 pixel glyphs in
-the seven card inks, falling behind every screen except the match. Everything
+the seven card inks, falling behind every screen except the match board. The
+VS intro before a match also shows them, dimmed toward the center. Everything
 else stays quiet so the bits and the cards carry the personality.
 
 Hierarchy comes from type, spacing, and grouping before containers or effects.
@@ -137,7 +138,8 @@ on `<html>`. In system mode, the store follows the device setting live.
 The backdrop is the one product-owner exception to "no indefinite decorative
 motion". It runs at 10 fps behind all content, never takes pointer events, stops
 while the tab is hidden, and never runs under reduced motion. Do not extend it
-to any other surface.
+to any other surface. The match intro mounts the same backdrop for its
+few seconds on screen, which is the only other allowed use.
 
 ## Accessibility
 

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { type FieldEffectView } from "@aegis/shared";
 import { Layers, Clock } from "lucide-react";
 import { fieldEffectExpiry } from "@/game/fieldEffectExpiry";
+import { isHarmfulFieldEffect } from "@/game/isHarmfulFieldEffect";
 import { readFieldEffects } from "@/game/readFieldEffects";
 import { useTranslation, type TranslationKey } from "../../../i18n";
 import "./fieldEffects.css";
@@ -24,6 +25,31 @@ const restrictionLabels: Record<string, TranslationKey> = {
   play: "game.restriction.cannotPlay",
   playOrMove: "game.restriction.cannotPlay",
 };
+
+const BADGE_WIDTH = 64;
+const BADGE_HEIGHT = 44;
+const ORB_GAP = 4;
+
+type OrbAvoidance = {
+  field: Element;
+  ownField: boolean;
+  right: number;
+  top: number;
+  badge: HTMLElement | null;
+};
+
+function avoidTurnOrb({ field, ownField, right, top, badge }: OrbAvoidance): number {
+  const orb = (field.closest(".game-board") ?? field).querySelector(".game-end-turn-orb")?.getBoundingClientRect();
+  if (!orb || orb.width === 0) return top;
+  const size = badge?.getBoundingClientRect();
+  const width = size?.width || BADGE_WIDTH;
+  const height = size?.height || BADGE_HEIGHT;
+  const badgeRight = window.innerWidth - right;
+  const overlapsX = badgeRight > orb.left - ORB_GAP && badgeRight - width < orb.right + ORB_GAP;
+  const overlapsY = top + height > orb.top - ORB_GAP && top < orb.bottom + ORB_GAP;
+  if (!overlapsX || !overlapsY) return top;
+  return ownField ? orb.bottom + ORB_GAP : orb.top - ORB_GAP - height;
+}
 
 export function FieldEffectsIndicator({
   json,
@@ -61,11 +87,10 @@ export function FieldEffectsIndicator({
       // The outer edge is outside the cards and their paging controls. A portal
       // keeps the touch target clear of row clipping without reserving lane space.
       const compact = window.matchMedia("(max-width: 959px)").matches;
-      const top = compact ? (ownField ? bounds.bottom - 30 : bounds.top - 28) : bounds.top + 4;
-      const next =
-        top >= visible.top && top + 44 <= visible.bottom
-          ? { right: Math.max(8, window.innerWidth - Math.min(bounds.right, visible.right) + 4), top }
-          : undefined;
+      const right = Math.max(8, window.innerWidth - Math.min(bounds.right, visible.right) + 4);
+      const preferredTop = compact ? (ownField ? bounds.bottom - 30 : bounds.top - 28) : bounds.top + 4;
+      const top = avoidTurnOrb({ field: field!, ownField, right, top: preferredTop, badge: details.current });
+      const next = top >= visible.top && top + BADGE_HEIGHT <= visible.bottom ? { right, top } : undefined;
       setCorner((previous) => (previous?.right === next?.right && previous?.top === next?.top ? previous : next));
     }
     const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(measure);
@@ -147,9 +172,7 @@ export function FieldEffectsIndicator({
     }
   }
   const summary = effects.length === 1 ? label(effects[0]!) : t("game.fieldEffects.count", { count: effects.length });
-  const harmful = effects.some(
-    (effect) => effect.kind === "restriction" || (effect.kind === "dp" && Number(effect.value) < 0),
-  );
+  const harmful = effects.some(isHarmfulFieldEffect);
   if (effects.length === 0) return null;
   const badge = (
     <details

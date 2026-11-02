@@ -1,6 +1,7 @@
 import { tournamentCircuitsJa } from "@/i18n/tournamentCircuits.ja";
 import { tournamentOfficialRequestJa } from "@/i18n/tournamentOfficialRequest.ja";
 import { matchQueueJa } from "@/i18n/matchQueue.ja";
+import { matchIntroJa } from "@/i18n/matchIntro.ja";
 import { staffRolesJa } from "@/i18n/staffRoles.ja";
 import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
 import { tournamentSpectatorsJa } from "@/i18n/tournamentSpectators.ja";
@@ -1078,9 +1079,14 @@ const interfaceMessages = {
   "settings.noticeDuration": "通知の表示時間",
   "settings.noticeDurationDesc":
     "効果の通知とカードパネルを画面に表示しておく時間です。通知にマウスを重ねると表示されたままになります。",
+  "settings.noticeDurationShort": "短い",
   "settings.noticeDurationNormal": "普通",
   "settings.noticeDurationLong": "長い",
   "settings.noticeDurationLongest": "最長",
+  "settings.noticeSize": "通知のサイズ",
+  "settings.noticeSizeDesc": "効果の通知とカードパネルの大きさです。コンパクトにすると盤面が隠れにくくなります。",
+  "settings.noticeSizeNormal": "普通",
+  "settings.noticeSizeCompact": "コンパクト",
   "settings.groupIdenticalTamers": "同じテイマーをまとめる",
   "settings.groupIdenticalTamersDesc":
     "整理された場で同じテイマーをまとめて表示します。オフにすると各カードを個別に表示します。",
@@ -2106,7 +2112,31 @@ const interfaceMessages = {
   "tournaments.reason.passwordInvalid": "Use at most 128 characters for the event password.",
   "tournaments.reason.incorrectPassword": "The event password is incorrect.",
   "tournaments.play.join": "Enter game",
-  "tournaments.play.ready": "I am ready",
+  "tournaments.play.ready": "Ready",
+  "tournaments.presence.label": "Ready",
+  "tournaments.presence.at": "{player}: {time}",
+  "tournaments.presence.notYet": "{player}: not yet",
+  "tournaments.history.ready": "Ready: {times}",
+  "tournaments.schedule.roundStarted": "Round {round} started",
+  "tournaments.schedule.phaseRoundStarted": "{round} started",
+  "tournaments.structure.roundRobin": "総当たり",
+  "tournaments.reason.topCutSizeInvalid": "リストからトップカットの人数を選び、先にトップカットをオンにしてください。",
+  "tournaments.reason.roundsInvalid": "ラウンド数は1〜10で選んでください。設定できるのはスイスドローだけです。",
+  "tournaments.reason.tiebreakersInvalid": "この形式で使えるタイブレークから、重複なしで1つ以上選んでください。",
+  "tournaments.standings.tiebreakOrder": "同点のときは次の順で順位を決めます:{order}。それでも同じなら抽選で決めます。",
+  "tournaments.reason.pointsInvalid":
+    "0〜10の整数を使ってください。勝ちは引き分けより多く、引き分けは負け以上にしてください。",
+  "tournaments.badge.noTopCut": "No Top Cut (too few players)",
+  "tournaments.standings.rank": "Rank",
+  "tournaments.standings.player": "Player",
+  "tournaments.standings.points": "Points",
+  "tournaments.standings.record": "W-L-D",
+  "tournaments.standings.matchWinRate": "MW%",
+  "tournaments.standings.opponentMatchWinRate": "OMW%",
+  "tournaments.standings.byes": "+{count} bye",
+  "tournaments.standings.tiebreakNote":
+    "Ties on points are broken by match win rate (MW%), then opponents' match win rate (OMW%), then head-to-head.",
+  "tournaments.catalog.winner": "Winner: {player}",
   "tournaments.play.waitingGame": "Waiting for your assigned opponent to enter this tournament game.",
   "tournaments.play.waiting": "Waiting for the opponent to confirm presence.",
   "tournaments.pairings.title": "Adjust pairings",
@@ -2125,8 +2155,7 @@ const interfaceMessages = {
   "tournaments.create.structure": "形式",
   "tournaments.create.bestOf": "対戦形式",
   "tournaments.create.topCut": "トップカット",
-  "tournaments.create.topCutDesc":
-    "スイスドローの上位プレイヤーが、最後にシングルエリミネーションのトーナメントに進みます。",
+  "tournaments.create.topCutDesc": "最後に、上位の人がトーナメントに進みます。",
   "tournaments.create.allowBots": "ボットを許可",
   "tournaments.create.allowBotsDesc": "チェックインが終了したら、空席をボットで埋めます。",
   "tournaments.create.banlist": "禁止カード",
@@ -2214,7 +2243,7 @@ const interfaceMessages = {
   "tournaments.reason.nameTooLong": "名前が長すぎます。",
   "tournaments.reason.structureInvalid": "スイスドローまたはシングルエリミネーションを選択してください。",
   "tournaments.reason.bestOfInvalid": "1本先取または2本先取を選択してください。",
-  "tournaments.reason.topCutRequiresSwiss": "決勝トーナメントはスイスドローのトーナメントでのみ使えます。",
+  "tournaments.reason.topCutRequiresSwiss": "トップカットはスイスドローか総当たりでのみ使えます。",
   "tournaments.reason.banlistModeUnknown": "その禁止カードの設定は認識できません。",
   "tournaments.reason.banlistSetUnknown": "そのセットの発売日は確認できません。",
   "tournaments.reason.maxPlayersOutOfRange": "プレイヤー数の上限は2～1024の範囲で選んでください。",
@@ -2365,7 +2394,8 @@ const interfaceMessages = {
   "deck.kindDual": "デュアル",
   "deck.artCopyPrompt": "何枚目かを選んでください",
   "deck.artEditingCopy": "{number}枚目を編集中です。イラストを選ぶとすぐに保存されます。",
-  "deck.artApplyAll": "すべての同名カードに使う",
+  "deck.artAllCopies": "すべて",
+  "deck.artEditingAllCopies": "すべての同名カードを編集中です。イラストを選ぶとすぐに保存されます。",
   "deck.artDoubleClickHint": "イラストをダブルクリックすると、このデッキのすべての同名カードに使います。",
   "common.done": "完了",
   "redesign.foundation.arena.preview": "自分の色とバトルフィールドを反映した盤面のプレビュー",
@@ -2900,6 +2930,7 @@ const interfaceMessages = {
   ...tournamentCircuitsJa,
   ...tournamentOfficialRequestJa,
   ...matchQueueJa,
+  ...matchIntroJa,
   ...staffRolesJa,
   ...achievementsJa,
   "profile.filter.deck": "デッキ",

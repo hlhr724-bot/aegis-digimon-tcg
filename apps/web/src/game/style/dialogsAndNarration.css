@@ -304,7 +304,7 @@
   overflow: hidden;
   margin: 0;
   font-family: var(--ds-font-display);
-  font-size: 1.15rem;
+  font-size: max(var(--ds-text-sm), calc(1.15rem * var(--notice-text-scale, 1)));
   font-weight: 700;
   color: #fff;
   text-align: center;
@@ -362,9 +362,9 @@
    fans like a hand — each card partly over the one before it — so a six-card reveal
    still reads as one line at the panel's width instead of growing a second row. */
 .side-panel__cards {
-  --panel-card-w: 128px;
+  --panel-card-w: calc(128px * var(--notice-scale, 1));
   /* The row is the panel's width: the same panel whether it lists two cards or six. */
-  --panel-row-w: 19.5rem;
+  --panel-row-w: calc(19.5rem * var(--notice-scale, 1));
   /* Pitch between cards. Capped below the card's own width so the row always fans, and
      otherwise whatever divides the fixed row evenly. */
   --panel-card-step: min(
@@ -375,7 +375,8 @@
   display: flex;
   box-sizing: content-box;
   width: var(--panel-row-w);
-  padding: 1rem 0.9rem 1.1rem;
+  padding: calc(1rem * var(--notice-scale, 1)) calc(0.9rem * var(--notice-scale, 1))
+    calc(1.1rem * var(--notice-scale, 1));
   /* The row is a fixed width so the panel is the same whether it lists two cards or six,
      which leaves it narrower than the panel wherever the panel is wide — the phone's
      full-width slot most of all. `justify-content` centres the fan inside the row; this
@@ -487,11 +488,12 @@ button.side-panel__name:focus-visible {
   display: grid;
   /* The floor is the icon-bodied notices' height: with it, a recovery chip and
      an effect chip in the same stack read as one family rather than two sizes. */
-  min-height: 3.75rem;
+  min-height: calc(3.75rem * var(--notice-scale, 1));
   /* The right inset clears the corner close button. */
-  padding: 0.55rem 2.6rem 0.55rem 0.55rem;
+  padding: calc(0.55rem * var(--notice-scale, 1)) 2.6rem calc(0.55rem * var(--notice-scale, 1))
+    calc(0.55rem * var(--notice-scale, 1));
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.6rem;
+  gap: calc(0.6rem * var(--notice-scale, 1));
   align-items: center;
   /* The clause is what the player reads, so it leads; the art sits at the end of the row,
      against the top, as the badge that says which card is talking. */
@@ -555,8 +557,8 @@ button.side-panel__name:focus-visible {
 
 .match-notice__icon {
   display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: calc(2.25rem * var(--notice-scale, 1));
+  height: calc(2.25rem * var(--notice-scale, 1));
   border-radius: 0.5rem;
   color: #fff;
   background: rgb(255 255 255 / 10%);
@@ -588,9 +590,10 @@ button.side-panel__name:focus-visible {
 
 /* An effect notice reads text-first, with the card's picture at the end of the row. */
 .match-notice[data-variant="effect"] {
-  padding: 0.7rem 2.6rem 0.7rem 0.75rem;
+  padding: calc(0.7rem * var(--notice-scale, 1)) 2.6rem calc(0.7rem * var(--notice-scale, 1))
+    calc(0.75rem * var(--notice-scale, 1));
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.75rem;
+  gap: calc(0.75rem * var(--notice-scale, 1));
   align-items: start;
 }
 
@@ -637,7 +640,7 @@ button.side-panel__name:focus-visible {
 
 .match-notice__title {
   font-family: var(--ds-font-display);
-  font-size: 0.85rem;
+  font-size: max(var(--ds-text-xs), calc(0.85rem * var(--notice-text-scale, 1)));
   color: #fff;
   overflow-wrap: anywhere;
 }
@@ -658,7 +661,7 @@ button.side-panel__name:focus-visible {
    the part a player has to read to know what just resolved. */
 .match-notice__text {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: max(var(--ds-text-xs), calc(0.8rem * var(--notice-text-scale, 1)));
   line-height: 1.45;
   color: rgb(226 236 255 / 92%);
 }

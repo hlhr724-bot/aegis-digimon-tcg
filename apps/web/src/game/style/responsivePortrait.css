@@ -253,7 +253,8 @@
   }
 
   .side-panel__cards {
-    padding: 0.8rem 0.9rem 0.9rem;
+    padding: calc(0.8rem * var(--notice-scale, 1)) calc(0.9rem * var(--notice-scale, 1))
+      calc(0.9rem * var(--notice-scale, 1));
   }
 
   /* The memory band is one row, across the whole screen.

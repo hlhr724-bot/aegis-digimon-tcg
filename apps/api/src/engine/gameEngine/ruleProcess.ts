@@ -319,7 +319,9 @@ export async function flushRuleTriggerPool(engine: GameEngine, pool: readonly Po
   const replacementPending = takeLeaveReplacementPending(engine);
   if (pool.length === 0 && watcherEvents.length === 0 && replacementPending.length === 0) return;
   const armed = watcherEvents.flatMap(({ armed: eventArmed }) => eventArmed);
-  if (engine.optionResolutionDepth > 0 && engine.optionMainDepth === 0) {
+  const insideOptionUse = engine.optionResolutionDepth > 0 && engine.optionMainDepth === 0;
+  const insideResolvingEffect = engine.effectResolutionDepth > 0 && engine.activeWindowToken !== undefined;
+  if (insideOptionUse || insideResolvingEffect) {
     engine.pendingNestedTimingEffects.push(
       ...collectDeletionPending(engine, pool),
       ...ruleWatchersAsPending(engine, uniqueOncePerTurnWatcherOccurrences(armed)),

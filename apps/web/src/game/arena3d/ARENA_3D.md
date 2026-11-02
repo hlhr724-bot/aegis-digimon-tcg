@@ -195,6 +195,7 @@ The classic board is unchanged: it keeps the DOM `.game-breeding-mode` layer.
 - `buildArenaCardMaterial` draws rounded corners with a signed distance field and a thin frame (2.4% of the card width) with a dark hairline inside it. `ArenaPermanentMesh` tints the frame with the owner's side color. It skips tone mapping, so the card art keeps the colors of the printed card. A highlight recolors the frame with the rim color and pulses slowly (about 0.4 Hz).
 - `buildArenaCardGlowMaterial` draws a crisp rounded outline just outside the card plus a soft halo. It uses normal blending in light mode, so the outline stays visible on a light floor. In light mode (`uLight`), it also deepens the color and makes the ambient halo 2.2 times stronger, so the aura still shows on a light floor. `uOutline` switches the outline off for the ambient aura and widens the halo.
 - Ambient aura: every field card, pile, and security stack shows a faint halo in its side color. `applyArenaCardGlow` chooses between the highlight and the aura, so a highlight (selected, attackable, candidate, effect source) always replaces the aura with its outline and full strength.
+- The ambient aura moves. `buildArenaCardGlowMaterial` drives it with fbm noise sampled along the direction from the card centre, so wisps drift outward and swirl slowly around the card with no seam. The wisps also stretch the halo reach, and a fine value-noise grain gives it texture. Each card takes a seed from its world position, so neighbours do not move in step. Highlights (`uOutline`) skip the noise. Reduced motion freezes it (`uFlow`).
 - `getArenaAuraTarget` returns 0.1 at rest and 0.18 for the active side's cards, with a slow breath (about 10 s, 15% deep). Each mesh eases toward the target, so a turn change fades the aura across in about a second. Piles and security use 60% of that strength. Reduced motion removes the breath.
 - Textures without art show a flat dark card with a soft vertical gradient.
 - Sigils lie flat at y = 0.012, under the slot tiles (0.022) and the cards (0.04), so they never draw across a card.
@@ -278,7 +279,8 @@ Calm rules: lifts are 0.1 to 0.2 units, the flash peaks at 0.3, the spotlight di
 - Tiles mix the side color with cyan. They use additive blending in dark mode and normal blending in light mode.
 - Drop target: `ArenaLayoutSync` reads `data-drag-intent="play"` from each row proxy into `field.playDropSides`. That side's empty tiles fade to mint within about 0.1 s and breathe gently while the drag lasts.
 - Active side: its tiles are slightly brighter.
-- Field effects: `BoardStage` passes `readFieldEffects(...)` for each player to `Arena3dLayer`. `summarizeArenaFieldEffects` reduces them to `active` and `harmful`. A side with active effects tints its tiles gold, or red-orange when any effect is a restriction or a DP loss. The tint fades in over about 1 s and pulses slowly (period about 6 s).
+- Field effects: `BoardStage` passes `readFieldEffects(...)` for each player to `Arena3dLayer`. `summarizeArenaFieldEffects` reduces them to a tone (`ArenaFieldEffectTone`: none, helpful, or harmful), one mark per effect, and a signature for memoization. An effect is harmful when `isHarmfulFieldEffect` says so: a restriction, or a DP change below 0. The DOM `FieldEffectsIndicator` uses the same rule for its warning chip. A side with any harmful effect is harmful; otherwise any effect makes it helpful. That side's tiles take the tone color (`ArenaFieldEffectTone.color`). The tint fades in over about 1 s and pulses slowly (period about 6 s). The last tone stays while the tint fades out.
+- Field effect aura: see [Field effect aura](#field-effect-aura).
 - The DOM `FieldEffectsIndicator` stays the source of details. In 3D, `Arena3dPositionedRow` renders a `data-field-effects-anchor` element beside the slot grid (right of the viewer's Digimon row, left of the opponent's), and the indicator measures that anchor instead of the whole row. Without the anchor, as on the classic board, it measures the row as before.
 - Reduced motion freezes the pulses.
 - `ArenaPermanentMesh` stacks the top card, evolution sources, and linked cards, with a glow and a shadow plane. `ArenaZoneMesh` stacks layers for piles and security.
@@ -336,6 +338,28 @@ The blow that wins a match on security plays a short finale before the result sc
 
 `ArenaEnvironment.ts` lists `hologram`, `prism`, `grid`, `halo`, and `aurora`. Hologram is the default. `arenaEnvironmentPreference.ts` stores the choice under `aegis.arena-environment`, including a random option. `ArenaHologramFloor` is mostly static: no flowing bands, breathing wave, rotating ring, or moving ticks. On Medium and High a small vertex wave follows ripples only.
 
+### Field effect aura
+
+`fieldEffects/ArenaFieldEffectAura.tsx` shows each side's field effects on the floor, whoever's turn it is. It is separate from the active-side aura: that aura shows only on the active side, so it cannot carry a lasting effect.
+
+- Layout: one transparent plane per side at y = 0.008 with `renderOrder` -4. It draws above the active-side aura (-5) and below the slot tiles. Each plane covers that side's slot grid (`measureArenaSlotGrid`, which the active-side aura also uses) plus 1.6 units. The frame is the grid plus 0.18 units, with a 0.4-unit corner radius. The layer fades out toward the center line and toward the canvas edges (the layout's `aura.screenFadeX`).
+- One program (`buildFieldEffectAuraMaterial`) serves both sides. Each plane is hidden while its weight is below 0.001 and no arrival is running, so a field with no effects costs no fragments.
+- Colors come from `ArenaFieldEffectTone`:
+
+| Tone    | Dark mode | Light mode | Dark-mode blending |
+| ------- | --------- | ---------- | ------------------ |
+| Helpful | `#ffc94d` | `#c98000`  | Additive           |
+| Harmful | `#ff3352` | `#a3102a`  | Normal             |
+
+- Helpful (a warm glow that gives off energy): a thin gold rim around the grid with a soft halo and a faint fill. Two bright highlights circle the rim in opposite positions, about one turn every 9 s. Soft ripples roll outward from the inside toward the rim.
+- Harmful (a dark, pressing look): a red rim that beats like a heart, two beats every 2.4 s. The inside darkens with drifting fbm smoke (a sine pattern on Low, where `floorEnergy` is off). Ripples roll inward. In dark mode, harmful uses normal blending with a dark crimson fill (22% of the tone color), so it darkens the floor and does not read as one more pink glow on the default palette.
+- Arrival: when a side gains an effect, `findArenaFieldEffectArrival` compares the marks as multisets, so a second copy of the same effect also counts. A harmful arrival wins over a helpful one. The arrival lasts 1.3 s (`arenaFieldEffectAuraTiming`): the strength rises in 0.08 s, then decays with a squared curve (`getArenaFieldEffectArrivalStrength`). A ring travels for 0.9 s with a cubic ease-out (`getArenaFieldEffectArrivalProgress`). A helpful ring grows from the grid center out past the rim. A harmful ring closes in from outside the rim toward the center. The rim and the fill also flash. The arrival uses its own color, so a helpful arrival on a harmful field still flashes gold.
+- The first set of effects after mount gets no arrival. It only fades in, so a reconnect does not replay effects that already exist.
+- Fades: the weight rises at rate 5 and falls at rate 2.4 (`stepArenaFieldEffectWeight`), so an ending effect fades out in about 1 s.
+- Reduced motion: no arrival, and the highlights, heartbeat, ripples, and smoke drift stop. What remains is a still tint: the rim, the halo, and the fill.
+- Cost: one more shader program (24 to 25 at mount). `ArenaShaderWarmup` draws the hidden planes once, so the first field effect compiles nothing. Also up to two planes only while effects are active. The rim, ripple, and heartbeat use a few `exp` and `sin` calls. The smoke is a 3-octave fbm on harmful sides only, on Medium and High. No per-frame allocations beyond the small parameter objects the aura already uses.
+- Verified with a Playwright script in `.local/field-effects/` that patches the served `Arena3dLayer` to inject effects into the crowded demo, at 1440 x 900 and Pixel 7, in dark and light mode, and with reduced motion on Low.
+
 ### Active-side aura
 
 The active side's field glows with a soft energy wave, like the turn wash in Digimon Alysion. `ArenaActiveSideAura` draws it as its own layer, so it works on every environment. `Arena3dScene` mounts it once, after the environment scene.
@@ -357,6 +381,9 @@ The active side's field glows with a soft energy wave, like the turn wash in Dig
   - a crest line (gaussian, width 0.2) rolls in every 5.2 s at 1.6 units per second, with a 0.8-unit glow and a short wake, and fades out before the center line. At the 10 fps idle rate it moves less than its own width per frame, so it does not step;
   - the shimmer and scanlines run only where the strength is above 0.03, which skips the faint tail.
 - Crest highlights mix toward the side's accent color (`playerAccent` or `opponentAccent`), lifted 18% toward white in dark mode and 50% in light mode, so a crest reads as a sheen and not a dark smear on the light floor. Light mode also draws highlights at 70% strength.
+- Each layout carries `aura` tuning: strength, center fade, bounds fade, and the horizontal screen fade. Wide and short use 1, 2, 1.4, and 0.12. The tall phone layout uses 1.5, 0.9, 0.7, and 0.05: its board is so narrow that the default fades covered most of it and the wave was barely visible.
+- The tall phone layout uses a wash instead (`aura.wash`, `uWash`). Broad bands, noise, and scanlines read as pink smudges on a 384 px board. The wash has two parts. A soft glow pool sits over the player's field rows (a gaussian around the slot grid), plus a faint rise toward the baseline. Small sparks drift from the baseline toward the center line: a 0.7-unit cell grid with about 60% of cells lit, a random offset per cell, a fade in and out, and a twinkle. Earlier versions with ribbons, chevrons, a sweeping light band, and expanding ripples were rejected in review. The sweep and the finale surge still apply. Dark mode adds the sparks in the accent color lifted toward white. Light mode draws them in the side color mixed with the accent, with alpha up to 0.92, so they stay crisp on the light floor. Reduced motion keeps only the glow pool.
+- The tall phone layout does not mount `ArenaMemoryTrack`. It shows the classic 2D memory gauge instead (phase tag, segmented bar, current-value bubble, and end-turn orb). The 3D track keeps coin 0 at the board center, so on a 384 px phone the phase pill and the orb beside it capped it at about 250 px, and a fixed scale overflowed where the camera fits closer. The arena gauge overrides in `arena3dField.css` are scoped to `:not([data-arena-layout="tall"])`. The tall band only keeps its position on the center line, inset 0.5 rem from each edge. A turn tag beside a shifted 3D track and an end-turn control in the player bar were both tried first and rejected in review.
 - The base strength is 0.3. The average strength stays close to the earlier tint, so the aura is no stronger, only more structured.
 - The side color is muted before use: it moves 35% (dark) or 40% (light) toward its own grey, then 20% (dark) or 12% (light) toward the floor tone (`colors.surface`).
 - Dark mode adds the muted color at 0.24 strength with additive blending, so it reads as a calm glow. Light mode uses normal blending with alpha up to 0.5. On screen it reads as a soft tint, not a solid patch. `colors.isLight` picks the mode.
@@ -380,16 +407,17 @@ These are the desktop budgets. Phones and tablets use the touch budgets below. "
 
 ### Touch budgets
 
-`getArena3dDeviceClass` sorts the device into `Arena3dDeviceClass`: desktop, tablet, or phone. A device is touch-first when its primary pointer is coarse and it has no fine pointer at all (`(any-pointer: fine)` is false). A tablet has a short screen side of 600 CSS px or more. A touch laptop or an iPad with a trackpad counts as a desktop.
+`getArena3dDeviceClass` sorts the device into `Arena3dDeviceClass`: desktop, tablet, or phone. A device whose primary pointer is coarse and whose short screen side is under 600 CSS px is a phone, even when `(any-pointer: fine)` matches: Samsung phones with S Pen support report a fine pointer, so they used to get desktop budgets and render at DPR 2 on a 2.8 screen. A larger coarse-pointer device is a tablet when it has no fine pointer at all. A touch laptop or an iPad with a trackpad counts as a desktop.
 
 `resolveArena3dQuality` swaps every tier for its entry in `ARENA_3D_TOUCH_QUALITY` on a phone or tablet, for both `auto` and a tier the player picked. The entries are module constants, so the memoized scene keeps the same `quality` object between renders.
 
 | Tier   | Max DPR | Antialias | Frame rate | Texture width | Texture budget | Floor segments | Floor wave | Bloom | Shards |
 | ------ | ------- | --------- | ---------- | ------------- | -------------- | -------------- | ---------- | ----- | ------ |
 | Low    | 1.5     | No        | 30         | 384 px        | 32 MB          | 1 (2 tris)     | No         | No    | 3      |
-| Medium | 2       | No        | 30         | 512 px        | 64 MB          | 64 (8,192)     | Yes        | No    | 4      |
-| High   | 2       | Yes       | 30         | 768 px        | 112 MB         | 96 (18,432)    | Yes        | Yes   | 6      |
+| Medium | 2       | No        | 60         | 512 px        | 64 MB          | 64 (8,192)     | Yes        | No    | 4      |
+| High   | 3       | Yes       | 60         | 768 px        | 112 MB         | 96 (18,432)    | Yes        | Yes   | 6      |
 
+- Touch High is never probed; only a player who picks it gets it. It renders at native density (up to DPR 3) and 60 fps. At DPR 2 on a DPR 2.6 to 3 phone the canvas was upscaled, which blurred the cards, and 30 fps made attack and delete motion step visibly. The governor still halves to 30 when the device misses frames.
 - Desktop Low renders at DPR 1. On a DPR 3 phone that is a third of the native resolution, so touch Low uses 1.5 instead. Fill cost is still about a quarter of native.
 - Touch Medium has no MSAA. At DPR 2 the edges are already fine, the card and floor shaders antialias their own edges, and MSAA costs bandwidth on tile-based mobile GPUs. Low and Medium then share the same antialias setting, so an automatic downgrade from Medium to Low keeps the canvas and its GL context.
 - The desktop High floor is 160 x 160 segments (51,200 triangles) over a 90 x 90 plane, for a 0.12-unit vertex wave. Touch tiers use 64 or 96 segments.
@@ -412,7 +440,7 @@ These are the desktop budgets. Phones and tablets use the touch budgets below. "
 - `ArenaQualityGovernor` judges the cadence, not the median frame gap. `ArenaFrameDriver` counts rendered frames and late frames (a frame that came one or more vsyncs after its slot). After 2.5 s the governor takes windows of 120 rendered frames and calls `judgeArenaFrameCadence`. When more than 10% of a window is late:
   1. above 30 fps, it halves the frame rate (`activity.frameRateCap`): 60 becomes a steady 30;
   2. at 30 fps on `auto`, it asks for a tier downgrade, then judges again on the new tier;
-  3. at 30 fps when the tier cannot drop (Low, or a tier the player picked), it halves to a steady 15.
+  3. at 30 fps on Low, it halves to a steady 15. A tier the player picked above Low stays at 30: 15 fps made attacks and deletes stutter.
 - The cap never goes back up while the canvas lives, so the rate cannot oscillate. A tier the player picks is never downgraded, but its frame rate can still halve: the player chose the look, not the frame rate.
 - The old governor asked for a downgrade when the median gap of busy frames was over 24 ms. A device that held 45 fps (alternating 16 and 33 ms gaps at 60 fps) passed that test and stuttered forever. The late-frame share catches it.
 - A display capped at 30 Hz (iOS Low Power Mode, Android battery saver) gives 33 ms rAF gaps. The driver renders every rAF there, no frame is late, and the tier stays.
@@ -446,6 +474,9 @@ These are the desktop budgets. Phones and tablets use the touch budgets below. "
 - `field/selectArenaLayoutVariant.test.ts`
 - `slots/computeArenaSlotTiles.test.ts`
 - `slots/summarizeArenaFieldEffects.test.ts`
+- `slots/measureArenaSlotGrid.test.ts`
+- `fieldEffects/findArenaFieldEffectArrival.test.ts`
+- `fieldEffects/arenaFieldEffectAuraTiming.test.ts`
 - `effects/createArenaCardMotionRegistry.test.ts`
 - `cues/advanceArenaCardCueState.test.ts`
 - `cues/readArenaProxyCue.test.ts`
@@ -469,26 +500,27 @@ Start `pnpm dev`, then run the harness from the repository root. It drives headl
 node tools/diagnostics/measure-arena-3d-performance.mjs --scenario crowded --gl metal --output .local/perf/crowded-metal.json
 ```
 
-| Option                | Values                                                                                                                                | Default                 |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| `--scenario`          | `crowded`, `classic`, `bot`, `viewer`, `mount`, `mobile`, `effects`, `decision`, `landing`, `rotate`, `cadence`                       | `crowded`               |
-| `--board`             | `arena3d`, `classic`: board style for `decision`, so the classic board can serve as a control                                         | `arena3d`               |
-| `--gl`                | `swiftshader`, `metal`                                                                                                                | `swiftshader`           |
-| `--quality`           | `auto`, `low`, `medium`, `high`                                                                                                       | `auto`                  |
-| `--reduced`           | flag: emulate reduced motion                                                                                                          | off                     |
-| `--seconds`           | idle window in seconds                                                                                                                | `6`                     |
-| `--turns`             | bot match windows of 15 s                                                                                                             | `6`                     |
-| `--cycles`            | classic and 3D switches in `mount`                                                                                                    | `8`                     |
-| `--base`              | web origin                                                                                                                            | `http://localhost:5173` |
-| `--device`            | `desktop`, `phone-landscape`, `phone-landscape-mouse`, `phone-portrait`, `tablet-landscape`                                           | `desktop`               |
-| `--throttle`          | CPU slowdown through `Emulation.setCPUThrottlingRate`                                                                                 | `1`                     |
-| `--gpu-name`          | renderer name the probe reads                                                                                                         | real renderer           |
-| `--cores`, `--memory` | `hardwareConcurrency` and `deviceMemory` the probe reads                                                                              | real values             |
-| `--effect`            | `all` or a list of `delete`, `wipe`, `impact`, `attack`, `security`, `security-chain`, `evolve`, `arrival`, `arrival-burst`, `finale` | `all`                   |
-| `--repeat`            | effect cycles in the leak check of `effects`                                                                                          | `20`                    |
-| `--capture`           | folder for `effects` frame captures at fixed clock offsets                                                                            | off                     |
-| `--seed`              | seeds `Math.random` so captures repeat                                                                                                | off                     |
-| `--trace`             | flag: trace long tasks (over 40 ms) in each `cadence` window and list their top events                                                | off                     |
+| Option                | Values                                                                                                                                                                          | Default                 |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `--scenario`          | `crowded`, `classic`, `bot`, `viewer`, `mount`, `mobile`, `effects`, `decision`, `landing`, `rotate`, `cadence`                                                                 | `crowded`               |
+| `--board`             | `arena3d`, `classic`: board style for `decision`, so the classic board can serve as a control                                                                                   | `arena3d`               |
+| `--gl`                | `swiftshader`, `metal`                                                                                                                                                          | `swiftshader`           |
+| `--quality`           | `auto`, `low`, `medium`, `high`                                                                                                                                                 | `auto`                  |
+| `--reduced`           | flag: emulate reduced motion                                                                                                                                                    | off                     |
+| `--seconds`           | idle window in seconds                                                                                                                                                          | `6`                     |
+| `--turns`             | bot match windows of 15 s                                                                                                                                                       | `6`                     |
+| `--cycles`            | classic and 3D switches in `mount`                                                                                                                                              | `8`                     |
+| `--base`              | web origin                                                                                                                                                                      | `http://localhost:5173` |
+| `--cdp`               | attach to a running Chrome instead of launching one, for example a phone through `adb forward tcp:9222 localabstract:chrome_devtools_remote`; `--device` and `--gl` are ignored | off                     |
+| `--device`            | `desktop`, `phone-landscape`, `phone-landscape-mouse`, `phone-portrait`, `tablet-landscape`                                                                                     | `desktop`               |
+| `--throttle`          | CPU slowdown through `Emulation.setCPUThrottlingRate`                                                                                                                           | `1`                     |
+| `--gpu-name`          | renderer name the probe reads                                                                                                                                                   | real renderer           |
+| `--cores`, `--memory` | `hardwareConcurrency` and `deviceMemory` the probe reads                                                                                                                        | real values             |
+| `--effect`            | `all` or a list of `delete`, `wipe`, `impact`, `attack`, `security`, `security-chain`, `evolve`, `arrival`, `arrival-burst`, `finale`                                           | `all`                   |
+| `--repeat`            | effect cycles in the leak check of `effects`                                                                                                                                    | `20`                    |
+| `--capture`           | folder for `effects` frame captures at fixed clock offsets                                                                                                                      | off                     |
+| `--seed`              | seeds `Math.random` so captures repeat                                                                                                                                          | off                     |
+| `--trace`             | flag: trace long tasks (over 40 ms) in each `cadence` window and list their top events                                                                                          | off                     |
 
 - `mobile` opens the crowded board on `--device`, records the resolved tier every second for 16 s (pixel ratio, drawing buffer, antialias, floor segments, card texture width, renderers created), then measures idle, draw calls, triangles, and texture memory, forces a render on every frame for 4 s, and resizes the viewport 31 times to count `WebGLRenderer.setSize` calls. Phone presets use `isMobile` and `hasTouch`, so `(pointer: coarse)` matches. `phone-landscape-mouse` is the same screen without touch, which resolves desktop budgets. `--gpu-name`, `--cores`, and `--memory` let SwiftShader stand in for a phone in the probe; `--gpu-name "Adreno (TM) 740" --cores 8 --memory 8` probes Medium.
 - `effects` opens the crowded board in 3D and plays burst effects without the presentation queue. It finds the scene's `ArenaPulseLayer`, `ArenaMotionDirector`, and `ArenaCardDepartures` fibers and sets their `pulses` and `deleteBursts` props through the React DevTools `overrideProps` hook of the R3F reconciler. Pulses use the centres of the real DOM proxies, as `useArenaPulses` does. Arrivals add a `.game-card-landing` child to the proxy. This needs the development build. The demo preview tools remount `GameScreen`, so they cannot measure an effect alone.

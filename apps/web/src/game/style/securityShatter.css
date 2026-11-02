@@ -217,8 +217,8 @@
 @media (width <= 767px), (height < 520px) and (orientation: landscape) {
   /* Same one-row fan on a narrow board, on the smaller card the phone panel draws. */
   .narration-item .side-panel__cards {
-    --panel-card-w: min(6.5rem, calc((100vw - 4rem) / 3));
-    --panel-row-w: min(17rem, calc(100vw - 5rem));
+    --panel-card-w: calc(min(6.5rem, calc((100vw - 4rem) / 3)) * var(--notice-scale, 1));
+    --panel-row-w: calc(min(17rem, calc(100vw - 5rem)) * var(--notice-scale, 1));
 
     flex-wrap: nowrap;
     overflow: visible;

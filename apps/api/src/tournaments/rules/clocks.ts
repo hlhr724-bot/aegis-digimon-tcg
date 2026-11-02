@@ -1,3 +1,4 @@
+import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
 import type { PhaseKind, TournamentRules } from "@aegis/shared";
 
 /**
@@ -44,7 +45,8 @@ export type MatchClockContext = {
 export function seriesDurationFor(rules: TournamentRules | null, context: MatchClockContext): number | null {
   const match = rules?.match;
   if (!match) return null;
-  const kind = context.phaseKind ?? (context.structure === "swiss" ? "swiss" : "single_elimination");
+  const kind =
+    context.phaseKind ?? (context.structure && playsScoredRounds(context.structure) ? "swiss" : "single_elimination");
   const base =
     kind === "swiss"
       ? match.swissDurationMs

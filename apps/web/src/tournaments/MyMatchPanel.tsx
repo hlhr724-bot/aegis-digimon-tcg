@@ -4,6 +4,7 @@ import { Alert, Badge, Panel, type BadgeTone } from "../design/primitives";
 import { TournamentBotPortrait } from "@/tournaments/TournamentBotPortrait";
 import { useTranslation } from "../i18n";
 import { useCountdown } from "./hooks";
+import { describePresence } from "@/tournaments/describePresence";
 import { countdownLevelKey, pairingReasonKey, matchStateKey } from "./labels";
 import type { ParticipantView, SeriesScoreView } from "@aegis/shared";
 import type { LegacyTournamentMatch, TournamentDetail } from "./types";
@@ -31,7 +32,7 @@ export function MyMatchPanel({
   onJoinGame?: (ticket: TournamentGameTicket) => void;
   onChanged?: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const match = findMyMatch(detail.matches, accountId);
   const series = providedSeries ?? detail.series?.find((row) => row.matchId === match?.id);
   const joinDeadlineAt = series?.joinDeadlineAt ?? null;
@@ -106,6 +107,23 @@ export function MyMatchPanel({
         <dt>{t("tournaments.myMatch.presence")}</dt>
         <dd>{series ? t(matchStateKey(series.status)) : t("tournaments.myMatch.presencePending")}</dd>
 
+        {series?.presentAt && match.status !== "bye" ? (
+          <>
+            <dt>{t("tournaments.presence.label")}</dt>
+            <dd className="tournaments-my-match__presence">
+              <span>
+                {describePresence({
+                  player: own?.displayName ?? t("tournaments.myMatch.you"),
+                  at: series.presentAt[ownSeat],
+                  locale,
+                  t,
+                })}
+              </span>
+              <span>{describePresence({ player: opponentName, at: series.presentAt[opponentSeat], locale, t })}</span>
+            </dd>
+          </>
+        ) : null}
+
         {series ? null : (
           <>
             <dt>{t("tournaments.myMatch.score")}</dt>
@@ -129,6 +147,7 @@ export function MyMatchPanel({
             tournamentId={detail.id}
             matchId={match.id}
             seriesId={series?.seriesId ?? null}
+            presentAt={series?.presentAt?.[ownSeat] ?? null}
             onJoinGame={onJoinGame}
             onChanged={onChanged}
           />

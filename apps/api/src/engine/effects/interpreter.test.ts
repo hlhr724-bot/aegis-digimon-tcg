@@ -7130,9 +7130,18 @@ describe("superlative narrowing — highestDP / lowestDP", () => {
     });
   }
 
-  function ctxWith(recorder: Recorder, perms: Permanent[]): EffectContext {
+  function ctxWith(recorder: Recorder, perms: Permanent[], tamerIds: string[] = []): EffectContext {
     const source = makeSource({ cardId: "Z-DP" });
-    return makeContext({ source, recorder, opponentBattleArea: perms });
+    return makeContext({
+      source,
+      recorder,
+      opponentBattleArea: perms,
+      definitionOf: (cardId: string) =>
+        makeFakeDefinition({
+          cardId,
+          kinds: tamerIds.some((id) => cardId === `${id}-card`) ? [CardKind.Tamer] : [CardKind.Digimon],
+        }),
+    });
   }
 
   it("lowestDP: narrows to the lowest-DP Digimon among opponents", async () => {
@@ -7186,12 +7195,12 @@ describe("superlative narrowing — highestDP / lowestDP", () => {
     expect(deleted.length).toBe(1);
   });
 
-  it("no-DP: a permanent with DP <= 0 is excluded from highestDP", async () => {
-    const compiled = deleteCard("highestDP");
+  it("no-DP: a Tamer is excluded from lowestDP", async () => {
+    const compiled = deleteCard("lowestDP");
     const recorder: Recorder = { calls: [] };
     const digi = makePerm("digi", 5000);
-    const zero = makePerm("zero", 0);
-    const ctx = ctxWith(recorder, [digi, zero]);
+    const tamer = makePerm("tamer", 0);
+    const ctx = ctxWith(recorder, [digi, tamer], ["tamer"]);
     const source = makeSource({ cardId: "Z-DP-NODP" });
     const effects = irCardModule("Z-DP-NODP", compiled).effectsForTiming(EffectTiming.OnPlay, source);
 
@@ -7200,6 +7209,22 @@ describe("superlative narrowing — highestDP / lowestDP", () => {
     const delCall = recorder.calls.find((c) => c.verb === "deletePermanent");
     expect(delCall).toBeDefined();
     expect(delCall!.args[0]).toEqual(["digi"]);
+  });
+
+  it("zero-DP: a Digimon at 0 DP is the lowest-DP Digimon", async () => {
+    const compiled = deleteCard("lowestDP");
+    const recorder: Recorder = { calls: [] };
+    const digi = makePerm("digi", 5000);
+    const zero = makePerm("zero", 0);
+    const ctx = ctxWith(recorder, [digi, zero]);
+    const source = makeSource({ cardId: "Z-DP-ZERO" });
+    const effects = irCardModule("Z-DP-ZERO", compiled).effectsForTiming(EffectTiming.OnPlay, source);
+
+    for (const e of effects) await e.resolve(ctx);
+
+    const delCall = recorder.calls.find((c) => c.verb === "deletePermanent");
+    expect(delCall).toBeDefined();
+    expect(delCall!.args[0]).toEqual(["zero"]);
   });
 
   it("FAILS-WHEN-REVERTED: without DP branch, lowestDP selects wrong target", async () => {

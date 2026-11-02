@@ -1,5 +1,39 @@
 [
   {
+    "version": "1.48.0-beta",
+    "releasedAt": "2026-11-02",
+    "summaryKey": "releases.1.48.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.48.0-beta.feature.matchIntro"
+      },
+      {
+        "textKey": "releases.1.48.0-beta.feature.notices"
+      },
+      {
+        "textKey": "releases.1.48.0-beta.feature.artPicker"
+      },
+      {
+        "textKey": "releases.1.48.0-beta.feature.tournaments"
+      },
+      {
+        "textKey": "releases.1.48.0-beta.feature.arena3d"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.48.0-beta.fix.artsDigivolve",
+        "issue": 6453
+      },
+      {
+        "textKey": "releases.1.48.0-beta.fix.lowestDp"
+      },
+      {
+        "textKey": "releases.1.48.0-beta.fix.replaysScroll"
+      }
+    ]
+  },
+  {
     "version": "1.47.0-beta",
     "releasedAt": "2026-11-02",
     "summaryKey": "releases.1.47.0-beta.summary",

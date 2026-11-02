@@ -1,6 +1,7 @@
 import { tournamentCircuitsIt } from "@/i18n/tournamentCircuits.it";
 import { tournamentOfficialRequestIt } from "@/i18n/tournamentOfficialRequest.it";
 import { matchQueueIt } from "@/i18n/matchQueue.it";
+import { matchIntroIt } from "@/i18n/matchIntro.it";
 import { staffRolesIt } from "@/i18n/staffRoles.it";
 import { tournamentDetailIt } from "@/i18n/tournamentDetail.it";
 import { tournamentSpectatorsIt } from "@/i18n/tournamentSpectators.it";
@@ -970,9 +971,15 @@ const interfaceMessages = {
   "settings.noticeDuration": "Durata degli avvisi",
   "settings.noticeDurationDesc":
     "Quanto restano sullo schermo gli avvisi degli effetti e i pannelli delle carte. Passa il mouse su un avviso per tenerlo aperto.",
+  "settings.noticeDurationShort": "Breve",
   "settings.noticeDurationNormal": "Normale",
   "settings.noticeDurationLong": "Lunga",
   "settings.noticeDurationLongest": "Più lunga",
+  "settings.noticeSize": "Dimensione degli avvisi",
+  "settings.noticeSizeDesc":
+    "Quanto sono grandi gli avvisi degli effetti e i pannelli delle carte. Compatta copre meno il campo.",
+  "settings.noticeSizeNormal": "Normale",
+  "settings.noticeSizeCompact": "Compatta",
   "settings.groupIdenticalTamers": "Raggruppa i Tamer identici",
   "settings.groupIdenticalTamersDesc":
     "Mostra insieme i Tamer identici nel campo ordinato. Disattiva per mostrare ogni copia separatamente.",
@@ -2008,7 +2015,33 @@ const interfaceMessages = {
   "tournaments.reason.passwordInvalid": "Use at most 128 characters for the event password.",
   "tournaments.reason.incorrectPassword": "The event password is incorrect.",
   "tournaments.play.join": "Enter game",
-  "tournaments.play.ready": "I am ready",
+  "tournaments.play.ready": "Ready",
+  "tournaments.presence.label": "Ready",
+  "tournaments.presence.at": "{player}: {time}",
+  "tournaments.presence.notYet": "{player}: not yet",
+  "tournaments.history.ready": "Ready: {times}",
+  "tournaments.schedule.roundStarted": "Round {round} started",
+  "tournaments.schedule.phaseRoundStarted": "{round} started",
+  "tournaments.structure.roundRobin": "Girone all'italiana",
+  "tournaments.reason.topCutSizeInvalid": "Scegli una dimensione del Top Cut dalla lista e attiva prima il Top Cut.",
+  "tournaments.reason.roundsInvalid": "Scegli da 1 a 10 turni. Solo gli eventi svizzeri possono impostarlo.",
+  "tournaments.reason.tiebreakersInvalid":
+    "Scegli almeno uno spareggio, senza ripetizioni, tra quelli offerti da questa struttura.",
+  "tournaments.standings.tiebreakOrder":
+    "I pareggi a punti si risolvono in quest'ordine: {order}. Un sorteggio decide ogni pareggio rimasto.",
+  "tournaments.reason.pointsInvalid":
+    "Usa numeri interi da 0 a 10. La vittoria deve valere più del pareggio, e il pareggio almeno quanto la sconfitta.",
+  "tournaments.badge.noTopCut": "No Top Cut (too few players)",
+  "tournaments.standings.rank": "Rank",
+  "tournaments.standings.player": "Player",
+  "tournaments.standings.points": "Points",
+  "tournaments.standings.record": "W-L-D",
+  "tournaments.standings.matchWinRate": "MW%",
+  "tournaments.standings.opponentMatchWinRate": "OMW%",
+  "tournaments.standings.byes": "+{count} bye",
+  "tournaments.standings.tiebreakNote":
+    "Ties on points are broken by match win rate (MW%), then opponents' match win rate (OMW%), then head-to-head.",
+  "tournaments.catalog.winner": "Winner: {player}",
   "tournaments.play.waitingGame": "Waiting for your assigned opponent to enter this tournament game.",
   "tournaments.play.waiting": "Waiting for the opponent to confirm presence.",
   "tournaments.pairings.title": "Adjust pairings",
@@ -2027,8 +2060,7 @@ const interfaceMessages = {
   "tournaments.create.structure": "Struttura",
   "tournaments.create.bestOf": "Durata dell'incontro",
   "tournaments.create.topCut": "Top Cut",
-  "tournaments.create.topCutDesc":
-    "Alla fine, i migliori della fase svizzera passano a un tabellone a eliminazione diretta.",
+  "tournaments.create.topCutDesc": "Alla fine, i migliori giocatori passano a un tabellone a eliminazione.",
   "tournaments.create.allowBots": "Consenti bot",
   "tournaments.create.allowBotsDesc": "Occupa i posti vuoti con bot alla chiusura del check-in.",
   "tournaments.create.banlist": "Carte vietate",
@@ -2117,7 +2149,7 @@ const interfaceMessages = {
   "tournaments.reason.nameTooLong": "Il nome è troppo lungo.",
   "tournaments.reason.structureInvalid": "Scegli sistema svizzero o eliminazione diretta.",
   "tournaments.reason.bestOfInvalid": "Scegli al meglio di una o tre partite.",
-  "tournaments.reason.topCutRequiresSwiss": "Il Top Cut funziona solo con un torneo svizzero.",
+  "tournaments.reason.topCutRequiresSwiss": "Il Top Cut funziona solo con lo svizzero o il girone all'italiana.",
   "tournaments.reason.banlistModeUnknown": "Non riconosciamo questa opzione per la banlist.",
   "tournaments.reason.banlistSetUnknown": "Non abbiamo una data di pubblicazione confermata per quell'espansione.",
   "tournaments.reason.maxPlayersOutOfRange": "Scegli un limite tra 2 e 1024 giocatori.",
@@ -2279,7 +2311,8 @@ const interfaceMessages = {
   "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Scegli una copia",
   "deck.artEditingCopy": "Stai modificando la copia {number}. Scegli un'illustrazione per salvarla subito.",
-  "deck.artApplyAll": "Usa per tutte le copie",
+  "deck.artAllCopies": "Tutte le copie",
+  "deck.artEditingAllCopies": "Stai modificando tutte le copie. Scegli un'illustrazione per salvarla subito.",
   "deck.artDoubleClickHint": "Fai doppio clic su un'illustrazione per usarla su tutte le copie di questo mazzo.",
   "common.done": "Fatto",
   "redesign.foundation.arena.preview": "Anteprima del campo con i tuoi colori e scenario",
@@ -2668,6 +2701,7 @@ const interfaceMessages = {
   ...tournamentCircuitsIt,
   ...tournamentOfficialRequestIt,
   ...matchQueueIt,
+  ...matchIntroIt,
   ...staffRolesIt,
   ...achievementsIt,
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;

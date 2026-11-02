@@ -369,20 +369,24 @@ describe("SwissProgram round closing", () => {
     for (const match of matches) {
       const winner = fixture.byAccount.get(match.accountIds[0])!;
       const loser = fixture.byAccount.get(match.accountIds[1])!;
-      expect(ledger).toContainEqual({
-        participantId: winner.participantId,
-        opponentId: loser.participantId,
-        opponentKind: "human",
-        roundNumber: 1,
-        outcome: "win",
-      });
-      expect(ledger).toContainEqual({
-        participantId: loser.participantId,
-        opponentId: winner.participantId,
-        opponentKind: "human",
-        roundNumber: 1,
-        outcome: "loss",
-      });
+      expect(ledger).toContainEqual(
+        expect.objectContaining({
+          participantId: winner.participantId,
+          opponentId: loser.participantId,
+          opponentKind: "human",
+          roundNumber: 1,
+          outcome: "win",
+        }),
+      );
+      expect(ledger).toContainEqual(
+        expect.objectContaining({
+          participantId: loser.participantId,
+          opponentId: winner.participantId,
+          opponentKind: "human",
+          roundNumber: 1,
+          outcome: "loss",
+        }),
+      );
     }
 
     const phase = await currentPhase();
