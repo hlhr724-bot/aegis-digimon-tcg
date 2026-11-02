@@ -5,6 +5,7 @@ import { staffRolesEs } from "@/i18n/staffRoles.es";
 import { tournamentDetailEs } from "@/i18n/tournamentDetail.es";
 import { tournamentSpectatorsEs } from "@/i18n/tournamentSpectators.es";
 import { publicReplaysEs } from "@/i18n/publicReplays.es";
+import { replayAnnotationsEs } from "@/i18n/replayAnnotations.es";
 import { achievementsEs } from "@/i18n/achievements.es";
 import { rankedEs } from "@/i18n/ranked.es";
 import { friendsEs } from "@/i18n/friends.es";
@@ -2377,6 +2378,7 @@ export const es: Record<keyof typeof en, string> = {
   ...tournamentDetailEs,
   ...tournamentSpectatorsEs,
   ...publicReplaysEs,
+  ...replayAnnotationsEs,
   ...tournamentCircuitsEs,
   ...tournamentOfficialRequestEs,
   ...matchQueueEs,

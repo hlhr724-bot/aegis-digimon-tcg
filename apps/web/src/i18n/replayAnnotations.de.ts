@@ -1,0 +1,31 @@
+import type { replayAnnotationsEn } from "@/i18n/replayAnnotations.en";
+
+export const replayAnnotationsDe: Record<keyof typeof replayAnnotationsEn, string> = {
+  "replayAnnotations.title": "Anmerkungen",
+  "replayAnnotations.toggle": "Anmerkungen anzeigen",
+  "replayAnnotations.close": "Anmerkungen schließen",
+  "replayAnnotations.markMoment": "Diesen Moment markieren",
+  "replayAnnotations.markMomentAt": "Zug {turn}, Aktion {action} markieren",
+  "replayAnnotations.privateHint": "Nur Sie sehen Ihre Markierungen.",
+  "replayAnnotations.unavailable":
+    "Melden Sie sich an, um Replays zu kommentieren, die Sie gespielt haben oder die mit Ihnen geteilt wurden.",
+  "replayAnnotations.error": "Die Änderung konnte nicht gespeichert werden. Versuchen Sie es erneut.",
+  "replayAnnotations.empty": "Noch keine Markierungen.",
+  "replayAnnotations.moment": "Zug {turn} · Aktion {action}",
+  "replayAnnotations.removeMarker": "Markierung löschen",
+  "replayAnnotations.timelineMarker": "{emoji} Zug {turn}, Aktion {action}",
+  "replayAnnotations.limitReached": "Sie haben das Markierungslimit für diese Partie erreicht.",
+  "replayAnnotations.live.title": "Private Replay-Markierung",
+  "replayAnnotations.live.signIn": "Melden Sie sich an, um Replay-Markierungen zu speichern.",
+  "replayAnnotations.live.unavailable": "Diese Partie hat kein Replay zum Markieren.",
+  "replayAnnotations.live.tooFast": "Warten Sie kurz, bevor Sie eine weitere Markierung setzen.",
+  "replayAnnotations.live.marked": "{emoji} in Zug {turn} markiert. Nur Sie sehen es.",
+  "replayAnnotations.emoji.keyMoment": "Schlüsselmoment",
+  "replayAnnotations.emoji.mistake": "Fehler",
+  "replayAnnotations.emoji.greatPlay": "Starker Zug",
+  "replayAnnotations.emoji.question": "Frage",
+  "replayAnnotations.emoji.idea": "Idee",
+  "replayAnnotations.emoji.lucky": "Glück",
+  "replayAnnotations.emoji.turningPoint": "Wendepunkt",
+  "replayAnnotations.emoji.surprise": "Überraschung",
+};

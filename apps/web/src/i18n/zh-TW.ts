@@ -5,6 +5,7 @@ import { staffRolesZhTW } from "@/i18n/staffRoles.zh-TW";
 import { tournamentDetailZhTW } from "@/i18n/tournamentDetail.zh-TW";
 import { tournamentSpectatorsZhTW } from "@/i18n/tournamentSpectators.zh-TW";
 import { publicReplaysZhTW } from "@/i18n/publicReplays.zh-TW";
+import { replayAnnotationsZhTW } from "@/i18n/replayAnnotations.zh-TW";
 import { achievementsZhTw } from "@/i18n/achievements.zh-TW";
 import { rankedZhTw } from "@/i18n/ranked.zh-TW";
 import { friendsEn } from "@/i18n/friends.en";
@@ -2797,6 +2798,7 @@ const interfaceMessages = {
   ...tournamentDetailZhTW,
   ...tournamentSpectatorsZhTW,
   ...publicReplaysZhTW,
+  ...replayAnnotationsZhTW,
   ...tournamentCircuitsZhTW,
   ...tournamentOfficialRequestZhTW,
   ...matchQueueZhTW,

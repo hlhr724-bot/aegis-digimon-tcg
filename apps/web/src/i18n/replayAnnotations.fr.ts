@@ -1,0 +1,31 @@
+import type { replayAnnotationsEn } from "@/i18n/replayAnnotations.en";
+
+export const replayAnnotationsFr: Record<keyof typeof replayAnnotationsEn, string> = {
+  "replayAnnotations.title": "Annotations",
+  "replayAnnotations.toggle": "Afficher les annotations",
+  "replayAnnotations.close": "Fermer les annotations",
+  "replayAnnotations.markMoment": "Marquer ce moment",
+  "replayAnnotations.markMomentAt": "Marquer le tour {turn}, action {action}",
+  "replayAnnotations.privateHint": "Vous seul voyez vos repères.",
+  "replayAnnotations.unavailable":
+    "Connectez-vous pour annoter les replays que vous avez joués ou qui vous ont été partagés.",
+  "replayAnnotations.error": "Impossible d'enregistrer la modification. Réessayez.",
+  "replayAnnotations.empty": "Aucun repère pour l'instant.",
+  "replayAnnotations.moment": "Tour {turn} · Action {action}",
+  "replayAnnotations.removeMarker": "Supprimer le repère",
+  "replayAnnotations.timelineMarker": "{emoji} Tour {turn}, action {action}",
+  "replayAnnotations.limitReached": "Vous avez atteint la limite de repères pour cette partie.",
+  "replayAnnotations.live.title": "Repère privé du replay",
+  "replayAnnotations.live.signIn": "Connectez-vous pour enregistrer des repères.",
+  "replayAnnotations.live.unavailable": "Cette partie n'a pas de replay à marquer.",
+  "replayAnnotations.live.tooFast": "Patientez un instant avant d'ajouter un autre repère.",
+  "replayAnnotations.live.marked": "{emoji} marqué au tour {turn}. Vous seul le voyez.",
+  "replayAnnotations.emoji.keyMoment": "Moment clé",
+  "replayAnnotations.emoji.mistake": "Erreur",
+  "replayAnnotations.emoji.greatPlay": "Beau coup",
+  "replayAnnotations.emoji.question": "Question",
+  "replayAnnotations.emoji.idea": "Idée",
+  "replayAnnotations.emoji.lucky": "Chance",
+  "replayAnnotations.emoji.turningPoint": "Tournant",
+  "replayAnnotations.emoji.surprise": "Surprise",
+};

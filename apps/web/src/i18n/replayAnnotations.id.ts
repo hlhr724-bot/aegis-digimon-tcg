@@ -1,0 +1,31 @@
+import type { replayAnnotationsEn } from "@/i18n/replayAnnotations.en";
+
+export const replayAnnotationsId: Record<keyof typeof replayAnnotationsEn, string> = {
+  "replayAnnotations.title": "Anotasi",
+  "replayAnnotations.toggle": "Tampilkan anotasi",
+  "replayAnnotations.close": "Tutup anotasi",
+  "replayAnnotations.markMoment": "Tandai momen ini",
+  "replayAnnotations.markMomentAt": "Tandai giliran {turn}, aksi {action}",
+  "replayAnnotations.privateHint": "Hanya Anda yang dapat melihat penanda Anda.",
+  "replayAnnotations.unavailable":
+    "Masuk untuk memberi anotasi pada replay yang Anda mainkan atau yang dibagikan kepada Anda.",
+  "replayAnnotations.error": "Perubahan tidak dapat disimpan. Coba lagi.",
+  "replayAnnotations.empty": "Belum ada penanda.",
+  "replayAnnotations.moment": "Giliran {turn} · Aksi {action}",
+  "replayAnnotations.removeMarker": "Hapus penanda",
+  "replayAnnotations.timelineMarker": "{emoji} Giliran {turn}, aksi {action}",
+  "replayAnnotations.limitReached": "Anda telah mencapai batas penanda untuk pertandingan ini.",
+  "replayAnnotations.live.title": "Penanda replay pribadi",
+  "replayAnnotations.live.signIn": "Masuk untuk menyimpan penanda replay.",
+  "replayAnnotations.live.unavailable": "Pertandingan ini tidak memiliki replay untuk ditandai.",
+  "replayAnnotations.live.tooFast": "Tunggu sebentar sebelum menambahkan penanda lain.",
+  "replayAnnotations.live.marked": "{emoji} ditandai pada giliran {turn}. Hanya Anda yang melihatnya.",
+  "replayAnnotations.emoji.keyMoment": "Momen penting",
+  "replayAnnotations.emoji.mistake": "Kesalahan",
+  "replayAnnotations.emoji.greatPlay": "Permainan hebat",
+  "replayAnnotations.emoji.question": "Pertanyaan",
+  "replayAnnotations.emoji.idea": "Ide",
+  "replayAnnotations.emoji.lucky": "Beruntung",
+  "replayAnnotations.emoji.turningPoint": "Titik balik",
+  "replayAnnotations.emoji.surprise": "Kejutan",
+};

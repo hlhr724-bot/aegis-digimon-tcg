@@ -63,6 +63,10 @@ export default defineConfig({
       },
       {
         extends: true,
+        test: { name: "replay-annotations", include: ["src/replays/annotations/**/*.test.tsx"], environment: "jsdom" },
+      },
+      {
+        extends: true,
         test: { name: "bot-personas", include: ["src/bot/personas/**/*.test.tsx"], environment: "jsdom" },
       },
       {
@@ -154,6 +158,7 @@ export default defineConfig({
           exclude: [
             "src/game/screen/hooks/useBoardMeasurements.test.tsx",
             "src/replays/ReplayPlayer.test.tsx",
+            "src/replays/annotations/**/*.test.tsx",
             "src/social/**/*.test.tsx",
             "src/i18n/useCardTranslationState.test.tsx",
             ...configDefaults.exclude,

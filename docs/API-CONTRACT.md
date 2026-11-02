@@ -37,6 +37,39 @@ follow this rule. Unseated clients receive neither conversation, and payloads
 cannot select a different sender role or audience. Existing moderation and
 per-sender cooldowns apply within each conversation.
 
+## Replay annotations
+
+Signed-in players can annotate a match. The match ID is the replay summary ID
+(`MatchReplay.id`). Annotations belong to their author and are private. See
+[replay annotations](REPLAY-ANNOTATIONS.md) for the model and limits.
+
+Live markers use the `replayAnnotation` room message
+(`LIVE_REPLAY_ANNOTATION_CHANNEL`). The client sends
+`{ kind: "marker", emoji }`. The room derives the author from the seat or
+spectator account and the moment from its own recording: the latest recorded
+frame and the current turn. It answers only the sender with
+`{ kind: "marker", marker }` or `{ kind: "rejected", reason }`. Reasons are
+`sign_in_required`, `unavailable` (no recording, or the recording hit its
+limit), `limit_reached`, `too_fast` (one marker per second per author), and
+`invalid`. Markers never enter the state patch, the event channel, the replay
+file, or the input record, so the opponent cannot see or infer them.
+
+HTTP endpoints. All responses send `Cache-Control: private, no-store`.
+
+| Method and path                                   | Who                        | Result                                                      |
+| ------------------------------------------------- | -------------------------- | ----------------------------------------------------------- |
+| `GET /replay-annotations/:matchId`                | Anyone; guests get nothing | `ReplayAnnotations`: the viewer's markers and `canAnnotate` |
+| `POST /replay-annotations/:matchId/markers`       | Signed-in, allowed viewer  | 201 with the `ReplayMarker`                                 |
+| `DELETE /replay-annotations/:matchId/markers/:id` | The marker's author        | `{ ok: true }`; 404 for any other caller                    |
+
+`POST` takes `{ frameIndex, turn, emoji }`. `frameIndex` is an integer from 0
+to 4999, `turn` an integer from 0 to 10000, and `emoji` one value of
+`ReplayMarkerEmoji`. Errors: 400 `invalid_moment` or `invalid_emoji`, 401
+`authentication_required`, 403 `not_allowed`, 404 for a malformed match ID,
+409 `limit_reached`, and 429 `too_many_requests`. A viewer may annotate a match
+when they have their own `account_replays` row for it, or when a saved replay
+of it is shared with them under the existing visibility rules.
+
 ## Live match list
 
 `GET /spectate/live?offset=0&limit=10` returns a `LiveMatchPage`:

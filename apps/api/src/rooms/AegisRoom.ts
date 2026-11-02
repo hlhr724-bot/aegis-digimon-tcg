@@ -63,6 +63,9 @@ import { ReplayRecording } from "../replays/recording.js";
 import { replayDownload } from "../replays/download.js";
 import { replayLibrary } from "../replays/runtime.js";
 import type { ReplayLibrary } from "../replays/ReplayLibrary.js";
+import { LiveReplayAnnotator } from "#api/replays/annotations/LiveReplayAnnotator";
+import type { ReplayAnnotationStore } from "#api/replays/annotations/ReplayAnnotationStore";
+import { LIVE_REPLAY_ANNOTATION_CHANNEL } from "@aegis/shared/replays/annotations/LiveReplayAnnotation";
 import {
   GameState,
   MATCH_EXPIRED_CLOSE_CODE,
@@ -412,6 +415,11 @@ export class AegisRoom extends Room<{
   private rollbackSequence = 0;
   private rollbackPending?: { id: string; seat: Seat; target: { index: number; turn?: number } };
   private replayRecording?: ReplayRecording;
+  private readonly liveReplayAnnotator = new LiveReplayAnnotator({
+    store: { addMarker: (params) => this.replayAnnotations().addMarker(params) },
+    recording: () => this.replayRecording,
+    turn: () => this.state.turnCount,
+  });
   private readonly spectatorReplayDownloads = new Map<string, Promise<ReplayDownloadMessage>>();
   private replayDownloads = new Map<Seat, Promise<ReplayDownloadMessage>>();
   private replayFinished = false;
@@ -1305,6 +1313,10 @@ export class AegisRoom extends Room<{
       }
       if (type === CHAT_CHANNEL) {
         this.handleChat(client, payload);
+        return;
+      }
+      if (type === LIVE_REPLAY_ANNOTATION_CHANNEL) {
+        this.handleLiveReplayAnnotation(client, payload);
         return;
       }
       if (type === GUEST_APPROVAL_CHANNEL) {
@@ -3336,6 +3348,10 @@ export class AegisRoom extends Room<{
     return replayLibrary;
   }
 
+  protected replayAnnotations(): Pick<ReplayAnnotationStore, "addMarker"> {
+    return replayLibrary.annotations;
+  }
+
   /** A failed index write still delivers the file; the player can download it or save it to Drive as a guest would. */
   private replayIndex(
     seat: Seat | -1,
@@ -3632,6 +3648,18 @@ export class AegisRoom extends Room<{
       client.leave(MESSAGE_FLOOD_CLOSE_CODE);
     }
     return false;
+  }
+
+  private handleLiveReplayAnnotation(client: Client, payload: unknown): void {
+    const authorId = this.accountByClient.get(client.sessionId) ?? this.spectatorIdentities.get(client.sessionId)?.id;
+    void this.liveReplayAnnotator
+      .handle({ authorId, payload })
+      .then((result) => {
+        if (this.clients.includes(client)) {
+          client.send(LIVE_REPLAY_ANNOTATION_CHANNEL, result);
+        }
+      })
+      .catch((error: unknown) => this.debugError("[AegisRoom] replay annotation failed", error));
   }
 
   private handleChat(client: Client, payload: unknown): void {

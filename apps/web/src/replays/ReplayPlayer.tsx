@@ -16,6 +16,8 @@ import { createAnimationPlayback } from "../game/animationPlayback";
 import { ReplayRecording } from "./ReplayRecording";
 import { ReplayControls } from "@/replays/ReplayControls";
 import { ReplayTimeline } from "@/replays/ReplayTimeline";
+import { ReplayAnnotationPanel } from "@/replays/annotations/ReplayAnnotationPanel";
+import { useReplayAnnotations } from "@/replays/annotations/useReplayAnnotations";
 
 const emptyDeck = { mainDeck: [], eggDeck: [] };
 const acknowledgeDecision = () => undefined;
@@ -44,6 +46,8 @@ export function ReplayPlayer({
   const [showHand, setShowHand] = useState(true);
   const [viewerSeat, setViewerSeat] = useState<Seat>(replay.viewerSeat === 1 ? 1 : 0);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [annotationsOpen, setAnnotationsOpen] = useState(false);
+  const annotations = useReplayAnnotations({ matchId: replay.id });
   const [controlsVisible, setControlsVisible] = useState(true);
   const [recordingMode, setRecordingMode] = useState(false);
   const history = useRef<HTMLElement>(null);
@@ -257,6 +261,7 @@ export function ReplayPlayer({
   }, []);
   function startRecordingPlayback() {
     setHistoryOpen(false);
+    setAnnotationsOpen(false);
     seek(0);
     setPlaying(true);
   }
@@ -332,6 +337,15 @@ export function ReplayPlayer({
             {result.reasonKey ? <p>{t(result.reasonKey)}</p> : null}
           </div>
         ) : null}
+        {annotationsOpen ? (
+          <ReplayAnnotationPanel
+            replay={replay}
+            annotations={annotations}
+            index={cursor.index}
+            onJump={jump}
+            onClose={() => setAnnotationsOpen(false)}
+          />
+        ) : null}
         {historyOpen ? (
           <aside ref={history} id="replay-history" className="replay-history" aria-label={t("replay.log")}>
             <header>
@@ -378,9 +392,26 @@ export function ReplayPlayer({
           title={t("replay.historyShow")}
           aria-expanded={historyOpen}
           aria-controls="replay-history"
-          onClick={() => setHistoryOpen((open) => !open)}
+          onClick={() => {
+            setAnnotationsOpen(false);
+            setHistoryOpen((open) => !open);
+          }}
         >
           <Icons.FileText size={20} />
+        </button>
+        <button
+          type="button"
+          className="replay-player__tool"
+          aria-label={t("replayAnnotations.toggle")}
+          title={t("replayAnnotations.toggle")}
+          aria-expanded={annotationsOpen}
+          aria-controls="replay-annotations"
+          onClick={() => {
+            setHistoryOpen(false);
+            setAnnotationsOpen((open) => !open);
+          }}
+        >
+          <Icons.Flag size={20} />
         </button>
         <button
           type="button"
@@ -396,7 +427,14 @@ export function ReplayPlayer({
       </div>
       <ReplayControls visible={controlsVisible}>
         <div className="replay-controls__timeline">
-          <ReplayTimeline replay={replay} logLines={logLines} index={cursor.index} onSeek={seek} onJump={jump} />
+          <ReplayTimeline
+            replay={replay}
+            logLines={logLines}
+            index={cursor.index}
+            markers={annotations.markers}
+            onSeek={seek}
+            onJump={jump}
+          />
           <span role="status" title={atEnd && settled ? t("replay.finished") : labels[cursor.index]}>
             {atEnd && settled ? t("replay.finished") : labels[cursor.index]}
           </span>

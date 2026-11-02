@@ -3,6 +3,7 @@ import { CHAT_CHANNEL, CHAT_COOLDOWN_MS, type ChatBroadcast, type ChatMessage, t
 import { playSound } from "../../design/sound";
 import type { AegisRoom } from "../../net/client";
 import { isChatSoundEnabled } from "./chatSound";
+import { useLiveReplayAnnotations, type LiveReplayAnnotations } from "@/replays/annotations/useLiveReplayAnnotations";
 
 const HISTORY_LIMIT = 50;
 /** Network jitter can bring two sends closer together on the server than they left the client. */
@@ -28,6 +29,7 @@ export interface MatchChat {
   send: ((message: ChatMessage) => void) | undefined;
   /** True while the server would drop a new message from this sender. */
   coolingDown: boolean;
+  replayAnnotations?: LiveReplayAnnotations;
 }
 
 /**
@@ -80,6 +82,7 @@ export function useMatchChat({
     [room],
   );
 
+  const replayAnnotations = useLiveReplayAnnotations({ room });
   const viewer = { viewerSeat, spectating, mutedOpponent, mutedSpectators };
   const shown = entries.filter((entry) => isEntryShown({ entry, viewer }));
   const latest: Partial<Record<Seat, ChatEntry>> = {};
@@ -95,6 +98,7 @@ export function useMatchChat({
     setMutedSpectators,
     send: room ? send : undefined,
     coolingDown,
+    replayAnnotations,
   };
 }
 

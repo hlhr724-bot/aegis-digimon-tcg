@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ShieldMinus } from "lucide-react";
 import type { MatchReplay } from "@aegis/shared/replays";
+import type { ReplayMarker } from "@aegis/shared/replays/annotations/ReplayMarker";
 import type { Seat } from "@aegis/shared/schema/enums";
 import { useTranslation } from "@/i18n/useTranslation";
 import { buildReplayTimelineEvents } from "@/replays/buildReplayTimelineEvents";
@@ -11,6 +12,7 @@ type Props = {
   replay: MatchReplay;
   logLines: readonly (string | undefined)[];
   index: number;
+  markers?: readonly ReplayMarker[];
   onSeek: (index: number) => void;
   onJump: (index: number) => void;
 };
@@ -44,7 +46,7 @@ function groupNearbyEvents({ events, last, width }: GroupParams): Group[] {
   return groups;
 }
 
-export function ReplayTimeline({ replay, logLines, index: committedIndex, onSeek, onJump }: Props) {
+export function ReplayTimeline({ replay, logLines, index: committedIndex, markers = [], onSeek, onJump }: Props) {
   const { t } = useTranslation();
   const [scrubIndex, setScrubIndex] = useState<number>();
   const scrubTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -210,6 +212,35 @@ export function ReplayTimeline({ replay, logLines, index: committedIndex, onSeek
         </li>
       </ul>
       <div ref={scale} className="replay-timeline__scale" role="group" aria-label={t("replay.timeline.events")}>
+        {markers.length ? (
+          <div className="replay-timeline__annotations">
+            {markers.map((marker) => {
+              const target = Math.min(marker.frameIndex, last);
+              const label = t("replayAnnotations.timelineMarker", {
+                emoji: marker.emoji,
+                turn: marker.turn,
+                action: target + 1,
+              });
+              return (
+                <button
+                  key={marker.id}
+                  type="button"
+                  className="replay-timeline__annotation"
+                  style={{ left: `${(target / last) * 100}%` }}
+                  title={label}
+                  aria-label={label}
+                  aria-current={target === index ? "step" : undefined}
+                  onClick={() => {
+                    setSelectedIndex(undefined);
+                    onJump(target);
+                  }}
+                >
+                  <span aria-hidden="true">{marker.emoji}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
         {renderLane(0)}
         <div className="replay-timeline__bar">
           {segments.map(({ event, start, end }) => {
