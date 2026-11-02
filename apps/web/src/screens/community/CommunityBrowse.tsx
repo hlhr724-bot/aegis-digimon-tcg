@@ -39,6 +39,7 @@ export function CommunityBrowse({ signedIn, accountId, onOpenDeck, onPlay, onCop
   const [sort, setSort] = useState<CommunitySort>("top");
   const [period, setPeriod] = useState<CommunityPeriod>("week");
   const [colors, setColors] = useState<string[]>([]);
+  const [withGuide, setWithGuide] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<Results>({ status: "loading" });
@@ -53,7 +54,7 @@ export function CommunityBrowse({ signedIn, accountId, onOpenDeck, onPlay, onCop
     let current = true;
     setResults({ status: "loading" });
     communityApi
-      .browse({ sort, period, colors, search, page: 0 })
+      .browse({ sort, period, colors, withGuide, search, page: 0 })
       .then((page) => {
         if (current) {
           setResults({ status: "ready", ...page, page: 0, loadingMore: false });
@@ -67,7 +68,7 @@ export function CommunityBrowse({ signedIn, accountId, onOpenDeck, onPlay, onCop
     return () => {
       current = false;
     };
-  }, [sort, period, colors, search, attempt]);
+  }, [sort, period, colors, withGuide, search, attempt]);
 
   const loadMore = async () => {
     if (results.status !== "ready" || results.loadingMore) {
@@ -76,7 +77,7 @@ export function CommunityBrowse({ signedIn, accountId, onOpenDeck, onPlay, onCop
     const page = results.page + 1;
     setResults({ ...results, loadingMore: true });
     try {
-      const next = await communityApi.browse({ sort, period, colors, search, page });
+      const next = await communityApi.browse({ sort, period, colors, withGuide, search, page });
       setResults({
         status: "ready",
         decks: [...results.decks, ...next.decks],
@@ -135,6 +136,15 @@ export function CommunityBrowse({ signedIn, accountId, onOpenDeck, onPlay, onCop
               ))}
             </div>
           ) : null}
+          <button
+            type="button"
+            className="community-chip"
+            aria-pressed={withGuide}
+            onClick={() => setWithGuide((value) => !value)}
+          >
+            <Icons.BookOpen size={12} />
+            {t("community.guide.badge")}
+          </button>
           <div className="community-chips" role="group" aria-label={t("community.colorsLabel")}>
             {COLORS.map((color) => (
               <button

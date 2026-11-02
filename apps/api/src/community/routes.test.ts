@@ -653,6 +653,16 @@ describe("deck guides", () => {
     expect(await (await call(`/community/decks/${id}`)).json()).toMatchObject({ guide: after.guide });
   });
 
+  it("filters the browse list to decks with a guide", async () => {
+    const author = await signIn("Author");
+    const { id } = await saveAndPublish(author, "guided", "Guided deck", redList);
+    await saveAndPublish(author, "unguided", "Unguided deck", otherList);
+    await call(`/community/decks/${id}/guide`, "PUT", author, { guide: "Start" });
+    expect((await browse()).decks).toHaveLength(2);
+    expect((await browse("?guide=1")).decks.map((deck) => deck.name)).toEqual(["Guided deck"]);
+    expect((await browse("?guide=0")).decks).toHaveLength(2);
+  });
+
   it("requires the owner of a public deck and allows admins to read hidden guides", async () => {
     const author = await signIn("Author");
     const other = await signIn("Other");

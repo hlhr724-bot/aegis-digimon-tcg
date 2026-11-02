@@ -532,8 +532,13 @@ button.community-report-link:hover {
   row-gap: var(--ds-space-2);
 }
 
-.community-lobby-decks .community-tile__colors {
+.community-lobby-decks__meta {
+  display: flex;
   flex-basis: 100%;
+  min-height: 26px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
 }
 
 /* A borderless heart leaves room for the eye beside it on the narrowest tiles. */

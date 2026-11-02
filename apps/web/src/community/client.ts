@@ -20,6 +20,7 @@ export type CommunityBrowseQuery = {
   sort: CommunitySort;
   period: CommunityPeriod;
   colors: readonly string[];
+  withGuide?: boolean;
   search: string;
   page: number;
 };
@@ -48,6 +49,7 @@ export const communityApi = {
     const params = new URLSearchParams({ sort: query.sort, period: query.period, page: String(query.page) });
     if (query.search.trim()) params.set("q", query.search.trim());
     if (query.colors.length > 0) params.set("colors", query.colors.join(","));
+    if (query.withGuide) params.set("guide", "1");
     return request<CommunityDeckPage>(`/community/decks?${params}`);
   },
   deck: (id: string) => request<CommunityDeck>(`/community/decks/${encodeURIComponent(id)}`),
