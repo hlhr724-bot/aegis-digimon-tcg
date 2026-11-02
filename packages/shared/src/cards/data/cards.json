@@ -111028,5 +111028,65 @@
     "maxCountInDeck": 4,
     "imageId": "BT27-072",
     "effectText": "[Digivolve] Lv.6 w/[Mamemon] in name w/o [X Antibody] trait: Cost 1\n\n[When Digivolving] [When Attacking] [Once Per Turn] Activate 1 [On Deletion] effect on 1 Digimon card with [Mamemon] in its name in this Digimon's digivolution cards as this Digimon's effect.\n[All Turns] All of your Digimon with [Mamemon] in their names gain ＜Alliance＞, ＜Reboot＞ and ＜Blocker＞."
+  },
+  {
+    "cardId": "BT27-017",
+    "set": "BT27",
+    "nameEn": "Spinomon",
+    "nameJp": "スピノモン",
+    "colors": ["Red", "Purple"],
+    "kinds": ["Digimon"],
+    "level": 6,
+    "playCost": 11,
+    "dp": 11000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 5,
+        "memoryCost": 4
+      },
+      {
+        "color": "Purple",
+        "level": 5,
+        "memoryCost": 4
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Virus"],
+    "types": ["Dinosaur", "Kurata's Army", "Bio"],
+    "effectText": "[Digivolve] [Stegomon] w/[Bio] trait: Cost 5\n[Digivolve] Tamer w/[Kurata's Army] trait: Cost 7\n＜Security A. +1＞ ＜Armor Purge＞ ＜Engage＞ (At the end of your turn, this Digimon may attack.)\n[On Play] [When Digivolving] Delete 1 of your opponent's Digimon with as much DP as this Digimon or less.\n[All Turns] This Digimon can't digivolve.\n[Opponent's Turn] While this Digimon is suspended, none of your opponent's Digimon can attack players.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-017"
+  },
+  {
+    "cardId": "BT27-048",
+    "set": "BT27",
+    "nameEn": "Stegomon",
+    "nameJp": "ステゴモン",
+    "colors": ["Green", "Purple"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 5,
+    "dp": 6000,
+    "evoCosts": [
+      {
+        "color": "Green",
+        "level": 3,
+        "memoryCost": 3
+      },
+      {
+        "color": "Purple",
+        "level": 3,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Armor Form"],
+    "attributes": ["Free"],
+    "types": ["Stegosaur", "Kurata's Army", "Bio"],
+    "effectText": "[Digivolve] Tamer w/[Kurata's Army] trait: Cost 2\n＜Armor Purge＞\n[On Play] [When Digivolving] [When Attacking] [Once Per Turn] You may suspend 1 Digimon. Then, by choosing 1 of your Digimon, delete the chosen Digimon, and 1 of your opponent's Digimon or Tamers can't unsuspend until their turn ends.\n[Rule] Trait: Has [Dinosaur] Type.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-048"
   }
 ]

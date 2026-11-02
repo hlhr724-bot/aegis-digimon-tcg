@@ -15567,5 +15567,11 @@
   "BT27-102": {
     "[Main]Youmayplay1[Kurata'sArmy]traitTamercardfromyourhandortrashwithoutpayingthecost.Then,placethiscardinthebattlearea.[AllTurns]WhenanyDigimononthefieldaredeleted,<Delay>・1ofyourTamersmaydigivolveintoa[Kurata'sArmy]traitDigimoncardinthehandortrashwithoutpayingthecost.": "【メイン】自分の手札/トラッシュから、特徴「倉田軍団」を持つテイマーカード1枚をコストを支払わず登場できる。その後、このカードをバトルエリアに置く。\n【お互いのターン】エリアのデジモンが消滅したとき、≪ディレイ≫。\n・自分のテイマー1体を手札/トラッシュの特徴「倉田軍団」を持つデジモンカードにコストを支払わず進化できる。",
     "[Security]Youmayplay1playcost5orlower[Kurata'sArmy]traitcardfromyourhandortrashwithoutpayingthecost.": "【セキュリティ】自分の手札/トラッシュから、特徴「倉田軍団」を持つ登場コスト5以下のカード1枚をコストを支払わず登場できる。"
+  },
+  "BT27-048": {
+    "[Digivolve]Tamerw/[Kurata'sArmy]trait:Cost2<ArmorPurge>[OnPlay][WhenDigivolving][WhenAttacking][OncePerTurn]Youmaysuspend1Digimon.Then,bychoosing1ofyourDigimon,deletethechosenDigimon,and1ofyouropponent'sDigimonorTamerscan'tunsuspenduntiltheirturnends.[Rule]Trait:Has[Dinosaur]Type.": "〔進化〕特徴「倉田軍団」を持つテイマー:コスト2\n≪アーマー解除≫\n【登場時】【進化時】【アタック時】[ターン1回]デジモン1体をレストできる。その後、自分のデジモン1体を選ぶことで、選んだデジモンを消滅させ、相手のターン終了まで、相手のデジモン/テイマー1体はアクティブにならない。\n〈ルール〉特徴:タイプ「恐竜型」を持つ。"
+  },
+  "BT27-017": {
+    "[Digivolve][Stegomon]w/[Bio]trait:Cost5[Digivolve]Tamerw/[Kurata'sArmy]trait:Cost7<SecurityA.+1><ArmorPurge><Engage>(Attheendofyourturn,thisDigimonmayattack.)[OnPlay][WhenDigivolving]Delete1ofyouropponent'sDigimonwithasmuchDPasthisDigimonorless.[AllTurns]ThisDigimoncan'tdigivolve.[Opponent'sTurn]WhilethisDigimonissuspended,noneofyouropponent'sDigimoncanattackplayers.": "〔進化〕特徴「バイオ」を持つ「ステゴモン」:コスト5\n〔進化〕特徴「倉田軍団」を持つテイマー:コスト7\n≪Sアタック+1≫ ≪アーマー解除≫ ≪急襲≫（自分のターン終了時、このデジモンでアタックできる）\n【登場時】【進化時】このデジモンのDP以下の相手のデジモン1体を消滅させる。\n【お互いのターン】このデジモンは進化できない。\n【相手のターン】このデジモンがレスト状態の間、相手のデジモン全てはプレイヤーにアタックできない。"
   }
 }

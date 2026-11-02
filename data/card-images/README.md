@@ -227,3 +227,13 @@ official English and Japanese reveal scans. Each 951 x 1295 px attachment is
 cropped to `(41, 41, 909, 1254)`, producing 868 x 1213 px WebP images at
 quality 90 without the white outer margin. The SAMPLE watermark is preserved.
 The Japanese scans supply the Japanese name transcriptions.
+
+## BT27 Stegomon and Spinomon, 2026-11-01
+
+BT27-048, BT27-017 and their `-J` printings come from user-provided official
+English and Japanese reveal scans. The 951 x 1295 px Japanese scans are cropped
+to `(41, 42, 909, 1255)`, producing 868 x 1213 px images. The 881 x 1200 px
+English scans are cropped to `(38, 39, 842, 1163)`, producing 804 x 1124 px
+images. All four are WebP at quality 90, without the white outer margin. The
+SAMPLE watermark is preserved. The Japanese scans supply the Japanese text
+transcription.

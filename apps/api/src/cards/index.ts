@@ -131,3 +131,5 @@ import "#api/cards/BT27/BT27-012";
 import "#api/cards/BT27/BT27-072";
 import "#api/cards/BT27/BT27-060";
 import "#api/cards/BT27/BT27-065";
+import "#api/cards/BT27/BT27-048";
+import "#api/cards/BT27/BT27-017";
