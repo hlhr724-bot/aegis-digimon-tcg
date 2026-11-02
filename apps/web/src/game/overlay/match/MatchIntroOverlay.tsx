@@ -2,6 +2,7 @@ import { useEffect, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { isDigimonWorldAvatarId } from "@aegis/shared/account/avatars";
 import { Avatar } from "@/design/primitives";
+import { PixelBackdrop } from "@/design/PixelBackdrop";
 import { BotPortrait } from "@/bot/personas/BotPortrait";
 import { botPersonaById } from "@aegis/shared/bot/personas/botPersonaById";
 import { useTranslation } from "@/i18n/useTranslation";
@@ -49,6 +50,8 @@ export function MatchIntroOverlay({ viewer, opponent, leaving, onSkip }: MatchIn
       onClick={onSkip}
     >
       <div className="match-intro__backdrop" aria-hidden="true" />
+      <PixelBackdrop />
+      <div className="match-intro__burst" aria-hidden="true" />
       <p className="match-intro__announcement" role="status">
         {announcement}
       </p>
