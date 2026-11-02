@@ -186,7 +186,8 @@ evaluator or search beyond Main decisions.
 
 The residual MCTS used for training and evaluation (`runMctsResidualMatch`) gained two
 opt-in options in November 2026: a heuristic rollout program and root progressive
-widening. Together they scored +0.11 at an equal time budget in a 142-task screen. They
+widening. Together they scored +0.11 at an equal time budget in a 142-task screen, but a
+reserved-seed confirmation (119 tasks) measured only +0.03, with an interval including zero. They
 do not touch the paired root search of Expert and Master, and no level default changed.
 See [rollout program and root widening](../../apps/api/src/bot/evolution/README.md#rollout-program-and-root-widening).
 

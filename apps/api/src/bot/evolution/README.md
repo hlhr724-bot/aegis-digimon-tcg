@@ -148,6 +148,19 @@ confirmation on reserved seeds is required before any default changes. 31 of 640
 were invalid because a search had an invalid rollout; they are spread over all arms and
 excluded with their whole task.
 
+**Confirmation on reserved seeds did not reproduce the gain.** Baseline against both
+options, seeds 51000 onward, same setup. The run stopped early at 136 of 160 tasks
+when the host ran short of memory; 119 tasks were valid in both arms.
+
+| Arm      | Score | 95% Wilson interval | Paired difference from baseline | Rollouts per search |
+| -------- | ----- | ------------------- | ------------------------------- | ------------------- |
+| Baseline | 0.420 | 0.335–0.510         |                                 | 4.0                 |
+| Both     | 0.454 | 0.367–0.543         | +0.034 (−0.044 to +0.111)       | 3.9                 |
+
+The direction holds, but the effect is smaller and its interval includes zero. Treat
+the options as unproven: keep them off by default and confirm with a larger, quieter
+run, ideally at the 16 to 32 rollouts per search that a training host reaches.
+
 ## Local experimental evidence
 
 The October 2026 local screens are exploratory, with no production activation.
