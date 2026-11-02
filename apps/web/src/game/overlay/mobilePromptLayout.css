@@ -167,17 +167,20 @@
     > button:last-child {
     grid-column: 1 / -1;
   }
-  .game-modal__panel.effect-prompt-family[data-prompt-surface] .decision-overlay__footer--selection {
+  .game-modal__panel.effect-prompt-family[data-prompt-surface] .decision-overlay__footer.game-actions-row {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ds-space-2);
   }
-  .game-modal__panel.effect-prompt-family[data-prompt-surface] .decision-overlay__footer--selection > button {
+  .game-modal__panel.effect-prompt-family[data-prompt-surface] .decision-overlay__footer.game-actions-row > button {
     grid-column: auto;
     width: 100%;
+    min-height: var(--ds-touch-target);
+    border-radius: var(--ds-radius-md);
   }
   .game-modal__panel.effect-prompt-family[data-prompt-surface]
-    .decision-overlay__footer--selection
-    > button:last-child {
+    .decision-overlay__footer.game-actions-row
+    > button:last-child:nth-child(odd) {
     grid-column: 1 / -1;
   }
   .game-modal__panel.effect-prompt-family[data-prompt-surface] .effect-choice__option {
@@ -213,6 +216,15 @@
     max-height: calc(
       100dvh - var(--mobile-prompt-hand-clearance, 0px) - var(--ds-space-4) - env(safe-area-inset-top, 0px)
     ) !important;
+  }
+  .game-modal__panel.effect-prompt-family[data-prompt-surface]
+    .decision-overlay__footer.game-actions-row:has(> button:nth-child(3)) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .game-modal__panel.effect-prompt-family[data-prompt-surface]
+    .decision-overlay__footer.game-actions-row:has(> button:nth-child(3))
+    > button:last-child:nth-child(odd) {
+    grid-column: auto;
   }
 }
 
