@@ -1,3 +1,4 @@
+import { deckOddsKo } from "@/i18n/deckOdds.ko";
 import { tournamentCircuitsKo } from "@/i18n/tournamentCircuits.ko";
 import { tournamentOfficialRequestKo } from "@/i18n/tournamentOfficialRequest.ko";
 import { matchQueueKo } from "@/i18n/matchQueue.ko";
@@ -2874,6 +2875,7 @@ const interfaceMessages = {
   ...tournamentCircuitsKo,
   ...tournamentOfficialRequestKo,
   ...matchQueueKo,
+  ...deckOddsKo,
   ...staffRolesKo,
   ...achievementsKo,
   "profile.filter.deck": "덱",

@@ -1,3 +1,4 @@
+import { deckOddsIt } from "@/i18n/deckOdds.it";
 import { tournamentCircuitsIt } from "@/i18n/tournamentCircuits.it";
 import { tournamentOfficialRequestIt } from "@/i18n/tournamentOfficialRequest.it";
 import { matchQueueIt } from "@/i18n/matchQueue.it";
@@ -2668,6 +2669,7 @@ const interfaceMessages = {
   ...tournamentCircuitsIt,
   ...tournamentOfficialRequestIt,
   ...matchQueueIt,
+  ...deckOddsIt,
   ...staffRolesIt,
   ...achievementsIt,
 } satisfies Record<Exclude<keyof typeof en, `releases.${string}`>, string>;

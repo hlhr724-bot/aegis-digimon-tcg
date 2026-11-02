@@ -1,16 +1,10 @@
 import { describe, it, expect } from "vitest";
+import { OPENING_HAND_SIZE } from "@aegis/shared/rules/OPENING_HAND_SIZE";
+import { SECURITY_STACK_SIZE } from "@aegis/shared/rules/SECURITY_STACK_SIZE";
 import { GameState, PlayerState, Zone, type Seat } from "@aegis/shared";
 import { cite } from "./_kb.js";
 import "./not-testable.js";
-import {
-  runSetup,
-  finalizeSecurity,
-  mulliganRedraw,
-  makeRng,
-  seatSeed,
-  OPENING_HAND_SIZE,
-  SECURITY_STACK_SIZE,
-} from "../setup.js";
+import { runSetup, finalizeSecurity, mulliganRedraw, makeRng, seatSeed } from "../setup.js";
 import { validateDecklist } from "../deckValidation.js";
 import { RED_DECK, BLUE_DECK } from "../testDecks.js";
 import "../../cards/index.js";

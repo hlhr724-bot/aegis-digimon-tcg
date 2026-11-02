@@ -1493,3 +1493,160 @@
   font-size: var(--ds-text-xs);
   line-height: var(--ds-leading-body);
 }
+
+.deck-draw-odds {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+.deck-draw-odds__controls,
+.deck-draw-odds__toggles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.deck-draw-odds__picker {
+  flex: 1 1 12rem;
+  min-width: 0;
+  min-height: var(--ds-touch-target);
+  padding: 0 var(--ds-space-2);
+  color: var(--ds-text);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-sheet);
+}
+
+.deck-draw-odds__toggle,
+.deck-draw-odds__chip,
+.deck-draw-odds__turn {
+  min-height: var(--ds-touch-target);
+  padding: 0 var(--ds-space-2);
+  color: var(--ds-text);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-sheet);
+  cursor: pointer;
+}
+
+.deck-draw-odds__toggle:focus-visible,
+.deck-draw-odds__chip:focus-visible,
+.deck-draw-odds__turn:focus-visible,
+.deck-draw-odds__picker:focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 1px;
+}
+
+.deck-draw-odds__check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  min-height: var(--ds-touch-target);
+  color: var(--ds-text);
+  font-size: var(--ds-text-xs);
+}
+
+.deck-draw-odds__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deck-draw-odds__chip {
+  border-radius: var(--ds-radius-pill);
+}
+
+.deck-draw-odds__hint,
+.deck-draw-odds__note,
+.deck-draw-odds__sensitivity {
+  margin: 0;
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-body);
+}
+
+.deck-draw-odds__sensitivity {
+  display: grid;
+  gap: 2px;
+  padding: 0;
+  list-style: none;
+}
+
+.deck-draw-odds__table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.deck-draw-odds__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.deck-draw-odds__table th[scope="row"] {
+  max-width: 9rem;
+  padding: var(--ds-space-1) var(--ds-space-2) var(--ds-space-1) 0;
+  overflow: hidden;
+  color: var(--ds-text);
+  font-weight: 500;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deck-draw-odds__table tr[data-kind="combo"] th[scope="row"],
+.deck-draw-odds__table tr[data-kind="rookies"] th[scope="row"] {
+  color: var(--ds-text-3);
+}
+
+.deck-draw-odds__turn {
+  width: 100%;
+  min-width: 2.25rem;
+  padding: 0 var(--ds-space-1);
+  font-family: var(--ds-font-mono);
+}
+
+.deck-draw-odds__turn[aria-pressed="true"] {
+  color: var(--ds-on-accent);
+  border-color: var(--ds-accent);
+  background: var(--ds-accent);
+}
+
+.deck-draw-odds__table td {
+  position: relative;
+  height: 2rem;
+  padding: 0 2px;
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.deck-draw-odds__bar {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  left: 3px;
+  max-height: calc(100% - 4px);
+  border-radius: 2px 2px 0 0;
+  background: color-mix(in srgb, var(--ds-accent) 28%, transparent);
+}
+
+.deck-draw-odds__table td[data-focus="true"] .deck-draw-odds__bar {
+  background: color-mix(in srgb, var(--ds-accent) 55%, transparent);
+}
+
+.deck-draw-odds__value {
+  position: relative;
+  color: var(--ds-text);
+  font-family: var(--ds-font-mono);
+}
