@@ -606,3 +606,75 @@
     font-size: 18px;
   }
 }
+
+.tournaments-tiebreakers__label,
+.tournaments-tiebreakers__name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.tournaments-tiebreakers__list {
+  display: grid;
+  gap: var(--ds-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: tiebreaker;
+}
+
+.tournaments-tiebreakers__list li {
+  counter-increment: tiebreaker;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.tournaments-tiebreakers__name::before {
+  min-width: 1.5em;
+  color: var(--ds-text-3);
+  content: counter(tiebreaker) ".";
+}
+
+.tournaments-tiebreakers__list .aegis-help-tip {
+  width: 22px;
+  height: 22px;
+}
+
+.tournaments-tiebreakers__list .aegis-help-tip::before {
+  inset: -11px;
+}
+
+.tournaments-tiebreakers__actions {
+  display: inline-flex;
+  gap: var(--ds-space-1);
+}
+
+.tournaments-tiebreakers__actions button {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text-2);
+  background: transparent;
+  cursor: pointer;
+}
+
+.tournaments-tiebreakers__actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tournaments-tiebreakers__actions button:focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 1px;
+}
+
+.tournaments-points__fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ds-space-3);
+}

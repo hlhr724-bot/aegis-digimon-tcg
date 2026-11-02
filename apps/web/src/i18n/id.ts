@@ -1,6 +1,7 @@
 import { tournamentCircuitsId } from "@/i18n/tournamentCircuits.id";
 import { tournamentOfficialRequestId } from "@/i18n/tournamentOfficialRequest.id";
 import { matchQueueId } from "@/i18n/matchQueue.id";
+import { matchIntroId } from "@/i18n/matchIntro.id";
 import { staffRolesId } from "@/i18n/staffRoles.id";
 import { tournamentDetailId } from "@/i18n/tournamentDetail.id";
 import { tournamentSpectatorsId } from "@/i18n/tournamentSpectators.id";
@@ -1079,9 +1080,14 @@ const interfaceMessages = {
   "settings.noticeDuration": "Durasi notifikasi",
   "settings.noticeDurationDesc":
     "Berapa lama notifikasi efek dan panel kartu tampil di layar. Arahkan kursor ke notifikasi agar tetap terbuka.",
+  "settings.noticeDurationShort": "Singkat",
   "settings.noticeDurationNormal": "Biasa",
   "settings.noticeDurationLong": "Panjang",
   "settings.noticeDurationLongest": "Terpanjang",
+  "settings.noticeSize": "Ukuran notifikasi",
+  "settings.noticeSizeDesc": "Seberapa besar notifikasi efek dan panel kartu. Ringkas menutupi lebih sedikit papan.",
+  "settings.noticeSizeNormal": "Biasa",
+  "settings.noticeSizeCompact": "Ringkas",
   "settings.groupIdenticalTamers": "Kelompokkan Tamer identik",
   "settings.groupIdenticalTamersDesc":
     "Tampilkan Tamer identik bersama di field tertata. Nonaktifkan untuk menampilkan setiap salinan secara terpisah.",
@@ -2116,7 +2122,33 @@ const interfaceMessages = {
   "tournaments.reason.passwordInvalid": "Use at most 128 characters for the event password.",
   "tournaments.reason.incorrectPassword": "The event password is incorrect.",
   "tournaments.play.join": "Enter game",
-  "tournaments.play.ready": "I am ready",
+  "tournaments.play.ready": "Ready",
+  "tournaments.presence.label": "Ready",
+  "tournaments.presence.at": "{player}: {time}",
+  "tournaments.presence.notYet": "{player}: not yet",
+  "tournaments.history.ready": "Ready: {times}",
+  "tournaments.schedule.roundStarted": "Round {round} started",
+  "tournaments.schedule.phaseRoundStarted": "{round} started",
+  "tournaments.structure.roundRobin": "Round robin",
+  "tournaments.reason.topCutSizeInvalid": "Pilih ukuran Top Cut dari daftar, dan aktifkan Top Cut dulu.",
+  "tournaments.reason.roundsInvalid": "Pilih 1 sampai 10 ronde. Hanya event Swiss yang bisa mengaturnya.",
+  "tournaments.reason.tiebreakersInvalid":
+    "Pilih minimal satu tiebreaker, tanpa duplikat, dari yang tersedia untuk struktur ini.",
+  "tournaments.standings.tiebreakOrder":
+    "Seri poin ditentukan dengan urutan ini: {order}. Undian menentukan seri yang tersisa.",
+  "tournaments.reason.pointsInvalid":
+    "Gunakan bilangan bulat 0 sampai 10. Menang harus lebih besar dari seri, dan seri minimal sama dengan kalah.",
+  "tournaments.badge.noTopCut": "No Top Cut (too few players)",
+  "tournaments.standings.rank": "Rank",
+  "tournaments.standings.player": "Player",
+  "tournaments.standings.points": "Points",
+  "tournaments.standings.record": "W-L-D",
+  "tournaments.standings.matchWinRate": "MW%",
+  "tournaments.standings.opponentMatchWinRate": "OMW%",
+  "tournaments.standings.byes": "+{count} bye",
+  "tournaments.standings.tiebreakNote":
+    "Ties on points are broken by match win rate (MW%), then opponents' match win rate (OMW%), then head-to-head.",
+  "tournaments.catalog.winner": "Winner: {player}",
   "tournaments.play.waitingGame": "Waiting for your assigned opponent to enter this tournament game.",
   "tournaments.play.waiting": "Waiting for the opponent to confirm presence.",
   "tournaments.pairings.title": "Adjust pairings",
@@ -2135,7 +2167,7 @@ const interfaceMessages = {
   "tournaments.create.structure": "Struktur",
   "tournaments.create.bestOf": "Format pertandingan",
   "tournaments.create.topCut": "Top Cut",
-  "tournaments.create.topCutDesc": "Di akhir, pemain Swiss terbaik masuk ke bracket sistem gugur.",
+  "tournaments.create.topCutDesc": "Di akhir, pemain terbaik masuk ke bracket sistem gugur.",
   "tournaments.create.allowBots": "Izinkan bot",
   "tournaments.create.allowBotsDesc": "Isi semua kursi kosong dengan bot saat check-in ditutup.",
   "tournaments.create.banlist": "Kartu terlarang",
@@ -2224,7 +2256,7 @@ const interfaceMessages = {
   "tournaments.reason.nameTooLong": "Nama itu terlalu panjang.",
   "tournaments.reason.structureInvalid": "Pilih Swiss atau eliminasi tunggal.",
   "tournaments.reason.bestOfInvalid": "Pilih best of one atau best of three.",
-  "tournaments.reason.topCutRequiresSwiss": "Top Cut hanya berfungsi dengan turnamen Swiss.",
+  "tournaments.reason.topCutRequiresSwiss": "Top Cut hanya untuk Swiss atau round robin.",
   "tournaments.reason.banlistModeUnknown": "Kami tidak mengenali opsi kartu terlarang itu.",
   "tournaments.reason.banlistSetUnknown": "Kami belum memiliki tanggal rilis yang pasti untuk set itu.",
   "tournaments.reason.maxPlayersOutOfRange": "Pilih batas pemain antara 2 dan 1024.",
@@ -2377,7 +2409,8 @@ const interfaceMessages = {
   "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Pilih salinan",
   "deck.artEditingCopy": "Mengedit salinan {number}. Pilih artwork untuk langsung menyimpannya.",
-  "deck.artApplyAll": "Gunakan pada semua salinan",
+  "deck.artAllCopies": "Semua salinan",
+  "deck.artEditingAllCopies": "Mengedit semua salinan. Pilih artwork untuk langsung menyimpannya.",
   "deck.artDoubleClickHint": "Klik dua kali sebuah artwork untuk memakainya pada semua salinan di deck ini.",
   "common.done": "Selesai",
   "redesign.foundation.arena.preview": "Pratinjau papan dengan warna dan arena Anda",
@@ -2921,6 +2954,7 @@ const interfaceMessages = {
   ...tournamentCircuitsId,
   ...tournamentOfficialRequestId,
   ...matchQueueId,
+  ...matchIntroId,
   ...staffRolesId,
   ...achievementsId,
   "profile.filter.deck": "Deck",

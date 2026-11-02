@@ -155,6 +155,7 @@ export type Tournament = {
   maxPlayers: number;
   createdBy: string;
   winnerAccountId: string | null;
+  winnerDisplayName: string | null;
   registrations: number;
   circuitId: string | null;
   autoStart: boolean;
@@ -1327,6 +1328,7 @@ export class AccountStore {
       result.rows.map(async (row) =>
         toTournament({
           ...row,
+          winner_display_name: await this.tournamentWinnerDisplayName(row),
           registrations:
             (
               await this.pool.query<{ count: string }>(
@@ -1374,7 +1376,19 @@ export class AccountStore {
           [id],
         )
       ).rows[0]?.count ?? 0;
-    return toTournament({ ...row, registrations });
+    return toTournament({ ...row, registrations, winner_display_name: await this.tournamentWinnerDisplayName(row) });
+  }
+  private async tournamentWinnerDisplayName(row: TournamentRow): Promise<string | null> {
+    if (row.winner_account_id == null) return null;
+    const participant = await this.pool.query<{ display_name: string }>(
+      "SELECT display_name FROM tournament_participants WHERE tournament_id=$1 AND account_id=$2 LIMIT 1",
+      [row.id, row.winner_account_id],
+    );
+    if (participant.rows[0]) return participant.rows[0].display_name;
+    const account = await this.pool.query<{ display_name: string }>("SELECT display_name FROM accounts WHERE id=$1", [
+      row.winner_account_id,
+    ]);
+    return account.rows[0]?.display_name ?? null;
   }
   async registerTournament(id: string, accountId: string): Promise<boolean> {
     return this.transaction(async (client) => {
@@ -1789,6 +1803,7 @@ function toTournament(row: TournamentRow): Tournament {
     maxPlayers: Number(row.max_players),
     createdBy: String(row.created_by),
     winnerAccountId: row.winner_account_id == null ? null : String(row.winner_account_id),
+    winnerDisplayName: row.winner_display_name == null ? null : String(row.winner_display_name),
     registrations: Number(row.registrations),
     circuitId: row.circuit_id == null ? null : String(row.circuit_id),
     autoStart: row.auto_start === true,

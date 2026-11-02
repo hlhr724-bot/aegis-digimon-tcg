@@ -5,6 +5,13 @@ import { DeckFormatSelector } from "@/screens/DeckFormatSelector";
 import type { TournamentClockSettings } from "@aegis/shared/tournaments/TournamentClockSettings";
 import { TournamentClockFields } from "@/tournaments/TournamentClockFields";
 import { useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
+import { roundRobinRoundCount } from "@aegis/shared/tournaments/roundRobinRoundCount";
+import type { TournamentTiebreaker } from "@aegis/shared/tournaments/TournamentTiebreaker";
+import { MAX_SWISS_ROUNDS, TOURNAMENT_TOP_CUT_SIZES } from "@aegis/shared/tournaments/TournamentTopCutSize";
+import { TournamentTiebreakerPicker } from "@/tournaments/TournamentTiebreakerPicker";
+import { TournamentPointsField } from "@/tournaments/TournamentPointsField";
+import type { TournamentPoints } from "@aegis/shared/tournaments/TournamentPoints";
 import {
   swissRoundCount,
   topCutSize,
@@ -54,6 +61,7 @@ type FormSectionKey = (typeof FORM_SECTIONS)[number]["key"];
 
 const STRUCTURE_OPTIONS = [
   { value: "swiss", hintKey: "tournaments.create.structureHint.swiss", icon: Icons.LayoutGrid },
+  { value: "round_robin", hintKey: "tournaments.create.structureHint.roundRobin", icon: Icons.Users },
   { value: "single_elimination", hintKey: "tournaments.create.structureHint.singleElimination", icon: Icons.Trophy },
 ] as const satisfies readonly { value: TournamentStructure; hintKey: TranslationKey; icon: unknown }[];
 
@@ -87,6 +95,10 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
   );
   const [bestOf, setBestOf] = useState<1 | 3>(1);
   const [topCut, setTopCut] = useState(false);
+  const [topCutChoice, setTopCutChoice] = useState<number | null>(null);
+  const [rounds, setRounds] = useState<number | null>(null);
+  const [tiebreakers, setTiebreakers] = useState<TournamentTiebreaker[] | null>(null);
+  const [points, setPoints] = useState<TournamentPoints | null>(null);
   const [allowBots, setAllowBots] = useState(false);
   const [randomBotStyles, setRandomBotStyles] = useState(false);
   const [banlistMode, setBanlistMode] = useState<BanlistMode>("none");
@@ -96,7 +108,7 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
   const [submitting, setSubmitting] = useState(false);
 
   const isOfficial = canCreateOfficial && official;
-  const showTopCut = structure === "swiss";
+  const showTopCut = playsScoredRounds(structure);
   const startsAtMs = new Date(startsAt).getTime();
   const banlist = useMemo<BanlistPolicy>(
     () => (banlistMode === "as_of_set" ? { mode: "as_of_set", setId: banlistSetId } : { mode: banlistMode }),
@@ -116,8 +128,14 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
 
   const selectStructure = (next: TournamentStructure) => {
     setStructure(next);
+    setTiebreakers(null);
     if (next !== "swiss") {
+      setRounds(null);
+    }
+    if (!playsScoredRounds(next)) {
+      setPoints(null);
       setTopCut(false);
+      setTopCutChoice(null);
     }
   };
 
@@ -147,6 +165,10 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
       structure,
       roundStartMode,
       topCut,
+      topCutSize: topCut ? topCutChoice : null,
+      rounds: structure === "swiss" ? rounds : null,
+      tiebreakers: playsScoredRounds(structure) ? tiebreakers : null,
+      points: playsScoredRounds(structure) ? points : null,
       bestOf,
       startsAt: startsAtMs,
       maxPlayers,
@@ -314,6 +336,63 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
               </div>
             ) : null}
 
+            {showTopCut && topCut ? (
+              <div className="aegis-field">
+                <label className="aegis-field__label" htmlFor={`${formId}-top-cut-size`}>
+                  {t("tournaments.create.topCutSize")}
+                </label>
+                <select
+                  id={`${formId}-top-cut-size`}
+                  className="aegis-field__control"
+                  value={topCutChoice ?? ""}
+                  onChange={(event) => setTopCutChoice(event.target.value === "" ? null : Number(event.target.value))}
+                >
+                  <option value="">{t("tournaments.create.topCutSizeAuto")}</option>
+                  {TOURNAMENT_TOP_CUT_SIZES.map((size) => (
+                    <option key={size} value={size}>
+                      {t("tournaments.format.topCutSize", { count: size })}
+                    </option>
+                  ))}
+                </select>
+                <FieldError message={errorFor("topCutSize")} />
+              </div>
+            ) : null}
+
+            {structure === "swiss" ? (
+              <div className="aegis-field">
+                <label className="aegis-field__label" htmlFor={`${formId}-rounds`}>
+                  {t("tournaments.format.swissRounds")}
+                </label>
+                <select
+                  id={`${formId}-rounds`}
+                  className="aegis-field__control"
+                  value={rounds ?? ""}
+                  onChange={(event) => setRounds(event.target.value === "" ? null : Number(event.target.value))}
+                >
+                  <option value="">{t("tournaments.create.roundsAuto")}</option>
+                  {Array.from({ length: MAX_SWISS_ROUNDS }, (_, index) => index + 1).map((count) => (
+                    <option key={count} value={count}>
+                      {t("tournaments.format.roundCount", { count })}
+                    </option>
+                  ))}
+                </select>
+                <FieldError message={errorFor("rounds")} />
+              </div>
+            ) : null}
+
+            {playsScoredRounds(structure) ? (
+              <TournamentTiebreakerPicker
+                structure={structure}
+                value={tiebreakers}
+                onChange={setTiebreakers}
+                error={errorFor("tiebreakers")}
+              />
+            ) : null}
+
+            {playsScoredRounds(structure) ? (
+              <TournamentPointsField value={points} onChange={setPoints} error={errorFor("points")} />
+            ) : null}
+
             <div className="create-tournament__wide">
               <DeckFormatSelector value={format} onChange={setFormat} showBanlist={false} />
             </div>
@@ -418,15 +497,20 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
               <h2 className="tournaments-card__title">{t("tournaments.create.estimates")}</h2>
             </header>
             <div className="tournaments-card__content">
-              {structure === "swiss" ? (
+              {playsScoredRounds(structure) ? (
                 <>
                   <p className="create-tournament__estimate">
                     <Icons.LayoutGrid size={15} aria-hidden="true" />
-                    {t("tournaments.create.estimateRounds", { rounds: swissRoundCount(maxPlayers) })}
+                    {t("tournaments.create.estimateRounds", {
+                      rounds:
+                        structure === "round_robin"
+                          ? roundRobinRoundCount(maxPlayers)
+                          : (rounds ?? swissRoundCount(maxPlayers)),
+                    })}
                   </p>
                   <p className="create-tournament__estimate">
                     <Icons.Trophy size={15} aria-hidden="true" />
-                    {getCutEstimate({ topCut, maxPlayers, t })}
+                    {getCutEstimate({ topCut, topCutChoice, maxPlayers, t })}
                   </p>
                 </>
               ) : (
@@ -547,13 +631,13 @@ function BanlistPreviewSection({ preview }: { preview: ReturnType<typeof preview
   );
 }
 
-type CutEstimateParams = { topCut: boolean; maxPlayers: number; t: Translate };
+type CutEstimateParams = { topCut: boolean; topCutChoice: number | null; maxPlayers: number; t: Translate };
 
-function getCutEstimate({ topCut, maxPlayers, t }: CutEstimateParams): string {
+function getCutEstimate({ topCut, topCutChoice, maxPlayers, t }: CutEstimateParams): string {
   if (!topCut) {
     return t("tournaments.create.estimateNoCut");
   }
-  const size = topCutSize(maxPlayers);
+  const size = topCutChoice ?? topCutSize(maxPlayers);
   if (size > 0) {
     return t("tournaments.create.estimateCut", { size });
   }

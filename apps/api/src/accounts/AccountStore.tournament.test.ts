@@ -368,6 +368,15 @@ describe("AccountStore tournament results", () => {
       ),
     ).toBe(true);
     expect(await store.tournament(id)).toMatchObject({ status: "finished", winnerAccountId: final.player0AccountId });
+    const championName = (
+      await store.pool.query<{ display_name: string }>("SELECT display_name FROM accounts WHERE id=$1", [
+        final.player0AccountId,
+      ])
+    ).rows[0]!.display_name;
+    expect((await store.tournament(id))?.winnerDisplayName).toBe(championName);
+    expect((await store.tournaments()).find((tournament) => tournament.id === id)?.winnerDisplayName).toBe(
+      championName,
+    );
     const champion = await store.profile(final.player0AccountId!);
     expect(champion.stats).toMatchObject({ tournamentsWon: 1, tournamentsPlayed: 1, tournamentWins: 1 });
     expect((await new TrophyStore(store).getTrophies(final.player0AccountId!)).items).toMatchObject([

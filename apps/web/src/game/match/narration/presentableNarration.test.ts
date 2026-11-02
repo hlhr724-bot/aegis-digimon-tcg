@@ -4,6 +4,7 @@ import { NOTICE_LIFETIME_MS, type MatchNotice } from "../../notices";
 import type { NarrationItem } from "../../narration";
 import { TOUCH_NARRATION_LIFETIME_SCALE } from "../../narration";
 import { setNoticeDuration } from "../../noticeDuration";
+import { SIDE_PANEL_LIFETIME_MS } from "@/game/sidePanels";
 import { presentableNarration, createDiscardedSourcePanels } from "./presentableNarration";
 
 const item = {
@@ -24,6 +25,20 @@ describe("presentable narration", () => {
   it("stretches the reading time by the chosen notice duration", () => {
     setNoticeDuration("longest");
     expect(presentableNarration(item, { collapseNarration: false }).lifetimeMs).toBe(NOTICE_LIFETIME_MS * 2);
+  });
+
+  it("shortens the reading time of a notice and its card panel at short duration", () => {
+    setNoticeDuration("short");
+    const withPanel = {
+      ...item,
+      panel: { id: "panel-1", side: 0, titleKey: "panel.trashed", cards: [], ordered: false, createdAt: 0 },
+    } as unknown as NarrationItem;
+    expect(presentableNarration(item, { collapseNarration: false }).lifetimeMs).toBe(
+      Math.round(NOTICE_LIFETIME_MS * 0.6),
+    );
+    expect(presentableNarration(withPanel, { collapseNarration: false }).lifetimeMs).toBe(
+      Math.round(Math.max(NOTICE_LIFETIME_MS, SIDE_PANEL_LIFETIME_MS) * 0.6),
+    );
   });
 
   it("combines the notice duration with the touch layout's longer clock", () => {

@@ -1,6 +1,7 @@
 import { tournamentCircuitsDe } from "@/i18n/tournamentCircuits.de";
 import { tournamentOfficialRequestDe } from "@/i18n/tournamentOfficialRequest.de";
 import { matchQueueDe } from "@/i18n/matchQueue.de";
+import { matchIntroDe } from "@/i18n/matchIntro.de";
 import { staffRolesDe } from "@/i18n/staffRoles.de";
 import { tournamentDetailDe } from "@/i18n/tournamentDetail.de";
 import { tournamentSpectatorsDe } from "@/i18n/tournamentSpectators.de";
@@ -1102,9 +1103,14 @@ const interfaceMessages = {
   "settings.noticeDuration": "Anzeigedauer von Hinweisen",
   "settings.noticeDurationDesc":
     "Wie lange Effekthinweise und Kartenfenster auf dem Bildschirm bleiben. Bewegen Sie den Mauszeiger über einen Hinweis, um ihn offen zu halten.",
+  "settings.noticeDurationShort": "Kurz",
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Lang",
   "settings.noticeDurationLongest": "Am längsten",
+  "settings.noticeSize": "Größe von Hinweisen",
+  "settings.noticeSizeDesc": "Wie groß Effekthinweise und Kartenfenster sind. Kompakt verdeckt weniger vom Spielfeld.",
+  "settings.noticeSizeNormal": "Normal",
+  "settings.noticeSizeCompact": "Kompakt",
   "settings.groupIdenticalTamers": "Identische Tamer gruppieren",
   "settings.groupIdenticalTamersDesc":
     "Zeigt identische Tamer im geordneten Feld zusammen. Ausschalten, um jede Kopie einzeln anzuzeigen.",
@@ -2152,7 +2158,34 @@ const interfaceMessages = {
   "tournaments.reason.passwordInvalid": "Use at most 128 characters for the event password.",
   "tournaments.reason.incorrectPassword": "The event password is incorrect.",
   "tournaments.play.join": "Enter game",
-  "tournaments.play.ready": "I am ready",
+  "tournaments.play.ready": "Ready",
+  "tournaments.presence.label": "Ready",
+  "tournaments.presence.at": "{player}: {time}",
+  "tournaments.presence.notYet": "{player}: not yet",
+  "tournaments.history.ready": "Ready: {times}",
+  "tournaments.schedule.roundStarted": "Round {round} started",
+  "tournaments.schedule.phaseRoundStarted": "{round} started",
+  "tournaments.structure.roundRobin": "Jeder gegen jeden",
+  "tournaments.reason.topCutSizeInvalid":
+    "Wählen Sie eine Top-Cut-Größe aus der Liste und schalten Sie den Top Cut zuerst ein.",
+  "tournaments.reason.roundsInvalid": "Wählen Sie 1 bis 10 Runden. Nur Schweizer Events können das festlegen.",
+  "tournaments.reason.tiebreakersInvalid":
+    "Wählen Sie mindestens einen Tiebreaker, jeden nur einmal, aus denen, die diese Struktur bietet.",
+  "tournaments.standings.tiebreakOrder":
+    "Punktgleichstände werden in dieser Reihenfolge entschieden: {order}. Ein Los entscheidet jeden verbleibenden Gleichstand.",
+  "tournaments.reason.pointsInvalid":
+    "Nutzen Sie ganze Zahlen von 0 bis 10. Ein Sieg muss mehr zählen als ein Unentschieden, ein Unentschieden mindestens so viel wie eine Niederlage.",
+  "tournaments.badge.noTopCut": "No Top Cut (too few players)",
+  "tournaments.standings.rank": "Rank",
+  "tournaments.standings.player": "Player",
+  "tournaments.standings.points": "Points",
+  "tournaments.standings.record": "W-L-D",
+  "tournaments.standings.matchWinRate": "MW%",
+  "tournaments.standings.opponentMatchWinRate": "OMW%",
+  "tournaments.standings.byes": "+{count} bye",
+  "tournaments.standings.tiebreakNote":
+    "Ties on points are broken by match win rate (MW%), then opponents' match win rate (OMW%), then head-to-head.",
+  "tournaments.catalog.winner": "Winner: {player}",
   "tournaments.play.waitingGame": "Waiting for your assigned opponent to enter this tournament game.",
   "tournaments.play.waiting": "Waiting for the opponent to confirm presence.",
   "tournaments.pairings.title": "Adjust pairings",
@@ -2171,7 +2204,7 @@ const interfaceMessages = {
   "tournaments.create.structure": "Struktur",
   "tournaments.create.bestOf": "Match-Länge",
   "tournaments.create.topCut": "Top Cut",
-  "tournaments.create.topCutDesc": "Am Ende ziehen die besten Spieler der Schweizer Runden in eine K.-o.-Runde ein.",
+  "tournaments.create.topCutDesc": "Am Ende ziehen die besten Spieler in eine K.-o.-Runde ein.",
   "tournaments.create.allowBots": "Bots zulassen",
   "tournaments.create.allowBotsDesc": "Füllt freie Plätze mit Bots auf, wenn der Check-in endet.",
   "tournaments.create.banlist": "Verbotene Karten",
@@ -2262,7 +2295,7 @@ const interfaceMessages = {
   "tournaments.reason.nameTooLong": "Dieser Name ist zu lang.",
   "tournaments.reason.structureInvalid": "Wählen Sie Schweizer System oder K.-o.-System.",
   "tournaments.reason.bestOfInvalid": "Wählen Sie Best-of-One oder Best-of-Three.",
-  "tournaments.reason.topCutRequiresSwiss": "Ein Top Cut ist nur bei einem Turnier im Schweizer System möglich.",
+  "tournaments.reason.topCutRequiresSwiss": "Top Cut gibt es nur bei Schweizer System oder Jeder gegen jeden.",
   "tournaments.reason.banlistModeUnknown": "Diese Option für verbotene Karten kennen wir nicht.",
   "tournaments.reason.banlistSetUnknown": "Für dieses Set gibt es kein bestätigtes Erscheinungsdatum.",
   "tournaments.reason.maxPlayersOutOfRange": "Wählen Sie ein Spielerlimit zwischen 2 und 1024.",
@@ -2424,7 +2457,8 @@ const interfaceMessages = {
   "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Kopie wählen",
   "deck.artEditingCopy": "Kopie {number} wird bearbeitet. Wählen Sie ein Artwork, um es sofort zu speichern.",
-  "deck.artApplyAll": "Für alle Kopien verwenden",
+  "deck.artAllCopies": "Alle Kopien",
+  "deck.artEditingAllCopies": "Alle Kopien werden bearbeitet. Wählen Sie ein Artwork, um es sofort zu speichern.",
   "deck.artDoubleClickHint": "Doppelklicken Sie auf ein Artwork, um es für alle Kopien in diesem Deck zu verwenden.",
   "common.done": "Fertig",
   "redesign.foundation.arena.preview": "Spielfeldvorschau mit Ihren Farben und Ihrem Schlachtfeld",
@@ -2980,6 +3014,7 @@ const interfaceMessages = {
   ...tournamentCircuitsDe,
   ...tournamentOfficialRequestDe,
   ...matchQueueDe,
+  ...matchIntroDe,
   ...staffRolesDe,
   ...achievementsDe,
   "profile.filter.deck": "Deck",

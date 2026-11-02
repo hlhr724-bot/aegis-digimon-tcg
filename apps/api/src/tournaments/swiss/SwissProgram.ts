@@ -1,6 +1,10 @@
 import { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
 import { grantTournamentTrophies } from "#api/achievements/grantTournamentTrophies";
 import { buildTournamentRules } from "#api/tournaments/rules/buildTournamentRules";
+import { pairRoundRobinRound } from "#api/tournaments/pairing/pairRoundRobinRound";
+import type { SwissBye, SwissPairing } from "#api/tournaments/pairing/pairSwissRound";
+import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
+import { TournamentTiebreaker } from "@aegis/shared/tournaments/TournamentTiebreaker";
 import { randomUUID } from "node:crypto";
 import type {
   LedgerEntry,
@@ -11,12 +15,13 @@ import type {
   SeriesScoreView,
   StandingsRow,
   TournamentRules,
+  TournamentStructure,
 } from "@aegis/shared";
 import type { PoolClient } from "pg";
 import type { AccountStore } from "../../accounts/AccountStore.js";
 import type { Queryable } from "../../db/migrator.js";
 import { appendTournamentEvent } from "../audit/index.js";
-import { pairSwissRound, type PairingParticipant, type SwissPairingResult } from "../pairing/index.js";
+import { pairSwissRound, type PairingParticipant } from "../pairing/index.js";
 import { type AcquireTournamentLock, inProcessTournamentLock } from "../participants/index.js";
 import { freezeStructure } from "../rules/index.js";
 import type { SeriesStore } from "../series/index.js";
@@ -91,13 +96,14 @@ export class SwissProgram {
     return this.mutate(tournamentId, async (client) => {
       const tournament = await lockTournament(client, tournamentId);
       if (!tournament) return failure("tournament_not_found");
-      if (tournament.structure !== "swiss") return failure("not_swiss");
+      if (!playsScoredRounds(tournament.structure)) return failure("not_swiss");
 
       const existing = await readPhase(client, tournamentId);
       if (existing) return ok(await this.phaseView(client, tournament, existing));
 
       const roster = await readRoster(client, tournamentId);
       if (roster.length === 0) return failure("no_active_participants");
+      if (tournament.structure === "round_robin" && roster.length < 2) return failure("no_active_participants");
       // Swiss pairs participants but seats accounts: the match row, the presence check and the
       // game authorization are all account-keyed. A bot has no account and therefore no seat, and
       // no preset allows bots in Swiss — so this is a corrupted field, not a supported case.
@@ -105,8 +111,10 @@ export class SwissProgram {
       if (accountless) return failure("participant_without_account", accountless.id);
 
       const frozen = freezeStructure(roster.length, {
-        structure: "swiss",
+        structure: tournament.structure as TournamentStructure,
         topCut: tournament.topCutEnabled,
+        rounds: tournament.rules?.program?.rounds ?? null,
+        topCutSize: tournament.rules?.program?.topCutSize ?? null,
       });
       await client.query("UPDATE tournaments SET top_cut_size=$1, status='in_progress' WHERE id=$2", [
         frozen.topCutSize,
@@ -442,17 +450,15 @@ export class SwissProgram {
     phaseId: string,
     roundNumber: number,
     now: number,
-  ): Promise<SwissResult<SwissPairingResult>> {
+  ): Promise<SwissResult<RoundPlan>> {
     const roster = await readRoster(client, tournament.id);
     if (roster.length === 0) return failure("no_active_participants");
-    const ledger = await readLedger(client, tournament.id);
-    const paired = pairSwissRound({
-      participants: pairingParticipants(roster, ledger, standingsConfig(tournament.rules, tournament.id)),
-      roundNumber,
-      seed: tournament.id,
-    });
-    if (!paired.ok) return failure("pairing_failed", paired.error.message);
-    const result = paired.result;
+    const planned =
+      tournament.structure === "round_robin"
+        ? ok(await planRoundRobinRound(client, tournament.id, phaseId, roster, roundNumber))
+        : await planSwissRound(client, tournament, roster, roundNumber);
+    if (!planned.ok) return planned;
+    const result = planned.value;
 
     const roundId = randomUUID();
     await client.query(
@@ -495,20 +501,18 @@ export class SwissProgram {
       position += 1;
     }
 
-    // A bye is a resolved match the instant it is published: nobody has to show up for it, so it
-    // carries no join deadline and its ledger row is written now rather than at round close. That
-    // is what lets the round close on the remaining matches alone.
-    if (result.bye) {
-      const byeAccountId = accountOfParticipant.get(result.bye.participantId) ?? null;
+    for (const bye of result.byes) {
+      const byeAccountId = accountOfParticipant.get(bye.participantId) ?? null;
       await client.query(
         `INSERT INTO tournament_matches
            (id, tournament_id, round, position, player0_account_id, winner_account_id, status,
             phase_id, round_id, pairing_reason)
          VALUES ($1,$2,$3,$4,$5,$5,'bye',$6,$7,$8)`,
-        [randomUUID(), tournament.id, roundNumber, position, byeAccountId, phaseId, roundId, result.bye.reason],
+        [randomUUID(), tournament.id, roundNumber, position, byeAccountId, phaseId, roundId, bye.reason],
       );
+      position += 1;
       await this.appendLedger(client, tournament.id, roundNumber, now, {
-        participantId: result.bye.participantId,
+        participantId: bye.participantId,
         opponentId: null,
         opponentKind: null,
         roundNumber,
@@ -533,7 +537,8 @@ export class SwissProgram {
       after: {
         roundNumber,
         matches: result.pairings.length,
-        bye: result.bye?.participantId ?? null,
+        bye: result.byes[0]?.participantId ?? null,
+        byes: result.byes.map((bye) => bye.participantId),
         scoreDifference: result.scoreDifference,
         scoreDifferenceOptimal: result.scoreDifferenceOptimal,
         budgetExhausted: result.budgetExhausted,
@@ -547,7 +552,8 @@ export class SwissProgram {
   private async roundResults(client: PoolClient, tournamentId: string, roundId: string): Promise<MatchResult[]> {
     const matches = (
       await client.query<MatchOutcomeRow>(
-        `SELECT m.id, m.status, m.player0_account_id, m.player1_account_id, s.status series_status, s.official_result
+        `SELECT m.id, m.status, m.player0_account_id, m.player1_account_id, s.status series_status, s.official_result,
+                s.wins0, s.wins1
          FROM tournament_matches m
          LEFT JOIN match_series s ON s.tournament_match_id = m.id
          WHERE m.round_id=$1 ORDER BY m.position`,
@@ -574,7 +580,7 @@ export class SwissProgram {
     // double loss would be inventing one, which is exactly what the rules plan forbids: it waits
     // for an audited organizer decision instead.
     if (officialResult === null) return { ...base, state: "needs_decision" };
-    return { ...base, state: "resolved", officialResult };
+    return { ...base, state: "resolved", officialResult, games: [toCount(row.wins0), toCount(row.wins1)] };
   }
 
   private async ledgerMatch(
@@ -594,6 +600,8 @@ export class SwissProgram {
       opponentKind: second.kind,
       roundNumber,
       outcome: outcome0,
+      gamesWon: result.games[0],
+      gamesLost: result.games[1],
     });
     await this.appendLedger(client, tournamentId, roundNumber, now, {
       participantId: second.id,
@@ -601,6 +609,8 @@ export class SwissProgram {
       opponentKind: first.kind,
       roundNumber,
       outcome: outcome1,
+      gamesWon: result.games[1],
+      gamesLost: result.games[0],
     });
     const winnerAccountId =
       result.officialResult === "participant0"
@@ -629,8 +639,9 @@ export class SwissProgram {
   ): Promise<void> {
     await client.query(
       `INSERT INTO tournament_result_ledger
-         (id, tournament_id, participant_id, opponent_id, opponent_kind, round_number, outcome, recorded_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+         (id, tournament_id, participant_id, opponent_id, opponent_kind, round_number, outcome, recorded_at,
+          games_won, games_lost)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        ON CONFLICT (tournament_id, participant_id, round_number) DO NOTHING`,
       [
         randomUUID(),
@@ -641,6 +652,8 @@ export class SwissProgram {
         roundNumber,
         entry.outcome,
         now,
+        entry.gamesWon ?? null,
+        entry.gamesLost ?? null,
       ],
     );
   }
@@ -819,7 +832,7 @@ type MatchResult = {
   | { state: "open" }
   | { state: "ledgered" }
   | { state: "needs_decision" }
-  | { state: "resolved"; officialResult: ResolvedResult }
+  | { state: "resolved"; officialResult: ResolvedResult; games: [number | null, number | null] }
 );
 
 type MatchOutcomeRow = {
@@ -829,6 +842,16 @@ type MatchOutcomeRow = {
   player1_account_id: string | null;
   series_status: string | null;
   official_result: string | null;
+  wins0: string | number | null;
+  wins1: string | number | null;
+};
+
+type RoundPlan = {
+  pairings: SwissPairing[];
+  byes: SwissBye[];
+  scoreDifference: number | null;
+  scoreDifferenceOptimal: boolean | null;
+  budgetExhausted: boolean | null;
 };
 
 type TournamentContext = {
@@ -880,14 +903,11 @@ const TIEBREAKER_ALIASES: Record<string, string> = {
   random_final_position: "judge_random_draw",
 };
 
-const KNOWN_TIEBREAKERS = new Set([
+const KNOWN_TIEBREAKERS = new Set<string>([
   "points",
-  "match_win_rate",
-  "opponent_match_win_rate",
-  "opponent_opponent_match_win_rate",
-  "head_to_head",
   "extra_match",
   "judge_random_draw",
+  ...Object.values(TournamentTiebreaker).map((entry) => entry.value),
 ]);
 
 /**
@@ -1115,8 +1135,10 @@ async function readLedger(
       opponent_kind: ParticipantKind | null;
       round_number: string | number;
       outcome: MatchOutcome;
+      games_won: number | null;
+      games_lost: number | null;
     }>(
-      `SELECT participant_id, opponent_id, opponent_kind, round_number, outcome
+      `SELECT participant_id, opponent_id, opponent_kind, round_number, outcome, games_won, games_lost
        FROM tournament_result_ledger
        WHERE tournament_id=$1 AND ($2::int IS NULL OR round_number <= $2::int)
        ORDER BY round_number, participant_id`,
@@ -1128,7 +1150,74 @@ async function readLedger(
     opponentKind: row.opponent_kind,
     roundNumber: Number(row.round_number),
     outcome: row.outcome,
+    gamesWon: row.games_won === null ? null : Number(row.games_won),
+    gamesLost: row.games_lost === null ? null : Number(row.games_lost),
   }));
+}
+
+function toCount(value: string | number | null): number | null {
+  return value === null ? null : Number(value);
+}
+
+async function planSwissRound(
+  client: PoolClient,
+  tournament: TournamentContext,
+  roster: readonly RosterEntry[],
+  roundNumber: number,
+): Promise<SwissResult<RoundPlan>> {
+  const ledger = await readLedger(client, tournament.id);
+  const paired = pairSwissRound({
+    participants: pairingParticipants(roster, ledger, standingsConfig(tournament.rules, tournament.id)),
+    roundNumber,
+    seed: tournament.id,
+  });
+  if (!paired.ok) return failure("pairing_failed", paired.error.message);
+  return ok({
+    pairings: paired.result.pairings,
+    byes: paired.result.bye ? [paired.result.bye] : [],
+    scoreDifference: paired.result.scoreDifference,
+    scoreDifferenceOptimal: paired.result.scoreDifferenceOptimal,
+    budgetExhausted: paired.result.budgetExhausted,
+  });
+}
+
+async function planRoundRobinRound(
+  client: PoolClient,
+  tournamentId: string,
+  phaseId: string,
+  roster: readonly RosterEntry[],
+  roundNumber: number,
+): Promise<RoundPlan> {
+  const seating = await readRoundRobinSeating(client, tournamentId, phaseId, roster);
+  const round = pairRoundRobinRound({
+    seating,
+    activeIds: new Set(roster.map((participant) => participant.id)),
+    roundNumber,
+  });
+  return { ...round, scoreDifference: null, scoreDifferenceOptimal: null, budgetExhausted: null };
+}
+
+async function readRoundRobinSeating(
+  client: PoolClient,
+  tournamentId: string,
+  phaseId: string,
+  roster: readonly RosterEntry[],
+): Promise<string[]> {
+  const seated = await client.query<{ player0_account_id: string | null; player1_account_id: string | null }>(
+    "SELECT player0_account_id, player1_account_id FROM tournament_matches WHERE phase_id=$1 AND round=1",
+    [phaseId],
+  );
+  if (seated.rows.length === 0) return roster.map((participant) => participant.id);
+  const accounts = new Set(
+    seated.rows.flatMap((row) => [row.player0_account_id, row.player1_account_id]).filter((id) => id !== null),
+  );
+  const participants = await client.query<{ id: string; account_id: string | null }>(
+    "SELECT id, account_id FROM tournament_participants WHERE tournament_id=$1 ORDER BY created_at, id",
+    [tournamentId],
+  );
+  return participants.rows
+    .filter((participant) => participant.account_id !== null && accounts.has(participant.account_id))
+    .map((participant) => participant.id);
 }
 
 /**

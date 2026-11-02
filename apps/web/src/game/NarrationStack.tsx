@@ -28,6 +28,8 @@ import {
 import { noticeRemaining, type MatchNotice } from "./notices";
 import type { LowTimeWarning } from "@/game/useLowTimeWarning";
 import { motionPreference } from "@/design/motion/motionPreference";
+import { useNoticeSize } from "@/game/noticeSize/useNoticeSize";
+import { getNoticeSizeStyle } from "@/game/noticeSize/getNoticeSizeStyle";
 
 /** The art on the folded band: enough to recognise the card, not enough to read it. */
 const PEEK_ART_WIDTH = 34;
@@ -181,6 +183,7 @@ function Slot({
     };
   }, [count, anchor, children]);
   const { t } = useTranslation();
+  const noticeSize = useNoticeSize();
 
   function scrollPage(direction: -1 | 1) {
     const element = column.current;
@@ -199,8 +202,9 @@ function Slot({
       data-security-dock={securityDockActive || undefined}
       data-more={more.above || more.below || undefined}
       data-anchor={anchor}
+      data-notice-size={noticeSize.value}
       ref={column}
-      style={{ "--narration-count": count } as CSSProperties}
+      style={{ "--narration-count": count, ...getNoticeSizeStyle(noticeSize) } as CSSProperties}
       onPointerEnter={(event) => event.pointerType === "mouse" && hold(true)}
       onPointerLeave={(event) => event.pointerType === "mouse" && hold(false)}
       onFocus={() => hold(true)}

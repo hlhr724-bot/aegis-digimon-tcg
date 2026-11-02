@@ -1,3 +1,4 @@
+import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
 import type { AccountStore } from "#api/accounts/AccountStore";
 import { logError } from "#api/logger";
 import type { BotSeatingStore } from "#api/tournaments/bots/BotSeatingStore";
@@ -33,7 +34,7 @@ export async function startDueTournaments(params: Params): Promise<number> {
   for (const tournament of due) {
     const tournamentId = String(tournament.id);
     try {
-      if (tournament.structure === "swiss" && (await confirmedField(accounts, tournamentId)) < MIN_SWISS_FIELD) {
+      if (playsScoredRounds(tournament.structure) && (await confirmedField(accounts, tournamentId)) < MIN_SWISS_FIELD) {
         await participants.cancelTournament({ tournamentId, reason: "below_minimum", now });
         continue;
       }

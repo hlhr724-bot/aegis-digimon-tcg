@@ -136,3 +136,83 @@ describe("validateCreateTournament", () => {
     expect(asOfSet.value.banlistCards.length).toBeLessThan(current.value.banlistCards.length);
   });
 });
+
+describe("validateCreateTournament organizer program settings", () => {
+  it("freezes the Swiss default tiebreakers and automatic sizes for a new Swiss event", () => {
+    const result = validateCreateTournament(competitive(), CREATED_AT);
+    if (!result.ok) throw new Error("expected a valid event");
+    expect(result.value.rules.standings.tiebreakers).toEqual([
+      "opponent_match_win_rate",
+      "game_win_rate",
+      "opponent_opponent_match_win_rate",
+      "judge_random_draw",
+    ]);
+    expect(result.value.rules.program).toEqual({ rounds: null, topCutSize: null });
+  });
+
+  it("freezes the round robin default tiebreakers", () => {
+    const result = validateCreateTournament(competitive({ structure: "round_robin" }), CREATED_AT);
+    if (!result.ok) throw new Error("expected a valid event");
+    expect(result.value.rules.standings.tiebreakers).toEqual([
+      "match_wins",
+      "head_to_head",
+      "game_win_rate",
+      "judge_random_draw",
+    ]);
+  });
+
+  it("keeps the organizer's tiebreaker order, Top Cut size and round count", () => {
+    const result = validateCreateTournament(
+      competitive({ tiebreakers: ["game_difference", "opponent_points"], topCutSize: 4, rounds: 6 }),
+      CREATED_AT,
+    );
+    if (!result.ok) throw new Error("expected a valid event");
+    expect(result.value.rules.standings.tiebreakers).toEqual([
+      "game_difference",
+      "opponent_points",
+      "judge_random_draw",
+    ]);
+    expect(result.value.rules.program).toEqual({ rounds: 6, topCutSize: 4 });
+  });
+
+  it("refuses tiebreakers the structure does not offer, repeats and empty lists", () => {
+    expect(codes(competitive({ structure: "round_robin", tiebreakers: ["opponent_match_win_rate"] }))).toContain(
+      "tiebreakers_invalid",
+    );
+    expect(codes(competitive({ tiebreakers: ["head_to_head", "head_to_head"] }))).toContain("tiebreakers_invalid");
+    expect(codes(competitive({ tiebreakers: [] }))).toContain("tiebreakers_invalid");
+    expect(codes(community({ tiebreakers: ["head_to_head"] }))).toContain("tiebreakers_invalid");
+  });
+
+  it("refuses a Top Cut size without a Top Cut or outside the offered sizes", () => {
+    expect(codes(competitive({ topCut: false, topCutSize: 4 }))).toContain("top_cut_size_invalid");
+    expect(codes(competitive({ topCutSize: 6 }))).toContain("top_cut_size_invalid");
+  });
+
+  it("refuses a round count outside Swiss or above the limit", () => {
+    expect(codes(competitive({ structure: "round_robin", rounds: 3 }))).toContain("rounds_invalid");
+    expect(codes(competitive({ rounds: 11 }))).toContain("rounds_invalid");
+    expect(codes(competitive({ rounds: 0 }))).toContain("rounds_invalid");
+  });
+});
+
+describe("validateCreateTournament points", () => {
+  it("freezes the organizer's points per win, draw and loss, with a bye worth a win", () => {
+    const result = validateCreateTournament(competitive({ points: { win: 2, draw: 1, loss: 0 } }), CREATED_AT);
+    if (!result.ok) throw new Error("expected a valid event");
+    expect(result.value.rules.standings).toMatchObject({ winPoints: 2, drawPoints: 1, lossPoints: 0, byePoints: 2 });
+  });
+
+  it("keeps 3/1/0 when the organizer leaves points on Auto", () => {
+    const result = validateCreateTournament(competitive(), CREATED_AT);
+    if (!result.ok) throw new Error("expected a valid event");
+    expect(result.value.rules.standings).toMatchObject({ winPoints: 3, drawPoints: 1, lossPoints: 0, byePoints: 3 });
+  });
+
+  it("refuses points where a win is not worth more than a draw, or values out of range", () => {
+    expect(codes(competitive({ points: { win: 1, draw: 1, loss: 0 } }))).toContain("points_invalid");
+    expect(codes(competitive({ points: { win: 3, draw: 0, loss: 1 } }))).toContain("points_invalid");
+    expect(codes(competitive({ points: { win: 11, draw: 1, loss: 0 } }))).toContain("points_invalid");
+    expect(codes(community({ points: { win: 3, draw: 1, loss: 0 } }))).toContain("points_invalid");
+  });
+});

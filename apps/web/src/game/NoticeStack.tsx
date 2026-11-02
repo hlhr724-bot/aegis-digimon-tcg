@@ -21,6 +21,7 @@ import { CardLink, CardLinkedText, cardDisplayName, useCardOpener } from "./card
 import { ErodeRing } from "./ErodeRing";
 import { TIMING_LABELS, noticeEffectClause } from "./overlay";
 import { type MatchNotice, type NoticeKeyword, type StackStripReason } from "./notices";
+import { useNoticeSize } from "@/game/noticeSize/useNoticeSize";
 
 /** The art beside the clause: a thumbnail on a phone, a readable card on a desktop board. */
 const NOTICE_THUMB_WIDTH = 46;
@@ -34,6 +35,18 @@ const PREVENTION_KEYWORD_DESCRIPTION_KEYS = {
   armorPurge: "notice.keywordDescription.armorPurge",
 } as const;
 
+interface ThumbWidthParams {
+  material: boolean;
+  desktop: boolean;
+}
+
+function getThumbWidth({ material, desktop }: ThumbWidthParams): number {
+  if (material) {
+    return desktop ? 42 : 32;
+  }
+  return desktop ? NOTICE_THUMB_WIDTH_DESKTOP : NOTICE_THUMB_WIDTH;
+}
+
 /**
  * The notice's art, opening the card when the board has somewhere to open it.
  *
@@ -43,7 +56,8 @@ const PREVENTION_KEYWORD_DESCRIPTION_KEYS = {
 function NoticeThumb({ cardId, artId, material = false }: { cardId: string; artId?: string; material?: boolean }) {
   const openCard = useCardOpener();
   const desktop = useMediaQuery(DESKTOP_NOTICE_QUERY);
-  const width = material ? (desktop ? 42 : 32) : desktop ? NOTICE_THUMB_WIDTH_DESKTOP : NOTICE_THUMB_WIDTH;
+  const { scale } = useNoticeSize();
+  const width = Math.round(getThumbWidth({ material, desktop }) * scale);
   return (
     <span className={`match-notice__thumb${material ? " match-notice__thumb--material" : ""}`} aria-hidden="true">
       <CardMini
