@@ -1,6 +1,6 @@
 {
   "name": "@aegis/api",
-  "version": "1.47.0-beta",
+  "version": "1.48.0-beta",
   "private": true,
   "description": "Aegis authoritative game server: Node + TypeScript + Colyseus. Owns 100% of game state and rules.",
   "type": "module",

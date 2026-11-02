@@ -1,4 +1,58 @@
 {
+  "releases.1.48.0-beta.summary": {
+    "en": "Matches open with a VS intro, effect notices can be shorter and smaller, and tournaments show more detail. Includes 3D arena improvements on phones and rules fixes.",
+    "pt-BR": "As partidas começam com uma introdução VS, os avisos de efeito podem ser mais curtos e menores, e os torneios mostram mais detalhes. Inclui melhorias da Arena 3D em celulares e correções de regras.",
+    "es": "Las partidas empiezan con una introducción VS, los avisos de efecto pueden ser más cortos y pequeños, y los torneos muestran más detalles. Incluye mejoras de la Arena 3D en móviles y correcciones de reglas.",
+    "it": "Le partite si aprono con un'introduzione VS, gli avvisi degli effetti possono essere più brevi e piccoli e i tornei mostrano più dettagli. Include miglioramenti dell'Arena 3D sui telefoni e correzioni alle regole."
+  },
+  "releases.1.48.0-beta.feature.matchIntro": {
+    "en": "A VS intro with both players' avatars and names plays before each match. Tap it to skip.",
+    "pt-BR": "Uma introdução VS com os avatares e nomes dos dois jogadores aparece antes de cada partida. Toque para pular.",
+    "es": "Una introducción VS con los avatares y nombres de ambos jugadores aparece antes de cada partida. Tócala para saltarla.",
+    "it": "Prima di ogni partita appare un'introduzione VS con gli avatar e i nomi dei due giocatori. Toccala per saltarla."
+  },
+  "releases.1.48.0-beta.feature.notices": {
+    "en": "Settings has a Short notice duration and a Compact notice size, so effect notices and card panels cover less of the board.",
+    "pt-BR": "As Configurações têm uma duração Curta e um tamanho Compacto para os avisos, para que avisos de efeito e painéis de carta cubram menos o tabuleiro.",
+    "es": "Los Ajustes tienen una duración Corta y un tamaño Compacto para los avisos, para que los avisos de efecto y los paneles de carta tapen menos el tablero.",
+    "it": "Le Impostazioni hanno una durata Breve e una dimensione Compatta per gli avvisi, così gli avvisi degli effetti e i pannelli delle carte coprono meno il tabellone."
+  },
+  "releases.1.48.0-beta.feature.artPicker": {
+    "en": "The deck builder's artwork picker starts on All copies, so one click restyles every copy. Choose a copy to change only that one.",
+    "pt-BR": "O seletor de arte do construtor de decks começa em Todas as cópias, então um clique muda todas as cópias. Escolha uma cópia para mudar só ela.",
+    "es": "El selector de arte del constructor de mazos empieza en Todas las copias, así que un clic cambia todas las copias. Elige una copia para cambiar solo esa.",
+    "it": "Il selettore di artwork del deck builder parte da Tutte le copie, così un clic cambia ogni copia. Scegli una copia per cambiare solo quella."
+  },
+  "releases.1.48.0-beta.feature.tournaments": {
+    "en": "Tournaments show round start times, each player's ready time, a standings table with points and tiebreakers, and the winner of finished events. Organizers can run round robin events and choose tiebreakers.",
+    "pt-BR": "Os torneios mostram o horário de início das rodadas, o horário em que cada jogador ficou pronto, uma tabela de classificação com pontos e critérios de desempate e o vencedor dos eventos encerrados. Organizadores podem fazer eventos em todos contra todos e escolher os desempates.",
+    "es": "Los torneos muestran la hora de inicio de cada ronda, la hora en que cada jugador estuvo listo, una tabla de clasificación con puntos y desempates, y el ganador de los eventos terminados. Los organizadores pueden hacer eventos de todos contra todos y elegir los desempates.",
+    "it": "I tornei mostrano l'orario di inizio dei turni, l'orario in cui ogni giocatore è pronto, una classifica con punti e spareggi e il vincitore degli eventi conclusi. Gli organizzatori possono creare eventi a girone all'italiana e scegliere gli spareggi."
+  },
+  "releases.1.48.0-beta.feature.arena3d": {
+    "en": "Arena 3D on phones is sharper and smoother, with a clearer turn wave, a larger inspected card and animated field effects.",
+    "pt-BR": "A Arena 3D no celular está mais nítida e fluida, com uma onda de turno mais visível, uma carta inspecionada maior e efeitos de campo animados.",
+    "es": "La Arena 3D en móviles es más nítida y fluida, con una ola de turno más visible, una carta inspeccionada más grande y efectos de campo animados.",
+    "it": "L'Arena 3D sui telefoni è più nitida e fluida, con un'onda del turno più visibile, una carta ispezionata più grande ed effetti di campo animati."
+  },
+  "releases.1.48.0-beta.fix.artsDigivolve": {
+    "en": "When an effect uses an Option with Arts Digivolve, the new Digimon's [When Digivolving] now resolves before the opponent's effects from the same deletion.",
+    "pt-BR": "Quando um efeito usa uma Opção com Arts Digivolve, o [When Digivolving] do novo Digimon agora resolve antes dos efeitos do oponente gerados pela mesma deleção.",
+    "es": "Cuando un efecto usa una Opción con Arts Digivolve, el [When Digivolving] del nuevo Digimon ahora se resuelve antes de los efectos del oponente causados por la misma eliminación.",
+    "it": "Quando un effetto usa un'Opzione con Arts Digivolve, il [When Digivolving] del nuovo Digimon ora si risolve prima degli effetti dell'avversario causati dalla stessa eliminazione."
+  },
+  "releases.1.48.0-beta.fix.lowestDp": {
+    "en": "Effects that choose the lowest or highest DP Digimon now count Digimon at 0 DP.",
+    "pt-BR": "Efeitos que escolhem o Digimon com menor ou maior DP agora consideram Digimon com 0 DP.",
+    "es": "Los efectos que eligen al Digimon con menos o más DP ahora cuentan a los Digimon con 0 DP.",
+    "it": "Gli effetti che scelgono il Digimon con meno o più DP ora considerano i Digimon con 0 DP."
+  },
+  "releases.1.48.0-beta.fix.replaysScroll": {
+    "en": "The Public Replays screen scrolls again.",
+    "pt-BR": "A tela de Replays Públicos volta a rolar.",
+    "es": "La pantalla de Repeticiones públicas vuelve a desplazarse.",
+    "it": "La schermata dei Replay pubblici scorre di nuovo."
+  },
   "releases.1.47.0-beta.summary": {
     "en": "Try the new Arena 3D board, watch live tournament games from the bracket, find live matches in Play > Rooms, and filter community decks by guide. Adds BT27 cards and rules fixes.",
     "pt-BR": "Experimente o novo tabuleiro Arena 3D, assista a partidas de torneio ao vivo direto da chave, encontre partidas ao vivo em Jogar > Salas e filtre decks da comunidade com guia. Inclui cartas de BT27 e correções de regras.",
