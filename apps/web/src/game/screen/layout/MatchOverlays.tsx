@@ -115,6 +115,7 @@ export function MatchOverlays({
   onRematch,
   returnsToRoom,
   arenaDeckColors,
+  mulliganHeld,
 }: {
   state: GameState;
   viewer: PlayerState;
@@ -223,6 +224,7 @@ export function MatchOverlays({
   returnsToRoom?: boolean;
   /** Each side's main card color, for the board look settings' deck-color palette. */
   arenaDeckColors: ArenaDeckColors;
+  mulliganHeld: boolean;
 }) {
   const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
@@ -241,7 +243,7 @@ export function MatchOverlays({
     : undefined;
   return (
     <>
-      {decision && decision.seat === viewerSeat && decision.kind === "mulligan" ? (
+      {decision && decision.seat === viewerSeat && decision.kind === "mulligan" && !mulliganHeld ? (
         <MulliganOverlay
           handCardIds={handEntries.map((h) => h.cardId)}
           turnOrder={viewerTurnOrder}
