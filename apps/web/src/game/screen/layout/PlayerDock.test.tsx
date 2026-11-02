@@ -8,7 +8,10 @@ import { PlayerDock } from "./PlayerDock";
 
 afterEach(cleanup);
 
-function renderSpectatorDock(props: Partial<ComponentProps<typeof PlayerDock>>, onOpenCard = vi.fn<(cardId: string, artId?: string) => void>()) {
+function renderSpectatorDock(
+  props: Partial<ComponentProps<typeof PlayerDock>>,
+  onOpenCard = vi.fn<(cardId: string, artId?: string) => void>(),
+) {
   render(
     <I18nProvider>
       <CardOpenerProvider onOpenCard={onOpenCard}>
