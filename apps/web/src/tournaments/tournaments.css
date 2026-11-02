@@ -1881,3 +1881,30 @@
     font-size: 19px;
   }
 }
+
+.tournaments-format dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.tournaments-format dd {
+  align-self: center;
+}
+
+.tournaments-format dt .aegis-help-tip {
+  width: 22px;
+  height: 22px;
+}
+
+.tournaments-format__scale {
+  display: grid;
+  gap: 2px;
+  margin: var(--ds-space-2) 0;
+  padding-left: var(--ds-space-4);
+}
+
+.tournaments-format__order {
+  margin: 0;
+  padding-left: var(--ds-space-4);
+}

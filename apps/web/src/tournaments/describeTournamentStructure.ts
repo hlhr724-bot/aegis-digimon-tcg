@@ -15,5 +15,8 @@ export function describeTournamentStructure({ detail, t }: DescribeTournamentStr
   if (detail.topCutSize === 0) {
     return `${structure} · ${t("tournaments.badge.noTopCut")}`;
   }
-  return `${structure} + ${t("tournaments.badge.topCut")}`;
+  if (detail.topCutSize === null) {
+    return `${structure} + ${t("tournaments.badge.topCut")}`;
+  }
+  return `${structure} + ${t("tournaments.format.topCutSize", { count: detail.topCutSize })}`;
 }

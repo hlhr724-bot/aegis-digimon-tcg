@@ -5,7 +5,6 @@ import { TournamentCategorySwitch } from "@/tournaments/TournamentCategorySwitch
 import { isCheckInOpen } from "@/tournaments/isCheckInOpen";
 import { serverNow } from "@/tournaments/serverClock";
 import { TournamentMatchHistory } from "@/tournaments/TournamentMatchHistory";
-import { deckFormatLabel } from "@/screens/deckFormatLabel";
 import type { TournamentGameTicket } from "@aegis/shared/tournaments/TournamentGameTicket";
 import { TournamentPairingControls } from "@/tournaments/TournamentPairingControls";
 import { TournamentSpectatingPanel } from "@/tournaments/TournamentSpectatingPanel";
@@ -25,6 +24,7 @@ import { TournamentCopyLinkButton } from "@/tournaments/TournamentCopyLinkButton
 import { TournamentCrumb } from "@/tournaments/TournamentCrumb";
 import { TournamentScheduleTimeline } from "@/tournaments/TournamentScheduleTimeline";
 import { TournamentStandingsTable } from "@/tournaments/TournamentStandingsTable";
+import { TournamentFormatPanel } from "@/tournaments/TournamentFormatPanel";
 import { describeTournamentStructure } from "@/tournaments/describeTournamentStructure";
 import { isTournamentClosed } from "@/tournaments/isTournamentClosed";
 import { Alert, Badge, Button, Panel } from "../design/primitives";
@@ -44,7 +44,7 @@ import { TournamentSignupFlow } from "@/tournaments/TournamentSignupFlow";
 import { ownParticipant } from "@/tournaments/ownParticipant";
 import { TournamentCloseCheckIn } from "@/tournaments/TournamentCloseCheckIn";
 import { usePolledRequest } from "./hooks";
-import { banlistModeKey, participantStatusKey, restrictionKey, statusKey, structureKey, windowKey } from "./labels";
+import { participantStatusKey, restrictionKey, statusKey, windowKey } from "./labels";
 import { MyMatchPanel } from "./MyMatchPanel";
 import { TopCutBracket } from "./TopCutBracket";
 import type { TournamentDetail as TournamentDetailPayload, TournamentWindows } from "./types";
@@ -138,10 +138,6 @@ export function TournamentDetail({
   const own = ownParticipant({ participants: detail.participants, accountId });
   const isActiveParticipant = own !== undefined && own.status !== "dropped" && own.status !== "disqualified";
   const actions = entryActions({ detail, own, signedIn: accountId !== undefined });
-  const banlistLabel =
-    detail.banlistPolicy.mode === "as_of_set"
-      ? t("tournaments.banlist.asOfSet", { set: detail.banlistPolicy.setId })
-      : t(banlistModeKey(detail.banlistPolicy));
   const isElimination = detail.structure === "single_elimination";
   const eliminationPhase = detail.phases?.find((phase) => phase.kind === "single_elimination");
   const visibleTabs = Object.values(TournamentTab).filter((entry) => !entry.organizerOnly || canOrganize);
@@ -174,28 +170,7 @@ export function TournamentDetail({
     </Panel>
   ) : null;
 
-  const formatPanel = (
-    <Panel>
-      <h3>{t("tournaments.detail.format")}</h3>
-      <dl>
-        <dt>{t("tournaments.create.structure")}</dt>
-        <dd>{t(structureKey(detail.structure))}</dd>
-        <dt>{t("tournaments.detail.cardPool")}</dt>
-        <dd>{deckFormatLabel(detail.format ?? "standard", t)}</dd>
-        <dt>{t("tournaments.create.bestOf")}</dt>
-        <dd>{t("tournaments.bestOf", { count: detail.bestOf })}</dd>
-        <dt>{t("tournaments.create.banlist")}</dt>
-        <dd>{banlistLabel}</dd>
-      </dl>
-      <div className="tournaments-badges">
-        {detail.topCutEnabled && detail.topCutSize !== 0 ? (
-          <Badge tone="success">{t("tournaments.badge.topCut")}</Badge>
-        ) : null}
-        {detail.topCutEnabled && detail.topCutSize === 0 ? <Badge>{t("tournaments.badge.noTopCut")}</Badge> : null}
-        {detail.allowBots ? <Badge tone="warning">{t("tournaments.badge.bots")}</Badge> : null}
-      </div>
-    </Panel>
-  );
+  const formatPanel = <TournamentFormatPanel detail={detail} />;
 
   const schedulePanel = (
     <Panel>
@@ -338,7 +313,11 @@ export function TournamentDetail({
     <Panel>
       <h3>{t("tournaments.detail.standings")}</h3>
       {detail.standings?.length ? (
-        <TournamentStandingsTable standings={detail.standings} participants={detail.participants} />
+        <TournamentStandingsTable
+          standings={detail.standings}
+          participants={detail.participants}
+          rules={detail.rules}
+        />
       ) : (
         <p>{t("tournaments.detail.standingsPending")}</p>
       )}

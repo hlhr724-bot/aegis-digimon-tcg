@@ -2015,6 +2015,13 @@ const interfaceMessages = {
   "tournaments.history.ready": "Ready: {times}",
   "tournaments.schedule.roundStarted": "Round {round} started",
   "tournaments.schedule.phaseRoundStarted": "{round} started",
+  "tournaments.structure.roundRobin": "Girone all'italiana",
+  "tournaments.reason.topCutSizeInvalid": "Scegli una dimensione del Top Cut dalla lista e attiva prima il Top Cut.",
+  "tournaments.reason.roundsInvalid": "Scegli da 1 a 10 turni. Solo gli eventi svizzeri possono impostarlo.",
+  "tournaments.reason.tiebreakersInvalid":
+    "Scegli almeno uno spareggio, senza ripetizioni, tra quelli offerti da questa struttura.",
+  "tournaments.standings.tiebreakOrder":
+    "I pareggi a punti si risolvono in quest'ordine: {order}. Un sorteggio decide ogni pareggio rimasto.",
   "tournaments.badge.noTopCut": "No Top Cut (too few players)",
   "tournaments.standings.rank": "Rank",
   "tournaments.standings.player": "Player",
@@ -2044,8 +2051,7 @@ const interfaceMessages = {
   "tournaments.create.structure": "Struttura",
   "tournaments.create.bestOf": "Durata dell'incontro",
   "tournaments.create.topCut": "Top Cut",
-  "tournaments.create.topCutDesc":
-    "Alla fine, i migliori della fase svizzera passano a un tabellone a eliminazione diretta.",
+  "tournaments.create.topCutDesc": "Alla fine, i migliori giocatori passano a un tabellone a eliminazione.",
   "tournaments.create.allowBots": "Consenti bot",
   "tournaments.create.allowBotsDesc": "Occupa i posti vuoti con bot alla chiusura del check-in.",
   "tournaments.create.banlist": "Carte vietate",
@@ -2134,7 +2140,7 @@ const interfaceMessages = {
   "tournaments.reason.nameTooLong": "Il nome è troppo lungo.",
   "tournaments.reason.structureInvalid": "Scegli sistema svizzero o eliminazione diretta.",
   "tournaments.reason.bestOfInvalid": "Scegli al meglio di una o tre partite.",
-  "tournaments.reason.topCutRequiresSwiss": "Il Top Cut funziona solo con un torneo svizzero.",
+  "tournaments.reason.topCutRequiresSwiss": "Il Top Cut funziona solo con lo svizzero o il girone all'italiana.",
   "tournaments.reason.banlistModeUnknown": "Non riconosciamo questa opzione per la banlist.",
   "tournaments.reason.banlistSetUnknown": "Non abbiamo una data di pubblicazione confermata per quell'espansione.",
   "tournaments.reason.maxPlayersOutOfRange": "Scegli un limite tra 2 e 1024 giocatori.",

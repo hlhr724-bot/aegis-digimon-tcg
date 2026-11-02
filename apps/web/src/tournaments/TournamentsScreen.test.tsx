@@ -211,7 +211,7 @@ describe("tournament catalog", () => {
     expect(within(lightning).queryByText("Top Cut")).toBeNull();
 
     const regional = screen.getByRole("heading", { name: "Regional qualifier" }).closest("li") as HTMLElement;
-    expect(within(regional).getByText("Swiss + Top Cut")).toBeTruthy();
+    expect(within(regional).getByText("Swiss + Top 8")).toBeTruthy();
     expect(within(regional).getByText("Banned cards as of BT10")).toBeTruthy();
     expect(within(regional).queryByText("Bots allowed")).toBeNull();
   });
@@ -407,6 +407,78 @@ describe("tournament creation form", () => {
     fireEvent.click(screen.getByRole("switch", { name: /Top Cut/ }));
     expect(within(estimates).getByText("Roughly a Top 2 cut")).toBeTruthy();
     expect(within(estimates).getByText(/locked in when check-in closes/)).toBeTruthy();
+  });
+
+  it("offers round robin with its default tiebreakers and the Top Cut switch", async () => {
+    await openForm();
+    fireEvent.click(screen.getByRole("radio", { name: /Round robin/ }));
+    expect(screen.getByRole("switch", { name: /Top Cut/ })).toBeTruthy();
+    expect(screen.queryByLabelText("Swiss rounds")).toBeNull();
+    const order = screen.getByRole("list", { name: /Tiebreakers/ });
+    expect(
+      within(order)
+        .getAllByRole("listitem")
+        .map((item) => item.textContent),
+    ).toEqual(["Match wins", "Head-to-head", "Game win rate (GW%)"]);
+  });
+
+  it("submits the organizer's Top Cut size, round count and tiebreaker order", async () => {
+    const fetchMock = mockApi({
+      "GET /tournaments": { body: [] },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true, roles: ["admin"] } },
+      "POST /tournaments": { status: 201, body: { ...LIGHTNING, banlistCards: [] } },
+    });
+    await openForm();
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Custom Swiss" } });
+    fireEvent.click(screen.getByRole("radio", { name: /Swiss/ }));
+    fireEvent.click(screen.getByRole("switch", { name: /Top Cut/ }));
+    fireEvent.change(screen.getByLabelText("Top Cut size"), { target: { value: "4" } });
+    fireEvent.change(screen.getByLabelText("Swiss rounds"), { target: { value: "6" } });
+    fireEvent.click(screen.getByRole("button", { name: "Custom" }));
+    fireEvent.click(screen.getByRole("button", { name: "Move Game win rate (GW%) up" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove Opponents' opponents' match win rate (OOMW%)" }));
+    fireEvent.change(screen.getByLabelText("Add a tiebreaker"), { target: { value: "head_to_head" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Create tournament" }));
+    const postedBody = async () => {
+      const call = fetchMock.mock.calls.find(
+        (args: unknown[]) => (args[1] as RequestInit | undefined)?.method === "POST",
+      );
+      return call === undefined ? undefined : JSON.parse(String((call[1] as RequestInit).body));
+    };
+    await waitFor(async () => expect(await postedBody()).toBeDefined());
+    expect(await postedBody()).toMatchObject({
+      structure: "swiss",
+      topCut: true,
+      topCutSize: 4,
+      rounds: 6,
+      tiebreakers: ["game_win_rate", "opponent_match_win_rate", "head_to_head"],
+    });
+  });
+
+  it("sends automatic settings as null so the server applies the official tables", async () => {
+    const fetchMock = mockApi({
+      "GET /tournaments": { body: [] },
+      "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", avatarUrl: null, isAdmin: true, roles: ["admin"] } },
+      "POST /tournaments": { status: 201, body: { ...LIGHTNING, banlistCards: [] } },
+    });
+    await openForm();
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Auto Swiss" } });
+    fireEvent.click(screen.getByRole("radio", { name: /Swiss/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Create tournament" }));
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some((args: unknown[]) => (args[1] as RequestInit | undefined)?.method === "POST"),
+      ).toBe(true),
+    );
+    const call = fetchMock.mock.calls.find(
+      (args: unknown[]) => (args[1] as RequestInit | undefined)?.method === "POST",
+    )!;
+    expect(JSON.parse(String((call[1] as RequestInit).body))).toMatchObject({
+      topCutSize: null,
+      rounds: null,
+      tiebreakers: null,
+    });
   });
 
   it("renders the server's validation reason codes inline", async () => {

@@ -2158,6 +2158,14 @@ const interfaceMessages = {
   "tournaments.history.ready": "Ready: {times}",
   "tournaments.schedule.roundStarted": "Round {round} started",
   "tournaments.schedule.phaseRoundStarted": "{round} started",
+  "tournaments.structure.roundRobin": "Jeder gegen jeden",
+  "tournaments.reason.topCutSizeInvalid":
+    "Wählen Sie eine Top-Cut-Größe aus der Liste und schalten Sie den Top Cut zuerst ein.",
+  "tournaments.reason.roundsInvalid": "Wählen Sie 1 bis 10 Runden. Nur Schweizer Events können das festlegen.",
+  "tournaments.reason.tiebreakersInvalid":
+    "Wählen Sie mindestens einen Tiebreaker, jeden nur einmal, aus denen, die diese Struktur bietet.",
+  "tournaments.standings.tiebreakOrder":
+    "Punktgleichstände werden in dieser Reihenfolge entschieden: {order}. Ein Los entscheidet jeden verbleibenden Gleichstand.",
   "tournaments.badge.noTopCut": "No Top Cut (too few players)",
   "tournaments.standings.rank": "Rank",
   "tournaments.standings.player": "Player",
@@ -2187,7 +2195,7 @@ const interfaceMessages = {
   "tournaments.create.structure": "Struktur",
   "tournaments.create.bestOf": "Match-Länge",
   "tournaments.create.topCut": "Top Cut",
-  "tournaments.create.topCutDesc": "Am Ende ziehen die besten Spieler der Schweizer Runden in eine K.-o.-Runde ein.",
+  "tournaments.create.topCutDesc": "Am Ende ziehen die besten Spieler in eine K.-o.-Runde ein.",
   "tournaments.create.allowBots": "Bots zulassen",
   "tournaments.create.allowBotsDesc": "Füllt freie Plätze mit Bots auf, wenn der Check-in endet.",
   "tournaments.create.banlist": "Verbotene Karten",
@@ -2278,7 +2286,7 @@ const interfaceMessages = {
   "tournaments.reason.nameTooLong": "Dieser Name ist zu lang.",
   "tournaments.reason.structureInvalid": "Wählen Sie Schweizer System oder K.-o.-System.",
   "tournaments.reason.bestOfInvalid": "Wählen Sie Best-of-One oder Best-of-Three.",
-  "tournaments.reason.topCutRequiresSwiss": "Ein Top Cut ist nur bei einem Turnier im Schweizer System möglich.",
+  "tournaments.reason.topCutRequiresSwiss": "Top Cut gibt es nur bei Schweizer System oder Jeder gegen jeden.",
   "tournaments.reason.banlistModeUnknown": "Diese Option für verbotene Karten kennen wir nicht.",
   "tournaments.reason.banlistSetUnknown": "Für dieses Set gibt es kein bestätigtes Erscheinungsdatum.",
   "tournaments.reason.maxPlayersOutOfRange": "Wählen Sie ein Spielerlimit zwischen 2 und 1024.",
