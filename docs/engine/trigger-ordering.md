@@ -1,9 +1,39 @@
 ---
 title: Trigger ordering audit
-updated: 2026-10-15
+updated: 2026-11-02
 ---
 
 # Trigger ordering
+
+## Arts Digivolve inside a resolving effect (2026-11-02)
+
+Issue: https://github.com/vinicius3333/aegis-digimon-tcg/issues/6453
+
+The reported match `f6fcf95e-ca61-4139-87be-eea73d013523` (report 809, server
+`eb8e2ac85652ba0ea83a33f7cee3fb0a4252c1d8`) replays all 149 inputs without divergence on
+the development baseline.
+
+ST23-04 Murasamemon's [When Digivolving] uses BT25-043 Habakiri, and Habakiri's Arts
+Digivolve turns Murasamemon into Habakirimon. Q6166 (ST23-04) and Q6313 (BT25-043) require the
+0 DP Digimon to be deleted by rule check right after the Arts Digivolve, with its deletion
+reactions triggering at the same time as Habakirimon's [When Digivolving]. The engine deleted
+the opponent's Examon at the correct time. However, `flushRuleTriggerPool` opened the reaction
+window immediately, while ST23-04 was still resolving. Partition and ＜Delay＞ DNA digivolved
+into EX13-045, whose [When Digivolving] then resolved before ST23-04 ended. Its battle deleted
+Habakirimon, so the turn player's parked [When Digivolving] never activated.
+
+`flushRuleTriggerPool` now parks the pooled reactions with the enclosing window whenever an
+effect is resolving inside an active window, as it already did for an Option used at top level
+(BT26-031 Q6998). Would-leave replacements still interrupt immediately. After ST23-04
+finishes, Habakirimon's [When Digivolving] resolves before the opponent's EX13-045 entry
+effect (comprehensive rules 15-4-3-5 and 15-4-4).
+
+Proof lives in `scenarios/arts-digivolve-inside-effect-resolves-turn-player-entry-effects-first.test.ts`.
+Reverting the engine change makes it fail. In `turn-player-block-triggers-resolve-first-replay.test.ts`,
+EX13-014's outer [When Digivolving] now ends before the reactions to its own Arts Digivolve
+deletion. That moves one `effectResolved` event earlier, so the test now expects state-version
+and event-count drift at inputs 50 and 51. Its decisions and behavioral assertions are
+unchanged.
 
 ## Derived trigger exhaustion (2026-10-15)
 

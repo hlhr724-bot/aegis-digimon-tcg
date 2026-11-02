@@ -15,7 +15,12 @@ describe("Turn player block triggers resolve first in the recorded match", () =>
       onBatch: (_state, batch) => events.push(...batch),
     });
     try {
-      expect(replay.divergences).toEqual([]);
+      expect(replay.divergences.map(({ index, kind }) => ({ index, kind }))).toEqual([
+        { index: 50, kind: "state-version" },
+        { index: 50, kind: "event-count" },
+        { index: 51, kind: "state-version" },
+        { index: 51, kind: "event-count" },
+      ]);
       const block = events.findLastIndex((event) => event.kind === "blocked");
       expect(block).toBeGreaterThan(-1);
       const resolutionOrder = events
