@@ -89,6 +89,16 @@ describe("field burst", () => {
     expect(permanentBurstFromEvent({ ...PLAYED, seat: VIEWER }, 1)).not.toBeNull();
   });
 
+  it("keeps the acting seat so an opponent raising burst stays on the opponent side", () => {
+    expect(permanentBurstFromEvent({ ...DIGIVOLVED, seat: OPPONENT, inBreeding: true }, 1)).toMatchObject({
+      seat: OPPONENT,
+      inBreeding: true,
+    });
+    expect(
+      permanentBurstFromEvent({ kind: "hatched", seat: OPPONENT, permanentId: "perm-egg", cardId: "ST1-01" }, 1),
+    ).toMatchObject({ seat: OPPONENT, variant: "hatch" });
+  });
+
   it("leaves an Option alone: it never becomes a permanent", () => {
     expect(permanentBurstFromEvent({ kind: "cardPlayed", seat: OPPONENT, cardId: "BT1-090" }, 1)).toBeNull();
   });

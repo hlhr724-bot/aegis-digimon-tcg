@@ -43,6 +43,7 @@ it("keeps the host entrance when sources or its stripped top change, and remount
   const evolution = {
     key: 2,
     permanentId: perm.permanentId,
+    seat: 0 as const,
     variant: "evolve" as const,
     color: "Blue" as const,
     inBreeding: false,
@@ -59,6 +60,7 @@ it("keeps a breeding transfer quiet after handoff, but permits the next evolutio
   const move = {
     key: 1,
     permanentId: perm.permanentId,
+    seat: 0 as const,
     variant: "play" as const,
     color: "Blue" as const,
     inBreeding: false,

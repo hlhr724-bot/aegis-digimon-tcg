@@ -10,6 +10,7 @@ import { findArenaZoneElement } from "@/game/arena3d/findArenaZoneElement";
 import { findAttackerPermanentId } from "@/game/arena3d/findAttackerPermanentId";
 import { getElementCenter } from "@/game/arena3d/getElementCenter";
 import { getOppositeSide } from "@/game/arena3d/getOppositeSide";
+import { resolveArenaBurstAnchor } from "@/game/arena3d/resolveArenaBurstAnchor";
 import type { FieldClashScene } from "@/game/fieldClash";
 import type { DeleteBurst, TurnTransitionCue } from "@/game/match/types";
 import type { MatchFinale } from "@/game/match/finale/MatchFinale";
@@ -230,11 +231,12 @@ export function useArenaPulses({
         continue;
       }
       seenBursts.current.add(burst.key);
-      const element = permanents.current?.[burst.permanentId];
-      const side = getElementSide(element);
-      const anchor =
-        element ??
-        (burst.inBreeding ? findArenaZoneElement({ board: board.current, side, zone: ArenaZone.RAISING.value }) : null);
+      const { side, anchor } = resolveArenaBurstAnchor({
+        board: board.current,
+        burst,
+        viewerSeat,
+        element: permanents.current?.[burst.permanentId],
+      });
       emit({
         key: `burst:${burst.key}`,
         kind: getBurstKind(burst.variant),
@@ -244,7 +246,7 @@ export function useArenaPulses({
         permanentId: burst.permanentId,
       });
     }
-  }, [permanentBursts, permanents, board, emit]);
+  }, [permanentBursts, permanents, board, viewerSeat, emit]);
 
   useEffect(() => {
     for (const burst of deleteBursts) {
