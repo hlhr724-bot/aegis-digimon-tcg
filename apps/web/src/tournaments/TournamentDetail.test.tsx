@@ -15,6 +15,13 @@ import { loadDictionary } from "@/i18n/loadDictionary";
 import { loadCardTranslations } from "@/i18n/loadCardTranslations";
 import { translator } from "@/i18n/translator";
 
+const RULES_FOR_FORMAT = {
+  match: { winsRequired: 2, swissDurationMs: null, topCutDurationMs: null, finalDurationMs: null, overtimeMs: 0 },
+  attendance: { joinGraceMs: 0, gameLossAtMs: null, matchLossAtMs: 0 },
+  timeout: { swiss: "draw", elimination: "extra_turns_then_state_tiebreak" },
+  standings: { winPoints: 3, drawPoints: 1, lossPoints: 0, byePoints: 3, tiebreakers: [] as string[] },
+} satisfies NonNullable<TournamentDetailPayload["rules"]>;
+
 const DETAIL: TournamentDetailPayload = {
   id: "t-1",
   name: "Regional qualifier",
@@ -193,8 +200,226 @@ describe("tournament detail", () => {
     const standings = (await screen.findByRole("heading", { name: "Standings" })).closest(
       ".aegis-panel",
     ) as HTMLElement;
-    expect(within(standings).getByText("Tamer One")).toBeTruthy();
-    expect(within(standings).getByText("9 points")).toBeTruthy();
+    const row = within(standings).getByRole("row", { name: /Tamer One/ });
+    expect(within(row).getByText("9")).toBeTruthy();
+    expect(within(row).getByText("3-0-0")).toBeTruthy();
+    expect(within(row).getByText("100.0%")).toBeTruthy();
+    expect(within(row).getByText("50.0%")).toBeTruthy();
+    expect(within(standings).getByRole("columnheader", { name: "OMW%" })).toBeTruthy();
+  });
+
+  it("lists only players who are still in the event", async () => {
+    mockDetail({
+      participants: [
+        ...DETAIL.participants,
+        { id: "p-3", accountId: "acc-gone", kind: "human", displayName: "Gone Tamer", status: "dropped", seed: null },
+      ],
+    });
+    renderDetail("acc-player", undefined, false, TournamentTab.PLAYERS.value);
+    const participants = (await screen.findByRole("heading", { name: "Players" })).closest(
+      ".aegis-panel",
+    ) as HTMLElement;
+    expect(within(participants).getByText("Tamer One")).toBeTruthy();
+    expect(within(participants).queryByText("Gone Tamer")).toBeNull();
+    expect(within(participants).queryByText("Dropped out")).toBeNull();
+  });
+
+  it("adds the actual start of each round to the schedule", async () => {
+    mockDetail({
+      status: "running",
+      phases: [
+        {
+          id: "phase-swiss",
+          kind: "swiss",
+          status: "running",
+          plannedRounds: 3,
+          rounds: [
+            { number: 1, status: "published", publishedAt: Date.parse("2026-08-13T18:07:00.000Z"), matches: [] },
+          ],
+        },
+      ],
+    });
+    renderDetail("acc-player");
+    const schedule = (await screen.findByRole("heading", { name: "Schedule" })).closest(".aegis-panel") as HTMLElement;
+    expect(within(schedule).getByText("Round 1 started")).toBeTruthy();
+  });
+
+  it("says a finished Swiss event had no Top Cut when the field was too small", async () => {
+    mockDetail({ status: "finished", topCutSize: 0, winnerDisplayName: "Tamer One" });
+    renderDetail("acc-player");
+    expect(await screen.findByText("Swiss · No Top Cut (too few players)")).toBeTruthy();
+    expect(screen.getByText("Winner: Tamer One")).toBeTruthy();
+  });
+
+  it("says the round count and Top Cut are set when check-in closes", async () => {
+    mockDetail();
+    renderDetail("acc-player");
+    const format = (await screen.findByRole("heading", { name: "Format" })).closest(".aegis-panel") as HTMLElement;
+    expect(within(format).getAllByText("Set when check-in closes")).toHaveLength(2);
+    expect(screen.getAllByText("Swiss + Top Cut").length).toBeGreaterThan(0);
+  });
+
+  it("states the frozen round count and Top Cut size once check-in closes", async () => {
+    mockDetail({
+      status: "running",
+      registeredCount: 20,
+      topCutSize: 4,
+      phases: [{ id: "phase-swiss", kind: "swiss", status: "running", plannedRounds: 5, rounds: [] }],
+    });
+    renderDetail("acc-player");
+    const format = (await screen.findByRole("heading", { name: "Format" })).closest(".aegis-panel") as HTMLElement;
+    expect(within(format).getByText("5 rounds")).toBeTruthy();
+    expect(within(format).getByText("Top 4")).toBeTruthy();
+    expect(screen.getAllByText("Swiss + Top 4").length).toBeGreaterThan(0);
+  });
+
+  it("says no Top Cut applies when 8 or fewer players checked in", async () => {
+    mockDetail({ status: "running", topCutSize: 0 });
+    renderDetail("acc-player");
+    const format = (await screen.findByRole("heading", { name: "Format" })).closest(".aegis-panel") as HTMLElement;
+    expect(within(format).getByText("None (8 or fewer players)")).toBeTruthy();
+  });
+
+  it("explains the Top Cut size table in its help tip", async () => {
+    mockDetail();
+    renderDetail("acc-player");
+    fireEvent.click(await screen.findByRole("button", { name: "What does Top Cut mean?" }));
+    expect(await screen.findByText("Up to 8 players: no cut")).toBeTruthy();
+    expect(screen.getByText("17–32 players: top 4")).toBeTruthy();
+    expect(screen.getByText("33–128 players: top 8")).toBeTruthy();
+    expect(screen.getByText("Over 512 players: top 32")).toBeTruthy();
+  });
+
+  it("explains every format setting with a help tip", async () => {
+    mockDetail({ allowBots: true });
+    renderDetail("acc-player");
+    await screen.findByRole("heading", { name: "Format" });
+    for (const setting of [
+      "Structure",
+      "Swiss rounds",
+      "Top Cut",
+      "Card pool",
+      "Match length",
+      "Banned cards",
+      "Bots",
+    ]) {
+      expect(screen.getByRole("button", { name: `What does ${setting} mean?` })).toBeTruthy();
+    }
+    fireEvent.click(screen.getByRole("button", { name: "What does Match length mean?" }));
+    expect(
+      await screen.findByText("Each match is up to 3 games. The first player to win 2 takes the match."),
+    ).toBeTruthy();
+  });
+
+  it("explains a round robin event with the organizer's Top Cut and tiebreaker order", async () => {
+    mockDetail({
+      structure: "round_robin",
+      rules: {
+        ...RULES_FOR_FORMAT,
+        standings: { ...RULES_FOR_FORMAT.standings, tiebreakers: ["match_wins", "head_to_head", "judge_random_draw"] },
+        program: { rounds: null, topCutSize: 4 },
+      },
+    });
+    renderDetail("acc-player");
+    const format = (await screen.findByRole("heading", { name: "Format" })).closest(".aegis-panel") as HTMLElement;
+    expect(within(format).getByText("Round robin")).toBeTruthy();
+    expect(within(format).getByText("Top 4 (set by organizer)")).toBeTruthy();
+    expect(within(format).getByText("Match wins")).toBeTruthy();
+    expect(within(format).getByText("Head-to-head")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "What does Tiebreakers mean?" }));
+    expect(await screen.findByText("If you beat the other tied players, you rank above them.")).toBeTruthy();
+  });
+
+  it("shows standings columns in the event's tiebreaker order", async () => {
+    mockDetail({
+      status: "running",
+      rules: {
+        ...RULES_FOR_FORMAT,
+        standings: {
+          ...RULES_FOR_FORMAT.standings,
+          tiebreakers: ["game_win_rate", "game_difference", "judge_random_draw"],
+        },
+      },
+      standings: [
+        {
+          participantId: "p-1",
+          rank: 1,
+          points: 3,
+          wins: 1,
+          losses: 0,
+          draws: 0,
+          byes: 0,
+          matchWinRate: 1,
+          opponentMatchWinRate: 0.33,
+          gameWinRate: 2 / 3,
+          gameDifference: 1,
+        },
+      ],
+    });
+    renderDetail("acc-player", undefined, false, TournamentTab.BRACKET.value);
+    const standings = (await screen.findByRole("heading", { name: "Standings" })).closest(
+      ".aegis-panel",
+    ) as HTMLElement;
+    expect(
+      within(standings)
+        .getAllByRole("columnheader")
+        .map((cell) => cell.textContent),
+    ).toEqual(["Rank", "Player", "Points", "W-L-D", "GW%", "Game diff."]);
+    expect(within(standings).getByText("66.7%")).toBeTruthy();
+    expect(
+      within(standings).getByText(
+        "Ties on points are broken in this order: Game win rate (GW%) → Game difference. A random draw settles any tie left.",
+      ),
+    ).toBeTruthy();
+  });
+
+  it("shows the event's points and the last opponent's rank in the standings", async () => {
+    mockDetail({
+      status: "running",
+      rules: {
+        ...RULES_FOR_FORMAT,
+        standings: {
+          ...RULES_FOR_FORMAT.standings,
+          winPoints: 2,
+          drawPoints: 1,
+          lossPoints: 0,
+          byePoints: 2,
+          tiebreakers: ["last_opponent_rank", "judge_random_draw"],
+        },
+      },
+      standings: [
+        {
+          participantId: "p-1",
+          rank: 1,
+          points: 2,
+          wins: 1,
+          losses: 0,
+          draws: 0,
+          byes: 0,
+          matchWinRate: 1,
+          opponentMatchWinRate: 0.33,
+          lastOpponentRank: 3,
+        },
+      ],
+    });
+    renderDetail("acc-player", undefined, false, TournamentTab.BRACKET.value);
+    const standings = (await screen.findByRole("heading", { name: "Standings" })).closest(
+      ".aegis-panel",
+    ) as HTMLElement;
+    expect(within(standings).getByRole("columnheader", { name: "Last opp." })).toBeTruthy();
+    expect(within(standings).getByText("#3")).toBeTruthy();
+  });
+
+  it("states the event's points per win, draw and loss in the Format panel", async () => {
+    mockDetail({
+      rules: {
+        ...RULES_FOR_FORMAT,
+        standings: { ...RULES_FOR_FORMAT.standings, winPoints: 2, drawPoints: 1, lossPoints: 0, byePoints: 2 },
+      },
+    });
+    renderDetail("acc-player");
+    const format = (await screen.findByRole("heading", { name: "Format" })).closest(".aegis-panel") as HTMLElement;
+    expect(within(format).getByText("Win 2 · Draw 1 · Loss 0")).toBeTruthy();
   });
 
   it("shows the official badge to players without endorsement controls", async () => {
@@ -627,12 +852,13 @@ describe("tournament match entry", () => {
           tournamentId="t-1"
           matchId="m-1"
           seriesId={null}
+          presentAt={null}
           onJoinGame={onJoinGame}
           onChanged={onChanged}
         />
       </I18nProvider>,
     );
-    fireEvent.click(screen.getByRole("button", { name: "I am ready" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ready" }));
     expect(await screen.findByText("Waiting for the opponent to confirm presence.")).toBeTruthy();
     expect(onChanged).toHaveBeenCalledOnce();
     expect(onJoinGame).not.toHaveBeenCalled();
@@ -642,6 +868,7 @@ describe("tournament match entry", () => {
           tournamentId="t-1"
           matchId="m-1"
           seriesId="s-1"
+          presentAt={null}
           onJoinGame={onJoinGame}
           onChanged={onChanged}
         />
@@ -649,6 +876,65 @@ describe("tournament match entry", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Enter game" }));
     await waitFor(() => expect(onJoinGame).toHaveBeenCalledWith(ticket));
+  });
+});
+
+describe("tournament presence", () => {
+  it("keeps a confirmed presence after the panel remounts", () => {
+    render(
+      <I18nProvider>
+        <TournamentMatchActions
+          tournamentId="t-1"
+          matchId="m-1"
+          seriesId={null}
+          presentAt={Date.parse("2026-08-13T18:08:00.000Z")}
+          onJoinGame={() => undefined}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText("Waiting for the opponent to confirm presence.")).toBeTruthy();
+  });
+
+  it("prints when each player confirmed presence in the match list", () => {
+    render(
+      <I18nProvider>
+        <TournamentMatchHistory
+          detail={{
+            participants: DETAIL.participants,
+            matches: [
+              {
+                id: "m-1",
+                round: 1,
+                position: 0,
+                player0AccountId: "acc-player",
+                player1AccountId: null,
+                winnerAccountId: null,
+                status: "pending",
+              },
+            ],
+            series: [
+              {
+                matchId: "m-1",
+                seriesId: null,
+                status: "awaiting_players",
+                participantIds: ["p-1", "p-2"],
+                participant0Id: "acc-player",
+                participant1Id: null,
+                wins0: 0,
+                wins1: 0,
+                currentGameIndex: null,
+                joinDeadlineAt: null,
+                seriesDeadlineAt: null,
+                presentAt: [Date.parse("2026-08-13T18:08:00.000Z"), null],
+                winnerParticipantId: null,
+              },
+            ],
+          }}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.getByText(/^Ready: Tamer One: .+ · Bot Two: not yet$/)).toBeTruthy();
   });
 });
 
@@ -771,7 +1057,13 @@ it("refuses an HTML authorization response instead of joining a casual game", as
   const onJoinGame = vi.fn<() => void>();
   render(
     <I18nProvider>
-      <TournamentMatchActions tournamentId="t-1" matchId="m-1" seriesId="s-1" onJoinGame={onJoinGame} />
+      <TournamentMatchActions
+        tournamentId="t-1"
+        matchId="m-1"
+        seriesId="s-1"
+        presentAt={null}
+        onJoinGame={onJoinGame}
+      />
     </I18nProvider>,
   );
   fireEvent.click(screen.getByRole("button"));

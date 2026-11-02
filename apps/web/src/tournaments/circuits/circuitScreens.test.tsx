@@ -141,6 +141,21 @@ describe("circuit screens", () => {
     });
   });
 
+  it("lets a circuit run its events as round robin with a Top Cut", async () => {
+    const fetchMock = mockApi({
+      "POST /tournament-circuits": { status: 201, body: CIRCUIT },
+      "GET /auth/me": { body: { id: "admin-1", displayName: "Admin", isAdmin: true, roles: ["admin"] } },
+    });
+    renderScreen({ kind: "createCircuit" });
+    fireEvent.change(await screen.findByLabelText("Name"), { target: { value: "League Circuit" } });
+    fireEvent.change(screen.getByLabelText("Structure"), { target: { value: "round_robin" } });
+    fireEvent.click(screen.getByRole("switch", { name: /Top Cut/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Create circuit" }));
+    await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => init?.method === "POST")).toBe(true));
+    const [, init] = fetchMock.mock.calls.find(([, request]) => request?.method === "POST") ?? [];
+    expect(JSON.parse(String(init?.body)).template).toMatchObject({ structure: "round_robin", topCut: true });
+  });
+
   it.each([AccountRole.ADMIN.value, AccountRole.ORGANIZER.value])(
     "shows circuit creation in an empty catalog for %s",
     async (role) => {

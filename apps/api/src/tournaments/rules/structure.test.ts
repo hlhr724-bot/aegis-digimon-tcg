@@ -51,3 +51,23 @@ describe("freezeStructure", () => {
     expect(freezeStructure(16.9, SWISS_WITH_CUT)).toEqual({ swissRounds: 4, topCutSize: 2 });
   });
 });
+
+describe("freezeStructure organizer settings", () => {
+  it("plays a full round robin: one round per opponent, plus one bye round for an odd field", () => {
+    expect(freezeStructure(6, { structure: "round_robin", topCut: false })).toEqual({
+      swissRounds: 5,
+      topCutSize: null,
+    });
+    expect(freezeStructure(5, { structure: "round_robin", topCut: true })).toEqual({ swissRounds: 5, topCutSize: 0 });
+  });
+
+  it("uses the organizer's Swiss round count instead of the table", () => {
+    expect(freezeStructure(20, { structure: "swiss", topCut: false, rounds: 3 }).swissRounds).toBe(3);
+  });
+
+  it("uses the organizer's Top Cut size, halved until it fits the field", () => {
+    expect(freezeStructure(6, { structure: "swiss", topCut: true, topCutSize: 4 }).topCutSize).toBe(4);
+    expect(freezeStructure(5, { structure: "round_robin", topCut: true, topCutSize: 8 }).topCutSize).toBe(4);
+    expect(freezeStructure(1, { structure: "swiss", topCut: true, topCutSize: 2 }).topCutSize).toBe(0);
+  });
+});
