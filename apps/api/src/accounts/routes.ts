@@ -1134,6 +1134,7 @@ function toTournamentSummary(
     block: tournament.block,
     createdBy: tournament.createdBy,
     winnerAccountId: tournament.winnerAccountId,
+    winnerDisplayName: tournament.winnerDisplayName,
     // Deprecated alias for `registeredCount`. Remove once the web client reads the shared contract.
     registrations: tournament.registrations,
   };

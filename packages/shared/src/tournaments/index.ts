@@ -186,6 +186,7 @@ export type TournamentSummary = {
   registeredCount: number;
   banlistPolicy: BanlistPolicy;
   circuitId?: string | null;
+  winnerDisplayName?: string | null;
 };
 
 export type SeriesScoreView = {
@@ -201,6 +202,7 @@ export type SeriesScoreView = {
   currentGameIndex: number | null;
   joinDeadlineAt: number | null;
   seriesDeadlineAt: number | null;
+  presentAt?: readonly [number | null, number | null];
   winnerParticipantId: string | null;
   /**
    * Why the pairer put these two together, when it recorded one. Optional because a match created

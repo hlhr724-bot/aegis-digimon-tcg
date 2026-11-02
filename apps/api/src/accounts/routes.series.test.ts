@@ -131,6 +131,19 @@ describe("POST /tournaments/:id/matches/:matchId/present", () => {
     expect(second.body.series.seriesDeadlineAt - second.body.series.startedAt).toBe(2_700_000 + 300_000);
   });
 
+  it("publishes when each player confirmed presence on the tournament detail", async () => {
+    const before = await get(`/tournaments/${tournamentId}`, "alice");
+    expect(before.body.series.find((row: ResponseBody) => row.matchId === matchId).presentAt).toEqual([null, null]);
+
+    await post(`/tournaments/${tournamentId}/matches/${matchId}/present`, "alice");
+    const after = await get(`/tournaments/${tournamentId}`, "bob");
+    const [alicePresentAt, bobPresentAt] = after.body.series.find(
+      (row: ResponseBody) => row.matchId === matchId,
+    ).presentAt;
+    expect(alicePresentAt).toBeGreaterThan(0);
+    expect(bobPresentAt).toBeNull();
+  });
+
   it("refuses somebody who is not in the pairing, and 404s an unknown match or tournament", async () => {
     expect((await post(`/tournaments/${tournamentId}/matches/${matchId}/present`, "carol")).status).toBe(403);
     expect((await post(`/tournaments/${tournamentId}/matches/${randomUUID()}/present`, "alice")).status).toBe(404);
@@ -224,6 +237,7 @@ describe("GET /tournaments/:id", () => {
         currentGameIndex: null,
         joinDeadlineAt: null,
         seriesDeadlineAt: null,
+        presentAt: [null, null],
         winnerParticipantId: null,
         // A legacy bracket row was never paired by the Swiss pairer, so it has no reason to give.
         pairingReason: null,
