@@ -1031,6 +1031,7 @@ const interfaceMessages = {
   "settings.effectSpeedFast": "快",
   "settings.noticeDuration": "通知顯示時長",
   "settings.noticeDurationDesc": "效果通知和卡片面板在螢幕上停留的時長。將滑鼠懸停在通知上可使其保持顯示。",
+  "settings.noticeDurationShort": "短",
   "settings.noticeDurationNormal": "正常",
   "settings.noticeDurationLong": "長",
   "settings.noticeDurationLongest": "最長",

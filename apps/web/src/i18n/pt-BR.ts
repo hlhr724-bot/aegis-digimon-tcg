@@ -827,6 +827,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.noticeDuration": "Duração dos avisos",
   "settings.noticeDurationDesc":
     "Quanto tempo os avisos de efeito e os painéis de cartas ficam na tela. Passe o mouse sobre um aviso para mantê-lo aberto.",
+  "settings.noticeDurationShort": "Curta",
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Longa",
   "settings.noticeDurationLongest": "Mais longa",

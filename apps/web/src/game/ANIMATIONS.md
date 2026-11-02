@@ -674,6 +674,30 @@ feedback in `design/sound.ts` remains the starting implementation.
 
 Phones that collapse notices (`collapseNotices`) use the folded band from the main branch: one row naming the newest moment and counting the rest, which opens the full column. The compact-toast and floating-row redesigns of 2026-10-05 were canceled and removed.
 
+## Notice duration
+
+The Notice duration setting (`noticeDuration.ts`) scales the reading clock of every
+narration item, effect notices and card panels alike, and the low-time warning:
+
+| Option  | Scale | Notice | Card panel | Notice on phone |
+| ------- | ----- | ------ | ---------- | --------------- |
+| Short   | 0.6×  | 3.6 s  | 4.2 s      | 8.6 s           |
+| Normal  | 1×    | 6 s    | 7 s        | 14.4 s          |
+| Long    | 1.5×  | 9 s    | 10.5 s     | 21.6 s          |
+| Longest | 2×    | 12 s   | 14 s       | 28.8 s          |
+
+Short is 0.6×, not 0.5×. At 0.5× a notice gets 3 s. A one-line clause such as
+"[On Play] Delete 1 of your opponent's Digimon with 4000 DP or less." has about 13
+words. At a typical silent reading speed of about 240 words per minute it takes about
+3.3 s, before the eye has found the notice. At 0.6× it gets 3.6 s, which covers that
+line. Players who need longer can hover over a notice to keep it open.
+
+The scale is applied once, in `presentableNarration`, when the queue publishes an item.
+Every later clock reads that lifetime: the expiry timer, the erode ring, the phone band's
+progress bar, and the stacked-clause cap in `supersedeEffectClauses`. The refusal notice
+keeps its fixed clock, because it answers the viewer's own action rather than narrating
+an effect.
+
 ## Real attack and grouping checkpoint, 2026-10-05
 
 Rush, Raid acceptance/refusal and inherited/accumulated Security Attack now have

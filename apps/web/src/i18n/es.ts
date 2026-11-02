@@ -819,6 +819,7 @@ export const es: Record<keyof typeof en, string> = {
   "settings.noticeDuration": "Duración de los avisos",
   "settings.noticeDurationDesc":
     "Cuánto tiempo permanecen en pantalla los avisos de efecto y los paneles de cartas. Pasa el ratón sobre un aviso para mantenerlo abierto.",
+  "settings.noticeDurationShort": "Corta",
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Larga",
   "settings.noticeDurationLongest": "Más larga",

@@ -1078,6 +1078,7 @@ const interfaceMessages = {
   "settings.noticeDuration": "通知の表示時間",
   "settings.noticeDurationDesc":
     "効果の通知とカードパネルを画面に表示しておく時間です。通知にマウスを重ねると表示されたままになります。",
+  "settings.noticeDurationShort": "短い",
   "settings.noticeDurationNormal": "普通",
   "settings.noticeDurationLong": "長い",
   "settings.noticeDurationLongest": "最長",

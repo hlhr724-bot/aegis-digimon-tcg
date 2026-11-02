@@ -1101,6 +1101,7 @@ const interfaceMessages = {
   "settings.noticeDuration": "Anzeigedauer von Hinweisen",
   "settings.noticeDurationDesc":
     "Wie lange Effekthinweise und Kartenfenster auf dem Bildschirm bleiben. Bewegen Sie den Mauszeiger über einen Hinweis, um ihn offen zu halten.",
+  "settings.noticeDurationShort": "Kurz",
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Lang",
   "settings.noticeDurationLongest": "Am längsten",

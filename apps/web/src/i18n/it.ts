@@ -970,6 +970,7 @@ const interfaceMessages = {
   "settings.noticeDuration": "Durata degli avvisi",
   "settings.noticeDurationDesc":
     "Quanto restano sullo schermo gli avvisi degli effetti e i pannelli delle carte. Passa il mouse su un avviso per tenerlo aperto.",
+  "settings.noticeDurationShort": "Breve",
   "settings.noticeDurationNormal": "Normale",
   "settings.noticeDurationLong": "Lunga",
   "settings.noticeDurationLongest": "Più lunga",

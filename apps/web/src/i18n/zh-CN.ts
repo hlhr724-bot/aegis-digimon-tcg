@@ -1025,6 +1025,7 @@ const interfaceMessages = {
   "settings.effectSpeedFast": "快",
   "settings.noticeDuration": "提示停留时长",
   "settings.noticeDurationDesc": "效果提示和卡牌面板在屏幕上停留的时长。悬停提示可保持显示。",
+  "settings.noticeDurationShort": "短",
   "settings.noticeDurationNormal": "正常",
   "settings.noticeDurationLong": "长",
   "settings.noticeDurationLongest": "最长",

@@ -1093,6 +1093,7 @@ const interfaceMessages = {
   "settings.noticeDuration": "Durée des notifications",
   "settings.noticeDurationDesc":
     "Durée d'affichage des notifications d'effet et des panneaux de cartes. Survolez une notification pour la garder ouverte.",
+  "settings.noticeDurationShort": "Courte",
   "settings.noticeDurationNormal": "Normale",
   "settings.noticeDurationLong": "Longue",
   "settings.noticeDurationLongest": "Très longue",

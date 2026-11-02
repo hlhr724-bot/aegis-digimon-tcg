@@ -825,6 +825,7 @@ export const en = {
   "settings.noticeDuration": "Notice duration",
   "settings.noticeDurationDesc":
     "How long effect notices and card panels stay on screen. Hover over a notice to keep it open.",
+  "settings.noticeDurationShort": "Short",
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Long",
   "settings.noticeDurationLongest": "Longest",

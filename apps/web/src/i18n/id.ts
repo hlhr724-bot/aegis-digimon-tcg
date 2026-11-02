@@ -1078,6 +1078,7 @@ const interfaceMessages = {
   "settings.noticeDuration": "Durasi notifikasi",
   "settings.noticeDurationDesc":
     "Berapa lama notifikasi efek dan panel kartu tampil di layar. Arahkan kursor ke notifikasi agar tetap terbuka.",
+  "settings.noticeDurationShort": "Singkat",
   "settings.noticeDurationNormal": "Biasa",
   "settings.noticeDurationLong": "Panjang",
   "settings.noticeDurationLongest": "Terpanjang",
