@@ -7,7 +7,7 @@ import { LIVE_REPLAY_ANNOTATION_COOLDOWN_MS } from "@aegis/shared/replays/annota
 type LiveRecording = { id: string; frameCount: number; exceededLimit: boolean };
 
 type Port = {
-  store: Pick<ReplayAnnotationStore, "addMarker">;
+  store: Pick<ReplayAnnotationStore, "addMarker" | "addNote">;
   recording: () => LiveRecording | undefined;
   turn: () => number;
   now?: () => number;
@@ -45,14 +45,21 @@ export class LiveReplayAnnotator {
       return reject(LiveReplayAnnotationRejection.TOO_FAST.value);
     }
     this.lastAcceptedAt.set(authorId, now);
-    const result = await this.port.store.addMarker({
+    const moment = {
       authorId,
       matchId: recording.id,
       frameIndex: recording.frameCount - 1,
       turn: this.port.turn(),
-      emoji: request.emoji,
       now,
-    });
+    };
+    if (request.kind === "note") {
+      const result = await this.port.store.addNote({ ...moment, text: request.text });
+      if (result.kind === "limit_reached") {
+        return reject(LiveReplayAnnotationRejection.LIMIT_REACHED.value);
+      }
+      return { kind: "note", note: result.note };
+    }
+    const result = await this.port.store.addMarker({ ...moment, emoji: request.emoji });
     if (result.kind === "limit_reached") {
       return reject(LiveReplayAnnotationRejection.LIMIT_REACHED.value);
     }

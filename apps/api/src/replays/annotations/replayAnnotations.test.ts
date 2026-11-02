@@ -4,7 +4,11 @@ import express from "express";
 import { afterEach, describe, expect, it } from "vitest";
 import type { ReplayDownloadMessage } from "@aegis/shared";
 import { ReplayMarkerEmoji } from "@aegis/shared/replays/annotations/ReplayMarkerEmoji";
-import { MAX_REPLAY_MARKERS_PER_MATCH } from "@aegis/shared/replays/annotations/replayAnnotationLimits";
+import {
+  MAX_REPLAY_MARKERS_PER_MATCH,
+  MAX_REPLAY_NOTES_PER_MATCH,
+  REPLAY_NOTE_MAX_LENGTH,
+} from "@aegis/shared/replays/annotations/replayAnnotationLimits";
 import { AccountStore } from "#api/accounts/AccountStore";
 import { createMemoryPool } from "#api/db/memoryPool.fixture";
 import { ANNOTATION_GRACE_MS } from "#api/replays/annotations/ReplayAnnotationStore";
@@ -86,8 +90,8 @@ describe("replay markers", () => {
     });
     expect(added).toMatchObject({ kind: "added", marker: { matchId, frameIndex: 12, turn: 3, emoji: "❌" } });
     expect((await store.list({ viewerId: owner.id, matchId })).markers).toHaveLength(1);
-    expect(await store.list({ viewerId: viewer.id, matchId })).toEqual({ markers: [], canAnnotate: false });
-    expect(await store.list({ viewerId: undefined, matchId })).toEqual({ markers: [], canAnnotate: false });
+    expect(await store.list({ viewerId: viewer.id, matchId })).toEqual({ markers: [], notes: [], canAnnotate: false });
+    expect(await store.list({ viewerId: undefined, matchId })).toEqual({ markers: [], notes: [], canAnnotate: false });
   });
 
   it("lets a viewer annotate a replay only while it is shared with them", async () => {
@@ -111,15 +115,89 @@ describe("replay markers", () => {
     });
   });
 
-  it("removes markers of matches without any indexed replay after the grace period", async () => {
+  it("removes annotations of matches without any indexed replay after the grace period", async () => {
     const { accounts, owner, matchId, store } = await setup();
     const orphan = randomUUID();
-    await store.addMarker({ authorId: owner.id, matchId, frameIndex: 1, turn: 1, emoji: "⭐", now: 1 });
-    await store.addMarker({ authorId: owner.id, matchId: orphan, frameIndex: 1, turn: 1, emoji: "⭐", now: 1 });
+    for (const target of [matchId, orphan]) {
+      await store.addMarker({ authorId: owner.id, matchId: target, frameIndex: 1, turn: 1, emoji: "⭐", now: 1 });
+      await store.addNote({ authorId: owner.id, matchId: target, frameIndex: 1, turn: 1, text: "Note", now: 1 });
+    }
     expect(await store.cleanup(ANNOTATION_GRACE_MS)).toBe(0);
-    expect(await store.cleanup(ANNOTATION_GRACE_MS + 2)).toBe(1);
-    const left = await accounts.pool.query<{ match_id: string }>("SELECT match_id FROM replay_markers");
-    expect(left.rows.map((row) => row.match_id)).toEqual([matchId]);
+    expect(await store.cleanup(ANNOTATION_GRACE_MS + 2)).toBe(2);
+    for (const table of ["replay_markers", "replay_notes"]) {
+      const left = await accounts.pool.query<{ match_id: string }>(`SELECT match_id FROM ${table}`);
+      expect(left.rows.map((row) => row.match_id)).toEqual([matchId]);
+    }
+  });
+});
+
+describe("replay notes", () => {
+  it("adds, edits and caps notes for their author only", async () => {
+    const { owner, viewer, matchId, store } = await setup();
+    const added = await store.addNote({
+      authorId: owner.id,
+      matchId,
+      frameIndex: 3,
+      turn: 2,
+      text: "Too greedy",
+      now: 5,
+    });
+    if (added.kind !== "added") {
+      throw new Error("Expected the note to be added");
+    }
+    expect(added.note).toMatchObject({ frameIndex: 3, turn: 2, text: "Too greedy", createdAt: 5, updatedAt: 5 });
+    expect(
+      await store.updateNote({ authorId: viewer.id, matchId, noteId: added.note.id, text: "Hijack" }),
+    ).toBeUndefined();
+    expect(
+      await store.updateNote({ authorId: owner.id, matchId, noteId: added.note.id, text: "Fine", now: 9 }),
+    ).toMatchObject({ text: "Fine", createdAt: 5, updatedAt: 9 });
+    expect(await store.removeNote({ authorId: viewer.id, matchId, id: added.note.id })).toBe(false);
+    for (let index = 1; index < MAX_REPLAY_NOTES_PER_MATCH; index++) {
+      await store.addNote({ authorId: owner.id, matchId, frameIndex: index, turn: 1, text: `Note ${index}` });
+    }
+    expect(await store.addNote({ authorId: owner.id, matchId, frameIndex: 0, turn: 1, text: "One more" })).toEqual({
+      kind: "limit_reached",
+    });
+    expect((await store.list({ viewerId: owner.id, matchId })).notes).toHaveLength(MAX_REPLAY_NOTES_PER_MATCH);
+    expect((await store.list({ viewerId: viewer.id, matchId })).notes).toEqual([]);
+  });
+});
+
+describe("replay note routes", () => {
+  it("validates note text and lets only the author edit or delete it", async () => {
+    const { accounts, owner, viewer, library, matchId } = await setup();
+    const call = await serve(accounts, library);
+    const ownerSession = (await accounts.issueSession(owner)).id;
+    const viewerSession = (await accounts.issueSession(viewer)).id;
+    const notes = `/replay-annotations/${matchId}/notes`;
+    const post = (session: string, body: unknown) =>
+      call(notes, { method: "POST", session, body: JSON.stringify(body) });
+
+    for (const text of ["", "   ", 42, "a".repeat(REPLAY_NOTE_MAX_LENGTH + 1)]) {
+      expect((await post(ownerSession, { frameIndex: 1, turn: 1, text })).status).toBe(400);
+    }
+    expect((await post(ownerSession, { frameIndex: -1, turn: 1, text: "ok" })).status).toBe(400);
+    expect((await post(viewerSession, { frameIndex: 1, turn: 1, text: "ok" })).status).toBe(403);
+    const created = await post(ownerSession, { frameIndex: 1, turn: 1, text: "  Should   attack\n\n\n\nfirst " });
+    expect(created.status).toBe(201);
+    const note = await created.json();
+    expect(note.text).toBe("Should attack\n\nfirst");
+
+    const patch = (session: string, text: unknown) =>
+      call(`${notes}/${note.id}`, { method: "PATCH", session, body: JSON.stringify({ text }) });
+    expect((await patch(ownerSession, "")).status).toBe(400);
+    expect((await patch(viewerSession, "Mine now")).status).toBe(404);
+    const edited = await patch(ownerSession, "Attack first");
+    expect(edited.status).toBe(200);
+    expect(await edited.json()).toMatchObject({ id: note.id, text: "Attack first" });
+
+    const remove = (session: string) => call(`${notes}/${note.id}`, { method: "DELETE", session });
+    expect((await remove(viewerSession)).status).toBe(404);
+    expect((await remove(ownerSession)).status).toBe(200);
+    expect(
+      (await call(`/replay-annotations/${matchId}`, { session: ownerSession }).then((res) => res.json())).notes,
+    ).toEqual([]);
   });
 });
 
@@ -152,10 +230,10 @@ describe("replay marker routes", () => {
     expect(marker).toMatchObject({ matchId, frameIndex: 4, turn: 2, emoji: "⭐" });
 
     const anonymous = await call(`/replay-annotations/${matchId}`);
-    expect(await anonymous.json()).toEqual({ markers: [], canAnnotate: false });
+    expect(await anonymous.json()).toEqual({ markers: [], notes: [], canAnnotate: false });
     const own = await call(`/replay-annotations/${matchId}`, { session: ownerSession });
     expect(own.headers.get("cache-control")).toContain("no-store");
-    expect(await own.json()).toEqual({ markers: [marker], canAnnotate: true });
+    expect(await own.json()).toEqual({ markers: [marker], notes: [], canAnnotate: true });
 
     const remove = (session: string) =>
       call(`/replay-annotations/${matchId}/markers/${marker.id}`, { method: "DELETE", session });

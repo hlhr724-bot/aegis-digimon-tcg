@@ -66,7 +66,7 @@ it("shows saved markers on the timeline, jumps to them and marks the current mom
       return Response.json({ ...savedMarker, id: "m2", frameIndex: 0, turn: 1, emoji: "💡" }, { status: 201 });
     }
     expect(String(input)).toContain(`/replay-annotations/${MATCH_ID}`);
-    return Response.json({ markers: [savedMarker], canAnnotate: true });
+    return Response.json({ markers: [savedMarker], notes: [], canAnnotate: true });
   });
   vi.stubGlobal("fetch", fetcher);
   render(
@@ -87,6 +87,52 @@ it("shows saved markers on the timeline, jumps to them and marks the current mom
   const body = JSON.parse(String(fetcher.mock.calls.find(([, init]) => init?.method === "POST")?.[1]?.body));
   expect(body).toEqual({ frameIndex: 0, turn: 1, emoji: "💡" });
   expect(await screen.findByRole("button", { name: "💡 Turn 1, action 1" })).toBeTruthy();
+});
+
+it("adds, edits and deletes a text note at the shown moment", async () => {
+  const savedNote = {
+    id: "n1",
+    matchId: MATCH_ID,
+    frameIndex: 0,
+    turn: 1,
+    text: "Hold the blocker",
+    createdAt: 1,
+    updatedAt: 1,
+  };
+  const fetcher = vi.fn<typeof fetch>(async (_input, init) => {
+    if (init?.method === "POST") {
+      return Response.json(savedNote, { status: 201 });
+    }
+    if (init?.method === "PATCH") {
+      return Response.json({ ...savedNote, text: JSON.parse(String(init.body)).text, updatedAt: 2 });
+    }
+    if (init?.method === "DELETE") {
+      return Response.json({ ok: true });
+    }
+    return Response.json({ markers: [], notes: [], canAnnotate: true });
+  });
+  vi.stubGlobal("fetch", fetcher);
+  render(
+    <I18nProvider>
+      <ReplayPlayer replay={buildReplay()} onClose={vi.fn<() => void>()} />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Show annotations" }));
+  const field = await screen.findByLabelText("Add a note at this moment");
+  fireEvent.change(field, { target: { value: "  Hold the blocker  " } });
+  fireEvent.click(screen.getByRole("button", { name: "Save note" }));
+  expect(await screen.findByText("Hold the blocker")).toBeTruthy();
+  const post = fetcher.mock.calls.find(([, init]) => init?.method === "POST");
+  expect(JSON.parse(String(post?.[1]?.body))).toEqual({ frameIndex: 0, turn: 1, text: "Hold the blocker" });
+  expect(screen.getByRole("button", { name: "Note on turn 1, action 1: Hold the blocker" })).toBeTruthy();
+
+  fireEvent.click(screen.getByRole("button", { name: "Edit note" }));
+  fireEvent.change(screen.getByLabelText("Edit note"), { target: { value: "Attack first" } });
+  fireEvent.click(screen.getAllByRole("button", { name: "Save note" }).at(-1)!);
+  expect(await screen.findByText("Attack first")).toBeTruthy();
+
+  fireEvent.click(screen.getByRole("button", { name: "Delete note" }));
+  expect(await screen.findByText("No markers or notes yet.")).toBeTruthy();
 });
 
 it("tells a live player whether the private marker was saved", () => {
@@ -115,4 +161,7 @@ it("tells a live player whether the private marker was saved", () => {
     </I18nProvider>,
   );
   expect(screen.getByRole("status").textContent).toBe("Sign in to save replay markers.");
+  fireEvent.change(screen.getByLabelText("Private note"), { target: { value: "Opponent kept two blockers" } });
+  fireEvent.click(screen.getByRole("button", { name: "Save note" }));
+  expect(send).toHaveBeenLastCalledWith({ kind: "note", text: "Opponent kept two blockers" });
 });

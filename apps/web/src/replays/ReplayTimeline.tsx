@@ -1,9 +1,10 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ShieldMinus } from "lucide-react";
 import type { MatchReplay } from "@aegis/shared/replays";
-import type { ReplayMarker } from "@aegis/shared/replays/annotations/ReplayMarker";
 import type { Seat } from "@aegis/shared/schema/enums";
+import { Icons } from "@/design/icons";
 import { useTranslation } from "@/i18n/useTranslation";
+import type { ReplayAnnotationEntry } from "@/replays/annotations/buildReplayAnnotationEntries";
 import { buildReplayTimelineEvents } from "@/replays/buildReplayTimelineEvents";
 import type { ReplayTimelineEvent } from "@/replays/ReplayTimelineEvent";
 import { ReplayTimelineEventKind } from "@/replays/ReplayTimelineEventKind";
@@ -12,7 +13,7 @@ type Props = {
   replay: MatchReplay;
   logLines: readonly (string | undefined)[];
   index: number;
-  markers?: readonly ReplayMarker[];
+  annotations?: readonly ReplayAnnotationEntry[];
   onSeek: (index: number) => void;
   onJump: (index: number) => void;
 };
@@ -46,7 +47,7 @@ function groupNearbyEvents({ events, last, width }: GroupParams): Group[] {
   return groups;
 }
 
-export function ReplayTimeline({ replay, logLines, index: committedIndex, markers = [], onSeek, onJump }: Props) {
+export function ReplayTimeline({ replay, logLines, index: committedIndex, annotations = [], onSeek, onJump }: Props) {
   const { t } = useTranslation();
   const [scrubIndex, setScrubIndex] = useState<number>();
   const scrubTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -140,6 +141,13 @@ export function ReplayTimeline({ replay, logLines, index: committedIndex, marker
     });
   }
 
+  function getAnnotationLabel(entry: ReplayAnnotationEntry, target: number) {
+    if (entry.kind === "note") {
+      return t("replayAnnotations.timelineNote", { turn: entry.turn, action: target + 1, text: entry.note.text });
+    }
+    return t("replayAnnotations.timelineMarker", { emoji: entry.marker.emoji, turn: entry.turn, action: target + 1 });
+  }
+
   function describeEvent(event: ReplayTimelineEvent) {
     return logLines.slice(event.index, event.index + 4).find(Boolean);
   }
@@ -212,20 +220,17 @@ export function ReplayTimeline({ replay, logLines, index: committedIndex, marker
         </li>
       </ul>
       <div ref={scale} className="replay-timeline__scale" role="group" aria-label={t("replay.timeline.events")}>
-        {markers.length ? (
+        {annotations.length ? (
           <div className="replay-timeline__annotations">
-            {markers.map((marker) => {
-              const target = Math.min(marker.frameIndex, last);
-              const label = t("replayAnnotations.timelineMarker", {
-                emoji: marker.emoji,
-                turn: marker.turn,
-                action: target + 1,
-              });
+            {annotations.map((entry) => {
+              const target = Math.min(entry.frameIndex, last);
+              const label = getAnnotationLabel(entry, target);
               return (
                 <button
-                  key={marker.id}
+                  key={entry.id}
                   type="button"
                   className="replay-timeline__annotation"
+                  data-kind={entry.kind}
                   style={{ left: `${(target / last) * 100}%` }}
                   title={label}
                   aria-label={label}
@@ -235,7 +240,11 @@ export function ReplayTimeline({ replay, logLines, index: committedIndex, marker
                     onJump(target);
                   }}
                 >
-                  <span aria-hidden="true">{marker.emoji}</span>
+                  {entry.kind === "marker" ? (
+                    <span aria-hidden="true">{entry.marker.emoji}</span>
+                  ) : (
+                    <Icons.Pencil size={12} />
+                  )}
                 </button>
               );
             })}

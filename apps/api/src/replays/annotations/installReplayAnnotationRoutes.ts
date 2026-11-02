@@ -5,6 +5,7 @@ import type { ReplayAnnotationStore } from "#api/replays/annotations/ReplayAnnot
 import { UUID } from "#api/replays/ReplayLibrary";
 import { isReplayMarkerEmoji } from "@aegis/shared/replays/annotations/isReplayMarkerEmoji";
 import { isReplayMatchId } from "@aegis/shared/replays/annotations/isReplayMatchId";
+import { parseReplayNoteText } from "@aegis/shared/replays/annotations/parseReplayNoteText";
 import { MAX_REPLAY_FRAME_INDEX } from "@aegis/shared/replays/annotations/replayAnnotationLimits";
 
 const MAX_TURN = 10_000;
@@ -16,8 +17,23 @@ type Params = {
 };
 type WriteContext = { req: Request; res: Response; authorId: string; matchId: string };
 
+type Moment = { frameIndex: number; turn: number };
+
 function isIntegerBetween(value: unknown, max: number): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= max;
+}
+
+function parseMoment(body: Record<string, unknown>): Moment | undefined {
+  const { frameIndex, turn } = body;
+  if (!isIntegerBetween(frameIndex, MAX_REPLAY_FRAME_INDEX) || !isIntegerBetween(turn, MAX_TURN)) {
+    return undefined;
+  }
+  return { frameIndex, turn };
+}
+
+function getBody(req: Request): Record<string, unknown> {
+  const body: unknown = req.body;
+  return body && typeof body === "object" && !Array.isArray(body) ? (body as Record<string, unknown>) : {};
 }
 
 export function installReplayAnnotationRoutes({ app, store, session }: Params): void {
@@ -70,12 +86,13 @@ export function installReplayAnnotationRoutes({ app, store, session }: Params): 
   app.post(
     "/replay-annotations/:matchId/markers",
     write(async ({ req, res, authorId, matchId }) => {
-      const { frameIndex, turn, emoji } = (req.body ?? {}) as Record<string, unknown>;
-      if (!isIntegerBetween(frameIndex, MAX_REPLAY_FRAME_INDEX) || !isIntegerBetween(turn, MAX_TURN)) {
+      const body = getBody(req);
+      const moment = parseMoment(body);
+      if (!moment) {
         res.status(400).json({ error: "invalid_moment" });
         return;
       }
-      if (!isReplayMarkerEmoji(emoji)) {
+      if (!isReplayMarkerEmoji(body.emoji)) {
         res.status(400).json({ error: "invalid_emoji" });
         return;
       }
@@ -83,7 +100,7 @@ export function installReplayAnnotationRoutes({ app, store, session }: Params): 
         res.status(403).json({ error: "not_allowed" });
         return;
       }
-      const result = await store.addMarker({ authorId, matchId, frameIndex, turn, emoji });
+      const result = await store.addMarker({ authorId, matchId, ...moment, emoji: body.emoji });
       if (result.kind === "limit_reached") {
         res.status(409).json({ error: "limit_reached" });
         return;
@@ -93,10 +110,67 @@ export function installReplayAnnotationRoutes({ app, store, session }: Params): 
   );
 
   app.delete(
-    "/replay-annotations/:matchId/markers/:markerId",
+    "/replay-annotations/:matchId/markers/:id",
     write(async ({ req, res, authorId, matchId }) => {
-      const markerId = String(req.params.markerId ?? "");
-      if (!UUID.test(markerId) || !(await store.removeMarker({ authorId, matchId, markerId }))) {
+      const id = String(req.params.id ?? "");
+      if (!UUID.test(id) || !(await store.removeMarker({ authorId, matchId, id }))) {
+        res.sendStatus(404);
+        return;
+      }
+      res.json({ ok: true });
+    }),
+  );
+
+  app.post(
+    "/replay-annotations/:matchId/notes",
+    write(async ({ req, res, authorId, matchId }) => {
+      const body = getBody(req);
+      const moment = parseMoment(body);
+      if (!moment) {
+        res.status(400).json({ error: "invalid_moment" });
+        return;
+      }
+      const text = parseReplayNoteText(body.text);
+      if (text === undefined) {
+        res.status(400).json({ error: "invalid_text" });
+        return;
+      }
+      if (!(await store.canAnnotate({ accountId: authorId, matchId }))) {
+        res.status(403).json({ error: "not_allowed" });
+        return;
+      }
+      const result = await store.addNote({ authorId, matchId, ...moment, text });
+      if (result.kind === "limit_reached") {
+        res.status(409).json({ error: "limit_reached" });
+        return;
+      }
+      res.status(201).json(result.note);
+    }),
+  );
+
+  app.patch(
+    "/replay-annotations/:matchId/notes/:id",
+    write(async ({ req, res, authorId, matchId }) => {
+      const id = String(req.params.id ?? "");
+      const text = parseReplayNoteText(getBody(req).text);
+      if (text === undefined) {
+        res.status(400).json({ error: "invalid_text" });
+        return;
+      }
+      const note = UUID.test(id) ? await store.updateNote({ authorId, matchId, noteId: id, text }) : undefined;
+      if (!note) {
+        res.sendStatus(404);
+        return;
+      }
+      res.json(note);
+    }),
+  );
+
+  app.delete(
+    "/replay-annotations/:matchId/notes/:id",
+    write(async ({ req, res, authorId, matchId }) => {
+      const id = String(req.params.id ?? "");
+      if (!UUID.test(id) || !(await store.removeNote({ authorId, matchId, id }))) {
         res.sendStatus(404);
         return;
       }

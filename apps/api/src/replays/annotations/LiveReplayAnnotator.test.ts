@@ -11,8 +11,12 @@ function setup(recording = { id: MATCH_ID, frameCount: 8, exceededLimit: false }
     kind: "added",
     marker: { id: "marker", createdAt: now, ...params } as never,
   }));
+  const addNote = vi.fn<ReplayAnnotationStore["addNote"]>(async (params) => ({
+    kind: "added",
+    note: { id: "note", createdAt: now, updatedAt: now, ...params } as never,
+  }));
   const annotator = new LiveReplayAnnotator({
-    store: { addMarker },
+    store: { addMarker, addNote },
     recording: () => recording,
     turn: () => 5,
     now: () => now,
@@ -20,6 +24,7 @@ function setup(recording = { id: MATCH_ID, frameCount: 8, exceededLimit: false }
   return {
     annotator,
     addMarker,
+    addNote,
     advance: (ms: number) => {
       now += ms;
     },
@@ -36,6 +41,14 @@ describe("live replay markers", () => {
     expect(addMarker).toHaveBeenCalledWith(
       expect.objectContaining({ authorId: "author", matchId: MATCH_ID, frameIndex: 7, emoji: "🔥" }),
     );
+  });
+
+  it("stores a live text note at the same moment", async () => {
+    const { annotator, addNote, addMarker } = setup();
+    const result = await annotator.handle({ authorId: "author", payload: { kind: "note", text: " Bluff? " } });
+    expect(result).toMatchObject({ kind: "note", note: { matchId: MATCH_ID, frameIndex: 7, turn: 5, text: "Bluff?" } });
+    expect(addNote).toHaveBeenCalledTimes(1);
+    expect(addMarker).not.toHaveBeenCalled();
   });
 
   it("refuses guests, invalid payloads and rapid repeats without touching storage", async () => {

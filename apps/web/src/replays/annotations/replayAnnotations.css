@@ -90,9 +90,6 @@
 .replay-annotations__moment[aria-current] {
   background: var(--ds-accent-soft);
 }
-.replay-annotations__moment > span:first-child {
-  font-size: 18px;
-}
 .replay-marker-picker {
   display: flex;
   flex-wrap: wrap;
@@ -165,4 +162,61 @@
   width: 32px;
   height: 32px;
   font-size: 16px;
+}
+.replay-note-form {
+  display: grid;
+  gap: 6px;
+}
+.replay-note-form label {
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+}
+.replay-note-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-paper);
+  color: var(--ds-text);
+  font: inherit;
+  font-size: max(16px, var(--ds-text-sm));
+  resize: vertical;
+}
+.replay-note-form__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.replay-note-form__actions small {
+  margin-right: auto;
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-xs);
+}
+.replay-annotations__glyph {
+  font-size: 18px;
+}
+.replay-annotations__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.replay-annotations__text small {
+  color: var(--ds-text-3);
+}
+.replay-annotations__text span {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.replay-annotations__editing {
+  padding: 8px 12px;
+}
+.replay-annotations__list > li.replay-annotations__editing {
+  display: block;
+}
+.replay-timeline__annotation[data-kind="note"] {
+  color: var(--ds-text-2);
 }

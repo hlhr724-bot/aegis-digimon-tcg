@@ -416,7 +416,10 @@ export class AegisRoom extends Room<{
   private rollbackPending?: { id: string; seat: Seat; target: { index: number; turn?: number } };
   private replayRecording?: ReplayRecording;
   private readonly liveReplayAnnotator = new LiveReplayAnnotator({
-    store: { addMarker: (params) => this.replayAnnotations().addMarker(params) },
+    store: {
+      addMarker: (params) => this.replayAnnotations().addMarker(params),
+      addNote: (params) => this.replayAnnotations().addNote(params),
+    },
     recording: () => this.replayRecording,
     turn: () => this.state.turnCount,
   });
@@ -3348,7 +3351,7 @@ export class AegisRoom extends Room<{
     return replayLibrary;
   }
 
-  protected replayAnnotations(): Pick<ReplayAnnotationStore, "addMarker"> {
+  protected replayAnnotations(): Pick<ReplayAnnotationStore, "addMarker" | "addNote"> {
     return replayLibrary.annotations;
   }
 

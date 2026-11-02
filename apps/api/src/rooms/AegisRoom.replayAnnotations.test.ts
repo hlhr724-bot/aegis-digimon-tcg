@@ -19,8 +19,13 @@ class AnnotatedRoom extends AegisRoom {
     marker: { id: "marker", createdAt: 1, ...params },
   }));
 
-  protected override replayAnnotations(): Pick<ReplayAnnotationStore, "addMarker"> {
-    return { addMarker: this.addMarker };
+  readonly addNote = vi.fn<ReplayAnnotationStore["addNote"]>(async (params) => ({
+    kind: "added",
+    note: { id: "note", createdAt: 1, updatedAt: 1, ...params },
+  }));
+
+  protected override replayAnnotations(): Pick<ReplayAnnotationStore, "addMarker" | "addNote"> {
+    return { addMarker: this.addMarker, addNote: this.addNote };
   }
 }
 

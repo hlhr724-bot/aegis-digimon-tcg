@@ -18,6 +18,7 @@ import { ReplayControls } from "@/replays/ReplayControls";
 import { ReplayTimeline } from "@/replays/ReplayTimeline";
 import { ReplayAnnotationPanel } from "@/replays/annotations/ReplayAnnotationPanel";
 import { useReplayAnnotations } from "@/replays/annotations/useReplayAnnotations";
+import { buildReplayAnnotationEntries } from "@/replays/annotations/buildReplayAnnotationEntries";
 
 const emptyDeck = { mainDeck: [], eggDeck: [] };
 const acknowledgeDecision = () => undefined;
@@ -48,6 +49,10 @@ export function ReplayPlayer({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [annotationsOpen, setAnnotationsOpen] = useState(false);
   const annotations = useReplayAnnotations({ matchId: replay.id });
+  const annotationEntries = useMemo(
+    () => buildReplayAnnotationEntries({ markers: annotations.markers, notes: annotations.notes }),
+    [annotations.markers, annotations.notes],
+  );
   const [controlsVisible, setControlsVisible] = useState(true);
   const [recordingMode, setRecordingMode] = useState(false);
   const history = useRef<HTMLElement>(null);
@@ -431,7 +436,7 @@ export function ReplayPlayer({
             replay={replay}
             logLines={logLines}
             index={cursor.index}
-            markers={annotations.markers}
+            annotations={annotationEntries}
             onSeek={seek}
             onJump={jump}
           />

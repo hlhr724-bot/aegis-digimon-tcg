@@ -1,39 +1,44 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ReplayMarker } from "@aegis/shared/replays/annotations/ReplayMarker";
 import type { ReplayMarkerEmoji } from "@aegis/shared/replays/annotations/ReplayMarkerEmoji";
+import type { ReplayNote } from "@aegis/shared/replays/annotations/ReplayNote";
 import { replayAnnotationApi } from "@/replays/annotations/replayAnnotationApi";
 
 type Params = { matchId: string };
-type MarkMomentParams = { frameIndex: number; turn: number; emoji: ReplayMarkerEmoji };
+type Moment = { frameIndex: number; turn: number };
+type MarkMomentParams = Moment & { emoji: ReplayMarkerEmoji };
+type AddNoteParams = Moment & { text: string };
+type EditNoteParams = { noteId: string; text: string };
 
 export type ReplayAnnotationsState = {
   markers: readonly ReplayMarker[];
+  notes: readonly ReplayNote[];
   canAnnotate: boolean;
   failed: boolean;
   markMoment: (params: MarkMomentParams) => Promise<void>;
   removeMarker: (markerId: string) => Promise<void>;
+  addNote: (params: AddNoteParams) => Promise<boolean>;
+  editNote: (params: EditNoteParams) => Promise<boolean>;
+  removeNote: (noteId: string) => Promise<void>;
 };
-
-function sortMarkers(markers: readonly ReplayMarker[]): ReplayMarker[] {
-  return [...markers].sort(
-    (first, second) => first.frameIndex - second.frameIndex || first.createdAt - second.createdAt,
-  );
-}
 
 export function useReplayAnnotations({ matchId }: Params): ReplayAnnotationsState {
   const [markers, setMarkers] = useState<readonly ReplayMarker[]>([]);
+  const [notes, setNotes] = useState<readonly ReplayNote[]>([]);
   const [canAnnotate, setCanAnnotate] = useState(false);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let active = true;
     setMarkers([]);
+    setNotes([]);
     setCanAnnotate(false);
     replayAnnotationApi
       .list(matchId)
       .then((annotations) => {
         if (active) {
-          setMarkers(sortMarkers(annotations.markers));
+          setMarkers(annotations.markers);
+          setNotes(annotations.notes);
           setCanAnnotate(annotations.canAnnotate);
         }
       })
@@ -43,31 +48,64 @@ export function useReplayAnnotations({ matchId }: Params): ReplayAnnotationsStat
     };
   }, [matchId]);
 
+  const attempt = useCallback(async (work: () => Promise<void>) => {
+    setFailed(false);
+    try {
+      await work();
+      return true;
+    } catch {
+      setFailed(true);
+      return false;
+    }
+  }, []);
+
   const markMoment = useCallback(
     async (params: MarkMomentParams) => {
-      setFailed(false);
-      try {
+      await attempt(async () => {
         const marker = await replayAnnotationApi.addMarker(matchId, params);
-        setMarkers((current) => sortMarkers([...current, marker]));
-      } catch {
-        setFailed(true);
-      }
+        setMarkers((current) => [...current, marker]);
+      });
     },
-    [matchId],
+    [attempt, matchId],
   );
 
   const removeMarker = useCallback(
     async (markerId: string) => {
-      setFailed(false);
-      try {
+      await attempt(async () => {
         await replayAnnotationApi.removeMarker(matchId, markerId);
         setMarkers((current) => current.filter((marker) => marker.id !== markerId));
-      } catch {
-        setFailed(true);
-      }
+      });
     },
-    [matchId],
+    [attempt, matchId],
   );
 
-  return { markers, canAnnotate, failed, markMoment, removeMarker };
+  const addNote = useCallback(
+    (params: AddNoteParams) =>
+      attempt(async () => {
+        const note = await replayAnnotationApi.addNote(matchId, params);
+        setNotes((current) => [...current, note]);
+      }),
+    [attempt, matchId],
+  );
+
+  const editNote = useCallback(
+    ({ noteId, text }: EditNoteParams) =>
+      attempt(async () => {
+        const note = await replayAnnotationApi.updateNote(matchId, noteId, text);
+        setNotes((current) => current.map((entry) => (entry.id === noteId ? note : entry)));
+      }),
+    [attempt, matchId],
+  );
+
+  const removeNote = useCallback(
+    async (noteId: string) => {
+      await attempt(async () => {
+        await replayAnnotationApi.removeNote(matchId, noteId);
+        setNotes((current) => current.filter((note) => note.id !== noteId));
+      });
+    },
+    [attempt, matchId],
+  );
+
+  return { markers, notes, canAnnotate, failed, markMoment, removeMarker, addNote, editNote, removeNote };
 }

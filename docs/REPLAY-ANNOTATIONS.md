@@ -1,7 +1,7 @@
 # Replay annotations
 
-Players can mark pivotal moments of a match, live or while they watch the
-replay. The markers help them learn from past games and make content, such as
+Players can mark pivotal moments of a match and write notes about them, live
+or while they watch the replay. The markers help them learn from past games and make content, such as
 replay reviews on YouTube.
 
 ## What a player can do
@@ -9,9 +9,10 @@ replay reviews on YouTube.
 | Where              | Action                                                          |
 | ------------------ | --------------------------------------------------------------- |
 | During a match     | Drop an emoji marker on the current moment from the chat window |
-| In the replay view | Drop an emoji marker on the shown action                        |
-| In the replay view | See markers on the timeline and jump to one with a click        |
-| In the replay view | Delete their own markers from the annotations panel             |
+| During a match     | Write a private text note on the current moment                 |
+| In the replay view | Drop an emoji marker or write a note on the shown action        |
+| In the replay view | See markers and notes on the timeline and jump with a click     |
+| In the replay view | Edit their own notes and delete their own markers and notes     |
 
 ## Model
 
@@ -24,16 +25,16 @@ replay reviews on YouTube.
 - The server stores annotations in its database. It never writes them into the
   replay file, so a downloaded or Drive copy stays unchanged.
 
-## Live markers
+## Live annotations
 
-- The client sends only the emoji. The room picks the moment from its own
+- The client sends only the emoji or the note text. The room picks the moment from its own
   recording: the latest recorded frame and the current turn.
-- The room answers only the sender. Markers stay out of the state patch, the
+- The room answers only the sender. Annotations stay out of the state patch, the
   event channel, the replay file and the input record. The opponent cannot see
-  a marker or infer it from timing.
+  an annotation or infer it from timing.
 - A failed database write does not touch the match. The room logs it and the
   sender sees no confirmation.
-- Guests cannot mark, because a marker needs an author account.
+- Guests cannot annotate, because an annotation needs an author account.
 
 ## Who can annotate
 
@@ -45,14 +46,17 @@ A signed-in viewer can annotate a match when one of these is true:
 
 ## Visibility
 
-Markers are private. Only their author can list them.
+Markers and notes are private. Only their author can list, edit or delete
+them.
 
 ## Limits
 
 | Limit                        | Value                                               |
 | ---------------------------- | --------------------------------------------------- |
 | Markers per author and match | 100                                                 |
-| Live markers                 | One per second per author                           |
+| Notes per author and match   | 50                                                  |
+| Note length                  | 1 to 500 code points after normalization            |
+| Live annotations             | One per second per author                           |
 | HTTP writes                  | Token bucket of 20, one token per 3 s               |
 | HTTP reads                   | Token bucket of 30, one token per 2 s               |
 | Emoji                        | One of the eight `ReplayMarkerEmoji` values         |

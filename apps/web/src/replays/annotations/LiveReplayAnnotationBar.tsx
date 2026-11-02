@@ -3,6 +3,7 @@ import type { LiveReplayAnnotationResult } from "@aegis/shared/replays/annotatio
 import type { TranslationKey, TranslationParams } from "@/i18n/translationTypes";
 import { useTranslation } from "@/i18n/useTranslation";
 import { ReplayMarkerPicker } from "@/replays/annotations/ReplayMarkerPicker";
+import { ReplayNoteForm } from "@/replays/annotations/ReplayNoteForm";
 import type { LiveReplayAnnotations } from "@/replays/annotations/useLiveReplayAnnotations";
 
 type Props = { annotations: LiveReplayAnnotations };
@@ -19,12 +20,18 @@ function getStatusKey(result: LiveReplayAnnotationResult): TranslationKey {
   if (result.kind === "rejected") {
     return REJECTION_MESSAGES[result.reason];
   }
+  if (result.kind === "note") {
+    return "replayAnnotations.live.noted";
+  }
   return "replayAnnotations.live.marked";
 }
 
 function getStatusParams(result: LiveReplayAnnotationResult): TranslationParams {
   if (result.kind === "marker") {
     return { emoji: result.marker.emoji, turn: result.marker.turn };
+  }
+  if (result.kind === "note") {
+    return { turn: result.note.turn };
   }
   return {};
 }
@@ -42,6 +49,15 @@ export function LiveReplayAnnotationBar({ annotations }: Props) {
     <section className="live-replay-annotations" aria-label={t("replayAnnotations.live.title")}>
       <h3>{t("replayAnnotations.live.title")}</h3>
       <ReplayMarkerPicker onPick={(emoji) => send({ kind: "marker", emoji })} />
+      <ReplayNoteForm
+        label="replayAnnotations.live.noteLabel"
+        submitLabel="replayAnnotations.saveNote"
+        rows={1}
+        onSubmit={(text) => {
+          send({ kind: "note", text });
+          return true;
+        }}
+      />
       <p role="status">{status}</p>
     </section>
   );
