@@ -1,5 +1,4 @@
 import { randomInt, randomUUID } from "node:crypto";
-import { isBetaOnlyCard } from "@aegis/shared/cards/cardPool";
 import type { DeckFormat } from "@aegis/shared/deckFormat";
 import type { CommunityRandomResult } from "@aegis/shared/decks/CommunityRandomResult";
 import {
@@ -24,8 +23,11 @@ import {
 import type { PoolClient } from "pg";
 import type { AccountStore } from "../accounts/AccountStore.js";
 import { reviewDeckName } from "./deckNameModeration.js";
+import type { CommunityMatchupDeck } from "#api/community/CommunityMatchupDeck";
+import { isEligibleCommunityDeck } from "#api/community/isEligibleCommunityDeck";
 
 const SHOWN_COLORS = 3;
+const MATCHUP_DEFAULT_SCAN = 64;
 const DAY_MS = 86_400_000;
 const PERIOD_MS: Record<Exclude<CommunityPeriod, "all">, number> = { week: 7 * DAY_MS, month: 30 * DAY_MS };
 
@@ -307,15 +309,7 @@ export class CommunityDeckStore {
         ).rows;
         for (const row of rows) {
           const deck = { mainDeck: row.main_deck, eggDeck: row.egg_deck };
-          if (!deckLegality(deck, { format }).legal) continue;
-          if (
-            !betaAllowed &&
-            [...deck.mainDeck, ...deck.eggDeck].some((id) => {
-              const card = getCardDefinition(id);
-              return card !== undefined && isBetaOnlyCard(card);
-            })
-          )
-            continue;
+          if (!isEligibleCommunityDeck({ deck, format, betaAllowed })) continue;
           eligibleCount += 1;
           if (randomInt(eligibleCount) === 0) selected = row;
         }
@@ -337,6 +331,41 @@ export class CommunityDeckStore {
           : null,
       };
     });
+  }
+
+  async matchupOpponents({
+    format,
+    deckIds,
+    limit,
+  }: {
+    format: DeckFormat | undefined;
+    deckIds: readonly string[] | undefined;
+    limit: number;
+  }): Promise<CommunityMatchupDeck[]> {
+    if (deckIds !== undefined && (deckIds.length === 0 || deckIds.some((id) => !isUuid(id)))) return [];
+    await this.accounts.ensureReady();
+    const rows = (
+      deckIds === undefined
+        ? await this.accounts.pool.query<PublicDeckRow>(
+            `SELECT ${PUBLIC_DECK_COLUMNS} FROM public_decks p JOIN accounts a ON a.id=p.account_id WHERE p.status='public' ORDER BY p.like_count DESC, p.published_at DESC, p.id LIMIT $1`,
+            [MATCHUP_DEFAULT_SCAN],
+          )
+        : await this.accounts.pool.query<PublicDeckRow>(
+            `SELECT ${PUBLIC_DECK_COLUMNS} FROM public_decks p JOIN accounts a ON a.id=p.account_id WHERE p.status='public' AND p.id IN (${deckIds.map((_, index) => `$${index + 1}`).join(",")})`,
+            [...deckIds],
+          )
+    ).rows;
+    const ordered = deckIds === undefined ? rows : deckIds.flatMap((id) => rows.filter((row) => row.id === id));
+    return ordered
+      .filter((row) =>
+        isEligibleCommunityDeck({
+          deck: { mainDeck: row.main_deck, eggDeck: row.egg_deck },
+          format,
+          betaAllowed: false,
+        }),
+      )
+      .slice(0, limit)
+      .map((row) => ({ id: row.id, name: row.name, mainDeck: row.main_deck, eggDeck: row.egg_deck }));
   }
 
   async updateGuide({ accountId, publicDeckId, guide }: UpdateGuideParams): Promise<boolean> {

@@ -1,7 +1,7 @@
 import { randomInt, randomUUID } from "node:crypto";
 import { availableParallelism, loadavg } from "node:os";
 import { MatchupGameResult } from "@aegis/shared/deckSimulation/MatchupGameResult";
-import type { MatchupJob, MatchupSampleGame } from "@aegis/shared/deckSimulation/MatchupJob";
+import type { MatchupJob, MatchupSampleGame, MatchupTally } from "@aegis/shared/deckSimulation/MatchupJob";
 import { MatchupJobStatus } from "@aegis/shared/deckSimulation/MatchupJobStatus";
 import type { ReplayRecord } from "#api/replays/inputs/types";
 import { MATCHUP_LIMITS } from "#api/deckSimulation/MATCHUP_LIMITS";
@@ -12,15 +12,14 @@ import type { MatchupWorkerMessage } from "#api/deckSimulation/MatchupWorkerMess
 import { spawnMatchupWorker } from "#api/deckSimulation/spawnMatchupWorker";
 import { wilsonScoreInterval } from "#api/deckSimulation/wilsonScoreInterval";
 
+type Counts = { wins: number; losses: number; draws: number; invalidGames: number };
+
 type JobRecord = {
   id: string;
   accountId: string;
   request: MatchupRequest;
   status: MatchupJobStatus;
-  wins: number;
-  losses: number;
-  draws: number;
-  invalidGames: number;
+  counts: Counts[];
   samples: MatchupSampleGame[];
   replays: Map<number, ReplayRecord>;
   createdAt: number;
@@ -41,6 +40,18 @@ type Options = {
   now?: () => number;
   limits?: Partial<typeof MATCHUP_LIMITS>;
 };
+
+function tally(counts: Counts, requestedGames: number): MatchupTally {
+  const completedGames = counts.wins + counts.losses + counts.draws;
+  const points = counts.wins + counts.draws * MatchupGameResult.DRAW.points;
+  return {
+    requestedGames,
+    completedGames,
+    ...counts,
+    score: completedGames === 0 ? null : points / completedGames,
+    interval: wilsonScoreInterval({ points, games: completedGames }),
+  };
+}
 
 function hostIsBusy(): boolean {
   return loadavg()[0]! > availableParallelism() * MATCHUP_LIMITS.busyHostLoadPerCore;
@@ -75,10 +86,7 @@ export class MatchupSimulator {
       accountId,
       request,
       status: MatchupJobStatus.QUEUED.value,
-      wins: 0,
-      losses: 0,
-      draws: 0,
-      invalidGames: 0,
+      counts: request.opponents.map(() => ({ wins: 0, losses: 0, draws: 0, invalidGames: 0 })),
       samples: [],
       replays: new Map(),
       createdAt: this.#now(),
@@ -101,6 +109,19 @@ export class MatchupSimulator {
     return job?.accountId === accountId ? job.replays.get(index) : undefined;
   }
 
+  cancel({ accountId, jobId }: { accountId: string; jobId: string }): MatchupJob | undefined {
+    const job = this.#jobs.get(jobId);
+    if (job?.accountId !== accountId) return undefined;
+    if (job.status === MatchupJobStatus.QUEUED.value) {
+      this.#queue.splice(this.#queue.indexOf(jobId), 1);
+      job.status = MatchupJobStatus.CANCELLED.value;
+      job.finishedAt = this.#now();
+    } else if (job.status === MatchupJobStatus.RUNNING.value && this.#slot?.currentJobId === jobId) {
+      this.#slot.handle.postMessage({ type: "cancel", jobId });
+    }
+    return this.#view(job);
+  }
+
   close(): void {
     clearTimeout(this.#retryTimer);
     this.#retireWorker();
@@ -119,21 +140,25 @@ export class MatchupSimulator {
   }
 
   #view(job: JobRecord): MatchupJob {
-    const completedGames = job.wins + job.losses + job.draws;
-    const points = job.wins + job.draws * MatchupGameResult.DRAW.points;
     const expiresFrom = job.finishedAt ?? this.#now();
+    const total = job.counts.reduce(
+      (sum, counts) => ({
+        wins: sum.wins + counts.wins,
+        losses: sum.losses + counts.losses,
+        draws: sum.draws + counts.draws,
+        invalidGames: sum.invalidGames + counts.invalidGames,
+      }),
+      { wins: 0, losses: 0, draws: 0, invalidGames: 0 },
+    );
     return {
       id: job.id,
       status: job.status,
-      opponentName: job.request.opponentName,
-      requestedGames: job.request.games,
-      completedGames,
-      wins: job.wins,
-      losses: job.losses,
-      draws: job.draws,
-      invalidGames: job.invalidGames,
-      score: completedGames === 0 ? null : points / completedGames,
-      interval: wilsonScoreInterval({ points, games: completedGames }),
+      ...tally(total, job.request.gamesPerOpponent * job.request.opponents.length),
+      opponents: job.request.opponents.map((opponent, index) => ({
+        name: opponent.name,
+        ...(opponent.communityDeckId === undefined ? {} : { communityDeckId: opponent.communityDeckId }),
+        ...tally(job.counts[index]!, job.request.gamesPerOpponent),
+      })),
       samples: job.samples.map((sample) => ({ ...sample })),
       createdAt: new Date(job.createdAt).toISOString(),
       expiresAt: new Date(expiresFrom + this.#limits.finishedJobTtlMs).toISOString(),
@@ -192,14 +217,17 @@ export class MatchupSimulator {
     if (job === undefined || message.jobId !== slot.currentJobId) return;
     if (message.type === "game") {
       const { outcome } = message;
-      if (outcome.result === MatchupGameResult.WIN.value) job.wins++;
-      else if (outcome.result === MatchupGameResult.LOSS.value) job.losses++;
-      else if (outcome.result === MatchupGameResult.DRAW.value) job.draws++;
-      else job.invalidGames++;
+      const counts = job.counts[message.opponentIndex];
+      if (counts === undefined) return;
+      if (outcome.result === MatchupGameResult.WIN.value) counts.wins++;
+      else if (outcome.result === MatchupGameResult.LOSS.value) counts.losses++;
+      else if (outcome.result === MatchupGameResult.DRAW.value) counts.draws++;
+      else counts.invalidGames++;
       if (outcome.replay !== undefined && outcome.result !== undefined) {
         job.replays.set(message.index, outcome.replay);
         job.samples.push({
           index: message.index,
+          opponentIndex: message.opponentIndex,
           wentFirst: message.playerFirst,
           result: outcome.result,
           reason: outcome.reason,
@@ -217,7 +245,7 @@ export class MatchupSimulator {
           ? MatchupJobStatus.COMPLETED.value
           : message.end === "timed-out"
             ? MatchupJobStatus.TIMED_OUT.value
-            : MatchupJobStatus.FAILED.value,
+            : MatchupJobStatus.CANCELLED.value,
     );
   }
 

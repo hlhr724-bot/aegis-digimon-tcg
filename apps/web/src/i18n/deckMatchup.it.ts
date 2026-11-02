@@ -24,4 +24,21 @@ export const deckMatchupIt = {
   "deckMatchup.error.failed": "La sfida si è fermata. Riprova più tardi.",
   "deckMatchup.note":
     "Bot di livello Standard giocano entrambi i mazzi sul server. Il risultato mostra come i bot giocano questi mazzi, non le persone.",
+  "deckMatchup.community.option": "Mazzi della community",
+  "deckMatchup.community.default": "Nessuna scelta: i {count} mazzi legali della community con più mi piace",
+  "deckMatchup.community.selected": "{count} mazzi della community scelti su {max}",
+  "deckMatchup.community.loading": "Caricamento dei mazzi della community…",
+  "deckMatchup.community.unavailable":
+    "Impossibile caricare i mazzi della community. La selezione predefinita funziona comunque.",
+  "deckMatchup.community.deck": "{name} di {author}",
+  "deckMatchup.gamesEach": "{count} partite ciascuno",
+  "deckMatchup.cancel": "Annulla",
+  "deckMatchup.cancelled": "Annullata dopo {done} partite.",
+  "deckMatchup.sampleAgainst": "Partita {index} contro {opponent}: {result} in {turns} turni, {order}",
+  "deckMatchup.table.opponent": "Avversario",
+  "deckMatchup.table.score": "Percentuale di vittorie",
+  "deckMatchup.table.range": "Intervallo al 95%",
+  "deckMatchup.table.rangeValue": "da {low} a {high}",
+  "deckMatchup.table.games": "Partite",
+  "deckMatchup.table.gamesValue": "{done} di {total}",
 };

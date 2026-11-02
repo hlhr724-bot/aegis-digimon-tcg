@@ -7,7 +7,14 @@ import { runMatchupJob } from "#api/deckSimulation/runMatchupJob";
 function createTask(overrides: Partial<MatchupJobTask> = {}): MatchupJobTask {
   return {
     jobId: "job",
-    request: { deck: RED_DECK, opponent: BLUE_DECK, opponentName: "Blue", games: 10 },
+    request: {
+      deck: RED_DECK,
+      opponents: [
+        { name: "Blue", deck: BLUE_DECK },
+        { name: "Red", deck: RED_DECK },
+      ],
+      gamesPerOpponent: 1,
+    },
     seed: 4242,
     sampleLimit: 1,
     deadlineEpochMs: Date.now() + 600_000,
@@ -16,19 +23,17 @@ function createTask(overrides: Partial<MatchupJobTask> = {}): MatchupJobTask {
 }
 
 describe("runMatchupJob", () => {
-  it("plays Standard bots with alternating first player and records only the sample replays", async () => {
-    const games: { index: number; playerFirst: boolean; outcome: MatchupGameOutcome }[] = [];
-    let calls = 0;
+  it("plays each opponent in turn with Standard bots and records only the sample replays", async () => {
+    const games: { index: number; opponentIndex: number; playerFirst: boolean; outcome: MatchupGameOutcome }[] = [];
     const end = await runMatchupJob({
       task: createTask(),
       signal: new AbortController().signal,
-      now: () => (calls++ < 2 ? 0 : Number.MAX_SAFE_INTEGER),
       onGame: (game) => games.push(game),
     });
-    expect(end).toBe("timed-out");
-    expect(games.map((game) => [game.index, game.playerFirst])).toEqual([
-      [0, true],
-      [1, false],
+    expect(end).toBe("completed");
+    expect(games.map((game) => [game.index, game.opponentIndex, game.playerFirst])).toEqual([
+      [0, 0, true],
+      [1, 1, true],
     ]);
     expect(games.every((game) => game.outcome.result !== undefined && game.outcome.turns > 0)).toBe(true);
     expect(games[0]!.outcome.replay?.inputs.length).toBeGreaterThan(0);

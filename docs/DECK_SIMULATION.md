@@ -53,7 +53,7 @@ rows.
 ## Bot matchup
 
 The **Bot matchup** panel runs bot games between the deck being edited and an opponent:
-the same deck (mirror) or a validated famous deck. The player picks 10, 20 or 40
+the same deck (mirror), a validated famous deck, or a set of community decks. The player picks 10, 20 or 40
 games. The server plays them and the panel polls the job. It shows the win rate (a
 draw counts as half), the 95% Wilson interval as a number and as a band, the record,
 and up to three sample games.
@@ -93,4 +93,28 @@ A local run of 10 Standard games against a famous deck took 7.6 s on a developme
 machine. A 40-game job should fit the 120 s budget on the production host; if not, it
 ends as `timed-out` with the games it finished.
 
-Results are not stored. A process restart loses running and finished jobs.
+Results are not stored. A process restart loses running and finished jobs. A running
+job can be cancelled; it keeps the games it finished.
+
+### Community decks
+
+The opponent list also offers **Community decks**. The player either picks up to five
+public community decks or leaves the list empty for the default set: the five most
+liked public decks that are legal in the editor's format. The client sends only deck
+ids, or nothing for the default set. `CommunityDeckStore.matchupOpponents` loads the
+decks on the server and applies the same rules as the random community deck: status
+`public` only, so decks hidden by moderation (`040-community-deck-moderation`) and
+unpublished decks never take part, plus `deckLegality` for the format and no beta-only
+cards. A chosen deck that fails these rules rejects the request.
+
+Each opponent plays 4 or 8 games, one opponent after another, in the same single job.
+So a comparison is capped at 5 × 8 = 40 games, the same as the largest single matchup,
+and shares its 120 s budget, queue and per-account limits. The panel polls the job and
+fills a table as results arrive: the win rate, its 95% interval and the games played per
+opponent, sorted from best to worst, with the best and worst rows marked. The overall
+win rate sits above the table. With 4 or 8 games per opponent the intervals are wide;
+read them as a first screen, not a verdict.
+
+Bot results are kept apart from human statistics. `043-deck-composition-matchups`
+indexes human match records by deck composition for deck statistics; bot games are
+never written there, so they cannot skew those numbers.

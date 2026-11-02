@@ -24,4 +24,21 @@ export const deckMatchupFr = {
   "deckMatchup.error.failed": "L'affrontement s'est arrêté. Réessayez plus tard.",
   "deckMatchup.note":
     "Des bots Standard jouent les deux decks sur le serveur. Le résultat montre comment les bots jouent ces decks, pas des joueurs humains.",
+  "deckMatchup.community.option": "Decks de la communauté",
+  "deckMatchup.community.default": "Aucun deck choisi : les {count} decks légaux de la communauté les plus aimés",
+  "deckMatchup.community.selected": "{count} decks de la communauté choisis sur {max}",
+  "deckMatchup.community.loading": "Chargement des decks de la communauté…",
+  "deckMatchup.community.unavailable":
+    "Impossible de charger les decks de la communauté. La sélection par défaut reste disponible.",
+  "deckMatchup.community.deck": "{name} par {author}",
+  "deckMatchup.gamesEach": "{count} parties chacun",
+  "deckMatchup.cancel": "Annuler",
+  "deckMatchup.cancelled": "Annulé après {done} parties.",
+  "deckMatchup.sampleAgainst": "Partie {index} contre {opponent} : {result} en {turns} tours, {order}",
+  "deckMatchup.table.opponent": "Adversaire",
+  "deckMatchup.table.score": "Taux de victoire",
+  "deckMatchup.table.range": "Intervalle à 95 %",
+  "deckMatchup.table.rangeValue": "{low} à {high}",
+  "deckMatchup.table.games": "Parties",
+  "deckMatchup.table.gamesValue": "{done} sur {total}",
 };

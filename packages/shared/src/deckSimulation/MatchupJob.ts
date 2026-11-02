@@ -3,16 +3,14 @@ import type { MatchupJobStatus } from "#shared/deckSimulation/MatchupJobStatus";
 
 export interface MatchupSampleGame {
   index: number;
+  opponentIndex: number;
   wentFirst: boolean;
   result: MatchupGameResult;
   reason: string;
   turns: number;
 }
 
-export interface MatchupJob {
-  id: string;
-  status: MatchupJobStatus;
-  opponentName: string;
+export interface MatchupTally {
   requestedGames: number;
   completedGames: number;
   wins: number;
@@ -21,6 +19,17 @@ export interface MatchupJob {
   invalidGames: number;
   score: number | null;
   interval: readonly [number, number] | null;
+}
+
+export interface MatchupOpponentResult extends MatchupTally {
+  name: string;
+  communityDeckId?: string;
+}
+
+export interface MatchupJob extends MatchupTally {
+  id: string;
+  status: MatchupJobStatus;
+  opponents: MatchupOpponentResult[];
   samples: MatchupSampleGame[];
   createdAt: string;
   expiresAt: string;

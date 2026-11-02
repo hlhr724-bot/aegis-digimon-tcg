@@ -2,12 +2,15 @@ import { useCallback, useState } from "react";
 import { VALIDATED_FAMOUS_DECKS } from "@aegis/shared";
 import type { MatchupJob } from "@aegis/shared/deckSimulation/MatchupJob";
 import { MatchupJobStatus } from "@aegis/shared/deckSimulation/MatchupJobStatus";
-import { MATCHUP_GAME_COUNTS, type MatchupGameCount } from "@aegis/shared/deckSimulation/MATCHUP_GAME_COUNTS";
+import { COMMUNITY_MATCHUP_LIMITS } from "@aegis/shared/deckSimulation/COMMUNITY_MATCHUP_LIMITS";
+import { MATCHUP_GAME_COUNTS } from "@aegis/shared/deckSimulation/MATCHUP_GAME_COUNTS";
 import { AccountApiError } from "@/account/client";
 import type { TranslationKey } from "@/i18n/translationTypes";
 import { useTranslation } from "@/i18n/useTranslation";
 import { expand, MAIN_TARGET, total, type CountMap } from "@/screens/deckCounts";
+import { CommunityOpponentPicker } from "@/screens/deckSimulation/CommunityOpponentPicker";
 import { matchupApi, type MatchupOpponentChoice } from "@/screens/deckSimulation/matchupApi";
+import { MatchupOpponentTable } from "@/screens/deckSimulation/MatchupOpponentTable";
 import { usePolling } from "@/tournaments/hooks";
 import "@/screens/deckBuilder.css";
 
@@ -18,6 +21,7 @@ interface DeckMatchupProps {
 }
 
 const MIRROR = "mirror";
+const COMMUNITY = "community";
 const POLL_MS = 1500;
 
 function errorKey(error: unknown): TranslationKey {
@@ -39,7 +43,12 @@ const percent = (value: number) => `${Math.round(value * 100)}%`;
 export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
   const { t } = useTranslation();
   const [opponent, setOpponent] = useState(MIRROR);
-  const [games, setGames] = useState<MatchupGameCount>(MATCHUP_GAME_COUNTS[1]);
+  const [singleGames, setSingleGames] = useState<number>(MATCHUP_GAME_COUNTS[1]);
+  const [communityGames, setCommunityGames] = useState<number>(COMMUNITY_MATCHUP_LIMITS.gamesPerOpponent[0]);
+  const [communityDeckIds, setCommunityDeckIds] = useState<string[]>([]);
+  const community = opponent === COMMUNITY;
+  const games = community ? communityGames : singleGames;
+  const gameChoices: readonly number[] = community ? COMMUNITY_MATCHUP_LIMITS.gamesPerOpponent : MATCHUP_GAME_COUNTS;
   const [job, setJob] = useState<MatchupJob | undefined>();
   const [error, setError] = useState<TranslationKey | undefined>();
   const running = job !== undefined && !isFinished(job);
@@ -59,7 +68,12 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
 
   const start = async () => {
     setError(undefined);
-    const choice: MatchupOpponentChoice = opponent === MIRROR ? { mirror: true } : { famousDeckId: opponent };
+    const choice: MatchupOpponentChoice =
+      opponent === MIRROR
+        ? { mirror: true }
+        : community
+          ? { community: communityDeckIds.length === 0 ? {} : { deckIds: communityDeckIds } }
+          : { famousDeckId: opponent };
     try {
       setJob(
         await matchupApi.start({
@@ -69,6 +83,15 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
           format,
         }),
       );
+    } catch (failure) {
+      setError(errorKey(failure));
+    }
+  };
+
+  const cancel = async () => {
+    if (jobId === undefined) return;
+    try {
+      setJob(await matchupApi.cancel(jobId));
     } catch (failure) {
       setError(errorKey(failure));
     }
@@ -86,6 +109,7 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
           onChange={(event) => setOpponent(event.target.value)}
         >
           <option value={MIRROR}>{t("deckMatchup.mirror")}</option>
+          <option value={COMMUNITY}>{t("deckMatchup.community.option")}</option>
           {VALIDATED_FAMOUS_DECKS.map((deck) => (
             <option key={deck.deckId} value={deck.deckId}>
               {deck.name} · {deck.block}
@@ -97,11 +121,11 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
           aria-label={t("deckMatchup.games")}
           value={games}
           disabled={running}
-          onChange={(event) => setGames(Number(event.target.value) as MatchupGameCount)}
+          onChange={(event) => (community ? setCommunityGames : setSingleGames)(Number(event.target.value))}
         >
-          {MATCHUP_GAME_COUNTS.map((count) => (
+          {gameChoices.map((count) => (
             <option key={count} value={count}>
-              {t("deckMatchup.gameCount", { count })}
+              {t(community ? "deckMatchup.gamesEach" : "deckMatchup.gameCount", { count })}
             </option>
           ))}
         </select>
@@ -113,7 +137,15 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
         >
           {t("deckMatchup.run")}
         </button>
+        {running ? (
+          <button type="button" className="deck-draw-odds__toggle" onClick={() => void cancel()}>
+            {t("deckMatchup.cancel")}
+          </button>
+        ) : null}
       </div>
+      {community ? (
+        <CommunityOpponentPicker selected={communityDeckIds} disabled={running} onChange={setCommunityDeckIds} />
+      ) : null}
       {error === undefined ? null : (
         <p className="deck-draw-odds__hint" role="alert">
           {t(error)}
@@ -155,12 +187,17 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
             <p>{t("deckMatchup.timedOut", { done: job.completedGames })}</p>
           ) : null}
           {job.status === MatchupJobStatus.FAILED.value ? <p>{t("deckMatchup.error.failed")}</p> : null}
+          {job.status === MatchupJobStatus.CANCELLED.value ? (
+            <p>{t("deckMatchup.cancelled", { done: job.completedGames })}</p>
+          ) : null}
+          {job.opponents.length > 1 ? <MatchupOpponentTable opponents={job.opponents} /> : null}
           {job.samples.length > 0 ? (
             <ul className="deck-draw-odds__sensitivity" aria-label={t("deckMatchup.samples")}>
               {job.samples.map((sample) => (
                 <li key={sample.index}>
-                  {t("deckMatchup.sample", {
+                  {t(job.opponents.length > 1 ? "deckMatchup.sampleAgainst" : "deckMatchup.sample", {
                     index: sample.index + 1,
+                    opponent: job.opponents[sample.opponentIndex]?.name ?? "",
                     result: t(`deckMatchup.result.${sample.result}`),
                     turns: sample.turns,
                     order: t(sample.wentFirst ? "deckOdds.goingFirst" : "deckOdds.goingSecond"),

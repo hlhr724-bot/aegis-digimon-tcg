@@ -6,7 +6,14 @@ import type { MatchupRequest } from "#api/deckSimulation/MatchupRequest";
 import type { MatchupWorkerHandle } from "#api/deckSimulation/MatchupWorkerHandle";
 import type { MatchupWorkerMessage, MatchupWorkerRequest } from "#api/deckSimulation/MatchupWorkerMessage";
 
-const request: MatchupRequest = { deck: RED_DECK, opponent: RED_DECK, opponentName: "Mirror", games: 10 };
+const request: MatchupRequest = {
+  deck: RED_DECK,
+  opponents: [
+    { name: "Mirror", deck: RED_DECK },
+    { name: "Community", deck: RED_DECK, communityDeckId: "11111111-1111-4111-8111-111111111111" },
+  ],
+  gamesPerOpponent: 4,
+};
 
 function createFakeWorker() {
   const posted: MatchupWorkerRequest[] = [];
@@ -59,6 +66,7 @@ describe("MatchupSimulator", () => {
       type: "game",
       jobId,
       index: 0,
+      opponentIndex: 0,
       playerFirst: true,
       outcome: { result: "win", reason: "security", turns: 9, replay },
     });
@@ -66,20 +74,23 @@ describe("MatchupSimulator", () => {
       type: "game",
       jobId,
       index: 1,
+      opponentIndex: 0,
       playerFirst: false,
       outcome: { result: "loss", reason: "security", turns: 11 },
     });
     worker.emit({
       type: "game",
       jobId,
-      index: 2,
+      index: 4,
+      opponentIndex: 1,
       playerFirst: true,
       outcome: { result: "draw", reason: "turnLimit", turns: 60 },
     });
     worker.emit({
       type: "game",
       jobId,
-      index: 3,
+      index: 5,
+      opponentIndex: 1,
       playerFirst: false,
       outcome: { result: undefined, reason: "stalled", turns: 4 },
     });
@@ -93,11 +104,39 @@ describe("MatchupSimulator", () => {
       draws: 1,
       invalidGames: 1,
       score: 0.5,
-      samples: [{ index: 0, wentFirst: true, result: "win", reason: "security", turns: 9 }],
+      samples: [{ index: 0, opponentIndex: 0, wentFirst: true, result: "win", reason: "security", turns: 9 }],
     });
+    expect(finished.requestedGames).toBe(8);
+    expect(finished.opponents).toMatchObject([
+      { name: "Mirror", requestedGames: 4, completedGames: 2, wins: 1, losses: 1, score: 0.5 },
+      {
+        name: "Community",
+        communityDeckId: "11111111-1111-4111-8111-111111111111",
+        completedGames: 1,
+        draws: 1,
+        invalidGames: 1,
+        score: 0.5,
+      },
+    ]);
     expect(finished.interval![0]).toBeLessThan(0.5);
     expect(finished.interval![1]).toBeGreaterThan(0.5);
     expect(simulator.replay({ accountId: "a", jobId, index: 0 })).toBe(replay);
+  });
+
+  it("cancels a queued job at once and asks the worker to stop a running one", () => {
+    const worker = createFakeWorker();
+    const simulator = new MatchupSimulator({ spawnWorker: () => worker.handle, isHostBusy: () => false });
+    const running = simulator.start({ accountId: "a", request });
+    const queued = simulator.start({ accountId: "b", request });
+    worker.emit({ type: "ready" });
+    expect(simulator.cancel({ accountId: "b", jobId: queued.id })?.status).toBe("cancelled");
+    expect(simulator.cancel({ accountId: "b", jobId: running.id })).toBeUndefined();
+    simulator.cancel({ accountId: "a", jobId: running.id });
+    expect(worker.posted.at(-1)).toEqual({ type: "cancel", jobId: running.id });
+    worker.emit({ type: "finished", jobId: running.id, end: "cancelled" });
+    expect(simulator.get({ accountId: "a", jobId: running.id })?.status).toBe("cancelled");
+    expect(worker.posted.filter((message) => message.type === "run")).toHaveLength(1);
+    simulator.close();
   });
 
   it("hides jobs and replays from other accounts", () => {

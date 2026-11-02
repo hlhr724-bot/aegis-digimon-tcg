@@ -24,4 +24,21 @@ export const deckMatchupDe = {
   "deckMatchup.error.failed": "Das Duell wurde abgebrochen. Versuchen Sie es später erneut.",
   "deckMatchup.note":
     "Standard-Bots spielen beide Decks auf dem Server. Das Ergebnis zeigt, wie die Bots diese Decks spielen, nicht wie Menschen sie spielen.",
+  "deckMatchup.community.option": "Community-Decks",
+  "deckMatchup.community.default": "Keine Auswahl: die {count} beliebtesten legalen Community-Decks",
+  "deckMatchup.community.selected": "{count} von {max} Community-Decks gewählt",
+  "deckMatchup.community.loading": "Community-Decks werden geladen…",
+  "deckMatchup.community.unavailable":
+    "Community-Decks konnten nicht geladen werden. Die Standardauswahl funktioniert trotzdem.",
+  "deckMatchup.community.deck": "{name} von {author}",
+  "deckMatchup.gamesEach": "je {count} Partien",
+  "deckMatchup.cancel": "Abbrechen",
+  "deckMatchup.cancelled": "Nach {done} Partien abgebrochen.",
+  "deckMatchup.sampleAgainst": "Partie {index} gegen {opponent}: {result} in {turns} Zügen, {order}",
+  "deckMatchup.table.opponent": "Gegner",
+  "deckMatchup.table.score": "Siegquote",
+  "deckMatchup.table.range": "95-%-Bereich",
+  "deckMatchup.table.rangeValue": "{low} bis {high}",
+  "deckMatchup.table.games": "Partien",
+  "deckMatchup.table.gamesValue": "{done} von {total}",
 };

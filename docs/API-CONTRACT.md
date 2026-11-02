@@ -199,16 +199,27 @@ workflow; source edits, unpublishing and moderation cannot change that copy.
 
 `POST /account/deck-simulations/matchups` needs a session. The body is
 `{ deck: { mainDeck, eggDeck }, opponent, games, format? }`. `opponent` is
-`{ mirror: true }`, `{ famousDeckId }` (a `VALIDATED_FAMOUS_DECKS` id) or
-`{ deck, name? }`. `games` is one of `MATCHUP_GAME_COUNTS` (10, 20 or 40). The server
-validates both decks with `validateDecklist` for `format`. It answers `202` with a
-`MatchupJob` (`@aegis/shared/deckSimulation/MatchupJob`).
+`{ mirror: true }`, `{ famousDeckId }` (a `VALIDATED_FAMOUS_DECKS` id), `{ deck, name? }`
+or `{ community: { deckIds? } }`. For one opponent, `games` is one of
+`MATCHUP_GAME_COUNTS` (10, 20 or 40). For community decks, `games` is the count per
+opponent, 4 or 8 (`COMMUNITY_MATCHUP_LIMITS`), and `deckIds` holds 1 to 5 distinct public
+deck ids. Without `deckIds`, the server picks its default set: the 5 most liked public
+decks that are legal for `format`. The server loads community decks itself and accepts
+only public decks (not hidden by moderation, not unpublished) that pass `deckLegality`
+for `format` and contain no beta-only cards; otherwise it answers `400 invalid_opponent`.
+The server validates the player's deck with `validateDecklist` for `format`. It answers
+`202` with a `MatchupJob` (`@aegis/shared/deckSimulation/MatchupJob`): the overall tally
+plus one tally per opponent in `opponents`.
 
 `GET /account/deck-simulations/matchups/:id` returns the caller's `MatchupJob`, or
 `404` for an unknown, expired or foreign job. Clients poll it until `status` is
-`completed`, `timed-out` or `failed`. `score` counts a draw as half a win, and
+`completed`, `timed-out`, `cancelled` or `failed`. `score` counts a draw as half a win, and
 `interval` is the 95% Wilson interval of that score. Games that end on an engine
 error count in `invalidGames`, not in the score.
+
+`DELETE /account/deck-simulations/matchups/:id` cancels the caller's job. A queued job
+ends as `cancelled` at once. A running job stops at the current game and keeps the
+results it already has.
 
 | Status | Error               | Meaning                                         |
 | ------ | ------------------- | ----------------------------------------------- |

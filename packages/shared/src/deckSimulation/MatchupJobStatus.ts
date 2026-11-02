@@ -3,6 +3,7 @@ export const MatchupJobStatus = {
   RUNNING: { name: "RUNNING", value: "running", isFinished: false },
   COMPLETED: { name: "COMPLETED", value: "completed", isFinished: true },
   TIMED_OUT: { name: "TIMED_OUT", value: "timed-out", isFinished: true },
+  CANCELLED: { name: "CANCELLED", value: "cancelled", isFinished: true },
   FAILED: { name: "FAILED", value: "failed", isFinished: true },
 } as const;
 

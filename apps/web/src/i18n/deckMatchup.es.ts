@@ -24,4 +24,21 @@ export const deckMatchupEs = {
   "deckMatchup.error.failed": "El enfrentamiento se detuvo. Inténtalo más tarde.",
   "deckMatchup.note":
     "Bots de nivel Estándar juegan ambos mazos en el servidor. El resultado muestra cómo los juegan los bots, no las personas.",
+  "deckMatchup.community.option": "Mazos de la comunidad",
+  "deckMatchup.community.default": "Sin selección: los {count} mazos legales de la comunidad con más me gusta",
+  "deckMatchup.community.selected": "{count} de {max} mazos de la comunidad elegidos",
+  "deckMatchup.community.loading": "Cargando mazos de la comunidad…",
+  "deckMatchup.community.unavailable":
+    "No se pudieron cargar los mazos de la comunidad. El conjunto predeterminado sigue disponible.",
+  "deckMatchup.community.deck": "{name} de {author}",
+  "deckMatchup.gamesEach": "{count} partidas cada uno",
+  "deckMatchup.cancel": "Cancelar",
+  "deckMatchup.cancelled": "Cancelado tras {done} partidas.",
+  "deckMatchup.sampleAgainst": "Partida {index} contra {opponent}: {result} en {turns} turnos, {order}",
+  "deckMatchup.table.opponent": "Rival",
+  "deckMatchup.table.score": "Tasa de victorias",
+  "deckMatchup.table.range": "Rango del 95 %",
+  "deckMatchup.table.rangeValue": "{low} a {high}",
+  "deckMatchup.table.games": "Partidas",
+  "deckMatchup.table.gamesValue": "{done} de {total}",
 };

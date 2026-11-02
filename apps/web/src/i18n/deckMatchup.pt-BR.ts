@@ -24,4 +24,21 @@ export const deckMatchupPtBR = {
   "deckMatchup.error.failed": "O confronto parou. Tente mais tarde.",
   "deckMatchup.note":
     "Bots do nível Padrão jogam os dois decks no servidor. O resultado mostra como os bots jogam esses decks, não como pessoas jogam.",
+  "deckMatchup.community.option": "Decks da comunidade",
+  "deckMatchup.community.default": "Nenhum escolhido: os {count} decks legais da comunidade com mais curtidas",
+  "deckMatchup.community.selected": "{count} de {max} decks da comunidade escolhidos",
+  "deckMatchup.community.loading": "Carregando decks da comunidade…",
+  "deckMatchup.community.unavailable":
+    "Não foi possível carregar os decks da comunidade. O conjunto padrão ainda funciona.",
+  "deckMatchup.community.deck": "{name} de {author}",
+  "deckMatchup.gamesEach": "{count} partidas cada",
+  "deckMatchup.cancel": "Cancelar",
+  "deckMatchup.cancelled": "Cancelado após {done} partidas.",
+  "deckMatchup.sampleAgainst": "Partida {index} contra {opponent}: {result} em {turns} turnos, {order}",
+  "deckMatchup.table.opponent": "Adversário",
+  "deckMatchup.table.score": "Taxa de vitória",
+  "deckMatchup.table.range": "Faixa de 95%",
+  "deckMatchup.table.rangeValue": "{low} a {high}",
+  "deckMatchup.table.games": "Partidas",
+  "deckMatchup.table.gamesValue": "{done} de {total}",
 };

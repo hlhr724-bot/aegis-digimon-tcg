@@ -6,16 +6,20 @@ import { MatchupLimitError } from "#api/deckSimulation/MatchupLimitError";
 import { MatchupRequestError } from "#api/deckSimulation/MatchupRequestError";
 import type { MatchupSimulator } from "#api/deckSimulation/MatchupSimulator";
 import { parseMatchupRequest } from "#api/deckSimulation/parseMatchupRequest";
+import type { CommunityMatchupDecks } from "#api/deckSimulation/CommunityMatchupDecks";
+import type { MatchupRequest } from "#api/deckSimulation/MatchupRequest";
+import { resolveMatchupRequest } from "#api/deckSimulation/resolveMatchupRequest";
 
 const JOB_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 type Params = {
   app: Express;
   simulator: MatchupSimulator;
+  communityDecks: CommunityMatchupDecks;
   session: (req: Request) => Promise<AuthSession | undefined>;
 };
 
-export function installDeckSimulationRoutes({ app, simulator, session }: Params): void {
+export function installDeckSimulationRoutes({ app, simulator, communityDecks, session }: Params): void {
   const reads = tokenBucketLimiter({ capacity: 60, refillMs: 1000 });
   const starts = tokenBucketLimiter(MATCHUP_LIMITS.startsPerAccount);
   const route =
@@ -40,10 +44,10 @@ export function installDeckSimulationRoutes({ app, simulator, session }: Params)
 
   app.post(
     "/account/deck-simulations/matchups",
-    route((req, res, accountId) => {
-      let request;
+    route(async (req, res, accountId) => {
+      let request: MatchupRequest;
       try {
-        request = parseMatchupRequest(req.body);
+        request = await resolveMatchupRequest({ draft: parseMatchupRequest(req.body), communityDecks });
       } catch (error) {
         if (error instanceof MatchupRequestError) {
           res.status(400).json({ error: error.code });
@@ -72,6 +76,19 @@ export function installDeckSimulationRoutes({ app, simulator, session }: Params)
     route((req, res, accountId) => {
       const jobId = String(req.params.id ?? "");
       const job = JOB_ID.test(jobId) ? simulator.get({ accountId, jobId }) : undefined;
+      if (job === undefined) {
+        res.sendStatus(404);
+        return;
+      }
+      res.json(job);
+    }),
+  );
+
+  app.delete(
+    "/account/deck-simulations/matchups/:id",
+    route((req, res, accountId) => {
+      const jobId = String(req.params.id ?? "");
+      const job = JOB_ID.test(jobId) ? simulator.cancel({ accountId, jobId }) : undefined;
       if (job === undefined) {
         res.sendStatus(404);
         return;

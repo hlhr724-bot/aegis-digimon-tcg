@@ -7,6 +7,13 @@ export type MatchupWorkerRequest = { type: "run"; task: MatchupJobTask } | { typ
 
 export type MatchupWorkerMessage =
   | { type: "ready" }
-  | { type: "game"; jobId: string; index: number; playerFirst: boolean; outcome: MatchupGameOutcome }
+  | {
+      type: "game";
+      jobId: string;
+      index: number;
+      opponentIndex: number;
+      playerFirst: boolean;
+      outcome: MatchupGameOutcome;
+    }
   | { type: "finished"; jobId: string; end: MatchupJobEnd }
   | { type: "failed"; jobId: string; error: string };

@@ -153,7 +153,8 @@ export function installAccountRoutes(
   installRankedRoutes({ app, accounts: store, session: sessionFromRequest, replayCapture });
   installAchievementRoutes({ app, accounts: store, session: sessionFromRequest });
   installReplayRoutes({ app, library: replays, session: sessionFromRequest });
-  installDeckSimulationRoutes({ app, simulator: new MatchupSimulator(), session: sessionFromRequest });
+  const communityDecks = new CommunityDeckStore(store);
+  installDeckSimulationRoutes({ app, simulator: new MatchupSimulator(), communityDecks, session: sessionFromRequest });
   installStoryRoutes({ app, store: new StoryProgressStore(store), session: sessionFromRequest });
   // The organizer's override surface, in its own module. See src/tournaments/arbitration.
   installArbitrationRoutes({
@@ -191,7 +192,7 @@ export function installAccountRoutes(
   // Public decks, likes and copies. See src/community.
   installCommunityDeckRoutes({
     app,
-    store: new CommunityDeckStore(store),
+    store: communityDecks,
     session: sessionFromRequest,
     reportStore: new DeckReportStore(store),
     reports: deckReports,
