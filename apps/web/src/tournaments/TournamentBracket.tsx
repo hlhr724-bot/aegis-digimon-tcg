@@ -51,20 +51,26 @@ export function TournamentBracket({ phase, participants, accountId, spectating }
     return spectating !== undefined && isTournamentSeriesLive(match);
   }
 
-  function renderWatchOverlay(match: SeriesScoreView) {
+  function renderWatchAction(match: SeriesScoreView) {
     if (!spectating || !isTournamentSeriesLive(match)) {
       return null;
     }
     const target = { tournamentId: spectating.tournamentId, matchId: match.matchId };
     return (
-      <button
-        type="button"
-        className="tournaments-tree__watch"
-        aria-label={t("tournaments.spectators.watchMatch", {
-          players: `${getSeatName(match, 0)} · ${getSeatName(match, 1)}`,
-        })}
-        onClick={() => spectating.onWatch(target)}
-      />
+      <>
+        <Badge tone="primary" className="tournaments-tree__watch-cue">
+          <Icons.Eye size={12} aria-hidden="true" />
+          {t("tournaments.spectators.watch")}
+        </Badge>
+        <button
+          type="button"
+          className="tournaments-tree__watch"
+          aria-label={t("tournaments.spectators.watchMatch", {
+            players: `${getSeatName(match, 0)} · ${getSeatName(match, 1)}`,
+          })}
+          onClick={() => spectating.onWatch(target)}
+        />
+      </>
     );
   }
 
@@ -131,7 +137,7 @@ export function TournamentBracket({ phase, participants, accountId, spectating }
                         {pairingReasonKey(match.pairingReason) ? (
                           <Badge tone="neutral">{t(pairingReasonKey(match.pairingReason)!)}</Badge>
                         ) : null}
-                        {renderWatchOverlay(match)}
+                        {renderWatchAction(match)}
                       </div>
                     </li>
                   ))}
