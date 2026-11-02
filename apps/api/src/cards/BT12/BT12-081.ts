@@ -23,7 +23,7 @@ if (whenDigivolving !== undefined && playFromTamer?.kind === "PlayWithoutCost") 
             into: {
               controllerDefault: "mine",
               kind: ["Digimon"],
-              nameOrTrait: [{ tokens: ["Quartzmon"], match: "name" }],
+              nameOrTrait: [{ tokens: ["Quartzmon"], match: "nameExact" }],
             },
             from: ["hand", "digivolutionCardsUnderTamers"],
             payCost: true,

@@ -1124,6 +1124,7 @@ export class ContinuousEffectLedger {
     private readonly anyControllerSeatOf?: (permanentId: string) => Seat | undefined,
     /** Keywords a rule confers without a ledger grant, such as ＜Collision＞'s ＜Blocker＞ during its attack. */
     private readonly ruleGrantedKeywordsOf?: (permanentId: string) => readonly string[],
+    private readonly currentAttackerId?: () => string | undefined,
   ) {}
 
   /** Grant a keyword to every current and future Digimon permanent controlled by `seat`. */
@@ -1177,8 +1178,36 @@ export class ContinuousEffectLedger {
     if (seat === undefined) return direct;
     return direct.concat(
       this.playerKeywordGrants
-        .filter((grant) => grant.seat === seat && this.playerKeywordGrantMatches(grant, permanentId))
+        .filter(
+          (grant) =>
+            grant.seat === seat &&
+            !this.progressShields(permanentId, (grant.ownerSeat ?? seat) !== seat) &&
+            this.playerKeywordGrantMatches(grant, permanentId),
+        )
         .map(({ keyword, amount }) => ({ keyword, amount })),
+    );
+  }
+
+  private progressShields(permanentId: string, byOpponentEffect: boolean): boolean {
+    if (!byOpponentEffect || this.currentAttackerId?.() !== permanentId) return false;
+    if (this.printedKeywordsOfPermanent?.(permanentId)?.includes("Progress") === true) return true;
+    if (this.ruleGrantedKeywordsOf?.(permanentId)?.includes("Progress") === true) return true;
+    const seat = this.controllerSeatOf?.(permanentId);
+    return (
+      this.keywordGrants.some(
+        (grant) =>
+          grant.permanentId === permanentId &&
+          grant.keyword === "Progress" &&
+          (grant.sourceSeat === undefined || grant.sourceSeat === seat) &&
+          this.keywordGrantIsActive(grant),
+      ) ||
+      this.playerKeywordGrants.some(
+        (grant) =>
+          grant.seat === seat &&
+          grant.keyword === "Progress" &&
+          (grant.ownerSeat ?? seat) === seat &&
+          this.playerKeywordGrantMatches(grant, permanentId),
+      )
     );
   }
 
@@ -1210,7 +1239,10 @@ export class ContinuousEffectLedger {
       direct +
       this.playerKeywordGrants.filter(
         (grant) =>
-          grant.seat === seat && grant.keyword === keyword && this.playerKeywordGrantMatches(grant, permanentId),
+          grant.seat === seat &&
+          grant.keyword === keyword &&
+          !this.progressShields(permanentId, (grant.ownerSeat ?? seat) !== seat) &&
+          this.playerKeywordGrantMatches(grant, permanentId),
       ).length
     );
   }
@@ -1328,7 +1360,7 @@ export class ContinuousEffectLedger {
           : sourceKinds.some((kind) =>
               this.hasRestriction(grant.permanentId, "beAffected", kind, { byOpponentEffect }),
             );
-      if (immune) return false;
+      if (immune || this.progressShields(grant.permanentId, byOpponentEffect)) return false;
     }
     if (grant.active === undefined) return true;
     // A conditional grant may inspect the recipient through permanentMatchesFilter,

@@ -19,7 +19,7 @@ describe("BT25-011 Aquilamon", () => {
         payCost: true,
         condition: { kind: "isYourTurn" },
         materials: { filter: { controller: "mine", kind: ["Digimon"] }, count: 2 },
-        into: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Silphymon"], match: "name" }] },
+        into: { controllerDefault: "mine", nameOrTrait: [{ tokens: ["Silphymon"], match: "nameExact" }] },
       });
     }
   });

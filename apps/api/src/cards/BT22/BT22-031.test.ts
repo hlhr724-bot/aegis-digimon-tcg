@@ -17,7 +17,7 @@ describe("BT22-031 GoldNumemon", () => {
       });
       expect(effect?.actions[1]).toMatchObject({
         kind: "Digivolve",
-        into: { nameOrTrait: [{ tokens: ["PlatinumNumemon"], match: "name" }] },
+        into: { nameOrTrait: [{ tokens: ["PlatinumNumemon"], match: "nameExact" }] },
         from: ["hand"],
         costOverride: 4,
         ignoreRequirements: true,

@@ -72,11 +72,11 @@ describe("BT18-073 Machinedramon", () => {
           actions: [
             {
               kind: "DnaDigivolve",
-              materials: { count: 1, filter: { nameOrTrait: [{ tokens: ["Kimeramon"], match: "name" }] } },
+              materials: { count: 1, filter: { nameOrTrait: [{ tokens: ["Kimeramon"], match: "nameExact" }] } },
               looseMaterials: {
                 count: 1,
                 from: ["trash"],
-                filter: { nameOrTrait: [{ tokens: ["Machinedramon"], match: "name" }] },
+                filter: { nameOrTrait: [{ tokens: ["Machinedramon"], match: "nameExact" }] },
               },
               into: { hasDnaDigivolutionRequirement: true },
             },

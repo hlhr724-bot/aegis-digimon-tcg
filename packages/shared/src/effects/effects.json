@@ -961,7 +961,7 @@
             "materials": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 2 },
             "into": {
               "controllerDefault": "mine",
-              "nameOrTrait": [{ "tokens": ["Omnimon Alter-S"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["Omnimon Alter-S"], "match": "nameExact" }]
             },
             "payCost": true,
             "optional": true
@@ -1273,7 +1273,7 @@
                 "materials": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 2 },
                 "into": {
                   "controllerDefault": "mine",
-                  "nameOrTrait": [{ "tokens": ["Omnimon Alter-S"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["Omnimon Alter-S"], "match": "nameExact" }]
                 },
                 "payCost": true,
                 "optional": true
@@ -6510,7 +6510,7 @@
           {
             "kind": "Digivolve",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "into": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Sakuyamon"], "match": "name" }] },
+            "into": { "controller": "mine", "nameOrTrait": [{ "tokens": ["Sakuyamon"], "match": "nameExact" }] },
             "from": ["hand"],
             "payCost": true,
             "costOverride": 1,
@@ -15035,7 +15035,7 @@
                 "zone": "trash",
                 "controllerDefault": "mine",
                 "kind": ["Digimon"],
-                "nameOrTrait": [{ "tokens": ["Vemmon", "Destromon"], "match": "name" }]
+                "nameOrTrait": [{ "tokens": ["Vemmon", "Destromon"], "match": "nameExact" }]
               },
               "count": 1
             },
@@ -15051,7 +15051,7 @@
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
             "into": {
               "controllerDefault": "mine",
-              "nameOrTrait": [{ "tokens": ["Destromon", "Galacticmon"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["Destromon", "Galacticmon"], "match": "nameExact" }]
             },
             "from": ["trash"],
             "payCost": true,
@@ -21636,7 +21636,7 @@
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
                 "into": {
                   "controllerDefault": "mine",
-                  "nameOrTrait": [{ "tokens": ["SaviorHuckmon"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["SaviorHuckmon"], "match": "nameExact" }]
                 },
                 "from": ["hand"],
                 "payCost": true,
@@ -27197,7 +27197,7 @@
           {
             "kind": "Digivolve",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Greymon"], "match": "name" }] },
+            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Greymon"], "match": "nameExact" }] },
             "payCost": false,
             "from": ["hand"],
             "optional": true,
@@ -38478,7 +38478,7 @@
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
                 "into": {
                   "controllerDefault": "mine",
-                  "nameOrTrait": [{ "tokens": ["Imperialdramon: Fighter Mode"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["Imperialdramon: Fighter Mode"], "match": "nameExact" }]
                 },
                 "payCost": false,
                 "from": ["hand"],
@@ -38507,7 +38507,7 @@
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
                 "into": {
                   "controllerDefault": "mine",
-                  "nameOrTrait": [{ "tokens": ["Imperialdramon: Fighter Mode"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["Imperialdramon: Fighter Mode"], "match": "nameExact" }]
                 },
                 "payCost": false,
                 "from": ["hand"],
@@ -40737,7 +40737,7 @@
             "into": {
               "controllerDefault": "mine",
               "kind": ["Digimon"],
-              "nameOrTrait": [{ "tokens": ["Chaosmon"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["Chaosmon"], "match": "nameExact" }]
             },
             "payCost": true,
             "optional": true
@@ -41330,7 +41330,7 @@
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
                 "into": {
                   "controllerDefault": "mine",
-                  "nameOrTrait": [{ "tokens": ["Fenriloogamon"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["Fenriloogamon"], "match": "nameExact" }]
                 },
                 "payCost": false,
                 "from": ["trash"],
@@ -43584,7 +43584,10 @@
           {
             "kind": "Digivolve",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["AncientGreymon"], "match": "name" }] },
+            "into": {
+              "controllerDefault": "mine",
+              "nameOrTrait": [{ "tokens": ["AncientGreymon"], "match": "nameExact" }]
+            },
             "payCost": true,
             "from": ["hand"],
             "costOverride": 3,
@@ -44358,7 +44361,7 @@
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "into": {
               "controllerDefault": "mine",
-              "nameOrTrait": [{ "tokens": ["AncientGarurumon"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["AncientGarurumon"], "match": "nameExact" }]
             },
             "payCost": true,
             "from": ["hand"],
@@ -50924,7 +50927,7 @@
               "filter": {
                 "zone": "battleArea",
                 "controller": "mine",
-                "nameOrTrait": [{ "tokens": ["Machinedramon"], "match": "name" }]
+                "nameOrTrait": [{ "tokens": ["Machinedramon"], "match": "nameExact" }]
               },
               "count": 1
             },
@@ -50932,7 +50935,7 @@
               "controllerDefault": "mine",
               "zone": "hand",
               "kind": ["Digimon"],
-              "nameOrTrait": [{ "tokens": ["Millenniummon"], "match": "name" }],
+              "nameOrTrait": [{ "tokens": ["Millenniummon"], "match": "nameExact" }],
               "hasDnaDigivolutionRequirement": true
             },
             "payCost": true,
@@ -50941,7 +50944,7 @@
               "filter": {
                 "zone": "trash",
                 "controller": "mine",
-                "nameOrTrait": [{ "tokens": ["Kimeramon"], "match": "name" }]
+                "nameOrTrait": [{ "tokens": ["Kimeramon"], "match": "nameExact" }]
               },
               "count": 1,
               "from": ["trash"]
@@ -52180,7 +52183,7 @@
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "into": {
               "controllerDefault": "mine",
-              "nameOrTrait": [{ "tokens": ["Lucemon: Chaos Mode"], "match": "name" }],
+              "nameOrTrait": [{ "tokens": ["Lucemon: Chaos Mode"], "match": "nameExact" }],
               "excludeCardIds": ["BT7-111"]
             },
             "payCost": false,
@@ -54555,7 +54558,7 @@
                 "zone": "battleArea",
                 "controller": "mine",
                 "kind": ["Digimon"],
-                "nameOrTrait": [{ "tokens": ["Kimeramon"], "match": "name" }]
+                "nameOrTrait": [{ "tokens": ["Kimeramon"], "match": "nameExact" }]
               },
               "count": 1
             },
@@ -54564,7 +54567,7 @@
                 "zone": "trash",
                 "controller": "mine",
                 "kind": ["Digimon"],
-                "nameOrTrait": [{ "tokens": ["Machinedramon"], "match": "name" }]
+                "nameOrTrait": [{ "tokens": ["Machinedramon"], "match": "nameExact" }]
               },
               "count": 1,
               "from": ["trash"]
@@ -54573,7 +54576,7 @@
               "zone": "hand",
               "controller": "mine",
               "kind": ["Digimon"],
-              "nameOrTrait": [{ "tokens": ["Millenniummon"], "match": "name" }],
+              "nameOrTrait": [{ "tokens": ["Millenniummon"], "match": "nameExact" }],
               "hasDnaDigivolutionRequirement": true
             },
             "payCost": true,
@@ -56886,7 +56889,10 @@
           {
             "kind": "Digivolve",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["OmniShoutmon"], "match": "name" }] },
+            "into": {
+              "controllerDefault": "mine",
+              "nameOrTrait": [{ "tokens": ["OmniShoutmon"], "match": "nameExact" }]
+            },
             "onto": { "filter": { "controller": "mine", "kind": ["Tamer"] }, "count": 1 },
             "optional": true,
             "payCost": false,
@@ -81297,7 +81303,7 @@
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "into": {
               "controllerDefault": "mine",
-              "nameOrTrait": [{ "tokens": ["PlatinumNumemon"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["PlatinumNumemon"], "match": "nameExact" }]
             },
             "payCost": true,
             "from": ["hand"],
@@ -81327,7 +81333,7 @@
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "into": {
               "controllerDefault": "mine",
-              "nameOrTrait": [{ "tokens": ["PlatinumNumemon"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["PlatinumNumemon"], "match": "nameExact" }]
             },
             "payCost": true,
             "from": ["hand"],
@@ -85601,7 +85607,10 @@
           {
             "kind": "Digivolve",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["LordKnightmon"], "match": "name" }] },
+            "into": {
+              "controllerDefault": "mine",
+              "nameOrTrait": [{ "tokens": ["LordKnightmon"], "match": "nameExact" }]
+            },
             "from": ["hand"],
             "useAlternateCost": true,
             "reduceCost": 3,
@@ -86443,8 +86452,7 @@
                 "into": {
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
-                  "cardId": "BT22-063",
-                  "nameOrTrait": [{ "tokens": ["Alphamon"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["Alphamon"], "match": "nameExact" }]
                 },
                 "from": ["hand"],
                 "reduceCost": 2,
@@ -86454,7 +86462,7 @@
                   "kind": "youHaveNone",
                   "filter": {
                     "controllerDefault": "mine",
-                    "nameOrTrait": [{ "tokens": ["Alphamon"], "match": "name" }]
+                    "nameOrTrait": [{ "tokens": ["Alphamon"], "match": "nameExact" }]
                   },
                   "raw": "you don't have [Alphamon]"
                 }
@@ -94344,7 +94352,7 @@
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
                   "nameOrTrait": [
-                    { "tokens": ["Titamon"], "match": "name" },
+                    { "tokens": ["Titamon"], "match": "nameExact" },
                     { "tokens": ["Titan"], "match": "trait" }
                   ]
                 },
@@ -94553,7 +94561,7 @@
                   "controllerDefault": "mine",
                   "kind": ["Digimon"],
                   "nameOrTrait": [
-                    { "tokens": ["Titamon"], "match": "name" },
+                    { "tokens": ["Titamon"], "match": "nameExact" },
                     { "tokens": ["Titan"], "match": "trait" }
                   ]
                 },
@@ -102240,7 +102248,7 @@
             "effectTextPart": "Then, if it's your turn, 2 of your Digimon may DNA digivolve into [Silphymon] in the hand.",
             "kind": "DnaDigivolve",
             "materials": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 2 },
-            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Silphymon"], "match": "name" }] },
+            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Silphymon"], "match": "nameExact" }] },
             "payCost": true,
             "condition": { "kind": "isYourTurn", "raw": "it's your turn" },
             "optional": true
@@ -102259,7 +102267,7 @@
             "effectTextPart": "Then, if it's your turn, 2 of your Digimon may DNA digivolve into [Silphymon] in the hand.",
             "kind": "DnaDigivolve",
             "materials": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 2 },
-            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Silphymon"], "match": "name" }] },
+            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Silphymon"], "match": "nameExact" }] },
             "payCost": true,
             "condition": { "kind": "isYourTurn", "raw": "it's your turn" },
             "optional": true
@@ -102461,7 +102469,10 @@
               {
                 "kind": "Digivolve",
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-                "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Flaremon"], "match": "name" }] },
+                "into": {
+                  "controllerDefault": "mine",
+                  "nameOrTrait": [{ "tokens": ["Flaremon"], "match": "nameExact" }]
+                },
                 "from": ["hand"],
                 "reduceCost": 1,
                 "payCost": true,
@@ -102478,7 +102489,10 @@
               {
                 "kind": "Digivolve",
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-                "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Flaremon"], "match": "name" }] },
+                "into": {
+                  "controllerDefault": "mine",
+                  "nameOrTrait": [{ "tokens": ["Flaremon"], "match": "nameExact" }]
+                },
                 "from": ["hand"],
                 "reduceCost": 1,
                 "payCost": true,
@@ -102660,7 +102674,7 @@
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
                 "into": {
                   "controllerDefault": "mine",
-                  "nameOrTrait": [{ "tokens": ["Marsmon", "Callismon"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["Marsmon", "Callismon"], "match": "nameExact" }]
                 },
                 "payCost": false,
                 "from": ["hand"],
@@ -102751,7 +102765,10 @@
               {
                 "kind": "Digivolve",
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-                "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Apollomon"], "match": "name" }] },
+                "into": {
+                  "controllerDefault": "mine",
+                  "nameOrTrait": [{ "tokens": ["Apollomon"], "match": "nameExact" }]
+                },
                 "from": ["hand"],
                 "reduceCost": 2,
                 "payCost": true,
@@ -102769,7 +102786,10 @@
               {
                 "kind": "Digivolve",
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-                "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Apollomon"], "match": "name" }] },
+                "into": {
+                  "controllerDefault": "mine",
+                  "nameOrTrait": [{ "tokens": ["Apollomon"], "match": "nameExact" }]
+                },
                 "from": ["hand"],
                 "reduceCost": 2,
                 "payCost": true,
@@ -102883,7 +102903,7 @@
             "into": {
               "controllerDefault": "mine",
               "zone": "hand",
-              "nameOrTrait": [{ "tokens": ["GraceNovamon"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["GraceNovamon"], "match": "nameExact" }]
             },
             "payCost": true,
             "optional": true
@@ -103257,7 +103277,10 @@
               {
                 "kind": "Digivolve",
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-                "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Crescemon"], "match": "name" }] },
+                "into": {
+                  "controllerDefault": "mine",
+                  "nameOrTrait": [{ "tokens": ["Crescemon"], "match": "nameExact" }]
+                },
                 "from": ["trash"],
                 "reduceCost": 1,
                 "payCost": true,
@@ -103275,7 +103298,10 @@
               {
                 "kind": "Digivolve",
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-                "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Crescemon"], "match": "name" }] },
+                "into": {
+                  "controllerDefault": "mine",
+                  "nameOrTrait": [{ "tokens": ["Crescemon"], "match": "nameExact" }]
+                },
                 "from": ["trash"],
                 "reduceCost": 1,
                 "payCost": true,
@@ -103471,7 +103497,10 @@
               {
                 "kind": "Digivolve",
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-                "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Dianamon"], "match": "name" }] },
+                "into": {
+                  "controllerDefault": "mine",
+                  "nameOrTrait": [{ "tokens": ["Dianamon"], "match": "nameExact" }]
+                },
                 "from": ["trash"],
                 "payCost": true,
                 "costDelta": -2,
@@ -103495,7 +103524,10 @@
               {
                 "kind": "Digivolve",
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-                "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Dianamon"], "match": "name" }] },
+                "into": {
+                  "controllerDefault": "mine",
+                  "nameOrTrait": [{ "tokens": ["Dianamon"], "match": "nameExact" }]
+                },
                 "from": ["trash"],
                 "payCost": true,
                 "costDelta": -2,
@@ -103739,7 +103771,7 @@
                 "into": {
                   "controllerDefault": "mine",
                   "zone": "hand",
-                  "nameOrTrait": [{ "tokens": ["GraceNovamon"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["GraceNovamon"], "match": "nameExact" }]
                 },
                 "payCost": true,
                 "optional": true
@@ -103769,7 +103801,7 @@
                 "into": {
                   "controllerDefault": "mine",
                   "zone": "hand",
-                  "nameOrTrait": [{ "tokens": ["GraceNovamon"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["GraceNovamon"], "match": "nameExact" }]
                 },
                 "payCost": true,
                 "optional": true
@@ -105958,7 +105990,7 @@
                 "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
                 "into": {
                   "controllerDefault": "mine",
-                  "nameOrTrait": [{ "tokens": ["Callismon", "Marsmon"], "match": "name" }]
+                  "nameOrTrait": [{ "tokens": ["Callismon", "Marsmon"], "match": "nameExact" }]
                 },
                 "payCost": false,
                 "from": ["hand"],
@@ -150655,7 +150687,7 @@
               "controllerDefault": "mine",
               "kind": ["Digimon"],
               "nameOrTrait": [
-                { "tokens": ["Omnimon"], "match": "name" },
+                { "tokens": ["Omnimon"], "match": "nameExact" },
                 { "tokens": ["ME", "VB"], "match": "trait" }
               ],
               "hasDnaDigivolutionRequirement": true
@@ -162856,7 +162888,7 @@
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "into": {
               "controllerDefault": "mine",
-              "nameOrTrait": [{ "tokens": ["Imperialdramon: Fighter Mode"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["Imperialdramon: Fighter Mode"], "match": "nameExact" }]
             },
             "from": ["hand"],
             "payCost": true,
@@ -186489,7 +186521,7 @@
             "materials": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 2 },
             "into": {
               "controllerDefault": "mine",
-              "nameOrTrait": [{ "tokens": ["Omnimon Alter-S"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["Omnimon Alter-S"], "match": "nameExact" }]
             },
             "payCost": true,
             "optional": true
@@ -186974,7 +187006,7 @@
                 "materials": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 2 },
                 "into": {
                   "controllerDefault": "mine",
-                  "nameOrTrait": [{ "tokens": ["Omnimon Alter-S"], "match": "name" }],
+                  "nameOrTrait": [{ "tokens": ["Omnimon Alter-S"], "match": "nameExact" }],
                   "zone": "hand"
                 },
                 "payCost": true,
@@ -192254,7 +192286,7 @@
           {
             "kind": "Digivolve",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Ginryumon"], "match": "name" }] },
+            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Ginryumon"], "match": "nameExact" }] },
             "payCost": false,
             "from": ["hand"],
             "optional": true,
@@ -221817,7 +221849,10 @@
           {
             "kind": "Digivolve",
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
-            "into": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["Gallantmon"], "match": "name" }] },
+            "into": {
+              "controllerDefault": "mine",
+              "nameOrTrait": [{ "tokens": ["Gallantmon"], "match": "nameExact" }]
+            },
             "payCost": true,
             "from": ["hand"],
             "costOverride": 4,
@@ -222161,7 +222196,7 @@
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "into": {
               "controllerDefault": "mine",
-              "nameOrTrait": [{ "tokens": ["UlforceVeedramon"], "match": "name" }]
+              "nameOrTrait": [{ "tokens": ["UlforceVeedramon"], "match": "nameExact" }]
             },
             "payCost": true,
             "from": ["hand"],
