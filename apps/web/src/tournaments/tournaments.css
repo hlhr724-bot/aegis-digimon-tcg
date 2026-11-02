@@ -1897,6 +1897,10 @@
   height: 22px;
 }
 
+.tournaments-format dt .aegis-help-tip::before {
+  inset: -11px;
+}
+
 .tournaments-format__scale {
   display: grid;
   gap: 2px;
