@@ -10,7 +10,7 @@ type SpotParams = {
   cardWidth: number;
 };
 
-const SPOT_PADDING = 0.16;
+const SPOT_PADDING = 0.1;
 
 function buildSpot({ point, cardWidth }: SpotParams): ArenaBreedingSpot {
   return {

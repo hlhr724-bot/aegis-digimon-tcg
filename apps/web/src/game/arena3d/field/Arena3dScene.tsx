@@ -236,6 +236,8 @@ function ArenaSceneContents(props: Props) {
       />
       <ArenaBreedingFocus
         active={props.breedingFocus}
+        breedingPermanents={props.breedingPermanents}
+        rimColor={colors.playerAccent}
         layout={layout}
         linearBlending={quality.bloom}
         activity={activity}
