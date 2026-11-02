@@ -422,6 +422,9 @@
 
 .game-board[data-board-style="arena3d"] .arena-3d-field .game-security-shield-wrap {
   position: absolute !important;
+  display: block !important;
+  width: max-content !important;
+  height: max-content !important;
   margin: 0 !important;
   right: auto !important;
   bottom: auto !important;
