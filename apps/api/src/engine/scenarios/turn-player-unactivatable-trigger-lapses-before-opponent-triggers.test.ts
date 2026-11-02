@@ -1,39 +1,50 @@
-import { readFileSync } from "node:fs";
+import { Phase } from "@aegis/shared";
 import { expect, it } from "vitest";
-import { runReplay } from "#api/replays/inputs/run";
-import type { ReplayRecord } from "#api/replays/inputs/types";
-
-const OPPONENT_DELETION_ORDER_INPUT = 64;
-const GOKUUMON_TARGET_INPUT = 66;
-const SOLARMON_INSTANCE_ID = "s1-e4ba9d518d9f77c2f03d388780d9003cc1dee8b57674539d64f0e47f8dd585a8";
+import "#api/cards/index";
+import { advance } from "#api/engine/testkit/advance";
+import { settle } from "#api/engine/testkit/harness";
+import { setupScenario } from "#api/engine/testkit/scenario";
+import { turnPlayerUnactivatableTriggerLapsesBeforeOpponentTriggers } from "./turn-player-unactivatable-trigger-lapses-before-opponent-triggers.fixture.js";
 
 it("lapses the turn player's unactivatable [When Attacking] once the opponent's simultaneous effects begin", async () => {
-  const record: ReplayRecord = JSON.parse(
-    readFileSync(
-      new URL("./turn-player-unactivatable-trigger-lapses-before-opponent-triggers.replay.json", import.meta.url),
-      "utf8",
-    ),
-  );
-  const triggeredEffectKeys: string[] = [];
-  const run = await runReplay(record, {
-    untilInput: GOKUUMON_TARGET_INPUT,
-    onBatch: (_state, events) => {
-      for (const event of events) {
-        if (event.kind === "effectTriggered") triggeredEffectKeys.push(event.effectKey);
-      }
-    },
+  const preferInstanceIds: string[] = [];
+  const s = setupScenario(turnPlayerUnactivatableTriggerLapsesBeforeOpponentTriggers(), {
+    autoAcceptOptional: true,
+    autoSelectCards: true,
+    preferInstanceIds,
   });
+  const solarmonId = s.inst("solarmon").instanceId;
+  preferInstanceIds.push(solarmonId);
+  const loop = s.engine.startTurnLoop();
   try {
-    expect(run.divergences.filter((divergence) => divergence.index < OPPONENT_DELETION_ORDER_INPUT)).toEqual([]);
+    await settle(() => s.state.phase === Phase.Breeding);
+    expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+    await advance(s.engine).waitForMainPhase(0);
 
+    const boltmonId = s.perm("boltmon").permanentId;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("gokuumon").permanentId,
+        instanceId: s.inst("seitenGokuumon").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.state.players[1]!.battleArea.some((permanent) => permanent.topCard.instanceId === solarmonId) &&
+        !s.state.pendingDecision,
+    );
+
+    expect(s.state.players[1]!.battleArea.some((permanent) => permanent.permanentId === boltmonId)).toBe(false);
+    const triggeredEffectKeys = s.events.flatMap((event) =>
+      event.kind === "effectTriggered" ? [event.effectKey] : [],
+    );
     const solarmonPlay = triggeredEffectKeys.indexOf("BT22-074/ir-11-1");
     expect(solarmonPlay).toBeGreaterThanOrEqual(0);
     expect(triggeredEffectKeys.slice(solarmonPlay)).not.toContain("EX12-015/ir-12-0");
-    expect(run.pendingRequest?.sourceCardId).not.toBe("EX12-015");
-    expect(
-      run.state.players[1]!.battleArea.some((permanent) => permanent.topCard.instanceId === SOLARMON_INSTANCE_ID),
-    ).toBe(true);
+    expect(s.state.players[1]!.battleArea.some((permanent) => permanent.topCard.instanceId === solarmonId)).toBe(true);
   } finally {
-    run.engine.applyIntent(0, { type: "surrender" });
+    if (!s.state.gameOver) s.engine.applyIntent(s.state.turnSeat as 0 | 1, { type: "surrender" });
+    await loop;
   }
 });
