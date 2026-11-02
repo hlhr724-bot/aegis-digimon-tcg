@@ -10,6 +10,7 @@ const { chromium } = requireWeb("@playwright/test");
 const { values } = parseArgs({
   options: {
     base: { type: "string", default: "http://localhost:5173" },
+    cdp: { type: "string" },
     gl: { type: "string", default: "swiftshader" },
     scenario: { type: "string", default: "crowded" },
     seconds: { type: "string", default: "6" },
@@ -2297,17 +2298,27 @@ async function runCadence({ page, session, report }) {
   }
 }
 
-async function main() {
+async function openBrowserContext() {
+  if (values.cdp) {
+    const browser = await chromium.connectOverCDP(values.cdp);
+    return { browser, context: browser.contexts()[0] ?? (await browser.newContext()) };
+  }
   const browser = await chromium.launch({ headless: true, args: GL_ARGS[values.gl] });
+  const context = await browser.newContext({
+    ...DEVICES[values.device],
+    locale: "en-US",
+    colorScheme: values.color,
+    reducedMotion: values.reduced ? "reduce" : "no-preference",
+  });
+  return { browser, context };
+}
+
+async function main() {
+  const { browser, context } = await openBrowserContext();
   const report = { options: values, consoleErrors: [], startedAt: new Date().toISOString() };
+  let page;
   try {
-    const context = await browser.newContext({
-      ...DEVICES[values.device],
-      locale: "en-US",
-      colorScheme: values.color,
-      reducedMotion: values.reduced ? "reduce" : "no-preference",
-    });
-    const page = await context.newPage();
+    page = await context.newPage();
     const arena = values.scenario !== "classic" && values.board !== "classic";
     const probeArgs = {
       boardStyle: arena ? "arena3d" : "classic",
@@ -2367,6 +2378,9 @@ async function main() {
       return canvas ? { width: canvas.width, clientWidth: canvas.clientWidth } : undefined;
     });
   } finally {
+    if (values.cdp) {
+      await page?.close().catch(() => undefined);
+    }
     await browser.close();
   }
   const json = JSON.stringify(report, null, 2);
