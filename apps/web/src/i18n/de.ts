@@ -1,6 +1,7 @@
 import { tournamentCircuitsDe } from "@/i18n/tournamentCircuits.de";
 import { tournamentOfficialRequestDe } from "@/i18n/tournamentOfficialRequest.de";
 import { matchQueueDe } from "@/i18n/matchQueue.de";
+import { matchIntroDe } from "@/i18n/matchIntro.de";
 import { staffRolesDe } from "@/i18n/staffRoles.de";
 import { tournamentDetailDe } from "@/i18n/tournamentDetail.de";
 import { tournamentSpectatorsDe } from "@/i18n/tournamentSpectators.de";
@@ -2978,6 +2979,7 @@ const interfaceMessages = {
   ...tournamentCircuitsDe,
   ...tournamentOfficialRequestDe,
   ...matchQueueDe,
+  ...matchIntroDe,
   ...staffRolesDe,
   ...achievementsDe,
   "profile.filter.deck": "Deck",
