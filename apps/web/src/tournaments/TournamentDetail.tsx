@@ -24,6 +24,8 @@ import { TournamentReportButton } from "@/tournaments/TournamentReportButton";
 import { TournamentCopyLinkButton } from "@/tournaments/TournamentCopyLinkButton";
 import { TournamentCrumb } from "@/tournaments/TournamentCrumb";
 import { TournamentScheduleTimeline } from "@/tournaments/TournamentScheduleTimeline";
+import { TournamentStandingsTable } from "@/tournaments/TournamentStandingsTable";
+import { describeTournamentStructure } from "@/tournaments/describeTournamentStructure";
 import { isTournamentClosed } from "@/tournaments/isTournamentClosed";
 import { Alert, Badge, Button, Panel } from "../design/primitives";
 import type { DeckListing } from "../game/decks";
@@ -186,7 +188,10 @@ export function TournamentDetail({
         <dd>{banlistLabel}</dd>
       </dl>
       <div className="tournaments-badges">
-        {detail.topCutEnabled ? <Badge tone="success">{t("tournaments.badge.topCut")}</Badge> : null}
+        {detail.topCutEnabled && detail.topCutSize !== 0 ? (
+          <Badge tone="success">{t("tournaments.badge.topCut")}</Badge>
+        ) : null}
+        {detail.topCutEnabled && detail.topCutSize === 0 ? <Badge>{t("tournaments.badge.noTopCut")}</Badge> : null}
         {detail.allowBots ? <Badge tone="warning">{t("tournaments.badge.bots")}</Badge> : null}
       </div>
     </Panel>
@@ -195,7 +200,7 @@ export function TournamentDetail({
   const schedulePanel = (
     <Panel>
       <h3>{t("tournaments.detail.schedule")}</h3>
-      <TournamentScheduleTimeline startsAt={detail.startsAt} windows={detail.windows} />
+      <TournamentScheduleTimeline startsAt={detail.startsAt} windows={detail.windows} phases={detail.phases} />
       <dl className="tournaments-detail__kv">
         <dt>{t("tournaments.slotsLabel")}</dt>
         <dd>{t("tournaments.slots", { registered: detail.registeredCount, max: detail.maxPlayers })}</dd>
@@ -269,14 +274,15 @@ export function TournamentDetail({
     />
   ) : null;
 
+  const listedParticipants = detail.participants.filter((participant) => participant.status !== "dropped");
   const playersPanel = (
     <Panel>
       <h3>{t("tournaments.detail.participants")}</h3>
-      {detail.participants.length === 0 ? (
+      {listedParticipants.length === 0 ? (
         <p>{t("tournaments.detail.noParticipants")}</p>
       ) : (
         <ul className="tournaments-participants">
-          {detail.participants.map((participant) => (
+          {listedParticipants.map((participant) => (
             <li key={participant.id} data-bot={participant.kind === "bot" || undefined}>
               {participant.kind === "bot" ? (
                 <TournamentBotPortrait size="small" />
@@ -332,17 +338,7 @@ export function TournamentDetail({
     <Panel>
       <h3>{t("tournaments.detail.standings")}</h3>
       {detail.standings?.length ? (
-        <ol className="tournaments-standings">
-          {detail.standings.map((row) => (
-            <li key={row.participantId}>
-              <span>#{row.rank}</span>
-              <span>
-                {detail.participants.find((p) => p.id === row.participantId)?.displayName ?? row.participantId}
-              </span>
-              <span>{t("tournaments.detail.points", { points: row.points })}</span>
-            </li>
-          ))}
-        </ol>
+        <TournamentStandingsTable standings={detail.standings} participants={detail.participants} />
       ) : (
         <p>{t("tournaments.detail.standingsPending")}</p>
       )}
@@ -387,8 +383,7 @@ export function TournamentDetail({
           </span>
           <span>
             <Icons.LayoutGrid size={14} aria-hidden="true" />
-            {t(structureKey(detail.structure))}
-            {detail.topCutEnabled ? ` + ${t("tournaments.badge.topCut")}` : ""}
+            {describeTournamentStructure({ detail, t })}
           </span>
           <span>
             <Icons.Swords size={14} aria-hidden="true" />
@@ -398,6 +393,12 @@ export function TournamentDetail({
             <Icons.Users size={14} aria-hidden="true" />
             {t("tournaments.slots", { registered: detail.registeredCount, max: detail.maxPlayers })}
           </span>
+          {detail.status === "finished" && detail.winnerDisplayName ? (
+            <span>
+              <Icons.Trophy size={14} aria-hidden="true" />
+              {t("tournaments.catalog.winner", { player: detail.winnerDisplayName })}
+            </span>
+          ) : null}
         </div>
         {detail.description ? <p className="tournaments-description">{detail.description}</p> : null}
       </header>

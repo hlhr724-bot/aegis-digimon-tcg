@@ -152,7 +152,7 @@ describe("tournament catalog", () => {
         body: [
           LIGHTNING,
           { ...REGIONAL, createdBy: "other" },
-          { ...LIGHTNING, id: "past", name: "Past cup", status: "finished" },
+          { ...LIGHTNING, id: "past", name: "Past cup", status: "finished", winnerDisplayName: "Steven" },
         ],
       },
       "GET /auth/me": { body: { id: "acc-1", displayName: "Tamer", isAdmin: false, roles: [] } },
@@ -165,7 +165,8 @@ describe("tournament catalog", () => {
     expect(screen.queryByRole("heading", { name: "Regional qualifier" })).toBeNull();
     fireEvent.click(screen.getByRole("tab", { name: "Explore" }));
     fireEvent.click(screen.getByRole("button", { name: "Past events" }));
-    expect(screen.getByRole("heading", { name: "Past cup" })).toBeTruthy();
+    const past = screen.getByRole("heading", { name: "Past cup" }).closest("li") as HTMLElement;
+    expect(within(past).getByText("Winner: Steven")).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Friday lightning" })).toBeNull();
   });
 
@@ -210,10 +211,20 @@ describe("tournament catalog", () => {
     expect(within(lightning).queryByText("Top Cut")).toBeNull();
 
     const regional = screen.getByRole("heading", { name: "Regional qualifier" }).closest("li") as HTMLElement;
-    expect(within(regional).getByText("Swiss")).toBeTruthy();
-    expect(within(regional).getByText("Top Cut")).toBeTruthy();
+    expect(within(regional).getByText("Swiss + Top Cut")).toBeTruthy();
     expect(within(regional).getByText("Banned cards as of BT10")).toBeTruthy();
     expect(within(regional).queryByText("Bots allowed")).toBeNull();
+  });
+
+  it("says a Swiss event with too few players for a cut has no Top Cut", async () => {
+    cleanup();
+    mockApi({
+      "GET /tournaments": { body: [{ ...REGIONAL, topCutSize: 0 }] },
+      "GET /auth/me": { body: null },
+    });
+    renderScreen();
+    const regional = (await screen.findByRole("heading", { name: "Regional qualifier" })).closest("li") as HTMLElement;
+    expect(within(regional).getByText("Swiss · No Top Cut (too few players)")).toBeTruthy();
   });
 
   it("reads registeredCount, not the deprecated registrations alias", async () => {

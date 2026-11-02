@@ -8,14 +8,16 @@ type Props = {
   tournamentId: string;
   matchId: string;
   seriesId: string | null;
+  presentAt: number | null;
   onJoinGame: (ticket: TournamentGameTicket) => void;
   onChanged?: () => void;
 };
 
-export function TournamentMatchActions({ tournamentId, matchId, seriesId, onJoinGame, onChanged }: Props) {
+export function TournamentMatchActions({ tournamentId, matchId, seriesId, presentAt, onJoinGame, onChanged }: Props) {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
-  const [present, setPresent] = useState(false);
+  const [markedPresent, setMarkedPresent] = useState(false);
+  const present = markedPresent || presentAt !== null;
   const [error, setError] = useState<ApiError>();
 
   async function markPresent() {
@@ -27,7 +29,7 @@ export function TournamentMatchActions({ tournamentId, matchId, seriesId, onJoin
       setError(result.error);
       return;
     }
-    setPresent(true);
+    setMarkedPresent(true);
     onChanged?.();
   }
 

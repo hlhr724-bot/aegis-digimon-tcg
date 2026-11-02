@@ -4,7 +4,8 @@ import { Badge, Button } from "@/design/primitives";
 import { Icons } from "@/design/icons";
 import { useTranslation } from "@/i18n/useTranslation";
 import { deckFormatLabel } from "@/screens/deckFormatLabel";
-import { statusKey, structureKey } from "@/tournaments/labels";
+import { statusKey } from "@/tournaments/labels";
+import { describeTournamentStructure } from "@/tournaments/describeTournamentStructure";
 import type { TournamentListing } from "@/tournaments/types";
 
 type TournamentFeaturedCardParams = {
@@ -49,8 +50,7 @@ export function TournamentFeaturedCard({ tournament, onOpen }: TournamentFeature
           </span>
           <span>
             <Icons.LayoutGrid size={15} aria-hidden="true" />
-            {t(structureKey(tournament.structure))}
-            {tournament.topCutEnabled ? ` + ${t("tournaments.badge.topCut")}` : ""}
+            {describeTournamentStructure({ detail: tournament, t })}
           </span>
           <span>
             <Icons.Swords size={15} aria-hidden="true" />

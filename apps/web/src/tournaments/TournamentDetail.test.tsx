@@ -193,8 +193,55 @@ describe("tournament detail", () => {
     const standings = (await screen.findByRole("heading", { name: "Standings" })).closest(
       ".aegis-panel",
     ) as HTMLElement;
-    expect(within(standings).getByText("Tamer One")).toBeTruthy();
-    expect(within(standings).getByText("9 points")).toBeTruthy();
+    const row = within(standings).getByRole("row", { name: /Tamer One/ });
+    expect(within(row).getByText("9")).toBeTruthy();
+    expect(within(row).getByText("3-0-0")).toBeTruthy();
+    expect(within(row).getByText("100.0%")).toBeTruthy();
+    expect(within(row).getByText("50.0%")).toBeTruthy();
+    expect(within(standings).getByRole("columnheader", { name: "OMW%" })).toBeTruthy();
+  });
+
+  it("lists only players who are still in the event", async () => {
+    mockDetail({
+      participants: [
+        ...DETAIL.participants,
+        { id: "p-3", accountId: "acc-gone", kind: "human", displayName: "Gone Tamer", status: "dropped", seed: null },
+      ],
+    });
+    renderDetail("acc-player", undefined, false, TournamentTab.PLAYERS.value);
+    const participants = (await screen.findByRole("heading", { name: "Players" })).closest(
+      ".aegis-panel",
+    ) as HTMLElement;
+    expect(within(participants).getByText("Tamer One")).toBeTruthy();
+    expect(within(participants).queryByText("Gone Tamer")).toBeNull();
+    expect(within(participants).queryByText("Dropped out")).toBeNull();
+  });
+
+  it("adds the actual start of each round to the schedule", async () => {
+    mockDetail({
+      status: "running",
+      phases: [
+        {
+          id: "phase-swiss",
+          kind: "swiss",
+          status: "running",
+          plannedRounds: 3,
+          rounds: [
+            { number: 1, status: "published", publishedAt: Date.parse("2026-08-13T18:07:00.000Z"), matches: [] },
+          ],
+        },
+      ],
+    });
+    renderDetail("acc-player");
+    const schedule = (await screen.findByRole("heading", { name: "Schedule" })).closest(".aegis-panel") as HTMLElement;
+    expect(within(schedule).getByText("Round 1 started")).toBeTruthy();
+  });
+
+  it("says a finished Swiss event had no Top Cut when the field was too small", async () => {
+    mockDetail({ status: "finished", topCutSize: 0, winnerDisplayName: "Tamer One" });
+    renderDetail("acc-player");
+    expect(await screen.findByText("Swiss · No Top Cut (too few players)")).toBeTruthy();
+    expect(screen.getByText("Winner: Tamer One")).toBeTruthy();
   });
 
   it("shows the official badge to players without endorsement controls", async () => {
@@ -627,12 +674,13 @@ describe("tournament match entry", () => {
           tournamentId="t-1"
           matchId="m-1"
           seriesId={null}
+          presentAt={null}
           onJoinGame={onJoinGame}
           onChanged={onChanged}
         />
       </I18nProvider>,
     );
-    fireEvent.click(screen.getByRole("button", { name: "I am ready" }));
+    fireEvent.click(screen.getByRole("button", { name: "Ready" }));
     expect(await screen.findByText("Waiting for the opponent to confirm presence.")).toBeTruthy();
     expect(onChanged).toHaveBeenCalledOnce();
     expect(onJoinGame).not.toHaveBeenCalled();
@@ -642,6 +690,7 @@ describe("tournament match entry", () => {
           tournamentId="t-1"
           matchId="m-1"
           seriesId="s-1"
+          presentAt={null}
           onJoinGame={onJoinGame}
           onChanged={onChanged}
         />
@@ -649,6 +698,65 @@ describe("tournament match entry", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Enter game" }));
     await waitFor(() => expect(onJoinGame).toHaveBeenCalledWith(ticket));
+  });
+});
+
+describe("tournament presence", () => {
+  it("keeps a confirmed presence after the panel remounts", () => {
+    render(
+      <I18nProvider>
+        <TournamentMatchActions
+          tournamentId="t-1"
+          matchId="m-1"
+          seriesId={null}
+          presentAt={Date.parse("2026-08-13T18:08:00.000Z")}
+          onJoinGame={() => undefined}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText("Waiting for the opponent to confirm presence.")).toBeTruthy();
+  });
+
+  it("prints when each player confirmed presence in the match list", () => {
+    render(
+      <I18nProvider>
+        <TournamentMatchHistory
+          detail={{
+            participants: DETAIL.participants,
+            matches: [
+              {
+                id: "m-1",
+                round: 1,
+                position: 0,
+                player0AccountId: "acc-player",
+                player1AccountId: null,
+                winnerAccountId: null,
+                status: "pending",
+              },
+            ],
+            series: [
+              {
+                matchId: "m-1",
+                seriesId: null,
+                status: "awaiting_players",
+                participantIds: ["p-1", "p-2"],
+                participant0Id: "acc-player",
+                participant1Id: null,
+                wins0: 0,
+                wins1: 0,
+                currentGameIndex: null,
+                joinDeadlineAt: null,
+                seriesDeadlineAt: null,
+                presentAt: [Date.parse("2026-08-13T18:08:00.000Z"), null],
+                winnerParticipantId: null,
+              },
+            ],
+          }}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.getByText(/^Ready: Tamer One: .+ · Bot Two: not yet$/)).toBeTruthy();
   });
 });
 
@@ -771,7 +879,13 @@ it("refuses an HTML authorization response instead of joining a casual game", as
   const onJoinGame = vi.fn<() => void>();
   render(
     <I18nProvider>
-      <TournamentMatchActions tournamentId="t-1" matchId="m-1" seriesId="s-1" onJoinGame={onJoinGame} />
+      <TournamentMatchActions
+        tournamentId="t-1"
+        matchId="m-1"
+        seriesId="s-1"
+        presentAt={null}
+        onJoinGame={onJoinGame}
+      />
     </I18nProvider>,
   );
   fireEvent.click(screen.getByRole("button"));
