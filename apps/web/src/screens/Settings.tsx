@@ -17,7 +17,6 @@ import { InterfaceThemeDialog } from "../design/InterfaceThemePicker";
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { Avatar, Button, Eyebrow, Switch, type PlayerIdentity } from "../design/primitives";
 import { Panel, SectionHeading } from "../design/surfaces";
-import { ArenaLookSettings } from "../design/ArenaLookSettings";
 import { BoardStyleSettings } from "@/game/arena3d/boardStyle/BoardStyleSettings";
 import { Icons, type IconComponent } from "../design/icons";
 import { getInterfaceColors, useInterfaceTheme } from "../design/interfaceTheme";
@@ -726,7 +725,6 @@ export function Settings({
 
             <section id="settings-arena" className="settings-card" aria-labelledby="settings-arena-title" tabIndex={-1}>
               <SectionHeading id="settings-arena-title" title={t("redesign.settings.arena")} />
-              <ArenaLookSettings />
               <BoardStyleSettings />
             </section>
           </div>

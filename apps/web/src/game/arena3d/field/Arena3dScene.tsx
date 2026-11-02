@@ -1,19 +1,14 @@
-import { memo, useEffect, useMemo, useRef, useSyncExternalStore, type ComponentType, type RefObject } from "react";
+import { memo, useEffect, useMemo, useRef, useSyncExternalStore, type RefObject } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { PerspectiveCamera, Vector3 } from "three";
 import { Side } from "@/game/side";
 import { createCardTextureCache } from "@/design/webglCard/createCardTextureCache";
 import type { ArenaActivity } from "@/game/arena3d/ArenaActivity";
 import { ArenaActiveSideAura } from "@/game/arena3d/ArenaActiveSideAura";
-import { ArenaAuroraEnvironment } from "@/game/arena3d/ArenaAuroraEnvironment";
 import type { ArenaCameraImpulse } from "@/game/arena3d/ArenaCameraImpulse";
-import { ArenaEnvironment } from "@/game/arena3d/ArenaEnvironment";
-import type { ArenaEnvironmentSceneProps } from "@/game/arena3d/ArenaEnvironmentSceneProps";
+import type { ArenaEnvironment } from "@/game/arena3d/ArenaEnvironment";
+import { ARENA_ENVIRONMENT_SCENES } from "@/game/arena3d/arenaEnvironmentScenes";
 import { ArenaFrameDriver } from "@/game/arena3d/ArenaFrameDriver";
-import { ArenaGridEnvironment } from "@/game/arena3d/ArenaGridEnvironment";
-import { ArenaHaloEnvironment } from "@/game/arena3d/ArenaHaloEnvironment";
-import { ArenaHologramEnvironment } from "@/game/arena3d/ArenaHologramEnvironment";
-import { ArenaPrismEnvironment } from "@/game/arena3d/ArenaPrismEnvironment";
 import type { ArenaPulse } from "@/game/arena3d/ArenaPulse";
 import { ArenaPulseLayer } from "@/game/arena3d/ArenaPulseLayer";
 import { ArenaBreedingFocus } from "@/game/arena3d/breeding/ArenaBreedingFocus";
@@ -72,14 +67,6 @@ type EnergyProps = {
   energy: { current: number };
 };
 
-const ENVIRONMENT_SCENES: Record<ArenaEnvironment, ComponentType<ArenaEnvironmentSceneProps>> = {
-  [ArenaEnvironment.HOLOGRAM.value]: ArenaHologramEnvironment,
-  [ArenaEnvironment.PRISM.value]: ArenaPrismEnvironment,
-  [ArenaEnvironment.GRID.value]: ArenaGridEnvironment,
-  [ArenaEnvironment.HALO.value]: ArenaHaloEnvironment,
-  [ArenaEnvironment.AURORA.value]: ArenaAuroraEnvironment,
-};
-
 function EnergyDecay({ energy }: EnergyProps) {
   useFrame((_, delta) => {
     energy.current = Math.max(0, energy.current - delta * 0.8);
@@ -124,7 +111,7 @@ function ArenaSceneContents(props: Props) {
     renderedFrames: 0,
     lateFrames: 0,
   });
-  const EnvironmentScene = ENVIRONMENT_SCENES[environment];
+  const EnvironmentScene = ARENA_ENVIRONMENT_SCENES[environment];
 
   useEffect(() => () => cache.dispose(), [cache]);
 

@@ -4,7 +4,6 @@
    it is picked. */
 
 import { useId } from "react";
-import { ArenaLookSettings } from "../../../design/ArenaLookSettings";
 import type { ArenaDeckColors } from "../../../design/arenaPalette";
 import { Dialog } from "../../../design/primitives";
 import { Icons } from "../../../design/icons";
@@ -53,8 +52,7 @@ export function ArenaLookDialog({ deckColors, onClose, handoffUrl }: ArenaLookDi
         </h3>
         <InterfaceThemePicker dark={dark} onToggleDark={setDarkMode} deckColors={deckColors} />
       </section>
-      <BoardStyleSettings />
-      <ArenaLookSettings deckColors={deckColors} />
+      <BoardStyleSettings deckColors={deckColors} />
     </Dialog>
   );
 }

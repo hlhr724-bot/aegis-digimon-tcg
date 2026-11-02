@@ -14,7 +14,8 @@ The classic 2D board is the default. The 3D arena is experimental.
 
 - `boardStylePreference.ts` stores the choice in `localStorage` under `aegis.board-style`. The default is `classic`.
 - The dev URL calls `setStyle`, so the choice persists after you leave the page.
-- `BoardStyleSettings` shows the environment and quality pickers only when the 3D style is chosen and WebGL works. It shows a note when WebGL is missing.
+- `BoardStyleSettings` owns the whole board look section. With the 3D style chosen and WebGL working, it shows the environment and quality pickers. Otherwise it shows the classic board look (`design/ArenaLookSettings.tsx`: preview, battle lanes, and battlefield), because the 3D arena uses neither lanes nor battlefield art. It shows a note when WebGL is missing.
+- The environment picker shows a still preview of each environment. `environmentPreview/ArenaEnvironmentPreviewRenderer.tsx` is lazy-loaded and renders the real scenes from `arenaEnvironmentScenes.ts`, one at a time, in a hidden 384×216 canvas at Medium quality. It saves each frame as a WebP image in `arenaEnvironmentPreviewStore.ts`, keyed by the side colors, so a theme change renders new previews. The canvas closes when all previews exist. Until then, or if WebGL fails, each tile shows its color swatch.
 - `GameScreen.tsx` calls `useBoardStyle`. `resolveBoardStyle` returns `classic` when the preference is not 3D or WebGL is missing. Portrait screens use the 3D arena too; see [Responsive layout](#responsive-layout).
 
 ## Architecture

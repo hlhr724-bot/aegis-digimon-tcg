@@ -118,15 +118,64 @@
   font-weight: 600;
 }
 
-.aegis-arena-look__palettes {
+.aegis-arena-look__battlefields {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: var(--ds-space-2);
 }
 
-.aegis-arena-look__battlefields {
+.aegis-arena-look__segments {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-fill);
+}
+
+.aegis-arena-look__segment {
+  position: relative;
+  display: flex;
+  min-height: var(--ds-touch-target);
+  align-items: center;
+  justify-content: center;
   gap: var(--ds-space-2);
+  padding: var(--ds-space-1) var(--ds-space-3);
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  border-radius: calc(var(--ds-radius-lg) - 3px);
+  cursor: pointer;
+  transition:
+    background-color var(--ds-motion-fast),
+    color var(--ds-motion-fast),
+    box-shadow var(--ds-motion-fast);
+}
+
+.aegis-arena-look__segment:hover {
+  color: var(--ds-text);
+}
+
+.aegis-arena-look__segment:has(:checked) {
+  color: var(--ds-text);
+  background: var(--ds-sheet);
+  box-shadow:
+    0 0 0 1px var(--ds-accent),
+    0 1px 3px rgb(0 0 0 / 25%);
+}
+
+.aegis-arena-look__segment:has(:focus-visible) {
+  box-shadow: var(--ds-focus-ring);
+}
+
+.aegis-arena-look__segment-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
 }
 
 /* Anchors the visually hidden radio inside its option. Without it, the radio is
@@ -159,33 +208,6 @@
   box-shadow: var(--ds-focus-ring);
 }
 
-.aegis-arena-look__palette {
-  display: flex;
-  min-height: var(--ds-touch-target);
-  align-items: center;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-2) var(--ds-space-3);
-  font-size: var(--ds-text-sm);
-}
-
-.aegis-arena-look__swatch {
-  width: 24px;
-  height: 24px;
-  flex: none;
-  border-radius: var(--ds-radius-pill);
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 10%);
-}
-
-.aegis-arena-look__palette .aegis-arena-look__option-label {
-  flex: 1;
-}
-
-.aegis-arena-look__theme-icon {
-  display: grid;
-  width: 22px;
-  place-items: center;
-}
-
 /* One or two bars, drawn like the lanes they choose. */
 .aegis-arena-look__lanes-icon {
   display: grid;
@@ -200,11 +222,6 @@
   height: 6px;
   border: 1px solid currentcolor;
   border-radius: 2px;
-}
-
-.aegis-arena-look__check {
-  display: grid;
-  color: var(--ds-accent);
 }
 
 .aegis-arena-look__battlefield {
@@ -273,20 +290,20 @@
   font-size: var(--ds-text-sm);
 }
 
-@container (width >= 480px) {
-  .aegis-arena-look__palettes {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @container (width >= 760px) {
   .aegis-arena-look__layout {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
   }
+
+  .aegis-arena-look__preview-column {
+    position: sticky;
+    top: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .aegis-arena-look__option {
+  .aegis-arena-look__option,
+  .aegis-arena-look__segment {
     transition-duration: 1ms;
   }
 }

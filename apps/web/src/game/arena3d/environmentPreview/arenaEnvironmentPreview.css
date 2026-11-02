@@ -1,0 +1,6 @@
+.arena-environment-preview {
+  position: fixed;
+  top: 0;
+  left: -10000px;
+  pointer-events: none;
+}
