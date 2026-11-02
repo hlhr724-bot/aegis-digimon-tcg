@@ -481,6 +481,7 @@ export class GameEngine {
         return undefined;
       },
       (permanentId) => (collisionGrantsBlocker(this, permanentId) ? ["Blocker"] : []),
+      () => this.combat?.currentAttackerId,
     );
     this.memory = new MemoryGauge(this.state, this.hooks.emit, (seat, opts) => {
       const kinds = opts.isTamerEffect ? [CardKind.Tamer] : [CardKind.Digimon];
