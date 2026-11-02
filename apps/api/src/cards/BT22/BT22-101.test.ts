@@ -76,8 +76,7 @@ describe("BT22-101 Kyoko Kuremi", () => {
       into: {
         controllerDefault: "mine",
         kind: ["Digimon"],
-        cardId: "BT22-063",
-        nameOrTrait: [{ tokens: ["Alphamon"], match: "name" }],
+        nameOrTrait: [{ tokens: ["Alphamon"], match: "nameExact" }],
       },
       from: ["hand"],
       reduceCost: 2,
@@ -85,7 +84,7 @@ describe("BT22-101 Kyoko Kuremi", () => {
       optional: true,
       condition: {
         kind: "youHaveNone",
-        filter: { nameOrTrait: [{ tokens: ["Alphamon"], match: "name" }] },
+        filter: { nameOrTrait: [{ tokens: ["Alphamon"], match: "nameExact" }] },
       },
     });
   });

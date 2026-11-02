@@ -93,8 +93,7 @@ export const compiled: CompiledCard = {
               into: {
                 controllerDefault: "mine",
                 kind: ["Digimon"],
-                cardId: "BT22-063",
-                nameOrTrait: [{ tokens: ["Alphamon"], match: "name" }],
+                nameOrTrait: [{ tokens: ["Alphamon"], match: "nameExact" }],
               },
               from: ["hand"],
               reduceCost: 2,
@@ -104,7 +103,7 @@ export const compiled: CompiledCard = {
                 kind: "youHaveNone",
                 filter: {
                   controllerDefault: "mine",
-                  nameOrTrait: [{ tokens: ["Alphamon"], match: "name" }],
+                  nameOrTrait: [{ tokens: ["Alphamon"], match: "nameExact" }],
                 },
                 raw: "you don't have [Alphamon]",
               },

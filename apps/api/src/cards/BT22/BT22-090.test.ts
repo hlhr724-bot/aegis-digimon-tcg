@@ -29,7 +29,7 @@ describe("BT22-090 Rie Kishibe", () => {
       from: ["hand"],
       into: {
         controllerDefault: "mine",
-        nameOrTrait: [{ tokens: ["LordKnightmon"], match: "name" }],
+        nameOrTrait: [{ tokens: ["LordKnightmon"], match: "nameExact" }],
       },
       reduceCost: 3,
       payCost: true,

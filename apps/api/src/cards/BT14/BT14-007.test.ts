@@ -14,7 +14,7 @@ describe("BT14-007", () => {
           payCost: false,
           from: ["hand"],
           condition: { kind: "youHave" },
-          into: { nameOrTrait: [{ tokens: ["Greymon"], match: "name" }] },
+          into: { nameOrTrait: [{ tokens: ["Greymon"], match: "nameExact" }] },
         },
       ],
     }));

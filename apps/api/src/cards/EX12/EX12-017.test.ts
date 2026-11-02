@@ -153,7 +153,7 @@ describe("EX12-017 WarGreymon", () => {
         into: {
           kind: ["Digimon"],
           nameOrTrait: [
-            { tokens: ["Omnimon"], match: "name" },
+            { tokens: ["Omnimon"], match: "nameExact" },
             { tokens: ["ME", "VB"], match: "trait" },
           ],
         },
@@ -210,6 +210,49 @@ describe("EX12-017 WarGreymon", () => {
     expect(s.events.filter((event) => event.kind === "attackDeclared").at(-1)).toMatchObject({
       target: { kind: "permanent", permanentId: redirectTargetId },
     });
+  });
+
+  it("does not DNA digivolve into Omnimon Alter-S because [Omnimon] names an exact card", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "BT1-023", as: "attacker", dp: 12000 }] },
+        1: {
+          battleArea: [
+            { card: "ST2-10", as: "blueMaterial" },
+            { card: "EX12-017", as: "counterSource" },
+          ],
+          hand: [{ card: "EX9-021", as: "alterS" }],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.some((event) => event.kind === "counterWindowOpened"));
+    const opened = s.events.find((event) => event.kind === "counterWindowOpened");
+    if (opened?.kind !== "counterWindowOpened") throw new Error("counterWindowOpened not found");
+    const eligible = opened.eligibleCounters.find(
+      (candidate) => candidate.instanceId === s.perm("counterSource").topCard.instanceId,
+    );
+    expect(eligible).toBeDefined();
+
+    expect(
+      s.engine.applyIntent(1, {
+        type: "respondCounter",
+        sourceInstanceId: eligible!.instanceId,
+        effectKey: eligible!.effectKey,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.events.filter((event) => event.kind === "attackDeclared").length >= 2);
+
+    expect(s.state.players[1]!.battleArea.some((permanent) => permanent.topCard?.cardId === "EX9-021")).toBe(false);
+    expect(s.state.players[1]!.hand.map((card) => card.cardId)).toEqual(["EX9-021"]);
   });
 
   it("DNA digivolves an attacked Digimon away during Counter (Q6744) and spends the attack Counter cap (Q6745)", async () => {

@@ -23,6 +23,22 @@ describe("ST8-04 Veemon", () => {
     expect(s.state.memory).toBe(1);
   });
 
+  it("does not use the alternate path for UlforceVeedramon Zero", () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "ST8-04", as: "veemon" }], hand: [{ card: "P-048", as: "zero" }] },
+      1: { battleArea: ["ST8-10"] },
+    });
+    s.state.memory = 5;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("veemon").permanentId,
+        instanceId: s.inst("zero").instanceId,
+      }),
+    ).toEqual({ ok: false, reason: "invalid-evolution" });
+    expect(s.state.memory).toBe(5);
+  });
+
   it("draws 1 when its host attacks with 7 or fewer cards in hand", async () => {
     const s = setupEngine({
       0: { deck: [{ card: "ST8-02", as: "drawn" }], battleArea: [{ card: "ST8-10", as: "host", under: ["ST8-04"] }] },

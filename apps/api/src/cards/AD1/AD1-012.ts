@@ -187,7 +187,7 @@ const compiled: CompiledCard = {
                 nameOrTrait: [
                   {
                     tokens: ["Omnimon Alter-S"],
-                    match: "name",
+                    match: "nameExact",
                   },
                 ],
               },

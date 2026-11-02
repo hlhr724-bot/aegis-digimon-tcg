@@ -94,7 +94,7 @@ export const compiled: CompiledCard = {
             nameOrTrait: [
               {
                 tokens: ["Lucemon: Chaos Mode"],
-                match: "name",
+                match: "nameExact",
               },
             ],
             excludeCardIds: ["BT7-111"],

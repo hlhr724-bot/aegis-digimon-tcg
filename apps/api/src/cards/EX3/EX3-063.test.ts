@@ -82,7 +82,7 @@ describe("EX3-063 Imperialdramon: Dragon Mode", () => {
             { kind: "ModifyDP", amount: 2000 },
             {
               kind: "Digivolve",
-              into: { nameOrTrait: [{ tokens: ["Imperialdramon: Fighter Mode"], match: "name" }] },
+              into: { nameOrTrait: [{ tokens: ["Imperialdramon: Fighter Mode"], match: "nameExact" }] },
               costOverride: 2,
               optional: true,
             },

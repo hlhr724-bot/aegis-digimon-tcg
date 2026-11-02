@@ -71,7 +71,7 @@ const compiled: CompiledCard = {
                 nameOrTrait: [
                   {
                     tokens: ["Imperialdramon: Fighter Mode"],
-                    match: "name",
+                    match: "nameExact",
                   },
                 ],
               },
@@ -120,7 +120,7 @@ const compiled: CompiledCard = {
                 nameOrTrait: [
                   {
                     tokens: ["Imperialdramon: Fighter Mode"],
-                    match: "name",
+                    match: "nameExact",
                   },
                 ],
               },

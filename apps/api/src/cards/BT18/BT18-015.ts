@@ -75,7 +75,7 @@ export const compiled: CompiledCard = {
               nameOrTrait: [
                 {
                   tokens: ["Machinedramon"],
-                  match: "name",
+                  match: "nameExact",
                 },
               ],
             },
@@ -88,7 +88,7 @@ export const compiled: CompiledCard = {
             nameOrTrait: [
               {
                 tokens: ["Millenniummon"],
-                match: "name",
+                match: "nameExact",
               },
             ],
             hasDnaDigivolutionRequirement: true,
@@ -102,7 +102,7 @@ export const compiled: CompiledCard = {
               nameOrTrait: [
                 {
                   tokens: ["Kimeramon"],
-                  match: "name",
+                  match: "nameExact",
                 },
               ],
             },

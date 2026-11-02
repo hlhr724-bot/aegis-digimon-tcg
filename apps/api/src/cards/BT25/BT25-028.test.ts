@@ -66,7 +66,7 @@ describe("BT25-028 Dianamon", () => {
             into: {
               controllerDefault: "mine",
               zone: "hand",
-              nameOrTrait: [{ tokens: ["GraceNovamon"], match: "name" }],
+              nameOrTrait: [{ tokens: ["GraceNovamon"], match: "nameExact" }],
             },
             payCost: true,
             optional: true,
