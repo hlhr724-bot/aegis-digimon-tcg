@@ -539,8 +539,9 @@ it.each([false, undefined])(
 );
 
 it.each([true, false])(
-  "titles the Armor Purge pick as an Armor Purge question on board/dialog (%s)",
+  "asks Armor Purge as use or don't use with the Digimon already chosen on board/dialog (%s)",
   (answerOnBoard) => {
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
     render(
       <I18nProvider>
         <DecisionPrompts
@@ -569,11 +570,16 @@ it.each([true, false])(
           triggerDetails={[]}
           opponentSecurityCount={5}
           onTogglePick={() => {}}
-          onRespond={() => {}}
+          onRespond={onRespond}
           onOpenDialog={() => {}}
         />
       </I18nProvider>,
     );
-    expect(screen.getByText(/^Use ＜Armor Purge＞\?/)).toBeTruthy();
+    expect(screen.getByText("Use ＜Armor Purge＞?")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /confirm targets/i })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Use" }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "selectCards", instanceIds: ["stegomon-top"] });
+    fireEvent.click(screen.getByRole("button", { name: "Don't use" }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "selectCards", instanceIds: [] });
   },
 );

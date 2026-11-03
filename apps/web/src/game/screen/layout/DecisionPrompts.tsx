@@ -125,6 +125,11 @@ export function DecisionPrompts({
   const digiXrosRequirements = digiXrosCardId ? digiXrosRequirementFor(digiXrosCardId) : undefined;
   const isDigiXrosDecision = digiXrosCardId !== undefined && digiXrosRequirements !== undefined;
   const isMaterialDecision = isAssemblyDecision || isDigiXrosDecision;
+  const armorPurgeInstanceId =
+    decision?.kind === "selectCards" && decision.options?.promptKey === "armorPurge"
+      ? decision.options.candidateInstanceIds?.[0]
+      : undefined;
+  const isArmorPurgeDecision = armorPurgeInstanceId !== undefined;
   const selectedPlayCost = totalPlayCost({ picks, candidates });
   const permanentDetails = decisionPermanentDetails(permanents);
   const selectedDP = totalDP({ picks, dpOf: (id) => permanentDetails.get(id)?.currentDP });
@@ -142,7 +147,7 @@ export function DecisionPrompts({
     .join(" · ");
   return (
     <>
-      {decision && !answerOnBoard && sourceHost?.picking ? (
+      {decision && !answerOnBoard && !isArmorPurgeDecision && sourceHost?.picking ? (
         <BoardSourceHostPrompt
           sourceCardId={sourceCardId}
           clause={clause}
@@ -156,7 +161,12 @@ export function DecisionPrompts({
         />
       ) : null}
 
-      {decision && decision.kind !== "mulligan" && !answerOnBoard && !isMaterialDecision && !sourceHost?.picking
+      {decision &&
+      decision.kind !== "mulligan" &&
+      !answerOnBoard &&
+      !isMaterialDecision &&
+      !isArmorPurgeDecision &&
+      !sourceHost?.picking
         ? (() => {
             const sourceCounts = decisionSourceCounts(permanents);
             return (
@@ -208,7 +218,7 @@ export function DecisionPrompts({
           })()
         : null}
 
-      {decision && answerOnBoard && boardSelectionKind && !isMaterialDecision ? (
+      {decision && answerOnBoard && boardSelectionKind && !isMaterialDecision && !isArmorPurgeDecision ? (
         <BoardSelectionRail
           attackSelection={decision.options?.selectionContext === "attackTarget"}
           fieldSelection={candidates.some(
@@ -218,7 +228,6 @@ export function DecisionPrompts({
           sourceCardId={sourceCardId}
           prompt={
             (decision.options?.promptKey === "digivolveHost" ? t("overlay.digivolveHostPrompt") : undefined) ??
-            (decision.options?.promptKey === "armorPurge" ? t("overlay.armorPurgePrompt") : undefined) ??
             playerFacingPromptText(decision.promptText, decision.kind) ??
             (min === max
               ? t("overlay.selectCardsSubtitle", { count: max })
@@ -317,6 +326,19 @@ export function DecisionPrompts({
           intrinsicUnderTamerMax={candidates.filter((candidate) => candidate.zone === "digivolutionCards").length}
           onConfirm={(instanceIds) => onRespond({ kind: "selectCards", instanceIds })}
           onSkip={() => onRespond({ kind: "selectCards", instanceIds: [] })}
+        />
+      ) : null}
+
+      {decision && armorPurgeInstanceId !== undefined ? (
+        <BoardOptionalPrompt
+          key={decision.decisionId}
+          sourceCardId={sourceCardId}
+          sourcePermanentId={decision.sourcePermanentId}
+          prompt={t("overlay.armorPurgePrompt")}
+          clause={clause}
+          clauseEmphasis={decision.options?.effectTextEmphasis}
+          onUse={() => onRespond({ kind: "selectCards", instanceIds: [armorPurgeInstanceId] })}
+          onDecline={() => onRespond({ kind: "selectCards", instanceIds: [] })}
         />
       ) : null}
 

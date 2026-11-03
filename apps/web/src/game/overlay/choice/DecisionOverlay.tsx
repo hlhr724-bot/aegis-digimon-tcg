@@ -300,11 +300,9 @@ export function DecisionOverlay({
             ? t("overlay.activateBlitzPrompt")
             : request.options?.promptKey === "digivolveHost"
               ? t("overlay.digivolveHostPrompt")
-              : request.options?.promptKey === "armorPurge"
-                ? t("overlay.armorPurgePrompt")
-                : !specificPrompt || (sourceCardId && specificPrompt === getCardName(sourceCardId))
-                  ? genericPrompt
-                  : specificPrompt;
+              : !specificPrompt || (sourceCardId && specificPrompt === getCardName(sourceCardId))
+                ? genericPrompt
+                : specificPrompt;
 
   // Older decisions may carry their only effect description in the question.
   // Keep that context in the body while all activations share the same heading.

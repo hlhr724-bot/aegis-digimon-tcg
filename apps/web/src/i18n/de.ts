@@ -1610,8 +1610,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "Möchten Sie ＜Partition＞ aktivieren?",
   "overlay.activateBlitzPrompt": "Möchten Sie ＜Blitz＞ aktivieren?",
   "overlay.digivolveHostPrompt": "Wählen Sie die Karte, die digitieren soll.",
-  "overlay.armorPurgePrompt":
-    "＜Armor Purge＞ einsetzen? Wählen Sie dieses Digimon, um seine oberste Karte abzulegen und die Löschung zu verhindern, oder wählen Sie Passen, damit es gelöscht wird.",
+  "overlay.armorPurgePrompt": "＜Armor Purge＞ einsetzen?",
   "overlay.attackAlreadyResolving": "Solange dieser Angriff abgehandelt wird, kann kein weiterer Angriff beginnen.",
   "overlay.deckTop": "Oben auf dem Deck",
   "overlay.deckBottom": "Unten im Deck",
