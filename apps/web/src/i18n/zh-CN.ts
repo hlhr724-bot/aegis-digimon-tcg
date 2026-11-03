@@ -2364,6 +2364,8 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3dDesc": "实验功能。卡牌和特效以 3D 显示，耗电更多。",
   "redesign.foundation.boardStyle.unsupported":
     "3D 不可用：此浏览器无法使用 WebGL。请在浏览器设置中开启硬件加速，然后刷新页面。",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D 不可用：此设备的浏览器无法使用 WebGL。更新浏览器或换用其他浏览器可能会有帮助。",
   "redesign.foundation.boardStyle.restoring": "正在恢复3D棋盘…",
   "redesign.foundation.boardStyle.stopped": "3D已在此设备上停止。正在显示经典棋盘。",
   "redesign.foundation.boardStyle.retry": "重试",

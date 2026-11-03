@@ -2429,6 +2429,8 @@ const interfaceMessages = {
     "실험적 기능입니다. 카드와 효과가 3D로 표시되며 배터리를 더 사용합니다.",
   "redesign.foundation.boardStyle.unsupported":
     "3D를 사용할 수 없습니다: 이 브라우저는 WebGL을 사용할 수 없습니다. 브라우저 설정에서 하드웨어 가속을 켠 뒤 페이지를 새로고침하세요.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D를 사용할 수 없습니다: 이 기기의 브라우저는 WebGL을 사용할 수 없습니다. 브라우저를 업데이트하거나 다른 브라우저를 사용해 보세요.",
   "redesign.foundation.boardStyle.restoring": "3D 보드를 복원하는 중…",
   "redesign.foundation.boardStyle.stopped": "이 기기에서 3D가 멈췄습니다. 클래식 보드를 표시합니다.",
   "redesign.foundation.boardStyle.retry": "다시 시도",

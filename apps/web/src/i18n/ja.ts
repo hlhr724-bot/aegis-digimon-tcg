@@ -2450,6 +2450,8 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3dDesc": "実験的機能です。カードと演出を3Dで表示し、バッテリー消費が増えます。",
   "redesign.foundation.boardStyle.unsupported":
     "3Dは使えません: このブラウザはWebGLを使用できません。ブラウザ設定でハードウェアアクセラレーションを有効にして、ページを再読み込みしてください。",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3Dは使えません: この端末のブラウザはWebGLを使用できません。ブラウザを更新するか、別のブラウザを試すと解決する場合があります。",
   "redesign.foundation.boardStyle.restoring": "3D盤面を復元しています…",
   "redesign.foundation.boardStyle.stopped": "この端末で3Dが停止しました。クラシック盤面を表示中です。",
   "redesign.foundation.boardStyle.retry": "再試行",

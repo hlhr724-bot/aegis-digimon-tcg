@@ -2368,6 +2368,8 @@ const interfaceMessages = {
     "Sperimentale. Carte ed effetti vengono mostrati in 3D e consumano più batteria.",
   "redesign.foundation.boardStyle.unsupported":
     "3D disattivato: questo browser non può usare WebGL. Attiva l'accelerazione hardware nelle impostazioni del browser, poi ricarica la pagina.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D disattivato: il browser di questo dispositivo non può usare WebGL. Aggiornare il browser o provarne un altro può aiutare.",
   "redesign.foundation.boardStyle.restoring": "Ripristino del campo 3D…",
   "redesign.foundation.boardStyle.stopped":
     "Il 3D si è fermato su questo dispositivo. Viene mostrato il campo classico.",

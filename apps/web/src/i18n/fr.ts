@@ -2505,6 +2505,8 @@ const interfaceMessages = {
     "Expérimental. Les cartes et les effets s'affichent en 3D et consomment plus de batterie.",
   "redesign.foundation.boardStyle.unsupported":
     "3D désactivée : ce navigateur ne peut pas utiliser WebGL. Activez l'accélération matérielle dans les réglages du navigateur, puis rechargez la page.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D désactivée : le navigateur de cet appareil ne peut pas utiliser WebGL. Mettre à jour le navigateur ou en essayer un autre peut aider.",
   "redesign.foundation.boardStyle.restoring": "Restauration du plateau 3D…",
   "redesign.foundation.boardStyle.stopped": "La 3D s'est arrêtée sur cet appareil. Plateau classique affiché.",
   "redesign.foundation.boardStyle.retry": "Réessayer",

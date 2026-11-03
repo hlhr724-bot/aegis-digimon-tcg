@@ -3,6 +3,7 @@ import { ArenaLookSettings } from "@/design/ArenaLookSettings";
 import type { ArenaDeckColors } from "@/design/arenaPalette";
 import { Icons, type IconComponent } from "@/design/icons";
 import { playSound } from "@/design/sound";
+import { COARSE_POINTER_QUERY, useMediaQuery } from "@/design/useMediaQuery";
 import { ArenaEnvironmentSettings } from "@/game/arena3d/ArenaEnvironmentSettings";
 import { BoardStyle } from "@/game/arena3d/boardStyle/BoardStyle";
 import { boardStylePreference } from "@/game/arena3d/boardStyle/boardStylePreference";
@@ -78,6 +79,7 @@ export function BoardStyleSettings({ deckColors }: Props) {
   const selected = resolveBoardStyle({ preference, webGlAvailable });
   const arena3dActive = selected === BoardStyle.ARENA_3D.value;
   const unsupportedNoteId = useId();
+  const touchDevice = useMediaQuery(COARSE_POINTER_QUERY);
 
   return (
     <div className="aegis-arena-look aegis-board-style">
@@ -114,7 +116,11 @@ export function BoardStyleSettings({ deckColors }: Props) {
         ) : null}
         {webGlAvailable ? null : (
           <p id={unsupportedNoteId} className="aegis-arena-look__note aegis-board-style__unsupported">
-            {t("redesign.foundation.boardStyle.unsupported")}
+            {t(
+              touchDevice
+                ? "redesign.foundation.boardStyle.unsupportedTouch"
+                : "redesign.foundation.boardStyle.unsupported",
+            )}
           </p>
         )}
       </fieldset>

@@ -51,6 +51,8 @@ export const foundationEn = {
   "redesign.foundation.boardStyle.arena3dDesc": "Experimental. Cards and effects render in 3D and use more battery.",
   "redesign.foundation.boardStyle.unsupported":
     "3D is off: this browser can't use WebGL. Turn on hardware acceleration in your browser settings, then reload the page.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D is off: this device's browser can't use WebGL. Updating the browser or trying another browser may help.",
   "redesign.foundation.boardStyle.restoring": "Restoring the 3D board…",
   "redesign.foundation.boardStyle.stopped": "3D stopped on this device. Showing the classic board.",
   "redesign.foundation.boardStyle.retry": "Try again",

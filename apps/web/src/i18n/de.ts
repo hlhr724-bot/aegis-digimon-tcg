@@ -2513,6 +2513,8 @@ const interfaceMessages = {
     "Experimentell. Karten und Effekte werden in 3D dargestellt und verbrauchen mehr Akku.",
   "redesign.foundation.boardStyle.unsupported":
     "3D ist aus: Dieser Browser kann WebGL nicht nutzen. Aktivieren Sie die Hardwarebeschleunigung in den Browsereinstellungen und laden Sie die Seite neu.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D ist aus: Der Browser dieses Geräts kann WebGL nicht nutzen. Ein Browser-Update oder ein anderer Browser kann helfen.",
   "redesign.foundation.boardStyle.restoring": "3D-Spielfeld wird wiederhergestellt…",
   "redesign.foundation.boardStyle.stopped": "3D wurde auf diesem Gerät beendet. Klassisches Spielfeld wird angezeigt.",
   "redesign.foundation.boardStyle.retry": "Erneut versuchen",

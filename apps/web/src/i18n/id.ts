@@ -2465,6 +2465,8 @@ const interfaceMessages = {
     "Eksperimental. Kartu dan efek ditampilkan dalam 3D dan memakai lebih banyak baterai.",
   "redesign.foundation.boardStyle.unsupported":
     "3D nonaktif: browser ini tidak bisa memakai WebGL. Aktifkan akselerasi perangkat keras di pengaturan browser, lalu muat ulang halaman.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D nonaktif: browser di perangkat ini tidak bisa memakai WebGL. Memperbarui browser atau mencoba browser lain mungkin membantu.",
   "redesign.foundation.boardStyle.restoring": "Memulihkan papan 3D…",
   "redesign.foundation.boardStyle.stopped": "3D berhenti di perangkat ini. Menampilkan papan klasik.",
   "redesign.foundation.boardStyle.retry": "Coba lagi",
