@@ -2428,6 +2428,11 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3dDesc":
     "실험적 기능입니다. 카드와 효과가 3D로 표시되며 배터리를 더 사용합니다.",
   "redesign.foundation.boardStyle.unsupported": "이 기기에서는 3D 아레나를 표시할 수 없어 클래식 보드를 사용합니다.",
+  "redesign.foundation.boardStyle.restoring": "3D 보드를 복원하는 중…",
+  "redesign.foundation.boardStyle.stopped": "이 기기에서 3D가 멈췄습니다. 클래식 보드를 표시합니다.",
+  "redesign.foundation.boardStyle.retry": "다시 시도",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "이 브라우저는 3D를 실행할 수 없습니다. WebGL이 꺼져 있을 수 있습니다. 클래식 보드를 표시합니다.",
   "redesign.foundation.arena3dQuality.title": "3D 품질",
   "redesign.foundation.arena3dQuality.auto": "자동",
   "redesign.foundation.arena3dQuality.low": "낮음",

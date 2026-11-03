@@ -2505,6 +2505,11 @@ const interfaceMessages = {
     "Expérimental. Les cartes et les effets s'affichent en 3D et consomment plus de batterie.",
   "redesign.foundation.boardStyle.unsupported":
     "Cet appareil ne peut pas afficher l'arène 3D, les parties utilisent donc le plateau classique.",
+  "redesign.foundation.boardStyle.restoring": "Restauration du plateau 3D…",
+  "redesign.foundation.boardStyle.stopped": "La 3D s'est arrêtée sur cet appareil. Plateau classique affiché.",
+  "redesign.foundation.boardStyle.retry": "Réessayer",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "Ce navigateur ne peut pas exécuter la 3D. WebGL est peut-être désactivé. Plateau classique affiché.",
   "redesign.foundation.arena3dQuality.title": "Qualité 3D",
   "redesign.foundation.arena3dQuality.auto": "Automatique",
   "redesign.foundation.arena3dQuality.low": "Basse",

@@ -18,6 +18,22 @@ The classic 2D board is the default. The 3D arena is experimental.
 - The environment picker shows a still preview of each environment. `environmentPreview/ArenaEnvironmentPreviewRenderer.tsx` is lazy-loaded and renders the real scenes from `arenaEnvironmentScenes.ts`, one at a time, in a hidden 384×216 canvas at Medium quality. It saves each frame as a WebP image in `arenaEnvironmentPreviewStore.ts`, keyed by the side colors, so a theme change renders new previews. The canvas closes when all previews exist. Until then, or if WebGL fails, each tile shows its color swatch.
 - `GameScreen.tsx` calls `useBoardStyle`. `resolveBoardStyle` returns `classic` when the preference is not 3D or WebGL is missing. Portrait screens use the 3D arena too; see [Responsive layout](#responsive-layout).
 
+## Fallback and recovery
+
+Players who chose 3D but got the classic board without any message reported that they saw no difference between the two styles. The 3D layer now recovers when it can, says so when it cannot, and reports each case.
+
+| Case                                                              | What happens                                                                                                                                         | Notice                                               | Report reason      |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------ |
+| The browser drops the WebGL context (app switch, memory pressure) | `useArena3dSceneRecovery` unmounts the scene. Once the page is visible, it waits 800 ms and mounts a new canvas with a new `sceneKey`.               | "Restoring the 3D board…" while it waits             | `contextLost`      |
+| The context is lost again after 3 restarts                        | The scene stays off.                                                                                                                                 | "3D stopped…" with a retry button and a close button | `restartFailed`    |
+| The scene throws or its chunk fails to load                       | `ClientErrorBoundary` renders `SceneCrashSignal`, which stops the scene. The boundary is keyed by `sceneKey`, so a retry remounts it.                | Same as above                                        | `sceneCrashed`     |
+| The preference is 3D but WebGL is missing                         | `resolveBoardStyle` picks the classic board. `Arena3dUnavailableNotice` in `BoardStage` explains it. A close hides it for the rest of the page load. | "This browser can't run 3D…"                         | `webglUnavailable` |
+
+- The code lives in `fallback/`. `Arena3dNotice` measures the opponent bar and sits just below it, so it never covers the bar's menu button.
+- `reportArena3dFallback` sends a client error report of kind `arena3dFallback` with the message `Arena 3D fallback: <reason>`. The reporter sends each signature once per page load. See [client error reports](../../../../../internal-docs/ai/client-errors.md).
+- While the scene is off, `data-board-style` stays `arena3d`, so the field keeps the 3D slot positions without the 3D card styling. A full switch to the classic layout would remount the whole board mid-match; it is not done.
+- The no-WebGL case has no visual fallback. A CSS-perspective board was considered and left out until the reports show how many players need it.
+
 ## Architecture
 
 `BoardStage.tsx` sets `data-board-style` on `.game-board` and branches on it.
@@ -424,7 +440,7 @@ These are the desktop budgets. Phones and tablets use the touch budgets below. "
 - Touch Medium has no MSAA. At DPR 2 the edges are already fine, the card and floor shaders antialias their own edges, and MSAA costs bandwidth on tile-based mobile GPUs. Low and Medium then share the same antialias setting, so an automatic downgrade from Medium to Low keeps the canvas and its GL context.
 - The desktop High floor is 160 x 160 segments (51,200 triangles) over a 90 x 90 plane, for a 0.12-unit vertex wave. Touch tiers use 64 or 96 segments.
 - iOS Safari kills a tab at a few hundred MB in total. The touch budgets stay below that with room for the page. The crowded board holds 25 textures: about 25 MB at 384 px and 45 MB at 512 px, so neither tier evicts a held texture.
-- `createCardTextureCache` swaps the decoded `ImageBitmap` for a `{ width, height }` placeholder and closes it as soon as WebGL has uploaded it (`texture.onUpdate`). The GPU copy stays, and the CPU copy (about 1.5 MB per card at 512 px) goes. This is safe because each cache belongs to one renderer and a lost context falls back to the classic board. A restored context could not re-upload these textures.
+- `createCardTextureCache` swaps the decoded `ImageBitmap` for a `{ width, height }` placeholder and closes it as soon as WebGL has uploaded it (`texture.onUpdate`). The GPU copy stays, and the CPU copy (about 1.5 MB per card at 512 px) goes. This is safe because each cache belongs to one renderer. After a lost context, recovery mounts a new canvas with a new cache, which decodes the textures again; it never reuses the old context. See [Fallback and recovery](#fallback-and-recovery).
 
 ### Automatic tier
 

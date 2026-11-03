@@ -2368,6 +2368,12 @@ const interfaceMessages = {
     "Sperimentale. Carte ed effetti vengono mostrati in 3D e consumano più batteria.",
   "redesign.foundation.boardStyle.unsupported":
     "Questo dispositivo non può mostrare l'arena 3D, quindi le partite usano il tabellone classico.",
+  "redesign.foundation.boardStyle.restoring": "Ripristino del campo 3D…",
+  "redesign.foundation.boardStyle.stopped":
+    "Il 3D si è fermato su questo dispositivo. Viene mostrato il campo classico.",
+  "redesign.foundation.boardStyle.retry": "Riprova",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "Questo browser non può eseguire il 3D. WebGL potrebbe essere disattivato. Viene mostrato il campo classico.",
   "redesign.foundation.arena3dQuality.title": "Qualità 3D",
   "redesign.foundation.arena3dQuality.auto": "Automatica",
   "redesign.foundation.arena3dQuality.low": "Bassa",
