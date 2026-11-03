@@ -111283,5 +111283,22 @@
     "rarity": "U",
     "maxCountInDeck": 4,
     "imageId": "BD01-05"
+  },
+  {
+    "cardId": "BD01-10",
+    "set": "BD01",
+    "nameEn": "Kanata Hondo",
+    "nameJp": "本堂カナタ",
+    "colors": ["Red"],
+    "kinds": ["Tamer"],
+    "playCost": 3,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["ALYSION"],
+    "effectText": "[Start of Your Main Phase] If you have a red Digimon with the [ALYSION] trait, gain 1 memory.\n[Your Turn] All of your red Digimon with the [ALYSION] trait get +1000 DP.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BD01-10"
   }
 ]
