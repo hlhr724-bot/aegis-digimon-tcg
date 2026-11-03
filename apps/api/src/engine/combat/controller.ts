@@ -1,4 +1,5 @@
 import type { CombatControllerState } from "#api/engine/combat/CombatControllerState";
+import { isSameAttackTarget } from "#api/engine/combat/isSameAttackTarget";
 import type { CounterChoice } from "@aegis/shared/protocol/CounterChoice";
 import { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
 import {
@@ -280,6 +281,10 @@ export class CombatController {
     return this.currentAttack?.attackerPermanentId;
   }
 
+  get currentAttackTarget(): AttackTarget | undefined {
+    return this.currentAttack?.target;
+  }
+
   /** Unsuspending after an attack makes the Digimon eligible to declare another attack. */
   resetAttackEligibility(permanentId: string): void {
     this.attackedThisTurn.delete(permanentId);
@@ -335,6 +340,9 @@ export class CombatController {
     // restriction sits on the ATTACKER, and every printed instance is unscoped — it blocks the
     // switch whoever is attempting it. Returning false lets the caller see the redirect failed.
     if (this.hooks.continuous?.hasRestriction(this.currentAttack.attackerPermanentId, "attackTargetChange") === true) {
+      return false;
+    }
+    if (isSameAttackTarget(this.currentAttack.target, target)) {
       return false;
     }
     this.currentAttack.target = target;
