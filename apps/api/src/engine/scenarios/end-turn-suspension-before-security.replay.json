@@ -619,6 +619,21 @@
       "stateVersion": 23
     },
     {
+      "kind": "intent",
+      "seat": 0,
+      "ok": true,
+      "stateVersion": 24,
+      "engineEvents": 44,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-4",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-45"]
+        }
+      }
+    },
+    {
       "ok": true,
       "kind": "intent",
       "seat": 1,
@@ -649,7 +664,7 @@
           "kind": "selectCards",
           "instanceIds": ["s1-34"]
         },
-        "decisionId": "dec-4"
+        "decisionId": "dec-5"
       },
       "engineEvents": 61,
       "stateVersion": 35
@@ -675,7 +690,7 @@
           "kind": "selectCards",
           "instanceIds": ["s1-46"]
         },
-        "decisionId": "dec-5"
+        "decisionId": "dec-6"
       },
       "engineEvents": 74,
       "stateVersion": 41
@@ -690,7 +705,7 @@
           "kind": "orderCards",
           "order": ["s1-37", "s1-1", "s1-29"]
         },
-        "decisionId": "dec-6"
+        "decisionId": "dec-7"
       },
       "engineEvents": 75,
       "stateVersion": 42
@@ -705,7 +720,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-7"
+        "decisionId": "dec-8"
       },
       "engineEvents": 87,
       "stateVersion": 52
@@ -748,7 +763,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-8"
+        "decisionId": "dec-9"
       },
       "engineEvents": 101,
       "stateVersion": 62
@@ -774,7 +789,7 @@
           "kind": "selectCards",
           "instanceIds": ["s0-37"]
         },
-        "decisionId": "dec-9"
+        "decisionId": "dec-10"
       },
       "engineEvents": 113,
       "stateVersion": 69
@@ -812,7 +827,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-10"
+        "decisionId": "dec-11"
       },
       "engineEvents": 130,
       "stateVersion": 83
@@ -851,7 +866,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-11"
+        "decisionId": "dec-12"
       },
       "engineEvents": 147,
       "stateVersion": 92

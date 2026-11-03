@@ -85,7 +85,7 @@ describe("Battle entry effects resolve before End of Attack", () => {
         "BT26-092",
       ]);
       expect(replay.state.players[1]!.hand.some((card) => card.cardId === "BT24-037")).toBe(true);
-      for (const input of record.inputs.slice(28, 86)) {
+      for (const input of record.inputs.slice(28, 87)) {
         if (input.kind !== "intent") {
           throw new Error("Expected a recorded match intent");
         }
@@ -117,8 +117,8 @@ describe("Battle entry effects resolve before End of Attack", () => {
           response: { kind: "orderTriggers", order: [barrierKey] },
         }),
       ).toEqual({ ok: true });
-      const barrier = record.inputs[86]!;
-      const sourcePlay = record.inputs[87]!;
+      const barrier = record.inputs[87]!;
+      const sourcePlay = record.inputs[88]!;
       if (barrier.kind !== "intent" || sourcePlay.kind !== "intent" || sourcePlay.intent.type !== "respondDecision") {
         throw new Error("Expected the recorded Barrier and source-play answers");
       }
@@ -129,7 +129,7 @@ describe("Battle entry effects resolve before End of Attack", () => {
           decisionId: replay.state.pendingDecision!.decisionId,
         }),
       ).toEqual({ ok: true });
-      const input = record.inputs[88]!;
+      const input = record.inputs[89]!;
       if (
         input.kind !== "intent" ||
         input.intent.type !== "respondDecision" ||

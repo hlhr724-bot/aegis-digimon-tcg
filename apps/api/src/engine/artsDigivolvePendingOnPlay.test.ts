@@ -31,6 +31,19 @@ describe("Arts Digivolve pending On Play source residency", () => {
       }),
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const handSelection = s.state.pendingDecision!;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: handSelection.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("sistermon").instanceId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.state.pendingDecision?.kind === "selectCards" &&
+        s.state.pendingDecision.decisionId !== handSelection.decisionId,
+    );
     const decision = s.state.pendingDecision!;
     expect(decision.promptText).toContain("Arts Digivolve");
     expect(

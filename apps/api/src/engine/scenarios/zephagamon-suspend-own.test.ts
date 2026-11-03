@@ -84,6 +84,14 @@ describe("Zephagamon suspends your own Digimon", () => {
         response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
+    await settle(() => openDecision(s)?.kind === "selectCards");
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: openDecision(s)!.decisionId,
+        response: { kind: "selectCards", instanceIds: [HAND_PTEROMON] },
+      }),
+    ).toEqual({ ok: true });
 
     await settle(() =>
       s.state.players[0]!.battleArea.some((candidate) => candidate.topCard.instanceId === HAND_PTEROMON),
