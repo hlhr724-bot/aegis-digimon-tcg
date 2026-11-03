@@ -606,6 +606,33 @@ describe("CombatController.resolveAttack — Digimon vs Digimon", () => {
   });
 });
 
+describe("CombatController.redirectTarget", () => {
+  it("refuses to switch an attack to the target it already has", async () => {
+    const h = harness();
+    const attacker = digimon(0, 9000);
+    const defender = digimon(1, 4000, { suspended: true, cardId: DIGIMON_B });
+    h.state.players[0]?.battleArea.push(attacker);
+    h.state.players[1]?.battleArea.push(defender);
+    h.state.players[1]?.security.push(securityCard(1));
+    const switches: boolean[] = [];
+
+    await h.combat.resolveAttack(
+      0,
+      attacker,
+      { kind: "permanent", permanentId: defender.permanentId },
+      {
+        afterAttackDeclaration: async () => {
+          switches.push(h.combat.redirectTarget({ kind: "permanent", permanentId: defender.permanentId }));
+          switches.push(h.combat.redirectTarget({ kind: "player" }));
+          switches.push(h.combat.redirectTarget({ kind: "player" }));
+        },
+      },
+    );
+
+    expect(switches).toEqual([false, true, false]);
+  });
+});
+
 describe("CombatController.resolveAttack — player-directed (security hand-off)", () => {
   it("drains the current timing while combat is open and before the security check", async () => {
     const h = harness();
@@ -625,7 +652,7 @@ describe("CombatController.resolveAttack — player-directed (security hand-off)
           expect(h.combat.isAttacking).toBe(true);
           expect(h.securityCalls).toHaveLength(0);
           expect(h.combat.redirectTarget({ kind: "permanent", permanentId: redirectedDefender.permanentId })).toBe(
-            true,
+            !drained,
           );
           drained = true;
         },

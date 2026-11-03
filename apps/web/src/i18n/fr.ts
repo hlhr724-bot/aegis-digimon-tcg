@@ -1601,6 +1601,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "Voulez-vous activer Partition ?",
   "overlay.activateBlitzPrompt": "Voulez-vous activer Blitz ?",
   "overlay.digivolveHostPrompt": "Choisissez la carte qui va digivolver.",
+  "overlay.armorPurgePrompt": "Utiliser ＜Purge d'armure＞ ?",
   "overlay.attackAlreadyResolving": "Une autre attaque ne peut pas commencer pendant la résolution de cette attaque.",
   "overlay.deckTop": "Dessus du deck",
   "overlay.deckBottom": "Dessous du deck",

@@ -1006,12 +1006,17 @@ function GameScreenSession({
   const introOpponent = state?.players[otherSeat(viewerSeat)];
   const matchIntroOverlay = matchIntro.visible ? (
     <MatchIntroOverlay
-      viewer={{ name: introViewer?.displayName || joinOptions.displayName, avatarId: introViewer?.avatarId }}
+      viewer={{
+        name: introViewer?.displayName || joinOptions.displayName,
+        avatarId: introViewer?.avatarId,
+        avatarUrl: introViewer?.avatarUrl,
+      }}
       opponent={
         bothSeated(state)
           ? {
               name: introOpponent?.displayName || t("game.opponent"),
               avatarId: introOpponent?.avatarId,
+              avatarUrl: introOpponent?.avatarUrl,
               botPersonaId: introOpponent?.botPersonaId,
             }
           : undefined

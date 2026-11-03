@@ -523,6 +523,7 @@ export function BoardSourceHostPrompt({
 export function BoardOptionalPrompt({
   sourceCardId,
   sourcePermanentId,
+  prompt,
   contextText,
   clause,
   clauseEmphasis,
@@ -532,6 +533,7 @@ export function BoardOptionalPrompt({
 }: {
   sourceCardId?: string;
   sourcePermanentId?: string;
+  prompt?: string;
   /** Additional decision context belongs below the standard activation heading. */
   contextText?: string;
   clause?: string;
@@ -553,7 +555,7 @@ export function BoardOptionalPrompt({
       // The art is the card, so the name below it would only repeat the picture. The link
       // is kept when there is no art to show instead.
       art={sourceCardId}
-      prompt={t("overlay.useEffectPrompt")}
+      prompt={prompt ?? t("overlay.useEffectPrompt")}
       clause={clause ?? contextText}
       clauseEmphasis={clauseEmphasis}
       detail={clause ? contextText : undefined}

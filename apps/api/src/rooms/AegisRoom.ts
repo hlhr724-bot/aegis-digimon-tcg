@@ -728,6 +728,7 @@ export class AegisRoom extends Room<{
     }
     options.displayName = entry.displayName;
     options.avatarId = entry.avatarId;
+    if (entry.avatarUrl) this.liveAvatarUrlByClient.set(client.sessionId, entry.avatarUrl);
     options.deck = {
       mainDeck: [...entry.deck.mainDeck],
       eggDeck: [...entry.deck.eggDeck],
@@ -1424,6 +1425,7 @@ export class AegisRoom extends Room<{
           accountId: this.accountByClient.get(player.sessionId),
           displayName: player.displayName,
           ...(player.avatarId ? { avatarId: player.avatarId } : {}),
+          ...(player.avatarUrl ? { avatarUrl: player.avatarUrl } : {}),
           deck: {
             mainDeck: [...deck.mainDeck],
             eggDeck: [...deck.eggDeck],
@@ -2276,6 +2278,7 @@ export class AegisRoom extends Room<{
     this.withBatch(() => {
       this.engine.seatPlayer(seat, client.sessionId, options);
       this.state.players[seat]!.equippedRankedTier = this.equippedRankedTierByClient.get(client.sessionId) ?? "";
+      this.state.players[seat]!.avatarUrl = this.liveAvatarUrlByClient.get(client.sessionId) ?? "";
     });
     this.seatByClient.set(client.sessionId, seat);
     this.recordReplaySeat(seat, options.deck, {
@@ -4041,6 +4044,7 @@ export class AegisRoom extends Room<{
         player.sessionId = identity.sessionId;
         player.displayName = identity.displayName;
         player.avatarId = identity.avatarId;
+        player.avatarUrl = identity.avatarUrl;
         player.equippedRankedTier = identity.equippedRankedTier;
         player.botPersonaId = identity.botPersonaId;
         player.hideIdentityFromSpectators = identity.hideIdentityFromSpectators;

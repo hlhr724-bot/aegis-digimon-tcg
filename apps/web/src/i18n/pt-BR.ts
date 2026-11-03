@@ -1329,6 +1329,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.activatePartitionPrompt": "Você quer ativar Partition?",
   "overlay.activateBlitzPrompt": "Você quer ativar Blitz?",
   "overlay.digivolveHostPrompt": "Escolha a carta que vai digivolver.",
+  "overlay.armorPurgePrompt": "Usar ＜Armor Purge＞?",
   "overlay.attackAlreadyResolving": "Não é possível iniciar outro ataque enquanto este ataque está em andamento.",
   "overlay.deckTop": "Topo do deck",
   "overlay.deckBottom": "Fundo do deck",

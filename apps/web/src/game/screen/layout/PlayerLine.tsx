@@ -12,6 +12,7 @@ import { BotPortrait } from "@/bot/personas/BotPortrait";
 export function PlayerLine({
   name,
   avatarId,
+  avatarUrl,
   equippedRankedTier,
   botPersonaId,
   side,
@@ -21,6 +22,7 @@ export function PlayerLine({
 }: {
   name: string;
   avatarId?: string;
+  avatarUrl?: string;
   equippedRankedTier?: string;
   botPersonaId?: string;
   side: "player" | "opponent";
@@ -51,7 +53,12 @@ export function PlayerLine({
         {persona ? (
           <BotPortrait persona={persona} size={18} />
         ) : (
-          <Avatar name={name} avatarId={isDigimonWorldAvatarId(avatarId) ? avatarId : null} size={18} />
+          <Avatar
+            name={name}
+            avatarId={isDigimonWorldAvatarId(avatarId) ? avatarId : null}
+            avatarUrl={avatarUrl || null}
+            size={18}
+          />
         )}
       </span>
       {shortened ? (

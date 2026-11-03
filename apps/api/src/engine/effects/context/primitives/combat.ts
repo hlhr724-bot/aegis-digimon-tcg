@@ -1,4 +1,5 @@
 import type { EffectDuration, Seat } from "@aegis/shared";
+import type { AttackTarget } from "@aegis/shared/protocol/intents";
 import type { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
 
 export interface AttackDecisionProvenance {
@@ -56,6 +57,7 @@ export interface CombatPrimitives {
   /** Whether combat is currently resolving an attack. */
   isAttackResolving?(): boolean;
   isAttackTargetLocked?(attackerPermanentId?: string): boolean;
+  currentAttackTarget?(): AttackTarget | undefined;
   /**
    * Redirect the CURRENTLY-resolving attack onto a new target chosen by the source's
    * controller ("change the target of the attack to ..."). Consults the open attack

@@ -36,6 +36,7 @@ export function rollbackStateFingerprint(engine: Pick<GameEngine, "state" | "ref
       "sessionId",
       "displayName",
       "avatarId",
+      "avatarUrl",
       "equippedRankedTier",
       "botPersonaId",
       "hideIdentityFromSpectators",

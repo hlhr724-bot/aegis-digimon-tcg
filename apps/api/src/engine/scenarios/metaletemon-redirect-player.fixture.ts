@@ -31,6 +31,7 @@ const fixture: ScenarioFixture = {
           suspended: true,
           under: [{ card: "BT11-041", as: "own-source-metaletemon-0-card" }],
         },
+        { card: "BT1-009", as: "own-attacked-digimon", suspended: true },
       ],
     },
     "1": {

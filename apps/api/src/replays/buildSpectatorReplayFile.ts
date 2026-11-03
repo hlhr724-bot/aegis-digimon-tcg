@@ -38,6 +38,7 @@ export function buildSpectatorReplayFile({
       if (hiddenIdentities[player.seat]) {
         player.displayName = copy.players[player.seat];
         player.avatarId = "";
+        player.avatarUrl = "";
       }
     }
     frame.events = frame.events.filter((event) => event.kind !== "finalReveal");

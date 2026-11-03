@@ -1323,6 +1323,7 @@ export const en = {
   "overlay.activatePartitionPrompt": "Do you want to activate Partition?",
   "overlay.activateBlitzPrompt": "Do you want to activate Blitz?",
   "overlay.digivolveHostPrompt": "Choose the card that will digivolve.",
+  "overlay.armorPurgePrompt": "Use ＜Armor Purge＞?",
   "overlay.attackAlreadyResolving": "Another attack cannot start while this attack is resolving.",
   "overlay.deckTop": "Top of the deck",
   "overlay.deckBottom": "Bottom of the deck",

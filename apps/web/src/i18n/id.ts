@@ -1578,6 +1578,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "Apakah Anda ingin mengaktifkan Partition?",
   "overlay.activateBlitzPrompt": "Apakah Anda ingin mengaktifkan Blitz?",
   "overlay.digivolveHostPrompt": "Pilih kartu yang akan digivolve.",
+  "overlay.armorPurgePrompt": "Gunakan ＜Armor Purge＞?",
   "overlay.attackAlreadyResolving": "Serangan lain tidak dapat dimulai saat serangan ini sedang diproses.",
   "overlay.deckTop": "Bagian atas deck",
   "overlay.deckBottom": "Bagian bawah deck",

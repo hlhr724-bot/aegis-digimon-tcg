@@ -55,6 +55,7 @@ import { CardKind, digiXrosRequirementFor } from "@aegis/shared";
 import type { Action, Cost, Target, ZoneRef } from "@aegis/shared";
 import { canDetachPermanentTop, isDetachTopAction } from "../targeting/detachTop.js";
 import { printedPassage } from "#api/engine/decisions/printedPassage";
+import { isSameAttackTarget } from "#api/engine/combat/isSameAttackTarget";
 import type { DecisionApi } from "#api/engine/effects/context/decisions";
 
 function clearDeleteOutcome(ctx: EffectContext, action: Extract<Action, { kind: "Delete" }>): void {
@@ -790,7 +791,11 @@ async function runActionInner(ctx: EffectContext, action: Action): Promise<boole
             filter: { ...action.target.filter, controller: "opponent" as const },
           })
         : candidatePermanents(ctx, action.target, { includeUnaffectable: true });
-    if (candidates.length === 0) return unavailableAction(ctx, action, action.abortOnDecline === true);
+    const currentTarget = ctx.fx.currentAttackTarget?.();
+    const switchable = candidates.filter(
+      (permanent) => !isSameAttackTarget(currentTarget, { kind: "permanent", permanentId: permanent.permanentId }),
+    );
+    if (switchable.length === 0) return unavailableAction(ctx, action, action.abortOnDecline === true);
   }
   const structuredCost = action.kind !== "RawUnparsed" && typeof action.cost !== "number" ? action.cost : undefined;
   if (action.kind === "CostModifier" && action.amount === null && action.dynamicFrom === "deletedDigimonPlayCost") {

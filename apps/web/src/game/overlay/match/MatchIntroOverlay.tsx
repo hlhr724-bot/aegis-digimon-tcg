@@ -12,6 +12,7 @@ import "@/game/overlay/match/matchIntro.css";
 export type MatchIntroPlayer = {
   name: string;
   avatarId?: string;
+  avatarUrl?: string;
   botPersonaId?: string;
 };
 
@@ -96,6 +97,7 @@ function MatchIntroBar({ side, player }: MatchIntroBarProps) {
           <Avatar
             name={player.name}
             avatarId={isDigimonWorldAvatarId(player.avatarId) ? player.avatarId : null}
+            avatarUrl={player.avatarUrl || null}
             size={64}
           />
         )}

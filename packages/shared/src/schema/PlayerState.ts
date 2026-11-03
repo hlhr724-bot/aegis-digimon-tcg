@@ -148,4 +148,5 @@ export class PlayerState extends Schema {
   @view(PRIVATE_VIEW_TAG) @type("uint16") anonymousSpectatorCount = 0;
   @view(PRIVATE_VIEW_TAG) @type("string") manualInspectionJson = "[]";
   @view(PLAYER_IDENTITY_VIEW_TAG) @type("string") equippedRankedTier = "";
+  @view(PLAYER_IDENTITY_VIEW_TAG) @type("string") avatarUrl = "";
 }
