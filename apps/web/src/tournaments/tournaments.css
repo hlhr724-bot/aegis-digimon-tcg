@@ -1239,6 +1239,10 @@
   font-size: var(--ds-text-sm);
 }
 
+.tournaments-participants li[data-dropped] {
+  color: var(--ds-text-3);
+}
+
 .tournaments-banlist li:first-child,
 .tournaments-participants li:first-child,
 .tournaments-matches li:first-child {
