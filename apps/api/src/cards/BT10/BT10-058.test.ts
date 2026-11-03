@@ -4,7 +4,7 @@ import { assertNoLoudGap, setupEngine, settle } from "../../engine/testkit/harne
 import { compiled } from "./BT10-058.js";
 
 describe("BT10-058 Monitamon", () => {
-  it("matches its catalog and encodes separate Twilight and black-name slots", () => {
+  it("matches its catalog and encodes one 2-card pool of black-name or Twilight cards", () => {
     const d = getCardDefinition("BT10-058")!;
     expect([d.colors, d.level, d.playCost, d.dp]).toEqual([["Black"], 3, 3, 2000]);
     expect(d.evoCosts).toEqual([{ color: "Black", level: 2, memoryCost: 0 }]);
@@ -13,8 +13,8 @@ describe("BT10-058 Monitamon", () => {
     const action = compiled.effects[0]!.actions[0]!;
     expect(action.kind).toBe("RevealAdd");
     if (action.kind !== "RevealAdd") throw new Error("expected RevealAdd");
-    expect(action.add).toHaveLength(2);
-    expect(action.add.map(({ count }) => count)).toEqual([1, 1]);
+    expect(action.add).toHaveLength(1);
+    expect(action.add[0]).toMatchObject({ count: 2, orFilters: [{ nameOrTrait: [{ tokens: ["Twilight"] }] }] });
   });
 
   it("adds two eligible black Twilight cards from four revealed cards", async () => {
@@ -37,13 +37,13 @@ describe("BT10-058 Monitamon", () => {
     expect(player.deck).toHaveLength(2);
   });
 
-  it("may assign a dual-qualified card to Twilight and add only it (Q1985)", async () => {
+  it("must add a dual-qualified card together with another Twilight card", async () => {
     const s = setupEngine({
       0: {
         hand: [{ card: "BT10-058", as: "source" }],
         deck: [
           { card: "BT10-061", as: "first" },
-          { card: "BT10-005", as: "secondTwilight" },
+          { card: "BT10-063", as: "secondTwilight" },
           { card: "BT5-042", as: "yellowKnightmon" },
           { card: "BT10-064", as: "ineligible" },
         ],
@@ -62,20 +62,19 @@ describe("BT10-058 Monitamon", () => {
     const pending = s.state.pendingDecision!;
     const request = s.decisions.find(({ req }) => req.decisionId === pending.decisionId)!.req;
     expect(request.sourceCardId).toBe("BT10-058");
-    expect(request.options).toMatchObject({ min: 1, max: 1 });
-    expect(new Set(request.options?.candidateInstanceIds)).toEqual(
-      new Set([s.inst("first").instanceId, s.inst("secondTwilight").instanceId]),
-    );
+    const both = [s.inst("first").instanceId, s.inst("secondTwilight").instanceId];
+    expect(request.options).toMatchObject({ min: 2, max: 2 });
+    expect(new Set(request.options?.candidateInstanceIds)).toEqual(new Set(both));
 
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: pending.decisionId,
-        response: { kind: "selectCards", instanceIds: [s.inst("first").instanceId] },
+        response: { kind: "selectCards", instanceIds: both },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision === undefined && s.state.players[0]!.deck.length === 3);
-    expect(s.state.players[0]!.hand.map(({ instanceId }) => instanceId)).toEqual([s.inst("first").instanceId]);
+    await settle(() => s.state.pendingDecision === undefined && s.state.players[0]!.deck.length === 2);
+    expect(new Set(s.state.players[0]!.hand.map(({ instanceId }) => instanceId))).toEqual(new Set(both));
     assertNoLoudGap(s);
   });
 
