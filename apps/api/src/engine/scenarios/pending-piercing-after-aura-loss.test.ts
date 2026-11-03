@@ -10,7 +10,7 @@ const record: ReplayRecord = JSON.parse(
 
 describe("pending Piercing after its continuous source loses the effect", () => {
   it("removes the aura after De-Digivolve but finishes the already activated security checks", async () => {
-    const run = await runReplay(record, { untilInput: 56 });
+    const run = await runReplay(record, { untilInput: 55 });
     try {
       expect(run.divergences).toEqual([]);
       const attacker = run.state.players[1]!.battleArea.find((permanent) => permanent.permanentId === "perm-9")!;
@@ -22,7 +22,7 @@ describe("pending Piercing after its continuous source loses the effect", () => 
       expect([...attacker.keywords]).not.toContain("Piercing");
       expect(run.state.players[0]!.security).toHaveLength(4);
 
-      for (const input of record.inputs.slice(56)) {
+      for (const input of record.inputs.slice(55)) {
         if (input.kind !== "intent") {
           throw new Error(`Expected a recorded intent, received ${input.kind}`);
         }
