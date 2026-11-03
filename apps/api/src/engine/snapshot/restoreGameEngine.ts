@@ -11,8 +11,10 @@ import { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistr
 import { registerEngineSchemaFactories } from "#api/engine/snapshot/schema/registerEngineSchemaFactories";
 import { replaySnapshotContinuation } from "#api/engine/snapshot/replaySnapshotContinuation";
 import { restoreEngineRandom } from "#api/engine/random/restoreEngineRandom";
+import type { PreparedGameEngineRestore } from "#api/engine/snapshot/PreparedGameEngineRestore";
+import { createEngineSchemaCloner } from "#api/engine/snapshot/schema/createEngineSchemaCloner";
 
-type Params = { snapshot: GameEngineSnapshot; hooks: GameEngineHooks };
+type Params = { snapshot: GameEngineSnapshot; hooks: GameEngineHooks; prepared?: PreparedGameEngineRestore };
 
 type RestoredGameEngine = {
   engine: GameEngine;
@@ -29,9 +31,12 @@ const COMBAT_PROMPT_EVENTS: ReadonlySet<ServerEvent["kind"]> = new Set([
   "barrierPrompt",
 ]);
 
-export function restoreGameEngine({ snapshot, hooks }: Params): RestoredGameEngine {
+export function restoreGameEngine({ snapshot, hooks, prepared }: Params): RestoredGameEngine {
   if (snapshot.version !== 1 || snapshot.fingerprint !== getEngineCodeFingerprint()) {
     throw new Error("Incompatible engine snapshot version or code fingerprint");
+  }
+  if (prepared !== undefined && prepared.snapshot !== snapshot) {
+    throw new Error("Prepared engine restore belongs to a different snapshot");
   }
   const continuation = snapshot.continuation;
   let replaying = continuation !== undefined;
@@ -74,7 +79,11 @@ export function restoreGameEngine({ snapshot, hooks }: Params): RestoredGameEngi
         };
   const objects = new RuntimeObjectRegistry();
   registerEngineSchemaFactories({ objects });
-  const decoder = new RuntimeGraphDecoder({ snapshot: snapshot.graph, objects });
+  const decoder = new RuntimeGraphDecoder({
+    snapshot: snapshot.graph,
+    objects,
+    ...(prepared === undefined ? {} : { seeds: clonedSchemaSeeds(prepared) }),
+  });
   const state = decoder.decodeRootField({ key: "state" });
   if (!(state instanceof GameState)) {
     throw new Error("Engine snapshot has no GameState");
@@ -120,6 +129,16 @@ export function restoreGameEngine({ snapshot, hooks }: Params): RestoredGameEngi
       redeliverOpenPrompts({ engine, hooks, prompts });
     },
   };
+}
+
+function clonedSchemaSeeds(prepared: PreparedGameEngineRestore): [number, object][] {
+  const cloner = createEngineSchemaCloner();
+  cloner.clone(prepared.state);
+  return prepared.schemaSeeds.map(([index, original]) => {
+    const copy = cloner.cloneOf(original);
+    if (copy === undefined) throw new Error("Prepared engine restore has a schema object outside its state");
+    return [index, copy];
+  });
 }
 
 type RedeliverParams = { engine: GameEngine; hooks: GameEngineHooks; prompts: SnapshotOpenPrompts };

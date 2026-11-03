@@ -139,6 +139,28 @@ it("rejects a different schema layout, duplicate fields and incomplete field pay
   ).toThrow("missing an annotated field");
 });
 
+it("restores reordered schema fields and still rejects an unknown field", () => {
+  const objects = createRegistry();
+  const card = new CardInstance();
+  card.cardId = "BT1-009";
+  card.instanceId = "card-1";
+  const payload = objects.describe(card)!.payload as { fingerprint: string; fields: [string, unknown][] };
+  payload.fields.reverse();
+  const destination = createRegistry();
+  const restored = destination.allocate(EngineSchemaKind.CARD_INSTANCE.value) as CardInstance;
+  destination.hydrate({ value: restored, key: EngineSchemaKind.CARD_INSTANCE.value, payload });
+  expect(restored.cardId).toBe("BT1-009");
+  expect(restored.instanceId).toBe("card-1");
+  payload.fields.push(["notASchemaField", 1]);
+  expect(() =>
+    destination.hydrate({
+      value: destination.allocate(EngineSchemaKind.CARD_INSTANCE.value),
+      key: EngineSchemaKind.CARD_INSTANCE.value,
+      payload,
+    }),
+  ).toThrow("unknown or duplicate");
+});
+
 it("rejects sparse or extended schema arrays rather than compacting their values", () => {
   const values = new ArraySchema<string>("first", "second");
   expect(cloneGraph(values)).toEqual(values);
