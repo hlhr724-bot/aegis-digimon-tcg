@@ -1,21 +1,15 @@
 {
   "releases.1.50.0-beta.summary": {
-    "en": "Annotate replays with emoji markers and private notes, read official rulings in the card drawer, and see which timing fired in the match log. Includes rules fixes and smoother private rooms.",
-    "pt-BR": "Anote replays com marcadores de emoji e notas privadas, leia as regras oficiais na ficha da carta e veja qual tempo foi ativado no registro da partida. Inclui correções de regras e salas privadas mais tranquilas.",
-    "es": "Anota repeticiones con marcadores de emoji y notas privadas, lee las reglas oficiales en la ficha de la carta y mira qué momento se activó en el registro de la partida. Incluye correcciones de reglas y salas privadas más fluidas.",
-    "it": "Annota i replay con marcatori emoji e note private, leggi le regole ufficiali nella scheda della carta e scopri quale tempistica si è attivata nel registro della partita. Include correzioni alle regole e stanze private più fluide."
+    "en": "Annotate replays with emoji markers and private notes, and see which timing fired in the match log. Includes rules fixes and smoother private rooms.",
+    "pt-BR": "Anote replays com marcadores de emoji e notas privadas, e veja qual tempo foi ativado no registro da partida. Inclui correções de regras e salas privadas mais tranquilas.",
+    "es": "Anota repeticiones con marcadores de emoji y notas privadas, y mira qué momento se activó en el registro de la partida. Incluye correcciones de reglas y salas privadas más fluidas.",
+    "it": "Annota i replay con marcatori emoji e note private, e scopri quale tempistica si è attivata nel registro della partita. Include correzioni alle regole e stanze private più fluide."
   },
   "releases.1.50.0-beta.feature.replayAnnotations": {
     "en": "Mark key moments with any emoji during a match or a replay, add text notes, copy a link to a moment and copy YouTube chapters. Only you see your markers and notes.",
     "pt-BR": "Marque momentos importantes com qualquer emoji durante uma partida ou um replay, adicione notas de texto, copie um link para um momento e copie capítulos para o YouTube. Só você vê seus marcadores e notas.",
     "es": "Marca momentos clave con cualquier emoji durante una partida o una repetición, añade notas de texto, copia un enlace a un momento y copia capítulos para YouTube. Solo tú ves tus marcadores y notas.",
     "it": "Segna i momenti chiave con qualsiasi emoji durante una partita o un replay, aggiungi note di testo, copia un link a un momento e copia i capitoli per YouTube. Solo tu vedi i tuoi marcatori e le tue note."
-  },
-  "releases.1.50.0-beta.feature.rulings": {
-    "en": "The card drawer has an Official rulings section with the card's errata and Q&A.",
-    "pt-BR": "A ficha da carta tem uma seção de Regras oficiais com as erratas e as perguntas e respostas da carta.",
-    "es": "La ficha de la carta tiene una sección de Reglas oficiales con las erratas y las preguntas y respuestas de la carta.",
-    "it": "La scheda della carta ha una sezione Regole ufficiali con l'errata e le domande e risposte della carta."
   },
   "releases.1.50.0-beta.feature.logTiming": {
     "en": "The match log and replay history tag each activation with the timing that fired, such as [When Digivolving], and mark inherited effects.",
