@@ -1070,9 +1070,14 @@ const interfaceMessages = {
   "settings.noticeDuration": "알림 표시 시간",
   "settings.noticeDurationDesc":
     "효과 알림과 카드 패널이 화면에 머무는 시간입니다. 알림 위에 마우스를 올리면 계속 표시됩니다.",
+  "settings.noticeDurationShort": "짧게",
   "settings.noticeDurationNormal": "보통",
   "settings.noticeDurationLong": "길게",
   "settings.noticeDurationLongest": "가장 길게",
+  "settings.noticeSize": "알림 크기",
+  "settings.noticeSizeDesc": "효과 알림과 카드 패널의 크기입니다. 작게 하면 필드를 덜 가립니다.",
+  "settings.noticeSizeNormal": "보통",
+  "settings.noticeSizeCompact": "작게",
   "settings.groupIdenticalTamers": "동일한 테이머 묶기",
   "settings.groupIdenticalTamersDesc":
     "정리된 필드에서 동일한 테이머를 묶어 표시합니다. 끄면 각 카드를 개별적으로 표시합니다.",
@@ -1498,6 +1503,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "상대 시큐리티가 늘었습니다",
   "overlay.liveDp": "현재 DP",
   "overlay.baseDp": "원래 DP",
+  "overlay.linkDp": "링크 DP +{dp}",
   "overlay.keywords": "키워드",
   "overlay.restrictions": "제한",
   "overlay.heldDp": "{delta} DP (보호 중이라 미적용)",
@@ -1553,6 +1559,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "≪분할≫을 발동하시겠습니까?",
   "overlay.activateBlitzPrompt": "≪블리츠≫를 발동하시겠습니까?",
   "overlay.digivolveHostPrompt": "진화할 카드를 선택하세요.",
+  "overlay.armorPurgePrompt": "≪아머 해제≫를 사용하시겠습니까?",
   "overlay.attackAlreadyResolving": "이 어택을 처리하는 동안에는 다른 어택을 시작할 수 없습니다.",
   "overlay.deckTop": "덱 맨 위",
   "overlay.deckBottom": "덱 맨 아래",
@@ -2423,7 +2430,15 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3d": "아레나 3D",
   "redesign.foundation.boardStyle.arena3dDesc":
     "실험적 기능입니다. 카드와 효과가 3D로 표시되며 배터리를 더 사용합니다.",
-  "redesign.foundation.boardStyle.unsupported": "이 기기에서는 3D 아레나를 표시할 수 없어 클래식 보드를 사용합니다.",
+  "redesign.foundation.boardStyle.unsupported":
+    "3D를 사용할 수 없습니다: 이 브라우저는 WebGL을 사용할 수 없습니다. 브라우저 설정에서 하드웨어 가속을 켠 뒤 페이지를 새로고침하세요.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D를 사용할 수 없습니다: 이 기기의 브라우저는 WebGL을 사용할 수 없습니다. 브라우저를 업데이트하거나 다른 브라우저를 사용해 보세요.",
+  "redesign.foundation.boardStyle.restoring": "3D 보드를 복원하는 중…",
+  "redesign.foundation.boardStyle.stopped": "이 기기에서 3D가 멈췄습니다. 클래식 보드를 표시합니다.",
+  "redesign.foundation.boardStyle.retry": "다시 시도",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "이 브라우저는 3D를 실행할 수 없습니다. WebGL이 꺼져 있을 수 있습니다. 클래식 보드를 표시합니다.",
   "redesign.foundation.arena3dQuality.title": "3D 품질",
   "redesign.foundation.arena3dQuality.auto": "자동",
   "redesign.foundation.arena3dQuality.low": "낮음",

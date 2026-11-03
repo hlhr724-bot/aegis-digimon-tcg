@@ -184,6 +184,7 @@ function ArenaPermanentMeshView({
         auraColor: frameColor,
         aura: aura.current * Math.min(1, Math.max(0, tracked.opacity)) * look.shade,
         time,
+        flowing: !reducedMotion,
       });
     }
   });

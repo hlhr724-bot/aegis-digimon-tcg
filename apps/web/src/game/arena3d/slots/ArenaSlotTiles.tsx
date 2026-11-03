@@ -19,11 +19,13 @@ import type { ArenaRowSlot } from "@/game/arena3d/field/ArenaRowSlot";
 import type { ArenaTrackedField, ArenaTrackedZone } from "@/game/arena3d/field/ArenaTrackedField";
 import { ARENA_SECURITY_LAYOUT, type ArenaLaneLayout } from "@/game/arena3d/field/arenaWorldLayout";
 import type { ArenaFieldEffectState } from "@/game/arena3d/slots/ArenaFieldEffectState";
+import { ArenaFieldEffectTone } from "@/game/arena3d/slots/ArenaFieldEffectTone";
 import type { ArenaSlotTile } from "@/game/arena3d/slots/ArenaSlotTile";
 import { ArenaSlotTileKind } from "@/game/arena3d/slots/ArenaSlotTileKind";
 import { ARENA_SLOT_TILE_LAYOUT } from "@/game/arena3d/slots/arenaSlotTileLayout";
 import { buildArenaSlotTileMaterial } from "@/game/arena3d/slots/buildArenaSlotTileMaterial";
 import { computeArenaSlotTiles } from "@/game/arena3d/slots/computeArenaSlotTiles";
+import { findArenaFieldEffectTone } from "@/game/arena3d/slots/findArenaFieldEffectTone";
 import { Side } from "@/game/side";
 
 type Props = {
@@ -50,8 +52,6 @@ type EaseParams = {
   delta: number;
 };
 
-const HELPFUL_EFFECT_COLOR = "#ffe08a";
-const HARMFUL_EFFECT_COLOR = "#ff5f4a";
 const DROP_RATE = 12;
 const EFFECT_RATE = 1.4;
 const ACTIVE_RATE = 2.5;
@@ -137,10 +137,14 @@ export function ArenaSlotTiles({ rows, lanes, field, colors, activeSide, fieldEf
   }, [material, colors.player, colors.opponent, colors.isLight]);
 
   useEffect(() => {
-    const viewer = fieldEffects[Side.Viewer];
-    const opponent = fieldEffects[Side.Opponent];
-    material.uniforms.uViewerEffectColor!.value.set(viewer.harmful ? HARMFUL_EFFECT_COLOR : HELPFUL_EFFECT_COLOR);
-    material.uniforms.uOpponentEffectColor!.value.set(opponent.harmful ? HARMFUL_EFFECT_COLOR : HELPFUL_EFFECT_COLOR);
+    const viewer = fieldEffects[Side.Viewer].tone;
+    const opponent = fieldEffects[Side.Opponent].tone;
+    if (viewer !== ArenaFieldEffectTone.NONE.value) {
+      material.uniforms.uViewerEffectColor!.value.set(findArenaFieldEffectTone(viewer).color);
+    }
+    if (opponent !== ArenaFieldEffectTone.NONE.value) {
+      material.uniforms.uOpponentEffectColor!.value.set(findArenaFieldEffectTone(opponent).color);
+    }
   }, [material, fieldEffects]);
 
   useFrame((state, rawDelta) => {
@@ -154,14 +158,14 @@ export function ArenaSlotTiles({ rows, lanes, field, colors, activeSide, fieldEf
     easeSideState({
       state: uniforms.uViewerState!.value,
       drop: field.playDropSides.has(Side.Viewer),
-      effect: fieldEffects[Side.Viewer].active,
+      effect: fieldEffects[Side.Viewer].tone !== ArenaFieldEffectTone.NONE.value,
       active: activeSide > 0,
       delta,
     });
     easeSideState({
       state: uniforms.uOpponentState!.value,
       drop: field.playDropSides.has(Side.Opponent),
-      effect: fieldEffects[Side.Opponent].active,
+      effect: fieldEffects[Side.Opponent].tone !== ArenaFieldEffectTone.NONE.value,
       active: activeSide < 0,
       delta,
     });

@@ -1,4 +1,130 @@
 {
+  "releases.1.49.0-beta.summary": {
+    "en": "Armor Purge now asks Use or Don't use, matches show your profile avatar, and BD01 cards arrive. Includes Arena 3D improvements, faster reconnects and rules fixes.",
+    "pt-BR": "O Armor Purge agora pergunta Usar ou Não usar, as partidas mostram o avatar do seu perfil e chegam cartas de BD01. Inclui melhorias na Arena 3D, reconexões mais rápidas e correções de regras.",
+    "es": "Armor Purge ahora pregunta Usar o No usar, las partidas muestran el avatar de tu perfil y llegan cartas de BD01. Incluye mejoras de la Arena 3D, reconexiones más rápidas y correcciones de reglas.",
+    "it": "Armor Purge ora chiede Usa o Non usare, le partite mostrano l'avatar del tuo profilo e arrivano le carte BD01. Include miglioramenti dell'Arena 3D, riconnessioni più rapide e correzioni alle regole."
+  },
+  "releases.1.49.0-beta.feature.armorPurge": {
+    "en": "＜Armor Purge＞ now asks Use or Don't use for the threatened Digimon, instead of asking you to pick the card.",
+    "pt-BR": "O ＜Armor Purge＞ agora pergunta Usar ou Não usar para o Digimon ameaçado, em vez de pedir que você escolha a carta.",
+    "es": "＜Armor Purge＞ ahora pregunta Usar o No usar para el Digimon amenazado, en lugar de pedirte que elijas la carta.",
+    "it": "＜Armor Purge＞ ora chiede Usa o Non usare per il Digimon minacciato, invece di chiederti di scegliere la carta."
+  },
+  "releases.1.49.0-beta.feature.avatars": {
+    "en": "Matches show the avatar from your profile, including uploaded and Discord avatars.",
+    "pt-BR": "As partidas mostram o avatar do seu perfil, incluindo avatares enviados e do Discord.",
+    "es": "Las partidas muestran el avatar de tu perfil, incluidos los avatares subidos y los de Discord.",
+    "it": "Le partite mostrano l'avatar del tuo profilo, compresi gli avatar caricati e quelli di Discord."
+  },
+  "releases.1.49.0-beta.feature.bd01": {
+    "en": "Adds BD01 Gemmon, Liskmon, Reptilimon and Kanata Hondo.",
+    "pt-BR": "Adiciona Gemmon, Liskmon, Reptilimon e Kanata Hondo de BD01.",
+    "es": "Añade Gemmon, Liskmon, Reptilimon y Kanata Hondo de BD01.",
+    "it": "Aggiunge Gemmon, Liskmon, Reptilimon e Kanata Hondo di BD01."
+  },
+  "releases.1.49.0-beta.feature.linkInfo": {
+    "en": "The card inspector shows the link effect, requirement, cost and DP of Digimon on the field.",
+    "pt-BR": "O inspetor de cartas mostra o efeito, o requisito, o custo e o DP de link dos Digimon em campo.",
+    "es": "El inspector de cartas muestra el efecto, el requisito, el coste y el DP de link de los Digimon en el campo.",
+    "it": "L'ispettore delle carte mostra l'effetto, il requisito, il costo e i DP di link dei Digimon in campo."
+  },
+  "releases.1.49.0-beta.feature.arena3d": {
+    "en": "Arena 3D restarts itself after a graphics error, explains why it falls back to the classic board, and can't be chosen in Settings when the browser has no WebGL.",
+    "pt-BR": "A Arena 3D reinicia sozinha após um erro gráfico, explica por que voltou ao tabuleiro clássico e não pode ser escolhida nas Configurações quando o navegador não tem WebGL.",
+    "es": "La Arena 3D se reinicia sola tras un error gráfico, explica por qué vuelve al tablero clásico y no se puede elegir en los Ajustes cuando el navegador no tiene WebGL.",
+    "it": "L'Arena 3D si riavvia da sola dopo un errore grafico, spiega perché torna al tabellone classico e non si può scegliere nelle Impostazioni quando il browser non ha WebGL."
+  },
+  "releases.1.49.0-beta.feature.connection": {
+    "en": "A lost connection during a match is detected in about 8 seconds instead of up to 16, so you reconnect sooner.",
+    "pt-BR": "Uma conexão perdida durante a partida é detectada em cerca de 8 segundos, em vez de até 16, para você reconectar mais rápido.",
+    "es": "Una conexión perdida durante la partida se detecta en unos 8 segundos en lugar de hasta 16, así que te reconectas antes.",
+    "it": "Una connessione persa durante la partita viene rilevata in circa 8 secondi invece che fino a 16, così ti riconnetti prima."
+  },
+  "releases.1.49.0-beta.fix.attackRedirect": {
+    "en": "Effects can no longer switch an attack to the Digimon it already targets, so they no longer trigger \"when the attack target changes\" effects by mistake.",
+    "pt-BR": "Efeitos não podem mais trocar o alvo de um ataque para o Digimon que já é o alvo, então não ativam mais por engano efeitos de \"quando o alvo do ataque mudar\".",
+    "es": "Los efectos ya no pueden cambiar el objetivo de un ataque al Digimon que ya es el objetivo, así que ya no activan por error efectos de \"cuando cambie el objetivo del ataque\".",
+    "it": "Gli effetti non possono più cambiare il bersaglio di un attacco nel Digimon che è già il bersaglio, quindi non attivano più per errore effetti \"quando il bersaglio dell'attacco cambia\"."
+  },
+  "releases.1.49.0-beta.fix.battleSoftLock": {
+    "en": "Effects that make Digimon battle no longer get stuck when the opponent has no Digimon.",
+    "pt-BR": "Efeitos que fazem Digimon batalhar não travam mais quando o oponente não tem Digimon.",
+    "es": "Los efectos que hacen combatir a los Digimon ya no se bloquean cuando el oponente no tiene Digimon.",
+    "it": "Gli effetti che fanno combattere i Digimon non si bloccano più quando l'avversario non ha Digimon."
+  },
+  "releases.1.49.0-beta.fix.cardLanguage": {
+    "en": "Live matches, public replays and community decks show cards in your card language, not the owner's.",
+    "pt-BR": "Partidas ao vivo, replays públicos e decks da comunidade mostram as cartas no seu idioma de cartas, e não no do dono.",
+    "es": "Las partidas en vivo, las repeticiones públicas y los mazos de la comunidad muestran las cartas en tu idioma de cartas, no en el del dueño.",
+    "it": "Le partite in diretta, i replay pubblici e i mazzi della community mostrano le carte nella tua lingua delle carte, non in quella del proprietario."
+  },
+  "releases.1.49.0-beta.fix.droppedPlayers": {
+    "en": "Players who drop out of a tournament after playing stay in the Players list with a Dropped out badge.",
+    "pt-BR": "Jogadores que saem de um torneio depois de jogar continuam na lista de Jogadores com o selo Desistiu.",
+    "es": "Los jugadores que abandonan un torneo después de jugar siguen en la lista de Jugadores con la insignia Abandonó.",
+    "it": "I giocatori che lasciano un torneo dopo aver giocato restano nell'elenco Giocatori con il badge Ritirato."
+  },
+  "releases.1.49.0-beta.fix.phoneBoard": {
+    "en": "On phones, the 3D board shows the summoning stars again, and the memory gauge no longer covers card badges.",
+    "pt-BR": "No celular, o tabuleiro 3D volta a mostrar as estrelas de invocação, e o medidor de memória não cobre mais os selos das cartas.",
+    "es": "En móviles, el tablero 3D vuelve a mostrar las estrellas de invocación y el medidor de memoria ya no tapa las insignias de las cartas.",
+    "it": "Sui telefoni, il tabellone 3D mostra di nuovo le stelle di evocazione e l'indicatore della memoria non copre più i badge delle carte."
+  },
+  "releases.1.48.0-beta.summary": {
+    "en": "Matches open with a VS intro, effect notices can be shorter and smaller, and tournaments show more detail. Includes 3D arena improvements on phones and rules fixes.",
+    "pt-BR": "As partidas começam com uma introdução VS, os avisos de efeito podem ser mais curtos e menores, e os torneios mostram mais detalhes. Inclui melhorias da Arena 3D em celulares e correções de regras.",
+    "es": "Las partidas empiezan con una introducción VS, los avisos de efecto pueden ser más cortos y pequeños, y los torneos muestran más detalles. Incluye mejoras de la Arena 3D en móviles y correcciones de reglas.",
+    "it": "Le partite si aprono con un'introduzione VS, gli avvisi degli effetti possono essere più brevi e piccoli e i tornei mostrano più dettagli. Include miglioramenti dell'Arena 3D sui telefoni e correzioni alle regole."
+  },
+  "releases.1.48.0-beta.feature.matchIntro": {
+    "en": "A VS intro with both players' avatars and names plays before each match. Tap it to skip.",
+    "pt-BR": "Uma introdução VS com os avatares e nomes dos dois jogadores aparece antes de cada partida. Toque para pular.",
+    "es": "Una introducción VS con los avatares y nombres de ambos jugadores aparece antes de cada partida. Tócala para saltarla.",
+    "it": "Prima di ogni partita appare un'introduzione VS con gli avatar e i nomi dei due giocatori. Toccala per saltarla."
+  },
+  "releases.1.48.0-beta.feature.notices": {
+    "en": "Settings has a Short notice duration and a Compact notice size, so effect notices and card panels cover less of the board.",
+    "pt-BR": "As Configurações têm uma duração Curta e um tamanho Compacto para os avisos, para que avisos de efeito e painéis de carta cubram menos o tabuleiro.",
+    "es": "Los Ajustes tienen una duración Corta y un tamaño Compacto para los avisos, para que los avisos de efecto y los paneles de carta tapen menos el tablero.",
+    "it": "Le Impostazioni hanno una durata Breve e una dimensione Compatta per gli avvisi, così gli avvisi degli effetti e i pannelli delle carte coprono meno il tabellone."
+  },
+  "releases.1.48.0-beta.feature.artPicker": {
+    "en": "The deck builder's artwork picker starts on All copies, so one click restyles every copy. Choose a copy to change only that one.",
+    "pt-BR": "O seletor de arte do construtor de decks começa em Todas as cópias, então um clique muda todas as cópias. Escolha uma cópia para mudar só ela.",
+    "es": "El selector de arte del constructor de mazos empieza en Todas las copias, así que un clic cambia todas las copias. Elige una copia para cambiar solo esa.",
+    "it": "Il selettore di artwork del deck builder parte da Tutte le copie, così un clic cambia ogni copia. Scegli una copia per cambiare solo quella."
+  },
+  "releases.1.48.0-beta.feature.tournaments": {
+    "en": "Tournaments show round start times, each player's ready time, a standings table with points and tiebreakers, and the winner of finished events. Organizers can run round robin events and choose tiebreakers.",
+    "pt-BR": "Os torneios mostram o horário de início das rodadas, o horário em que cada jogador ficou pronto, uma tabela de classificação com pontos e critérios de desempate e o vencedor dos eventos encerrados. Organizadores podem fazer eventos em todos contra todos e escolher os desempates.",
+    "es": "Los torneos muestran la hora de inicio de cada ronda, la hora en que cada jugador estuvo listo, una tabla de clasificación con puntos y desempates, y el ganador de los eventos terminados. Los organizadores pueden hacer eventos de todos contra todos y elegir los desempates.",
+    "it": "I tornei mostrano l'orario di inizio dei turni, l'orario in cui ogni giocatore è pronto, una classifica con punti e spareggi e il vincitore degli eventi conclusi. Gli organizzatori possono creare eventi a girone all'italiana e scegliere gli spareggi."
+  },
+  "releases.1.48.0-beta.feature.arena3d": {
+    "en": "Arena 3D on phones is sharper and smoother, with a clearer turn wave, a larger inspected card and animated field effects.",
+    "pt-BR": "A Arena 3D no celular está mais nítida e fluida, com uma onda de turno mais visível, uma carta inspecionada maior e efeitos de campo animados.",
+    "es": "La Arena 3D en móviles es más nítida y fluida, con una ola de turno más visible, una carta inspeccionada más grande y efectos de campo animados.",
+    "it": "L'Arena 3D sui telefoni è più nitida e fluida, con un'onda del turno più visibile, una carta ispezionata più grande ed effetti di campo animati."
+  },
+  "releases.1.48.0-beta.fix.artsDigivolve": {
+    "en": "When an effect uses an Option with Arts Digivolve, the new Digimon's [When Digivolving] now resolves before the opponent's effects from the same deletion.",
+    "pt-BR": "Quando um efeito usa uma Opção com Arts Digivolve, o [When Digivolving] do novo Digimon agora resolve antes dos efeitos do oponente gerados pela mesma deleção.",
+    "es": "Cuando un efecto usa una Opción con Arts Digivolve, el [When Digivolving] del nuevo Digimon ahora se resuelve antes de los efectos del oponente causados por la misma eliminación.",
+    "it": "Quando un effetto usa un'Opzione con Arts Digivolve, il [When Digivolving] del nuovo Digimon ora si risolve prima degli effetti dell'avversario causati dalla stessa eliminazione."
+  },
+  "releases.1.48.0-beta.fix.lowestDp": {
+    "en": "Effects that choose the lowest or highest DP Digimon now count Digimon at 0 DP.",
+    "pt-BR": "Efeitos que escolhem o Digimon com menor ou maior DP agora consideram Digimon com 0 DP.",
+    "es": "Los efectos que eligen al Digimon con menos o más DP ahora cuentan a los Digimon con 0 DP.",
+    "it": "Gli effetti che scelgono il Digimon con meno o più DP ora considerano i Digimon con 0 DP."
+  },
+  "releases.1.48.0-beta.fix.replaysScroll": {
+    "en": "The Public Replays screen scrolls again.",
+    "pt-BR": "A tela de Replays Públicos volta a rolar.",
+    "es": "La pantalla de Repeticiones públicas vuelve a desplazarse.",
+    "it": "La schermata dei Replay pubblici scorre di nuovo."
+  },
   "releases.1.47.0-beta.summary": {
     "en": "Try the new Arena 3D board, watch live tournament games from the bracket, find live matches in Play > Rooms, and filter community decks by guide. Adds BT27 cards and rules fixes.",
     "pt-BR": "Experimente o novo tabuleiro Arena 3D, assista a partidas de torneio ao vivo direto da chave, encontre partidas ao vivo em Jogar > Salas e filtre decks da comunidade com guia. Inclui cartas de BT27 e correções de regras.",

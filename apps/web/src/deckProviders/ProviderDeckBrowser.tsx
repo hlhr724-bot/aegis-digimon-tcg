@@ -9,6 +9,7 @@ import { getProviderDeckListing } from "@/deckProviders/getProviderDeckListing";
 import { ProviderFreshness } from "@/deckProviders/ProviderFreshness";
 import { Button } from "@/design/primitives";
 import { useTranslation } from "@/i18n/useTranslation";
+import { ViewerCardLanguage } from "@/screens/cardLanguage/ViewerCardLanguage";
 import "@/deckProviders/providers.css";
 
 type Props = {
@@ -66,48 +67,50 @@ export function ProviderDeckBrowser({ search, collection, activeDeckId, format =
     .slice(0, 25)
     .filter((item) => [item.name, collection, ...item.colors].join(" ").toLocaleLowerCase().includes(query));
   return (
-    <div className="provider-collection">
-      {error ? (
-        <p role="alert">
-          {t("digilab.error")} <Button onClick={() => setVersion((value) => value + 1)}>{t("digilab.retry")}</Button>
-        </p>
-      ) : !meta ? (
-        <p role="status">{t("common.loading")}</p>
-      ) : (
-        <>
-          <p className="provider-collection__count">{t("digilab.archetypeCount", { count: archetypes.length })}</p>
-          {archetypes.length === 0 ? <p>{t("digilab.empty")}</p> : null}
-          <p className="provider-collection__hint">{t("digilab.selectHint")}</p>
-          {pickError ? <p role="alert">{pickError}</p> : null}
-          <div className="lobby-decks provider-archetype-grid">
-            {archetypes.map((archetype) => (
-              <ProviderArchetypeCard
-                key={archetype.id}
-                archetype={archetype}
-                collection={collection}
-                active={selection?.archetype === archetype.id && selection.deckId === activeDeckId}
-                busy={false}
-                disabled={false}
-                selectedName={selection?.archetype === archetype.id ? selection.name : undefined}
-                onSelect={() => void handleSelect(archetype)}
-                onInfo={() => setInspected(archetype)}
-              />
-            ))}
-          </div>
-        </>
-      )}
-      <ProviderFreshness data={meta} />
-      {inspected ? (
-        <ProviderArchetypeDialog
-          archetype={inspected}
-          collection={collection}
-          activeDeckId={activeDeckId}
-          format={format}
-          onUse={(deck) => handleUse(inspected, deck)}
-          onCopy={(deck) => onCopy({ ...deck, coverCardId: inspected.coverCardId ?? deck.coverCardId })}
-          onClose={() => setInspected(undefined)}
-        />
-      ) : null}
-    </div>
+    <ViewerCardLanguage>
+      <div className="provider-collection">
+        {error ? (
+          <p role="alert">
+            {t("digilab.error")} <Button onClick={() => setVersion((value) => value + 1)}>{t("digilab.retry")}</Button>
+          </p>
+        ) : !meta ? (
+          <p role="status">{t("common.loading")}</p>
+        ) : (
+          <>
+            <p className="provider-collection__count">{t("digilab.archetypeCount", { count: archetypes.length })}</p>
+            {archetypes.length === 0 ? <p>{t("digilab.empty")}</p> : null}
+            <p className="provider-collection__hint">{t("digilab.selectHint")}</p>
+            {pickError ? <p role="alert">{pickError}</p> : null}
+            <div className="lobby-decks provider-archetype-grid">
+              {archetypes.map((archetype) => (
+                <ProviderArchetypeCard
+                  key={archetype.id}
+                  archetype={archetype}
+                  collection={collection}
+                  active={selection?.archetype === archetype.id && selection.deckId === activeDeckId}
+                  busy={false}
+                  disabled={false}
+                  selectedName={selection?.archetype === archetype.id ? selection.name : undefined}
+                  onSelect={() => void handleSelect(archetype)}
+                  onInfo={() => setInspected(archetype)}
+                />
+              ))}
+            </div>
+          </>
+        )}
+        <ProviderFreshness data={meta} />
+        {inspected ? (
+          <ProviderArchetypeDialog
+            archetype={inspected}
+            collection={collection}
+            activeDeckId={activeDeckId}
+            format={format}
+            onUse={(deck) => handleUse(inspected, deck)}
+            onCopy={(deck) => onCopy({ ...deck, coverCardId: inspected.coverCardId ?? deck.coverCardId })}
+            onClose={() => setInspected(undefined)}
+          />
+        ) : null}
+      </div>
+    </ViewerCardLanguage>
   );
 }

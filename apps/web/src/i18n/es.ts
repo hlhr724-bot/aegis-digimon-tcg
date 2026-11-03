@@ -821,9 +821,15 @@ export const es: Record<keyof typeof en, string> = {
   "settings.noticeDuration": "Duración de los avisos",
   "settings.noticeDurationDesc":
     "Cuánto tiempo permanecen en pantalla los avisos de efecto y los paneles de cartas. Pasa el ratón sobre un aviso para mantenerlo abierto.",
+  "settings.noticeDurationShort": "Corta",
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Larga",
   "settings.noticeDurationLongest": "Más larga",
+  "settings.noticeSize": "Tamaño de los avisos",
+  "settings.noticeSizeDesc":
+    "El tamaño de los avisos de efecto y de los paneles de cartas. Compacto tapa menos el campo.",
+  "settings.noticeSizeNormal": "Normal",
+  "settings.noticeSizeCompact": "Compacto",
   "settings.groupIdenticalTamers": "Agrupar Tamers idénticos",
   "settings.groupIdenticalTamersDesc":
     "Muestra juntos los Tamers idénticos en el campo ordenado. Desactívalo para mostrar cada copia por separado.",
@@ -1251,6 +1257,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.recoveryOpp": "La seguridad del oponente aumentó",
   "overlay.liveDp": "DP actual",
   "overlay.baseDp": "DP impreso",
+  "overlay.linkDp": "DP de Link +{dp}",
   "overlay.keywords": "Palabras clave",
   "overlay.restrictions": "Restricciones",
   "overlay.heldDp": "{delta} DP bloqueado mientras esté protegido",
@@ -1306,6 +1313,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.activatePartitionPrompt": "¿Quieres activar Partition?",
   "overlay.activateBlitzPrompt": "¿Quieres activar Blitz?",
   "overlay.digivolveHostPrompt": "Elige la carta que va a digievolucionar.",
+  "overlay.armorPurgePrompt": "¿Usar ＜Armor Purge＞?",
   "overlay.attackAlreadyResolving": "No se puede iniciar otro ataque mientras se resuelve este ataque.",
   "overlay.deckTop": "Parte superior del deck",
   "overlay.deckBottom": "Parte inferior del deck",

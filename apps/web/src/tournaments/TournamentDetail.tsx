@@ -249,7 +249,10 @@ export function TournamentDetail({
     />
   ) : null;
 
-  const listedParticipants = detail.participants.filter((participant) => participant.status !== "dropped");
+  const competedIds = new Set(detail.standings?.map((row) => row.participantId));
+  const listedParticipants = detail.participants
+    .filter((participant) => participant.status !== "dropped" || competedIds.has(participant.id))
+    .sort((first, second) => Number(first.status === "dropped") - Number(second.status === "dropped"));
   const playersPanel = (
     <Panel>
       <h3>{t("tournaments.detail.participants")}</h3>
@@ -258,7 +261,11 @@ export function TournamentDetail({
       ) : (
         <ul className="tournaments-participants">
           {listedParticipants.map((participant) => (
-            <li key={participant.id} data-bot={participant.kind === "bot" || undefined}>
+            <li
+              key={participant.id}
+              data-bot={participant.kind === "bot" || undefined}
+              data-dropped={participant.status === "dropped" || undefined}
+            >
               {participant.kind === "bot" ? (
                 <TournamentBotPortrait size="small" />
               ) : (

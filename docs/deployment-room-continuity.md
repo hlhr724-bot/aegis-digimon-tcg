@@ -79,7 +79,7 @@ per 10 seconds. Cloudflare's single Free plan rate limiting rule protects `/matc
 ## Gateway health
 
 Every game WebSocket passes through the gateway's single event loop. If that loop stalls for
-6–10 seconds, both the API ping and the client liveness probe fail, and players drop with
+6–8 seconds, both the API ping and the client liveness probe fail, and players drop with
 close code 1006 or 4010. The gateway therefore does no blocking disk reads while it serves
 traffic, and every 10 seconds it writes one JSON line to stdout:
 
@@ -92,6 +92,35 @@ traffic, and every 10 seconds it writes one JSON line to stdout:
 Read it with `docker logs <gateway> | grep gateway.health`. A `loopMaxMs` above a few
 seconds at the time of a drop burst points at the gateway; a quiet gateway with healthy API
 logs points at Cloudflare or the players' networks.
+
+## Client liveness
+
+A dead TCP connection can stay open in the browser for minutes: a phone that changes
+network, or a NAT that forgets the flow, sends no close frame. `watchRoomLiveness` sends
+a Colyseus ping every 2 seconds and closes the socket with code 4010 when a ping goes
+unanswered for 6 seconds, so the reconnect flow starts within 8 seconds instead of 14.
+
+- A hidden tab does not probe. Browsers throttle its timers, and the server keeps the
+  seat for the reconnect grace period anyway.
+- When two checks are more than 4 seconds apart, the page's timers were frozen (a slow
+  device, a debugger, a resumed tab). The watcher probes again instead of closing,
+  because a pong may already be waiting in the queue.
+
+Production data from November 2, 2026 motivated these values. For drops closed by the
+liveness probe, the server had already seen the socket die about 7 seconds earlier
+(median), and the median reconnect after the close took 3 seconds.
+
+## API CPU
+
+Each API container has a 2-core CPU cap. It is a cap, not a reservation. With the former
+1.25-core cap, one process was throttled in 5.5% of 100 ms scheduler periods, frozen for
+740 seconds in 4.5 hours. A throttled process cannot answer any room or ping until the
+next period.
+
+Live bot search runs in worker threads in the same container. On Linux, each search
+thread lowers its own nice value to 10 (`os.setPriority` acts on the calling thread
+there), so the main thread that serves rooms runs first when they compete for CPU. On
+other platforms the call would lower the whole process, so it is skipped.
 
 ## Card images
 

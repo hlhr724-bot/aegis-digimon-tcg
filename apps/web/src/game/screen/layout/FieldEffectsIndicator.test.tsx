@@ -251,3 +251,21 @@ it.each([
   );
   expect(screen.getByLabelText(`Your field: ${label}`)).toBeTruthy();
 });
+
+it("moves the compact viewer indicator below the end-turn orb instead of covering it", () => {
+  vi.spyOn(window, "matchMedia").mockReturnValue({ ...window.matchMedia(""), matches: true });
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+    if (this.matches(".game-field")) return new DOMRect(0, 0, 390, 800);
+    if (this.matches(".game-battle-row--you")) return new DOMRect(10, 400, 360, 200);
+    if (this.matches(".game-end-turn-orb")) return new DOMRect(330, 540, 44, 44);
+    return new DOMRect(0, 0, 0, 0);
+  });
+  render(
+    <div className="game-board">
+      <button className="game-end-turn-orb" />
+      {indicator([reduction])}
+    </div>,
+  );
+  const badge = screen.getByLabelText("Your field: DP −4,000").closest("details")!;
+  expect(badge.style.top).toBe("588px");
+});

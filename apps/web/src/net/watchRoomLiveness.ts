@@ -1,13 +1,15 @@
 import { CloseCode } from "@colyseus/sdk";
 import type { AegisRoom } from "@/net/client";
 
-const PROBE_INTERVAL_MS = 4_000;
-const SILENCE_LIMIT_MS = 10_000;
+const PROBE_INTERVAL_MS = 2_000;
+const SILENCE_LIMIT_MS = 6_000;
+const STALLED_CHECK_GAP_MS = PROBE_INTERVAL_MS * 2;
 
 const isHidden = () => typeof document !== "undefined" && document.hidden;
 
 export function watchRoomLiveness({ room }: { room: AegisRoom }): () => void {
   let probeSentAt: number | undefined;
+  let lastCheckAt = Date.now();
 
   const probe = () => {
     probeSentAt = Date.now();
@@ -17,15 +19,18 @@ export function watchRoomLiveness({ room }: { room: AegisRoom }): () => void {
   };
 
   const check = () => {
+    const now = Date.now();
+    const checksWereStalled = now - lastCheckAt > STALLED_CHECK_GAP_MS;
+    lastCheckAt = now;
     if (isHidden()) {
       probeSentAt = undefined;
       return;
     }
-    if (probeSentAt === undefined) {
+    if (probeSentAt === undefined || checksWereStalled) {
       probe();
       return;
     }
-    if (Date.now() - probeSentAt < SILENCE_LIMIT_MS) return;
+    if (now - probeSentAt < SILENCE_LIMIT_MS) return;
     stop();
     room.connection.close(CloseCode.MAY_TRY_RECONNECT);
   };

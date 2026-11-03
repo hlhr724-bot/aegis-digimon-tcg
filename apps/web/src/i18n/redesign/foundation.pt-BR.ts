@@ -52,7 +52,14 @@ export const foundationPtBR: Record<keyof typeof foundationEn, string> = {
   "redesign.foundation.boardStyle.arena3d": "Arena 3D",
   "redesign.foundation.boardStyle.arena3dDesc": "Experimental. Cartas e efeitos aparecem em 3D e gastam mais bateria.",
   "redesign.foundation.boardStyle.unsupported":
-    "Este dispositivo não consegue mostrar a arena 3D, então as partidas usam o tabuleiro clássico.",
+    "3D desativado: este navegador não consegue usar WebGL. Ative a aceleração de hardware nas configurações do navegador e recarregue a página.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D desativado: o navegador deste dispositivo não consegue usar WebGL. Atualizar o navegador ou usar outro navegador pode resolver.",
+  "redesign.foundation.boardStyle.restoring": "Restaurando o tabuleiro 3D…",
+  "redesign.foundation.boardStyle.stopped": "O 3D parou neste aparelho. Mostrando o tabuleiro clássico.",
+  "redesign.foundation.boardStyle.retry": "Tentar de novo",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "Este navegador não roda 3D. O WebGL pode estar desligado. Mostrando o tabuleiro clássico.",
   "redesign.foundation.arena3dQuality.title": "Qualidade 3D",
   "redesign.foundation.arena3dQuality.auto": "Automática",
   "redesign.foundation.arena3dQuality.low": "Baixa",

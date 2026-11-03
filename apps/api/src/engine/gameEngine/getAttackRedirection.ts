@@ -37,7 +37,7 @@ export function getAttackRedirection({ engine, attacker, targetPermanentId }: Pa
     ) {
       continue;
     }
-    const ids = sub.attackRedirectTargetIds(ctx);
+    const ids = sub.attackRedirectTargetIds(ctx).filter((id) => id !== targetPermanentId);
     if (ids.length === 0) {
       continue;
     }

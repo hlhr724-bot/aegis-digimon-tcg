@@ -169,6 +169,9 @@ export async function runCombatAction(ctx: EffectContext, action: Action, scope:
       // Direct battle ("1 of your Digimon may battle 1 of your opponent's Digimon"): resolve
       // an attacker (self or chosen) and a defender (chosen opponent Digimon), then run a §14
       // DP battle. Optional => the controller may decline either pick.
+      const defenderTarget = action.defender ?? action.target;
+      if (defenderTarget === undefined) return false;
+      if (candidatePermanents(ctx, defenderTarget, { includeUnaffectable: true }).length === 0) return false;
       let attackerId: string | undefined;
       if (action.attacker.isSelf || action.attacker.filter.isSelfRef) {
         attackerId = ctx.source.permanent()?.permanentId;
@@ -176,10 +179,6 @@ export async function runCombatAction(ctx: EffectContext, action: Action, scope:
         attackerId = (await resolvePermanentTargets(ctx, action.attacker, { preserveUnaffectableSelection: true }))[0];
       }
       if (attackerId === undefined) return false;
-      // The compiler emits the defender as either `defender` or the alternative `target`
-      // (BattleAction allows both); honor whichever is present.
-      const defenderTarget = action.defender ?? action.target;
-      if (defenderTarget === undefined) return false;
       // Q7016: the selection is performed by an effect, but the battle itself is rule
       // processing. An unaffected Digimon remains a legal choice and can still lose the
       // ensuing DP comparison, so retain chosen immune ids for both battle participants.

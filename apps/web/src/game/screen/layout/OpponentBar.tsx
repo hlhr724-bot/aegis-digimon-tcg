@@ -51,6 +51,7 @@ export function OpponentBar({
   handStripRef,
   opponentName,
   opponentAvatarId,
+  opponentAvatarUrl,
   opponentEquippedRankedTier,
   opponentBotPersonaId,
   viewerSeat,
@@ -88,6 +89,7 @@ export function OpponentBar({
   handStripRef: RefObject<HTMLDivElement | null>;
   opponentName: string;
   opponentAvatarId: string;
+  opponentAvatarUrl?: string;
   opponentEquippedRankedTier?: string;
   opponentBotPersonaId?: string;
   viewerSeat: Seat;
@@ -165,6 +167,7 @@ export function OpponentBar({
       <PlayerLine
         name={opponentName}
         avatarId={opponentAvatarId}
+        avatarUrl={opponentAvatarUrl}
         equippedRankedTier={opponentEquippedRankedTier}
         botPersonaId={opponentBotPersonaId}
         side="opponent"

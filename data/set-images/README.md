@@ -7,3 +7,11 @@
 The shared card pool currently uses the English preorder date of 2027-01-22 listed by [CardTrader](https://www.cardtrader.com/en-EU/games/digimon/expansions). The official English EX14 product page was unavailable when checked. Reconfirm this provisional date when Bandai publishes that page. Until then, the two implemented EX14 cards remain in the beta pool before that date.
 
 The set artwork is retained here as a source asset. The current card pool interface displays individual card art, supplied by `data/card-images/EX14-012.webp` and `data/card-images/EX14-054.webp`.
+
+## BD01 — NEW EVOLUTION
+
+`BD01.jpg` is the thumbnail of the official [[BD-01] NEW EVOLUTION Card Pack Trailer](https://www.youtube.com/watch?v=pkkQVi0N_wI) from the DIGIMON CARD GAME Official Channel (English Ver.). It was downloaded from [the original image](https://i.ytimg.com/vi/pkkQVi0N_wI/maxresdefault.jpg) on 2026-11-02.
+
+BD-01 is the first card pack of DIGIMON ALYSION, the Digimon Card Game mobile app. It is not a physical product, so it has no entry in `PRODUCT_RELEASES` and no English release date. `releaseDateForCard` gives every BD01 card the placeholder date 9999-12-31, so BD01 cards stay in the beta pool. BD01 is also kept out of historical formats and the tournament set list.
+
+The set artwork is retained here as a source asset. No screen shows BD01 set art today. The card pool displays `data/card-images/BD01-02.webp` and `data/card-images/BD01-02-J.webp`.

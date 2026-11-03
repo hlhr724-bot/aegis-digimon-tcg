@@ -972,9 +972,15 @@ const interfaceMessages = {
   "settings.noticeDuration": "Durata degli avvisi",
   "settings.noticeDurationDesc":
     "Quanto restano sullo schermo gli avvisi degli effetti e i pannelli delle carte. Passa il mouse su un avviso per tenerlo aperto.",
+  "settings.noticeDurationShort": "Breve",
   "settings.noticeDurationNormal": "Normale",
   "settings.noticeDurationLong": "Lunga",
   "settings.noticeDurationLongest": "Più lunga",
+  "settings.noticeSize": "Dimensione degli avvisi",
+  "settings.noticeSizeDesc":
+    "Quanto sono grandi gli avvisi degli effetti e i pannelli delle carte. Compatta copre meno il campo.",
+  "settings.noticeSizeNormal": "Normale",
+  "settings.noticeSizeCompact": "Compatta",
   "settings.groupIdenticalTamers": "Raggruppa i Tamer identici",
   "settings.groupIdenticalTamersDesc":
     "Mostra insieme i Tamer identici nel campo ordinato. Disattiva per mostrare ogni copia separatamente.",
@@ -1409,6 +1415,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "La sicurezza avversaria è aumentata",
   "overlay.liveDp": "DP attuali",
   "overlay.baseDp": "DP stampati",
+  "overlay.linkDp": "DP Link +{dp}",
   "overlay.keywords": "Parole chiave",
   "overlay.restrictions": "Restrizioni",
   "overlay.heldDp": "{delta} DP bloccati finché è protetto",
@@ -1464,6 +1471,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "Vuoi attivare Partition?",
   "overlay.activateBlitzPrompt": "Vuoi attivare Blitz?",
   "overlay.digivolveHostPrompt": "Scegli la carta che digievolverà.",
+  "overlay.armorPurgePrompt": "Usare ＜Armor Purge＞?",
   "overlay.attackAlreadyResolving": "Non puoi iniziare un altro attacco mentre questo attacco è in corso.",
   "overlay.deckTop": "Cima del mazzo",
   "overlay.deckBottom": "Fondo del mazzo",
@@ -2362,7 +2370,15 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3dDesc":
     "Sperimentale. Carte ed effetti vengono mostrati in 3D e consumano più batteria.",
   "redesign.foundation.boardStyle.unsupported":
-    "Questo dispositivo non può mostrare l'arena 3D, quindi le partite usano il tabellone classico.",
+    "3D disattivato: questo browser non può usare WebGL. Attiva l'accelerazione hardware nelle impostazioni del browser, poi ricarica la pagina.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D disattivato: il browser di questo dispositivo non può usare WebGL. Aggiornare il browser o provarne un altro può aiutare.",
+  "redesign.foundation.boardStyle.restoring": "Ripristino del campo 3D…",
+  "redesign.foundation.boardStyle.stopped":
+    "Il 3D si è fermato su questo dispositivo. Viene mostrato il campo classico.",
+  "redesign.foundation.boardStyle.retry": "Riprova",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "Questo browser non può eseguire il 3D. WebGL potrebbe essere disattivato. Viene mostrato il campo classico.",
   "redesign.foundation.arena3dQuality.title": "Qualità 3D",
   "redesign.foundation.arena3dQuality.auto": "Automatica",
   "redesign.foundation.arena3dQuality.low": "Bassa",
