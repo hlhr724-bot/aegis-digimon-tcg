@@ -64,7 +64,7 @@ export function installReplayAnnotationRoutes({ app, store, session }: Params): 
       }
     };
 
-  app.get("/replay-annotations/:matchId", async (req, res, next) => {
+  app.get("/replays/annotations/:matchId", async (req, res, next) => {
     res.setHeader("Cache-Control", "private, no-store");
     try {
       const viewerId = (await session(req))?.account.id;
@@ -84,7 +84,7 @@ export function installReplayAnnotationRoutes({ app, store, session }: Params): 
   });
 
   app.post(
-    "/replay-annotations/:matchId/markers",
+    "/replays/annotations/:matchId/markers",
     write(async ({ req, res, authorId, matchId }) => {
       const body = getBody(req);
       const moment = parseMoment(body);
@@ -110,7 +110,7 @@ export function installReplayAnnotationRoutes({ app, store, session }: Params): 
   );
 
   app.delete(
-    "/replay-annotations/:matchId/markers/:id",
+    "/replays/annotations/:matchId/markers/:id",
     write(async ({ req, res, authorId, matchId }) => {
       const id = String(req.params.id ?? "");
       if (!UUID.test(id) || !(await store.removeMarker({ authorId, matchId, id }))) {
@@ -122,7 +122,7 @@ export function installReplayAnnotationRoutes({ app, store, session }: Params): 
   );
 
   app.post(
-    "/replay-annotations/:matchId/notes",
+    "/replays/annotations/:matchId/notes",
     write(async ({ req, res, authorId, matchId }) => {
       const body = getBody(req);
       const moment = parseMoment(body);
@@ -149,7 +149,7 @@ export function installReplayAnnotationRoutes({ app, store, session }: Params): 
   );
 
   app.patch(
-    "/replay-annotations/:matchId/notes/:id",
+    "/replays/annotations/:matchId/notes/:id",
     write(async ({ req, res, authorId, matchId }) => {
       const id = String(req.params.id ?? "");
       const text = parseReplayNoteText(getBody(req).text);
@@ -167,7 +167,7 @@ export function installReplayAnnotationRoutes({ app, store, session }: Params): 
   );
 
   app.delete(
-    "/replay-annotations/:matchId/notes/:id",
+    "/replays/annotations/:matchId/notes/:id",
     write(async ({ req, res, authorId, matchId }) => {
       const id = String(req.params.id ?? "");
       if (!UUID.test(id) || !(await store.removeNote({ authorId, matchId, id }))) {

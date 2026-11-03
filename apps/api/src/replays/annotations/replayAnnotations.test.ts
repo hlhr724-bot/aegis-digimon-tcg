@@ -180,7 +180,7 @@ describe("replay note routes", () => {
     const call = await serve(accounts, library);
     const ownerSession = (await accounts.issueSession(owner)).id;
     const viewerSession = (await accounts.issueSession(viewer)).id;
-    const notes = `/replay-annotations/${matchId}/notes`;
+    const notes = `/replays/annotations/${matchId}/notes`;
     const post = (session: string, body: unknown) =>
       call(notes, { method: "POST", session, body: JSON.stringify(body) });
 
@@ -206,7 +206,7 @@ describe("replay note routes", () => {
     expect((await remove(viewerSession)).status).toBe(404);
     expect((await remove(ownerSession)).status).toBe(200);
     expect(
-      (await call(`/replay-annotations/${matchId}`, { session: ownerSession }).then((res) => res.json())).notes,
+      (await call(`/replays/annotations/${matchId}`, { session: ownerSession }).then((res) => res.json())).notes,
     ).toEqual([]);
   });
 });
@@ -218,7 +218,7 @@ describe("replay marker routes", () => {
     const ownerSession = (await accounts.issueSession(owner)).id;
     const viewerSession = (await accounts.issueSession(viewer)).id;
     const post = (session: string | undefined, body: unknown, target = matchId) =>
-      call(`/replay-annotations/${target}/markers`, { method: "POST", session, body: JSON.stringify(body) });
+      call(`/replays/annotations/${target}/markers`, { method: "POST", session, body: JSON.stringify(body) });
     const valid = { frameIndex: 4, turn: 2, emoji: ReplayMarkerEmoji.KEY_MOMENT.value };
 
     expect((await post(undefined, valid)).status).toBe(401);
@@ -244,9 +244,9 @@ describe("replay marker routes", () => {
     const customMarker = await custom.json();
     expect(customMarker).toMatchObject({ frameIndex: 5, emoji: "🦖" });
 
-    const anonymous = await call(`/replay-annotations/${matchId}`);
+    const anonymous = await call(`/replays/annotations/${matchId}`);
     expect(await anonymous.json()).toEqual({ markers: [], notes: [], canAnnotate: false, ownReplayIds: [] });
-    const own = await call(`/replay-annotations/${matchId}`, { session: ownerSession });
+    const own = await call(`/replays/annotations/${matchId}`, { session: ownerSession });
     expect(own.headers.get("cache-control")).toContain("no-store");
     expect(await own.json()).toEqual({
       markers: [marker, customMarker],
@@ -256,7 +256,7 @@ describe("replay marker routes", () => {
     });
 
     const remove = (session: string) =>
-      call(`/replay-annotations/${matchId}/markers/${marker.id}`, { method: "DELETE", session });
+      call(`/replays/annotations/${matchId}/markers/${marker.id}`, { method: "DELETE", session });
     expect((await remove(viewerSession)).status).toBe(404);
     expect((await remove(ownerSession)).status).toBe(200);
     expect((await remove(ownerSession)).status).toBe(404);

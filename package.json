@@ -1,6 +1,6 @@
 {
   "name": "aegis",
-  "version": "1.50.0-beta",
+  "version": "1.50.1-beta",
   "private": true,
   "description": "Aegis - a server-authoritative Digimon-style trading card game (React + PixiJS client, Colyseus API).",
   "license": "MIT",

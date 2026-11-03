@@ -192,6 +192,14 @@ test("community API calls reach the API while page navigation gets the web app",
   assert.equal(isApiPath("/roadmap", { accept: "text/html,application/xhtml+xml" }), false);
 });
 
+test("replay annotation API calls reach the API through the replays prefix", () => {
+  const matchId = "00000000-0000-0000-0000-000000000000";
+  assert.equal(isApiPath(`/replays/annotations/${matchId}`, { accept: "*/*" }), true);
+  assert.equal(isApiPath(`/replays/annotations/${matchId}/notes/note-1`, { accept: "*/*" }), true);
+  assert.equal(isApiPath(`/replays/${matchId}`, { accept: "text/html,application/xhtml+xml" }), false);
+  assert.equal(isApiPath(`/replay-annotations/${matchId}`, { accept: "*/*" }), false);
+});
+
 test("tournament circuit API calls reach the API even when the browser accepts HTML", () => {
   assert.equal(isApiPath("/tournament-circuits", { accept: "application/json" }), true);
   assert.equal(isApiPath("/tournament-circuits/circuit-1/leaderboard", { accept: "text/html" }), true);
