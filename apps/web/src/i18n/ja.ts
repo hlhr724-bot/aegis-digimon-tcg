@@ -1516,6 +1516,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "相手のセキュリティが増えました",
   "overlay.liveDp": "現在のDP",
   "overlay.baseDp": "カードに記載のDP",
+  "overlay.linkDp": "リンクDP +{dp}",
   "overlay.keywords": "キーワード",
   "overlay.restrictions": "制限",
   "overlay.heldDp": "{delta} DP（保護中のため未適用）",

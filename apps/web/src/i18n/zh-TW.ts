@@ -1455,6 +1455,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "對手的安防區增加了",
   "overlay.liveDp": "目前 DP",
   "overlay.baseDp": "印刷 DP",
+  "overlay.linkDp": "連結 DP +{dp}",
   "overlay.keywords": "關鍵字",
   "overlay.restrictions": "限制",
   "overlay.heldDp": "{delta} DP（受保護，暫不生效）",

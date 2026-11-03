@@ -1545,6 +1545,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "La sécurité de l'adversaire a augmenté",
   "overlay.liveDp": "DP actuels",
   "overlay.baseDp": "DP imprimé",
+  "overlay.linkDp": "DP de Link +{dp}",
   "overlay.keywords": "Mots-clés",
   "overlay.restrictions": "Restrictions",
   "overlay.heldDp": "{delta} DP bloqués tant qu'il est protégé",
