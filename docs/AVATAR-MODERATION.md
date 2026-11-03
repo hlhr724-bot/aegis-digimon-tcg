@@ -48,7 +48,7 @@ Migration 051 stores an accepted picture in the `accounts` row itself: `avatar_i
 - **WASM, not `onnxruntime-node`.** The native package ships glibc binaries, and the
   API image is alpine (musl). WASM runs on any libc and architecture, including the
   arm64 production host.
-- **One thread.** Each API process has a 1.25 CPU limit and also runs live rooms. One
+- **One thread.** Each API process has a 2 CPU limit and also runs live rooms. One
   inference thread keeps screening from taking CPU the rooms need.
 - **Started on demand, stopped when idle.** The worker uses about 190 MB while loaded.
   It starts only when layer 1 fails and stops after 60 seconds without work, so it

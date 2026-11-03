@@ -1,7 +1,20 @@
+import { setPriority } from "node:os";
 import { parentPort } from "node:worker_threads";
 import type { BotSearchTask } from "#api/bot/search/BotSearchTask";
 import { getEngineCodeFingerprint } from "#api/engine/snapshot/getEngineCodeFingerprint";
 
+const SEARCH_THREAD_NICENESS = 10;
+
+function yieldCpuToRoomThread(): void {
+  if (process.platform !== "linux") return;
+  try {
+    setPriority(SEARCH_THREAD_NICENESS);
+  } catch (error) {
+    process.stderr.write(`[searchWorker] could not lower search thread priority: ${String(error)}\n`);
+  }
+}
+
+yieldCpuToRoomThread();
 console.log = console.info = console.debug = console.warn = () => {};
 await import("#api/cards/index");
 const { runBotSearchTask } = await import("#api/bot/search/runBotSearchTask");
