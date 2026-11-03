@@ -1271,7 +1271,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "사용",
   "game.dragIntent.attack": "어택",
   "game.matchLog": "대전 로그",
-  "game.matchLogUnread": "대전 로그, 새 항목 {count}개",
   "game.matchLogExpand": "대전 로그 확대",
   "game.matchLogDrag": "드래그하여 이동",
   "settings.matchLogDisplay": "대전 로그 표시",

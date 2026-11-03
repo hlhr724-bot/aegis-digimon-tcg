@@ -1228,7 +1228,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "使用",
   "game.dragIntent.attack": "攻擊",
   "game.matchLog": "對局日誌",
-  "game.matchLogUnread": "對局日誌，{count} 條新紀錄",
   "game.matchLogExpand": "展開對局日誌",
   "game.matchLogDrag": "拖曳以移動",
   "settings.matchLogDisplay": "對局日誌顯示方式",

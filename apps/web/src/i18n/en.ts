@@ -1030,7 +1030,6 @@ export const en = {
   "game.dragIntent.use": "USE",
   "game.dragIntent.attack": "ATTACK",
   "game.matchLog": "Match log",
-  "game.matchLogUnread": "Match log, {count} new",
   "game.matchLogExpand": "Expand match log",
   "game.matchLogDrag": "Drag to move",
   "settings.matchLogDisplay": "Match log display",

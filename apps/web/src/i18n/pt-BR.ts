@@ -1034,7 +1034,6 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.dragIntent.use": "USAR",
   "game.dragIntent.attack": "ATACAR",
   "game.matchLog": "Registro da partida",
-  "game.matchLogUnread": "Registro da partida, {count} novas",
   "game.matchLogExpand": "Expandir registro da partida",
   "game.matchLogDrag": "Arraste para mover",
   "settings.matchLogDisplay": "Exibição do registro da partida",
