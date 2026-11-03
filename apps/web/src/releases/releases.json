@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.50.2-beta",
+    "releasedAt": "2026-11-03",
+    "summaryKey": "releases.1.50.2-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.50.2-beta.fix.monitamon"
+      }
+    ]
+  },
+  {
     "version": "1.50.1-beta",
     "releasedAt": "2026-11-03",
     "summaryKey": "releases.1.50.1-beta.summary",

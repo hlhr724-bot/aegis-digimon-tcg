@@ -1,4 +1,16 @@
 {
+  "releases.1.50.2-beta.summary": {
+    "en": "Monitamon can add any 2 eligible revealed cards.",
+    "pt-BR": "Monitamon pode adicionar quaisquer 2 cartas válidas reveladas.",
+    "es": "Monitamon puede añadir 2 cartas válidas cualesquiera de las reveladas.",
+    "it": "Monitamon può aggiungere 2 carte valide qualsiasi tra quelle rivelate."
+  },
+  "releases.1.50.2-beta.fix.monitamon": {
+    "en": "Monitamon (BT10-058) let you add only 1 black card with [Knightmon] or [DeadlyAxemon] in its name and 1 card with the [Twilight] trait. It now adds any 2 of those cards, such as 2 Knightmon or 2 Twilight cards.",
+    "pt-BR": "Monitamon (BT10-058) só deixava adicionar 1 carta preta com [Knightmon] ou [DeadlyAxemon] no nome e 1 carta com o traço [Twilight]. Agora ele adiciona quaisquer 2 dessas cartas, como 2 Knightmon ou 2 cartas [Twilight].",
+    "es": "Monitamon (BT10-058) solo dejaba añadir 1 carta negra con [Knightmon] o [DeadlyAxemon] en su nombre y 1 carta con el rasgo [Twilight]. Ahora añade 2 cualesquiera de esas cartas, como 2 Knightmon o 2 cartas [Twilight].",
+    "it": "Monitamon (BT10-058) permetteva di aggiungere solo 1 carta nera con [Knightmon] o [DeadlyAxemon] nel nome e 1 carta con il tratto [Twilight]. Ora aggiunge 2 qualsiasi di queste carte, come 2 Knightmon o 2 carte [Twilight]."
+  },
   "releases.1.50.1-beta.summary": {
     "en": "Saved replay markers and notes load and save again.",
     "pt-BR": "Os marcadores e as notas salvos nos replays voltam a carregar e salvar.",
