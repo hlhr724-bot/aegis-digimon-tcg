@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { normalizeReplayNoteText } from "@aegis/shared/replays/annotations/normalizeReplayNoteText";
 import { REPLAY_NOTE_MAX_LENGTH } from "@aegis/shared/replays/annotations/replayAnnotationLimits";
 import { Button } from "@/design/primitives";
@@ -11,16 +11,32 @@ type Props = {
   submitLabel: TranslationKey;
   initialText?: string;
   rows?: number;
+  focusOnMount?: boolean;
   onSubmit: (text: string) => Promise<boolean> | boolean;
   onCancel?: () => void;
 };
 
-export function ReplayNoteForm({ label, submitLabel, initialText = "", rows = 3, onSubmit, onCancel }: Props) {
+export function ReplayNoteForm({
+  label,
+  submitLabel,
+  initialText = "",
+  rows = 3,
+  focusOnMount = false,
+  onSubmit,
+  onCancel,
+}: Props) {
   const { t } = useTranslation();
   const fieldId = useId();
+  const field = useRef<HTMLTextAreaElement>(null);
   const [draft, setDraft] = useState(initialText);
   const [saving, setSaving] = useState(false);
   const text = normalizeReplayNoteText(draft);
+
+  useEffect(() => {
+    if (focusOnMount) {
+      field.current?.focus();
+    }
+  }, [focusOnMount]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -39,6 +55,7 @@ export function ReplayNoteForm({ label, submitLabel, initialText = "", rows = 3,
     <form className="replay-note-form" onSubmit={(event) => void submit(event)}>
       <label htmlFor={fieldId}>{t(label)}</label>
       <textarea
+        ref={field}
         id={fieldId}
         value={draft}
         rows={rows}

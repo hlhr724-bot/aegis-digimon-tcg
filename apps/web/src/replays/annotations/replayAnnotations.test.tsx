@@ -118,7 +118,8 @@ it("adds, edits and deletes a text note at the shown moment", async () => {
     </I18nProvider>,
   );
   fireEvent.click(screen.getByRole("button", { name: "Show annotations" }));
-  const field = await screen.findByLabelText("Add a note at this moment");
+  fireEvent.click(await screen.findByRole("button", { name: "Add a note at this moment" }));
+  const field = screen.getByLabelText("Add a note at this moment");
   fireEvent.change(field, { target: { value: "  Hold the blocker  " } });
   fireEvent.click(screen.getByRole("button", { name: "Save note" }));
   expect(await screen.findByText("Hold the blocker")).toBeTruthy();

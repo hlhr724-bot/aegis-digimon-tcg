@@ -2,6 +2,7 @@ import { useId, useMemo, useState } from "react";
 import type { MatchReplay } from "@aegis/shared/replays";
 import { ReplayMarkerEmoji } from "@aegis/shared/replays/annotations/ReplayMarkerEmoji";
 import { ReplayVisibility } from "@aegis/shared/replays/ReplayVisibility";
+import { Icons } from "@/design/icons";
 import { Button } from "@/design/primitives";
 import { useTranslation } from "@/i18n/useTranslation";
 import type { ReplayAnnotationEntry } from "@/replays/annotations/buildReplayAnnotationEntries";
@@ -69,6 +70,12 @@ export function ReplayAnnotationTools({ replay, annotations, entries, index, ski
 
   return (
     <section className="replay-annotations__tools" aria-label={t("replayAnnotations.tools")}>
+      {annotations.canAnnotate ? (
+        <p className="replay-annotations__hint replay-annotations__private">
+          <Icons.Lock size={12} />
+          {t("replayAnnotations.privateHint")}
+        </p>
+      ) : null}
       {annotations.ownReplays.map((own) => (
         <label key={own.replayId} className="replay-annotations__sharing">
           <input

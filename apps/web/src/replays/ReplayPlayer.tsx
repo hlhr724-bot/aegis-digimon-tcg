@@ -16,11 +16,13 @@ import { createAnimationPlayback } from "../game/animationPlayback";
 import { ReplayRecording } from "./ReplayRecording";
 import { ReplayControls } from "@/replays/ReplayControls";
 import { ReplayTimeline } from "@/replays/ReplayTimeline";
+import { useMediaQuery } from "@/design/useMediaQuery";
 import { ReplayAnnotationPanel } from "@/replays/annotations/ReplayAnnotationPanel";
 import { useReplayAnnotations } from "@/replays/annotations/useReplayAnnotations";
 import { buildReplayAnnotationEntries } from "@/replays/annotations/buildReplayAnnotationEntries";
 
 const emptyDeck = { mainDeck: [], eggDeck: [] };
+const ANNOTATION_SHEET_QUERY = "(width < 600px)";
 const acknowledgeDecision = () => undefined;
 
 export function ReplayPlayer({
@@ -66,6 +68,7 @@ export function ReplayPlayer({
   );
   const [controlsVisible, setControlsVisible] = useState(true);
   const [controlsInset, setControlsInset] = useState(0);
+  const annotationSheet = useMediaQuery(ANNOTATION_SHEET_QUERY) && annotationsOpen;
   const [recordingMode, setRecordingMode] = useState(false);
   const history = useRef<HTMLElement>(null);
   const historyToggle = useRef<HTMLButtonElement>(null);
@@ -445,7 +448,7 @@ export function ReplayPlayer({
           <Icons.PlayCircle size={20} />
         </button>
       </div>
-      <ReplayControls visible={controlsVisible} onDockedInsetChange={setControlsInset}>
+      <ReplayControls visible={controlsVisible && !annotationSheet} onDockedInsetChange={setControlsInset}>
         <div className="replay-controls__timeline">
           <ReplayTimeline
             replay={replay}

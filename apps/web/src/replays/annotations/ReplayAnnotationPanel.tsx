@@ -26,6 +26,8 @@ type Props = {
 export function ReplayAnnotationPanel({ replay, annotations, index, skipThinking, shareId, onJump, onClose }: Props) {
   const { t } = useTranslation();
   const [editingId, setEditingId] = useState<string>();
+  const [composing, setComposing] = useState(false);
+  const lastIndex = replay.frames.length - 1;
   const turn = replay.frames[index]?.state.turnCount ?? 0;
   const entries = useMemo(
     () => buildReplayAnnotationEntries({ markers: annotations.markers, notes: annotations.notes }),
@@ -140,18 +142,47 @@ export function ReplayAnnotationPanel({ replay, annotations, index, skipThinking
       </header>
       {annotations.canAnnotate ? (
         <section className="replay-annotations__compose">
-          <h3>{t("replayAnnotations.markMomentAt", { turn, action: index + 1 })}</h3>
+          <div className="replay-annotations__stepper">
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={Icons.ChevronLeft}
+              aria-label={t("replay.previous")}
+              disabled={index <= 0}
+              onClick={() => onJump(index - 1)}
+            />
+            <h3>{t("replayAnnotations.markMomentAt", { turn, action: index + 1 })}</h3>
+            <Button
+              size="sm"
+              variant="ghost"
+              icon={Icons.ChevronRight}
+              aria-label={t("replay.next")}
+              disabled={index >= lastIndex}
+              onClick={() => onJump(index + 1)}
+            />
+          </div>
           <ReplayMarkerPicker onPick={(emoji) => void annotations.markMoment({ frameIndex: index, turn, emoji })} />
-          <ReplayNoteForm
-            label="replayAnnotations.addNote"
-            submitLabel="replayAnnotations.saveNote"
-            rows={2}
-            onSubmit={(text) => annotations.addNote({ frameIndex: index, turn, text })}
-          />
-          <p className="replay-annotations__hint replay-annotations__private">
-            <Icons.Lock size={12} />
-            {t("replayAnnotations.privateHint")}
-          </p>
+          {composing ? (
+            <ReplayNoteForm
+              label="replayAnnotations.addNote"
+              submitLabel="replayAnnotations.saveNote"
+              rows={2}
+              focusOnMount
+              onCancel={() => setComposing(false)}
+              onSubmit={async (text) => {
+                const saved = await annotations.addNote({ frameIndex: index, turn, text });
+                if (saved) {
+                  setComposing(false);
+                }
+                return saved;
+              }}
+            />
+          ) : (
+            <button type="button" className="replay-annotations__add-note" onClick={() => setComposing(true)}>
+              <Icons.Pencil size={14} />
+              {t("replayAnnotations.addNote")}
+            </button>
+          )}
         </section>
       ) : (
         <p className="replay-annotations__hint">{t("replayAnnotations.unavailable")}</p>
