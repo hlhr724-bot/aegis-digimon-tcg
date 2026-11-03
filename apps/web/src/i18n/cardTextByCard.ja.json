@@ -15588,5 +15588,11 @@
   },
   "BD01-02": {
     "[YourTurn]Add1000tothis[ALYSION]traitDigimon'sDPdeletioneffect'smaximum.": "【自分のターン】特徴「アリシオン」を持つこのデジモンのDP消滅効果の上限+1000。"
+  },
+  "BD01-03": {
+    "[WhenDigivolving]Delete1ofyouropponent'sDigimonwith2000DPorless.": "【進化時】DP2000以下の相手のデジモン1体を消滅させる。"
+  },
+  "BD01-05": {
+    "[YourTurn][OncePerTurn]Whenanyofyouropponent'sDigimonaredeleted,thisDigimongains<SecurityA.+1>fortheturn.(ThisDigimonchecks1additionalsecuritycard.)": "【自分のターン】[ターン1回] 相手のデジモンが消滅したとき、ターン終了まで、このデジモンは≪Sアタック+1≫（このデジモンがチェックする枚数+1）を得る。"
   }
 }

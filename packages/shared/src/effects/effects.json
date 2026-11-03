@@ -248648,5 +248648,49 @@
     ],
     "coverage": "full",
     "residual": []
+  },
+  "BD01-03": {
+    "effects": [
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "Delete",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "dp": { "op": "lte", "value": 2000 } },
+              "count": 1
+            }
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BD01-05": {
+    "effects": [
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "SubTrigger",
+            "event": "onDeletionOf",
+            "sourceFilter": { "controller": "opponent", "kind": ["Digimon"] },
+            "actions": [
+              {
+                "kind": "GainKeyword",
+                "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+                "keyword": { "keyword": "SecurityAttack", "amount": 1, "raw": "＜Security A. +1＞" },
+                "duration": "forTheTurn"
+              }
+            ]
+          }
+        ],
+        "isInherited": true,
+        "frequency": "OncePerTurn"
+      }
+    ],
+    "coverage": "full",
+    "residual": []
   }
 }
