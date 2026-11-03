@@ -1329,7 +1329,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.activateBlitzPrompt": "Você quer ativar Blitz?",
   "overlay.digivolveHostPrompt": "Escolha a carta que vai digivolver.",
   "overlay.armorPurgePrompt":
-    "Usar ＜Armor Purge＞? Selecione este Digimon para descartar a carta do topo e evitar a deleção, ou pule para deixá-lo ser deletado.",
+    "Usar ＜Armor Purge＞? Selecione este Digimon para descartar a carta do topo e evitar a deleção, ou escolha Passar para deixá-lo ser deletado.",
   "overlay.attackAlreadyResolving": "Não é possível iniciar outro ataque enquanto este ataque está em andamento.",
   "overlay.deckTop": "Topo do deck",
   "overlay.deckBottom": "Fundo do deck",

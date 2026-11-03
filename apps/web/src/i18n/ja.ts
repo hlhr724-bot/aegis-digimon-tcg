@@ -1572,7 +1572,7 @@ const interfaceMessages = {
   "overlay.activateBlitzPrompt": "《ブリッツ》を発動しますか？",
   "overlay.digivolveHostPrompt": "進化させるカードを選んでください。",
   "overlay.armorPurgePrompt":
-    "《アーマー解除》を使いますか？このデジモンを選ぶと一番上のカードをトラッシュして消滅を防ぎます。スキップすると消滅します。",
+    "《アーマー解除》を使いますか？このデジモンを選ぶと一番上のカードをトラッシュして消滅を防ぎます。パスすると消滅します。",
   "overlay.attackAlreadyResolving": "このアタックの処理中は、別のアタックを開始できません。",
   "overlay.deckTop": "デッキの一番上",
   "overlay.deckBottom": "デッキの一番下",

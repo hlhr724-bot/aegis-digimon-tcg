@@ -1510,7 +1510,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "要發動＜分割＞嗎？",
   "overlay.activateBlitzPrompt": "要發動＜閃擊＞嗎？",
   "overlay.digivolveHostPrompt": "選擇將會進化的卡片。",
-  "overlay.armorPurgePrompt": "使用＜裝甲解除＞？選擇此數碼寶貝以捨棄其最上方的卡片並防止消滅，或跳過讓其被消滅。",
+  "overlay.armorPurgePrompt": "使用＜裝甲解除＞？選擇此數碼寶貝以捨棄其最上方的卡片並防止消滅，或選擇放棄讓其被消滅。",
   "overlay.attackAlreadyResolving": "本次攻擊結算完畢前，無法開始另一次攻擊。",
   "overlay.deckTop": "卡組頂部",
   "overlay.deckBottom": "卡組底部",

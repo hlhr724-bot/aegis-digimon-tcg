@@ -1312,7 +1312,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.activateBlitzPrompt": "¿Quieres activar Blitz?",
   "overlay.digivolveHostPrompt": "Elige la carta que va a digievolucionar.",
   "overlay.armorPurgePrompt":
-    "¿Usar ＜Armor Purge＞? Selecciona este Digimon para enviar su carta superior a la papelera y evitar la eliminación, u omite para dejar que sea eliminado.",
+    "¿Usar ＜Armor Purge＞? Selecciona este Digimon para enviar su carta superior a la papelera y evitar la eliminación, o elige Pasar para dejar que sea eliminado.",
   "overlay.attackAlreadyResolving": "No se puede iniciar otro ataque mientras se resuelve este ataque.",
   "overlay.deckTop": "Parte superior del deck",
   "overlay.deckBottom": "Parte inferior del deck",

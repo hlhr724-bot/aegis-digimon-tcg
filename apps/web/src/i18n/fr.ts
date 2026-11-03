@@ -1601,7 +1601,7 @@ const interfaceMessages = {
   "overlay.activateBlitzPrompt": "Voulez-vous activer Blitz ?",
   "overlay.digivolveHostPrompt": "Choisissez la carte qui va digivolver.",
   "overlay.armorPurgePrompt":
-    "Utiliser ＜Purge d'armure＞ ? Sélectionnez ce Digimon pour défausser sa carte du dessus et empêcher la suppression, ou passez pour le laisser être supprimé.",
+    "Utiliser ＜Purge d'armure＞ ? Sélectionnez ce Digimon pour défausser sa carte du dessus et empêcher la suppression, ou choisissez Passer pour le laisser être supprimé.",
   "overlay.attackAlreadyResolving": "Une autre attaque ne peut pas commencer pendant la résolution de cette attaque.",
   "overlay.deckTop": "Dessus du deck",
   "overlay.deckBottom": "Dessous du deck",

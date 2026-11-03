@@ -1558,7 +1558,7 @@ const interfaceMessages = {
   "overlay.activateBlitzPrompt": "≪블리츠≫를 발동하시겠습니까?",
   "overlay.digivolveHostPrompt": "진화할 카드를 선택하세요.",
   "overlay.armorPurgePrompt":
-    "≪아머 해제≫를 사용하시겠습니까? 이 디지몬을 선택하면 맨 위 카드를 트래시해 소멸을 막습니다. 건너뛰면 소멸합니다.",
+    "≪아머 해제≫를 사용하시겠습니까? 이 디지몬을 선택하면 맨 위 카드를 트래시해 소멸을 막습니다. 패스하면 소멸합니다.",
   "overlay.attackAlreadyResolving": "이 어택을 처리하는 동안에는 다른 어택을 시작할 수 없습니다.",
   "overlay.deckTop": "덱 맨 위",
   "overlay.deckBottom": "덱 맨 아래",
