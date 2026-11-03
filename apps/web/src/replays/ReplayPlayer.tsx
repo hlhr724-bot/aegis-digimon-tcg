@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import type { MatchReplay, Seat } from "@aegis/shared";
 import { GameScreen } from "../game/GameScreen";
 import { buildMatchLog } from "../game/matchLog";
+import { LogEffectTags } from "@/game/log/LogEffectTags";
 import type { PresentationControls, PresentationProbe } from "../game/presentationProbe";
 import { useTranslation } from "../i18n";
 import { Icons } from "../design/icons";
@@ -122,17 +123,18 @@ export function ReplayPlayer({
     }),
     [],
   );
-  const logLines = useMemo(
+  const frameLines = useMemo(
     () =>
       replay.frames.map(
         (entry) =>
           buildMatchLog(entry.events, replay.viewerSeat === 1 ? 1 : 0, new Map(), t, 1, {
             0: replay.players[0],
             1: replay.players[1],
-          })[0]?.text,
+          })[0],
       ),
     [replay, t],
   );
+  const logLines = useMemo(() => frameLines.map((line) => line?.text), [frameLines]);
   const labels = useMemo(
     () =>
       logLines.map(
@@ -399,6 +401,7 @@ export function ReplayPlayer({
                         {t("replay.turn")} {replay.frames[index]!.state.turnCount}
                       </small>
                       <span>{label}</span>
+                      {frameLines[index]?.effect ? <LogEffectTags effect={frameLines[index].effect} /> : null}
                     </span>
                   </button>
                 </li>
