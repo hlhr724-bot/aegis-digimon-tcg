@@ -1267,6 +1267,7 @@ export const en = {
   "overlay.recoveryOpp": "Opponent's security increased",
   "overlay.liveDp": "Live DP",
   "overlay.baseDp": "Printed DP",
+  "overlay.linkDp": "Link DP +{dp}",
   "overlay.keywords": "Keywords",
   "overlay.restrictions": "Restrictions",
   "overlay.heldDp": "{delta} DP blocked while protected",

@@ -1256,6 +1256,7 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.recoveryOpp": "La seguridad del oponente aumentó",
   "overlay.liveDp": "DP actual",
   "overlay.baseDp": "DP impreso",
+  "overlay.linkDp": "DP de Link +{dp}",
   "overlay.keywords": "Palabras clave",
   "overlay.restrictions": "Restricciones",
   "overlay.heldDp": "{delta} DP bloqueado mientras esté protegido",

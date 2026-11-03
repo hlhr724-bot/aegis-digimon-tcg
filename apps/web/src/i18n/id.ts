@@ -1522,6 +1522,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "Security lawan meningkat",
   "overlay.liveDp": "DP saat ini",
   "overlay.baseDp": "DP tercetak",
+  "overlay.linkDp": "DP Link +{dp}",
   "overlay.keywords": "Keyword",
   "overlay.restrictions": "Batasan",
   "overlay.heldDp": "{delta} DP tertahan selama terlindungi",

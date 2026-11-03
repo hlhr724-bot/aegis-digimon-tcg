@@ -1502,6 +1502,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "상대 시큐리티가 늘었습니다",
   "overlay.liveDp": "현재 DP",
   "overlay.baseDp": "원래 DP",
+  "overlay.linkDp": "링크 DP +{dp}",
   "overlay.keywords": "키워드",
   "overlay.restrictions": "제한",
   "overlay.heldDp": "{delta} DP (보호 중이라 미적용)",

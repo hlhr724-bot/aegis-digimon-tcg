@@ -1273,6 +1273,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.recoveryOpp": "A segurança do oponente aumentou",
   "overlay.liveDp": "DP atual",
   "overlay.baseDp": "DP impresso",
+  "overlay.linkDp": "DP de Link +{dp}",
   "overlay.keywords": "Palavras-chave",
   "overlay.restrictions": "Restrições",
   "overlay.heldDp": "{delta} DP bloqueado enquanto protegido",
