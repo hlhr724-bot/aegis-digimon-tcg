@@ -537,3 +537,43 @@ it.each([false, undefined])(
     expect(screen.queryByRole("button", { name: /pass|no selection/i })).toBeNull();
   },
 );
+
+it.each([true, false])(
+  "titles the Armor Purge pick as an Armor Purge question on board/dialog (%s)",
+  (answerOnBoard) => {
+    render(
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "armor-purge",
+            seat: 0,
+            kind: "selectCards",
+            promptText: "Stegomon",
+            sourceCardId: "BT27-048",
+            options: {
+              min: 0,
+              max: 1,
+              candidateInstanceIds: ["stegomon-top"],
+              selectionGoal: "protect",
+              promptKey: "armorPurge",
+            },
+          }}
+          answerOnBoard={answerOnBoard}
+          permanents={[]}
+          sourceCardId="BT27-048"
+          candidates={[{ instanceId: "stegomon-top", cardId: "BT27-048", zone: "battle" }]}
+          allowsPick={() => true}
+          picks={[]}
+          min={0}
+          max={1}
+          triggerDetails={[]}
+          opponentSecurityCount={5}
+          onTogglePick={() => {}}
+          onRespond={() => {}}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.getByText(/^Use ＜Armor Purge＞\?/)).toBeTruthy();
+  },
+);

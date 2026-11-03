@@ -251,6 +251,7 @@ function buildSeatScopedApi(
         digiXrosMaterialLimits?: { candidateInstanceIds: string[]; max: number }[];
         /** Paid source cards that will enter trash before this DigiXros is placed. */
         digiXrosRuleTrashInstanceIds?: string[];
+        promptKey?: "armorPurge";
       },
     ): Promise<string[]> {
       const min = pickMinimum(ctx, opts.min, opts.max);
@@ -286,6 +287,7 @@ function buildSeatScopedApi(
           digiXrosRuleTrashInstanceIds: opts.digiXrosRuleTrashInstanceIds,
           ...provenance(ctx),
           ...(selectionGoal === undefined ? {} : { selectionGoal }),
+          ...(opts.promptKey !== undefined ? { promptKey: opts.promptKey } : {}),
           ...backOutPurpose(min, opts.min),
           ...(asksController && ctx.payingDeclinableCost === true ? { declinesCost: true } : {}),
         },

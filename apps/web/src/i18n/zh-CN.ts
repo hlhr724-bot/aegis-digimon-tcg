@@ -1504,6 +1504,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "要发动 Partition 吗？",
   "overlay.activateBlitzPrompt": "要发动进击吗？",
   "overlay.digivolveHostPrompt": "选择要进化的卡牌。",
+  "overlay.armorPurgePrompt": "使用＜装甲解除＞？选择此数码宝贝以舍弃其最上方的卡牌并防止消灭，或跳过让其被消灭。",
   "overlay.attackAlreadyResolving": "本次攻击处理中，无法开始另一次攻击。",
   "overlay.deckTop": "卡组顶",
   "overlay.deckBottom": "卡组底",

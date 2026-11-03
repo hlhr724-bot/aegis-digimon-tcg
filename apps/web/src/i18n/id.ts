@@ -1577,6 +1577,8 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "Apakah Anda ingin mengaktifkan Partition?",
   "overlay.activateBlitzPrompt": "Apakah Anda ingin mengaktifkan Blitz?",
   "overlay.digivolveHostPrompt": "Pilih kartu yang akan digivolve.",
+  "overlay.armorPurgePrompt":
+    "Gunakan ＜Armor Purge＞? Pilih Digimon ini untuk membuang kartu teratasnya ke Trash dan mencegah Delete, atau lewati agar Digimon ini terkena Delete.",
   "overlay.attackAlreadyResolving": "Serangan lain tidak dapat dimulai saat serangan ini sedang diproses.",
   "overlay.deckTop": "Bagian atas deck",
   "overlay.deckBottom": "Bagian bawah deck",

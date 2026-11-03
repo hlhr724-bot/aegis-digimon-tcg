@@ -218,6 +218,7 @@ export function DecisionPrompts({
           sourceCardId={sourceCardId}
           prompt={
             (decision.options?.promptKey === "digivolveHost" ? t("overlay.digivolveHostPrompt") : undefined) ??
+            (decision.options?.promptKey === "armorPurge" ? t("overlay.armorPurgePrompt") : undefined) ??
             playerFacingPromptText(decision.promptText, decision.kind) ??
             (min === max
               ? t("overlay.selectCardsSubtitle", { count: max })

@@ -1469,6 +1469,8 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "Vuoi attivare Partition?",
   "overlay.activateBlitzPrompt": "Vuoi attivare Blitz?",
   "overlay.digivolveHostPrompt": "Scegli la carta che digievolverà.",
+  "overlay.armorPurgePrompt":
+    "Usare ＜Armor Purge＞? Seleziona questo Digimon per scartare la sua carta in cima ed evitare l'eliminazione, oppure salta per lasciarlo eliminare.",
   "overlay.attackAlreadyResolving": "Non puoi iniziare un altro attacco mentre questo attacco è in corso.",
   "overlay.deckTop": "Cima del mazzo",
   "overlay.deckBottom": "Fondo del mazzo",
