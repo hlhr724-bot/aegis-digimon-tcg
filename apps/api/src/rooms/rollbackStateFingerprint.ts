@@ -29,6 +29,7 @@ export function rollbackStateFingerprint(engine: Pick<GameEngine, "state" | "ref
     "rollbackTurnSeat",
     "canUndoAction",
     "canRollbackTurn",
+    "guestApproval",
   ])
     delete json[key];
   for (const player of json.players as Record<string, unknown>[]) {

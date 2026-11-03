@@ -4036,6 +4036,7 @@ export class AegisRoom extends Room<{
       restored.roomCode = previous.roomCode;
       restored.spectatorCode = previous.spectatorCode;
       restored.series.assign(previous.series.toJSON());
+      restored.guestApproval = previous.guestApproval;
       restored.allowRollback = true;
       restored.rollbackRevision = previous.rollbackRevision + 1;
       for (const seat of [0, 1] as const) {

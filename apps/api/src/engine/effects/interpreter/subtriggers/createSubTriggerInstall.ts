@@ -1446,13 +1446,23 @@ export function createSubTriggerInstall({
  */
 const TRIGGER_SUBJECT_REFERENCE = /trigger|attacker|leaving|battleOpponent|sameTarget/i;
 
+const EVENT_PROVENANCE_CONDITIONS: ReadonlySet<string> = new Set([
+  "triggeredByEffect",
+  "triggerByYourEffect",
+  "triggerByYourDigimonEffect",
+  "triggerEnteredByEffect",
+  "triggerPlayedOrDigivolvedByEffect",
+  "triggerPlayedByEffectSource",
+  "triggerPlayedByDecode",
+]);
+
 function bodyRefersToTriggerSubject(actions: readonly Action[]): boolean {
   const references: string[] = [];
   JSON.stringify(actions, (key, value: unknown) => {
     if (key !== "attacker") {
       references.push(key);
     }
-    if (typeof value === "string" && value !== "triggeredByEffect") {
+    if (typeof value === "string" && !EVENT_PROVENANCE_CONDITIONS.has(value)) {
       references.push(value);
     }
     return value;
