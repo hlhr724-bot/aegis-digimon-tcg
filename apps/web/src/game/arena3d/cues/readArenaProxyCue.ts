@@ -11,6 +11,7 @@ type Params = {
 const DP_LOSS_SELECTOR = ".game-dp-pulse--debuff, .game-dp-pulse--debuffFatal";
 const DP_CHANGE_SELECTOR = ".game-dp-pulse";
 const LANDING_SELECTOR = ".game-card-landing";
+const SUMMONING_SELECTOR = ".game-summoning-ring";
 
 function readChannel(element: ArenaCueElement): ArenaCardChannelEntry | undefined {
   if (element.classList.contains("game-permanent--effect-source")) {
@@ -48,5 +49,6 @@ export function readArenaProxyCue({ element, offered }: Params): ArenaCardCue {
     shaking: element.classList.contains("game-permanent-shake"),
     landing: Boolean(element.querySelector(LANDING_SELECTOR)),
     offered,
+    summoning: Boolean(element.querySelector(SUMMONING_SELECTOR)),
   };
 }
