@@ -1,5 +1,49 @@
 [
   {
+    "version": "1.49.0-beta",
+    "releasedAt": "2026-11-03",
+    "summaryKey": "releases.1.49.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.49.0-beta.feature.armorPurge"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.feature.avatars"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.feature.bd01"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.feature.linkInfo"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.feature.arena3d"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.feature.connection"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.49.0-beta.fix.attackRedirect",
+        "issue": 6455
+      },
+      {
+        "textKey": "releases.1.49.0-beta.fix.battleSoftLock",
+        "issue": 6467
+      },
+      {
+        "textKey": "releases.1.49.0-beta.fix.cardLanguage"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.fix.droppedPlayers"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.fix.phoneBoard"
+      }
+    ]
+  },
+  {
     "version": "1.48.0-beta",
     "releasedAt": "2026-11-02",
     "summaryKey": "releases.1.48.0-beta.summary",

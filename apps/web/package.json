@@ -1,6 +1,6 @@
 {
   "name": "@aegis/web",
-  "version": "1.48.0-beta",
+  "version": "1.49.0-beta",
   "private": true,
   "description": "Aegis client: React + TypeScript + Vite. A pure function of synchronized state; sends intents, contains no rules.",
   "type": "module",
