@@ -88,7 +88,7 @@ export function buildSlotCompose({ slot, revision, apiEnvironment, network, stat
     services[`api${index}`] = {
       image: `aegis-api:${revision}`,
       restart: "unless-stopped",
-      cpus: 1.25,
+      cpus: 2,
       mem_limit: `${API_MEMORY_MIB}m`,
       stop_grace_period: "60s",
       environment: Object.fromEntries(

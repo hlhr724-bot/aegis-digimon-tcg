@@ -1,6 +1,7 @@
 import { BoardStyle } from "@/game/arena3d/boardStyle/BoardStyle";
 import { Arena3dField } from "@/game/arena3d/field/Arena3dField";
 import { Arena3dLayer } from "@/game/arena3d/field/Arena3dLayer";
+import { Arena3dUnavailableNotice } from "@/game/arena3d/fallback/Arena3dUnavailableNotice";
 import { createArenaFieldStore } from "@/game/arena3d/field/createArenaFieldStore";
 import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
 import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
@@ -666,6 +667,7 @@ export function BoardStage({
             flexDirection: "column",
           }}
         >
+          {arena3d ? null : <Arena3dUnavailableNotice />}
           {arena3d ? (
             <Arena3dLayer
               board={anchors.board}
@@ -727,6 +729,7 @@ export function BoardStage({
             handStripRef={anchors.opponentHandStrip}
             opponentName={opponentName}
             opponentAvatarId={opponent.avatarId}
+            opponentAvatarUrl={opponent.avatarUrl}
             opponentEquippedRankedTier={opponent.equippedRankedTier}
             opponentBotPersonaId={opponent.botPersonaId}
             viewerSeat={viewerSeat}
@@ -898,6 +901,7 @@ export function BoardStage({
             timer={state.matchTimer ? <MatchTimer state={state} seat={viewerSeat} /> : undefined}
             playerName={spectating ? viewerName : viewer.displayName || t("game.you")}
             playerAvatarId={viewer.avatarId}
+            playerAvatarUrl={viewer.avatarUrl}
             playerEquippedRankedTier={viewer.equippedRankedTier}
             playerBotPersonaId={viewer.botPersonaId}
             actingLabel={actingPlateKeys.viewer ? t(actingPlateKeys.viewer) : undefined}

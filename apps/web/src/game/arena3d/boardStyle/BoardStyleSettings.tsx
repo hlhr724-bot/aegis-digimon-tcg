@@ -3,9 +3,11 @@ import { ArenaLookSettings } from "@/design/ArenaLookSettings";
 import type { ArenaDeckColors } from "@/design/arenaPalette";
 import { Icons, type IconComponent } from "@/design/icons";
 import { playSound } from "@/design/sound";
+import { COARSE_POINTER_QUERY, useMediaQuery } from "@/design/useMediaQuery";
 import { ArenaEnvironmentSettings } from "@/game/arena3d/ArenaEnvironmentSettings";
 import { BoardStyle } from "@/game/arena3d/boardStyle/BoardStyle";
 import { boardStylePreference } from "@/game/arena3d/boardStyle/boardStylePreference";
+import { resolveBoardStyle } from "@/game/arena3d/boardStyle/resolveBoardStyle";
 import { isWebGlAvailable } from "@/game/arena3d/isWebGlAvailable";
 import { Arena3dQuality } from "@/game/arena3d/quality/Arena3dQuality";
 import { AUTO_ARENA_3D_QUALITY, type Arena3dQualityChoice } from "@/game/arena3d/quality/Arena3dQualityChoice";
@@ -72,44 +74,55 @@ function Arena3dQualitySettings() {
 export function BoardStyleSettings({ deckColors }: Props) {
   const { t } = useTranslation();
   const groupName = useId();
-  const selected = boardStylePreference.useStyle();
+  const preference = boardStylePreference.useStyle();
   const [webGlAvailable] = useState(isWebGlAvailable);
-  const arena3dChosen = selected === BoardStyle.ARENA_3D.value;
-  const arena3dActive = arena3dChosen && webGlAvailable;
+  const selected = resolveBoardStyle({ preference, webGlAvailable });
+  const arena3dActive = selected === BoardStyle.ARENA_3D.value;
+  const unsupportedNoteId = useId();
+  const touchDevice = useMediaQuery(COARSE_POINTER_QUERY);
 
   return (
     <div className="aegis-arena-look aegis-board-style">
       <fieldset className="aegis-arena-look__group">
         <legend className="aegis-arena-look__legend">{t("redesign.foundation.boardStyle.title")}</legend>
         <div className="aegis-arena-look__segments">
-          {STYLE_OPTIONS.map((option) => (
-            <label key={option.style} className="aegis-arena-look__segment">
-              <input
-                type="radio"
-                className="aegis-sr-only"
-                name={groupName}
-                value={option.style}
-                checked={option.style === selected}
-                onChange={() => {
-                  boardStylePreference.setStyle(option.style);
-                  playSound("select");
-                }}
-              />
-              <span className="aegis-arena-look__segment-icon" aria-hidden="true">
-                <option.icon size={16} />
-              </span>
-              <span>{t(option.labelKey)}</span>
-            </label>
-          ))}
+          {STYLE_OPTIONS.map((option) => {
+            const blocked = option.style === BoardStyle.ARENA_3D.value && !webGlAvailable;
+            return (
+              <label key={option.style} className="aegis-arena-look__segment">
+                <input
+                  type="radio"
+                  className="aegis-sr-only"
+                  name={groupName}
+                  value={option.style}
+                  checked={option.style === selected}
+                  disabled={blocked}
+                  aria-describedby={blocked ? unsupportedNoteId : undefined}
+                  onChange={() => {
+                    boardStylePreference.setStyle(option.style);
+                    playSound("select");
+                  }}
+                />
+                <span className="aegis-arena-look__segment-icon" aria-hidden="true">
+                  <option.icon size={16} />
+                </span>
+                <span>{t(option.labelKey)}</span>
+              </label>
+            );
+          })}
         </div>
-        {arena3dChosen ? (
+        {arena3dActive ? (
           <p className="aegis-arena-look__note">{t("redesign.foundation.boardStyle.arena3dDesc")}</p>
         ) : null}
-        {arena3dChosen && !webGlAvailable ? (
-          <p className="aegis-arena-look__note" role="status">
-            {t("redesign.foundation.boardStyle.unsupported")}
+        {webGlAvailable ? null : (
+          <p id={unsupportedNoteId} className="aegis-arena-look__note aegis-board-style__unsupported">
+            {t(
+              touchDevice
+                ? "redesign.foundation.boardStyle.unsupportedTouch"
+                : "redesign.foundation.boardStyle.unsupported",
+            )}
           </p>
-        ) : null}
+        )}
       </fieldset>
       {arena3dActive ? (
         <>

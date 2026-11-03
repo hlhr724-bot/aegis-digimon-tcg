@@ -2,6 +2,8 @@ export type ProcessMetricsReport = {
   intervalMs: number;
   processCpuCores: number;
   mainThreadUtilization: number;
+  eventLoopDelayP99Ms: number;
+  eventLoopDelayMaxMs: number;
   searchBusyCores: number;
   searchShareOfProcessCpu: number;
   searchesStarted: number;

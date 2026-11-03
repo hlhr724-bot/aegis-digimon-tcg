@@ -5,11 +5,14 @@ and, optionally, to a Discord channel. No third-party service is involved.
 
 ## What is captured
 
-| Source                         | Kind                 | Where                                                       |
-| ------------------------------ | -------------------- | ----------------------------------------------------------- |
-| Uncaught `window` error        | `error`              | `installClientErrorListeners`, installed in `main.tsx`      |
-| Unhandled promise rejection    | `unhandledRejection` | same                                                        |
-| React render error in a screen | `render`             | `ClientErrorBoundary` around the screen region in `App.tsx` |
+| Source                          | Kind                 | Where                                                       |
+| ------------------------------- | -------------------- | ----------------------------------------------------------- |
+| Uncaught `window` error         | `error`              | `installClientErrorListeners`, installed in `main.tsx`      |
+| Unhandled promise rejection     | `unhandledRejection` | same                                                        |
+| React render error in a screen  | `render`             | `ClientErrorBoundary` around the screen region in `App.tsx` |
+| 3D board fell back or restarted | `arena3dFallback`    | `reportArena3dFallback`; the message names the reason       |
+
+`arena3dFallback` is not a crash. It records why a player who chose the 3D board got the classic board, as `Arena 3D fallback: <reason>` with the reason `webglUnavailable`, `contextLost`, `restartFailed`, or `sceneCrashed`. See `apps/web/src/game/arena3d/ARENA_3D.md`.
 
 The boundary shows "Something went wrong" with a reload button. It is keyed by screen,
 so navigating to another screen also recovers.

@@ -5,6 +5,7 @@ import type { ForceAttackOptions } from "../context/primitives/index.js";
 import { canAttackerDeclare, canAttackTarget } from "../../combat/legality.js";
 import { AttackTargetScope } from "@aegis/shared/effects/ir/actions/AttackTargetScope";
 import { getForcedAttackCandidateIds } from "#api/engine/effects/verbs/getForcedAttackCandidateIds";
+import { isSameAttackTarget } from "#api/engine/combat/isSameAttackTarget";
 
 import type { PrimitivesContext } from "./context.js";
 
@@ -182,10 +183,20 @@ export function createCombatVerbs(pc: PrimitivesContext) {
    * (chosen by the source's controller). The reserved id `"player"` represents the
    * defending player, allowing cards that say "another opponent's Digimon or the player".
    */
+  const currentAttackTarget = (): AttackTarget | undefined =>
+    engine.combat?.isAttacking === true ? engine.combat.currentAttackTarget : undefined;
+
   const redirectAttack: Primitives["redirectAttack"] = async (candidatePermanentIds, opts) => {
     const combat = engine.combat;
     if (combat === undefined || !combat.isAttacking || isAttackTargetLocked()) return;
-    const candidates = candidatePermanentIds.filter((id) => id === "player" || access.permanentById(id) !== undefined);
+    const candidates = candidatePermanentIds.filter(
+      (id) =>
+        (id === "player" || access.permanentById(id) !== undefined) &&
+        !isSameAttackTarget(
+          combat.currentAttackTarget,
+          id === "player" ? { kind: "player" } : { kind: "permanent", permanentId: id },
+        ),
+    );
     if (candidates.length === 0) return;
     // The chooser is the source's controller by default; BT4-075 passes the opponent seat so
     // the DEFENDING player picks among their own unsuspended Digimon. When `optional`, the
@@ -227,5 +238,13 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     }
   };
 
-  return { forceAttack, canForceAttack, blitzAttack, isAttackResolving, isAttackTargetLocked, redirectAttack };
+  return {
+    forceAttack,
+    canForceAttack,
+    blitzAttack,
+    isAttackResolving,
+    isAttackTargetLocked,
+    currentAttackTarget,
+    redirectAttack,
+  };
 }

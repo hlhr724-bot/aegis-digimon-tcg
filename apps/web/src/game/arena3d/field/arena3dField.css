@@ -657,6 +657,56 @@
   translate: 0 -50% !important;
 }
 
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field[data-arena-layout="tall"]
+  .game-memory-coin:not(.game-memory-coin--marker)
+  .game-memory-coin__n {
+  display: none !important;
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field[data-arena-layout="tall"]
+  [data-arena-3d-row="you"]
+  .game-permanent
+  .game-source-badge {
+  top: 3px;
+  left: 3px;
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field[data-arena-layout="tall"]
+  [data-arena-3d-row="you"]
+  .game-permanent
+  .game-copies-badge {
+  top: 3px;
+  right: 3px;
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field[data-arena-layout="tall"]
+  [data-arena-3d-row="you"]
+  .game-permanent
+  > .card-ace-badge {
+  top: calc(var(--permanent-width, 116px) * 0.62);
+}
+
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field[data-arena-layout="tall"]
+  [data-arena-3d-row="you"]
+  .game-permanent
+  .game-keyword-badges {
+  top: 3px;
+  bottom: auto;
+  left: 45%;
+  right: 3px;
+}
+
+@media (max-height: 760px) {
+  .game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="tall"] .game-memory-coin--marker {
+    scale: 0.8;
+  }
+}
+
 @media (max-height: 520px) {
   .game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="short"] .game-end-turn-orb {
     min-width: 5rem;

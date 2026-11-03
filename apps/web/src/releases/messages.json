@@ -1,4 +1,76 @@
 {
+  "releases.1.49.0-beta.summary": {
+    "en": "Armor Purge now asks Use or Don't use, matches show your profile avatar, and BD01 cards arrive. Includes Arena 3D improvements, faster reconnects and rules fixes.",
+    "pt-BR": "O Armor Purge agora pergunta Usar ou Não usar, as partidas mostram o avatar do seu perfil e chegam cartas de BD01. Inclui melhorias na Arena 3D, reconexões mais rápidas e correções de regras.",
+    "es": "Armor Purge ahora pregunta Usar o No usar, las partidas muestran el avatar de tu perfil y llegan cartas de BD01. Incluye mejoras de la Arena 3D, reconexiones más rápidas y correcciones de reglas.",
+    "it": "Armor Purge ora chiede Usa o Non usare, le partite mostrano l'avatar del tuo profilo e arrivano le carte BD01. Include miglioramenti dell'Arena 3D, riconnessioni più rapide e correzioni alle regole."
+  },
+  "releases.1.49.0-beta.feature.armorPurge": {
+    "en": "＜Armor Purge＞ now asks Use or Don't use for the threatened Digimon, instead of asking you to pick the card.",
+    "pt-BR": "O ＜Armor Purge＞ agora pergunta Usar ou Não usar para o Digimon ameaçado, em vez de pedir que você escolha a carta.",
+    "es": "＜Armor Purge＞ ahora pregunta Usar o No usar para el Digimon amenazado, en lugar de pedirte que elijas la carta.",
+    "it": "＜Armor Purge＞ ora chiede Usa o Non usare per il Digimon minacciato, invece di chiederti di scegliere la carta."
+  },
+  "releases.1.49.0-beta.feature.avatars": {
+    "en": "Matches show the avatar from your profile, including uploaded and Discord avatars.",
+    "pt-BR": "As partidas mostram o avatar do seu perfil, incluindo avatares enviados e do Discord.",
+    "es": "Las partidas muestran el avatar de tu perfil, incluidos los avatares subidos y los de Discord.",
+    "it": "Le partite mostrano l'avatar del tuo profilo, compresi gli avatar caricati e quelli di Discord."
+  },
+  "releases.1.49.0-beta.feature.bd01": {
+    "en": "Adds BD01 Gemmon, Liskmon, Reptilimon and Kanata Hondo.",
+    "pt-BR": "Adiciona Gemmon, Liskmon, Reptilimon e Kanata Hondo de BD01.",
+    "es": "Añade Gemmon, Liskmon, Reptilimon y Kanata Hondo de BD01.",
+    "it": "Aggiunge Gemmon, Liskmon, Reptilimon e Kanata Hondo di BD01."
+  },
+  "releases.1.49.0-beta.feature.linkInfo": {
+    "en": "The card inspector shows the link effect, requirement, cost and DP of Digimon on the field.",
+    "pt-BR": "O inspetor de cartas mostra o efeito, o requisito, o custo e o DP de link dos Digimon em campo.",
+    "es": "El inspector de cartas muestra el efecto, el requisito, el coste y el DP de link de los Digimon en el campo.",
+    "it": "L'ispettore delle carte mostra l'effetto, il requisito, il costo e i DP di link dei Digimon in campo."
+  },
+  "releases.1.49.0-beta.feature.arena3d": {
+    "en": "Arena 3D restarts itself after a graphics error, explains why it falls back to the classic board, and can't be chosen in Settings when the browser has no WebGL.",
+    "pt-BR": "A Arena 3D reinicia sozinha após um erro gráfico, explica por que voltou ao tabuleiro clássico e não pode ser escolhida nas Configurações quando o navegador não tem WebGL.",
+    "es": "La Arena 3D se reinicia sola tras un error gráfico, explica por qué vuelve al tablero clásico y no se puede elegir en los Ajustes cuando el navegador no tiene WebGL.",
+    "it": "L'Arena 3D si riavvia da sola dopo un errore grafico, spiega perché torna al tabellone classico e non si può scegliere nelle Impostazioni quando il browser non ha WebGL."
+  },
+  "releases.1.49.0-beta.feature.connection": {
+    "en": "A lost connection during a match is detected in about 8 seconds instead of up to 16, so you reconnect sooner.",
+    "pt-BR": "Uma conexão perdida durante a partida é detectada em cerca de 8 segundos, em vez de até 16, para você reconectar mais rápido.",
+    "es": "Una conexión perdida durante la partida se detecta en unos 8 segundos en lugar de hasta 16, así que te reconectas antes.",
+    "it": "Una connessione persa durante la partita viene rilevata in circa 8 secondi invece che fino a 16, così ti riconnetti prima."
+  },
+  "releases.1.49.0-beta.fix.attackRedirect": {
+    "en": "Effects can no longer switch an attack to the Digimon it already targets, so they no longer trigger \"when the attack target changes\" effects by mistake.",
+    "pt-BR": "Efeitos não podem mais trocar o alvo de um ataque para o Digimon que já é o alvo, então não ativam mais por engano efeitos de \"quando o alvo do ataque mudar\".",
+    "es": "Los efectos ya no pueden cambiar el objetivo de un ataque al Digimon que ya es el objetivo, así que ya no activan por error efectos de \"cuando cambie el objetivo del ataque\".",
+    "it": "Gli effetti non possono più cambiare il bersaglio di un attacco nel Digimon che è già il bersaglio, quindi non attivano più per errore effetti \"quando il bersaglio dell'attacco cambia\"."
+  },
+  "releases.1.49.0-beta.fix.battleSoftLock": {
+    "en": "Effects that make Digimon battle no longer get stuck when the opponent has no Digimon.",
+    "pt-BR": "Efeitos que fazem Digimon batalhar não travam mais quando o oponente não tem Digimon.",
+    "es": "Los efectos que hacen combatir a los Digimon ya no se bloquean cuando el oponente no tiene Digimon.",
+    "it": "Gli effetti che fanno combattere i Digimon non si bloccano più quando l'avversario non ha Digimon."
+  },
+  "releases.1.49.0-beta.fix.cardLanguage": {
+    "en": "Live matches, public replays and community decks show cards in your card language, not the owner's.",
+    "pt-BR": "Partidas ao vivo, replays públicos e decks da comunidade mostram as cartas no seu idioma de cartas, e não no do dono.",
+    "es": "Las partidas en vivo, las repeticiones públicas y los mazos de la comunidad muestran las cartas en tu idioma de cartas, no en el del dueño.",
+    "it": "Le partite in diretta, i replay pubblici e i mazzi della community mostrano le carte nella tua lingua delle carte, non in quella del proprietario."
+  },
+  "releases.1.49.0-beta.fix.droppedPlayers": {
+    "en": "Players who drop out of a tournament after playing stay in the Players list with a Dropped out badge.",
+    "pt-BR": "Jogadores que saem de um torneio depois de jogar continuam na lista de Jogadores com o selo Desistiu.",
+    "es": "Los jugadores que abandonan un torneo después de jugar siguen en la lista de Jugadores con la insignia Abandonó.",
+    "it": "I giocatori che lasciano un torneo dopo aver giocato restano nell'elenco Giocatori con il badge Ritirato."
+  },
+  "releases.1.49.0-beta.fix.phoneBoard": {
+    "en": "On phones, the 3D board shows the summoning stars again, and the memory gauge no longer covers card badges.",
+    "pt-BR": "No celular, o tabuleiro 3D volta a mostrar as estrelas de invocação, e o medidor de memória não cobre mais os selos das cartas.",
+    "es": "En móviles, el tablero 3D vuelve a mostrar las estrellas de invocación y el medidor de memoria ya no tapa las insignias de las cartas.",
+    "it": "Sui telefoni, il tabellone 3D mostra di nuovo le stelle di evocazione e l'indicatore della memoria non copre più i badge delle carte."
+  },
   "releases.1.48.0-beta.summary": {
     "en": "Matches open with a VS intro, effect notices can be shorter and smaller, and tournaments show more detail. Includes 3D arena improvements on phones and rules fixes.",
     "pt-BR": "As partidas começam com uma introdução VS, os avisos de efeito podem ser mais curtos e menores, e os torneios mostram mais detalhes. Inclui melhorias da Arena 3D em celulares e correções de regras.",

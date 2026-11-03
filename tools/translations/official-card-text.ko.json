@@ -1,7 +1,7 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ko",
-  "catalogCards": 4562,
+  "catalogCards": 4566,
   "sourceCards": 3814,
   "translatedCards": 3595,
   "translatedFields": 5487,
@@ -7319,6 +7319,31 @@
     {
       "cardId": "BT27-071",
       "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BD01-02",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BD01-03",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BD01-05",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BD01-10",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BD01-10",
+      "field": "securityEffectText",
       "reason": "unavailable-source-card"
     }
   ],

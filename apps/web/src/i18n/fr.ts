@@ -1545,6 +1545,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "La sécurité de l'adversaire a augmenté",
   "overlay.liveDp": "DP actuels",
   "overlay.baseDp": "DP imprimé",
+  "overlay.linkDp": "DP de Link +{dp}",
   "overlay.keywords": "Mots-clés",
   "overlay.restrictions": "Restrictions",
   "overlay.heldDp": "{delta} DP bloqués tant qu'il est protégé",
@@ -1600,6 +1601,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "Voulez-vous activer Partition ?",
   "overlay.activateBlitzPrompt": "Voulez-vous activer Blitz ?",
   "overlay.digivolveHostPrompt": "Choisissez la carte qui va digivolver.",
+  "overlay.armorPurgePrompt": "Utiliser ＜Purge d'armure＞ ?",
   "overlay.attackAlreadyResolving": "Une autre attaque ne peut pas commencer pendant la résolution de cette attaque.",
   "overlay.deckTop": "Dessus du deck",
   "overlay.deckBottom": "Dessous du deck",
@@ -2504,7 +2506,14 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3dDesc":
     "Expérimental. Les cartes et les effets s'affichent en 3D et consomment plus de batterie.",
   "redesign.foundation.boardStyle.unsupported":
-    "Cet appareil ne peut pas afficher l'arène 3D, les parties utilisent donc le plateau classique.",
+    "3D désactivée : ce navigateur ne peut pas utiliser WebGL. Activez l'accélération matérielle dans les réglages du navigateur, puis rechargez la page.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D désactivée : le navigateur de cet appareil ne peut pas utiliser WebGL. Mettre à jour le navigateur ou en essayer un autre peut aider.",
+  "redesign.foundation.boardStyle.restoring": "Restauration du plateau 3D…",
+  "redesign.foundation.boardStyle.stopped": "La 3D s'est arrêtée sur cet appareil. Plateau classique affiché.",
+  "redesign.foundation.boardStyle.retry": "Réessayer",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "Ce navigateur ne peut pas exécuter la 3D. WebGL est peut-être désactivé. Plateau classique affiché.",
   "redesign.foundation.arena3dQuality.title": "Qualité 3D",
   "redesign.foundation.arena3dQuality.auto": "Automatique",
   "redesign.foundation.arena3dQuality.low": "Basse",

@@ -5,6 +5,7 @@ import { test, expect } from "./scenario-page";
 const SCENARIO = fixtureMetaletemonRedirectPlayer;
 const METAL_ETEMON = fixturePermanentId("own-metaletemon");
 const ATTACKER = fixturePermanentId("opponent-metaletemon-agumon");
+const ATTACKED = fixturePermanentId("own-attacked-digimon");
 
 const isRedirectPrompt = (payloadJson: string | undefined) =>
   (JSON.parse(payloadJson || "{}") as { candidateInstanceIds?: string[] }).candidateInstanceIds?.includes(
@@ -22,7 +23,7 @@ test.describe("MetalEtemon switches an attack to its own player", () => {
         {
           type: "attack",
           attackerPermanentId: ATTACKER,
-          target: { kind: "permanent", permanentId: METAL_ETEMON },
+          target: { kind: "permanent", permanentId: ATTACKED },
         },
         { type: "endPhase" },
       ],

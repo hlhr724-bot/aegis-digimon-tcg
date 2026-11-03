@@ -208,7 +208,39 @@ describe("tournament detail", () => {
     expect(within(standings).getByRole("columnheader", { name: "OMW%" })).toBeTruthy();
   });
 
-  it("lists only players who are still in the event", async () => {
+  it("keeps players who dropped after competing and marks them as dropped", async () => {
+    mockDetail({
+      status: "running",
+      participants: [
+        ...DETAIL.participants,
+        { id: "p-3", accountId: "acc-gone", kind: "human", displayName: "Gone Tamer", status: "dropped", seed: null },
+      ],
+      standings: [
+        {
+          participantId: "p-3",
+          rank: 2,
+          points: 0,
+          matchWinRate: 0,
+          opponentMatchWinRate: 0,
+          wins: 0,
+          losses: 1,
+          draws: 0,
+          byes: 0,
+        },
+      ],
+    });
+    renderDetail("acc-player", undefined, false, TournamentTab.PLAYERS.value);
+    const participants = (await screen.findByRole("heading", { name: "Players" })).closest(
+      ".aegis-panel",
+    ) as HTMLElement;
+    const items = within(participants).getAllByRole("listitem");
+    const dropped = items.at(-1) as HTMLElement;
+    expect(within(dropped).getByText("Gone Tamer")).toBeTruthy();
+    expect(within(dropped).getByText("Dropped out")).toBeTruthy();
+    expect(dropped.dataset.dropped).toBe("true");
+  });
+
+  it("hides players who withdrew before competing", async () => {
     mockDetail({
       participants: [
         ...DETAIL.participants,
@@ -221,7 +253,6 @@ describe("tournament detail", () => {
     ) as HTMLElement;
     expect(within(participants).getByText("Tamer One")).toBeTruthy();
     expect(within(participants).queryByText("Gone Tamer")).toBeNull();
-    expect(within(participants).queryByText("Dropped out")).toBeNull();
   });
 
   it("adds the actual start of each round to the schedule", async () => {

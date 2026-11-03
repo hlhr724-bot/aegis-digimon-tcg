@@ -814,6 +814,7 @@ Each API process logs `[aegis/api] process metrics` once a minute
 | `searchBusyCores`                                                            | Busy event-loop time of the live search workers divided by wall time |
 | `searchShareOfProcessCpu`                                                    | `searchBusyCores / processCpuCores`, capped at 1                     |
 | `mainThreadUtilization`                                                      | Main-thread event-loop utilization                                   |
+| `eventLoopDelayP99Ms`, `eventLoopDelayMaxMs`                                 | 99th-percentile and worst main-thread event-loop delay, in ms        |
 | `searchesStarted`, `searchesCompleted`                                       | Searches sent to a worker and answered                               |
 | `searchDeadlineFallbacks`, `searchCapacityFallbacks`, `searchErrorFallbacks` | Searches answered by the Standard fallback, by cause                 |
 | `rooms`, `botRooms`, `clients`                                               | Rooms owned by the process, rooms with a bot seat, connected clients |
@@ -821,6 +822,11 @@ Each API process logs `[aegis/api] process metrics` once a minute
 Worker busy time is wall time, not CPU time. When the container is throttled, a
 search can be busy without running, so the share is an upper bound. Bot work on the
 main thread (Standard evaluation, inference) is not counted as search.
+
+Event-loop delay is sampled every 10 ms, so an idle process reports about 10 ms. Values
+well above that mean rooms on the process wait to be served. Search worker threads run
+at nice 10 on Linux, so they yield CPU to the main thread; see
+[API CPU](../../docs/deployment-room-continuity.md#api-cpu).
 
 ## Seating and experiments
 
