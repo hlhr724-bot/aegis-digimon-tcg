@@ -115,6 +115,8 @@ describe("bounded Fragment parameters", () => {
     await settle(() => s.state.pendingDecision !== undefined);
     const refusal = s.state.pendingDecision!;
     expect(refusal.kind).toBe("selectCards");
+    expect(refusal.promptText).toContain("＜Fragment (3)＞");
+    expect(JSON.parse(refusal.payloadJson ?? "{}")).toMatchObject({ min: 0, max: 3 });
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",

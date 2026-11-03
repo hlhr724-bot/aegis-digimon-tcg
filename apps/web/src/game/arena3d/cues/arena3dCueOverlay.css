@@ -35,8 +35,7 @@
 }
 
 .game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-summoning-ring {
-  top: -8%;
-  height: 30%;
+  opacity: 0 !important;
 }
 
 .game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-dp-pulse {

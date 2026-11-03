@@ -60,6 +60,14 @@ const FRAGMENT_SHADER = `
       float grow = 1.0 - pow(1.0 - vProgress, 3.0);
       float fade = pow(1.0 - vProgress, 1.5);
       alpha = (getLine(distance, mix(0.03, 0.24, grow), 0.035) + exp(-outside * 9.0) * step(0.0, distance) * 0.3) * fade;
+    } else if (vKind > 2.5) {
+      float breath = 0.82 + 0.18 * sin(uTime * 1.6);
+      float ring = getLine(distance, 0.05, 0.016);
+      float glow = exp(-outside * 14.0) * step(0.0, distance);
+      float stars = pow(0.5 + 0.5 * cos(angle * 3.0 - uTime * 1.5), 28.0);
+      float twinkle = getLine(distance, 0.05, 0.03) * stars;
+      alpha = (ring * 0.55 * breath + glow * 0.2 * breath + twinkle * 0.95) * vStrength;
+      color = mix(vColor, vec3(1.0), twinkle * 0.45);
     } else {
       float settle = 1.0 - pow(1.0 - vProgress, 3.0);
       float reach = mix(0.42, 0.03, settle);

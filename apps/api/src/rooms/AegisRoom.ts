@@ -1022,7 +1022,7 @@ export class AegisRoom extends Room<{
       this.storyBattleId = battle.id;
       this.soloBattle = battle;
       if (battle.shuffleDecks) {
-        shuffleStoryDecks({ fixture: battle.fixture, seed });
+        shuffleStoryDecks({ fixture: battle.fixture, seed, randomKey });
       }
       this.scenarioFixture = battle.fixture;
       options.allowRollback = false;

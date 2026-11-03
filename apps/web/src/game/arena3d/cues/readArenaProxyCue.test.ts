@@ -63,4 +63,12 @@ describe("reading a field proxy's cue", () => {
 
     expect(cue).toMatchObject({ shaking: true, landing: true, offered: true, channel: undefined });
   });
+
+  it("reads the summoning ring a card wears while it cannot attack", () => {
+    const sick = readArenaProxyCue({ element: buildElement({ children: ["game-summoning-ring"] }), offered: false });
+    const ready = readArenaProxyCue({ element: buildElement({}), offered: false });
+
+    expect(sick.summoning).toBe(true);
+    expect(ready.summoning).toBe(false);
+  });
 });

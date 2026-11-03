@@ -95,7 +95,7 @@ export function createBaselinePolicy(): BotPolicy {
       if (request.kind === "selectCards" || request.kind === "chooseTargets") {
         const min = request.options?.min ?? 0;
         const instanceIds =
-          request.kind === "chooseTargets" && request.options?.allowedTargetCombinations !== undefined
+          request.options?.allowedTargetCombinations !== undefined
             ? (request.options.allowedTargetCombinations[0] ?? [])
             : (request.options?.candidateInstanceIds ?? []).slice(0, min);
         return {

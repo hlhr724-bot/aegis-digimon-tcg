@@ -438,6 +438,7 @@ export interface SelectionPort {
       selectionContext?: "attackTarget" | "partitionActivation" | "materialSaveActivation";
       /** Preview the full group while a single candidate represents activating the keyword. */
       visibleInstanceIds?: string[];
+      allowedTargetCombinations?: string[][];
       selectionGoal?: DecisionSelectionGoal;
     },
   ): Promise<string[]>;

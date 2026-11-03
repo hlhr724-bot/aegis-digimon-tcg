@@ -1,26 +1,24 @@
 import type { Permanent, Seat } from "@aegis/shared";
-import { partitionClauseMatches, partitionSpecOf, type PartitionClause } from "../../combat/keywords.js";
+import { partitionSpecOf } from "../../combat/keywords.js";
 import type { RemovalCause } from "../EffectContext.js";
-import type { EffectContext } from "../EffectContext.js";
 import type { ReplacementSubscriptionInstead } from "../subtriggers.js";
 import type { PrimitivesContext } from "./context.js";
 import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
 import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
+import { listPartitionAssignments } from "#api/engine/effects/verbs/listPartitionAssignments";
+import { askPartitionMaterials } from "#api/engine/effects/verbs/askPartitionMaterials";
+import { PARTITION_MATERIAL_PROMPT } from "#api/engine/effects/verbs/partitionMaterialPrompt";
 
-function matchPartitionSources(
-  clauses: readonly PartitionClause[],
-  sources: readonly Permanent["stack"][number][],
-): string[] | undefined {
-  if (clauses.length === 0) return [];
-  for (const [index, source] of sources.entries()) {
-    if (!partitionClauseMatches(clauses[0]!, source.cardId)) continue;
-    const rest = matchPartitionSources(
-      clauses.slice(1),
-      sources.filter((_, sourceIndex) => sourceIndex !== index),
-    );
-    if (rest !== undefined) return [source.instanceId, ...rest];
-  }
-  return undefined;
+function listOfferedInstanceIds(assignments: readonly (readonly string[])[]): string[] {
+  return [...new Set(assignments.flat())];
+}
+
+function hasSameCards(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((instanceId) => right.includes(instanceId));
+}
+
+function hasAllCards(stack: Permanent["stack"], instanceIds: readonly string[]): boolean {
+  return instanceIds.every((instanceId) => stack.some((card) => card.instanceId === instanceId));
 }
 
 /** A live Partition clause and the exact materials its declaration requires. */
@@ -32,17 +30,21 @@ function partitionCandidate(permanent: Permanent) {
       : undefined;
   const spec = topSpec ?? (stackSource === undefined ? undefined : partitionSpecOf(stackSource.cardId));
   if (spec === undefined) return undefined;
-  const matchedInstanceIds = matchPartitionSources(spec, permanent.stack);
-  if (matchedInstanceIds === undefined) return undefined;
+  const assignments = listPartitionAssignments({ clauses: spec, sources: permanent.stack });
+  if (assignments.length === 0) {
+    return undefined;
+  }
   return {
     holderPermanentId: permanent.permanentId,
     seat: permanent.controllerSeat,
-    matchedInstanceIds,
+    assignments,
     partitionSourceInstanceId: topSpec === undefined ? stackSource!.instanceId : permanent.topCard.instanceId,
     partitionSourceCardId: topSpec === undefined ? stackSource!.cardId : permanent.topCard.cardId,
     partitionSourceRole: topSpec === undefined ? ("stack" as const) : ("top" as const),
   };
 }
+
+type PartitionCandidate = NonNullable<ReturnType<typeof partitionCandidate>>;
 
 /** CR 16-29-2: Partition competes with every other immediate would-leave effect. */
 export function partitionLeaveReplacements(
@@ -50,7 +52,12 @@ export function partitionLeaveReplacements(
   deps: {
     permanentById(id: string): Permanent | undefined;
     hasPartition(id: string): boolean;
-    select(ctx: EffectContext, candidate: NonNullable<ReturnType<typeof partitionCandidate>>): Promise<string[]>;
+    confirm(candidate: PartitionCandidate, assignment: readonly string[]): Promise<boolean>;
+    choose(
+      candidate: PartitionCandidate,
+      assignments: readonly (readonly string[])[],
+      min: number,
+    ): Promise<readonly string[]>;
     play(sourceInstanceId: string, materialIds: string[]): Promise<unknown>;
   },
 ): ReplacementSubscriptionInstead[] {
@@ -59,17 +66,21 @@ export function partitionLeaveReplacements(
     if (permanent?.topCard === undefined || permanent.inBreeding || !deps.hasPartition(id)) return [];
     const candidate = partitionCandidate(permanent);
     if (candidate === undefined) return [];
-    const stillAvailable = () => {
+    const liveAssignments = () => {
       const live = deps.permanentById(id);
-      return (
-        live !== undefined &&
-        deps.hasPartition(id) &&
-        (candidate.partitionSourceRole === "top"
+      if (live === undefined || !deps.hasPartition(id)) {
+        return [];
+      }
+      const sourceInRole =
+        candidate.partitionSourceRole === "top"
           ? live.topCard.instanceId === candidate.partitionSourceInstanceId
-          : live.stack.some((card) => card.instanceId === candidate.partitionSourceInstanceId)) &&
-        candidate.matchedInstanceIds.every((material) => live.stack.some((card) => card.instanceId === material))
-      );
+          : live.stack.some((card) => card.instanceId === candidate.partitionSourceInstanceId);
+      if (!sourceInRole) {
+        return [];
+      }
+      return candidate.assignments.filter((assignment) => hasAllCards(live.stack, assignment));
     };
+    const stillAvailable = () => liveAssignments().length > 0;
     return [
       {
         id: buildKeywordReactionId(KeywordReaction.PARTITION.value, id),
@@ -83,11 +94,19 @@ export function partitionLeaveReplacements(
           cause !== "byBattle" && !(cause === "byEffect" && seat === permanent.controllerSeat),
         appliesTo: (_ctx, leavingId) => leavingId === id && stillAvailable(),
         apply: async (ctx) => {
-          if (!stillAvailable() || ctx.presetOptionalAnswer === false) return;
-          const selected =
-            ctx.presetOptionalAnswer === true ? [candidate.matchedInstanceIds[0]!] : await deps.select(ctx, candidate);
-          if (selected.length === 0 || !stillAvailable()) return;
-          await deps.play(candidate.partitionSourceInstanceId, candidate.matchedInstanceIds);
+          if (!stillAvailable() || ctx.presetOptionalAnswer === false) {
+            return;
+          }
+          const materials = await askPartitionMaterials({
+            assignments: liveAssignments(),
+            required: ctx.presetOptionalAnswer === true,
+            confirm: (assignment) => deps.confirm(candidate, assignment),
+            choose: (assignments, min) => deps.choose(candidate, assignments, min),
+          });
+          if (materials === undefined || !liveAssignments().some((assignment) => hasSameCards(assignment, materials))) {
+            return;
+          }
+          await deps.play(candidate.partitionSourceInstanceId, materials);
         },
       },
     ];
@@ -114,18 +133,7 @@ export function createPartitionReactions(pc: PrimitivesContext) {
         if (cause === "byEffect" && resolvingSeat === perm.controllerSeat) return undefined;
         return partitionCandidate(perm);
       })
-      .filter(
-        (
-          candidate,
-        ): candidate is {
-          holderPermanentId: string;
-          seat: Seat;
-          matchedInstanceIds: string[];
-          partitionSourceInstanceId: string;
-          partitionSourceCardId: string;
-          partitionSourceRole: "top" | "stack";
-        } => candidate !== undefined,
-      );
+      .filter((candidate): candidate is PartitionCandidate => candidate !== undefined);
   }
 
   function captureReturns(
@@ -147,46 +155,59 @@ export function createPartitionReactions(pc: PrimitivesContext) {
   }
 
   async function resolve(candidates: ReturnType<typeof capture>, movedInstanceIds: readonly string[] = []) {
-    for (const {
-      holderPermanentId,
-      seat,
-      matchedInstanceIds,
-      partitionSourceInstanceId,
-      partitionSourceCardId,
-      partitionSourceRole,
-    } of candidates) {
+    for (const candidate of candidates) {
+      const { holderPermanentId, seat, partitionSourceInstanceId, partitionSourceCardId, partitionSourceRole } =
+        candidate;
       const survivingHolder = access.permanentById(holderPermanentId);
-      const allMovedToLooseZone = matchedInstanceIds.every((id) => movedInstanceIds.includes(id));
       const partitionSourceStillInRole =
         partitionSourceRole === "top"
           ? survivingHolder?.topCard?.instanceId === partitionSourceInstanceId
           : survivingHolder?.stack.some((card) => card.instanceId === partitionSourceInstanceId) === true;
-      const allStillUnderSurvivingHolder =
-        survivingHolder !== undefined &&
-        partitionSourceStillInRole &&
-        matchedInstanceIds.every((id) => survivingHolder.stack.some((card) => card.instanceId === id));
-      if (!allMovedToLooseZone && !allStillUnderSurvivingHolder) continue;
-      const chosen = await engine.ask.selectInstances(
-        seat,
-        [matchedInstanceIds[0]!],
-        0,
-        1,
-        "＜Partition＞: play the specified digivolution cards without paying their costs?",
-        {
-          sourceCardId: partitionSourceCardId,
-          sourceInstanceId: partitionSourceInstanceId,
-          selectionContext: "partitionActivation",
-          visibleInstanceIds: matchedInstanceIds,
-        },
+      const available = candidate.assignments.filter(
+        (assignment) =>
+          assignment.every((id) => movedInstanceIds.includes(id)) ||
+          (survivingHolder !== undefined &&
+            partitionSourceStillInRole &&
+            hasAllCards(survivingHolder.stack, assignment)),
       );
-      if (chosen.length === 0) continue;
+      if (available.length === 0) {
+        continue;
+      }
+      const provenance = { sourceCardId: partitionSourceCardId, sourceInstanceId: partitionSourceInstanceId };
+      const materials = await askPartitionMaterials({
+        assignments: available,
+        required: false,
+        confirm: async (assignment) =>
+          (
+            await engine.ask.selectInstances(
+              seat,
+              [assignment[0]!],
+              0,
+              1,
+              "＜Partition＞: play the specified digivolution cards without paying their costs?",
+              { ...provenance, selectionContext: "partitionActivation", visibleInstanceIds: [...assignment] },
+            )
+          ).length > 0,
+        choose: (assignments, min) =>
+          engine.ask.selectInstances(
+            seat,
+            listOfferedInstanceIds(assignments),
+            min,
+            assignments[0]!.length,
+            PARTITION_MATERIAL_PROMPT,
+            { ...provenance, allowedTargetCombinations: assignments.map((assignment) => [...assignment]) },
+          ),
+      });
+      if (materials === undefined) {
+        continue;
+      }
       // Q2860: Partition plays from digivolution cards even after the holder's deletion trashed them.
       if (engine.playForKeywordEffect) {
-        await engine.playForKeywordEffect(partitionSourceInstanceId, matchedInstanceIds, {
+        await engine.playForKeywordEffect(partitionSourceInstanceId, materials, {
           playedFromZone: "digivolutionCards",
         });
       } else {
-        await pc.fx.playInstances(matchedInstanceIds, { payCost: false, playedFromZone: "digivolutionCards" });
+        await pc.fx.playInstances(materials, { payCost: false, playedFromZone: "digivolutionCards" });
       }
     }
   }
