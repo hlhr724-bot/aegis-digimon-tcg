@@ -1179,7 +1179,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "USA",
   "game.dragIntent.attack": "ATTACCA",
   "game.matchLog": "Registro della partita",
-  "game.matchLogUnread": "Registro della partita, {count} nuove",
   "game.matchLogExpand": "Espandi registro della partita",
   "game.matchLogDrag": "Trascina per spostare",
   "settings.matchLogDisplay": "Visualizzazione del registro",

@@ -1286,7 +1286,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "GUNAKAN",
   "game.dragIntent.attack": "SERANG",
   "game.matchLog": "Log pertandingan",
-  "game.matchLogUnread": "Log pertandingan, {count} baru",
   "game.matchLogExpand": "Perbesar log pertandingan",
   "game.matchLogDrag": "Seret untuk memindahkan",
   "settings.matchLogDisplay": "Tampilan log pertandingan",

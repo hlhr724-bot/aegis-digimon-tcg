@@ -1283,7 +1283,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "使用",
   "game.dragIntent.attack": "アタック",
   "game.matchLog": "対戦ログ",
-  "game.matchLogUnread": "対戦ログ、新着{count}件",
   "game.matchLogExpand": "対戦ログを拡大",
   "game.matchLogDrag": "ドラッグして移動",
   "settings.matchLogDisplay": "対戦ログの表示",

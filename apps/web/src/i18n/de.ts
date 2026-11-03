@@ -1315,7 +1315,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "VERWENDEN",
   "game.dragIntent.attack": "ANGRIFF",
   "game.matchLog": "Match-Protokoll",
-  "game.matchLogUnread": "Match-Protokoll, {count} neu",
   "game.matchLogExpand": "Match-Protokoll vergrößern",
   "game.matchLogDrag": "Zum Verschieben ziehen",
   "settings.matchLogDisplay": "Anzeige des Match-Protokolls",

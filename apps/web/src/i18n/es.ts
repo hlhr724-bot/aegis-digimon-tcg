@@ -1021,7 +1021,6 @@ export const es: Record<keyof typeof en, string> = {
   "game.dragIntent.use": "USAR",
   "game.dragIntent.attack": "ATACAR",
   "game.matchLog": "Registro de la partida",
-  "game.matchLogUnread": "Registro de la partida, {count} nuevas",
   "game.matchLogExpand": "Ampliar registro de la partida",
   "game.matchLogDrag": "Arrastra para mover",
   "settings.matchLogDisplay": "Visualización del registro",

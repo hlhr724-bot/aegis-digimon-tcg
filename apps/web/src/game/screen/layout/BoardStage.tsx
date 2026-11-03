@@ -49,7 +49,6 @@ import type { GameState, Permanent, PlayerState, Seat } from "@aegis/shared";
 import type { RevealedZones } from "../model/gameOutcome";
 import { canAttackPlayerWith, canAttackWith, otherSeat } from "../../boardModel";
 import type { LogEntry, LogLine } from "@/game/log/LogEntry";
-import { useUnreadLogCount } from "@/game/log/useUnreadLogCount";
 import type { SeatNames } from "@/game/log/SeatNames";
 import type { SeatAvatars } from "@/game/log/SeatAvatars";
 import { intents } from "../../../net/intents";
@@ -312,7 +311,6 @@ export function BoardStage({
   useBreedingTransferOrigins(anchors.board);
   useFieldShatterOrigins(anchors.board);
   const other = otherSeat(viewerSeat);
-  const logUnread = useUnreadLogCount({ entries: readouts.logEntries, open: overlays.historyOpen });
   const matchLogDisplay = useMatchLogDisplay();
   const showsFixedLog = matchLogDisplay.showsPanel && !layout.narrowGameLayout;
   const shownNarration = matchLogDisplay.showsPopups || layout.narrowGameLayout ? cues.narration : HIDDEN_NARRATION;
@@ -766,7 +764,6 @@ export function BoardStage({
             onToggleChat={chat ? chatWindow.toggle : undefined}
             chatOpen={chatWindow.open}
             chatUnread={chatWindow.unread}
-            logUnread={logUnread}
             gameOver={state.gameOver}
             onSurrender={
               spectating || state.gameOver ? () => onLeaveSpectator?.() : () => overlays.setSurrenderConfirmOpen(true)

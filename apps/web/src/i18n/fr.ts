@@ -1306,7 +1306,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "UTILISER",
   "game.dragIntent.attack": "ATTAQUE",
   "game.matchLog": "Journal du match",
-  "game.matchLogUnread": "Journal du match, {count} nouvelle(s)",
   "game.matchLogExpand": "Agrandir le journal du match",
   "game.matchLogDrag": "Faites glisser pour déplacer",
   "settings.matchLogDisplay": "Affichage du journal",
