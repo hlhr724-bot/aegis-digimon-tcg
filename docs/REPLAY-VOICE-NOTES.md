@@ -41,7 +41,7 @@ the viewer's device and never uploads it. It does not solve server storage.
    `friend_replay_files`. Larger volumes would need object storage with
    server-side encryption and signed, short-lived download URLs.
 6. **Serving.** Downloads go through the API, which rechecks the same access
-   rules as `GET /replay-annotations/:matchId`. Responses send
+   rules as `GET /replays/annotations/:matchId`. Responses send
    `Cache-Control: private, no-store` and `Content-Disposition: attachment`.
 7. **Retention.** The annotation cleanup job also removes voice notes, and
    account deletion cascades.

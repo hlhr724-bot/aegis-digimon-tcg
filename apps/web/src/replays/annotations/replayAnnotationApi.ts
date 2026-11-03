@@ -6,7 +6,7 @@ import { request } from "@/account/client";
 type MarkerInput = { frameIndex: number; turn: number; emoji: string };
 type NoteInput = { frameIndex: number; turn: number; text: string };
 
-const annotationsPath = (matchId: string) => `/replay-annotations/${encodeURIComponent(matchId)}`;
+const annotationsPath = (matchId: string) => `/replays/annotations/${encodeURIComponent(matchId)}`;
 const itemPath = (matchId: string, kind: "markers" | "notes", id: string) =>
   `${annotationsPath(matchId)}/${kind}/${encodeURIComponent(id)}`;
 
