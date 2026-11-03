@@ -19,6 +19,8 @@ output
 replays
 data
 !data/kb/banlist.json
+!data/kb/qa.json
+!data/kb/errata.json
 apps/web/e2e
 apps/web/test
 apps/api/logs

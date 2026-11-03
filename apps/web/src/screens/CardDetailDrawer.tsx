@@ -22,6 +22,7 @@ import { CardFull } from "../design/cards";
 import { formLabel, kindOf } from "../design/theme";
 import { useTranslation } from "../i18n";
 import { isBetaCard } from "@/screens/isBetaCard";
+import { CardRulingsSection } from "@/rulings/CardRulingsSection";
 import "./cardLibrary.css";
 
 /* ---------- the shared right detail drawer ---------- */
@@ -170,6 +171,7 @@ export function CardDetailDrawer({
             tone="security"
           />
         </I18nContext.Provider>
+        <CardRulingsSection cardId={cardId} />
         {footer}
       </div>
     </aside>
