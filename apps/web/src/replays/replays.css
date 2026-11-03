@@ -553,15 +553,22 @@
     display: none;
   }
   .replay-player__heading {
-    padding: 4px 8px 4px 4px;
-    gap: 6px;
-    max-width: calc(100% - 120px);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
   }
-  .replay-player__heading > button {
+  .replay-player .replay-player__heading > .aegis-button {
     flex: none;
-    width: 40px;
+    width: 44px;
+    height: 44px;
     min-height: 44px;
     padding: 0;
+    border: 1px solid var(--ds-line);
+    border-radius: 12px;
+    background: var(--ds-sheet);
+    color: var(--ds-text);
+    box-shadow: 0 4px 24px rgb(0 0 0 / 10%);
   }
   .replay-player__heading h1 {
     position: absolute;
