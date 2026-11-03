@@ -109,6 +109,54 @@ effects, resolves them one at a time, and opens typed decisions when player
 input is required. Continuous effects are recomputed from active sources rather
 than stored as permanent mutations.
 
+### Skipping unchanged recomputes
+
+The engine asks for a continuous recompute at many points, including before and
+after every timing window, even when nothing happened in between. In bot
+rollouts about two thirds of those requests find nothing changed, and the
+recompute is about 40% of rollout CPU. Search rollout engines (restored by
+`runReplayContinuation`) set `searchRollout`, and
+`recomputeContinuousEffects` (`engine/gameEngine/continuousPass.ts`) then skips
+a request when its inputs match the last completed recompute. Live matches and
+replays never skip.
+
+- **Mutation clock** (`engine/mutationClock/`). One process-wide counter goes up
+  on every tracked schema write (the Colyseus `ChangeTree` recording methods)
+  and on every call to a ledger method. Ledger methods count as writes unless
+  they are listed in `LEDGER_READ_ONLY_MEMBERS`. A few hot sweeps count only
+  when they actually remove or flag something. New ledger methods therefore
+  count as writes by default. The clock is installed the first time a skipping
+  engine recomputes, so processes without searches never pay for it.
+- **Controller context.** The combat, turn and decision controllers, and a few
+  engine depth fields, append their relevant values to the key.
+- **Rules for skipping.** The recompute is not in flight or queued, the key is
+  unchanged, and the last recompute published if this one must publish. The key
+  is stored after the recompute finishes, so it includes the recompute's own
+  writes. It is not stored if another async flow wrote during the last pass, or
+  if the recompute changed the number of non-continuous subscriptions. Some hand
+  watchers are re-added as non-continuous entries on every recompute, so such a
+  recompute is not idempotent and must keep running.
+- **Watcher identity.** A real recompute re-installs every continuous watcher
+  under a fresh id, and once-per-timing bookkeeping and armed-watcher lists
+  observe that. A skip therefore renews the ids of continuous subscriptions and
+  replacements (`renewContinuousIdentities`). It does not recreate the closures
+  a watcher captured at install time. Two recorded replays still diverged when
+  live engines skipped with this renewal, which is why live engines do not skip.
+- **Verification.** `AEGIS_VERIFY_CONTINUOUS_SKIPS=1` makes every API test run
+  each would-be skip on every engine anyway and fail if the state or a ledger
+  would change. `continuousRecomputeSkip.test.ts` always does this for two full
+  bot matches.
+
+Rollout engines also save work that no observer needs. A continuous pass reuses
+the continuous effects it built for a card source until the card's effect module
+changes (`continuousEffectsBySource`). Publishing skips three projections that
+only clients read: once-per-turn markers, field effect summaries and Negamon
+play hints.
+
+A missed write path would make a rollout skip a recompute it needed. When you
+add engine state that a static effect can read, make sure its writes go through
+the schema or a ledger method, or add it to the key.
+
 ### Trigger sequencing
 
 One game event produces one pool of triggers, resolved by a single loop:

@@ -65,6 +65,8 @@ import { SubTriggerRegistry, type SubTriggerSubscription } from "./effects/subtr
 import { type CardStateLookup } from "./cards/CardSource.js";
 import { UseTracker } from "./effects/kernel.js";
 import type { CardSource } from "./effects/CardSource.js";
+import type { Effect } from "./effects/Effect.js";
+import type { EffectModule } from "./effects/EffectModule.js";
 import type { CollectedEffect } from "./effects/collect.js";
 import type {
   EffectContext,
@@ -358,6 +360,9 @@ export class GameEngine {
   recomputeInFlight: Promise<void> | undefined;
   /** Coalesces external recompute requests that arrive while a pass is rebuilding the ledgers. */
   recomputeQueued = false;
+  searchRollout = false;
+  continuousRecomputeKey: unknown[] | undefined = undefined;
+  continuousRecomputePublished = false;
 
   /**
    * Cards linked since the last over-limit rule check (fed by the link verb through
@@ -619,6 +624,7 @@ export class GameEngine {
    * fresh instance (setup.ts, primitives' token creation), never re-assigned on a live one.
    */
   readonly cardSourceByInstance = new WeakMap<CardInstance, CardSource>();
+  readonly continuousEffectsBySource = new WeakMap<CardSource, { module: EffectModule; effects: readonly Effect[] }>();
 
   /** Guards each immediate prevention from reactivating during its own resolution. */
   preventReentryGuard = { activeReplacementKeys: new Set<string>() };

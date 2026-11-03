@@ -112,6 +112,10 @@ export class DecisionManager {
     return { sequence: this.seq };
   }
 
+  appendContinuousRecomputeContext(key: unknown[]): void {
+    key.push(this.seq, this.open !== undefined);
+  }
+
   restoreRuntimeState(state: unknown): void {
     this.assertSnapshotBoundary();
     if (

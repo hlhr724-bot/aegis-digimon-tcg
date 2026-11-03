@@ -7,6 +7,7 @@ import { getEffectModule } from "../effects/registry.js";
 import { grantedTokenEffectsForTiming } from "../effects/interpreter.js";
 import type { CardSource } from "../effects/CardSource.js";
 import type { Effect } from "../effects/Effect.js";
+import type { EffectModule } from "../effects/EffectModule.js";
 import type { EffectContext, DecisionApi } from "../effects/EffectContext.js";
 import { sameNumericMap } from "./schemaSync.js";
 import { listCandidateInstances } from "./ruleProcess.js";
@@ -15,6 +16,10 @@ import type { GameEngine } from "../GameEngine.js";
 import { runWithPreparedCardLocation } from "#api/engine/effects/runWithPreparedCardLocation";
 import { nestedTriggerSourceStillResident } from "#api/engine/gameEngine/subTriggers";
 import { applyEntryGrants } from "#api/engine/gameEngine/applyEntryGrants";
+import { continuousSkipVerifier } from "#api/engine/mutationClock/continuousSkipVerifier";
+import { engineMutationClock } from "#api/engine/mutationClock/engineMutationClock";
+import { installLedgerMutationClock } from "#api/engine/mutationClock/installLedgerMutationClock";
+import { installSchemaMutationClock } from "#api/engine/mutationClock/installSchemaMutationClock";
 
 /**
  * Re-derive every continuous (persistent / `EffectTiming.None`) effect from a clean
@@ -41,11 +46,33 @@ import { applyEntryGrants } from "#api/engine/gameEngine/applyEntryGrants";
  * the continuous ledgers. Public so callers/tests can force a recompute at a decision point
  * the timing/boundary hooks do not already cover.
  */
-export async function recomputeContinuousEffects(engine: GameEngine, publish = true): Promise<void> {
+export async function recomputeContinuousEffects(
+  engine: GameEngine,
+  publish = true,
+  mayReuseLastRecompute = true,
+): Promise<void> {
   engine.pendingNestedTimingEffects = engine.pendingNestedTimingEffects.filter((pending) =>
     nestedTriggerSourceStillResident(engine, pending),
   );
   if (publish && engine.continuousScope.getStore() !== true) await applyEntryGrants(engine);
+  const verify = continuousSkipVerifier.verify;
+  if (mayReuseLastRecompute && (engine.searchRollout || verify !== undefined)) {
+    installSchemaMutationClock();
+    installLedgerMutationClock();
+    if (
+      engine.recomputeInFlight === undefined &&
+      !engine.recomputeQueued &&
+      unchangedSinceLastRecompute(engine, publish)
+    ) {
+      if (verify !== undefined) {
+        await verify({ engine, recompute: () => recomputeContinuousEffects(engine, publish, false) });
+        return;
+      }
+      engine.subTriggers.renewContinuousIdentities();
+      engine.continuousRecomputeKey = continuousRecomputeKey(engine);
+      return;
+    }
+  }
   if (engine.recomputeInFlight !== undefined) {
     if (engine.continuousScope.getStore() === true) return;
     engine.recomputeQueued = true;
@@ -60,63 +87,112 @@ export async function recomputeContinuousEffects(engine: GameEngine, publish = t
   // we don't open a nested DecisionManager request that collides with an already-open
   // dec-1 (#residual-gaps/nested-decision-crash).
   const noPromptAsk = createNoPromptDecisionApi();
+  engine.continuousRecomputeKey = undefined;
+  let foreignWritesAtPassStart = engineMutationClock.foreignWrites;
+  let nonContinuousAtPassStart = engine.subTriggers.nonContinuousCount();
   // Defer the driver by one microtask so `recomputeInFlight` is installed before the
   // first pass can recursively reach engine method through a static effect primitive.
-  const task = Promise.resolve().then(async () => {
-    do {
-      engine.recomputeQueued = false;
-      // Everything each pass records is a continuous effect, and the tier tag has to follow
-      // THIS async chain: a timing window resolving concurrently (a play whose trailing
-      // recompute is still in flight) must not read the tag from a shared field.
-      //
-      // A continuous gate may read a value produced by another continuous effect (for
-      // example, EX10-010's DP threshold on two facing copies). Re-derive from a clean tier
-      // each time so stale grants and duplicate watchers cannot accumulate, but seed each
-      // pass with the previous pass's DP deltas so the dependency chain can reach a fixpoint.
-      // The cap protects the resolver from a genuinely oscillating set of card effects.
-      const maxFixpointPasses = 32;
-      let seed = engine.projection.continuousDpSeeds();
-      let converged = false;
-      for (let pass = 0; pass < maxFixpointPasses; pass++) {
-        await engine.continuousScope.run(true, () => engine.runContinuousPass(noPromptAsk, seed, false));
-        engine.projection.updateContinuousDpSeeds();
-        const next = engine.projection.continuousDpSeeds();
-        if (sameNumericMap(seed, next)) {
-          converged = true;
-          break;
+  const task = engineMutationClock.recomputeScope.run(true, () =>
+    Promise.resolve().then(async () => {
+      do {
+        engine.recomputeQueued = false;
+        foreignWritesAtPassStart = engineMutationClock.foreignWrites;
+        nonContinuousAtPassStart = engine.subTriggers.nonContinuousCount();
+        // Everything each pass records is a continuous effect, and the tier tag has to follow
+        // THIS async chain: a timing window resolving concurrently (a play whose trailing
+        // recompute is still in flight) must not read the tag from a shared field.
+        //
+        // A continuous gate may read a value produced by another continuous effect (for
+        // example, EX10-010's DP threshold on two facing copies). Re-derive from a clean tier
+        // each time so stale grants and duplicate watchers cannot accumulate, but seed each
+        // pass with the previous pass's DP deltas so the dependency chain can reach a fixpoint.
+        // The cap protects the resolver from a genuinely oscillating set of card effects.
+        const maxFixpointPasses = 32;
+        let seed = engine.projection.continuousDpSeeds();
+        let converged = false;
+        for (let pass = 0; pass < maxFixpointPasses; pass++) {
+          await engine.continuousScope.run(true, () => engine.runContinuousPass(noPromptAsk, seed, false));
+          engine.projection.updateContinuousDpSeeds();
+          const next = engine.projection.continuousDpSeeds();
+          if (sameNumericMap(seed, next)) {
+            converged = true;
+            break;
+          }
+          seed = next;
         }
-        seed = next;
+        if (!converged) {
+          throw new Error(`continuous effects did not converge after ${maxFixpointPasses} passes`);
+        }
+        engine.modifiers.refreshReducedDp(engine.state);
+        if (publish) {
+          await publishContinuousState(engine);
+        }
+      } while (engine.recomputeQueued);
+      if (
+        engineMutationClock.foreignWrites === foreignWritesAtPassStart &&
+        engine.subTriggers.nonContinuousCount() === nonContinuousAtPassStart
+      ) {
+        engine.continuousRecomputeKey = continuousRecomputeKey(engine);
+        engine.continuousRecomputePublished = publish;
       }
-      if (!converged) {
-        throw new Error(`continuous effects did not converge after ${maxFixpointPasses} passes`);
-      }
-      engine.modifiers.refreshReducedDp(engine.state);
-      if (publish) {
-        await publishContinuousState(engine);
-      }
-    } while (engine.recomputeQueued);
-  });
+    }),
+  );
   engine.recomputeInFlight = task;
+  engineMutationClock.recomputesInFlight++;
   try {
     await task;
   } finally {
+    engineMutationClock.recomputesInFlight--;
     if (engine.recomputeInFlight === task) engine.recomputeInFlight = undefined;
   }
+}
+
+function unchangedSinceLastRecompute(engine: GameEngine, publish: boolean): boolean {
+  const previous = engine.continuousRecomputeKey;
+  if (previous === undefined || (publish && !engine.continuousRecomputePublished)) return false;
+  const current = continuousRecomputeKey(engine);
+  if (current.length !== previous.length) return false;
+  for (let index = 0; index < current.length; index++) {
+    if (!Object.is(current[index], previous[index])) return false;
+  }
+  return true;
+}
+
+function continuousRecomputeKey(engine: GameEngine): unknown[] {
+  const key: unknown[] = [
+    engineMutationClock.version,
+    engine.pendingNestedTimingEffects.length,
+    engine.effectResolutionDepth,
+    engine.optionResolutionDepth,
+    engine.optionMainDepth,
+    engine.securityCheckDepth,
+    engine.ruleProcessing,
+    [...engine.decoyCostPermanentIds].join(","),
+    [...engine.justLinked].join(","),
+    engine.attackStepPauseDepth,
+    engine.turnEndWindowSeat,
+    engine.payingPlayCost,
+    engine.effectBodyTokens.length,
+  ];
+  engine.combat.appendContinuousRecomputeContext(key);
+  engine.turnMachine.appendContinuousRecomputeContext(key);
+  engine.decisions.appendContinuousRecomputeContext(key);
+  return key;
 }
 
 /** Intermediate stack tops derive ledgers but publish memory thresholds/affordances at the final boundary. */
 async function publishContinuousState(engine: GameEngine): Promise<void> {
   engine.memory.commitTurnEndMinMemoryRecompute();
   engine.projection.syncActivatableEffects();
-  engine.projection.syncOncePerTurnUsage();
+  if (!engine.searchRollout) engine.projection.syncOncePerTurnUsage();
   engine.projection.syncKeywords();
   engine.projection.syncSummoningSickness();
   engine.projection.syncRestrictions();
-  engine.projection.syncFieldEffects();
+  if (!engine.searchRollout) engine.projection.syncFieldEffects();
   engine.projection.syncAttackTargets();
   engine.projection.syncHandAffordances();
   engine.projection.syncLinkTargets();
-  await engine.projection.syncNegamonPlayEffects();
+  if (!engine.searchRollout) await engine.projection.syncNegamonPlayEffects();
 }
 
 /**
@@ -179,7 +255,7 @@ async function derivePass(
     const module = getEffectModule(instance.cardId);
     if (module === undefined || module.hasTiming?.(EffectTiming.None) === false) continue;
     const source = cardSourceOf(engine, instance);
-    for (const effect of module.effectsForTiming(EffectTiming.None, source)) {
+    for (const effect of continuousEffectsOf(engine, module, source)) {
       continuousEffects.push({ source, effect });
     }
   }
@@ -330,4 +406,13 @@ function enterContinuousEffectSource(ctx: EffectContext, effect: Effect): () => 
     ctx.conferredToPermanentId ?? ctx.source.permanent()?.permanentId,
   );
   return () => ctx.fx.leaveEffectResolution?.();
+}
+
+function continuousEffectsOf(engine: GameEngine, module: EffectModule, source: CardSource): readonly Effect[] {
+  if (!engine.searchRollout) return module.effectsForTiming(EffectTiming.None, source);
+  const cached = engine.continuousEffectsBySource.get(source);
+  if (cached?.module === module) return cached.effects;
+  const effects = module.effectsForTiming(EffectTiming.None, source);
+  engine.continuousEffectsBySource.set(source, { module, effects });
+  return effects;
 }

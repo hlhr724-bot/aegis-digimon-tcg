@@ -22,6 +22,7 @@ const heavySuites = [
 const postgresLane = "src/db/postgres.atomicity*.test.ts";
 
 const testFiles = "src/**/*.test.ts";
+const verifyContinuousSkips = process.env.AEGIS_VERIFY_CONTINUOUS_SKIPS === "1";
 // pnpm test may forward a focused path to Vitest; in that case keep the original
 // file selectable rather than excluding it in favor of its generated batch.
 const focusedPath = process.argv.some((arg) => arg.startsWith("src/") || arg.startsWith("test-support/"));
@@ -85,10 +86,22 @@ export default defineConfig({
           execArgv: ["--import=./test-support/ts-loader.mjs", ...testExecArgv(process.argv)],
           experimental: { viteModuleRunner: false, nodeLoader: false },
           globalSetup: ["./test-support/global-setup.mjs"],
+          setupFiles: verifyContinuousSkips ? ["./test-support/continuous-skip-verification.mjs"] : [],
         },
       },
       ...(viteRunnerFiles.length
-        ? [{ extends: true, test: { name: "vite", include: viteRunnerFiles, exclude, isolate: true } }]
+        ? [
+            {
+              extends: true,
+              test: {
+                name: "vite",
+                include: viteRunnerFiles,
+                exclude,
+                isolate: true,
+                setupFiles: verifyContinuousSkips ? ["./test-support/continuous-skip-verification.mjs"] : [],
+              },
+            },
+          ]
         : []),
     ],
     // `forks` (process isolation) gives each file a full heap. `threads` shares a

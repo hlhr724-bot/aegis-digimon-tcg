@@ -145,6 +145,29 @@ export class CombatController {
     return this.attackHistory;
   }
 
+  appendContinuousRecomputeContext(key: unknown[]): void {
+    const attack = this.currentAttack;
+    key.push(
+      this.attackSequence,
+      attack?.attackerPermanentId,
+      attack?.attackerCardId,
+      attack?.attackerArtId,
+      attack?.seat,
+      attack?.target.kind,
+      attack?.target.kind === "permanent" ? attack.target.permanentId : undefined,
+      attack?.piercingTriggered,
+      this.endRequested,
+      this.battles.length,
+      this.openWindow !== undefined,
+      this.resolving,
+      this.settlementDepth,
+      this.completedCombat !== undefined,
+      this.pendingEndOfAttackTrigger !== undefined,
+      this.counterWindow !== undefined,
+      this.attackHistory.size,
+    );
+  }
+
   getRuntimeState(): CombatControllerState {
     this.assertSnapshotBoundary();
     return { attackSequence: this.attackSequence, attackedThisTurn: this.attackHistory };
