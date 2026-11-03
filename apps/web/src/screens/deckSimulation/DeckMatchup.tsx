@@ -12,6 +12,9 @@ import { expand, MAIN_TARGET, total, type CountMap } from "@/screens/deckCounts"
 import { CommunityOpponentPicker } from "@/screens/deckSimulation/CommunityOpponentPicker";
 import { matchupApi, type MatchupOpponentChoice } from "@/screens/deckSimulation/matchupApi";
 import { MatchupOpponentTable } from "@/screens/deckSimulation/MatchupOpponentTable";
+import { SimulationSelect } from "@/screens/deckSimulation/SimulationSelect";
+import { WinRateBand } from "@/screens/deckSimulation/WinRateBand";
+import { Icons } from "@/design/icons";
 import { ReplayViewer, useReplayFile } from "@/replays/ReplayViewer";
 import { usePolling } from "@/tournaments/hooks";
 import "@/screens/deckBuilder.css";
@@ -111,12 +114,28 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
     }
   };
 
+  const finished = job !== undefined && isFinished(job);
+  const progress = job === undefined || job.requestedGames === 0 ? 0 : job.completedGames / job.requestedGames;
+  const notices: string[] =
+    job === undefined
+      ? []
+      : [
+          job.invalidGames > 0 ? t("deckMatchup.invalid", { count: job.invalidGames }) : undefined,
+          job.status === MatchupJobStatus.TIMED_OUT.value
+            ? t("deckMatchup.timedOut", { done: job.completedGames })
+            : undefined,
+          job.status === MatchupJobStatus.FAILED.value ? t("deckMatchup.error.failed") : undefined,
+          job.status === MatchupJobStatus.CANCELLED.value
+            ? t("deckMatchup.cancelled", { done: job.completedGames })
+            : undefined,
+        ].filter((notice): notice is string => notice !== undefined);
+
   return (
-    <section className="deck-matchup" aria-label={t("deckMatchup.title")}>
+    <section className="deck-sim deck-matchup" aria-label={t("deckMatchup.title")}>
       <div className="deck-stat-label">{t("deckMatchup.title")}</div>
-      <div className="deck-draw-odds__controls">
-        <select
-          className="deck-draw-odds__picker"
+      <div className="deck-sim__controls">
+        <SimulationSelect
+          wrapperClassName="deck-sim__grow"
           aria-label={t("deckMatchup.opponent")}
           value={opponent}
           disabled={running}
@@ -129,9 +148,9 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
               {deck.name} · {deck.block}
             </option>
           ))}
-        </select>
-        <select
-          className="deck-draw-odds__picker deck-matchup__games"
+        </SimulationSelect>
+        <SimulationSelect
+          wrapperClassName="deck-matchup__games"
           aria-label={t("deckMatchup.games")}
           value={games}
           disabled={running}
@@ -142,100 +161,124 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
               {t(community ? "deckMatchup.gamesEach" : "deckMatchup.gameCount", { count })}
             </option>
           ))}
-        </select>
-        <button
-          type="button"
-          className="deck-draw-odds__toggle"
-          disabled={running || !deckReady}
-          onClick={() => void start()}
-        >
-          {t("deckMatchup.run")}
-        </button>
+        </SimulationSelect>
         {running ? (
-          <button type="button" className="deck-draw-odds__toggle" onClick={() => void cancel()}>
+          <button type="button" className="deck-sim-button" onClick={() => void cancel()}>
+            <Icons.X size={14} />
             {t("deckMatchup.cancel")}
           </button>
-        ) : null}
+        ) : (
+          <button
+            type="button"
+            className="deck-sim-button"
+            data-variant="primary"
+            disabled={!deckReady}
+            onClick={() => void start()}
+          >
+            <Icons.Play size={14} />
+            {t("deckMatchup.run")}
+          </button>
+        )}
       </div>
       {community ? (
         <CommunityOpponentPicker selected={communityDeckIds} disabled={running} onChange={setCommunityDeckIds} />
       ) : null}
       {error === undefined ? null : (
-        <p className="deck-draw-odds__hint" role="alert">
+        <p className="deck-sim__alert" role="alert">
           {t(error)}
         </p>
       )}
       {job === undefined ? null : (
         <div className="deck-matchup__result" aria-live="polite">
-          {job.status === MatchupJobStatus.QUEUED.value ? <p>{t("deckMatchup.queued")}</p> : null}
-          {job.status === MatchupJobStatus.RUNNING.value ? (
-            <p>{t("deckMatchup.running", { done: job.completedGames, total: job.requestedGames })}</p>
+          {running ? (
+            <div className="deck-matchup__progress">
+              <p>
+                {job.status === MatchupJobStatus.QUEUED.value
+                  ? t("deckMatchup.queued")
+                  : t("deckMatchup.running", { done: job.completedGames, total: job.requestedGames })}
+              </p>
+              <div className="deck-matchup__progress-track" aria-hidden="true">
+                <span style={{ width: percent(progress) }} />
+              </div>
+            </div>
           ) : null}
           {job.score !== null && job.interval !== null ? (
-            <>
-              <p className="deck-matchup__score">
-                {t("deckMatchup.score", { score: percent(job.score) })}
-                <span>
-                  {t("deckMatchup.interval", { low: percent(job.interval[0]), high: percent(job.interval[1]) })}
-                </span>
-              </p>
-              <div
-                className="deck-matchup__band"
-                role="img"
-                aria-label={t("deckMatchup.interval", {
-                  low: percent(job.interval[0]),
-                  high: percent(job.interval[1]),
-                })}
-              >
-                <span
-                  className="deck-matchup__band-range"
-                  style={{ left: percent(job.interval[0]), width: percent(job.interval[1] - job.interval[0]) }}
-                />
-                <span className="deck-matchup__band-point" style={{ left: percent(job.score) }} />
+            <div className="deck-matchup__summary" data-final={finished}>
+              <div className="deck-matchup__headline">
+                <div
+                  className="deck-matchup__score"
+                  role="group"
+                  aria-label={t("deckMatchup.score", { score: percent(job.score) })}
+                >
+                  <span className="deck-matchup__score-label">{t("deckMatchup.table.score")}</span>
+                  <span className="deck-matchup__score-value">{percent(job.score)}</span>
+                </div>
+                <p className="deck-matchup__record">
+                  {t("deckMatchup.record", { wins: job.wins, losses: job.losses, draws: job.draws })}
+                </p>
               </div>
-              <p>{t("deckMatchup.record", { wins: job.wins, losses: job.losses, draws: job.draws })}</p>
-            </>
+              <WinRateBand score={job.score} interval={job.interval} />
+              <p className="deck-sim__hint">
+                {t("deckMatchup.interval", { low: percent(job.interval[0]), high: percent(job.interval[1]) })}
+              </p>
+            </div>
           ) : null}
-          {job.invalidGames > 0 ? <p>{t("deckMatchup.invalid", { count: job.invalidGames })}</p> : null}
-          {job.status === MatchupJobStatus.TIMED_OUT.value ? (
-            <p>{t("deckMatchup.timedOut", { done: job.completedGames })}</p>
-          ) : null}
-          {job.status === MatchupJobStatus.FAILED.value ? <p>{t("deckMatchup.error.failed")}</p> : null}
-          {job.status === MatchupJobStatus.CANCELLED.value ? (
-            <p>{t("deckMatchup.cancelled", { done: job.completedGames })}</p>
-          ) : null}
+          {notices.map((notice) => (
+            <p key={notice} className="deck-sim__notice">
+              <Icons.CircleAlert size={14} />
+              {notice}
+            </p>
+          ))}
           {job.opponents.length > 1 ? <MatchupOpponentTable opponents={job.opponents} /> : null}
           {job.samples.length > 0 ? (
-            <ul className="deck-draw-odds__sensitivity" aria-label={t("deckMatchup.samples")}>
-              {job.samples.map((sample) => (
-                <li key={sample.index} className="deck-matchup__sample">
-                  {t(job.opponents.length > 1 ? "deckMatchup.sampleAgainst" : "deckMatchup.sample", {
-                    index: sample.index + 1,
-                    opponent: job.opponents[sample.opponentIndex]?.name ?? "",
-                    result: t(`deckMatchup.result.${sample.result}`),
-                    turns: sample.turns,
-                    order: t(sample.wentFirst ? "deckOdds.goingFirst" : "deckOdds.goingSecond"),
-                  })}
-                  <button
-                    type="button"
-                    className="deck-draw-odds__toggle"
-                    disabled={viewer.loading}
-                    onClick={() => void watch(sample.index)}
-                  >
-                    {t("deckMatchup.watch")}
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div className="deck-matchup__samples">
+              <div className="deck-sim__subhead">{t("deckMatchup.samples")}</div>
+              <ul aria-label={t("deckMatchup.samples")}>
+                {job.samples.map((sample) => (
+                  <li key={sample.index} className="deck-matchup__sample">
+                    <span className="deck-matchup__result-badge" data-result={sample.result}>
+                      {t(`deckMatchup.result.${sample.result}`)}
+                    </span>
+                    <span className="deck-matchup__sample-text">
+                      <span className="deck-matchup__sample-title">
+                        {job.opponents.length > 1
+                          ? t("deckMatchup.sampleTitleAgainst", {
+                              index: sample.index + 1,
+                              opponent: job.opponents[sample.opponentIndex]?.name ?? "",
+                            })
+                          : t("deckMatchup.sampleTitle", { index: sample.index + 1 })}
+                      </span>
+                      <span className="deck-matchup__sample-detail">
+                        {t("deckMatchup.sampleDetail", {
+                          turns: sample.turns,
+                          order: t(sample.wentFirst ? "deckOdds.goingFirst" : "deckOdds.goingSecond"),
+                        })}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      className="deck-sim-button"
+                      data-size="small"
+                      aria-label={t("deckMatchup.watchGame", { index: sample.index + 1 })}
+                      disabled={viewer.loading}
+                      onClick={() => void watch(sample.index)}
+                    >
+                      <Icons.PlayCircle size={14} />
+                      {t("deckMatchup.watchShort")}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ) : null}
         </div>
       )}
       {replayFailed || viewer.error !== undefined ? (
-        <p className="deck-draw-odds__hint" role="alert">
+        <p className="deck-sim__alert" role="alert">
           {t("deckMatchup.replayUnavailable")}
         </p>
       ) : null}
-      <p className="deck-draw-odds__note">{t("deckMatchup.note")}</p>
+      <p className="deck-sim__note">{t("deckMatchup.note")}</p>
       {viewer.replay === undefined
         ? null
         : createPortal(

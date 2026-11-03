@@ -5,6 +5,7 @@ export const deckOddsZhCN = {
   "deckOdds.removeKeyCard": "从关键卡中移除{card}",
   "deckOdds.goingFirst": "先攻",
   "deckOdds.goingSecond": "后攻",
+  "deckOdds.order": "先后手",
   "deckOdds.mulligan": "没抽到时更换手牌",
   "deckOdds.empty": "选择关键卡，查看每个回合前抽到它们的概率。",
   "deckOdds.openingShort": "手牌",

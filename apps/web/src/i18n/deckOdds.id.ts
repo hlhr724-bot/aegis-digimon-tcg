@@ -5,6 +5,7 @@ export const deckOddsId = {
   "deckOdds.removeKeyCard": "Hapus {card} dari kartu kunci",
   "deckOdds.goingFirst": "Jalan pertama",
   "deckOdds.goingSecond": "Jalan kedua",
+  "deckOdds.order": "Urutan main",
   "deckOdds.mulligan": "Mulligan jika tangan meleset",
   "deckOdds.empty": "Pilih kartu kunci untuk melihat peluang memilikinya di setiap giliran.",
   "deckOdds.openingShort": "Tangan",

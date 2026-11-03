@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { getCardDefinition } from "@aegis/shared";
+import { Icons } from "@/design/icons";
 import { useTranslation } from "@/i18n/useTranslation";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
@@ -9,6 +10,7 @@ import {
   MAX_KEY_CARDS,
   type DeckDrawOddsRow,
 } from "@/screens/deckSimulation/computeDeckDrawOdds";
+import { SimulationSelect } from "@/screens/deckSimulation/SimulationSelect";
 import type { CountMap } from "@/screens/deckCounts";
 import "@/screens/deckBuilder.css";
 
@@ -18,9 +20,8 @@ interface DeckDrawOddsProps {
 
 const DEFAULT_FOCUS_TURN = 3;
 
-function formatPercent(probability: number): string {
-  return `${Math.round(probability * 100)}%`;
-}
+const toPercent = (probability: number) => Math.round(probability * 100);
+const formatPercent = (probability: number) => `${toPercent(probability)}%`;
 
 export function DeckDrawOdds({ main }: DeckDrawOddsProps) {
   const { t } = useTranslation();
@@ -38,19 +39,17 @@ export function DeckDrawOdds({ main }: DeckDrawOddsProps) {
     .map((cardId) => ({ cardId, name: cardName(cardId) }))
     .sort((left, right) => left.name.localeCompare(right.name) || left.cardId.localeCompare(right.cardId));
   const turns = Array.from({ length: DRAW_ODDS_LAST_TURN + 1 }, (_, turn) => turn);
-  const rowLabel = (row: DeckDrawOddsRow) =>
-    row.kind === "card"
-      ? `${cardName(row.cardId!)} ×${row.copies}`
-      : row.kind === "combo"
-        ? t("deckOdds.allKeyCards")
-        : t("deckOdds.rookies", { count: row.copies });
+  const turnLabel = (turn: number) => (turn === 0 ? t("deckOdds.openingShort") : t("deckOdds.turnShort", { turn }));
+  const rowName = (row: DeckDrawOddsRow) =>
+    row.kind === "card" ? cardName(row.cardId!) : row.kind === "combo" ? t("deckOdds.allKeyCards") : undefined;
+  const sensitivityRows = odds.rows.filter((row) => row.curveWithOneMore !== undefined);
 
   return (
-    <section className="deck-draw-odds" aria-label={t("deckOdds.title")}>
+    <section className="deck-sim deck-draw-odds" aria-label={t("deckOdds.title")}>
       <div className="deck-stat-label">{t("deckOdds.title")}</div>
-      <div className="deck-draw-odds__controls">
-        <select
-          className="deck-draw-odds__picker"
+      <div className="deck-sim__controls">
+        <SimulationSelect
+          wrapperClassName="deck-sim__grow"
           aria-label={t("deckOdds.addKeyCard")}
           value=""
           disabled={activeKeyCards.length >= MAX_KEY_CARDS || candidates.length === 0}
@@ -65,16 +64,19 @@ export function DeckDrawOdds({ main }: DeckDrawOddsProps) {
               {candidate.name} ({candidate.cardId})
             </option>
           ))}
-        </select>
-        <div className="deck-draw-odds__toggles">
-          <button type="button" className="deck-draw-odds__toggle" onClick={() => setGoingFirst(!goingFirst)}>
-            {goingFirst ? t("deckOdds.goingFirst") : t("deckOdds.goingSecond")}
+        </SimulationSelect>
+        <div className="deck-segmented deck-sim__segmented" role="group" aria-label={t("deckOdds.order")}>
+          <button type="button" aria-pressed={goingFirst} onClick={() => setGoingFirst(true)}>
+            {t("deckOdds.goingFirst")}
           </button>
-          <label className="deck-draw-odds__check">
-            <input type="checkbox" checked={mulligan} onChange={(event) => setMulligan(event.target.checked)} />
-            {t("deckOdds.mulligan")}
-          </label>
+          <button type="button" aria-pressed={!goingFirst} onClick={() => setGoingFirst(false)}>
+            {t("deckOdds.goingSecond")}
+          </button>
         </div>
+        <label className="deck-sim__check">
+          <input type="checkbox" checked={mulligan} onChange={(event) => setMulligan(event.target.checked)} />
+          {t("deckOdds.mulligan")}
+        </label>
       </div>
       {activeKeyCards.length > 0 ? (
         <ul className="deck-draw-odds__chips">
@@ -86,17 +88,24 @@ export function DeckDrawOdds({ main }: DeckDrawOddsProps) {
                 aria-label={t("deckOdds.removeKeyCard", { card: cardName(cardId) })}
                 onClick={() => setKeyCardIds(activeKeyCards.filter((id) => id !== cardId))}
               >
-                {cardName(cardId)} ×
+                <span className="deck-draw-odds__chip-name">{cardName(cardId)}</span>
+                <Icons.X size={12} />
               </button>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="deck-draw-odds__hint">{t("deckOdds.empty")}</p>
+        <p className="deck-sim__hint">{t("deckOdds.empty")}</p>
       )}
       {odds.rows.length > 0 ? (
         <div className="deck-draw-odds__table-wrap">
           <table className="deck-draw-odds__table">
+            <colgroup>
+              <col className="deck-draw-odds__name-col" />
+              {turns.map((turn) => (
+                <col key={turn} />
+              ))}
+            </colgroup>
             <thead>
               <tr>
                 <th scope="col">
@@ -110,49 +119,65 @@ export function DeckDrawOdds({ main }: DeckDrawOddsProps) {
                       aria-pressed={turn === focusTurn}
                       onClick={() => setFocusTurn(turn)}
                     >
-                      {turn === 0 ? t("deckOdds.openingShort") : t("deckOdds.turnShort", { turn })}
+                      {turnLabel(turn)}
                     </button>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {odds.rows.map((row) => (
-                <tr key={row.key} data-kind={row.kind}>
-                  <th scope="row">{rowLabel(row)}</th>
-                  {row.curve.map((probability, turn) => (
-                    <td key={turn} data-focus={turn === focusTurn}>
-                      <span
-                        className="deck-draw-odds__bar"
-                        style={{ height: `${Math.round(probability * 100)}%` }}
-                        aria-hidden="true"
-                      />
-                      <span className="deck-draw-odds__value">{formatPercent(probability)}</span>
-                    </td>
-                  ))}
-                </tr>
-              ))}
+              {odds.rows.map((row) => {
+                const name = rowName(row);
+                return (
+                  <tr key={row.key} data-kind={row.kind}>
+                    <th scope="row">
+                      <span className="deck-draw-odds__row-label">
+                        <span className="deck-draw-odds__row-name">
+                          {name ?? t("deckOdds.rookies", { count: row.copies })}
+                        </span>
+                        {row.kind === "card" ? <span className="deck-draw-odds__copies">×{row.copies}</span> : null}
+                      </span>
+                    </th>
+                    {row.curve.map((probability, turn) => (
+                      <td
+                        key={turn}
+                        data-focus={turn === focusTurn}
+                        style={{ "--odds": toPercent(probability) } as CSSProperties}
+                      >
+                        {formatPercent(probability)}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       ) : null}
-      {odds.rows.some((row) => row.curveWithOneMore !== undefined) ? (
+      {sensitivityRows.length > 0 ? (
         <ul className="deck-draw-odds__sensitivity">
-          {odds.rows
-            .filter((row) => row.curveWithOneMore !== undefined)
-            .map((row) => (
+          {sensitivityRows.map((row) => {
+            const before = row.curve[focusTurn]!;
+            const after = row.curveWithOneMore![focusTurn]!;
+            return (
               <li key={row.key}>
-                {t("deckOdds.withOneMore", {
-                  card: cardName(row.cardId!),
-                  turn: focusTurn === 0 ? t("deckOdds.openingShort") : t("deckOdds.turnShort", { turn: focusTurn }),
-                  before: formatPercent(row.curve[focusTurn]!),
-                  after: formatPercent(row.curveWithOneMore![focusTurn]!),
-                })}
+                <span className="deck-draw-odds__delta" aria-hidden="true">
+                  +{toPercent(after) - toPercent(before)}
+                </span>
+                <span>
+                  {t("deckOdds.withOneMore", {
+                    card: cardName(row.cardId!),
+                    turn: turnLabel(focusTurn),
+                    before: formatPercent(before),
+                    after: formatPercent(after),
+                  })}
+                </span>
               </li>
-            ))}
+            );
+          })}
         </ul>
       ) : null}
-      <p className="deck-draw-odds__note">{t("deckOdds.note")}</p>
+      <p className="deck-sim__note">{t("deckOdds.note")}</p>
     </section>
   );
 }

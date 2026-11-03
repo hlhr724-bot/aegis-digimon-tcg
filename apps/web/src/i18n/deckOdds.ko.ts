@@ -5,6 +5,7 @@ export const deckOddsKo = {
   "deckOdds.removeKeyCard": "핵심 카드에서 {card} 제거",
   "deckOdds.goingFirst": "선공",
   "deckOdds.goingSecond": "후공",
+  "deckOdds.order": "턴 순서",
   "deckOdds.mulligan": "못 뽑은 패는 멀리건",
   "deckOdds.empty": "핵심 카드를 고르면 각 턴까지 뽑을 확률을 보여 줍니다.",
   "deckOdds.openingShort": "패",

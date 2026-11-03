@@ -36,7 +36,7 @@ export function CommunityOpponentPicker({ selected, disabled, onChange }: Commun
 
   return (
     <fieldset className="deck-matchup__community" disabled={disabled}>
-      <legend className="deck-draw-odds__hint">
+      <legend className="deck-sim__hint">
         {selected.length === 0
           ? t("deckMatchup.community.default", { count: COMMUNITY_MATCHUP_LIMITS.defaultOpponents })
           : t("deckMatchup.community.selected", {
@@ -44,22 +44,22 @@ export function CommunityOpponentPicker({ selected, disabled, onChange }: Commun
               max: COMMUNITY_MATCHUP_LIMITS.maxOpponents,
             })}
       </legend>
-      {failed ? <p className="deck-draw-odds__hint">{t("deckMatchup.community.unavailable")}</p> : null}
-      {decks === undefined && !failed ? (
-        <p className="deck-draw-odds__hint">{t("deckMatchup.community.loading")}</p>
-      ) : null}
+      {failed ? <p className="deck-sim__hint">{t("deckMatchup.community.unavailable")}</p> : null}
+      {decks === undefined && !failed ? <p className="deck-sim__hint">{t("deckMatchup.community.loading")}</p> : null}
       {decks !== undefined ? (
         <ul className="deck-matchup__community-list">
           {decks.map((deck) => (
             <li key={deck.id}>
-              <label className="deck-draw-odds__check">
+              <label className="deck-matchup__community-row">
                 <input
                   type="checkbox"
+                  aria-label={t("deckMatchup.community.deck", { name: deck.name, author: deck.author.displayName })}
                   checked={selected.includes(deck.id)}
                   disabled={!selected.includes(deck.id) && full}
                   onChange={() => toggle(deck.id)}
                 />
-                {t("deckMatchup.community.deck", { name: deck.name, author: deck.author.displayName })}
+                <span className="deck-matchup__community-name">{deck.name}</span>
+                <span className="deck-matchup__community-author">{deck.author.displayName}</span>
               </label>
             </li>
           ))}

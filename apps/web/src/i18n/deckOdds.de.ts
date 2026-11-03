@@ -5,6 +5,7 @@ export const deckOddsDe = {
   "deckOdds.removeKeyCard": "{card} aus den Schlüsselkarten entfernen",
   "deckOdds.goingFirst": "Als Erster",
   "deckOdds.goingSecond": "Als Zweiter",
+  "deckOdds.order": "Zugreihenfolge",
   "deckOdds.mulligan": "Mulligan ohne Treffer",
   "deckOdds.empty": "Wählen Sie Schlüsselkarten, um zu sehen, wie wahrscheinlich Sie sie bis zu jedem Zug haben.",
   "deckOdds.openingShort": "Hand",

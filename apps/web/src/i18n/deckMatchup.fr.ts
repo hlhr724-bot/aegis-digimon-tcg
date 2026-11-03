@@ -13,7 +13,8 @@ export const deckMatchupFr = {
   "deckMatchup.invalid": "{count} parties se sont arrêtées sur une erreur du moteur et ne comptent pas.",
   "deckMatchup.timedOut": "La limite de temps a arrêté la simulation après {done} parties.",
   "deckMatchup.samples": "Parties d'exemple",
-  "deckMatchup.sample": "Partie {index} : {result} en {turns} tours, {order}",
+  "deckMatchup.sampleTitle": "Partie {index}",
+  "deckMatchup.sampleDetail": "{turns} tours · {order}",
   "deckMatchup.result.win": "victoire",
   "deckMatchup.result.loss": "défaite",
   "deckMatchup.result.draw": "nul",
@@ -34,7 +35,7 @@ export const deckMatchupFr = {
   "deckMatchup.gamesEach": "{count} parties chacun",
   "deckMatchup.cancel": "Annuler",
   "deckMatchup.cancelled": "Annulé après {done} parties.",
-  "deckMatchup.sampleAgainst": "Partie {index} contre {opponent} : {result} en {turns} tours, {order}",
+  "deckMatchup.sampleTitleAgainst": "Partie {index} contre {opponent}",
   "deckMatchup.table.opponent": "Adversaire",
   "deckMatchup.table.score": "Taux de victoire",
   "deckMatchup.table.range": "Intervalle à 95 %",
@@ -42,6 +43,8 @@ export const deckMatchupFr = {
   "deckMatchup.table.games": "Parties",
   "deckMatchup.table.gamesValue": "{done} sur {total}",
   "deckMatchup.watch": "Revoir tour par tour",
+  "deckMatchup.watchShort": "Revoir",
+  "deckMatchup.watchGame": "Revoir la partie {index} tour par tour",
   "deckMatchup.replayUnavailable":
     "Cette partie d'exemple n'est plus disponible. Relancez l'affrontement pour la revoir.",
 };

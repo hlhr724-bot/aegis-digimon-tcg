@@ -5,6 +5,7 @@ export const deckOddsPtBR = {
   "deckOdds.removeKeyCard": "Remover {card} das cartas-chave",
   "deckOdds.goingFirst": "Jogando primeiro",
   "deckOdds.goingSecond": "Jogando segundo",
+  "deckOdds.order": "Ordem de jogo",
   "deckOdds.mulligan": "Mulligan se a mão falhar",
   "deckOdds.empty": "Escolha cartas-chave para ver a chance de tê-las em cada turno.",
   "deckOdds.openingShort": "Mão",

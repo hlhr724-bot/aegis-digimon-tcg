@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { MatchupJob } from "@aegis/shared/deckSimulation/MatchupJob";
 import { I18nProvider } from "@/i18n/I18nProvider";
@@ -61,10 +61,13 @@ describe("DeckMatchup", () => {
     vi.stubGlobal("fetch", fetch);
     renderMatchup(FULL_DECK);
     fireEvent.click(screen.getByRole("button", { name: "Run matchup" }));
-    expect(await screen.findByText("Win rate 63%")).toBeTruthy();
+    expect(await screen.findByRole("group", { name: "Win rate 63%" })).toBeTruthy();
     expect(screen.getByText("95% range 41% to 80%")).toBeTruthy();
     expect(screen.getByText("12 wins, 7 losses, 1 draws")).toBeTruthy();
-    expect(screen.getByText(/Game 1: win in 9 turns, Going first/)).toBeTruthy();
+    const sample = within(screen.getByRole("list", { name: "Sample games" })).getByRole("listitem");
+    expect(within(sample).getByText("win")).toBeTruthy();
+    expect(within(sample).getByText("Game 1")).toBeTruthy();
+    expect(within(sample).getByText("9 turns · Going first")).toBeTruthy();
     const [path, init] = fetch.mock.calls[0]!;
     expect(path).toMatch(/\/account\/deck-simulations\/matchups$/);
     const body = JSON.parse(String(init?.body));
@@ -126,7 +129,7 @@ describe("DeckMatchup", () => {
     vi.stubGlobal("fetch", fetch);
     renderMatchup(FULL_DECK);
     fireEvent.click(screen.getByRole("button", { name: "Run matchup" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Watch turn by turn" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Watch game 1 turn by turn" }));
     expect(
       await screen.findByText("This sample game is no longer available. Run the matchup again to watch it."),
     ).toBeTruthy();

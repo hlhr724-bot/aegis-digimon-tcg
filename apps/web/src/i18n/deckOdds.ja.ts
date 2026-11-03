@@ -5,6 +5,7 @@ export const deckOddsJa = {
   "deckOdds.removeKeyCard": "{card}をキーカードから外す",
   "deckOdds.goingFirst": "先攻",
   "deckOdds.goingSecond": "後攻",
+  "deckOdds.order": "手番",
   "deckOdds.mulligan": "引けなかった手札はマリガン",
   "deckOdds.empty": "キーカードを選ぶと、各ターンまでに引ける確率を表示します。",
   "deckOdds.openingShort": "手札",
