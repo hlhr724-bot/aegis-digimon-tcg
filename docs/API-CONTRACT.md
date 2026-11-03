@@ -58,15 +58,14 @@ the opponent cannot see or infer them.
 
 HTTP endpoints. All responses send `Cache-Control: private, no-store`.
 
-| Method and path                                   | Who                       | Result                                                            |
-| ------------------------------------------------- | ------------------------- | ----------------------------------------------------------------- |
-| `GET /replay-annotations/:matchId`                | Anyone                    | `ReplayAnnotations`: own and shared annotations, sharing settings |
-| `POST /replay-annotations/:matchId/markers`       | Signed-in, allowed viewer | 201 with the `ReplayMarker`                                       |
-| `DELETE /replay-annotations/:matchId/markers/:id` | The marker's author       | `{ ok: true }`                                                    |
-| `POST /replay-annotations/:matchId/notes`         | Signed-in, allowed viewer | 201 with the `ReplayNote`                                         |
-| `PATCH /replay-annotations/:matchId/notes/:id`    | The note's author         | The updated `ReplayNote`                                          |
-| `DELETE /replay-annotations/:matchId/notes/:id`   | The note's author         | `{ ok: true }`                                                    |
-| `PUT /account/replays/:id/annotation-sharing`     | The replay's owner        | `{ replayId, annotationsShared }`                                 |
+| Method and path                                   | Who                       | Result                                            |
+| ------------------------------------------------- | ------------------------- | ------------------------------------------------- |
+| `GET /replay-annotations/:matchId`                | Anyone                    | `ReplayAnnotations`: the viewer's own annotations |
+| `POST /replay-annotations/:matchId/markers`       | Signed-in, allowed viewer | 201 with the `ReplayMarker`                       |
+| `DELETE /replay-annotations/:matchId/markers/:id` | The marker's author       | `{ ok: true }`                                    |
+| `POST /replay-annotations/:matchId/notes`         | Signed-in, allowed viewer | 201 with the `ReplayNote`                         |
+| `PATCH /replay-annotations/:matchId/notes/:id`    | The note's author         | The updated `ReplayNote`                          |
+| `DELETE /replay-annotations/:matchId/notes/:id`   | The note's author         | `{ ok: true }`                                    |
 
 - Markers take `{ frameIndex, turn, emoji }`; notes take
   `{ frameIndex, turn, text }`; a note edit takes `{ text }`.
@@ -84,15 +83,10 @@ HTTP endpoints. All responses send `Cache-Control: private, no-store`.
 - A viewer may annotate a match when they have their own `account_replays` row
   for it, or when a saved replay of it is shared with them under the existing
   visibility rules.
-- `GET` returns `markers`, `notes` and `canAnnotate` for the signed-in viewer,
-  `ownReplays` (the viewer's saved replays of the match with their visibility
-  and `annotationsShared`), and `shared`: the annotations of each other replay
-  owner who opted in, whose saved replay of the match the viewer can watch
-  under the existing visibility rules. Guests get only `shared`, from public
-  replays. Shared note text has blocked words masked.
-- `PUT /account/replays/:id/annotation-sharing` takes `{ shared: boolean }`.
-  It works on the owner's saved replays only. Errors: 400 `invalid_sharing`,
-  401, 404 for another account's or an unsaved replay, and 429.
+- Annotations are private: only their author can read them, even on a public
+  replay. `GET` returns the signed-in viewer's own `markers` and `notes`,
+  `canAnnotate`, and `ownReplayIds` (the viewer's saved replays of the match,
+  used for moment links). Guests get empty lists and `canAnnotate: false`.
 
 ## Live match list
 

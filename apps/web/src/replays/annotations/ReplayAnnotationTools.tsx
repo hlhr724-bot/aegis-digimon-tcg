@@ -1,7 +1,6 @@
 import { useId, useMemo, useState } from "react";
 import type { MatchReplay } from "@aegis/shared/replays";
 import { ReplayMarkerEmoji } from "@aegis/shared/replays/annotations/ReplayMarkerEmoji";
-import { ReplayVisibility } from "@aegis/shared/replays/ReplayVisibility";
 import { Icons } from "@/design/icons";
 import { Button } from "@/design/primitives";
 import { useTranslation } from "@/i18n/useTranslation";
@@ -36,7 +35,7 @@ export function ReplayAnnotationTools({ replay, annotations, entries, index, ski
   const { t } = useTranslation();
   const chaptersId = useId();
   const [copied, setCopied] = useState<Copied>();
-  const linkId = shareId ?? annotations.ownReplays[0]?.replayId;
+  const linkId = shareId ?? annotations.ownReplayIds[0];
   const chapters = useMemo(
     () =>
       buildReplayChapters({
@@ -79,25 +78,6 @@ export function ReplayAnnotationTools({ replay, annotations, entries, index, ski
           {t("replayAnnotations.privateHint")}
         </p>
       ) : null}
-      {annotations.ownReplays.map((own) => (
-        <label key={own.replayId} className="replay-annotations__sharing">
-          <input
-            type="checkbox"
-            checked={own.annotationsShared}
-            onChange={(event) => void annotations.setSharing({ replayId: own.replayId, shared: event.target.checked })}
-          />
-          <span>
-            {t("replayAnnotations.shareWithReplay")}
-            <small>
-              {t(
-                own.visibility === ReplayVisibility.PRIVATE.value
-                  ? "replayAnnotations.shareHintPrivate"
-                  : "replayAnnotations.shareHintShared",
-              )}
-            </small>
-          </span>
-        </label>
-      ))}
       <div className="replay-annotations__actions">
         {linkId ? (
           <Button

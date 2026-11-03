@@ -66,7 +66,7 @@ it("shows saved markers on the timeline, jumps to them and marks the current mom
       return Response.json({ ...savedMarker, id: "m2", frameIndex: 0, turn: 1, emoji: "💡" }, { status: 201 });
     }
     expect(String(input)).toContain(`/replay-annotations/${MATCH_ID}`);
-    return Response.json({ markers: [savedMarker], notes: [], canAnnotate: true, shared: [], ownReplays: [] });
+    return Response.json({ markers: [savedMarker], notes: [], canAnnotate: true, ownReplayIds: [] });
   });
   vi.stubGlobal("fetch", fetcher);
   render(
@@ -94,7 +94,7 @@ it("marks the shown moment from the playback bar without opening the panel", asy
     if (init?.method === "POST") {
       return Response.json({ ...savedMarker, id: "m2", frameIndex: 0, turn: 1, emoji: "🔥" }, { status: 201 });
     }
-    return Response.json({ markers: [], notes: [], canAnnotate: true, shared: [], ownReplays: [] });
+    return Response.json({ markers: [], notes: [], canAnnotate: true, ownReplayIds: [] });
   });
   vi.stubGlobal("fetch", fetcher);
   render(
@@ -124,7 +124,7 @@ it("marks a moment with an emoji outside the presets, typed or picked from the e
       created += 1;
       return Response.json({ ...savedMarker, id: `c${created}`, frameIndex: 0, turn: 1, emoji }, { status: 201 });
     }
-    return Response.json({ markers: [], notes: [], canAnnotate: true, shared: [], ownReplays: [] });
+    return Response.json({ markers: [], notes: [], canAnnotate: true, ownReplayIds: [] });
   });
   vi.stubGlobal("fetch", fetcher);
   render(
@@ -177,7 +177,7 @@ it("adds, edits and deletes a text note at the shown moment", async () => {
     if (init?.method === "DELETE") {
       return Response.json({ ok: true });
     }
-    return Response.json({ markers: [], notes: [], canAnnotate: true, shared: [], ownReplays: [] });
+    return Response.json({ markers: [], notes: [], canAnnotate: true, ownReplayIds: [] });
   });
   vi.stubGlobal("fetch", fetcher);
   render(
@@ -204,31 +204,15 @@ it("adds, edits and deletes a text note at the shown moment", async () => {
   expect(await screen.findByText("No markers or notes yet.")).toBeTruthy();
 });
 
-it("opens a deep link at its action, shares annotations with the replay and copies chapters", async () => {
-  const sharing: unknown[] = [];
-  const fetcher = vi.fn<typeof fetch>(async (input, init) => {
-    if (init?.method === "PUT") {
-      sharing.push({ url: String(input), body: JSON.parse(String(init.body)) });
-      return Response.json({ replayId: "11111111-1111-4111-8111-111111111111", annotationsShared: true });
-    }
-    return Response.json({
+it("opens a deep link at its action, keeps annotations private and copies chapters", async () => {
+  const fetcher = vi.fn<typeof fetch>(async () =>
+    Response.json({
       markers: [savedMarker],
       notes: [],
       canAnnotate: true,
-      shared: [
-        {
-          authorName: "Coach",
-          markers: [],
-          notes: [
-            { id: "s1", matchId: MATCH_ID, frameIndex: 1, turn: 1, text: "Watch this", createdAt: 1, updatedAt: 1 },
-          ],
-        },
-      ],
-      ownReplays: [
-        { replayId: "11111111-1111-4111-8111-111111111111", visibility: "public", annotationsShared: false },
-      ],
-    });
-  });
+      ownReplayIds: ["11111111-1111-4111-8111-111111111111"],
+    }),
+  );
   const writeText = vi.fn<(text: string) => Promise<void>>(async () => undefined);
   vi.stubGlobal("fetch", fetcher);
   Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
@@ -240,18 +224,8 @@ it("opens a deep link at its action, shares annotations with the replay and copi
   expect(screen.getByText("Action 2 of 3")).toBeTruthy();
 
   fireEvent.click(screen.getByRole("button", { name: "Show annotations" }));
-  expect(await screen.findByText("Shared by Coach")).toBeTruthy();
-  expect(screen.getByText("Watch this")).toBeTruthy();
-
-  fireEvent.click(screen.getByRole("checkbox", { name: /Include my markers and notes/ }));
-  await waitFor(() => expect(sharing).toHaveLength(1));
-  expect(sharing[0]).toEqual({
-    url: expect.stringContaining("/account/replays/11111111-1111-4111-8111-111111111111/annotation-sharing"),
-    body: { shared: true },
-  });
-  await waitFor(() =>
-    expect(screen.getByRole<HTMLInputElement>("checkbox", { name: /Include my markers and notes/ }).checked).toBe(true),
-  );
+  expect(await screen.findByText("Only you can see your markers and notes.")).toBeTruthy();
+  expect(within(screen.getByRole("complementary", { name: "Annotations" })).queryByRole("checkbox")).toBeNull();
 
   fireEvent.click(screen.getByRole("button", { name: "Copy link to this moment" }));
   await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));

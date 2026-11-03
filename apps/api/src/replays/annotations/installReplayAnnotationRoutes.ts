@@ -177,32 +177,4 @@ export function installReplayAnnotationRoutes({ app, store, session }: Params): 
       res.json({ ok: true });
     }),
   );
-
-  app.put("/account/replays/:id/annotation-sharing", async (req, res, next) => {
-    res.setHeader("Cache-Control", "private, no-store");
-    try {
-      const current = await session(req);
-      if (!current) {
-        res.status(401).json({ error: "authentication_required" });
-        return;
-      }
-      if (!writeLimit(current.account.id)) {
-        res.status(429).json({ error: "too_many_requests" });
-        return;
-      }
-      const replayId = String(req.params.id ?? "");
-      const shared = getBody(req).shared;
-      if (typeof shared !== "boolean") {
-        res.status(400).json({ error: "invalid_sharing" });
-        return;
-      }
-      if (!UUID.test(replayId) || !(await store.setSharing({ accountId: current.account.id, replayId, shared }))) {
-        res.sendStatus(404);
-        return;
-      }
-      res.json({ replayId, annotationsShared: shared });
-    } catch (error) {
-      next(error);
-    }
-  });
 }

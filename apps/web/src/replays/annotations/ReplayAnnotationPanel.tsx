@@ -33,14 +33,6 @@ export function ReplayAnnotationPanel({ replay, annotations, index, skipThinking
     () => buildReplayAnnotationEntries({ markers: annotations.markers, notes: annotations.notes }),
     [annotations.markers, annotations.notes],
   );
-  const sharedGroups = useMemo(
-    () =>
-      annotations.shared.map((group) => ({
-        authorName: group.authorName,
-        entries: buildReplayAnnotationEntries({ markers: group.markers, notes: group.notes }),
-      })),
-    [annotations.shared],
-  );
 
   function removeEntry(entry: ReplayAnnotationEntry) {
     if (entry.kind === "marker") {
@@ -110,27 +102,6 @@ export function ReplayAnnotationPanel({ replay, annotations, index, skipThinking
     );
   }
 
-  function renderSharedEntry(entry: ReplayAnnotationEntry) {
-    return (
-      <li key={entry.id} data-kind={entry.kind}>
-        <button
-          type="button"
-          className="replay-annotations__moment"
-          aria-current={entry.frameIndex === index ? "step" : undefined}
-          onClick={() => onJump(entry.frameIndex)}
-        >
-          <span className="replay-annotations__glyph" data-kind={entry.kind} aria-hidden="true">
-            {entry.kind === "marker" ? entry.marker.emoji : <Icons.Pencil size={14} />}
-          </span>
-          <span className="replay-annotations__text">
-            <small>{t("replayAnnotations.moment", { turn: entry.turn, action: entry.frameIndex + 1 })}</small>
-            {entry.kind === "note" ? <span>{entry.note.text}</span> : null}
-          </span>
-        </button>
-      </li>
-    );
-  }
-
   return (
     <aside id="replay-annotations" className="replay-annotations" aria-label={t("replayAnnotations.title")}>
       <header>
@@ -193,12 +164,6 @@ export function ReplayAnnotationPanel({ replay, annotations, index, skipThinking
       ) : (
         <ol className="replay-annotations__list">{entries.map(renderEntry)}</ol>
       )}
-      {sharedGroups.map((group) => (
-        <section key={group.authorName} className="replay-annotations__shared">
-          <h3>{t("replayAnnotations.sharedBy", { name: group.authorName })}</h3>
-          <ol className="replay-annotations__list">{group.entries.map(renderSharedEntry)}</ol>
-        </section>
-      ))}
       <ReplayAnnotationTools
         replay={replay}
         annotations={annotations}

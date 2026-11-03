@@ -62,10 +62,10 @@ export function ReplayPlayer({
   const annotationEntries = useMemo(
     () =>
       buildReplayAnnotationEntries({
-        markers: [...annotations.markers, ...annotations.shared.flatMap((group) => group.markers)],
-        notes: [...annotations.notes, ...annotations.shared.flatMap((group) => group.notes)],
+        markers: annotations.markers,
+        notes: annotations.notes,
       }),
-    [annotations.markers, annotations.notes, annotations.shared],
+    [annotations.markers, annotations.notes],
   );
   const [controlsVisible, setControlsVisible] = useState(true);
   const [controlsInset, setControlsInset] = useState(0);

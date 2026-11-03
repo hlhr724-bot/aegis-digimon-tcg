@@ -94,15 +94,13 @@ describe("replay markers", () => {
       markers: [],
       notes: [],
       canAnnotate: false,
-      shared: [],
-      ownReplays: [],
+      ownReplayIds: [],
     });
     expect(await store.list({ viewerId: undefined, matchId })).toEqual({
       markers: [],
       notes: [],
       canAnnotate: false,
-      shared: [],
-      ownReplays: [],
+      ownReplayIds: [],
     });
   });
 
@@ -247,15 +245,14 @@ describe("replay marker routes", () => {
     expect(customMarker).toMatchObject({ frameIndex: 5, emoji: "🦖" });
 
     const anonymous = await call(`/replay-annotations/${matchId}`);
-    expect(await anonymous.json()).toEqual({ markers: [], notes: [], canAnnotate: false, shared: [], ownReplays: [] });
+    expect(await anonymous.json()).toEqual({ markers: [], notes: [], canAnnotate: false, ownReplayIds: [] });
     const own = await call(`/replay-annotations/${matchId}`, { session: ownerSession });
     expect(own.headers.get("cache-control")).toContain("no-store");
     expect(await own.json()).toEqual({
       markers: [marker, customMarker],
       notes: [],
       canAnnotate: true,
-      shared: [],
-      ownReplays: [],
+      ownReplayIds: [],
     });
 
     const remove = (session: string) =>
@@ -266,43 +263,38 @@ describe("replay marker routes", () => {
   });
 });
 
-describe("shared replay annotations", () => {
-  it("shows the owner's annotations only while they opt in and the replay is shared with the viewer", async () => {
+describe("annotation privacy", () => {
+  it("shows annotations only to their author, even on a public replay", async () => {
     const { accounts, owner, viewer, library, matchId, replayId, store } = await setup();
     const call = await serve(accounts, library);
-    const ownerSession = (await accounts.issueSession(owner)).id;
-    const viewerSession = (await accounts.issueSession(viewer)).id;
     await library.attachDrive(owner.id, replayId, FILE_ID);
-    await store.addMarker({ authorId: owner.id, matchId, frameIndex: 2, turn: 1, emoji: "🔥" });
-    await store.addNote({ authorId: owner.id, matchId, frameIndex: 2, turn: 1, text: "What the fuck was that" });
-    const sharedFor = async (viewerId: string | undefined) => (await store.list({ viewerId, matchId })).shared;
-    const share = (session: string, shared: unknown, target = replayId) =>
-      call(`/account/replays/${target}/annotation-sharing`, {
-        method: "PUT",
-        session,
-        body: JSON.stringify({ shared }),
-      });
-
-    expect((await share(ownerSession, "yes")).status).toBe(400);
-    expect((await share(viewerSession, true)).status).toBe(404);
-    expect((await share(ownerSession, true)).status).toBe(200);
-    expect((await store.list({ viewerId: owner.id, matchId })).ownReplays).toEqual([
-      { replayId, visibility: "private", annotationsShared: true },
-    ]);
-    expect(await sharedFor(viewer.id)).toEqual([]);
-
     await library.setVisibility(owner.id, replayId, "public");
-    const visible = await sharedFor(undefined);
-    expect(visible).toHaveLength(1);
-    expect(visible[0]).toMatchObject({ authorName: "Owner", markers: [{ emoji: "🔥" }] });
-    expect(visible[0]!.notes[0]!.text).toBe("What the **** was that");
-    expect(await sharedFor(viewer.id)).toHaveLength(1);
-    expect(await sharedFor(owner.id)).toEqual([]);
+    await store.addMarker({ authorId: owner.id, matchId, frameIndex: 2, turn: 1, emoji: "🔥" });
+    await store.addNote({ authorId: owner.id, matchId, frameIndex: 2, turn: 1, text: "Owner only" });
+    const viewerMarker = await store.addMarker({ authorId: viewer.id, matchId, frameIndex: 3, turn: 2, emoji: "💡" });
+    expect(viewerMarker.kind).toBe("added");
 
-    expect((await share(ownerSession, false)).status).toBe(200);
-    expect(await sharedFor(viewer.id)).toEqual([]);
-    await share(ownerSession, true);
-    await library.setVisibility(owner.id, replayId, "private");
-    expect(await sharedFor(viewer.id)).toEqual([]);
+    const ownerView = await store.list({ viewerId: owner.id, matchId });
+    expect(ownerView.markers.map(({ emoji }) => emoji)).toEqual(["🔥"]);
+    expect(ownerView.notes.map(({ text }) => text)).toEqual(["Owner only"]);
+    expect(ownerView.ownReplayIds).toEqual([replayId]);
+
+    const viewerView = await store.list({ viewerId: viewer.id, matchId });
+    expect(viewerView).toMatchObject({ canAnnotate: true, notes: [], ownReplayIds: [] });
+    expect(viewerView.markers.map(({ emoji }) => emoji)).toEqual(["💡"]);
+
+    expect(await store.list({ viewerId: undefined, matchId })).toEqual({
+      markers: [],
+      notes: [],
+      canAnnotate: false,
+      ownReplayIds: [],
+    });
+    const ownerSession = (await accounts.issueSession(owner)).id;
+    const sharing = await call(`/account/replays/${replayId}/annotation-sharing`, {
+      method: "PUT",
+      session: ownerSession,
+      body: JSON.stringify({ shared: true }),
+    });
+    expect(sharing.status).toBe(404);
   });
 });

@@ -59,7 +59,6 @@ import { publicReplayListing } from "#api/db/migrations/053-public-replay-listin
 import { tournamentTiebreakValues } from "#api/db/migrations/054-tournament-tiebreak-values";
 import { replayMarkers } from "#api/db/migrations/055-replay-markers";
 import { replayNotes } from "#api/db/migrations/056-replay-notes";
-import { replayAnnotationSharing } from "#api/db/migrations/057-replay-annotation-sharing";
 
 export const migrations: readonly Migration[] = [
   initialSchema,
@@ -118,5 +117,4 @@ export const migrations: readonly Migration[] = [
   tournamentTiebreakValues,
   replayMarkers,
   replayNotes,
-  replayAnnotationSharing,
 ];
