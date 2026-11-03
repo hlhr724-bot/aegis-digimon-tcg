@@ -8,6 +8,7 @@ import { Avatar, Button } from "@/design/primitives";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { useTranslation } from "@/i18n/useTranslation";
+import { ViewerCardLanguage } from "@/screens/cardLanguage/ViewerCardLanguage";
 import { deckFormatLabel } from "@/screens/deckFormatLabel";
 import "@/screens/liveMatchCard.css";
 
@@ -26,8 +27,10 @@ export function LiveMatchCard({ match, now, onWatch }: LiveMatchCardParams) {
     <li className="live-match-card">
       <div className="live-match-card__arena">
         <div className="live-match-card__artwork" aria-hidden="true">
-          <LiveMatchCardArt preview={match.playerPreviews?.[0]} />
-          <LiveMatchCardArt preview={match.playerPreviews?.[1]} />
+          <ViewerCardLanguage>
+            <LiveMatchCardArt preview={match.playerPreviews?.[0]} />
+            <LiveMatchCardArt preview={match.playerPreviews?.[1]} />
+          </ViewerCardLanguage>
         </div>
         <div className="live-match-card__top">
           <span className="live-match-card__live">

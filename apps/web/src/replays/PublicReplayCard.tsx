@@ -6,6 +6,7 @@ import { Icons } from "@/design/icons";
 import { Button } from "@/design/primitives";
 import type { Translate } from "@/i18n/translationTypes";
 import { useTranslation } from "@/i18n/useTranslation";
+import { ViewerCardLanguage } from "@/screens/cardLanguage/ViewerCardLanguage";
 import { deckFormatLabel } from "@/screens/deckFormatLabel";
 
 const SEATS = [0, 1] as const;
@@ -25,11 +26,13 @@ export function PublicReplayCard({ replay, onOpen }: PublicReplayCardParams) {
     <li className="public-replay">
       <div className="public-replay__arena">
         <div className="public-replay__artwork" aria-hidden="true">
-          {SEATS.map((seat) => (
-            <span key={seat} className="public-replay__art">
-              <CoverThumb coverCardId={replay.summary.deckIcons?.[seat] ?? undefined} objectPosition="50% 24%" />
-            </span>
-          ))}
+          <ViewerCardLanguage>
+            {SEATS.map((seat) => (
+              <span key={seat} className="public-replay__art">
+                <CoverThumb coverCardId={replay.summary.deckIcons?.[seat] ?? undefined} objectPosition="50% 24%" />
+              </span>
+            ))}
+          </ViewerCardLanguage>
         </div>
         {formatLabel ? <span className="public-replay__badge">{formatLabel}</span> : null}
       </div>
