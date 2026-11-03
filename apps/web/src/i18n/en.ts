@@ -6,7 +6,6 @@ import { staffRolesEn } from "@/i18n/staffRoles.en";
 import { tournamentDetailEn } from "@/i18n/tournamentDetail.en";
 import { tournamentSpectatorsEn } from "@/i18n/tournamentSpectators.en";
 import { publicReplaysEn } from "@/i18n/publicReplays.en";
-import { rulingsEn } from "@/i18n/rulings.en";
 import { achievementsEn } from "@/i18n/achievements.en";
 import { rankedEn } from "@/i18n/ranked.en";
 import { friendsEn } from "@/i18n/friends.en";
@@ -2198,7 +2197,6 @@ export const en = {
   ...tournamentDetailEn,
   ...tournamentSpectatorsEn,
   ...publicReplaysEn,
-  ...rulingsEn,
   ...tournamentCircuitsEn,
   ...tournamentOfficialRequestEn,
   ...matchQueueEn,

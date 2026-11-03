@@ -16,7 +16,6 @@ import { digilabProvider } from "#api/deckProviders/providers/digilab";
 import { ProviderSnapshotReader } from "#api/deckProviders/ProviderSnapshotReader";
 import { ProviderClient } from "#api/deckProviders/ProviderClient";
 import { installProviderRoutes } from "#api/deckProviders/installProviderRoutes";
-import { installCardRulingRoutes } from "#api/rulings/installCardRulingRoutes";
 import { installBotRoutes } from "#api/rooms/installBotRoutes";
 import { getLiveSearchWorkerPool } from "#api/bot/search/getLiveSearchWorkerPool";
 import { startProcessMetricsLog } from "#api/processMetrics/startProcessMetricsLog";
@@ -120,7 +119,6 @@ const providerClient = new ProviderClient({
   providerId: digilabProvider.value,
   apiKey: process.env[digilabProvider.keyVariable],
 });
-installCardRulingRoutes({ app });
 installProviderRoutes({
   app,
   client: new ProviderSnapshotReader({ store: accountStore, providerId: digilabProvider.value }),

@@ -7,8 +7,6 @@ The canonical normalized data lives in `data/kb/`:
 - `errata.json` contains official corrections;
 - `banlist.json` contains restriction history used by the runtime.
 
-The API image ships `qa.json`, `errata.json` and `banlist.json`. `GET /cards/:cardId/rulings` serves a card's Q&A and errata to the card detail drawer, so a refreshed snapshot reaches players on the next deploy. The text stays in English, as published.
-
 Useful commands:
 
 ```bash

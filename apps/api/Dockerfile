@@ -41,8 +41,6 @@ COPY --from=dependencies /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY data/kb/banlist.json ./data/kb/banlist.json
-COPY data/kb/qa.json ./data/kb/qa.json
-COPY data/kb/errata.json ./data/kb/errata.json
 COPY --from=model /models /models
 
 ENV AVATAR_NSFW_MODEL=/models/nsfw.onnx
