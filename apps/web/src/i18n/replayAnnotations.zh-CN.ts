@@ -51,4 +51,9 @@ export const replayAnnotationsZhCN: Record<keyof typeof replayAnnotationsEn, str
   "replayAnnotations.chapterStart": "{first} vs {second}",
   "replayAnnotations.chapterMarker": "{emoji} {label} · 第 {turn} 回合",
   "replayAnnotations.chapterNote": "第 {turn} 回合：{text}",
+  "replayAnnotations.moreEmoji": "其他表情",
+  "replayAnnotations.customEmoji": "或输入任意表情",
+  "replayAnnotations.useEmoji": "使用",
+  "replayAnnotations.customEmojiInvalid": "请只输入一个表情。",
+  "replayAnnotations.chapterEmoji": "{emoji} · 第 {turn} 回合",
 };

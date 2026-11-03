@@ -8,7 +8,6 @@ import type {
   SharedReplayAnnotations,
 } from "@aegis/shared/replays/annotations/ReplayAnnotations";
 import type { ReplayMarker } from "@aegis/shared/replays/annotations/ReplayMarker";
-import type { ReplayMarkerEmoji } from "@aegis/shared/replays/annotations/ReplayMarkerEmoji";
 import type { ReplayNote } from "@aegis/shared/replays/annotations/ReplayNote";
 import {
   MAX_REPLAY_MARKERS_PER_MATCH,
@@ -26,7 +25,7 @@ type MomentRow = {
   turn: number;
   created_at: string;
 };
-type MarkerRow = MomentRow & { emoji: ReplayMarkerEmoji };
+type MarkerRow = MomentRow & { emoji: string };
 type NoteRow = MomentRow & { body: string; updated_at: string };
 
 type ReplayAccess = {
@@ -36,7 +35,7 @@ type ReplayAccess = {
 type MatchParams = { accountId: string; matchId: string };
 type ListParams = { viewerId: string | undefined; matchId: string };
 type MomentParams = { authorId: string; matchId: string; frameIndex: number; turn: number; now?: number };
-type AddMarkerParams = MomentParams & { emoji: ReplayMarkerEmoji };
+type AddMarkerParams = MomentParams & { emoji: string };
 type AddNoteParams = MomentParams & { text: string };
 type UpdateNoteParams = { authorId: string; matchId: string; noteId: string; text: string; now?: number };
 type RemoveParams = { authorId: string; matchId: string; id: string };

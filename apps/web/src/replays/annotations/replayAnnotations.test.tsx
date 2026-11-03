@@ -116,6 +116,47 @@ it("marks the shown moment from the playback bar without opening the panel", asy
   expect(screen.queryByRole("complementary", { name: "Annotations" })).toBeNull();
 });
 
+it("marks a moment with an emoji outside the presets, typed or picked from the extra grid", async () => {
+  let created = 0;
+  const fetcher = vi.fn<typeof fetch>(async (_input, init) => {
+    if (init?.method === "POST") {
+      const { emoji } = JSON.parse(String(init.body)) as { emoji: string };
+      created += 1;
+      return Response.json({ ...savedMarker, id: `c${created}`, frameIndex: 0, turn: 1, emoji }, { status: 201 });
+    }
+    return Response.json({ markers: [], notes: [], canAnnotate: true, shared: [], ownReplays: [] });
+  });
+  vi.stubGlobal("fetch", fetcher);
+  render(
+    <I18nProvider>
+      <ReplayPlayer replay={buildReplay()} onClose={vi.fn<() => void>()} />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Show annotations" }));
+  const panel = await screen.findByRole("complementary", { name: "Annotations" });
+
+  fireEvent.click(within(panel).getByRole("button", { name: "Other emoji" }));
+  fireEvent.click(within(panel).getByRole("button", { name: "🎯" }));
+  expect(await screen.findByRole("button", { name: "🎯 Turn 1, action 1" })).toBeTruthy();
+  expect(within(panel).getByRole("button", { name: "Other emoji" }).getAttribute("aria-expanded")).toBe("false");
+
+  fireEvent.click(within(panel).getByRole("button", { name: "Other emoji" }));
+  const field = within(panel).getByLabelText("Or type any emoji");
+  const use = within(panel).getByRole("button", { name: "Use" }) as HTMLButtonElement;
+  fireEvent.change(field, { target: { value: "ok" } });
+  expect(within(panel).getByRole("alert").textContent).toBe("Enter one emoji.");
+  expect(use.disabled).toBe(true);
+  fireEvent.change(field, { target: { value: " 🦖 " } });
+  expect(use.disabled).toBe(false);
+  fireEvent.click(use);
+  expect(await screen.findByRole("button", { name: "🎯 Turn 1, action 1; 🦖 Turn 1, action 1" })).toBeTruthy();
+
+  const posted = fetcher.mock.calls
+    .filter(([, init]) => init?.method === "POST")
+    .map(([, init]) => JSON.parse(String(init?.body)).emoji);
+  expect(posted).toEqual(["🎯", "🦖"]);
+});
+
 it("adds, edits and deletes a text note at the shown moment", async () => {
   const savedNote = {
     id: "n1",

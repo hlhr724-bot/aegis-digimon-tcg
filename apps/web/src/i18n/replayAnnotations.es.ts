@@ -51,4 +51,9 @@ export const replayAnnotationsEs: Record<keyof typeof replayAnnotationsEn, strin
   "replayAnnotations.chapterStart": "{first} vs {second}",
   "replayAnnotations.chapterMarker": "{emoji} {label} · Turno {turn}",
   "replayAnnotations.chapterNote": "Turno {turn}: {text}",
+  "replayAnnotations.moreEmoji": "Otros emojis",
+  "replayAnnotations.customEmoji": "O escribe cualquier emoji",
+  "replayAnnotations.useEmoji": "Usar",
+  "replayAnnotations.customEmojiInvalid": "Escribe un solo emoji.",
+  "replayAnnotations.chapterEmoji": "{emoji} · Turno {turn}",
 };

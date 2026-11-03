@@ -1,10 +1,9 @@
 import type { ReplayAnnotations } from "@aegis/shared/replays/annotations/ReplayAnnotations";
 import type { ReplayMarker } from "@aegis/shared/replays/annotations/ReplayMarker";
-import type { ReplayMarkerEmoji } from "@aegis/shared/replays/annotations/ReplayMarkerEmoji";
 import type { ReplayNote } from "@aegis/shared/replays/annotations/ReplayNote";
 import { request } from "@/account/client";
 
-type MarkerInput = { frameIndex: number; turn: number; emoji: ReplayMarkerEmoji };
+type MarkerInput = { frameIndex: number; turn: number; emoji: string };
 type NoteInput = { frameIndex: number; turn: number; text: string };
 
 const annotationsPath = (matchId: string) => `/replay-annotations/${encodeURIComponent(matchId)}`;

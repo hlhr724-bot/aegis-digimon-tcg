@@ -51,4 +51,9 @@ export const replayAnnotationsPtBR: Record<keyof typeof replayAnnotationsEn, str
   "replayAnnotations.chapterStart": "{first} vs {second}",
   "replayAnnotations.chapterMarker": "{emoji} {label} · Turno {turn}",
   "replayAnnotations.chapterNote": "Turno {turn}: {text}",
+  "replayAnnotations.moreEmoji": "Outros emojis",
+  "replayAnnotations.customEmoji": "Ou digite qualquer emoji",
+  "replayAnnotations.useEmoji": "Usar",
+  "replayAnnotations.customEmojiInvalid": "Digite um único emoji.",
+  "replayAnnotations.chapterEmoji": "{emoji} · Turno {turn}",
 };

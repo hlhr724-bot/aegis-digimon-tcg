@@ -51,4 +51,9 @@ export const replayAnnotationsKo: Record<keyof typeof replayAnnotationsEn, strin
   "replayAnnotations.chapterStart": "{first} vs {second}",
   "replayAnnotations.chapterMarker": "{emoji} {label} · {turn}턴",
   "replayAnnotations.chapterNote": "{turn}턴: {text}",
+  "replayAnnotations.moreEmoji": "다른 이모지",
+  "replayAnnotations.customEmoji": "또는 원하는 이모지 입력",
+  "replayAnnotations.useEmoji": "사용",
+  "replayAnnotations.customEmojiInvalid": "이모지를 하나만 입력하세요.",
+  "replayAnnotations.chapterEmoji": "{emoji} · {turn}턴",
 };

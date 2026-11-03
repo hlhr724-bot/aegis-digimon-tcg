@@ -52,4 +52,9 @@ export const replayAnnotationsId: Record<keyof typeof replayAnnotationsEn, strin
   "replayAnnotations.chapterStart": "{first} vs {second}",
   "replayAnnotations.chapterMarker": "{emoji} {label} · Giliran {turn}",
   "replayAnnotations.chapterNote": "Giliran {turn}: {text}",
+  "replayAnnotations.moreEmoji": "Emoji lain",
+  "replayAnnotations.customEmoji": "Atau ketik emoji apa saja",
+  "replayAnnotations.useEmoji": "Pakai",
+  "replayAnnotations.customEmojiInvalid": "Masukkan satu emoji.",
+  "replayAnnotations.chapterEmoji": "{emoji} · Giliran {turn}",
 };

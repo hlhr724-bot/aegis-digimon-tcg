@@ -527,3 +527,98 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+.replay-marker-chooser {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.replay-marker-picker__more {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 8px;
+  margin-left: -8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ds-text-2);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+.replay-marker-picker__more:hover,
+.replay-marker-picker__more[aria-expanded="true"] {
+  color: var(--ds-accent);
+}
+.replay-marker-picker__extra {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--ds-line);
+  border-radius: 12px;
+  background: var(--ds-paper);
+}
+.replay-marker-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+}
+.replay-marker-picker__grid button {
+  display: grid;
+  place-items: center;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.replay-marker-picker__grid button:hover:not(:disabled) {
+  background: var(--ds-accent-soft);
+}
+.replay-marker-picker__grid button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.replay-marker-picker__custom {
+  display: grid;
+  gap: 6px;
+}
+.replay-marker-picker__custom label {
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+}
+.replay-marker-picker__custom > div {
+  display: flex;
+  gap: 6px;
+}
+.replay-marker-picker__custom input {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 0 var(--ds-space-3);
+  border: 1px solid var(--ds-line-strong);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-sheet);
+  color: var(--ds-text);
+  font: inherit;
+  font-size: max(16px, var(--ds-text-sm));
+}
+.replay-marker-picker__custom input:focus-visible {
+  border-color: var(--ds-accent);
+  outline: 2px solid var(--ds-accent-soft);
+}
+.replay-marker-picker__custom input[aria-invalid="true"] {
+  border-color: var(--ds-danger);
+}
+.replay-marker-picker__custom small {
+  color: var(--ds-danger);
+  font-size: var(--ds-text-xs);
+}

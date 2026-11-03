@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ReplayMarker } from "@aegis/shared/replays/annotations/ReplayMarker";
-import type { ReplayMarkerEmoji } from "@aegis/shared/replays/annotations/ReplayMarkerEmoji";
 import type { ReplayNote } from "@aegis/shared/replays/annotations/ReplayNote";
 import type {
   OwnReplayAnnotationSharing,
@@ -10,7 +9,7 @@ import { replayAnnotationApi } from "@/replays/annotations/replayAnnotationApi";
 
 type Params = { matchId: string };
 type Moment = { frameIndex: number; turn: number };
-type MarkMomentParams = Moment & { emoji: ReplayMarkerEmoji };
+type MarkMomentParams = Moment & { emoji: string };
 type AddNoteParams = Moment & { text: string };
 type EditNoteParams = { noteId: string; text: string };
 type SetSharingParams = { replayId: string; shared: boolean };

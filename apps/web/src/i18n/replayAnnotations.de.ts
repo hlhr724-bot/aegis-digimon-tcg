@@ -52,4 +52,9 @@ export const replayAnnotationsDe: Record<keyof typeof replayAnnotationsEn, strin
   "replayAnnotations.chapterStart": "{first} vs {second}",
   "replayAnnotations.chapterMarker": "{emoji} {label} · Zug {turn}",
   "replayAnnotations.chapterNote": "Zug {turn}: {text}",
+  "replayAnnotations.moreEmoji": "Andere Emojis",
+  "replayAnnotations.customEmoji": "Oder ein beliebiges Emoji eingeben",
+  "replayAnnotations.useEmoji": "Verwenden",
+  "replayAnnotations.customEmojiInvalid": "Gib genau ein Emoji ein.",
+  "replayAnnotations.chapterEmoji": "{emoji} · Zug {turn}",
 };

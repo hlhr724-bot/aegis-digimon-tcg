@@ -49,9 +49,12 @@ export function ReplayAnnotationTools({ replay, annotations, entries, index, ski
             return t("replayAnnotations.chapterNote", { turn: entry.turn, text: shortenNote(entry.note.text) });
           }
           const definition = Object.values(ReplayMarkerEmoji).find((option) => option.value === entry.marker.emoji);
+          if (!definition) {
+            return t("replayAnnotations.chapterEmoji", { emoji: entry.marker.emoji, turn: entry.turn });
+          }
           return t("replayAnnotations.chapterMarker", {
             emoji: entry.marker.emoji,
-            label: definition ? t(definition.label) : "",
+            label: t(definition.label),
             turn: entry.turn,
           });
         },

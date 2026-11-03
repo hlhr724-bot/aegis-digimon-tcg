@@ -51,4 +51,9 @@ export const replayAnnotationsJa: Record<keyof typeof replayAnnotationsEn, strin
   "replayAnnotations.chapterStart": "{first} vs {second}",
   "replayAnnotations.chapterMarker": "{emoji} {label}・ターン{turn}",
   "replayAnnotations.chapterNote": "ターン{turn}: {text}",
+  "replayAnnotations.moreEmoji": "ほかの絵文字",
+  "replayAnnotations.customEmoji": "または好きな絵文字を入力",
+  "replayAnnotations.useEmoji": "使う",
+  "replayAnnotations.customEmojiInvalid": "絵文字を1つだけ入力してください。",
+  "replayAnnotations.chapterEmoji": "{emoji}・ターン{turn}",
 };

@@ -49,4 +49,9 @@ export const replayAnnotationsEn = {
   "replayAnnotations.chapterStart": "{first} vs {second}",
   "replayAnnotations.chapterMarker": "{emoji} {label} · Turn {turn}",
   "replayAnnotations.chapterNote": "Turn {turn}: {text}",
+  "replayAnnotations.moreEmoji": "Other emoji",
+  "replayAnnotations.customEmoji": "Or type any emoji",
+  "replayAnnotations.useEmoji": "Use",
+  "replayAnnotations.customEmojiInvalid": "Enter one emoji.",
+  "replayAnnotations.chapterEmoji": "{emoji} · Turn {turn}",
 } as const;

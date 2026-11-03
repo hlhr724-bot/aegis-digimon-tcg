@@ -71,7 +71,9 @@ HTTP endpoints. All responses send `Cache-Control: private, no-store`.
 - Markers take `{ frameIndex, turn, emoji }`; notes take
   `{ frameIndex, turn, text }`; a note edit takes `{ text }`.
 - `frameIndex` is an integer from 0 to 4999, `turn` an integer from 0 to 10000,
-  and `emoji` one value of `ReplayMarkerEmoji`.
+  and `emoji` exactly one emoji (`isReplayMarkerEmoji`): one grapheme made only of
+  emoji code points, at most 32 UTF-16 units. `ReplayMarkerEmoji` lists the 8
+  presets the client offers first.
 - The API normalizes note text with `normalizeReplayNoteText`: it strips control
   and direction-override characters, keeps up to one blank line, and trims.
   The result must be 1 to 500 code points.

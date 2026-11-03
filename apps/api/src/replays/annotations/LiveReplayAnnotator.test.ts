@@ -57,7 +57,7 @@ describe("live replay markers", () => {
       kind: "rejected",
       reason: "sign_in_required",
     });
-    expect(await annotator.handle({ authorId: "author", payload: { kind: "marker", emoji: "🤡" } })).toEqual({
+    expect(await annotator.handle({ authorId: "author", payload: { kind: "marker", emoji: "ok" } })).toEqual({
       kind: "rejected",
       reason: "invalid",
     });

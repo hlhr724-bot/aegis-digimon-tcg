@@ -3,16 +3,14 @@ import { parseLiveReplayAnnotationRequest } from "#shared/replays/annotations/pa
 import { ReplayMarkerEmoji } from "#shared/replays/annotations/ReplayMarkerEmoji";
 
 describe("live replay annotation requests", () => {
-  it("accepts a marker with an allowed emoji", () => {
-    expect(parseLiveReplayAnnotationRequest({ kind: "marker", emoji: ReplayMarkerEmoji.KEY_MOMENT.value })).toEqual({
-      kind: "marker",
-      emoji: ReplayMarkerEmoji.KEY_MOMENT.value,
-    });
+  it("accepts a marker with a preset or any other single emoji", () => {
+    for (const emoji of [ReplayMarkerEmoji.KEY_MOMENT.value, "🤡"]) {
+      expect(parseLiveReplayAnnotationRequest({ kind: "marker", emoji })).toEqual({ kind: "marker", emoji });
+    }
   });
 
-  it("refuses emoji outside the allowlist and malformed payloads", () => {
+  it("refuses text, several emoji and malformed payloads", () => {
     for (const payload of [
-      { kind: "marker", emoji: "🤡" },
       { kind: "marker", emoji: "⭐⭐" },
       { kind: "marker", emoji: "constructor" },
       { kind: "marker" },
