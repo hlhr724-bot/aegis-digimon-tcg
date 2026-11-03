@@ -1,4 +1,70 @@
 {
+  "releases.1.50.0-beta.summary": {
+    "en": "Annotate replays with emoji markers and private notes, read official rulings in the card drawer, and see which timing fired in the match log. Includes rules fixes and smoother private rooms.",
+    "pt-BR": "Anote replays com marcadores de emoji e notas privadas, leia as regras oficiais na ficha da carta e veja qual tempo foi ativado no registro da partida. Inclui correções de regras e salas privadas mais tranquilas.",
+    "es": "Anota repeticiones con marcadores de emoji y notas privadas, lee las reglas oficiales en la ficha de la carta y mira qué momento se activó en el registro de la partida. Incluye correcciones de reglas y salas privadas más fluidas.",
+    "it": "Annota i replay con marcatori emoji e note private, leggi le regole ufficiali nella scheda della carta e scopri quale tempistica si è attivata nel registro della partita. Include correzioni alle regole e stanze private più fluide."
+  },
+  "releases.1.50.0-beta.feature.replayAnnotations": {
+    "en": "Mark key moments with any emoji during a match or a replay, add text notes, copy a link to a moment and copy YouTube chapters. Only you see your markers and notes.",
+    "pt-BR": "Marque momentos importantes com qualquer emoji durante uma partida ou um replay, adicione notas de texto, copie um link para um momento e copie capítulos para o YouTube. Só você vê seus marcadores e notas.",
+    "es": "Marca momentos clave con cualquier emoji durante una partida o una repetición, añade notas de texto, copia un enlace a un momento y copia capítulos para YouTube. Solo tú ves tus marcadores y notas.",
+    "it": "Segna i momenti chiave con qualsiasi emoji durante una partita o un replay, aggiungi note di testo, copia un link a un momento e copia i capitoli per YouTube. Solo tu vedi i tuoi marcatori e le tue note."
+  },
+  "releases.1.50.0-beta.feature.rulings": {
+    "en": "The card drawer has an Official rulings section with the card's errata and Q&A.",
+    "pt-BR": "A ficha da carta tem uma seção de Regras oficiais com as erratas e as perguntas e respostas da carta.",
+    "es": "La ficha de la carta tiene una sección de Reglas oficiales con las erratas y las preguntas y respuestas de la carta.",
+    "it": "La scheda della carta ha una sezione Regole ufficiali con l'errata e le domande e risposte della carta."
+  },
+  "releases.1.50.0-beta.feature.logTiming": {
+    "en": "The match log and replay history tag each activation with the timing that fired, such as [When Digivolving], and mark inherited effects.",
+    "pt-BR": "O registro da partida e o histórico do replay marcam cada ativação com o tempo que foi ativado, como [When Digivolving], e indicam efeitos herdados.",
+    "es": "El registro de la partida y el historial de la repetición marcan cada activación con el momento que se activó, como [When Digivolving], e indican los efectos heredados.",
+    "it": "Il registro della partita e la cronologia del replay indicano per ogni attivazione la tempistica che si è attivata, come [When Digivolving], e segnalano gli effetti ereditati."
+  },
+  "releases.1.50.0-beta.feature.botDeck": {
+    "en": "Practice vs AI remembers the bot's deck you chose last time.",
+    "pt-BR": "O treino contra a IA lembra o deck do bot que você escolheu da última vez.",
+    "es": "La práctica contra la IA recuerda el mazo del bot que elegiste la última vez.",
+    "it": "L'allenamento contro l'IA ricorda il mazzo del bot che hai scelto l'ultima volta."
+  },
+  "releases.1.50.0-beta.fix.bacchusmon": {
+    "en": "When one effect play triggers two copies of the same effect, such as two Bacchusmon, the second still activates after the first removes the played Digimon.",
+    "pt-BR": "Quando uma jogada por efeito ativa duas cópias do mesmo efeito, como dois Bacchusmon, a segunda ainda ativa depois que a primeira remove o Digimon jogado.",
+    "es": "Cuando una jugada por efecto activa dos copias del mismo efecto, como dos Bacchusmon, la segunda sigue activándose después de que la primera retire al Digimon jugado.",
+    "it": "Quando una giocata tramite effetto attiva due copie dello stesso effetto, come due Bacchusmon, la seconda si attiva ancora dopo che la prima ha rimosso il Digimon giocato."
+  },
+  "releases.1.50.0-beta.fix.partition": {
+    "en": "＜Partition＞ lets you choose which digivolution cards to play when several sets qualify.",
+    "pt-BR": "＜Partition＞ deixa você escolher quais cartas de digievolução jogar quando vários conjuntos se qualificam.",
+    "es": "＜Partition＞ te deja elegir qué cartas de digievolución jugar cuando varios conjuntos cumplen los requisitos.",
+    "it": "＜Partition＞ ti permette di scegliere quali carte digievoluzione giocare quando più set sono validi."
+  },
+  "releases.1.50.0-beta.fix.privateRooms": {
+    "en": "In private rooms that require approval, the host sees the join request before the match intro, and rollback works again. The rollback button now appears only when you can use it.",
+    "pt-BR": "Em salas privadas que exigem aprovação, o anfitrião vê o pedido de entrada antes da introdução da partida, e o retrocesso volta a funcionar. O botão de retrocesso agora só aparece quando você pode usá-lo.",
+    "es": "En las salas privadas que requieren aprobación, el anfitrión ve la solicitud de entrada antes de la introducción de la partida y el retroceso vuelve a funcionar. El botón de retroceso ahora solo aparece cuando puedes usarlo.",
+    "it": "Nelle stanze private che richiedono l'approvazione, l'host vede la richiesta di accesso prima dell'introduzione della partita e il rollback funziona di nuovo. Il pulsante di rollback ora compare solo quando puoi usarlo."
+  },
+  "releases.1.50.0-beta.fix.logBadge": {
+    "en": "The match menu badge counts only unread chat messages, not match log entries.",
+    "pt-BR": "O indicador do menu da partida conta apenas mensagens de chat não lidas, e não as entradas do registro.",
+    "es": "El indicador del menú de la partida cuenta solo los mensajes de chat sin leer, no las entradas del registro.",
+    "it": "Il badge del menu della partita conta solo i messaggi di chat non letti, non le voci del registro."
+  },
+  "releases.1.50.0-beta.fix.security3d": {
+    "en": "On phones, the 3D security stack no longer jumps when you press Attack, and summoning stars no longer cover 3D cards.",
+    "pt-BR": "Nos celulares, a pilha de segurança 3D não pula mais quando você toca em Atacar, e as estrelas de invocação não cobrem mais as cartas 3D.",
+    "es": "En los teléfonos, la pila de seguridad 3D ya no salta al pulsar Atacar y las estrellas de invocación ya no tapan las cartas 3D.",
+    "it": "Sui telefoni, la pila della sicurezza 3D non salta più quando premi Attacca e le stelle di evocazione non coprono più le carte 3D."
+  },
+  "releases.1.50.0-beta.fix.storyShuffle": {
+    "en": "Story battle decks are shuffled with the room's secret key, so the bot's cards can't be predicted.",
+    "pt-BR": "Os decks das batalhas do modo história são embaralhados com a chave secreta da sala, então as cartas do bot não podem ser previstas.",
+    "es": "Los mazos de las batallas del modo historia se barajan con la clave secreta de la sala, así que las cartas del bot no se pueden predecir.",
+    "it": "I mazzi delle battaglie della modalità storia vengono mescolati con la chiave segreta della stanza, quindi le carte del bot non si possono prevedere."
+  },
   "releases.1.49.0-beta.summary": {
     "en": "Armor Purge now asks Use or Don't use, matches show your profile avatar, and BD01 cards arrive. Includes Arena 3D improvements, faster reconnects and rules fixes.",
     "pt-BR": "O Armor Purge agora pergunta Usar ou Não usar, as partidas mostram o avatar do seu perfil e chegam cartas de BD01. Inclui melhorias na Arena 3D, reconexões mais rápidas e correções de regras.",

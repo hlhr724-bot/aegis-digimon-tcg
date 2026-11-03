@@ -1,5 +1,45 @@
 [
   {
+    "version": "1.50.0-beta",
+    "releasedAt": "2026-11-03",
+    "summaryKey": "releases.1.50.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.50.0-beta.feature.replayAnnotations"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.feature.rulings"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.feature.logTiming"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.feature.botDeck"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.50.0-beta.fix.bacchusmon"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.fix.partition",
+        "issue": 6487
+      },
+      {
+        "textKey": "releases.1.50.0-beta.fix.privateRooms"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.fix.logBadge"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.fix.security3d"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.fix.storyShuffle"
+      }
+    ]
+  },
+  {
     "version": "1.49.0-beta",
     "releasedAt": "2026-11-03",
     "summaryKey": "releases.1.49.0-beta.summary",
