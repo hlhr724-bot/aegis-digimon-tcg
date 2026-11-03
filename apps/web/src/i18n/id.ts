@@ -2464,7 +2464,7 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3dDesc":
     "Eksperimental. Kartu dan efek ditampilkan dalam 3D dan memakai lebih banyak baterai.",
   "redesign.foundation.boardStyle.unsupported":
-    "Perangkat ini tidak bisa menampilkan arena 3D, jadi pertandingan memakai papan klasik.",
+    "3D nonaktif: browser ini tidak bisa memakai WebGL. Aktifkan akselerasi perangkat keras di pengaturan browser, lalu muat ulang halaman.",
   "redesign.foundation.boardStyle.restoring": "Memulihkan papan 3D…",
   "redesign.foundation.boardStyle.stopped": "3D berhenti di perangkat ini. Menampilkan papan klasik.",
   "redesign.foundation.boardStyle.retry": "Coba lagi",

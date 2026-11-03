@@ -53,7 +53,7 @@ export const foundationEs: Record<keyof typeof foundationEn, string> = {
   "redesign.foundation.boardStyle.arena3dDesc":
     "Experimental. Las cartas y los efectos se muestran en 3D y consumen más batería.",
   "redesign.foundation.boardStyle.unsupported":
-    "Este dispositivo no puede mostrar la arena 3D, así que las partidas usan el tablero clásico.",
+    "3D desactivado: este navegador no puede usar WebGL. Activa la aceleración por hardware en los ajustes del navegador y recarga la página.",
   "redesign.foundation.boardStyle.restoring": "Restaurando el tablero 3D…",
   "redesign.foundation.boardStyle.stopped": "El 3D se detuvo en este dispositivo. Mostrando el tablero clásico.",
   "redesign.foundation.boardStyle.retry": "Reintentar",
