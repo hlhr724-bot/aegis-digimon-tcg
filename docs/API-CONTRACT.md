@@ -58,14 +58,14 @@ the opponent cannot see or infer them.
 
 HTTP endpoints. All responses send `Cache-Control: private, no-store`.
 
-| Method and path                                   | Who                       | Result                                            |
-| ------------------------------------------------- | ------------------------- | ------------------------------------------------- |
-| `GET /replay-annotations/:matchId`                | Anyone                    | `ReplayAnnotations`: the viewer's own annotations |
-| `POST /replay-annotations/:matchId/markers`       | Signed-in, allowed viewer | 201 with the `ReplayMarker`                       |
-| `DELETE /replay-annotations/:matchId/markers/:id` | The marker's author       | `{ ok: true }`                                    |
-| `POST /replay-annotations/:matchId/notes`         | Signed-in, allowed viewer | 201 with the `ReplayNote`                         |
-| `PATCH /replay-annotations/:matchId/notes/:id`    | The note's author         | The updated `ReplayNote`                          |
-| `DELETE /replay-annotations/:matchId/notes/:id`   | The note's author         | `{ ok: true }`                                    |
+| Method and path                                    | Who                       | Result                                            |
+| -------------------------------------------------- | ------------------------- | ------------------------------------------------- |
+| `GET /replays/annotations/:matchId`                | Anyone                    | `ReplayAnnotations`: the viewer's own annotations |
+| `POST /replays/annotations/:matchId/markers`       | Signed-in, allowed viewer | 201 with the `ReplayMarker`                       |
+| `DELETE /replays/annotations/:matchId/markers/:id` | The marker's author       | `{ ok: true }`                                    |
+| `POST /replays/annotations/:matchId/notes`         | Signed-in, allowed viewer | 201 with the `ReplayNote`                         |
+| `PATCH /replays/annotations/:matchId/notes/:id`    | The note's author         | The updated `ReplayNote`                          |
+| `DELETE /replays/annotations/:matchId/notes/:id`   | The note's author         | `{ ok: true }`                                    |
 
 - Markers take `{ frameIndex, turn, emoji }`; notes take
   `{ frameIndex, turn, text }`; a note edit takes `{ text }`.

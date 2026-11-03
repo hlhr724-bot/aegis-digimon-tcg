@@ -65,7 +65,7 @@ it("shows saved markers on the timeline, jumps to them and marks the current mom
     if (init?.method === "POST") {
       return Response.json({ ...savedMarker, id: "m2", frameIndex: 0, turn: 1, emoji: "💡" }, { status: 201 });
     }
-    expect(String(input)).toContain(`/replay-annotations/${MATCH_ID}`);
+    expect(String(input)).toContain(`/replays/annotations/${MATCH_ID}`);
     return Response.json({ markers: [savedMarker], notes: [], canAnnotate: true, ownReplayIds: [] });
   });
   vi.stubGlobal("fetch", fetcher);
