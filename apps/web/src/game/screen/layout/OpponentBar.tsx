@@ -74,7 +74,6 @@ export function OpponentBar({
   onToggleChat,
   chatOpen = false,
   chatUnread = 0,
-  logUnread = 0,
   onSurrender,
   gameOver = false,
   onSkipPresentation,
@@ -116,7 +115,6 @@ export function OpponentBar({
   chatOpen?: boolean;
   /** Messages from others since the chat window was last open. */
   chatUnread?: number;
-  logUnread?: number;
   onSurrender: () => void;
   gameOver?: boolean;
   onSkipPresentation: () => void;
@@ -127,7 +125,7 @@ export function OpponentBar({
   const fullscreenLabel = fullscreen.active ? t("game.fullscreen.exit") : t("game.fullscreen.enter");
   const FullscreenIcon = fullscreen.active ? Icons.Minimize : Icons.Maximize;
   const chatLabel = chatUnread > 0 ? t("chat.openUnread", { count: chatUnread }) : t("chat.open");
-  const logLabel = logUnread > 0 ? t("game.matchLogUnread", { count: logUnread }) : t("game.matchLog");
+  const logLabel = t("game.matchLog");
   const skipShown = useHeldFlag(skippable, SKIP_BUTTON_HOLD_MS);
   const tooltip = useTopbarTooltip();
   const friendsDrawer = useFriendsDrawerLauncher();
@@ -252,7 +250,7 @@ export function OpponentBar({
         >
           <summary aria-label={t("mobile.board.matchMenu")}>
             <Icons.MoreVertical size={20} />
-            <UnreadBadge count={chatUnread + logUnread} testId="menu-unread" />
+            <UnreadBadge count={chatUnread} testId="menu-unread" />
           </summary>
           <div className="game-mobile-menu__actions">
             {rollbackControls}
@@ -317,7 +315,6 @@ export function OpponentBar({
             data-testid="log-strip"
           >
             <Icons.ScrollText size={16} />
-            <UnreadBadge count={logUnread} testId="log-unread" />
           </button>
           {onToggleChat ? (
             <button
@@ -383,7 +380,6 @@ export function OpponentBar({
           ) : null}
           <button className="game-topbar-button" {...tooltip.describe("log", logLabel, onOpenLog)}>
             <Icons.ScrollText size={17} />
-            <UnreadBadge count={logUnread} testId="log-unread" />
           </button>
           {onToggleChat ? (
             <button

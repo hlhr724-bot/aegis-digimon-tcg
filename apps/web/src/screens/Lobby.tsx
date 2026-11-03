@@ -4,6 +4,8 @@ import type { BotSettings } from "@aegis/shared/bot/BotSettings";
 import { isBotDifficulty } from "@aegis/shared/bot/isBotDifficulty";
 import { isBotStyle } from "@aegis/shared/bot/isBotStyle";
 import { readBotSettings } from "@/bot/readBotSettings";
+import { readBotDeckPreference } from "@/bot/readBotDeckPreference";
+import { saveBotDeckPreference } from "@/bot/saveBotDeckPreference";
 import { GameModeSwitch } from "@/screens/GameModeSwitch";
 import { LobbyMode } from "@/screens/LobbyMode";
 import { GameMode } from "@aegis/shared/manual/GameMode";
@@ -307,8 +309,7 @@ export function Lobby({
   const [betaConfirmationOpen, setBetaConfirmationOpen] = useState(false);
   const [privateSub, setPrivateSub] = useState<"create" | "join">(invitedRoomCode ? "join" : "create");
   const [roomCodeInput, setRoomCodeInput] = useState(invitedRoomCode ?? "");
-  // "" is the random pool; any other value is a famous-deck preset id the bot will play.
-  const [botDeckId, setBotDeckId] = useState("");
+  const [preferredBotDeckId, setPreferredBotDeckId] = useState(readBotDeckPreference);
   const [botSettings, setBotSettings] = useState(readBotSettings);
   useEffect(() => {
     try {
@@ -357,14 +358,6 @@ export function Lobby({
   const unlimited = formatIsUnlimited(format);
   function changeFormat(next: DeckFormat) {
     setSelectedFormat(next);
-    const preset = FAMOUS_DECKS.find((deck) => deck.id === botDeckId);
-    if (preset && !deckLegality(preset, { format: next }).legal) setBotDeckId("");
-    const randomSet = FAMOUS_DECK_GROUPS.find(
-      (group) => `${RANDOM_SET_BOT_DECK_PREFIX}${group.collection}` === botDeckId,
-    );
-    if (randomSet && !randomSet.decks.some((deck) => deckLegality(deck, { format: next }).legal)) {
-      setBotDeckId("");
-    }
   }
   const banlistLimit = (id: string) => formatCopyLimit(id, format);
   const onStart = useCallback(
@@ -501,6 +494,18 @@ export function Lobby({
   );
   const isBotPresetUnplayable = (deck: DeckListing) =>
     !deckLegality(deck, { format }).legal || (!betaAllowed && deckHasBetaCards(deck));
+  const preferredOwnBotDeck = preferredBotDeckId.startsWith("mine:")
+    ? decks.find((deck) => deck.id === preferredBotDeckId.slice(5))
+    : undefined;
+  const preferredBotPreset = FAMOUS_DECKS.find((deck) => deck.id === preferredBotDeckId);
+  const preferredBotRandomSet = FAMOUS_DECK_GROUPS.find(
+    (group) => `${RANDOM_SET_BOT_DECK_PREFIX}${group.collection}` === preferredBotDeckId,
+  );
+  const preferredBotDeckPlayable =
+    (preferredOwnBotDeck !== undefined && deckLegality(preferredOwnBotDeck, { unlimited, format }).legal) ||
+    (preferredBotPreset !== undefined && !isBotPresetUnplayable(preferredBotPreset)) ||
+    (preferredBotRandomSet !== undefined && !preferredBotRandomSet.decks.every(isBotPresetUnplayable));
+  const botDeckId = preferredBotDeckPlayable ? preferredBotDeckId : "";
   const customBotDeck =
     vsBot && botDeckId.startsWith("mine:") ? decks.find((deck) => deck.id === botDeckId.slice(5)) : undefined;
   const botPreview = vsBot
@@ -1222,7 +1227,10 @@ export function Lobby({
                           id="lobby-bot-deck"
                           className="lobby-bot-deck-select"
                           value={botDeckId}
-                          onChange={(event) => setBotDeckId(event.target.value)}
+                          onChange={(event) => {
+                            setPreferredBotDeckId(event.target.value);
+                            saveBotDeckPreference(event.target.value);
+                          }}
                         >
                           <option value="">{t("lobby.botDeckRandom")}</option>
                           <optgroup label={t("lobby.filterMine")}>

@@ -6,6 +6,7 @@ import { staffRolesKo } from "@/i18n/staffRoles.ko";
 import { tournamentDetailKo } from "@/i18n/tournamentDetail.ko";
 import { tournamentSpectatorsKo } from "@/i18n/tournamentSpectators.ko";
 import { publicReplaysKo } from "@/i18n/publicReplays.ko";
+import { replayAnnotationsKo } from "@/i18n/replayAnnotations.ko";
 import { achievementsKo } from "@/i18n/achievements.ko";
 import { rankedKo } from "@/i18n/ranked.ko";
 import { friendsEn } from "@/i18n/friends.en";
@@ -1271,7 +1272,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "사용",
   "game.dragIntent.attack": "어택",
   "game.matchLog": "대전 로그",
-  "game.matchLogUnread": "대전 로그, 새 항목 {count}개",
   "game.matchLogExpand": "대전 로그 확대",
   "game.matchLogDrag": "드래그하여 이동",
   "settings.matchLogDisplay": "대전 로그 표시",
@@ -2912,6 +2912,7 @@ const interfaceMessages = {
   ...tournamentDetailKo,
   ...tournamentSpectatorsKo,
   ...publicReplaysKo,
+  ...replayAnnotationsKo,
   ...tournamentCircuitsKo,
   ...tournamentOfficialRequestKo,
   ...matchQueueKo,

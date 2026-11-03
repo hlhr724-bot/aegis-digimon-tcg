@@ -229,6 +229,43 @@ button.play-log__card:focus-visible {
 .play-log__line[data-effect="source"] p {
   color: var(--ds-text);
 }
+.play-log__effect {
+  display: grid;
+  gap: var(--ds-space-1);
+  min-width: 0;
+}
+.play-log__effect-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+.play-log__effect-timing,
+.play-log__effect-inherited {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--ds-space-2);
+  border-radius: var(--ds-radius-sm);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  line-height: 1.5;
+}
+.play-log__effect-timing {
+  color: var(--ds-text);
+  background: color-mix(in srgb, var(--play-log-tone, var(--ds-accent)) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--play-log-tone, var(--ds-accent)) 55%, transparent);
+}
+.play-log__effect-inherited {
+  color: var(--ds-text-2);
+  border: 1px solid var(--ds-line);
+}
+.play-log__line .play-log__effect-text {
+  padding-inline-start: var(--ds-space-2);
+  border-inline-start: 2px solid color-mix(in srgb, var(--play-log-tone) 45%, transparent);
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-xs);
+  line-height: 1.45;
+}
 .play-log__line[data-effect="result"] {
   margin-inline-start: var(--ds-space-4);
   padding-block: 3px;

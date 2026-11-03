@@ -6,6 +6,7 @@ import { staffRolesId } from "@/i18n/staffRoles.id";
 import { tournamentDetailId } from "@/i18n/tournamentDetail.id";
 import { tournamentSpectatorsId } from "@/i18n/tournamentSpectators.id";
 import { publicReplaysId } from "@/i18n/publicReplays.id";
+import { replayAnnotationsId } from "@/i18n/replayAnnotations.id";
 import { achievementsId } from "@/i18n/achievements.id";
 import { rankedId } from "@/i18n/ranked.id";
 import { friendsEn } from "@/i18n/friends.en";
@@ -1286,7 +1287,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "GUNAKAN",
   "game.dragIntent.attack": "SERANG",
   "game.matchLog": "Log pertandingan",
-  "game.matchLogUnread": "Log pertandingan, {count} baru",
   "game.matchLogExpand": "Perbesar log pertandingan",
   "game.matchLogDrag": "Seret untuk memindahkan",
   "settings.matchLogDisplay": "Tampilan log pertandingan",
@@ -2958,6 +2958,7 @@ const interfaceMessages = {
   ...tournamentDetailId,
   ...tournamentSpectatorsId,
   ...publicReplaysId,
+  ...replayAnnotationsId,
   ...tournamentCircuitsId,
   ...tournamentOfficialRequestId,
   ...matchQueueId,

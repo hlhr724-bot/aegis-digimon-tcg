@@ -114,25 +114,16 @@ describe("bounded Fragment parameters", () => {
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision !== undefined);
     const refusal = s.state.pendingDecision!;
-    expect(refusal.kind).toBe("optional");
+    expect(refusal.kind).toBe("selectCards");
+    expect(refusal.promptText).toContain("＜Fragment (3)＞");
+    expect(JSON.parse(refusal.payloadJson ?? "{}")).toMatchObject({ min: 0, max: 3 });
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",
         decisionId: refusal.decisionId,
-        response: { kind: "optional", accept: false },
+        response: { kind: "selectCards", instanceIds: [] },
       }),
     ).toEqual({ ok: true });
-    await settle(() => s.state.pendingDecision === undefined || s.state.pendingDecision.kind === "selectCards");
-    if (s.state.pendingDecision?.kind === "selectCards") {
-      const selection = s.state.pendingDecision;
-      expect(
-        s.engine.applyIntent(0, {
-          type: "respondDecision",
-          decisionId: selection.decisionId,
-          response: { kind: "selectCards", instanceIds: [] },
-        }),
-      ).toEqual({ ok: true });
-    }
     await settle(() => s.state.players[0]!.battleArea.length === 0);
     expect(s.state.players[0]!.trash.map(({ instanceId }) => instanceId)).toEqual(
       expect.arrayContaining([

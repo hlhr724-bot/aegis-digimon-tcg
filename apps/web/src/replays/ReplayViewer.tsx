@@ -17,7 +17,9 @@ class ReplayRenderBoundary extends Component<{ children: ReactNode; fallback: Re
 }
 
 /** Full-screen playback. A replay the player cannot render falls back to a message instead of a blank page. */
-export function ReplayViewer({ replay, onClose }: { replay: MatchReplay; onClose: () => void }) {
+type ReplayViewerProps = { replay: MatchReplay; onClose: () => void; initialIndex?: number; shareId?: string };
+
+export function ReplayViewer({ replay, onClose, initialIndex, shareId }: ReplayViewerProps) {
   const { t } = useTranslation();
   return (
     <ReplayRenderBoundary
@@ -29,7 +31,7 @@ export function ReplayViewer({ replay, onClose }: { replay: MatchReplay; onClose
         </div>
       }
     >
-      <ReplayPlayer replay={replay} onClose={onClose} />
+      <ReplayPlayer replay={replay} onClose={onClose} initialIndex={initialIndex} shareId={shareId} />
     </ReplayRenderBoundary>
   );
 }

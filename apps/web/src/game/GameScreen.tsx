@@ -39,6 +39,7 @@ import { MatchIntroOverlay } from "@/game/overlay/match/MatchIntroOverlay";
 import { useMatchIntro } from "@/game/screen/hooks/useMatchIntro";
 import { pendingMatchNotice } from "./screen/model/pendingMatchNotice";
 import { getGuestApprovalView } from "@/game/screen/model/getGuestApprovalView";
+import { isMatchIntroStarting } from "@/game/screen/model/isMatchIntroStarting";
 import { GUEST_APPROVAL_CHANNEL } from "@aegis/shared/protocol/GuestApprovalMessage";
 import { sourceHostChoiceFor } from "./screen/model/sourceHostChoice";
 import { BoardStage, type BoardAnchors } from "./screen/layout/BoardStage";
@@ -1000,7 +1001,7 @@ function GameScreenSession({
       !joinOptions.devScenario &&
       !findTutorialLesson(joinOptions.storyBattleId),
     awaitingOpponent: botSeatPending,
-    matchStarting: status === "connected" && bothSeated(state) && state?.turnCount === 0 && !state.gameOver,
+    matchStarting: isMatchIntroStarting({ status, state, guestApproval }),
   });
   const introViewer = state?.players[viewerSeat];
   const introOpponent = state?.players[otherSeat(viewerSeat)];

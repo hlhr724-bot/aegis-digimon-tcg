@@ -6,6 +6,7 @@ import { staffRolesZhTW } from "@/i18n/staffRoles.zh-TW";
 import { tournamentDetailZhTW } from "@/i18n/tournamentDetail.zh-TW";
 import { tournamentSpectatorsZhTW } from "@/i18n/tournamentSpectators.zh-TW";
 import { publicReplaysZhTW } from "@/i18n/publicReplays.zh-TW";
+import { replayAnnotationsZhTW } from "@/i18n/replayAnnotations.zh-TW";
 import { achievementsZhTw } from "@/i18n/achievements.zh-TW";
 import { rankedZhTw } from "@/i18n/ranked.zh-TW";
 import { friendsEn } from "@/i18n/friends.en";
@@ -1228,7 +1229,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "使用",
   "game.dragIntent.attack": "攻擊",
   "game.matchLog": "對局日誌",
-  "game.matchLogUnread": "對局日誌，{count} 條新紀錄",
   "game.matchLogExpand": "展開對局日誌",
   "game.matchLogDrag": "拖曳以移動",
   "settings.matchLogDisplay": "對局日誌顯示方式",
@@ -2836,6 +2836,7 @@ const interfaceMessages = {
   ...tournamentDetailZhTW,
   ...tournamentSpectatorsZhTW,
   ...publicReplaysZhTW,
+  ...replayAnnotationsZhTW,
   ...tournamentCircuitsZhTW,
   ...tournamentOfficialRequestZhTW,
   ...matchQueueZhTW,

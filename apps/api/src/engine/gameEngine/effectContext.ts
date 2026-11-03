@@ -37,6 +37,7 @@ import type {
 } from "../effects/EffectContext.js";
 import { detachLeaveReplacements, detachTraitTokens } from "../effects/detach.js";
 import { partitionLeaveReplacements } from "../effects/verbs/partition.js";
+import { PARTITION_MATERIAL_PROMPT } from "#api/engine/effects/verbs/partitionMaterialPrompt";
 import { guardLeaveReplacements } from "../effects/guard.js";
 import { definitionOf } from "../cards/cardData.js";
 import { consultLeavePrevention } from "../effects/leavePrevention.js";
@@ -351,7 +352,7 @@ export async function engineConsultLeavePrevention(
         ...partitionLeaveReplacements(ids, {
           permanentById: (id) => engine.access.permanentById(id),
           hasPartition: (id) => engine.continuous.hasKeyword(id, "Partition"),
-          select: async (_ctx, candidate) => {
+          confirm: async (candidate, assignment) => {
             const response = await engine.decisions.request({
               seat: candidate.seat,
               kind: "selectCards",
@@ -359,11 +360,27 @@ export async function engineConsultLeavePrevention(
               sourceCardId: candidate.partitionSourceCardId,
               sourceInstanceId: candidate.partitionSourceInstanceId,
               options: {
-                candidateInstanceIds: [candidate.matchedInstanceIds[0]!],
+                candidateInstanceIds: [assignment[0]!],
                 min: 0,
                 max: 1,
                 selectionContext: "partitionActivation",
-                visibleInstanceIds: candidate.matchedInstanceIds,
+                visibleInstanceIds: [...assignment],
+              },
+            });
+            return response.kind === "selectCards" && response.instanceIds.length > 0;
+          },
+          choose: async (candidate, assignments, min) => {
+            const response = await engine.decisions.request({
+              seat: candidate.seat,
+              kind: "selectCards",
+              promptText: PARTITION_MATERIAL_PROMPT,
+              sourceCardId: candidate.partitionSourceCardId,
+              sourceInstanceId: candidate.partitionSourceInstanceId,
+              options: {
+                candidateInstanceIds: [...new Set(assignments.flat())],
+                min,
+                max: assignments[0]!.length,
+                allowedTargetCombinations: assignments.map((assignment) => [...assignment]),
               },
             });
             return response.kind === "selectCards" ? response.instanceIds : [];
@@ -994,6 +1011,9 @@ export function buildPrimitives(engine: GameEngine): Primitives {
             isInherited: provenance?.isInherited,
             selectionContext: provenance?.selectionContext,
             visibleInstanceIds: provenance?.visibleInstanceIds,
+            ...(provenance?.allowedTargetCombinations === undefined
+              ? {}
+              : { allowedTargetCombinations: provenance.allowedTargetCombinations }),
             ...(provenance?.selectionGoal === undefined ? {} : { selectionGoal: provenance.selectionGoal }),
           },
         });

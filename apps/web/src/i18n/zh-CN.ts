@@ -6,6 +6,7 @@ import { staffRolesZhCN } from "@/i18n/staffRoles.zh-CN";
 import { tournamentDetailZhCN } from "@/i18n/tournamentDetail.zh-CN";
 import { tournamentSpectatorsZhCN } from "@/i18n/tournamentSpectators.zh-CN";
 import { publicReplaysZhCN } from "@/i18n/publicReplays.zh-CN";
+import { replayAnnotationsZhCN } from "@/i18n/replayAnnotations.zh-CN";
 import { achievementsZhCn } from "@/i18n/achievements.zh-CN";
 import { rankedZhCn } from "@/i18n/ranked.zh-CN";
 import { friendsEn } from "@/i18n/friends.en";
@@ -1222,7 +1223,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "使用",
   "game.dragIntent.attack": "攻击",
   "game.matchLog": "对局记录",
-  "game.matchLogUnread": "对局记录，{count} 条新记录",
   "game.matchLogExpand": "展开对局记录",
   "game.matchLogDrag": "拖动以移动",
   "settings.matchLogDisplay": "对局记录显示方式",
@@ -2830,6 +2830,7 @@ const interfaceMessages = {
   ...tournamentDetailZhCN,
   ...tournamentSpectatorsZhCN,
   ...publicReplaysZhCN,
+  ...replayAnnotationsZhCN,
   ...tournamentCircuitsZhCN,
   ...tournamentOfficialRequestZhCN,
   ...matchQueueZhCN,

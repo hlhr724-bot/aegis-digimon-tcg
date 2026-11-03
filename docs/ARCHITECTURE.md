@@ -59,6 +59,9 @@ stores the decklists and every input so the engine can re-execute the match.
 New matches also record a server-generated 256-bit `randomKey` for keyed shuffles
 and opaque initial card identities. This key stays in server hooks, logs, and
 private input records; it never enters synchronized state or player replay frames.
+Story battles shuffle their fixture decks with the same key, so a player who knows
+the public fixture and their own hand cannot recover the deck order from the 32-bit
+seed alone.
 Records without the key retain the legacy setup algorithm for reproduction.
 Live rooms ignore client seeds outside the test runtime. Feedback input records
 are available only through administrator routes or database tooling, including

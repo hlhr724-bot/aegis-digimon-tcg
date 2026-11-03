@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ClientState, type Client } from "colyseus";
 import { Phase, type Intent, type Seat } from "@aegis/shared";
 import { RollbackKind } from "@aegis/shared/protocol/RollbackKind";
+import { GuestApproval } from "@aegis/shared/protocol/GuestApproval";
 import { AegisRoom } from "#api/rooms/AegisRoom";
 import { RED_DECK, BLUE_DECK } from "#api/engine/testDecks";
 import fixture from "#api/engine/scenarios/matchRollback.fixture";
@@ -146,6 +147,22 @@ describe("consensual match rollback", () => {
       expect(room.state.undoActionSeat).toBe(-1);
     },
   );
+
+  it("undoes an action in a private room whose host approved the guest and keeps the approval", async () => {
+    const { room, clients } = await start();
+    room.state.guestApproval = GuestApproval.APPROVED.value;
+    await main(room);
+    const card = room.state.players[0]!.hand.find((entry) => entry.cardId === "BT1-009")!;
+    expect(send(room, 0, { type: "playCard", instanceId: card.instanceId })).toEqual({ ok: true });
+    await idle();
+    const source = engine(room);
+    await request(room, clients[0]!, RollbackKind.ACTION.value);
+    await answer(room, clients[1]!, true);
+    expect(engine(room)).not.toBe(source);
+    expect(room.state.rollbackRevision).toBe(1);
+    expect(room.state.memory).toBe(10);
+    expect(room.state.guestApproval).toBe(GuestApproval.APPROVED.value);
+  });
 
   it("does not skip an opponent action to undo an older own action", async () => {
     const { room, clients } = await start();

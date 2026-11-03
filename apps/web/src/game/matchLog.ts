@@ -13,6 +13,7 @@ import { appendLogEvent } from "@/game/log/appendLogEvent";
 import { flushPendingLogMemory } from "@/game/log/flushPendingLogMemory";
 import { flattenRecentLogEntries } from "@/game/log/flattenRecentLogEntries";
 import type { LogKind, LogLine } from "@/game/log/LogEntry";
+import { getLogEffectDetail } from "@/game/log/getLogEffectDetail";
 
 const cardName = (cardId: string): string => getLogCardName({ cardId });
 
@@ -250,15 +251,21 @@ export function describeEvent({
         cardIds: [event.sourceCardId],
       };
     case "effectTriggered":
+      return {
+        text: t("log.effectTriggered", {
+          card: getLogCardName({ cardId: event.sourceCardId, permanentId: event.sourcePermanentId }),
+        }),
+        kind: "sys",
+        cardIds: [event.sourceCardId],
+        effect: getLogEffectDetail({ event }),
+      };
     case "effectResolved":
       return {
         text: t(
-          event.kind === "effectTriggered"
-            ? "log.effectTriggered"
-            : event.digivolutionPerformed === false
-              ? "log.effectResolvedWithoutDigivolution"
-              : "log.effectResolved",
-          { card: getLogCardName({ cardId: event.sourceCardId, permanentId: event.sourcePermanentId }) },
+          event.digivolutionPerformed === false ? "log.effectResolvedWithoutDigivolution" : "log.effectResolved",
+          {
+            card: getLogCardName({ cardId: event.sourceCardId, permanentId: event.sourcePermanentId }),
+          },
         ),
         kind: "sys",
         cardIds: [event.sourceCardId],

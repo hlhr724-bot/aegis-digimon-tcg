@@ -6,6 +6,7 @@ import { staffRolesJa } from "@/i18n/staffRoles.ja";
 import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
 import { tournamentSpectatorsJa } from "@/i18n/tournamentSpectators.ja";
 import { publicReplaysJa } from "@/i18n/publicReplays.ja";
+import { replayAnnotationsJa } from "@/i18n/replayAnnotations.ja";
 import { achievementsJa } from "@/i18n/achievements.ja";
 import { rankedJa } from "@/i18n/ranked.ja";
 import { friendsEn } from "@/i18n/friends.en";
@@ -1283,7 +1284,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "使用",
   "game.dragIntent.attack": "アタック",
   "game.matchLog": "対戦ログ",
-  "game.matchLogUnread": "対戦ログ、新着{count}件",
   "game.matchLogExpand": "対戦ログを拡大",
   "game.matchLogDrag": "ドラッグして移動",
   "settings.matchLogDisplay": "対戦ログの表示",
@@ -2936,6 +2936,7 @@ const interfaceMessages = {
   ...tournamentDetailJa,
   ...tournamentSpectatorsJa,
   ...publicReplaysJa,
+  ...replayAnnotationsJa,
   ...tournamentCircuitsJa,
   ...tournamentOfficialRequestJa,
   ...matchQueueJa,

@@ -13,6 +13,8 @@ export function filterMatchLog({ turns, query }: Params): readonly LogTurnGroup[
       const entries = phase.entries.filter((entry) => {
         const searchable = [
           entry.text,
+          entry.effect?.timingLabel ?? "",
+          entry.effect?.clause ?? "",
           ...(entry.cardIds ?? []).flatMap((id) => [id, getCardDefinition(id)?.nameEn ?? ""]),
         ];
         return searchable.some((text) => text.toLocaleLowerCase().includes(needle));

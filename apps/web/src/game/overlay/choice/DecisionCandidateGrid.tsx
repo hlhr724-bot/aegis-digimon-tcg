@@ -1,6 +1,6 @@
 import { OpenDecisionCardButton } from "@/game/overlay/choice/OpenDecisionCardButton";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { CardBack, CardFull } from "../../../design/cards";
 import { NARROW_DIALOG_QUERY, TOUCH_LAYOUT_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
 import { Icons } from "../../../design/icons";
@@ -56,9 +56,18 @@ export function DecisionCandidateGrid({
   // A prompt that reaches into two zones at once (a hand and a trash, say) is
   // unreadable as one undivided row, so each zone gets its own titled section;
   // a single-zone prompt keeps the plain grid it always had.
+  const [openingRanks] = useState(
+    () =>
+      new Map(
+        [...candidates]
+          .sort((a, b) => Number(isCandidateSelectable(b)) - Number(isCandidateSelectable(a)))
+          .map((cand, index) => [cand.instanceId, index]),
+      ),
+  );
+  const rankOf = (cand: DecisionCandidate) => openingRanks.get(cand.instanceId) ?? openingRanks.size;
   const zoneGroups = candidateZoneGroups(candidates).map((group) => ({
     ...group,
-    items: [...group.items].sort((a, b) => Number(isCandidateSelectable(b)) - Number(isCandidateSelectable(a))),
+    items: [...group.items].sort((a, b) => rankOf(a) - rankOf(b)),
   }));
 
   function isCandidateSelectable(cand: DecisionCandidate) {

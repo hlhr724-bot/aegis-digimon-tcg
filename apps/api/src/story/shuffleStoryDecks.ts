@@ -2,12 +2,12 @@ import { catalogStoryBattles } from "@aegis/shared/story/catalogStoryBattles";
 import type { ScenarioFixture } from "#api/engine/scenario/types";
 import { makeRng, seatSeed, shuffleInPlace } from "#api/engine/setup";
 
-type Params = { fixture: ScenarioFixture; seed: number };
+type Params = { fixture: ScenarioFixture; seed: number; randomKey: string };
 
-export function shuffleStoryDecks({ fixture, seed }: Params): void {
+export function shuffleStoryDecks({ fixture, seed, randomKey }: Params): void {
   for (const seat of [0, 1] as const) {
     const board = fixture.board[seat];
-    const rng = makeRng(seatSeed(seed, seat));
+    const rng = makeRng(seatSeed(seed, seat), randomKey);
     if (board?.deck && catalogStoryBattles.some((battle) => battle.id === fixture.name)) {
       const hand = board.hand ?? [];
       const security = Array.isArray(board.security) ? board.security : [];

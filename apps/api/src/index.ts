@@ -141,6 +141,7 @@ function scheduleReplayCleanup() {
     cleaning = true;
     try {
       await replayLibrary.cleanup();
+      await replayLibrary.annotations.cleanup();
       await new DirectMessageStore(accountStore).cleanup();
     } catch (error) {
       logError("[replays] cleanup failed", error);

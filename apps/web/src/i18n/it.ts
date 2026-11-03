@@ -6,6 +6,7 @@ import { staffRolesIt } from "@/i18n/staffRoles.it";
 import { tournamentDetailIt } from "@/i18n/tournamentDetail.it";
 import { tournamentSpectatorsIt } from "@/i18n/tournamentSpectators.it";
 import { publicReplaysIt } from "@/i18n/publicReplays.it";
+import { replayAnnotationsIt } from "@/i18n/replayAnnotations.it";
 import { achievementsIt } from "@/i18n/achievements.it";
 import { rankedIt } from "@/i18n/ranked.it";
 import { friendsEn } from "@/i18n/friends.en";
@@ -1179,7 +1180,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "USA",
   "game.dragIntent.attack": "ATTACCA",
   "game.matchLog": "Registro della partita",
-  "game.matchLogUnread": "Registro della partita, {count} nuove",
   "game.matchLogExpand": "Espandi registro della partita",
   "game.matchLogDrag": "Trascina per spostare",
   "settings.matchLogDisplay": "Visualizzazione del registro",
@@ -2708,6 +2708,7 @@ const interfaceMessages = {
   ...tournamentDetailIt,
   ...tournamentSpectatorsIt,
   ...publicReplaysIt,
+  ...replayAnnotationsIt,
   ...tournamentCircuitsIt,
   ...tournamentOfficialRequestIt,
   ...matchQueueIt,

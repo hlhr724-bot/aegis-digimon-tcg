@@ -125,7 +125,8 @@ function isSameCue(a: ArenaCardCue, b: ArenaCardCue): boolean {
     a.tint === b.tint &&
     a.shaking === b.shaking &&
     a.landing === b.landing &&
-    a.offered === b.offered
+    a.offered === b.offered &&
+    a.summoning === b.summoning
   );
 }
 

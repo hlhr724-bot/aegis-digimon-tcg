@@ -7,6 +7,7 @@ export type ArenaCardCue = {
   shaking: boolean;
   landing: boolean;
   offered: boolean;
+  summoning: boolean;
 };
 
 export type ArenaCardCueTimeline = {

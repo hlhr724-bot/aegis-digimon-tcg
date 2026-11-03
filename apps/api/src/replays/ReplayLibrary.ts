@@ -1,4 +1,5 @@
 import { FriendReplayStore } from "#api/replays/FriendReplayStore";
+import { ReplayAnnotationStore } from "#api/replays/annotations/ReplayAnnotationStore";
 import { ReplayVisibility } from "@aegis/shared/replays/ReplayVisibility";
 import { isDeckFormat, type DeckFormat } from "@aegis/shared/deckFormat";
 import {
@@ -114,6 +115,7 @@ export interface DriveAccess {
 
 export class ReplayLibrary {
   readonly friendFiles: FriendReplayStore;
+  readonly annotations: ReplayAnnotationStore;
   private readonly apiKey?: string;
   private readonly fetch: typeof fetch;
 
@@ -122,6 +124,7 @@ export class ReplayLibrary {
     drive: DriveAccess = {},
   ) {
     this.friendFiles = new FriendReplayStore(accounts);
+    this.annotations = new ReplayAnnotationStore(accounts, this);
     this.apiKey = drive.apiKey || undefined;
     this.fetch = drive.fetch ?? fetch;
   }
