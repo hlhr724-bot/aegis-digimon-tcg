@@ -248626,5 +248626,27 @@
       { "namesExact": ["Thunderbirdmon"], "traits": ["Bio"], "cost": 5, "isAlternate": true },
       { "baseIsTamer": true, "traits": ["Kurata's Army"], "cost": 7, "isAlternate": true }
     ]
+  },
+  "BD01-02": {
+    "effects": [
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "DeletionMaxDpModifier",
+            "amount": 1000,
+            "scope": "self",
+            "duration": "permanent",
+            "condition": {
+              "kind": "selfHasTrait",
+              "filter": { "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }] }
+            }
+          }
+        ],
+        "isInherited": true
+      }
+    ],
+    "coverage": "full",
+    "residual": []
   }
 }

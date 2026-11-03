@@ -111208,5 +111208,30 @@
     "rarity": "R",
     "maxCountInDeck": 4,
     "imageId": "BT27-071"
+  },
+  {
+    "cardId": "BD01-02",
+    "set": "BD01",
+    "nameEn": "Gemmon",
+    "nameJp": "ジェムモン",
+    "colors": ["Red"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Vaccine"],
+    "types": ["Mythical Beast", "ALYSION"],
+    "inheritedEffectText": "[Your Turn] Add 1000 to this [ALYSION] trait Digimon's DP deletion effect's maximum.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BD01-02"
   }
 ]
