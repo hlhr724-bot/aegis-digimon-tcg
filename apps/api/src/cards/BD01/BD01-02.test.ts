@@ -1,7 +1,7 @@
 import { getCardDefinition } from "@aegis/shared";
 import { afterEach, describe, expect, it } from "vitest";
 import { registerIrCard, runtimeCompiledCard } from "../../engine/effects/interpreter.js";
-import { unregisterCard } from "../../engine/effects/registry.js";
+import { unregisterIrCard } from "../../engine/effects/interpreter/registration/unregisterIrCard.js";
 import { assertNoLoudGap, drainMicrotasks, settle, setupEngine } from "../../engine/testkit/harness.js";
 import { syntheticDefinitions } from "../../engine/testkit/syntheticDefinitions.js";
 import { compiled as gallantmonCompiled } from "../BT19/BT19-015.js";
@@ -50,7 +50,7 @@ async function digivolveGallantmonOverGemmon(host: string, opponentDp: readonly 
 
 describe("BD01-02 Gemmon", () => {
   afterEach(() => {
-    for (const id of syntheticDefinitions.keys()) unregisterCard(id);
+    for (const id of syntheticDefinitions.keys()) unregisterIrCard(id);
     syntheticDefinitions.clear();
   });
 
