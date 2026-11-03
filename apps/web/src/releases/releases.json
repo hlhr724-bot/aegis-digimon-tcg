@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.50.1-beta",
+    "releasedAt": "2026-11-03",
+    "summaryKey": "releases.1.50.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.50.1-beta.fix.replayAnnotations"
+      }
+    ]
+  },
+  {
     "version": "1.50.0-beta",
     "releasedAt": "2026-11-03",
     "summaryKey": "releases.1.50.0-beta.summary",
