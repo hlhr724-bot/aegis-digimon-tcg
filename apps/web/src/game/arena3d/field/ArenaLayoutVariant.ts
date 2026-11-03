@@ -55,7 +55,7 @@ const SHORT_ZONES: ArenaZoneSlots = {
   [`${Side.Viewer}:${ArenaZone.RAISING.value}`]: { x: -5.3, z: 3.2 },
 };
 
-const TALL_PILE_DEPTH = 4.95;
+const TALL_PILE_DEPTH = 5.28;
 const TALL_PILE_NEAR_X = 1.85;
 const TALL_PILE_FAR_X = 3.3;
 
@@ -96,8 +96,8 @@ export const ArenaLayoutVariant = {
   TALL: {
     name: "TALL",
     value: "tall",
-    bounds: { halfWidth: 3.95, halfDepth: 6.25 },
-    lanes: { digimonDepth: 1.22, supportDepth: 3.06, columnPitch: 1.5, halfWidth: 3.6 },
+    bounds: { halfWidth: 3.95, halfDepth: 6.58 },
+    lanes: { digimonDepth: 1.55, supportDepth: 3.39, columnPitch: 1.5, halfWidth: 3.6 },
     zones: TALL_ZONES,
     memoryScale: 0.5,
     pitchDegrees: 66,

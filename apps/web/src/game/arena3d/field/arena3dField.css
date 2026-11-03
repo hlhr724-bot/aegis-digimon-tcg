@@ -657,6 +657,19 @@
   translate: 0 -50% !important;
 }
 
+.game-board[data-board-style="arena3d"]
+  .arena-3d-field[data-arena-layout="tall"]
+  .game-memory-coin:not(.game-memory-coin--marker)
+  .game-memory-coin__n {
+  display: none !important;
+}
+
+@media (max-height: 760px) {
+  .game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="tall"] .game-memory-coin--marker {
+    scale: 0.8;
+  }
+}
+
 @media (max-height: 520px) {
   .game-board[data-board-style="arena3d"] .arena-3d-field[data-arena-layout="short"] .game-end-turn-orb {
     min-width: 5rem;
