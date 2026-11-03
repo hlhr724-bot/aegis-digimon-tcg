@@ -37,6 +37,7 @@ import type {
 } from "../effects/EffectContext.js";
 import { detachLeaveReplacements, detachTraitTokens } from "../effects/detach.js";
 import { partitionLeaveReplacements } from "../effects/verbs/partition.js";
+import { PARTITION_MATERIAL_PROMPT } from "#api/engine/effects/verbs/partitionMaterialPrompt";
 import { guardLeaveReplacements } from "../effects/guard.js";
 import { definitionOf } from "../cards/cardData.js";
 import { consultLeavePrevention } from "../effects/leavePrevention.js";
@@ -359,14 +360,25 @@ export async function engineConsultLeavePrevention(
               sourceCardId: candidate.partitionSourceCardId,
               sourceInstanceId: candidate.partitionSourceInstanceId,
               options: {
-                candidateInstanceIds: [candidate.matchedInstanceIds[0]!],
+                candidateInstanceIds: [candidate.offeredInstanceIds[0]!],
                 min: 0,
                 max: 1,
                 selectionContext: "partitionActivation",
-                visibleInstanceIds: candidate.matchedInstanceIds,
+                visibleInstanceIds: candidate.offeredInstanceIds,
               },
             });
             return response.kind === "selectCards" ? response.instanceIds : [];
+          },
+          chooseMaterial: async (candidate, candidateInstanceIds) => {
+            const response = await engine.decisions.request({
+              seat: candidate.seat,
+              kind: "selectCards",
+              promptText: PARTITION_MATERIAL_PROMPT,
+              sourceCardId: candidate.partitionSourceCardId,
+              sourceInstanceId: candidate.partitionSourceInstanceId,
+              options: { candidateInstanceIds, min: 1, max: 1 },
+            });
+            return response.kind === "selectCards" ? response.instanceIds[0] : undefined;
           },
           play: (source, materialIds) =>
             playForKeywordEffect(engine, source, materialIds, { playedFromZone: "digivolutionCards" }),
