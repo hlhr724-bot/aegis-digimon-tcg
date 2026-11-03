@@ -673,6 +673,18 @@ const Flag = (p: IconProps) => (
     <path d="M4 22v-7" />
   </Svg>
 );
+const Bookmark = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+  </Svg>
+);
+const BookmarkPlus = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+    <path d="M12 7v6" />
+    <path d="M15 10H9" />
+  </Svg>
+);
 const Megaphone = (p: IconProps) => (
   <Svg {...p}>
     <path d="m3 11 18-5v12L3 14v-3z" />
@@ -799,6 +811,8 @@ export const Icons = {
   MessageSquare,
   Megaphone,
   Flag,
+  Bookmark,
+  BookmarkPlus,
 };
 
 export type IconComponent = (props: IconProps) => ReactNode;

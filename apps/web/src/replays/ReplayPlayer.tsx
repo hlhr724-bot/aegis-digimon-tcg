@@ -17,6 +17,7 @@ import { ReplayRecording } from "./ReplayRecording";
 import { ReplayControls } from "@/replays/ReplayControls";
 import { ReplayTimeline } from "@/replays/ReplayTimeline";
 import { useMediaQuery } from "@/design/useMediaQuery";
+import { ReplayQuickAnnotate } from "@/replays/annotations/ReplayQuickAnnotate";
 import { ReplayAnnotationPanel } from "@/replays/annotations/ReplayAnnotationPanel";
 import { useReplayAnnotations } from "@/replays/annotations/useReplayAnnotations";
 import { buildReplayAnnotationEntries } from "@/replays/annotations/buildReplayAnnotationEntries";
@@ -434,7 +435,7 @@ export function ReplayPlayer({
             setAnnotationsOpen((open) => !open);
           }}
         >
-          <Icons.Flag size={20} />
+          <Icons.Bookmark size={20} />
         </button>
         <button
           type="button"
@@ -523,6 +524,13 @@ export function ReplayPlayer({
               <span className="replay-controls__edge" aria-hidden="true" />
             </Button>
           </div>
+          {annotations.canAnnotate ? (
+            <ReplayQuickAnnotate
+              annotations={annotations}
+              index={cursor.index}
+              turn={replay.frames[cursor.index]?.state.turnCount ?? 0}
+            />
+          ) : null}
           <details className="replay-controls__options">
             <summary aria-label={t("replay.options")}>
               <Icons.Settings size={20} />

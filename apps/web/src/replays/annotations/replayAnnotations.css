@@ -489,3 +489,41 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+.replay-controls__options.replay-controls__annotate > summary {
+  right: 96px;
+}
+.replay-controls:has(.replay-controls__annotate) .replay-controls__timeline {
+  margin-right: 136px;
+}
+.replay-controls__settings.replay-quick-annotate {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  width: min(320px, calc(100vw - 24px));
+  padding: 14px;
+}
+.replay-quick-annotate h3 {
+  margin: 0;
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.replay-quick-annotate .replay-marker-picker {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.replay-quick-annotate .replay-marker-picker button {
+  width: auto;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 20px;
+}
+.replay-quick-annotate .replay-note-form label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

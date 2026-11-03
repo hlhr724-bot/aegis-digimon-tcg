@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { GameState, PlayerState, type MatchReplay } from "@aegis/shared";
 import type { LiveReplayAnnotationRequest } from "@aegis/shared/replays/annotations/LiveReplayAnnotation";
@@ -87,6 +87,33 @@ it("shows saved markers on the timeline, jumps to them and marks the current mom
   const body = JSON.parse(String(fetcher.mock.calls.find(([, init]) => init?.method === "POST")?.[1]?.body));
   expect(body).toEqual({ frameIndex: 0, turn: 1, emoji: "💡" });
   expect(await screen.findByRole("button", { name: "💡 Turn 1, action 1" })).toBeTruthy();
+});
+
+it("marks the shown moment from the playback bar without opening the panel", async () => {
+  const fetcher = vi.fn<typeof fetch>(async (_input, init) => {
+    if (init?.method === "POST") {
+      return Response.json({ ...savedMarker, id: "m2", frameIndex: 0, turn: 1, emoji: "🔥" }, { status: 201 });
+    }
+    return Response.json({ markers: [], notes: [], canAnnotate: true, shared: [], ownReplays: [] });
+  });
+  vi.stubGlobal("fetch", fetcher);
+  render(
+    <I18nProvider>
+      <ReplayPlayer replay={buildReplay()} onClose={vi.fn<() => void>()} />
+    </I18nProvider>,
+  );
+
+  const shortcut = (await screen.findByTitle("Mark this moment")).closest("details")!;
+  fireEvent.click(shortcut.querySelector("summary")!);
+  fireEvent.click(await within(shortcut).findByRole("button", { name: "Great play" }));
+  await waitFor(() =>
+    expect(fetcher).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: "POST" })),
+  );
+  const body = JSON.parse(String(fetcher.mock.calls.find(([, init]) => init?.method === "POST")?.[1]?.body));
+  expect(body).toEqual({ frameIndex: 0, turn: 1, emoji: "🔥" });
+  expect(await screen.findByRole("button", { name: "🔥 Turn 1, action 1" })).toBeTruthy();
+  expect(shortcut.open).toBe(false);
+  expect(screen.queryByRole("complementary", { name: "Annotations" })).toBeNull();
 });
 
 it("adds, edits and deletes a text note at the shown moment", async () => {
