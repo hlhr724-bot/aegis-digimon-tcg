@@ -1,4 +1,16 @@
 {
+  "releases.1.50.1-beta.summary": {
+    "en": "Saved replay markers and notes load and save again.",
+    "pt-BR": "Os marcadores e as notas salvos nos replays voltam a carregar e salvar.",
+    "es": "Los marcadores y las notas guardados en las repeticiones vuelven a cargarse y guardarse.",
+    "it": "I marcatori e le note salvati nei replay tornano a caricarsi e salvarsi."
+  },
+  "releases.1.50.1-beta.fix.replayAnnotations": {
+    "en": "Replay markers and notes saved outside a live match failed to load or save. They now load in replays, and adding, editing or deleting a note works.",
+    "pt-BR": "Marcadores e notas de replay salvos fora de uma partida ao vivo não carregavam nem salvavam. Agora eles carregam nos replays, e adicionar, editar ou apagar uma nota funciona.",
+    "es": "Los marcadores y las notas de repetición guardados fuera de una partida en vivo no se cargaban ni se guardaban. Ahora se cargan en las repeticiones, y añadir, editar o borrar una nota funciona.",
+    "it": "I marcatori e le note dei replay salvati fuori da una partita dal vivo non si caricavano né si salvavano. Ora si caricano nei replay e aggiungere, modificare o eliminare una nota funziona."
+  },
   "releases.1.50.0-beta.summary": {
     "en": "Annotate replays with emoji markers and private notes, and see which timing fired in the match log. Includes rules fixes and smoother private rooms.",
     "pt-BR": "Anote replays com marcadores de emoji e notas privadas, e veja qual tempo foi ativado no registro da partida. Inclui correções de regras e salas privadas mais tranquilas.",
