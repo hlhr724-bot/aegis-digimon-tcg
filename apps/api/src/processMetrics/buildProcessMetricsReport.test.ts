@@ -3,6 +3,7 @@ import { buildProcessMetricsReport } from "#api/processMetrics/buildProcessMetri
 import type { ProcessMetricsSample } from "#api/processMetrics/ProcessMetricsSample";
 
 const roomCounts = { rooms: 12, botRooms: 5, clients: 19 };
+const eventLoopDelay = { p99Ms: 12.3456, maxMs: 84.0004 };
 
 function createSample(overrides: Partial<ProcessMetricsSample> = {}): ProcessMetricsSample {
   return {
@@ -28,12 +29,15 @@ it("reports interval CPU in cores and the share spent in bot search", () => {
       mainThreadActiveMs: 14_000,
       search: { activeMs: 22_000, started: 40, completed: 35, fallbacks: { deadline: 3, capacity: 2, error: 1 } },
     }),
+    eventLoopDelay,
     roomCounts,
   });
   expect(report).toEqual({
     intervalMs: 60_000,
     processCpuCores: 0.5,
     mainThreadUtilization: 0.2,
+    eventLoopDelayP99Ms: 12.346,
+    eventLoopDelayMaxMs: 84,
     searchBusyCores: 0.3,
     searchShareOfProcessCpu: 0.6,
     searchesStarted: 30,
@@ -49,6 +53,7 @@ it("reports no search share when the process used no CPU in the interval", () =>
   const report = buildProcessMetricsReport({
     previous: createSample(),
     current: createSample({ atMs: 60_000 }),
+    eventLoopDelay,
     roomCounts,
   });
   expect(report.searchShareOfProcessCpu).toBe(0);
@@ -63,6 +68,7 @@ it("caps the search share at the whole process when worker wall time exceeds thr
       processCpuMicros: 10_000_000,
       search: { activeMs: 20_000, started: 1, completed: 1, fallbacks: { deadline: 0, capacity: 0, error: 0 } },
     }),
+    eventLoopDelay,
     roomCounts,
   });
   expect(report.searchShareOfProcessCpu).toBe(1);
