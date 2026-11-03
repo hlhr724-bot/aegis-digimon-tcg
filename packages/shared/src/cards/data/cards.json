@@ -111208,5 +111208,80 @@
     "rarity": "R",
     "maxCountInDeck": 4,
     "imageId": "BT27-071"
+  },
+  {
+    "cardId": "BD01-02",
+    "set": "BD01",
+    "nameEn": "Gemmon",
+    "nameJp": "ジェムモン",
+    "colors": ["Red"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Vaccine"],
+    "types": ["Mythical Beast", "ALYSION"],
+    "inheritedEffectText": "[Your Turn] Add 1000 to this [ALYSION] trait Digimon's DP deletion effect's maximum.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BD01-02"
+  },
+  {
+    "cardId": "BD01-03",
+    "set": "BD01",
+    "nameEn": "Liskmon",
+    "nameJp": "リスクモン",
+    "colors": ["Red"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 5,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Vaccine"],
+    "types": ["Bird Dragon", "ALYSION"],
+    "effectText": "[When Digivolving] Delete 1 of your opponent's Digimon with 2000 DP or less.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BD01-03"
+  },
+  {
+    "cardId": "BD01-05",
+    "set": "BD01",
+    "nameEn": "Reptilimon",
+    "nameJp": "レプティリモン",
+    "colors": ["Red"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 6000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 4,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Vaccine"],
+    "types": ["Dragon Warrior", "ALYSION"],
+    "inheritedEffectText": "[Your Turn][Once Per Turn] When any of your opponent's Digimon are deleted, this Digimon gains ＜Security A. +1＞ for the turn. (This Digimon checks 1 additional security card.)",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BD01-05"
   }
 ]

@@ -237,3 +237,19 @@ English scans are cropped to `(38, 39, 842, 1163)`, producing 804 x 1124 px
 images. All four are WebP at quality 90, without the white outer margin. The
 SAMPLE watermark is preserved. The Japanese scans supply the Japanese text
 transcription.
+
+## BD01 Gemmon, 2026-11-02
+
+BD01-02 and BD01-02-J come from the user-provided official English and
+Japanese reveal scans. Each 951 x 1295 px attachment is cropped to
+`(41, 41, 909, 1254)`, producing 868 x 1213 px WebP images at quality 90
+without the white outer margin. The SAMPLE watermark is preserved. The
+Japanese scan supplies the Japanese name and text transcription.
+
+## BD01 Liskmon and Reptilimon, 2026-11-03
+
+BD01-03, BD01-05, and their `-J` printings come from the user-provided official
+English and Japanese reveal scans. Each 951 x 1295 px attachment is cropped to
+`(41, 41, 909, 1254)`, producing 868 x 1213 px WebP images at quality 90
+without the white outer margin. The SAMPLE watermark is preserved. The
+Japanese scans supply the Japanese name and text transcriptions.

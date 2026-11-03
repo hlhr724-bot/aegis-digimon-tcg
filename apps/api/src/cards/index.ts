@@ -1,4 +1,7 @@
 import "./AD1/index.js";
+import "#api/cards/BD01/BD01-02";
+import "#api/cards/BD01/BD01-03";
+import "#api/cards/BD01/BD01-05";
 import "./BT1/index.js";
 import "./BT10/index.js";
 import "./BT11/index.js";
