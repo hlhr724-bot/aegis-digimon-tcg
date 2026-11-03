@@ -2,7 +2,7 @@ import type { ArenaCardCueState } from "@/game/arena3d/cues/ArenaCardCue";
 
 export function createArenaCardCueState(): ArenaCardCueState {
   return {
-    cue: { channel: undefined, tint: undefined, shaking: false, landing: false, offered: false },
+    cue: { channel: undefined, tint: undefined, shaking: false, landing: false, offered: false, summoning: false },
     timeline: {
       channelAt: Number.NEGATIVE_INFINITY,
       sourceAt: Number.NEGATIVE_INFINITY,

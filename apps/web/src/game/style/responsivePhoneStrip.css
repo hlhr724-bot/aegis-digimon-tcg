@@ -374,7 +374,6 @@
     left: 0 !important;
     top: auto !important;
     transform: none !important;
-    translate: none;
   }
   /* Inline flex rows inside these panels default to min-width:auto, so long text
      refused to wrap and pushed the panel past the viewport. */

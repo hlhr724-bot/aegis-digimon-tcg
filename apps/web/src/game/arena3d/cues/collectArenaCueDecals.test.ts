@@ -20,10 +20,19 @@ function collectKinds(cues: ArenaCardCueState, time: number, reducedMotion = fal
     time,
     reducedMotion,
     arrivalColor: "#fff",
+    summoningColor: "#fd5",
   }).map((decal) => decal.kind.value);
 }
 
 describe("collecting arena cue decals", () => {
+  it("rings a summoning-sick card on the floor for as long as it cannot attack", () => {
+    const base = createArenaCardCueState();
+    const cues = { ...base, cue: { ...base.cue, summoning: true } };
+
+    expect(collectKinds(cues, 30)).toEqual([ArenaCueDecalKind.SUMMONING.value]);
+    expect(collectKinds(cues, 30, true)).toEqual([ArenaCueDecalKind.SUMMONING.value]);
+  });
+
   it("draws a floor ring and a light column under an effect source", () => {
     const base = createArenaCardCueState();
     const cues = {
@@ -52,10 +61,13 @@ describe("collecting arena cue decals", () => {
   it("skips hidden cards", () => {
     const base = createArenaCardCueState();
     const decals = collectArenaCueDecals({
-      permanents: [buildPermanent({ cues: { ...base, cue: { ...base.cue, landing: true } }, hidden: true })],
+      permanents: [
+        buildPermanent({ cues: { ...base, cue: { ...base.cue, landing: true, summoning: true } }, hidden: true }),
+      ],
       time: 1,
       reducedMotion: false,
       arrivalColor: "#fff",
+      summoningColor: "#fd5",
     });
 
     expect(decals).toEqual([]);

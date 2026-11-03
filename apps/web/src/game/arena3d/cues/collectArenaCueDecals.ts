@@ -16,6 +16,7 @@ type Params = {
   time: number;
   reducedMotion: boolean;
   arrivalColor: string;
+  summoningColor: string;
 };
 
 function getProgress(age: number, durationSeconds: number): number | undefined {
@@ -39,7 +40,13 @@ function getSourceSwell(age: number, reducedMotion: boolean): number {
   return Math.sin((age / ARENA_CUE_TIMING.sourceSwellSeconds) * Math.PI) * 0.35;
 }
 
-export function collectArenaCueDecals({ permanents, time, reducedMotion, arrivalColor }: Params): ArenaCueDecal[] {
+export function collectArenaCueDecals({
+  permanents,
+  time,
+  reducedMotion,
+  arrivalColor,
+  summoningColor,
+}: Params): ArenaCueDecal[] {
   const decals: ArenaCueDecal[] = [];
   for (const permanent of permanents) {
     if (permanent.hidden || permanent.opacity <= 0.05) {
@@ -47,6 +54,9 @@ export function collectArenaCueDecals({ permanents, time, reducedMotion, arrival
     }
     const { cue, timeline } = permanent.cues;
     const base = { x: permanent.top.x, z: permanent.top.z, width: permanent.top.width, yaw: permanent.top.yaw };
+    if (cue.summoning) {
+      decals.push({ ...base, kind: ArenaCueDecalKind.SUMMONING, color: summoningColor, progress: 1, strength: 1 });
+    }
     if (cue.channel) {
       const rise = getChannelRise(time - timeline.channelAt, reducedMotion);
       const swell = getSourceSwell(time - timeline.sourceAt, reducedMotion);

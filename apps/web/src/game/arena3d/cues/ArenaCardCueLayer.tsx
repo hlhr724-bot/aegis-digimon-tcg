@@ -45,6 +45,8 @@ const DECAL_HEIGHT = 0.03;
 const SPOTLIGHT_HEIGHT = 0.028;
 const DARK_ARRIVAL_COLOR = "#8fe9ff";
 const LIGHT_ARRIVAL_COLOR = "#3f74c9";
+const DARK_SUMMONING_COLOR = "#e89a0c";
+const LIGHT_SUMMONING_COLOR = "#c98a00";
 const DARK_SPOTLIGHT_STRENGTH = 0.5;
 const LIGHT_SPOTLIGHT_STRENGTH = 0.26;
 const PACE_HOLD_MS = 250;
@@ -136,6 +138,7 @@ export function ArenaCardCueLayer({ field, isLight, activity, reducedMotion }: P
       time,
       reducedMotion,
       arrivalColor: isLight ? LIGHT_ARRIVAL_COLOR : DARK_ARRIVAL_COLOR,
+      summoningColor: isLight ? LIGHT_SUMMONING_COLOR : DARK_SUMMONING_COLOR,
     });
     const decalColors = getAttribute(decalGeometry, "aColor");
     const decalProgress = getAttribute(decalGeometry, "aProgress");
