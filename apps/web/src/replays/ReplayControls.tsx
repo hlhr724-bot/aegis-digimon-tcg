@@ -2,9 +2,9 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { useTranslation } from "@/i18n";
 
 type Position = { x: number; y: number };
-type Props = { children: ReactNode; visible: boolean };
+type Props = { children: ReactNode; visible: boolean; onDockedInsetChange?: (inset: number) => void };
 
-export function ReplayControls({ children, visible }: Props) {
+export function ReplayControls({ children, visible, onDockedInsetChange }: Props) {
   const { t } = useTranslation();
   const panel = useRef<HTMLDivElement>(null);
   const drag = useRef<{ pointerId: number; x: number; y: number } | undefined>(undefined);
@@ -45,6 +45,25 @@ export function ReplayControls({ children, visible }: Props) {
       window.removeEventListener("resize", constrainPanel);
     };
   }, []);
+
+  useEffect(() => {
+    const element = panel.current;
+    if (!element || !onDockedInsetChange) {
+      return;
+    }
+    const report = onDockedInsetChange;
+    const docked = visible && position === undefined;
+    const reportInset = () =>
+      report(docked ? Math.max(0, window.innerHeight - element.getBoundingClientRect().top) : 0);
+    reportInset();
+    const resize = new ResizeObserver(reportInset);
+    resize.observe(element);
+    window.addEventListener("resize", reportInset);
+    return () => {
+      resize.disconnect();
+      window.removeEventListener("resize", reportInset);
+    };
+  }, [visible, position, onDockedInsetChange]);
 
   const below = position !== undefined && position.y < window.innerHeight / 2;
   const style: CSSProperties & { "--replay-options-height"?: string } = {};

@@ -246,6 +246,11 @@
   flex-direction: column;
   overflow: hidden;
 }
+@media (max-width: 900px) {
+  .replay-history {
+    bottom: max(calc(12px + env(safe-area-inset-bottom)), calc(var(--replay-controls-inset, 0px) + 8px));
+  }
+}
 .replay-history header {
   display: flex;
   align-items: center;

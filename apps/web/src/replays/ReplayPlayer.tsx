@@ -2,7 +2,7 @@ import { ReplayDeckIcons } from "@/replays/ReplayDeckIcons";
 import { ReplayDeckDialog } from "@/replays/ReplayDeckDialog";
 import { getReplayResult } from "@/replays/getReplayResult";
 import { useReplayEnding } from "@/replays/useReplayEnding";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { MatchReplay, Seat } from "@aegis/shared";
 import { GameScreen } from "../game/GameScreen";
 import { buildMatchLog } from "../game/matchLog";
@@ -65,6 +65,7 @@ export function ReplayPlayer({
     [annotations.markers, annotations.notes, annotations.shared],
   );
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [controlsInset, setControlsInset] = useState(0);
   const [recordingMode, setRecordingMode] = useState(false);
   const history = useRef<HTMLElement>(null);
   const historyToggle = useRef<HTMLButtonElement>(null);
@@ -290,6 +291,7 @@ export function ReplayPlayer({
       ref={surface}
       className={`replay-player${recordingMode ? " replay-player--recording" : ""}`}
       aria-label={t("replay.title")}
+      style={{ "--replay-controls-inset": `${controlsInset}px` } as CSSProperties}
     >
       <ReplayRecording
         replayId={replay.id}
@@ -443,7 +445,7 @@ export function ReplayPlayer({
           <Icons.PlayCircle size={20} />
         </button>
       </div>
-      <ReplayControls visible={controlsVisible}>
+      <ReplayControls visible={controlsVisible} onDockedInsetChange={setControlsInset}>
         <div className="replay-controls__timeline">
           <ReplayTimeline
             replay={replay}

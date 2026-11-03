@@ -47,6 +47,18 @@ function groupNearbyEvents({ events, last, width }: GroupParams): Group[] {
   return groups;
 }
 
+type AnnotationPinParams = { annotations: readonly ReplayAnnotationEntry[]; last: number };
+type AnnotationPin = { target: number; entries: ReplayAnnotationEntry[] };
+
+function groupAnnotationsByFrame({ annotations, last }: AnnotationPinParams): AnnotationPin[] {
+  const pins = new Map<number, ReplayAnnotationEntry[]>();
+  for (const entry of annotations) {
+    const target = Math.min(entry.frameIndex, last);
+    pins.set(target, [...(pins.get(target) ?? []), entry]);
+  }
+  return [...pins].map(([target, entries]) => ({ target, entries }));
+}
+
 export function ReplayTimeline({ replay, logLines, index: committedIndex, annotations = [], onSeek, onJump }: Props) {
   const { t } = useTranslation();
   const [scrubIndex, setScrubIndex] = useState<number>();
@@ -62,6 +74,7 @@ export function ReplayTimeline({ replay, logLines, index: committedIndex, annota
   const positionId = useId();
   const last = Math.max(1, replay.frames.length - 1);
   const events = useMemo(() => buildReplayTimelineEvents({ replay }), [replay]);
+  const annotationPins = useMemo(() => groupAnnotationsByFrame({ annotations, last }), [annotations, last]);
   const segments = useMemo(() => buildSegments({ events, last }), [events, last]);
   const lanes = useMemo(
     () =>
@@ -220,17 +233,17 @@ export function ReplayTimeline({ replay, logLines, index: committedIndex, annota
         </li>
       </ul>
       <div ref={scale} className="replay-timeline__scale" role="group" aria-label={t("replay.timeline.events")}>
-        {annotations.length ? (
+        {annotationPins.length ? (
           <div className="replay-timeline__annotations">
-            {annotations.map((entry) => {
-              const target = Math.min(entry.frameIndex, last);
-              const label = getAnnotationLabel(entry, target);
+            {annotationPins.map(({ target, entries }) => {
+              const label = entries.map((entry) => getAnnotationLabel(entry, target)).join("; ");
+              const marker = entries.find((entry) => entry.kind === "marker");
               return (
                 <button
-                  key={entry.id}
+                  key={target}
                   type="button"
                   className="replay-timeline__annotation"
-                  data-kind={entry.kind}
+                  data-kind={marker ? "marker" : "note"}
                   style={{ left: `${(target / last) * 100}%` }}
                   title={label}
                   aria-label={label}
@@ -240,11 +253,16 @@ export function ReplayTimeline({ replay, logLines, index: committedIndex, annota
                     onJump(target);
                   }}
                 >
-                  {entry.kind === "marker" ? (
-                    <span aria-hidden="true">{entry.marker.emoji}</span>
+                  {marker?.kind === "marker" ? (
+                    <span aria-hidden="true">{marker.marker.emoji}</span>
                   ) : (
                     <Icons.Pencil size={12} />
                   )}
+                  {entries.length > 1 ? (
+                    <span className="replay-timeline__annotation-count" aria-hidden="true">
+                      {entries.length}
+                    </span>
+                  ) : null}
                 </button>
               );
             })}

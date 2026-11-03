@@ -78,13 +78,9 @@ export function ReplayAnnotationPanel({ replay, annotations, index, skipThinking
           aria-current={entry.frameIndex === index ? "step" : undefined}
           onClick={() => onJump(entry.frameIndex)}
         >
-          {entry.kind === "marker" ? (
-            <span className="replay-annotations__glyph" aria-hidden="true">
-              {entry.marker.emoji}
-            </span>
-          ) : (
-            <Icons.Pencil size={16} />
-          )}
+          <span className="replay-annotations__glyph" data-kind={entry.kind} aria-hidden="true">
+            {entry.kind === "marker" ? entry.marker.emoji : <Icons.Pencil size={14} />}
+          </span>
           <span className="replay-annotations__text">
             <small>{moment}</small>
             {entry.kind === "note" ? <span>{entry.note.text}</span> : null}
@@ -121,13 +117,9 @@ export function ReplayAnnotationPanel({ replay, annotations, index, skipThinking
           aria-current={entry.frameIndex === index ? "step" : undefined}
           onClick={() => onJump(entry.frameIndex)}
         >
-          {entry.kind === "marker" ? (
-            <span className="replay-annotations__glyph" aria-hidden="true">
-              {entry.marker.emoji}
-            </span>
-          ) : (
-            <Icons.Pencil size={16} />
-          )}
+          <span className="replay-annotations__glyph" data-kind={entry.kind} aria-hidden="true">
+            {entry.kind === "marker" ? entry.marker.emoji : <Icons.Pencil size={14} />}
+          </span>
           <span className="replay-annotations__text">
             <small>{t("replayAnnotations.moment", { turn: entry.turn, action: entry.frameIndex + 1 })}</small>
             {entry.kind === "note" ? <span>{entry.note.text}</span> : null}
@@ -140,7 +132,10 @@ export function ReplayAnnotationPanel({ replay, annotations, index, skipThinking
   return (
     <aside id="replay-annotations" className="replay-annotations" aria-label={t("replayAnnotations.title")}>
       <header>
-        <h2>{t("replayAnnotations.title")}</h2>
+        <h2>
+          {t("replayAnnotations.title")}
+          {entries.length ? <span className="replay-annotations__count">{entries.length}</span> : null}
+        </h2>
         <Button size="sm" variant="ghost" icon={Icons.X} aria-label={t("replayAnnotations.close")} onClick={onClose} />
       </header>
       {annotations.canAnnotate ? (
@@ -153,7 +148,10 @@ export function ReplayAnnotationPanel({ replay, annotations, index, skipThinking
             rows={2}
             onSubmit={(text) => annotations.addNote({ frameIndex: index, turn, text })}
           />
-          <p className="replay-annotations__hint">{t("replayAnnotations.privateHint")}</p>
+          <p className="replay-annotations__hint replay-annotations__private">
+            <Icons.Lock size={12} />
+            {t("replayAnnotations.privateHint")}
+          </p>
         </section>
       ) : (
         <p className="replay-annotations__hint">{t("replayAnnotations.unavailable")}</p>
