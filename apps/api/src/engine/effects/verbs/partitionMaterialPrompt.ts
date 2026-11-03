@@ -1,1 +1,2 @@
-export const PARTITION_MATERIAL_PROMPT = "＜Partition＞: choose a digivolution card to play.";
+export const PARTITION_MATERIAL_PROMPT =
+  "＜Partition＞: choose the digivolution cards to play without paying their costs.";

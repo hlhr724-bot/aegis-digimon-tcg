@@ -20,9 +20,9 @@ const fixture: ScenarioFixture = {
           as: "ultimateChaosmon",
           under: [
             { card: "BT20-036", as: "yellowBlackBancholeomon" },
-            { card: "EX5-055", as: "firstHeavyleomon" },
+            { card: "EX5-055", as: "heavyleomon" },
             { card: "BT27-053", as: "greenYellowBancholeomon" },
-            { card: "EX5-055", as: "secondHeavyleomon" },
+            { card: "BT20-036", as: "secondYellowBlackBancholeomon" },
           ],
         },
       ],

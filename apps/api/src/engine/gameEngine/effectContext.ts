@@ -352,7 +352,7 @@ export async function engineConsultLeavePrevention(
         ...partitionLeaveReplacements(ids, {
           permanentById: (id) => engine.access.permanentById(id),
           hasPartition: (id) => engine.continuous.hasKeyword(id, "Partition"),
-          select: async (_ctx, candidate) => {
+          confirm: async (candidate, assignment) => {
             const response = await engine.decisions.request({
               seat: candidate.seat,
               kind: "selectCards",
@@ -360,25 +360,30 @@ export async function engineConsultLeavePrevention(
               sourceCardId: candidate.partitionSourceCardId,
               sourceInstanceId: candidate.partitionSourceInstanceId,
               options: {
-                candidateInstanceIds: [candidate.offeredInstanceIds[0]!],
+                candidateInstanceIds: [assignment[0]!],
                 min: 0,
                 max: 1,
                 selectionContext: "partitionActivation",
-                visibleInstanceIds: candidate.offeredInstanceIds,
+                visibleInstanceIds: [...assignment],
               },
             });
-            return response.kind === "selectCards" ? response.instanceIds : [];
+            return response.kind === "selectCards" && response.instanceIds.length > 0;
           },
-          chooseMaterial: async (candidate, candidateInstanceIds) => {
+          choose: async (candidate, assignments, min) => {
             const response = await engine.decisions.request({
               seat: candidate.seat,
               kind: "selectCards",
               promptText: PARTITION_MATERIAL_PROMPT,
               sourceCardId: candidate.partitionSourceCardId,
               sourceInstanceId: candidate.partitionSourceInstanceId,
-              options: { candidateInstanceIds, min: 1, max: 1 },
+              options: {
+                candidateInstanceIds: [...new Set(assignments.flat())],
+                min,
+                max: assignments[0]!.length,
+                allowedTargetCombinations: assignments.map((assignment) => [...assignment]),
+              },
             });
-            return response.kind === "selectCards" ? response.instanceIds[0] : undefined;
+            return response.kind === "selectCards" ? response.instanceIds : [];
           },
           play: (source, materialIds) =>
             playForKeywordEffect(engine, source, materialIds, { playedFromZone: "digivolutionCards" }),
@@ -1006,6 +1011,9 @@ export function buildPrimitives(engine: GameEngine): Primitives {
             isInherited: provenance?.isInherited,
             selectionContext: provenance?.selectionContext,
             visibleInstanceIds: provenance?.visibleInstanceIds,
+            ...(provenance?.allowedTargetCombinations === undefined
+              ? {}
+              : { allowedTargetCombinations: provenance.allowedTargetCombinations }),
             ...(provenance?.selectionGoal === undefined ? {} : { selectionGoal: provenance.selectionGoal }),
           },
         });

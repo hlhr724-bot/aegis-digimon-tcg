@@ -1,13 +1,12 @@
 import type { Permanent, Seat } from "@aegis/shared";
 import { partitionSpecOf } from "../../combat/keywords.js";
 import type { RemovalCause } from "../EffectContext.js";
-import type { EffectContext } from "../EffectContext.js";
 import type { ReplacementSubscriptionInstead } from "../subtriggers.js";
 import type { PrimitivesContext } from "./context.js";
 import { KeywordReaction } from "#api/engine/effects/KeywordReaction";
 import { buildKeywordReactionId } from "#api/engine/effects/buildKeywordReactionId";
 import { listPartitionAssignments } from "#api/engine/effects/verbs/listPartitionAssignments";
-import { choosePartitionMaterials } from "#api/engine/effects/verbs/choosePartitionMaterials";
+import { askPartitionMaterials } from "#api/engine/effects/verbs/askPartitionMaterials";
 import { PARTITION_MATERIAL_PROMPT } from "#api/engine/effects/verbs/partitionMaterialPrompt";
 
 function listOfferedInstanceIds(assignments: readonly (readonly string[])[]): string[] {
@@ -39,7 +38,6 @@ function partitionCandidate(permanent: Permanent) {
     holderPermanentId: permanent.permanentId,
     seat: permanent.controllerSeat,
     assignments,
-    offeredInstanceIds: listOfferedInstanceIds(assignments),
     partitionSourceInstanceId: topSpec === undefined ? stackSource!.instanceId : permanent.topCard.instanceId,
     partitionSourceCardId: topSpec === undefined ? stackSource!.cardId : permanent.topCard.cardId,
     partitionSourceRole: topSpec === undefined ? ("stack" as const) : ("top" as const),
@@ -54,8 +52,12 @@ export function partitionLeaveReplacements(
   deps: {
     permanentById(id: string): Permanent | undefined;
     hasPartition(id: string): boolean;
-    select(ctx: EffectContext, candidate: PartitionCandidate): Promise<string[]>;
-    chooseMaterial(candidate: PartitionCandidate, candidateInstanceIds: string[]): Promise<string | undefined>;
+    confirm(candidate: PartitionCandidate, assignment: readonly string[]): Promise<boolean>;
+    choose(
+      candidate: PartitionCandidate,
+      assignments: readonly (readonly string[])[],
+      min: number,
+    ): Promise<readonly string[]>;
     play(sourceInstanceId: string, materialIds: string[]): Promise<unknown>;
   },
 ): ReplacementSubscriptionInstead[] {
@@ -95,13 +97,11 @@ export function partitionLeaveReplacements(
           if (!stillAvailable() || ctx.presetOptionalAnswer === false) {
             return;
           }
-          const accepted = ctx.presetOptionalAnswer === true || (await deps.select(ctx, candidate)).length > 0;
-          if (!accepted) {
-            return;
-          }
-          const materials = await choosePartitionMaterials({
+          const materials = await askPartitionMaterials({
             assignments: liveAssignments(),
-            chooseOne: (candidateInstanceIds) => deps.chooseMaterial(candidate, candidateInstanceIds),
+            required: ctx.presetOptionalAnswer === true,
+            confirm: (assignment) => deps.confirm(candidate, assignment),
+            choose: (assignments, min) => deps.choose(candidate, assignments, min),
           });
           if (materials === undefined || !liveAssignments().some((assignment) => hasSameCards(assignment, materials))) {
             return;
@@ -173,32 +173,30 @@ export function createPartitionReactions(pc: PrimitivesContext) {
       if (available.length === 0) {
         continue;
       }
-      const offered = listOfferedInstanceIds(available);
-      const chosen = await engine.ask.selectInstances(
-        seat,
-        [offered[0]!],
-        0,
-        1,
-        "＜Partition＞: play the specified digivolution cards without paying their costs?",
-        {
-          sourceCardId: partitionSourceCardId,
-          sourceInstanceId: partitionSourceInstanceId,
-          selectionContext: "partitionActivation",
-          visibleInstanceIds: offered,
-        },
-      );
-      if (chosen.length === 0) {
-        continue;
-      }
-      const materials = await choosePartitionMaterials({
+      const provenance = { sourceCardId: partitionSourceCardId, sourceInstanceId: partitionSourceInstanceId };
+      const materials = await askPartitionMaterials({
         assignments: available,
-        chooseOne: async (candidateInstanceIds) =>
+        required: false,
+        confirm: async (assignment) =>
           (
-            await engine.ask.selectInstances(seat, candidateInstanceIds, 1, 1, PARTITION_MATERIAL_PROMPT, {
-              sourceCardId: partitionSourceCardId,
-              sourceInstanceId: partitionSourceInstanceId,
-            })
-          )[0],
+            await engine.ask.selectInstances(
+              seat,
+              [assignment[0]!],
+              0,
+              1,
+              "＜Partition＞: play the specified digivolution cards without paying their costs?",
+              { ...provenance, selectionContext: "partitionActivation", visibleInstanceIds: [...assignment] },
+            )
+          ).length > 0,
+        choose: (assignments, min) =>
+          engine.ask.selectInstances(
+            seat,
+            listOfferedInstanceIds(assignments),
+            min,
+            assignments[0]!.length,
+            PARTITION_MATERIAL_PROMPT,
+            { ...provenance, allowedTargetCombinations: assignments.map((assignment) => [...assignment]) },
+          ),
       });
       if (materials === undefined) {
         continue;

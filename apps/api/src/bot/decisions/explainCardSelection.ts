@@ -370,7 +370,7 @@ export function explainCardSelection(params: Params): CardSelection {
   }
   const ranks = new Map(candidates.map((instanceId) => [instanceId, rankCandidate(context, instanceId)]));
   const rankOf = (instanceId: string): CandidateRank => ranks.get(instanceId) ?? { primary: 0, secondary: 0 };
-  const allowedCombinations = request.kind === "chooseTargets" ? options?.allowedTargetCombinations : undefined;
+  const allowedCombinations = options?.allowedTargetCombinations;
   if (allowedCombinations !== undefined) {
     const best = [...allowedCombinations].sort((left, right) =>
       compareRanks(sumRanks(left.map(rankOf)), sumRanks(right.map(rankOf))),
