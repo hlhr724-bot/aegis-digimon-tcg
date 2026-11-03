@@ -2369,7 +2369,14 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.classic": "經典 2D",
   "redesign.foundation.boardStyle.arena3d": "3D 競技場",
   "redesign.foundation.boardStyle.arena3dDesc": "實驗功能。卡牌和特效以 3D 顯示，耗電較多。",
-  "redesign.foundation.boardStyle.unsupported": "此裝置無法顯示 3D 競技場，對戰將使用經典牌桌。",
+  "redesign.foundation.boardStyle.unsupported":
+    "3D 無法使用：此瀏覽器無法使用 WebGL。請在瀏覽器設定中開啟硬體加速，然後重新整理頁面。",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D 無法使用：此裝置的瀏覽器無法使用 WebGL。更新瀏覽器或改用其他瀏覽器可能會有幫助。",
+  "redesign.foundation.boardStyle.restoring": "正在恢復3D棋盤…",
+  "redesign.foundation.boardStyle.stopped": "3D已在此裝置上停止。正在顯示經典棋盤。",
+  "redesign.foundation.boardStyle.retry": "重試",
+  "redesign.foundation.boardStyle.unavailableInMatch": "此瀏覽器無法執行3D，可能已關閉WebGL。正在顯示經典棋盤。",
   "redesign.foundation.arena3dQuality.title": "3D 畫質",
   "redesign.foundation.arena3dQuality.auto": "自動",
   "redesign.foundation.arena3dQuality.low": "低",

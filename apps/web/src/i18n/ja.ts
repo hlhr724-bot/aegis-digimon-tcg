@@ -2450,7 +2450,14 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3d": "アリーナ3D",
   "redesign.foundation.boardStyle.arena3dDesc": "実験的機能です。カードと演出を3Dで表示し、バッテリー消費が増えます。",
   "redesign.foundation.boardStyle.unsupported":
-    "この端末では3Dアリーナを表示できないため、クラシック盤面を使用します。",
+    "3Dは使えません: このブラウザはWebGLを使用できません。ブラウザ設定でハードウェアアクセラレーションを有効にして、ページを再読み込みしてください。",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3Dは使えません: この端末のブラウザはWebGLを使用できません。ブラウザを更新するか、別のブラウザを試すと解決する場合があります。",
+  "redesign.foundation.boardStyle.restoring": "3D盤面を復元しています…",
+  "redesign.foundation.boardStyle.stopped": "この端末で3Dが停止しました。クラシック盤面を表示中です。",
+  "redesign.foundation.boardStyle.retry": "再試行",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "このブラウザは3Dを実行できません。WebGLがオフの可能性があります。クラシック盤面を表示中です。",
   "redesign.foundation.arena3dQuality.title": "3D画質",
   "redesign.foundation.arena3dQuality.auto": "自動",
   "redesign.foundation.arena3dQuality.low": "低",

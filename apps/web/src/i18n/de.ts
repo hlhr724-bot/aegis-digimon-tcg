@@ -2513,7 +2513,14 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3dDesc":
     "Experimentell. Karten und Effekte werden in 3D dargestellt und verbrauchen mehr Akku.",
   "redesign.foundation.boardStyle.unsupported":
-    "Dieses Gerät kann die 3D-Arena nicht anzeigen, daher nutzen Matches das klassische Spielfeld.",
+    "3D ist aus: Dieser Browser kann WebGL nicht nutzen. Aktivieren Sie die Hardwarebeschleunigung in den Browsereinstellungen und laden Sie die Seite neu.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D ist aus: Der Browser dieses Geräts kann WebGL nicht nutzen. Ein Browser-Update oder ein anderer Browser kann helfen.",
+  "redesign.foundation.boardStyle.restoring": "3D-Spielfeld wird wiederhergestellt…",
+  "redesign.foundation.boardStyle.stopped": "3D wurde auf diesem Gerät beendet. Klassisches Spielfeld wird angezeigt.",
+  "redesign.foundation.boardStyle.retry": "Erneut versuchen",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "Dieser Browser kann kein 3D ausführen. WebGL ist eventuell aus. Klassisches Spielfeld wird angezeigt.",
   "redesign.foundation.arena3dQuality.title": "3D-Qualität",
   "redesign.foundation.arena3dQuality.auto": "Automatisch",
   "redesign.foundation.arena3dQuality.low": "Niedrig",

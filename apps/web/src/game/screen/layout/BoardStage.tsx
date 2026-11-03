@@ -1,6 +1,7 @@
 import { BoardStyle } from "@/game/arena3d/boardStyle/BoardStyle";
 import { Arena3dField } from "@/game/arena3d/field/Arena3dField";
 import { Arena3dLayer } from "@/game/arena3d/field/Arena3dLayer";
+import { Arena3dUnavailableNotice } from "@/game/arena3d/fallback/Arena3dUnavailableNotice";
 import { createArenaFieldStore } from "@/game/arena3d/field/createArenaFieldStore";
 import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
 import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
@@ -666,6 +667,7 @@ export function BoardStage({
             flexDirection: "column",
           }}
         >
+          {arena3d ? null : <Arena3dUnavailableNotice />}
           {arena3d ? (
             <Arena3dLayer
               board={anchors.board}

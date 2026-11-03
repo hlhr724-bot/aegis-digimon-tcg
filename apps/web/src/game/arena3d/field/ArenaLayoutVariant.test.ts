@@ -120,3 +120,11 @@ describe.each(LAYOUTS)("the $name world layout", (layout) => {
     }
   });
 });
+
+describe("the tall world layout", () => {
+  it("leaves at least one card width between the Digimon rows for the classic memory gauge", () => {
+    const cardDepth = ARENA_ROW_LAYOUT.cardWidth * CARD_DIMENSIONS.height;
+    const centerGap = 2 * (ArenaLayoutVariant.TALL.lanes.digimonDepth - cardDepth / 2);
+    expect(centerGap).toBeGreaterThanOrEqual(ARENA_ROW_LAYOUT.cardWidth);
+  });
+});
