@@ -6,6 +6,7 @@ import { staffRolesJa } from "@/i18n/staffRoles.ja";
 import { tournamentDetailJa } from "@/i18n/tournamentDetail.ja";
 import { tournamentSpectatorsJa } from "@/i18n/tournamentSpectators.ja";
 import { publicReplaysJa } from "@/i18n/publicReplays.ja";
+import { replayAnnotationsJa } from "@/i18n/replayAnnotations.ja";
 import { achievementsJa } from "@/i18n/achievements.ja";
 import { rankedJa } from "@/i18n/ranked.ja";
 import { friendsEn } from "@/i18n/friends.en";
@@ -2935,6 +2936,7 @@ const interfaceMessages = {
   ...tournamentDetailJa,
   ...tournamentSpectatorsJa,
   ...publicReplaysJa,
+  ...replayAnnotationsJa,
   ...tournamentCircuitsJa,
   ...tournamentOfficialRequestJa,
   ...matchQueueJa,

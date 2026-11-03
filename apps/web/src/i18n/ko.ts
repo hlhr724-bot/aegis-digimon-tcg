@@ -6,6 +6,7 @@ import { staffRolesKo } from "@/i18n/staffRoles.ko";
 import { tournamentDetailKo } from "@/i18n/tournamentDetail.ko";
 import { tournamentSpectatorsKo } from "@/i18n/tournamentSpectators.ko";
 import { publicReplaysKo } from "@/i18n/publicReplays.ko";
+import { replayAnnotationsKo } from "@/i18n/replayAnnotations.ko";
 import { achievementsKo } from "@/i18n/achievements.ko";
 import { rankedKo } from "@/i18n/ranked.ko";
 import { friendsEn } from "@/i18n/friends.en";
@@ -2911,6 +2912,7 @@ const interfaceMessages = {
   ...tournamentDetailKo,
   ...tournamentSpectatorsKo,
   ...publicReplaysKo,
+  ...replayAnnotationsKo,
   ...tournamentCircuitsKo,
   ...tournamentOfficialRequestKo,
   ...matchQueueKo,

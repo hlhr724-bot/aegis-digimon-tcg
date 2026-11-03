@@ -34,6 +34,7 @@ import { isDeckFormat, type DeckFormat } from "@aegis/shared";
 import { randomBytes } from "node:crypto";
 import { ReplayLibrary } from "../replays/ReplayLibrary.js";
 import { installReplayRoutes } from "../replays/routes.js";
+import { installReplayAnnotationRoutes } from "#api/replays/annotations/installReplayAnnotationRoutes";
 import {
   isAvatarChoice,
   MATCH_MODES,
@@ -152,6 +153,7 @@ export function installAccountRoutes(
   installRankedRoutes({ app, accounts: store, session: sessionFromRequest, replayCapture });
   installAchievementRoutes({ app, accounts: store, session: sessionFromRequest });
   installReplayRoutes({ app, library: replays, session: sessionFromRequest });
+  installReplayAnnotationRoutes({ app, store: replays.annotations, session: sessionFromRequest });
   installStoryRoutes({ app, store: new StoryProgressStore(store), session: sessionFromRequest });
   // The organizer's override surface, in its own module. See src/tournaments/arbitration.
   installArbitrationRoutes({

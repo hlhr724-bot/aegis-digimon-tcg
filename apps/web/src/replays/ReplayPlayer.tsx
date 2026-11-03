@@ -2,7 +2,7 @@ import { ReplayDeckIcons } from "@/replays/ReplayDeckIcons";
 import { ReplayDeckDialog } from "@/replays/ReplayDeckDialog";
 import { getReplayResult } from "@/replays/getReplayResult";
 import { useReplayEnding } from "@/replays/useReplayEnding";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { MatchReplay, Seat } from "@aegis/shared";
 import { GameScreen } from "../game/GameScreen";
 import { buildMatchLog } from "../game/matchLog";
@@ -16,23 +16,36 @@ import { createAnimationPlayback } from "../game/animationPlayback";
 import { ReplayRecording } from "./ReplayRecording";
 import { ReplayControls } from "@/replays/ReplayControls";
 import { ReplayTimeline } from "@/replays/ReplayTimeline";
+import { useMediaQuery } from "@/design/useMediaQuery";
+import { ReplayQuickAnnotate } from "@/replays/annotations/ReplayQuickAnnotate";
+import { ReplayAnnotationPanel } from "@/replays/annotations/ReplayAnnotationPanel";
+import { useReplayAnnotations } from "@/replays/annotations/useReplayAnnotations";
+import { buildReplayAnnotationEntries } from "@/replays/annotations/buildReplayAnnotationEntries";
 
 const emptyDeck = { mainDeck: [], eggDeck: [] };
+const ANNOTATION_SHEET_QUERY = "(width < 600px)";
 const acknowledgeDecision = () => undefined;
 
 export function ReplayPlayer({
   replay,
   onClose,
   devProbe,
+  initialIndex = 0,
+  shareId,
 }: {
   replay: MatchReplay;
   onClose: () => void;
   devProbe?: PresentationProbe;
+  initialIndex?: number;
+  shareId?: string;
 }) {
   const observer = useRef(devProbe);
   observer.current = devProbe;
   const { t, locale } = useTranslation();
-  const [cursor, setCursor] = useState({ index: 0, from: 0, epoch: 0, animate: false });
+  const [cursor, setCursor] = useState(() => {
+    const start = Math.max(0, Math.min(replay.frames.length - 1, initialIndex));
+    return { index: start, from: start, epoch: 0, animate: false };
+  });
   const [playing, setPlaying] = useState(false);
   const [jumping, setJumping] = useState(false);
   const pendingJump = useRef<number | undefined>(undefined);
@@ -44,7 +57,19 @@ export function ReplayPlayer({
   const [showHand, setShowHand] = useState(true);
   const [viewerSeat, setViewerSeat] = useState<Seat>(replay.viewerSeat === 1 ? 1 : 0);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [annotationsOpen, setAnnotationsOpen] = useState(false);
+  const annotations = useReplayAnnotations({ matchId: replay.id });
+  const annotationEntries = useMemo(
+    () =>
+      buildReplayAnnotationEntries({
+        markers: annotations.markers,
+        notes: annotations.notes,
+      }),
+    [annotations.markers, annotations.notes],
+  );
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [controlsInset, setControlsInset] = useState(0);
+  const annotationSheet = useMediaQuery(ANNOTATION_SHEET_QUERY) && annotationsOpen;
   const [recordingMode, setRecordingMode] = useState(false);
   const history = useRef<HTMLElement>(null);
   const historyToggle = useRef<HTMLButtonElement>(null);
@@ -257,6 +282,7 @@ export function ReplayPlayer({
   }, []);
   function startRecordingPlayback() {
     setHistoryOpen(false);
+    setAnnotationsOpen(false);
     seek(0);
     setPlaying(true);
   }
@@ -269,6 +295,7 @@ export function ReplayPlayer({
       ref={surface}
       className={`replay-player${recordingMode ? " replay-player--recording" : ""}`}
       aria-label={t("replay.title")}
+      style={{ "--replay-controls-inset": `${controlsInset}px` } as CSSProperties}
     >
       <ReplayRecording
         replayId={replay.id}
@@ -332,6 +359,17 @@ export function ReplayPlayer({
             {result.reasonKey ? <p>{t(result.reasonKey)}</p> : null}
           </div>
         ) : null}
+        {annotationsOpen ? (
+          <ReplayAnnotationPanel
+            replay={replay}
+            annotations={annotations}
+            index={cursor.index}
+            skipThinking={skipThinking}
+            shareId={shareId}
+            onJump={jump}
+            onClose={() => setAnnotationsOpen(false)}
+          />
+        ) : null}
         {historyOpen ? (
           <aside ref={history} id="replay-history" className="replay-history" aria-label={t("replay.log")}>
             <header>
@@ -378,9 +416,26 @@ export function ReplayPlayer({
           title={t("replay.historyShow")}
           aria-expanded={historyOpen}
           aria-controls="replay-history"
-          onClick={() => setHistoryOpen((open) => !open)}
+          onClick={() => {
+            setAnnotationsOpen(false);
+            setHistoryOpen((open) => !open);
+          }}
         >
           <Icons.FileText size={20} />
+        </button>
+        <button
+          type="button"
+          className="replay-player__tool"
+          aria-label={t("replayAnnotations.toggle")}
+          title={t("replayAnnotations.toggle")}
+          aria-expanded={annotationsOpen}
+          aria-controls="replay-annotations"
+          onClick={() => {
+            setHistoryOpen(false);
+            setAnnotationsOpen((open) => !open);
+          }}
+        >
+          <Icons.Bookmark size={20} />
         </button>
         <button
           type="button"
@@ -394,9 +449,16 @@ export function ReplayPlayer({
           <Icons.PlayCircle size={20} />
         </button>
       </div>
-      <ReplayControls visible={controlsVisible}>
+      <ReplayControls visible={controlsVisible && !annotationSheet} onDockedInsetChange={setControlsInset}>
         <div className="replay-controls__timeline">
-          <ReplayTimeline replay={replay} logLines={logLines} index={cursor.index} onSeek={seek} onJump={jump} />
+          <ReplayTimeline
+            replay={replay}
+            logLines={logLines}
+            index={cursor.index}
+            annotations={annotationEntries}
+            onSeek={seek}
+            onJump={jump}
+          />
           <span role="status" title={atEnd && settled ? t("replay.finished") : labels[cursor.index]}>
             {atEnd && settled ? t("replay.finished") : labels[cursor.index]}
           </span>
@@ -462,6 +524,13 @@ export function ReplayPlayer({
               <span className="replay-controls__edge" aria-hidden="true" />
             </Button>
           </div>
+          {annotations.canAnnotate ? (
+            <ReplayQuickAnnotate
+              annotations={annotations}
+              index={cursor.index}
+              turn={replay.frames[cursor.index]?.state.turnCount ?? 0}
+            />
+          ) : null}
           <details className="replay-controls__options">
             <summary aria-label={t("replay.options")}>
               <Icons.Settings size={20} />

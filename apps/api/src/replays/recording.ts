@@ -179,6 +179,10 @@ export class ReplayRecording {
     return this.overflow;
   }
 
+  get frameCount(): number {
+    return this.compressedFrames.length;
+  }
+
   private get frames(): ReplayFrame[] {
     return this.serializedFrames().map((frame) => JSON.parse(frame) as ReplayFrame);
   }
