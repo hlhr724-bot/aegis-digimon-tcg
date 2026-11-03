@@ -37,7 +37,7 @@ describe("End-turn suspension before security effects", () => {
   );
 
   it("resolves Craniamon's derived reaction before playing Oblivimon from security", async () => {
-    const replay = await runReplay(record, { untilInput: 32 });
+    const replay = await runReplay(record, { untilInput: 33 });
     try {
       expect(replay.divergences).toEqual([]);
       expect(

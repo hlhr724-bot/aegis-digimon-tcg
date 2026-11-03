@@ -57,6 +57,10 @@ describe("Taunt granted after the main phase starts", () => {
         return { kind: "optional", accept: true };
       });
       await respond(s, 1, (request) => {
+        expect(request).toMatchObject({ kind: "selectCards", sourceCardId: "EX13-056" });
+        return { kind: "selectCards", instanceIds: [s.inst("blockPlayedTaunter").instanceId] };
+      });
+      await respond(s, 1, (request) => {
         expect(request.sourceCardId).toBe("BT25-054");
         return { kind: "chooseTargets", instanceIds: [bystanderId] };
       });

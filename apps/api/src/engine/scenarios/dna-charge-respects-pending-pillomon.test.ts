@@ -34,8 +34,10 @@ it.each([true, false])(
     await settle(() => s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "ST24-06"));
     await settle(() => s.state.pendingDecision === undefined);
     const selection = s.decisions.find(({ req }) => req.sourceCardId === "ST24-15" && req.kind === "selectCards");
-    const expectedCandidates = hasPillomon ? [] : [s.inst("tamer").instanceId, s.inst("kudamon").instanceId];
-    expect(selection !== undefined).toBe(!hasPillomon);
+    const expectedCandidates = hasPillomon
+      ? [s.inst("tamer").instanceId]
+      : [s.inst("tamer").instanceId, s.inst("kudamon").instanceId];
+    expect(selection).toBeDefined();
     expect(selection?.req.options?.candidateInstanceIds ?? []).toEqual(expect.arrayContaining(expectedCandidates));
     const hasOptionalPlay = s.decisions.some(({ req }) => req.sourceCardId === "ST24-15" && req.kind === "optional");
     expect(hasPillomon && hasOptionalPlay).toBe(hasPillomon);

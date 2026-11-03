@@ -13,7 +13,7 @@ const CHRONICLE_DORUMON = "BT20-048";
 const HISYARYUMON = "BT27-013";
 const PREVENT_PROMPT = "Prevent leaving the battle area?";
 const PROTECTION_CLAUSE = "When any of your [Chronicle] trait Digimon would leave the battle area";
-const DECLINE_INPUT = 106;
+const DECLINE_INPUT = 107;
 
 type ProtectionEventKind = "effectTriggered" | "effectResolved";
 

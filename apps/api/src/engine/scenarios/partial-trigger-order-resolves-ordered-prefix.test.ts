@@ -7,7 +7,7 @@ it("resolves both ordered Cool Boy effects before asking about the unordered res
   const record = JSON.parse(
     readFileSync(new URL("./partial-trigger-order-resolves-ordered-prefix.replay.json", import.meta.url), "utf8"),
   ) as ReplayRecord;
-  const replay = await runReplay(record, { untilInput: 94 });
+  const replay = await runReplay(record, { untilInput: 96 });
   try {
     expect(replay.divergences).toEqual([]);
     const coolBoys = replay.state.players[1]!.battleArea.filter(({ topCard }) => topCard.cardId === "BT20-091");

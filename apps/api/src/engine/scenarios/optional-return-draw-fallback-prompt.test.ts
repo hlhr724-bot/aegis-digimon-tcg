@@ -31,6 +31,8 @@ async function playTaiAndMattThroughDelay(s: EngineSetup) {
   ).toEqual({ ok: true });
   await settle(() => s.state.pendingDecision?.kind === "optional");
   respond(s, { kind: "optional", accept: true });
+  await settle(() => s.state.pendingDecision?.kind === "selectCards");
+  respond(s, { kind: "selectCards", instanceIds: [s.inst("taiAndMatt").instanceId] });
   await settle(() => s.state.pendingDecision !== undefined && s.decisions.at(-1)?.req.sourceCardId === "EX9-066");
   expect(s.state.players[0]!.battleArea.map((permanent) => permanent.topCard.instanceId)).toContain(
     s.inst("taiAndMatt").instanceId,

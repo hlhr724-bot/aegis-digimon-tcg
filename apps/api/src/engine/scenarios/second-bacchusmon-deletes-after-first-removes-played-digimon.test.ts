@@ -11,7 +11,7 @@ const record = JSON.parse(
   ),
 ) as ReplayRecord;
 
-const firstBacchusmonSuspendInput = 145;
+const firstBacchusmonSuspendInput = 150;
 const secondBacchusmonInstanceId = "s0-0a1c1f30026908307e0a1a5ed3ba9088528af087273285f1571c586cbee6aed5";
 const playedTapirmonPermanentId = "perm-29";
 const opponentMervamonPermanentId = "perm-16";
