@@ -10,6 +10,7 @@ export interface SeriesSeat {
   accountId?: string;
   displayName: string;
   avatarId?: string;
+  avatarUrl?: string;
   deck: SeatJoinOptions["deck"];
   deckId?: string;
   deckName?: string;

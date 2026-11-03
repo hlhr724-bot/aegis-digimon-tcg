@@ -238,3 +238,14 @@ it.each([false, true])(
     expect(leave).toHaveBeenCalledOnce();
   },
 );
+
+it("shows the opponent's uploaded profile avatar beside their name", () => {
+  const { container } = render(
+    <I18nProvider>
+      <OpponentBar {...props({ opponentAvatarUrl: "/account/avatar/rival/image?v=2" })} />
+    </I18nProvider>,
+  );
+  expect(container.querySelector(".game-player-line__avatar img")?.getAttribute("src")).toBe(
+    "/account/avatar/rival/image?v=2",
+  );
+});

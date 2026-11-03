@@ -27,6 +27,7 @@ export function PlayerDock({
   timer,
   playerName,
   playerAvatarId,
+  playerAvatarUrl,
   playerEquippedRankedTier,
   playerBotPersonaId,
   actingLabel,
@@ -71,6 +72,7 @@ export function PlayerDock({
   /** The viewer's name for the line over the tray, when the screen knows it. */
   playerName?: string;
   playerAvatarId?: string;
+  playerAvatarUrl?: string;
   playerEquippedRankedTier?: string;
   playerBotPersonaId?: string;
   actingLabel?: string;
@@ -127,6 +129,7 @@ export function PlayerDock({
         <PlayerLine
           name={playerName}
           avatarId={playerAvatarId}
+          avatarUrl={playerAvatarUrl}
           equippedRankedTier={playerEquippedRankedTier}
           botPersonaId={playerBotPersonaId}
           side="player"
