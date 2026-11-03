@@ -88,6 +88,58 @@ describe("incremental memory narration", () => {
   });
 });
 
+describe("activated effect details", () => {
+  it("names the timing that fired a clause printed under several timings", () => {
+    const cursor = appendEvents([
+      {
+        kind: "effectTriggered",
+        seat: 1,
+        sourceCardId: "BT20-042",
+        effectKey: "BT20-042/ir-7-0",
+        description:
+          "[On Play] [When Digivolving] Suspend 1 of your opponent's Digimon or Tamers. Then, 1 of their Digimon or Tamers can't unsuspend until the end of their turn.",
+        timing: "WhenDigivolving",
+        printedTiming: "WhenDigivolving",
+      },
+    ]);
+    expect(cursor.entries[0]?.effect).toEqual({
+      cardId: "BT20-042",
+      timing: "WhenDigivolving",
+      timingLabel: "[When Digivolving]",
+      isInherited: false,
+      clause:
+        "[On Play] [When Digivolving] Suspend 1 of your opponent's Digimon or Tamers. Then, 1 of their Digimon or Tamers can't unsuspend until the end of their turn.",
+    });
+  });
+
+  it("prefers the printed timing over the watcher event and marks inherited clauses", () => {
+    const cursor = appendEvents([
+      {
+        kind: "effectTriggered",
+        seat: 1,
+        sourceCardId: "EX13-021",
+        effectKey: "EX13-021/ir-35-2",
+        description:
+          "[All Turns] [Once Per Turn] When this Digimon with [Dracomon] or [Examon] in its text suspends, it may unsuspend.",
+        timing: "whenSuspended",
+        printedTiming: "AllTurns",
+        isInherited: true,
+      },
+    ]);
+    expect(cursor.entries[0]?.effect).toMatchObject({
+      timingLabel: "[All Turns]",
+      isInherited: true,
+    });
+  });
+
+  it("leaves resolution lines without effect details", () => {
+    const cursor = appendEvents([
+      { kind: "effectResolved", seat: 0, sourceCardId: "BT20-042", effectKey: "BT20-042/ir-7-0", description: "" },
+    ]);
+    expect(cursor.entries[0]?.effect).toBeUndefined();
+  });
+});
+
 describe("effect narration roles", () => {
   it("marks the triggered effect as the source and its outcomes as results within the batch", () => {
     const cursor = appendEvents([
