@@ -107,10 +107,18 @@ and pending interaction state. Each `PlayerState` owns its zones. A `Permanent`
 contains a top card, digivolution stack, linked cards, controller, DP, and
 position flags.
 
+`Permanent.retainedDpDelta` exposes surviving DP modifiers when a permanent is
+no longer a Digimon. The client shows the retained delta without assigning the
+Tamer a DP stat and keeps differently affected copies in separate field groups.
+
 The effect stack collects effects for a timing window, orders simultaneous
 effects, resolves them one at a time, and opens typed decisions when player
 input is required. Continuous effects are recomputed from active sources rather
 than stored as permanent mutations.
+
+A cost-free optional effect attack can be declined while choosing its target
+when the attacking player also owns the optional effect. Forced opponent attacks
+and attacks whose processing costs were paid retain mandatory target selection.
 
 ### Skipping unchanged recomputes
 
