@@ -1,4 +1,34 @@
 {
+  "releases.1.51.2-beta.summary": {
+    "en": "Card selections respect available Tamers and exact trash costs, DUAL Option costs use the correct effect type, and hover zoom works on hand and field cards.",
+    "pt-BR": "As seleções de cartas respeitam os Tamers disponíveis e os custos exatos de descarte, os custos de Options DUAL usam o tipo correto de efeito e o zoom ao passar o mouse funciona nas cartas da mão e do campo.",
+    "es": "Las selecciones de cartas respetan los Tamers disponibles y los costes exactos de descarte, los costes de Options DUAL usan el tipo de efecto correcto y el zoom al pasar el cursor funciona en las cartas de la mano y del campo.",
+    "it": "Le selezioni rispettano i Tamer disponibili e i costi di scarto esatti, i costi delle Option DUAL usano il tipo di effetto corretto e lo zoom al passaggio del mouse funziona sulle carte in mano e sul campo."
+  },
+  "releases.1.51.2-beta.fix.revealHost": {
+    "en": "Agumon (ST24-04) no longer asks you to place a revealed card under a DATA SQUAD Tamer when none is available. All remaining cards can be ordered together for the bottom of the deck. Other reveal effects also check that a valid host exists.",
+    "pt-BR": "Agumon (ST24-04) não pede mais para colocar uma carta revelada sob um Tamer DATA SQUAD quando não há nenhum disponível. Todas as cartas restantes podem ser ordenadas juntas no fundo do deck. Outros efeitos de revelação também verificam se existe um destino válido.",
+    "es": "Agumon (ST24-04) ya no pide colocar una carta revelada debajo de un Tamer DATA SQUAD cuando no hay ninguno disponible. Todas las cartas restantes se pueden ordenar juntas para el fondo del mazo. Otros efectos de revelación también comprueban que exista un destino válido.",
+    "it": "Agumon (ST24-04) non chiede più di mettere una carta rivelata sotto un Tamer DATA SQUAD quando non ce ne sono di disponibili. Tutte le carte rimaste possono essere ordinate insieme in fondo al mazzo. Anche gli altri effetti di rivelazione verificano che esista una destinazione valida."
+  },
+  "releases.1.51.2-beta.fix.exactTrash": {
+    "en": "Optional costs that require trashing 2 cards, such as WereGarurumon (X Antibody) (EX5-023), require the complete selection or an explicit refusal. Choosing only 1 card keeps the decision open instead of silently ending the effect.",
+    "pt-BR": "Custos opcionais que exigem descartar 2 cartas, como o de WereGarurumon (X Antibody) (EX5-023), exigem a seleção completa ou uma recusa explícita. Escolher só 1 carta mantém a decisão aberta em vez de encerrar o efeito silenciosamente.",
+    "es": "Los costes opcionales que requieren descartar 2 cartas, como el de WereGarurumon (X Antibody) (EX5-023), exigen la selección completa o un rechazo explícito. Elegir solo 1 carta mantiene abierta la decisión en lugar de terminar el efecto sin avisar.",
+    "it": "I costi facoltativi che richiedono di scartare 2 carte, come quello di WereGarurumon (X Antibody) (EX5-023), richiedono la selezione completa o un rifiuto esplicito. Scegliere solo 1 carta lascia aperta la decisione invece di terminare silenziosamente l’effetto."
+  },
+  "releases.1.51.2-beta.fix.dualOption": {
+    "en": "When a DUAL card is used as an Option, its use costs count as Option effects. Digimon-effect immunity no longer incorrectly blocks those costs, including Divine Tempest Ligero (LM-066)’s suspension cost.",
+    "pt-BR": "Quando uma carta DUAL é usada como Option, seus custos de uso contam como efeitos de Option. A imunidade a efeitos de Digimon não bloqueia mais esses custos indevidamente, incluindo o custo de suspender de Divine Tempest Ligero (LM-066).",
+    "es": "Cuando una carta DUAL se usa como Option, sus costes de uso cuentan como efectos de Option. La inmunidad a efectos de Digimon ya no bloquea incorrectamente esos costes, incluido el coste de suspender de Divine Tempest Ligero (LM-066).",
+    "it": "Quando una carta DUAL viene usata come Option, i suoi costi di utilizzo contano come effetti Option. L’immunità agli effetti Digimon non blocca più erroneamente questi costi, incluso il costo di sospensione di Divine Tempest Ligero (LM-066)."
+  },
+  "releases.1.51.2-beta.fix.hoverZoom": {
+    "en": "With Zoom cards on hover enabled, hovering a hand card or a face-up permanent in the field or breeding area shows its large preview. The preview closes when you press a card or scroll; face-down cards stay hidden.",
+    "pt-BR": "Com Zoom ao passar o mouse ativado, passar o mouse sobre uma carta da mão ou uma permanente virada para cima no campo ou na área de criação mostra sua prévia ampliada. A prévia fecha ao pressionar uma carta ou rolar; cartas viradas para baixo continuam ocultas.",
+    "es": "Con el zoom al pasar el cursor activado, pasar el cursor sobre una carta de la mano o un permanente boca arriba en el campo o en el área de crianza muestra su vista ampliada. La vista se cierra al pulsar una carta o desplazarse; las cartas boca abajo siguen ocultas.",
+    "it": "Con lo zoom al passaggio del mouse attivo, passando su una carta in mano o un permanente scoperto sul campo o nell’area di allevamento appare l’anteprima ingrandita. L’anteprima si chiude premendo una carta o scorrendo; le carte coperte restano nascoste."
+  },
   "releases.1.51.1-beta.summary": {
     "en": "Deck matchup tests start again, tournament games recover from rooms that closed early, and matches run smoother.",
     "pt-BR": "Os testes de confronto de deck voltam a começar, partidas de torneio se recuperam de salas que fecharam cedo e as partidas ficam mais fluidas.",
