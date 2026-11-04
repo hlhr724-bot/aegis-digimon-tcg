@@ -15601,5 +15601,8 @@
   },
   "BD02-03": {
     "[WhenAttacking][OncePerTurn]Trashthebottomdigivolutioncardof1ofyouropponent'sDigimon.": "【アタック時】[ターン1回] 相手のデジモン1体の進化元を下から1枚破棄する。"
+  },
+  "BD02-04": {
+    "[WhenAttacking][OncePerTurn]IfyouropponenthasnoDigimonwithdigivolutioncards,thisDigimonunsuspends.": "【アタック時】[ターン1回] 進化元を持つ相手のデジモンがいないなら、このデジモンをアクティブにする。"
   }
 }

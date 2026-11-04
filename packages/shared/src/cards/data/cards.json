@@ -111325,5 +111325,30 @@
     "rarity": "C",
     "maxCountInDeck": 4,
     "imageId": "BD02-03"
+  },
+  {
+    "cardId": "BD02-04",
+    "set": "BD02",
+    "nameEn": "Sekkamon",
+    "nameJp": "セッカモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 6000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 4,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Virus"],
+    "types": ["Beastkin", "ALYSION"],
+    "inheritedEffectText": "[When Attacking][Once Per Turn] If your opponent has no Digimon with digivolution cards, this Digimon unsuspends.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BD02-04"
   }
 ]

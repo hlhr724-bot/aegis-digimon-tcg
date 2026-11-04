@@ -5530,5 +5530,6 @@
   "[YourTurn]Add1000tothis[ALYSION]traitDigimon'sDPdeletioneffect'smaximum.": "【我方的回合】拥有“ALYSION”特征的此数码宝贝的DP消灭效果上限+1000。",
   "[WhenDigivolving]Delete1ofyouropponent'sDigimonwith2000DPorless.": "【进化时】消灭对方1只DP不高于2000的数码宝贝。",
   "[YourTurn][OncePerTurn]Whenanyofyouropponent'sDigimonaredeleted,thisDigimongains<SecurityA.+1>fortheturn.(ThisDigimonchecks1additionalsecuritycard.)": "【我方的回合】［每回合1次］当对方的数码宝贝被消灭时，本回合中，此数码宝贝获得《安防攻击+1》（此数码宝贝判定安防卡牌的张数+1）效果。",
-  "[StartofYourMainPhase]IfyouhavearedDigimonwiththe[ALYSION]trait,gain1memory.[YourTurn]AllofyourredDigimonwiththe[ALYSION]traitget+1000DP.": "【我方的主要阶段开始时】若我方的场上存在拥有“ALYSION”特征的红色数码宝贝，则内存值+1。\n【我方的回合】我方所有拥有“ALYSION”特征的红色数码宝贝的DP+1000。"
+  "[StartofYourMainPhase]IfyouhavearedDigimonwiththe[ALYSION]trait,gain1memory.[YourTurn]AllofyourredDigimonwiththe[ALYSION]traitget+1000DP.": "【我方的主要阶段开始时】若我方的场上存在拥有“ALYSION”特征的红色数码宝贝，则内存值+1。\n【我方的回合】我方所有拥有“ALYSION”特征的红色数码宝贝的DP+1000。",
+  "[WhenAttacking][OncePerTurn]IfyouropponenthasnoDigimonwithdigivolutioncards,thisDigimonunsuspends.": "【攻击时】［每回合1次］若对方场上不存在持有进化源的数码宝贝，则将此数码宝贝转换为活跃状态。"
 }
