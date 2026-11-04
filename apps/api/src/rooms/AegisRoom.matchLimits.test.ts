@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Client } from "colyseus";
 import { MATCH_EXPIRED_CLOSE_CODE } from "@aegis/shared";
-import { setRoomCreationAdmission } from "../deployment/admission.js";
+import { canCreateRoom, setRoomCreationAdmission } from "../deployment/admission.js";
 import { AegisRoom, DRAINING_MATCH_LIMIT_MS, FINISHED_MATCH_LIMIT_MS, MATCH_INACTIVITY_LIMIT_MS } from "./AegisRoom.js";
 
 const START = 1_000_000;
@@ -124,6 +124,28 @@ describe("AegisRoom match limits", () => {
       room.onDispose();
     }
   });
+
+  it("closes a room opened during the drain at the slot's deadline, not one of its own", () => {
+    const { room, internals, concede, disconnect } = makeRoom();
+    try {
+      seatPlayer(room, internals, 0);
+      setRoomCreationAdmission(() => false);
+      const now = vi.spyOn(Date, "now").mockReturnValue(START);
+      canCreateRoom();
+      now.mockReturnValue(START + DRAINING_MATCH_LIMIT_MS - 1);
+      internals.lastPlayerActionAt = START + DRAINING_MATCH_LIMIT_MS - 1;
+      internals.enforceMatchLimits();
+      expect(disconnect).not.toHaveBeenCalled();
+      now.mockReturnValue(START + DRAINING_MATCH_LIMIT_MS);
+      internals.lastPlayerActionAt = START + DRAINING_MATCH_LIMIT_MS;
+      internals.enforceMatchLimits();
+      expect(concede).not.toHaveBeenCalled();
+      expect(disconnect).toHaveBeenCalledWith(MATCH_EXPIRED_CLOSE_CODE);
+    } finally {
+      room.onDispose();
+    }
+  });
+
   it("keeps a finished match open for the results screen, then closes it", () => {
     const { room, internals, concede, disconnect } = makeRoom();
     try {
