@@ -1,4 +1,28 @@
 {
+  "releases.1.51.1-beta.summary": {
+    "en": "Deck matchup tests start again, tournament games recover from rooms that closed early, and matches run smoother.",
+    "pt-BR": "Os testes de confronto de deck voltam a começar, partidas de torneio se recuperam de salas que fecharam cedo e as partidas ficam mais fluidas.",
+    "es": "Las pruebas de enfrentamiento de mazos vuelven a empezar, las partidas de torneo se recuperan de salas que se cerraron antes de tiempo y las partidas son más fluidas.",
+    "it": "I test di scontro tra mazzi ripartono, le partite di torneo si riprendono dalle stanze chiuse in anticipo e le partite sono più fluide."
+  },
+  "releases.1.51.1-beta.fix.deckMatchup": {
+    "en": "Deck matchup tests stayed queued and never started. They now start, and a test that waits in the queue for more than 3 minutes ends with a timeout instead of waiting forever.",
+    "pt-BR": "Os testes de confronto de deck ficavam na fila e nunca começavam. Agora eles começam, e um teste que espera na fila por mais de 3 minutos termina por tempo esgotado em vez de esperar para sempre.",
+    "es": "Las pruebas de enfrentamiento de mazos se quedaban en la cola y nunca empezaban. Ahora empiezan, y una prueba que espera en la cola más de 3 minutos termina por tiempo agotado en lugar de esperar para siempre.",
+    "it": "I test di scontro tra mazzi restavano in coda e non partivano mai. Ora partono, e un test che resta in coda per più di 3 minuti termina per tempo scaduto invece di aspettare per sempre."
+  },
+  "releases.1.51.1-beta.fix.tournamentRoom": {
+    "en": "When a tournament game's room closed before the match started, the game refused every later join and could only be voided. Both players can now join the game again.",
+    "pt-BR": "Quando a sala de uma partida de torneio fechava antes de a partida começar, a partida recusava toda nova entrada e só podia ser anulada. Agora os dois jogadores podem entrar na partida de novo.",
+    "es": "Cuando la sala de una partida de torneo se cerraba antes de empezar el combate, la partida rechazaba cualquier entrada posterior y solo se podía anular. Ahora ambos jugadores pueden volver a entrar en la partida.",
+    "it": "Quando la stanza di una partita di torneo si chiudeva prima dell'inizio, la partita rifiutava ogni ingresso successivo e si poteva solo annullare. Ora entrambi i giocatori possono rientrare nella partita."
+  },
+  "releases.1.51.1-beta.fix.performance": {
+    "en": "The game server does less work for each match, which reduces lag and pauses, especially when a match ends.",
+    "pt-BR": "O servidor do jogo faz menos trabalho em cada partida, o que reduz atrasos e travadas, principalmente quando uma partida termina.",
+    "es": "El servidor del juego hace menos trabajo en cada partida, lo que reduce el retraso y las pausas, sobre todo cuando termina una partida.",
+    "it": "Il server di gioco svolge meno lavoro per ogni partita, riducendo ritardi e pause, soprattutto quando una partita finisce."
+  },
   "releases.1.51.0-beta.summary": {
     "en": "Test your decks against bots and see your draw odds in the deck editor. You can now decline effect plays from your hand.",
     "pt-BR": "Teste seus decks contra bots e veja as chances de compra no editor de decks. Agora você pode recusar jogar cartas da mão por efeito.",
