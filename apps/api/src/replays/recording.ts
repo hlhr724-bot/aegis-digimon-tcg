@@ -20,9 +20,42 @@ const MAX_RECORDING_BYTES = MAX_REPLAY_BYTES - 64 * 1024;
 const MAX_FRAMES = 5000;
 const FRAME_COMPRESSION = { params: { [constants.ZSTD_c_compressionLevel]: 1 } };
 
+const UNRECORDED_STATE_FIELDS = new Set(["pendingDecision", "combatWindow"]);
+const UNRECORDED_PLAYER_ZONES = new Set(["deck", "eggDeck", "security"]);
+
+function plainJson(value: unknown): unknown {
+  const serializable = value as { toJSON?: () => unknown };
+  return typeof serializable.toJSON === "function" ? serializable.toJSON() : value;
+}
+
+function schemaJson(schema: object, fieldJson: (name: string, value: unknown) => unknown): Record<string, unknown> {
+  const fields = (schema.constructor as unknown as Record<symbol, Record<string, unknown> | undefined>)[
+    Symbol.metadata
+  ];
+  if (fields === undefined) throw new Error("Replay recording expects a Colyseus schema");
+  const json: Record<string, unknown> = {};
+  for (const key in fields) {
+    const field = fields[key] as { name?: string; deprecated?: boolean } | number;
+    if (typeof field !== "object" || field.name === undefined || field.deprecated) continue;
+    const value = (schema as Record<string, unknown>)[field.name];
+    if (value !== null && value !== undefined) json[field.name] = fieldJson(field.name, value);
+  }
+  return json;
+}
+
+function stateJsonWithoutHiddenZones(state: GameState): GameState {
+  return schemaJson(state, (name, value) => {
+    if (UNRECORDED_STATE_FIELDS.has(name)) return undefined;
+    if (name !== "players") return plainJson(value);
+    return Array.from(value as GameState["players"], (player) =>
+      schemaJson(player, (zone, cards) => (UNRECORDED_PLAYER_ZONES.has(zone) ? [] : plainJson(cards))),
+    );
+  }) as unknown as GameState;
+}
+
 /** Deck order and facedown identities never belong in a replay, even after a game. */
 export function recordingState(state: GameState): GameState {
-  const copy = state.toJSON() as unknown as GameState;
+  const copy = stateJsonWithoutHiddenZones(state);
   copy.roomCode = "";
   copy.spectatorCode = "";
   copy.pendingDecision = undefined;
