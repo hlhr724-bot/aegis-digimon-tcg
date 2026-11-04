@@ -159,6 +159,7 @@ export class MatchupSimulator {
       requestedGames: view.requestedGames,
       invalidGames: view.invalidGames,
     });
+    this.#retireWhenIdle();
     if (job.request.deckId === undefined || view.completedGames === 0) return;
     this.#onFinished?.({
       accountId: job.accountId,
@@ -217,16 +218,17 @@ export class MatchupSimulator {
   #pump(): void {
     this.#expireQueued();
     if (this.#slot?.currentJobId !== undefined || this.#queue.length === 0) return;
-    if (this.#isHostBusy()) {
+    const slot = this.#ensureWorker();
+    clearTimeout(slot.idleTimer);
+    const busy = this.#isHostBusy();
+    if (!slot.ready) return;
+    if (busy) {
       clearTimeout(this.#retryTimer);
       this.#retryTimer = setTimeout(() => this.#pump(), this.#limits.busyHostRetryMs);
       this.#retryTimer.unref();
       return;
     }
-    const slot = this.#ensureWorker();
-    if (!slot.ready) return;
     const job = this.#jobs.get(this.#queue.shift()!)!;
-    clearTimeout(slot.idleTimer);
     slot.currentJobId = job.id;
     job.status = MatchupJobStatus.RUNNING.value;
     log("deckSimulation.started", { jobId: job.id, queuedMs: this.#now() - job.createdAt });
@@ -304,11 +306,15 @@ export class MatchupSimulator {
     clearTimeout(slot.hungTimer);
     slot.currentJobId = undefined;
     this.#settle(job, status);
-    if (this.#queue.length === 0) {
-      slot.idleTimer = setTimeout(() => this.#retireWorker(), this.#limits.idleWorkerMs);
-      slot.idleTimer.unref();
-    }
     this.#pump();
+  }
+
+  #retireWhenIdle(): void {
+    const slot = this.#slot;
+    if (slot === undefined || slot.currentJobId !== undefined || this.#queue.length > 0) return;
+    clearTimeout(slot.idleTimer);
+    slot.idleTimer = setTimeout(() => this.#retireWorker(), this.#limits.idleWorkerMs);
+    slot.idleTimer.unref();
   }
 
   #abandonHungWorker(jobId: string): void {

@@ -224,6 +224,47 @@ describe("MatchupSimulator", () => {
     simulator.close();
   });
 
+  it("starts the worker while the host check is still measuring", () => {
+    vi.useFakeTimers();
+    const hostChecks: boolean[] = [true, false];
+    const worker = createFakeWorker();
+    let spawned = 0;
+    const simulator = new MatchupSimulator({
+      spawnWorker: () => {
+        spawned++;
+        return worker.handle;
+      },
+      isHostBusy: () => hostChecks.shift() ?? false,
+    });
+    const job = simulator.start({ accountId: "a", request });
+    expect(spawned).toBe(1);
+    expect(hostChecks).toHaveLength(1);
+    worker.emit({ type: "ready" });
+    expect(simulator.get({ accountId: "a", jobId: job.id })?.status).toBe("running");
+    simulator.close();
+  });
+
+  it("retires a worker that was started for a job that expired in the queue", () => {
+    vi.useFakeTimers();
+    let clockMs = 0;
+    const worker = createFakeWorker();
+    const simulator = new MatchupSimulator({
+      spawnWorker: () => worker.handle,
+      isHostBusy: () => true,
+      now: () => clockMs,
+      limits: { queuedJobTimeoutMs: 5_000, idleWorkerMs: 3_000 },
+    });
+    const job = simulator.start({ accountId: "a", request });
+    worker.emit({ type: "ready" });
+    clockMs = 5_000;
+    vi.advanceTimersByTime(1_000);
+    expect(simulator.get({ accountId: "a", jobId: job.id })?.status).toBe("timed-out");
+    expect(worker.terminations()).toBe(0);
+    vi.advanceTimersByTime(3_000);
+    expect(worker.terminations()).toBe(1);
+    simulator.close();
+  });
+
   it("times out a job that stays queued because the host never frees up", () => {
     vi.useFakeTimers();
     let clockMs = 0;
