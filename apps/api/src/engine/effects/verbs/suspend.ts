@@ -164,6 +164,7 @@ export function createSuspendVerbs(pc: PrimitivesContext) {
           0,
           handTrashCost,
           `Trash ${handTrashCost} card${handTrashCost === 1 ? "" : "s"} from your hand to unsuspend this Digimon?`,
+          { purpose: "cost" },
         );
         if (chosen.length !== handTrashCost) continue;
         // Same provenance as the Active-phase payment in turnFlow: the granted cost belongs to

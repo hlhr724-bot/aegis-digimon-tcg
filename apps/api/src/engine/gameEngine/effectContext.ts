@@ -1015,6 +1015,7 @@ export function buildPrimitives(engine: GameEngine): Primitives {
               ? {}
               : { allowedTargetCombinations: provenance.allowedTargetCombinations }),
             ...(provenance?.selectionGoal === undefined ? {} : { selectionGoal: provenance.selectionGoal }),
+            ...(provenance?.purpose === undefined ? {} : { purpose: provenance.purpose }),
           },
         });
         return response.kind === "selectCards" ? response.instanceIds : [];
