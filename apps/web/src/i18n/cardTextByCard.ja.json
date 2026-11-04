@@ -15604,5 +15604,9 @@
   },
   "BD02-04": {
     "[WhenAttacking][OncePerTurn]IfyouropponenthasnoDigimonwithdigivolutioncards,thisDigimonunsuspends.": "【アタック時】[ターン1回] 進化元を持つ相手のデジモンがいないなら、このデジモンをアクティブにする。"
+  },
+  "BD02-08": {
+    "[StartofYourMainPhase]IfyouhaveablueDigimonwiththe[ALYSION]trait,gain1memory.[Main]BysuspendingthisTamer,1ofyourblueDigimonwiththe[ALYSION]traitgains<Piercing>fortheturn.(WhenthisDigimondeletesyouropponent'sDigimoninbattlewhileattacking,itcheckssecuritybeforetheattackends.)": "【自分のメインフェイズ開始時】特徴「アリシオン」を持つ青の自分のデジモンがいるなら、メモリー+1。\n【メイン】このテイマーをレストさせることで、ターン終了まで、特徴「アリシオン」を持つ青の自分のデジモン1体は≪貫通≫（アタック中のこのデジモンがバトルで相手のデジモンを消滅させたとき、アタック終了前にチェックする）を得る。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
   }
 }
