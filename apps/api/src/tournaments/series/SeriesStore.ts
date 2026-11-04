@@ -43,7 +43,6 @@ export type SeriesFailure =
   | "series_not_found"
   | "series_already_resolved"
   | "no_games_remaining"
-  | "authorization_live"
   | "authorization_invalid"
   | "authorization_expired"
   | "authorization_consumed"
@@ -378,8 +377,8 @@ export class SeriesStore {
    * "one live authorization per series" rule still holds, one level up — an authorization only ever
    * names the next unfinished game, so two games of one series can never be enterable at once.
    *
-   * A caller whose own authorization is still live is refused rather than handed a second one;
-   * re-issue waits for it to expire, be consumed, or for the game to be voided.
+   * A caller whose own authorization is still live gets a fresh one, and the old one expires in the
+   * same transaction, so a seat never holds two live tokens.
    */
   async authorizeNextGame(
     input: {
@@ -404,7 +403,7 @@ export class SeriesStore {
 
       const game = await this.nextGame(client, series, now);
       if (!game) return failure("no_games_remaining");
-      if (await hasLiveAuthorization(client, game.id, holder, now)) return failure("authorization_live");
+      await expireLiveAuthorizations(client, game.id, holder, now);
 
       const token = randomBytes(32).toString("base64url");
       await client.query(
@@ -560,6 +559,15 @@ export class SeriesStore {
       [gameId, roomId],
     );
     return started.rowCount === 1;
+  }
+
+  async releaseUnstartedGame(gameId: string, roomId: string): Promise<boolean> {
+    await this.accounts.ensureReady();
+    const released = await this.accounts.pool.query(
+      "UPDATE tournament_games SET room_id=NULL, status='allocated', claimed_at=NULL WHERE id=$1 AND room_id=$2 AND status='room_claimed'",
+      [gameId, roomId],
+    );
+    return released.rowCount === 1;
   }
 
   /**
@@ -1277,19 +1285,18 @@ function parseSnapshot(
   return (typeof value === "string" ? JSON.parse(value) : value) ?? undefined;
 }
 
-async function hasLiveAuthorization(
+async function expireLiveAuthorizations(
   client: PoolClient,
   gameId: string,
   holder: SeriesSeatHolder,
   now: number,
-): Promise<boolean> {
+): Promise<void> {
   const column = holder.kind === "account" ? "account_id" : "participant_id";
   const id = holder.kind === "account" ? holder.accountId : holder.participantId;
-  const found = await client.query(
-    `SELECT 1 FROM tournament_game_authorizations WHERE game_id=$1 AND ${column}=$2 AND consumed_at IS NULL AND expires_at>$3`,
+  await client.query(
+    `UPDATE tournament_game_authorizations SET expires_at=$3 WHERE game_id=$1 AND ${column}=$2 AND consumed_at IS NULL AND expires_at>$3`,
     [gameId, id, now],
   );
-  return (found.rowCount ?? 0) > 0;
 }
 
 const MATCH_COLUMNS =

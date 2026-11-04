@@ -770,6 +770,11 @@ export class AegisRoom extends Room<{
     }
   }
 
+  private refuseTournamentJoin(gameId: string, reason: string): undefined {
+    this.debug("tournament.join.refused", { gameId, reason });
+    return undefined;
+  }
+
   /**
    * Establishes who is joining, by whichever of the two tournament flows the options describe (see
    * {@link AegisJoinOptions}), or by the plain room ticket for casual and ranked play.
@@ -827,10 +832,10 @@ export class AegisRoom extends Room<{
         authorizationToken: token,
         roomId: this.roomId,
       });
-      if (!entry.ok) return undefined;
+      if (!entry.ok) return this.refuseTournamentJoin(gameId, entry.reason);
       const tournament = await this.accounts().tournament(entry.value.authorization.tournamentId);
       if (!tournament || tournament.format !== this.state.format) {
-        return undefined;
+        return this.refuseTournamentJoin(gameId, tournament ? "format_mismatch" : "tournament_not_found");
       }
       this.tournamentRules = tournament;
       options.format = tournament.format;
@@ -856,7 +861,10 @@ export class AegisRoom extends Room<{
           // Claiming binds this room to the game exactly once; the opponent's own authorization
           // then finds it already bound to this room and is admitted to it.
           const claimed = await this.series().claimGame({ gameId, authorizationToken: token, roomId: this.roomId });
-          if (!claimed.ok) return false;
+          if (!claimed.ok) {
+            this.refuseTournamentJoin(gameId, claimed.reason);
+            return false;
+          }
           this.tournamentGameId = gameId;
           this.tournamentId = tournament.id;
           return true;
@@ -1902,9 +1910,10 @@ export class AegisRoom extends Room<{
     this.tournamentBotRoomIdleTimeout?.clear();
     this.matchClockInterval?.clear();
     this.matchLimitInterval?.clear();
-    // Legacy only. A Tournament Game's room binding is permanent by design: the game either
-    // finished here or is voided by the scheduler, and re-binding it to a second room would be the
-    // duplicate-claim the UNIQUE room_id exists to prevent.
+    if (this.tournamentGameId)
+      void this.series()
+        .releaseUnstartedGame(this.tournamentGameId, this.roomId)
+        .catch((error: unknown) => this.debugError("[AegisRoom] failed to release unstarted tournament game", error));
     if (!this.tournamentGameId && this.tournamentMatchId)
       void this.accounts()
         .releaseTournamentRoom(this.tournamentMatchId, this.roomId)

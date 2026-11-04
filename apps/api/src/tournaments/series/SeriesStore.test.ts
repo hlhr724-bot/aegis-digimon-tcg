@@ -335,7 +335,7 @@ describe("playing a series", () => {
 });
 
 describe("authorization and room claims", () => {
-  it("issues one live authorization per participant and refuses a second until it expires", async () => {
+  it("replaces a participant's live authorization instead of refusing a retry", async () => {
     const series = await startSeries();
     const first = await fixture.store.authorizeNextGame({
       seriesId: series.id,
@@ -343,25 +343,96 @@ describe("authorization and room claims", () => {
       now: START + 10_000,
       ttlMs: 60_000,
     });
-    expect(first.ok).toBe(true);
-    expect(
-      await fixture.store.authorizeNextGame({
-        seriesId: series.id,
-        accountId: fixture.alice,
-        now: START + 20_000,
-        ttlMs: 60_000,
-      }),
-    ).toEqual({ ok: false, reason: "authorization_live" });
-
     const reissued = await fixture.store.authorizeNextGame({
       seriesId: series.id,
       accountId: fixture.alice,
-      now: START + 80_000,
+      now: START + 20_000,
       ttlMs: 60_000,
     });
-    expect(reissued.ok).toBe(true);
-    // Both authorizations name the same game: the series never has two games open at once.
-    expect(reissued.ok && first.ok && reissued.value.gameId).toBe(first.ok ? first.value.gameId : "");
+    if (!first.ok || !reissued.ok) throw new Error("authorization failed");
+    expect(reissued.value.gameId).toBe(first.value.gameId);
+    expect(reissued.value.token).not.toBe(first.value.token);
+
+    expect(
+      await fixture.store.claimGame({
+        gameId: first.value.gameId,
+        authorizationToken: first.value.token,
+        roomId: "room-1",
+        now: START + 21_000,
+      }),
+    ).toEqual({ ok: false, reason: "authorization_expired" });
+    expect(
+      (
+        await fixture.store.claimGame({
+          gameId: reissued.value.gameId,
+          authorizationToken: reissued.value.token,
+          roomId: "room-1",
+          now: START + 21_000,
+        })
+      ).ok,
+    ).toBe(true);
+  });
+
+  it("lets a new room claim a game whose first room closed before the match started", async () => {
+    const series = await startSeries();
+    const alice = await fixture.store.authorizeNextGame({
+      seriesId: series.id,
+      accountId: fixture.alice,
+      now: START + 10_000,
+    });
+    if (!alice.ok) throw new Error("authorization failed");
+    await fixture.store.claimGame({
+      gameId: alice.value.gameId,
+      authorizationToken: alice.value.token,
+      roomId: "room-abandoned",
+      now: START + 11_000,
+    });
+
+    expect(await fixture.store.releaseUnstartedGame(alice.value.gameId, "room-abandoned")).toBe(true);
+
+    const bob = await fixture.store.authorizeNextGame({
+      seriesId: series.id,
+      accountId: fixture.bob,
+      now: START + 20_000,
+    });
+    const aliceAgain = await fixture.store.authorizeNextGame({
+      seriesId: series.id,
+      accountId: fixture.alice,
+      now: START + 20_000,
+    });
+    if (!bob.ok || !aliceAgain.ok) throw new Error("authorization failed");
+    expect(bob.value.gameId).toBe(alice.value.gameId);
+    for (const token of [bob.value.token, aliceAgain.value.token])
+      expect(
+        (
+          await fixture.store.claimGame({
+            gameId: bob.value.gameId,
+            authorizationToken: token,
+            roomId: "room-retry",
+            now: START + 21_000,
+          })
+        ).ok,
+      ).toBe(true);
+  });
+
+  it("keeps a started game bound to its room when that room closes", async () => {
+    const series = await startSeries();
+    const authorization = await fixture.store.authorizeNextGame({
+      seriesId: series.id,
+      accountId: fixture.alice,
+      now: START + 10_000,
+    });
+    if (!authorization.ok) throw new Error("authorization failed");
+    await fixture.store.claimGame({
+      gameId: authorization.value.gameId,
+      authorizationToken: authorization.value.token,
+      roomId: "room-1",
+      now: START + 11_000,
+    });
+    await fixture.store.markGamePlaying(authorization.value.gameId, "room-1");
+
+    expect(await fixture.store.releaseUnstartedGame(authorization.value.gameId, "room-1")).toBe(false);
+    expect(await fixture.store.releaseUnstartedGame(authorization.value.gameId, "room-other")).toBe(false);
   });
 
   it("refuses an expired token at claim time", async () => {

@@ -200,12 +200,13 @@ describe("POST /series/:id/authorize-game", () => {
     expect(forAlice.body.expiresAt).toBeGreaterThan(Date.now());
   });
 
-  it("refuses a second authorization while the caller's own is still live", async () => {
+  it("issues a fresh authorization when the caller retries before the first expires", async () => {
     const seriesId = await startedSeries();
-    await post(`/series/${seriesId}/authorize-game`, "alice");
+    const first = await post(`/series/${seriesId}/authorize-game`, "alice");
     const again = await post(`/series/${seriesId}/authorize-game`, "alice");
-    expect(again.status).toBe(409);
-    expect(again.body).toEqual({ error: "authorization_live" });
+    expect(again.status).toBe(200);
+    expect(again.body.gameId).toBe(first.body.gameId);
+    expect(again.body.token).not.toBe(first.body.token);
   });
 
   it("refuses a non-participant and 404s an unknown series", async () => {
