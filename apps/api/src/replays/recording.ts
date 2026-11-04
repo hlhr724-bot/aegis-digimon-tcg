@@ -90,6 +90,7 @@ export class ReplayRecording {
   private bytes = 0;
   private overflow = false;
   private ending?: { players: [string, string]; winnerSeat: number };
+  private decompressedFrames?: WeakRef<{ frameCount: number; frames: string[] }>;
 
   constructor(readonly startedAt = Date.now()) {}
 
@@ -188,11 +189,15 @@ export class ReplayRecording {
   }
 
   private serializedFrames(): string[] {
+    const cached = this.decompressedFrames?.deref();
+    if (cached !== undefined && cached.frameCount === this.compressedFrames.length) return cached.frames;
     let previous: Buffer | undefined;
-    return this.compressedFrames.map((compressed) => {
+    const frames = this.compressedFrames.map((compressed) => {
       previous = zstdDecompressSync(compressed, previous ? { dictionary: previous } : {});
       return previous.toString();
     });
+    this.decompressedFrames = new WeakRef({ frameCount: frames.length, frames });
+    return frames;
   }
 
   private summary(mode: ReplaySummary["mode"], finishedAt: number): ReplaySummary | undefined {

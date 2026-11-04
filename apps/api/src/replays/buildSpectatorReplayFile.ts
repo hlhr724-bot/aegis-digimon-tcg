@@ -13,36 +13,39 @@ export function buildSpectatorReplayFile({
   hiddenIdentities,
   sharedDeckSeats = [],
 }: BuildSpectatorReplayFileParams): ParticipantReplayFile {
-  const copy = structuredClone(replay);
-  copy.viewerSeat = SPECTATOR_REPLAY_SEAT;
-  copy.visibleHandSeats = [];
-  for (const seat of [0, 1] as const) {
-    if (hiddenIdentities[seat] || !sharedDeckSeats[seat]) {
-      if (copy.decks) {
-        copy.decks[seat] = null;
-      }
-      if (copy.deckIcons) {
-        copy.deckIcons[seat] = null;
-      }
-    }
-  }
-  copy.players = copy.players.map((name, seat) => (hiddenIdentities[seat] ? `Player ${seat + 1}` : name)) as [
+  const closedSeat = (seat: number) => hiddenIdentities[seat] === true || sharedDeckSeats[seat] !== true;
+  const players = replay.players.map((name, seat) => (hiddenIdentities[seat] ? `Player ${seat + 1}` : name)) as [
     string,
     string,
   ];
-  for (const frame of copy.frames) {
-    for (const player of frame.state.players) {
-      player.hand = [] as never;
-      player.spectatorNamesJson = "[]";
-      player.manualInspectionJson = "[]";
-      if (hiddenIdentities[player.seat]) {
-        player.displayName = copy.players[player.seat];
-        player.avatarId = "";
-        player.avatarUrl = "";
-      }
-    }
-    frame.events = frame.events.filter((event) => event.kind !== "finalReveal");
-  }
+  const copy: MatchReplay = {
+    ...replay,
+    viewerSeat: SPECTATOR_REPLAY_SEAT,
+    visibleHandSeats: [],
+    players,
+    ...(replay.decks
+      ? { decks: replay.decks.map((deck, seat) => (closedSeat(seat) ? null : deck)) as MatchReplay["decks"] }
+      : {}),
+    ...(replay.deckIcons
+      ? {
+          deckIcons: replay.deckIcons.map((icon, seat) => (closedSeat(seat) ? null : icon)) as MatchReplay["deckIcons"],
+        }
+      : {}),
+    frames: replay.frames.map((frame) => ({
+      ...frame,
+      state: {
+        ...frame.state,
+        players: frame.state.players.map((player) => ({
+          ...player,
+          hand: [],
+          spectatorNamesJson: "[]",
+          manualInspectionJson: "[]",
+          ...(hiddenIdentities[player.seat] ? { displayName: players[player.seat]!, avatarId: "", avatarUrl: "" } : {}),
+        })),
+      },
+      events: frame.events.filter((event) => event.kind !== "finalReveal"),
+    })) as unknown as MatchReplay["frames"],
+  };
   const {
     decks: _decks,
     frames: _frames,
