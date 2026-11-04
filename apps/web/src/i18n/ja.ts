@@ -956,6 +956,7 @@ const interfaceMessages = {
   "library.kind.DigiEgg": "デジタマ",
   "library.kind.Tamer": "テイマー",
   "library.kind.Option": "オプション",
+  "library.kind.Dual": "デュアル",
   "deck.eyebrow": "デッキビルダー",
   "deck.title": "あなたのデッキ",
   "deck.empty": "まだデッキがありません。",

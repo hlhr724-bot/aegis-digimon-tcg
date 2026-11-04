@@ -703,6 +703,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "library.kind.DigiEgg": "Digi-Egg",
   "library.kind.Tamer": "Tamer",
   "library.kind.Option": "Option",
+  "library.kind.Dual": "Dual",
 
   "deck.eyebrow": "Construtor de decks",
   "deck.title": "Seus decks",

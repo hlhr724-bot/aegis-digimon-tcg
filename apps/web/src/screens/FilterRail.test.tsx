@@ -171,3 +171,46 @@ describe("deck builder keyword filter", () => {
     expect(keywords.getByRole("button", { name: "Blocker" }).getAttribute("aria-pressed")).toBe("false");
   });
 });
+
+const cardTypeCards = allCards().filter(({ cardId }) => ["BT25-043", "BT1-010", "BT1-092"].includes(cardId));
+
+function CardTypeFilterHarness() {
+  const filter = useCardFilter(cardTypeCards);
+  return (
+    <>
+      <FilterRail filter={filter} />
+      <output data-testid="results">
+        {filter.filtered
+          .map((card) => card.cardId)
+          .sort()
+          .join(",")}
+      </output>
+    </>
+  );
+}
+
+function renderCardTypeHarness() {
+  render(
+    <I18nProvider>
+      <CardTypeFilterHarness />
+    </I18nProvider>,
+  );
+  return within(screen.getByRole("group", { name: "Card type" }));
+}
+
+describe("deck builder card type filter", () => {
+  it("isolates DUAL cards and lists them under Digimon as well as Option", () => {
+    const cardType = renderCardTypeHarness();
+
+    fireEvent.click(cardType.getByRole("button", { name: "Dual" }));
+    expect(getResults()).toBe("BT25-043");
+
+    fireEvent.click(cardType.getByRole("button", { name: "Dual" }));
+    fireEvent.click(cardType.getByRole("button", { name: "Digimon" }));
+    expect(getResults()).toBe("BT1-010,BT25-043");
+
+    fireEvent.click(cardType.getByRole("button", { name: "Digimon" }));
+    fireEvent.click(cardType.getByRole("button", { name: "Option" }));
+    expect(getResults()).toBe("BT1-092,BT25-043");
+  });
+});
