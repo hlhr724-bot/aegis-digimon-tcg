@@ -2,7 +2,9 @@ import { ManualStatus } from "@aegis/shared/manual/ManualStatus";
 import "@/game/manual/manualFeatures.css";
 import { PermanentDpDeltaHint } from "@/game/piece/PermanentDpDeltaHint";
 import { CardAceBadge } from "@/design/CardAceBadge";
-import { useRef, type CSSProperties } from "react";
+import { CardZoomPreview } from "@/design/CardZoomPreview";
+import { useBoardHoverZoom } from "@/game/piece/useBoardHoverZoom";
+import { useRef, useState, type CSSProperties } from "react";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { useFieldReferenceVisible } from "@/design/fieldReference/useFieldReferenceVisible";
 import { getTranslatedCardName } from "@/i18n/getTranslatedCardName";
@@ -167,6 +169,8 @@ export function PermanentView({
   if (quietedEntrance.current.key !== arrivalKey) quietedEntrance.current = { key: arrivalKey, quiet: quietEntrance };
   else if (quietEntrance) quietedEntrance.current.quiet = true;
   const landingRef = useCardLanding(arrivalKey);
+  const [hovered, setHovered] = useState(false);
+  const zoomPoint = useBoardHoverZoom(hovered && topId && !faceDown && !pending ? perm.permanentId : null);
   if (!perm.topCard || (!topId && !faceDown)) return null;
   const def = topId ? getCardDefinition(topId) : undefined;
   const delta = perm.currentDP - originalDP(perm);
@@ -208,6 +212,8 @@ export function PermanentView({
       }}
       onPointerDown={onPointerDown}
       onPointerDownCapture={beginInspection}
+      onPointerEnter={(event) => setHovered(event.pointerType === "mouse")}
+      onPointerLeave={() => setHovered(false)}
       onContextMenu={
         onInspect
           ? (event) => {
@@ -397,6 +403,9 @@ export function PermanentView({
         {claw ? <ClawSlash key={`claw-${perm.permanentId}`} fixedFieldAnchor /> : null}
         {dpPulse ? <DpPulseParticles key={dpPulse.key} pulse={dpPulse} /> : null}
       </div>
+      {topId && zoomPoint ? (
+        <CardZoomPreview cardId={topId} artId={perm.topCard.artId} x={zoomPoint.x} y={zoomPoint.y} fallbackIndex={0} />
+      ) : null}
       <CardAceBadge cardId={topId} />
       {sources ? <PermanentSourceBadge sources={sources} /> : null}
       {copies > 1 ? <PermanentCopiesBadge copies={copies} /> : null}
