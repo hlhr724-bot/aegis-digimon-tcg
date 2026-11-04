@@ -175,7 +175,7 @@ function responseForDecision(request: DecisionRequest): DecisionResponse | undef
   if (request.kind === "optional") return { kind: "optional", accept: true };
   if (request.kind === "selectCards" || request.kind === "chooseTargets") {
     const candidates = request.options?.candidateInstanceIds ?? [];
-    return { kind: request.kind, instanceIds: candidates.slice(0, request.options?.min ?? 0) };
+    return { kind: request.kind, instanceIds: candidates.slice(0, request.options?.max ?? candidates.length) };
   }
   if (request.kind === "chooseOption") return { kind: "chooseOption", optionIndex: 0 };
   if (request.kind === "orderCards") {
