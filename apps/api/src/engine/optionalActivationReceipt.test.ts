@@ -64,28 +64,31 @@ describe("once-per-turn activation receipt boundaries", () => {
         const respond = async (instanceIds: string[]) => {
           await settle(() => s.state.pendingDecision?.kind === "selectCards");
           const prompt = s.decisions.at(-1)!.req;
-          expect(prompt.options).toMatchObject({ min: 0, max: 2, purpose: "cost" });
-          expect(
-            s.engine.applyIntent(0, {
-              type: "respondDecision",
-              decisionId: prompt.decisionId,
-              response: { kind: "selectCards", instanceIds },
-            }),
-          ).toEqual({ ok: true });
+          expect(prompt.options).toMatchObject({ min: 2, max: 2, purpose: "cost", declinesCost: true });
+          return s.engine.applyIntent(0, {
+            type: "respondDecision",
+            decisionId: prompt.decisionId,
+            response: { kind: "selectCards", instanceIds },
+          });
         };
 
         const incomplete = fire.fire(EffectTiming.OnPlay, s.perm("source"));
-        await respond([s.inst("first").instanceId]);
-        await incomplete;
+        await settle(() => s.state.pendingDecision?.kind === "selectCards");
+        const paymentDecisionId = s.state.pendingDecision!.decisionId;
+        expect(await respond([s.inst("first").instanceId])).toMatchObject({ ok: false });
+        expect(s.state.pendingDecision?.decisionId).toBe(paymentDecisionId);
         expect(s.events.some((event) => event.kind === "effectTriggered" && event.sourceCardId === CARD_ID)).toBe(
           false,
         );
         expect(s.state.players[0]!.hand).toHaveLength(2);
         expect(s.state.players[0]!.trash).toHaveLength(0);
         expect(s.perm("source").currentDP).toBe(3000);
+        expect(await respond([])).toEqual({ ok: true });
+        await incomplete;
+        expect(s.state.pendingDecision).toBeUndefined();
 
         const complete = fire.fire(EffectTiming.OnPlay, s.perm("source"));
-        await respond([s.inst("first").instanceId, s.inst("second").instanceId]);
+        expect(await respond([s.inst("first").instanceId, s.inst("second").instanceId])).toEqual({ ok: true });
         await complete;
         expect(s.state.players[0]!.hand).toHaveLength(0);
         expect(s.state.players[0]!.trash).toHaveLength(2);
