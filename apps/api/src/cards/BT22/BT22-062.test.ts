@@ -220,6 +220,77 @@ describe("BT22-062 MetalTyrannomon (X Antibody) — KB Q&A rulings", () => {
     expect(s.state.players[0]!.security).toHaveLength(3);
   });
 
+  it("requires the opponent to choose an attack target after the source controller selects their Digimon", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT22-065", as: "host", under: ["BT22-062"] }], security: SECURITY },
+      1: {
+        battleArea: [
+          { card: "BT1-009", as: "chosen", dp: 20000 },
+          { card: "BT1-010", as: "other", dp: 20000 },
+        ],
+      },
+    });
+    s.state.turnSeat = 1;
+    await s.ready();
+    const turn = s.engine.runOneTurn();
+    try {
+      await advance(s.engine).waitForMainPhase(1);
+      advance(s.engine).endMainPhaseIfOpen(1);
+      await settle(() => s.state.pendingDecision?.kind === "optional");
+      const activation = s.decisions.at(-1)!;
+      expect(activation.seat).toBe(0);
+      expect(activation.req.sourceCardId).toBe("BT22-062");
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: activation.req.decisionId,
+          response: { kind: "optional", accept: true },
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.state.pendingDecision?.kind === "chooseTargets");
+      const attackerChoice = s.decisions.at(-1)!;
+      expect(attackerChoice.seat).toBe(0);
+      expect(
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: attackerChoice.req.decisionId,
+          response: { kind: "chooseTargets", instanceIds: [s.perm("chosen").permanentId] },
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => s.state.pendingDecision?.kind === "selectCards");
+      const targetChoice = s.decisions.at(-1)!;
+      expect(targetChoice.seat).toBe(1);
+      expect(targetChoice.req.options?.selectionContext).toBe("attackTarget");
+      expect(targetChoice.req.options?.min).toBe(1);
+      expect(
+        s.engine.applyIntent(1, {
+          type: "respondDecision",
+          decisionId: targetChoice.req.decisionId,
+          response: { kind: "selectCards", instanceIds: [] },
+        }).ok,
+      ).toBe(false);
+      expect(s.state.pendingDecision?.decisionId).toBe(targetChoice.req.decisionId);
+      expect(
+        s.engine.applyIntent(1, {
+          type: "respondDecision",
+          decisionId: targetChoice.req.decisionId,
+          response: { kind: "selectCards", instanceIds: ["player"] },
+        }),
+      ).toEqual({ ok: true });
+      await settle(() => attackersDeclared(s).length === 1);
+      await advance(s.engine).finishAttack();
+      await turn;
+      expect(attackersDeclared(s)).toEqual([s.perm("chosen").permanentId]);
+      expect(s.perm("chosen").isSuspended).toBe(true);
+      expect(s.perm("other").isSuspended).toBe(false);
+      expect(s.state.players[0]!.security).toHaveLength(2);
+      expect(s.state.pendingDecision).toBeUndefined();
+    } finally {
+      s.engine.applyIntent(1, { type: "surrender" });
+      await turn;
+    }
+  });
+
   it("does not make a chosen Digimon that can't attack attack (Q4917)", async () => {
     async function runWithChosenDigimon(canAttack: boolean) {
       const s = setupEngine(
