@@ -62,6 +62,7 @@ export async function runMatchupGame({
     turnLimit: MATCHUP_TURN_LIMIT,
     recordReplay,
     deckRules: MATCHUP_DECK_RULES,
+    headless: true,
     signal,
   });
   const result = !isCleanGame(match)

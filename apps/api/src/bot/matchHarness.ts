@@ -39,6 +39,7 @@ export interface SeatConfig {
 
 export interface MatchOptions {
   omitHandAffordances?: boolean;
+  headless?: boolean;
   seed: number;
   firstSeat?: Seat;
   /** External experiment cancellation, e.g. an explicit model-decision budget. */
@@ -167,7 +168,7 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
     : undefined;
 
   const engine = new GameEngine(state, {
-    omitHandAffordances: options.omitHandAffordances,
+    omitHandAffordances: options.omitHandAffordances === true || options.headless === true,
     seed: options.seed,
     firstSeat: options.firstSeat,
     requestDecision: (seat, request) => {
@@ -190,6 +191,10 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
       bots[1]?.onEvent(event);
     },
   });
+  if (options.headless === true) {
+    engine.runtimeObjects.disableSnapshots();
+    engine.searchRollout = true;
+  }
 
   for (const seat of [0, 1] as const) {
     const config = options.seats[seat];
