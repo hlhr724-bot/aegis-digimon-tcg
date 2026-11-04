@@ -70,28 +70,88 @@ a policy fallback is reported as invalid and left out of the score.
 `worker_threads` worker (`matchupWorker.ts`), never on the game loop. The worker plays
 games one after another through `runBotMatch`, the same harness as the battle fuzzer
 and the level panels, and posts each result as it finishes. The worker loads the card
-registry once and stops after 60 seconds without work.
+registry once and stops after 60 seconds without work, including after a job that
+expired in the queue.
+
+The simulator starts the worker as soon as a job is queued, while the busy-host check
+takes its first CPU sample. The check needs two samples at least 1 s apart, so a cold
+start costs the slower of the two instead of both in a row.
+
+Matchup games run headless (`runBotMatch` option `headless`). No client watches them,
+so the engine skips work that only serves a client or a search:
+
+| Skipped work                                        | Why it is safe here                                                    |
+| --------------------------------------------------- | ---------------------------------------------------------------------- |
+| Hand affordances                                    | They tell a client which hand cards it can play; no bot reads them     |
+| Engine snapshot bookkeeping                         | Snapshots exist for live search; the Standard bot never searches       |
+| Once-per-turn, field effect and Negamon projections | Presentation only; search rollouts already skip them (`searchRollout`) |
+| Unchanged continuous recomputes                     | Reused when nothing changed, as in search rollouts                     |
+
+The bot still reads the projections it uses: attack targets, activatable effects and
+keywords. Sample replays re-simulate the game from its inputs with a full engine, so
+the viewer file is unchanged. Every sample still exported without divergence.
 
 ### Limits
 
 The limits live in `MATCHUP_LIMITS.ts` and fit a one-CPU host.
 
-| Limit                       | Value                           | Why                                                |
-| --------------------------- | ------------------------------- | -------------------------------------------------- |
-| Workers per API process     | 1                               | One game at a time for the whole process           |
-| Unfinished jobs per account | 1                               | One player cannot fill the queue                   |
-| Queued jobs per process     | 2                               | Bounded wait; more requests get `queue_full`       |
-| Games per job               | 10, 20 or 40                    | Fixed choices keep the cost predictable            |
-| Time budget per job         | 120 s                           | Checked between games; the job ends as `timed-out` |
-| Hung worker grace           | 15 s past the budget            | The worker is terminated and replaced              |
-| Worker heap                 | 512 MB                          | `resourceLimits.maxOldGenerationSizeMb`            |
-| Job starts per account      | 6, one more every 10 minutes    | Token bucket                                       |
-| Busy host                   | 1-minute load above 1.5 × cores | Queued jobs wait and retry every 2 s               |
-| Finished job lifetime       | 15 minutes                      | Results and sample replays then disappear          |
+| Limit                       | Value                                                                                                                    | Why                                                |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| Workers per API process     | 1                                                                                                                        | One game at a time for the whole process           |
+| Unfinished jobs per account | 1                                                                                                                        | One player cannot fill the queue                   |
+| Queued jobs per process     | 2                                                                                                                        | Bounded wait; more requests get `queue_full`       |
+| Games per job               | 10, 20 or 40                                                                                                             | Fixed choices keep the cost predictable            |
+| Time budget per job         | 120 s                                                                                                                    | Checked between games; the job ends as `timed-out` |
+| Hung worker grace           | 15 s past the budget                                                                                                     | The worker is terminated and replaced              |
+| Worker heap                 | 512 MB                                                                                                                   | `resourceLimits.maxOldGenerationSizeMb`            |
+| Job starts per account      | 6, one more every 10 minutes                                                                                             | Token bucket                                       |
+| Busy host                   | Less than 1 free container core, or over 25% of CPU periods throttled; outside a cgroup, 1-minute load above 1.5 × cores | Queued jobs wait and retry every 1 s               |
+| Finished job lifetime       | 15 minutes                                                                                                               | Results and sample replays then disappear          |
 
-A local run of 10 Standard games against a famous deck took 7.6 s on a development
-machine. A 40-game job should fit the 120 s budget on the production host; if not, it
-ends as `timed-out` with the games it finished.
+A job that runs past the budget ends as `timed-out` with the games it finished.
+
+### Measured speed
+
+Production logs from 2026-11-04, 02:44 to 14:20 UTC, before the speed changes:
+
+| Measure       | Value                                               |
+| ------------- | --------------------------------------------------- |
+| Jobs          | 85 finished: 73 completed, 8 cancelled, 4 timed out |
+| Time per game | p50 2.7 s, p90 4.5 s                                |
+| Queue wait    | 12 jobs at 2.0 s, most others 8 to 13 s             |
+| 40-game jobs  | 4 of 25 timed out after 27 to 34 games              |
+
+Every job waited at least 2 s because the busy-host check reports busy until it has a
+baseline sample. A cold worker added about 6.5 s on the production host. That host
+shares four Neoverse-N1 cores with other services, so the worker gets well under one
+core.
+
+A local benchmark on Node 26 (four famous-deck pairs, 10 games each, compiled build)
+measured the changes:
+
+| Measure                         | Before        | After        |
+| ------------------------------- | ------------- | ------------ |
+| Game without a sample replay    | 139 to 146 ms | 46 to 55 ms  |
+| All games, including 12 samples | 183 to 188 ms | 95 to 103 ms |
+
+All 40 games had the same winner, reason and turn count before and after. A wider
+check of eight pairs with 20 games each (160 games) also matched game for game, with
+and without the search-rollout shortcuts.
+
+A sample game now costs about four times a plain one (about 210 ms locally), because
+the worker records it and then re-simulates it with a full engine to export the
+viewer file. A job has at most three samples.
+
+Exporting samples only when a player opens one would save that work, but only if few
+players open them. HTTP requests are not logged anywhere on the production host, so
+the simulator logs `deckSimulation.replayOpened` with the job, the sample index,
+whether the file was still available, and the time since the job finished. Compare its
+count with `deckSimulation.finished` before changing how samples are exported.
+
+A V8 compile cache (`NODE_COMPILE_CACHE`) does not shorten worker start. In the API
+image on arm64, limited to one core, a worker was ready in 1.1 to 1.4 s with a warm
+cache and 1.1 to 1.2 s without one, although V8 accepted every cached module. Module
+evaluation, not compilation, dominates the start.
 
 Results are not stored. A process restart loses running and finished jobs. A running
 job can be cancelled; it keeps the games it finished.
