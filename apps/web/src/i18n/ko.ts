@@ -946,6 +946,7 @@ const interfaceMessages = {
   "library.kind.DigiEgg": "디지타마",
   "library.kind.Tamer": "테이머",
   "library.kind.Option": "옵션",
+  "library.kind.Dual": "듀얼",
   "deck.eyebrow": "덱 빌더",
   "deck.title": "내 덱",
   "deck.empty": "아직 덱이 없습니다.",

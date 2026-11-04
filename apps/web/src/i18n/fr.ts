@@ -967,6 +967,7 @@ const interfaceMessages = {
   "library.kind.DigiEgg": "Digi-Œuf",
   "library.kind.Tamer": "Tamer",
   "library.kind.Option": "Option",
+  "library.kind.Dual": "Dual",
   "deck.eyebrow": "Constructeur de deck",
   "deck.title": "Vos decks",
   "deck.empty": "Vous n'avez pas encore de decks.",

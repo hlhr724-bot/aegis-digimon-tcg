@@ -700,6 +700,7 @@ export const en = {
   "library.kind.DigiEgg": "Digi-Egg",
   "library.kind.Tamer": "Tamer",
   "library.kind.Option": "Option",
+  "library.kind.Dual": "Dual",
 
   "deck.eyebrow": "Deck Builder",
   "deck.title": "Your decks",

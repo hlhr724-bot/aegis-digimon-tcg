@@ -11,10 +11,10 @@ import {
   CardFilter,
   CardSort,
   HIGHEST_COST_FILTER,
-  KIND_FILTERS,
   LEVEL_FILTERS,
   RARITY_FILTERS,
 } from "./cardFilters";
+import { KIND_FILTERS } from "@/screens/matchesKindFilter";
 import { DIGIVOLUTION_COST_FILTERS, HIGHEST_DIGIVOLUTION_COST_FILTER } from "@/screens/matchesDigivolutionCostFilter";
 import "./cardLibrary.css";
 
@@ -135,7 +135,7 @@ export function FilterRail({
 
         <div className="card-filter-group">
           <div className="card-filter-label">{t("library.cardType")}</div>
-          <div className="card-filter-chips">
+          <div className="card-filter-chips" role="group" aria-label={t("library.cardType")}>
             {KIND_FILTERS.map((k) => (
               <button
                 key={k}
