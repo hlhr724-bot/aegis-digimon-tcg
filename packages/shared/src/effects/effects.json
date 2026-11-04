@@ -248741,6 +248741,33 @@
     "coverage": "full",
     "residual": []
   },
+  "BD02-02": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "RevealAdd",
+            "revealCount": 5,
+            "add": [
+              {
+                "filter": {
+                  "controllerDefault": "mine",
+                  "colors": ["Blue"],
+                  "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }]
+                },
+                "count": 1,
+                "to": "hand"
+              }
+            ],
+            "rest": "deckBottom"
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
   "BD02-03": {
     "effects": [
       {

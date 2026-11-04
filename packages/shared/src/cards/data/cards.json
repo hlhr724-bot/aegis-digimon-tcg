@@ -111302,6 +111302,31 @@
     "imageId": "BD01-10"
   },
   {
+    "cardId": "BD02-02",
+    "set": "BD02",
+    "nameEn": "Renamon",
+    "nameJp": "レナモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Data"],
+    "types": ["Beastkin", "ALYSION"],
+    "effectText": "[On Play] Reveal the top 5 cards of your deck. Add 1 blue [ALYSION] trait card among them to the hand. Return the rest to the bottom of the deck.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BD02-02"
+  },
+  {
     "cardId": "BD02-03",
     "set": "BD02",
     "nameEn": "Tenkomon",

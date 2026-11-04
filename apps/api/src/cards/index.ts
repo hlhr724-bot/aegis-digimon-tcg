@@ -3,6 +3,7 @@ import "#api/cards/BD01/BD01-02";
 import "#api/cards/BD01/BD01-03";
 import "#api/cards/BD01/BD01-05";
 import "#api/cards/BD01/BD01-10";
+import "#api/cards/BD02/BD02-02";
 import "#api/cards/BD02/BD02-03";
 import "#api/cards/BD02/BD02-04";
 import "#api/cards/BD02/BD02-08";
