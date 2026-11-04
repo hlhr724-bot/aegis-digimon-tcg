@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { matchupDeckKey } from "@aegis/shared/deckSimulation/matchupDeckKey";
 import { RED_DECK } from "#api/engine/testDecks";
 import { MatchupSimulator } from "#api/deckSimulation/MatchupSimulator";
 import type { MatchupRequest } from "#api/deckSimulation/MatchupRequest";
@@ -49,6 +50,54 @@ function lastJobId(posted: MatchupWorkerRequest[]): string {
 describe("MatchupSimulator", () => {
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it("hands a finished job for a saved deck to the result hook, without sample games", () => {
+    const worker = createFakeWorker();
+    const finished: unknown[] = [];
+    const simulator = new MatchupSimulator({
+      spawnWorker: () => worker.handle,
+      isHostBusy: () => false,
+      onFinished: (result) => finished.push(result),
+    });
+    simulator.start({ accountId: "a", request: { ...request, deckId: "deck-1" } });
+    worker.emit({ type: "ready" });
+    const jobId = lastJobId(worker.posted);
+    worker.emit({
+      type: "game",
+      jobId,
+      index: 0,
+      opponentIndex: 0,
+      playerFirst: true,
+      outcome: { result: "win", reason: "security", turns: 9 },
+      replayFile: new Uint8Array([31, 139, 8]),
+    });
+    worker.emit({ type: "finished", jobId, end: "completed" });
+    expect(finished).toEqual([
+      expect.objectContaining({
+        accountId: "a",
+        deckId: "deck-1",
+        deckKey: matchupDeckKey(RED_DECK),
+        job: expect.objectContaining({ id: jobId, status: "completed", completedGames: 1, samples: [] }),
+      }),
+    ]);
+  });
+
+  it("saves nothing for a job without a saved deck or without finished games", () => {
+    const worker = createFakeWorker();
+    const finished: unknown[] = [];
+    const simulator = new MatchupSimulator({
+      spawnWorker: () => worker.handle,
+      isHostBusy: () => false,
+      onFinished: (result) => finished.push(result),
+    });
+    simulator.start({ accountId: "a", request });
+    worker.emit({ type: "ready" });
+    worker.emit({ type: "finished", jobId: lastJobId(worker.posted), end: "completed" });
+    const queued = simulator.start({ accountId: "a", request: { ...request, deckId: "deck-1" } });
+    simulator.cancel({ accountId: "a", jobId: queued.id });
+    worker.emit({ type: "finished", jobId: lastJobId(worker.posted), end: "cancelled" });
+    expect(finished).toEqual([]);
   });
 
   it("runs a job in the worker and reports the score, interval and sample games", () => {

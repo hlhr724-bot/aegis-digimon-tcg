@@ -24,6 +24,8 @@ export interface MatchupTally {
 export interface MatchupOpponentResult extends MatchupTally {
   name: string;
   communityDeckId?: string;
+  coverCardId?: string;
+  colors?: string[];
 }
 
 export interface MatchupJob extends MatchupTally {

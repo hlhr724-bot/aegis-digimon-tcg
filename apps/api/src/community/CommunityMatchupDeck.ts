@@ -3,4 +3,6 @@ export type CommunityMatchupDeck = {
   name: string;
   mainDeck: readonly string[];
   eggDeck: readonly string[];
+  coverCardId: string | null;
+  colors: readonly string[];
 };

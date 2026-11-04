@@ -5,4 +5,5 @@ export type MatchupRequest = {
   deck: Decklist;
   opponents: readonly MatchupOpponent[];
   gamesPerOpponent: number;
+  deckId?: string;
 };

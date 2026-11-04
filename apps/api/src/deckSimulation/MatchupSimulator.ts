@@ -3,6 +3,8 @@ import { availableParallelism, loadavg } from "node:os";
 import { MatchupGameResult } from "@aegis/shared/deckSimulation/MatchupGameResult";
 import type { MatchupJob, MatchupSampleGame, MatchupTally } from "@aegis/shared/deckSimulation/MatchupJob";
 import { MatchupJobStatus } from "@aegis/shared/deckSimulation/MatchupJobStatus";
+import { matchupDeckKey } from "@aegis/shared/deckSimulation/matchupDeckKey";
+import type { FinishedMatchup } from "#api/deckSimulation/FinishedMatchup";
 import { MATCHUP_LIMITS } from "#api/deckSimulation/MATCHUP_LIMITS";
 import { MatchupLimitError } from "#api/deckSimulation/MatchupLimitError";
 import type { MatchupRequest } from "#api/deckSimulation/MatchupRequest";
@@ -38,6 +40,7 @@ type Options = {
   isHostBusy?: () => boolean;
   now?: () => number;
   limits?: Partial<typeof MATCHUP_LIMITS>;
+  onFinished?: (finished: FinishedMatchup) => void;
 };
 
 function tally(counts: Counts, requestedGames: number): MatchupTally {
@@ -63,10 +66,18 @@ export class MatchupSimulator {
   readonly #isHostBusy: () => boolean;
   readonly #now: () => number;
   readonly #limits: typeof MATCHUP_LIMITS;
+  readonly #onFinished: ((finished: FinishedMatchup) => void) | undefined;
   #slot?: WorkerSlot;
   #retryTimer?: NodeJS.Timeout;
 
-  constructor({ spawnWorker = spawnMatchupWorker, isHostBusy = hostIsBusy, now = Date.now, limits }: Options = {}) {
+  constructor({
+    spawnWorker = spawnMatchupWorker,
+    isHostBusy = hostIsBusy,
+    now = Date.now,
+    limits,
+    onFinished,
+  }: Options = {}) {
+    this.#onFinished = onFinished;
     this.#spawnWorker = spawnWorker;
     this.#isHostBusy = isHostBusy;
     this.#now = now;
@@ -113,8 +124,7 @@ export class MatchupSimulator {
     if (job?.accountId !== accountId) return undefined;
     if (job.status === MatchupJobStatus.QUEUED.value) {
       this.#queue.splice(this.#queue.indexOf(jobId), 1);
-      job.status = MatchupJobStatus.CANCELLED.value;
-      job.finishedAt = this.#now();
+      this.#settle(job, MatchupJobStatus.CANCELLED.value);
     } else if (job.status === MatchupJobStatus.RUNNING.value && this.#slot?.currentJobId === jobId) {
       this.#slot.handle.postMessage({ type: "cancel", jobId });
     }
@@ -128,6 +138,19 @@ export class MatchupSimulator {
 
   #isFinished(status: MatchupJobStatus): boolean {
     return Object.values(MatchupJobStatus).find((entry) => entry.value === status)!.isFinished;
+  }
+
+  #settle(job: JobRecord, status: MatchupJobStatus): void {
+    job.status = status;
+    job.finishedAt = this.#now();
+    const view = this.#view(job);
+    if (job.request.deckId === undefined || view.completedGames === 0) return;
+    this.#onFinished?.({
+      accountId: job.accountId,
+      deckId: job.request.deckId,
+      deckKey: matchupDeckKey(job.request.deck),
+      job: { ...view, samples: [] },
+    });
   }
 
   #prune(): void {
@@ -156,6 +179,8 @@ export class MatchupSimulator {
       opponents: job.request.opponents.map((opponent, index) => ({
         name: opponent.name,
         ...(opponent.communityDeckId === undefined ? {} : { communityDeckId: opponent.communityDeckId }),
+        ...(opponent.coverCardId === undefined ? {} : { coverCardId: opponent.coverCardId }),
+        ...(opponent.colors === undefined ? {} : { colors: [...opponent.colors] }),
         ...tally(job.counts[index]!, job.request.gamesPerOpponent),
       })),
       samples: job.samples.map((sample) => ({ ...sample })),
@@ -251,8 +276,7 @@ export class MatchupSimulator {
   #finish(slot: WorkerSlot, job: JobRecord, status: MatchupJobStatus): void {
     clearTimeout(slot.hungTimer);
     slot.currentJobId = undefined;
-    job.status = status;
-    job.finishedAt = this.#now();
+    this.#settle(job, status);
     if (this.#queue.length === 0) {
       slot.idleTimer = setTimeout(() => this.#retireWorker(), this.#limits.idleWorkerMs);
       slot.idleTimer.unref();
@@ -263,9 +287,7 @@ export class MatchupSimulator {
   #abandonHungWorker(jobId: string): void {
     const slot = this.#slot;
     if (slot?.currentJobId !== jobId) return;
-    const job = this.#jobs.get(jobId)!;
-    job.status = MatchupJobStatus.TIMED_OUT.value;
-    job.finishedAt = this.#now();
+    this.#settle(this.#jobs.get(jobId)!, MatchupJobStatus.TIMED_OUT.value);
     this.#retireWorker();
     this.#pump();
   }
@@ -273,10 +295,7 @@ export class MatchupSimulator {
   #workerExited(slot: WorkerSlot): void {
     if (this.#slot !== slot) return;
     const job = slot.currentJobId === undefined ? undefined : this.#jobs.get(slot.currentJobId);
-    if (job !== undefined && !this.#isFinished(job.status)) {
-      job.status = MatchupJobStatus.FAILED.value;
-      job.finishedAt = this.#now();
-    }
+    if (job !== undefined && !this.#isFinished(job.status)) this.#settle(job, MatchupJobStatus.FAILED.value);
     this.#retireWorker();
     this.#pump();
   }

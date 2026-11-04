@@ -13,6 +13,7 @@ import { storyGuestProgress } from "#api/db/migrations/039-story-guest-progress"
 import { communityDeckModeration } from "#api/db/migrations/040-community-deck-moderation";
 import { accountAvatarImage } from "#api/db/migrations/051-account-avatar-image";
 import { storyProgress } from "#api/db/migrations/038-story-progress";
+import { deckMatchupResults } from "#api/db/migrations/054-deck-matchup-results";
 import type { Migration } from "../migrator.js";
 import { initialSchema } from "./001-initial-schema.js";
 import { tournamentProgramColumns } from "./002-tournament-program-columns.js";
@@ -111,4 +112,5 @@ export const migrations: readonly Migration[] = [
   accountAvatarImage,
   tournamentRoundStartMode,
   publicReplayListing,
+  deckMatchupResults,
 ];

@@ -15,8 +15,14 @@ async function resolveOpponents({ draft, communityDecks }: Params): Promise<Matc
   if (opponent.kind === "famous") {
     const famous = VALIDATED_FAMOUS_DECKS.find((entry) => entry.deckId === opponent.famousDeckId);
     if (famous === undefined) throw new MatchupRequestError("invalid_opponent");
+    const coverCardId = [...new Set(famous.decklist.mainDeck)].at(-1);
     return [
-      { name: famous.name, deck: { mainDeck: [...famous.decklist.mainDeck], eggDeck: [...famous.decklist.eggDeck] } },
+      {
+        name: famous.name,
+        deck: { mainDeck: [...famous.decklist.mainDeck], eggDeck: [...famous.decklist.eggDeck] },
+        ...(coverCardId === undefined ? {} : { coverCardId }),
+        colors: [...famous.colors],
+      },
     ];
   }
   const decks = await communityDecks.matchupOpponents({
@@ -31,6 +37,8 @@ async function resolveOpponents({ draft, communityDecks }: Params): Promise<Matc
     name: deck.name,
     deck: { mainDeck: [...deck.mainDeck], eggDeck: [...deck.eggDeck] },
     communityDeckId: deck.id,
+    ...(deck.coverCardId === null ? {} : { coverCardId: deck.coverCardId }),
+    colors: [...deck.colors],
   }));
 }
 
@@ -39,5 +47,6 @@ export async function resolveMatchupRequest(params: Params): Promise<MatchupRequ
     deck: params.draft.deck,
     opponents: await resolveOpponents(params),
     gamesPerOpponent: params.draft.gamesPerOpponent,
+    ...(params.draft.deckId === undefined ? {} : { deckId: params.draft.deckId }),
   };
 }

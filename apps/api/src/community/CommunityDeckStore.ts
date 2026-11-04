@@ -365,7 +365,14 @@ export class CommunityDeckStore {
         }),
       )
       .slice(0, limit)
-      .map((row) => ({ id: row.id, name: row.name, mainDeck: row.main_deck, eggDeck: row.egg_deck }));
+      .map((row) => ({
+        id: row.id,
+        name: row.name,
+        mainDeck: row.main_deck,
+        eggDeck: row.egg_deck,
+        coverCardId: row.cover_card_id,
+        colors: row.colors,
+      }));
   }
 
   async updateGuide({ accountId, publicDeckId, guide }: UpdateGuideParams): Promise<boolean> {

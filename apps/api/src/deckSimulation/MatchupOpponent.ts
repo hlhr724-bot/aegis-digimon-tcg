@@ -4,4 +4,6 @@ export type MatchupOpponent = {
   name: string;
   deck: Decklist;
   communityDeckId?: string;
+  coverCardId?: string;
+  colors?: readonly string[];
 };

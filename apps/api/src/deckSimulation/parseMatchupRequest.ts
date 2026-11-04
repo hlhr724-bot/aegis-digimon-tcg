@@ -9,6 +9,7 @@ import type { MatchupRequestDraft } from "#api/deckSimulation/MatchupRequestDraf
 import { MatchupRequestError } from "#api/deckSimulation/MatchupRequestError";
 
 const MAX_NAME_LENGTH = 80;
+const MAX_DECK_ID_LENGTH = 64;
 
 function parseDecklist(input: unknown, code: string, format: DeckFormat | undefined): Decklist {
   if (typeof input !== "object" || input === null) throw new MatchupRequestError(code);
@@ -65,5 +66,17 @@ export function parseMatchupRequest(input: unknown): MatchupRequestDraft {
   if (typeof value.games !== "number" || !allowedGames.includes(value.games)) {
     throw new MatchupRequestError("invalid_games");
   }
-  return { deck: parseDecklist(value.deck, "invalid_deck", format), format, gamesPerOpponent: value.games, opponent };
+  if (
+    value.deckId !== undefined &&
+    (typeof value.deckId !== "string" || value.deckId.length === 0 || value.deckId.length > MAX_DECK_ID_LENGTH)
+  ) {
+    throw new MatchupRequestError("invalid_request");
+  }
+  return {
+    deck: parseDecklist(value.deck, "invalid_deck", format),
+    format,
+    gamesPerOpponent: value.games,
+    opponent,
+    ...(value.deckId === undefined ? {} : { deckId: value.deckId }),
+  };
 }

@@ -42,6 +42,12 @@ describe("parseMatchupRequest", () => {
     expect(parseMatchupRequest({ deck: unreleased, opponent: { mirror: true }, games: 10 }).deck).toEqual(unreleased);
   });
 
+  it("keeps the saved deck id so the result can be stored for that deck", () => {
+    expect(parseMatchupRequest({ deck, opponent: { mirror: true }, games: 10, deckId: "custom-3" }).deckId).toBe(
+      "custom-3",
+    );
+  });
+
   it.each([
     [{ deck, opponent: { mirror: true }, games: 1000 }, "invalid_games"],
     [{ deck, opponent: { community: {} }, games: 20 }, "invalid_games"],
@@ -60,6 +66,8 @@ describe("parseMatchupRequest", () => {
     [{ deck: { mainDeck: ["BT1-010"], eggDeck: [] }, opponent: { mirror: true }, games: 10 }, "invalid_deck"],
     [{ deck, opponent: { mirror: true }, games: 10, format: "nonsense" }, "invalid_format"],
     [null, "invalid_request"],
+    [{ deck, opponent: { mirror: true }, games: 10, deckId: "" }, "invalid_request"],
+    [{ deck, opponent: { mirror: true }, games: 10, deckId: "x".repeat(65) }, "invalid_request"],
   ])("rejects %j with %s", (input, code) => {
     expect(() => parseMatchupRequest(input)).toThrow(code);
   });

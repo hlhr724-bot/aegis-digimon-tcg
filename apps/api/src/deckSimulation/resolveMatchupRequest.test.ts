@@ -13,7 +13,14 @@ function draft(opponent: MatchupRequestDraft["opponent"]): MatchupRequestDraft {
 
 function communityDecks(found: { id: string; name: string }[]) {
   const matchupOpponents = vi.fn<CommunityMatchupDecks["matchupOpponents"]>(async () =>
-    found.map(({ id, name }) => ({ id, name, mainDeck: BLUE_DECK.mainDeck, eggDeck: BLUE_DECK.eggDeck })),
+    found.map(({ id, name }) => ({
+      id,
+      name,
+      mainDeck: BLUE_DECK.mainDeck,
+      eggDeck: BLUE_DECK.eggDeck,
+      coverCardId: "BT1-085",
+      colors: ["Blue"],
+    })),
   );
   return { matchupOpponents };
 }
@@ -33,6 +40,7 @@ describe("resolveMatchupRequest", () => {
       ["Popular", FIRST_ID],
       ["Recent", SECOND_ID],
     ]);
+    expect(request.opponents[0]).toMatchObject({ coverCardId: "BT1-085", colors: ["Blue"] });
     expect(request.gamesPerOpponent).toBe(4);
   });
 

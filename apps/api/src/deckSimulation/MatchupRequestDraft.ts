@@ -7,4 +7,5 @@ export type MatchupRequestDraft = {
   format: DeckFormat | undefined;
   gamesPerOpponent: number;
   opponent: MatchupOpponentSpec;
+  deckId?: string;
 };

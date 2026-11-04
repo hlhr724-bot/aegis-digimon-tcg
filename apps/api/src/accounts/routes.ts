@@ -1,4 +1,5 @@
 import { installDeckSimulationRoutes } from "#api/deckSimulation/installDeckSimulationRoutes";
+import { DeckMatchupResultStore } from "#api/deckSimulation/DeckMatchupResultStore";
 import { MatchupSimulator } from "#api/deckSimulation/MatchupSimulator";
 import type { TournamentOwnDeck } from "@aegis/shared/tournaments/TournamentOwnDeck";
 import { TournamentRoundStartMode } from "@aegis/shared/tournaments/TournamentRoundStartMode";
@@ -154,7 +155,19 @@ export function installAccountRoutes(
   installAchievementRoutes({ app, accounts: store, session: sessionFromRequest });
   installReplayRoutes({ app, library: replays, session: sessionFromRequest });
   const communityDecks = new CommunityDeckStore(store);
-  installDeckSimulationRoutes({ app, simulator: new MatchupSimulator(), communityDecks, session: sessionFromRequest });
+  const matchupResults = new DeckMatchupResultStore(store);
+  installDeckSimulationRoutes({
+    app,
+    simulator: new MatchupSimulator({
+      onFinished: (finished) =>
+        void matchupResults
+          .save(finished)
+          .catch((error: unknown) => console.error("[deck-simulation] save failed", error)),
+    }),
+    communityDecks,
+    results: matchupResults,
+    session: sessionFromRequest,
+  });
   installStoryRoutes({ app, store: new StoryProgressStore(store), session: sessionFromRequest });
   // The organizer's override surface, in its own module. See src/tournaments/arbitration.
   installArbitrationRoutes({
