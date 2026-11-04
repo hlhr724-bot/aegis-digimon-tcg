@@ -1,4 +1,16 @@
 {
+  "releases.1.52.1-beta.summary": {
+    "en": "Game updates reach every player sooner after a release.",
+    "pt-BR": "As atualizações do jogo chegam mais cedo a todos os jogadores depois de uma nova versão.",
+    "es": "Las actualizaciones del juego llegan antes a todos los jugadores después de una nueva versión.",
+    "it": "Gli aggiornamenti del gioco arrivano prima a tutti i giocatori dopo una nuova versione."
+  },
+  "releases.1.52.1-beta.fix.updateRollout": {
+    "en": "Players who kept starting rematches stayed on the previous game server for hours after an update. Rematches and later series games now close with the rest of that server's matches, at most 60 minutes after the update.",
+    "pt-BR": "Jogadores que continuavam iniciando revanches ficavam no servidor anterior por horas depois de uma atualização. Agora as revanches e as próximas partidas de uma série fecham junto com as outras partidas desse servidor, no máximo 60 minutos depois da atualização.",
+    "es": "Los jugadores que seguían iniciando revanchas se quedaban en el servidor anterior durante horas después de una actualización. Ahora las revanchas y las siguientes partidas de una serie se cierran junto con las demás partidas de ese servidor, como máximo 60 minutos después de la actualización.",
+    "it": "I giocatori che continuavano ad avviare rivincite restavano sul server precedente per ore dopo un aggiornamento. Ora le rivincite e le partite successive di una serie si chiudono insieme alle altre partite di quel server, al massimo 60 minuti dopo l'aggiornamento."
+  },
   "releases.1.52.0-beta.summary": {
     "en": "BD02 arrives with Renamon, Sekkamon, Tenkomon and Valner Dragnogh, and deck matchup tests start and finish faster.",
     "pt-BR": "BD02 chega com Renamon, Sekkamon, Tenkomon e Valner Dragnogh, e os testes de confronto de decks começam e terminam mais rápido.",

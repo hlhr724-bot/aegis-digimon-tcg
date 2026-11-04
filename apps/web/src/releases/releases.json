@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.52.1-beta",
+    "releasedAt": "2026-11-04",
+    "summaryKey": "releases.1.52.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.52.1-beta.fix.updateRollout"
+      }
+    ]
+  },
+  {
     "version": "1.52.0-beta",
     "releasedAt": "2026-11-04",
     "summaryKey": "releases.1.52.0-beta.summary",
