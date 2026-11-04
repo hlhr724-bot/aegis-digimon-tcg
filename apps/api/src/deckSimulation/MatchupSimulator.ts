@@ -12,6 +12,7 @@ import type { MatchupWorkerHandle } from "#api/deckSimulation/MatchupWorkerHandl
 import type { MatchupWorkerMessage } from "#api/deckSimulation/MatchupWorkerMessage";
 import { spawnMatchupWorker } from "#api/deckSimulation/spawnMatchupWorker";
 import { wilsonScoreInterval } from "#api/deckSimulation/wilsonScoreInterval";
+import { log } from "#api/logger";
 
 type Counts = { wins: number; losses: number; draws: number; invalidGames: number };
 
@@ -150,6 +151,14 @@ export class MatchupSimulator {
     job.status = status;
     job.finishedAt = this.#now();
     const view = this.#view(job);
+    log("deckSimulation.finished", {
+      jobId: job.id,
+      status,
+      durationMs: job.finishedAt - job.createdAt,
+      completedGames: view.completedGames,
+      requestedGames: view.requestedGames,
+      invalidGames: view.invalidGames,
+    });
     if (job.request.deckId === undefined || view.completedGames === 0) return;
     this.#onFinished?.({
       accountId: job.accountId,
@@ -220,6 +229,7 @@ export class MatchupSimulator {
     clearTimeout(slot.idleTimer);
     slot.currentJobId = job.id;
     job.status = MatchupJobStatus.RUNNING.value;
+    log("deckSimulation.started", { jobId: job.id, queuedMs: this.#now() - job.createdAt });
     const deadlineEpochMs = this.#now() + this.#limits.timeBudgetMs;
     slot.hungTimer = setTimeout(
       () => this.#abandonHungWorker(job.id),
