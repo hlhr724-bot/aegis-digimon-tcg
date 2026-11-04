@@ -3,10 +3,12 @@ import { deckOddsFr } from "@/i18n/deckOdds.fr";
 import { tournamentCircuitsFr } from "@/i18n/tournamentCircuits.fr";
 import { tournamentOfficialRequestFr } from "@/i18n/tournamentOfficialRequest.fr";
 import { matchQueueFr } from "@/i18n/matchQueue.fr";
+import { matchIntroFr } from "@/i18n/matchIntro.fr";
 import { staffRolesFr } from "@/i18n/staffRoles.fr";
 import { tournamentDetailFr } from "@/i18n/tournamentDetail.fr";
 import { tournamentSpectatorsFr } from "@/i18n/tournamentSpectators.fr";
 import { publicReplaysFr } from "@/i18n/publicReplays.fr";
+import { replayAnnotationsFr } from "@/i18n/replayAnnotations.fr";
 import { achievementsFr } from "@/i18n/achievements.fr";
 import { rankedFr } from "@/i18n/ranked.fr";
 import { friendsEn } from "@/i18n/friends.en";
@@ -1095,9 +1097,15 @@ const interfaceMessages = {
   "settings.noticeDuration": "Durée des notifications",
   "settings.noticeDurationDesc":
     "Durée d'affichage des notifications d'effet et des panneaux de cartes. Survolez une notification pour la garder ouverte.",
+  "settings.noticeDurationShort": "Courte",
   "settings.noticeDurationNormal": "Normale",
   "settings.noticeDurationLong": "Longue",
   "settings.noticeDurationLongest": "Très longue",
+  "settings.noticeSize": "Taille des notifications",
+  "settings.noticeSizeDesc":
+    "Taille des notifications d'effet et des panneaux de cartes. Compacte masque moins le terrain.",
+  "settings.noticeSizeNormal": "Normale",
+  "settings.noticeSizeCompact": "Compacte",
   "settings.groupIdenticalTamers": "Regrouper les Tamers identiques",
   "settings.groupIdenticalTamersDesc":
     "Regroupe les Tamers identiques sur le terrain organisé. Désactivez pour afficher chaque exemplaire séparément.",
@@ -1301,7 +1309,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "UTILISER",
   "game.dragIntent.attack": "ATTAQUE",
   "game.matchLog": "Journal du match",
-  "game.matchLogUnread": "Journal du match, {count} nouvelle(s)",
   "game.matchLogExpand": "Agrandir le journal du match",
   "game.matchLogDrag": "Faites glisser pour déplacer",
   "settings.matchLogDisplay": "Affichage du journal",
@@ -1540,6 +1547,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "La sécurité de l'adversaire a augmenté",
   "overlay.liveDp": "DP actuels",
   "overlay.baseDp": "DP imprimé",
+  "overlay.linkDp": "DP de Link +{dp}",
   "overlay.keywords": "Mots-clés",
   "overlay.restrictions": "Restrictions",
   "overlay.heldDp": "{delta} DP bloqués tant qu'il est protégé",
@@ -1595,6 +1603,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "Voulez-vous activer Partition ?",
   "overlay.activateBlitzPrompt": "Voulez-vous activer Blitz ?",
   "overlay.digivolveHostPrompt": "Choisissez la carte qui va digivolver.",
+  "overlay.armorPurgePrompt": "Utiliser ＜Purge d'armure＞ ?",
   "overlay.attackAlreadyResolving": "Une autre attaque ne peut pas commencer pendant la résolution de cette attaque.",
   "overlay.deckTop": "Dessus du deck",
   "overlay.deckBottom": "Dessous du deck",
@@ -2144,7 +2153,34 @@ const interfaceMessages = {
   "tournaments.reason.passwordInvalid": "Use at most 128 characters for the event password.",
   "tournaments.reason.incorrectPassword": "The event password is incorrect.",
   "tournaments.play.join": "Enter game",
-  "tournaments.play.ready": "I am ready",
+  "tournaments.play.ready": "Ready",
+  "tournaments.presence.label": "Ready",
+  "tournaments.presence.at": "{player}: {time}",
+  "tournaments.presence.notYet": "{player}: not yet",
+  "tournaments.history.ready": "Ready: {times}",
+  "tournaments.schedule.roundStarted": "Round {round} started",
+  "tournaments.schedule.phaseRoundStarted": "{round} started",
+  "tournaments.structure.roundRobin": "Toutes rondes",
+  "tournaments.reason.topCutSizeInvalid":
+    "Choisissez une taille de Top Cut dans la liste, et activez d'abord le Top Cut.",
+  "tournaments.reason.roundsInvalid": "Choisissez de 1 à 10 rondes. Seuls les événements suisses peuvent le régler.",
+  "tournaments.reason.tiebreakersInvalid":
+    "Choisissez au moins un critère de départage, sans doublon, parmi ceux de cette structure.",
+  "tournaments.standings.tiebreakOrder":
+    "Les égalités de points sont départagées dans cet ordre : {order}. Un tirage au sort règle toute égalité restante.",
+  "tournaments.reason.pointsInvalid":
+    "Utilisez des nombres entiers de 0 à 10. Une victoire doit valoir plus qu'un nul, et un nul au moins autant qu'une défaite.",
+  "tournaments.badge.noTopCut": "No Top Cut (too few players)",
+  "tournaments.standings.rank": "Rank",
+  "tournaments.standings.player": "Player",
+  "tournaments.standings.points": "Points",
+  "tournaments.standings.record": "W-L-D",
+  "tournaments.standings.matchWinRate": "MW%",
+  "tournaments.standings.opponentMatchWinRate": "OMW%",
+  "tournaments.standings.byes": "+{count} bye",
+  "tournaments.standings.tiebreakNote":
+    "Ties on points are broken by match win rate (MW%), then opponents' match win rate (OMW%), then head-to-head.",
+  "tournaments.catalog.winner": "Winner: {player}",
   "tournaments.play.waitingGame": "Waiting for your assigned opponent to enter this tournament game.",
   "tournaments.play.waiting": "Waiting for the opponent to confirm presence.",
   "tournaments.pairings.title": "Adjust pairings",
@@ -2163,8 +2199,7 @@ const interfaceMessages = {
   "tournaments.create.structure": "Structure",
   "tournaments.create.bestOf": "Durée du match",
   "tournaments.create.topCut": "Top Cut",
-  "tournaments.create.topCutDesc":
-    "À la fin, les meilleurs joueurs des rondes suisses accèdent à un tableau à élimination directe.",
+  "tournaments.create.topCutDesc": "À la fin, les meilleurs joueurs passent dans un tableau à élimination.",
   "tournaments.create.allowBots": "Autoriser les bots",
   "tournaments.create.allowBotsDesc": "Remplit les places vides avec des bots à la clôture du check-in.",
   "tournaments.create.banlist": "Cartes interdites",
@@ -2254,7 +2289,7 @@ const interfaceMessages = {
   "tournaments.reason.nameTooLong": "Ce nom est trop long.",
   "tournaments.reason.structureInvalid": "Choisissez les rondes suisses ou l’élimination directe.",
   "tournaments.reason.bestOfInvalid": "Choisissez une ou trois manches.",
-  "tournaments.reason.topCutRequiresSwiss": "Le Top Cut ne fonctionne qu'avec un tournoi en rondes suisses.",
+  "tournaments.reason.topCutRequiresSwiss": "Le Top Cut ne fonctionne qu'avec le système suisse ou toutes rondes.",
   "tournaments.reason.banlistModeUnknown": "Nous ne reconnaissons pas cette option de cartes interdites.",
   "tournaments.reason.banlistSetUnknown": "Nous n'avons pas de date de sortie confirmée pour cette extension.",
   "tournaments.reason.maxPlayersOutOfRange": "Choisissez une limite de joueurs entre 2 et 1024.",
@@ -2416,7 +2451,9 @@ const interfaceMessages = {
   "deck.artCopyPrompt": "Choisissez un exemplaire",
   "deck.artEditingCopy":
     "Modification de l'exemplaire {number}. Choisissez une illustration pour l'enregistrer immédiatement.",
-  "deck.artApplyAll": "Utiliser sur tous les exemplaires",
+  "deck.artAllCopies": "Tous les exemplaires",
+  "deck.artEditingAllCopies":
+    "Modification de tous les exemplaires. Choisissez une illustration pour l'enregistrer immédiatement.",
   "deck.artDoubleClickHint": "Double-cliquez sur une illustration pour l'utiliser sur tous les exemplaires de ce deck.",
   "common.done": "Terminé",
   "redesign.foundation.arena.preview": "Aperçu du plateau avec vos couleurs et votre champ de bataille",
@@ -2471,7 +2508,14 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3dDesc":
     "Expérimental. Les cartes et les effets s'affichent en 3D et consomment plus de batterie.",
   "redesign.foundation.boardStyle.unsupported":
-    "Cet appareil ne peut pas afficher l'arène 3D, les parties utilisent donc le plateau classique.",
+    "3D désactivée : ce navigateur ne peut pas utiliser WebGL. Activez l'accélération matérielle dans les réglages du navigateur, puis rechargez la page.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D désactivée : le navigateur de cet appareil ne peut pas utiliser WebGL. Mettre à jour le navigateur ou en essayer un autre peut aider.",
+  "redesign.foundation.boardStyle.restoring": "Restauration du plateau 3D…",
+  "redesign.foundation.boardStyle.stopped": "La 3D s'est arrêtée sur cet appareil. Plateau classique affiché.",
+  "redesign.foundation.boardStyle.retry": "Réessayer",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "Ce navigateur ne peut pas exécuter la 3D. WebGL est peut-être désactivé. Plateau classique affiché.",
   "redesign.foundation.arena3dQuality.title": "Qualité 3D",
   "redesign.foundation.arena3dQuality.auto": "Automatique",
   "redesign.foundation.arena3dQuality.low": "Basse",
@@ -2963,11 +3007,13 @@ const interfaceMessages = {
   ...tournamentDetailFr,
   ...tournamentSpectatorsFr,
   ...publicReplaysFr,
+  ...replayAnnotationsFr,
   ...tournamentCircuitsFr,
   ...tournamentOfficialRequestFr,
   ...matchQueueFr,
   ...deckMatchupFr,
   ...deckOddsFr,
+  ...matchIntroFr,
   ...staffRolesFr,
   ...achievementsFr,
   "profile.filter.deck": "Deck",

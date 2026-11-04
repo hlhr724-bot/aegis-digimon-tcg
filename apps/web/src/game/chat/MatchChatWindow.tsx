@@ -9,6 +9,7 @@ import { EmoteIcon } from "./EmoteIcon";
 import { EmotePicker } from "./EmotePicker";
 import { useDraggableWindow } from "./useDraggableWindow";
 import type { ChatEntry, MatchChat } from "./useMatchChat";
+import { LiveReplayAnnotationBar } from "@/replays/annotations/LiveReplayAnnotationBar";
 
 /**
  * The chat window: docked on the right, draggable by its title bar, with the history, a
@@ -193,6 +194,7 @@ export function MatchChatWindow({
             </form>
           </>
         ) : null}
+        {chat.replayAnnotations ? <LiveReplayAnnotationBar annotations={chat.replayAnnotations} /> : null}
       </div>
     </section>,
     document.body,

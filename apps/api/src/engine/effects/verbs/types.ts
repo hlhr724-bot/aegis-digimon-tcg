@@ -371,6 +371,7 @@ export interface MemoryPort {
 export interface CombatPort {
   readonly isAttacking: boolean;
   readonly currentAttackerId: string | undefined;
+  readonly currentAttackTarget?: AttackTarget;
   /** Resolve a direct rules battle without creating an attack declaration. */
   resolveBattle?(attacker: Permanent, defender: Permanent, opts?: { comparison?: "digivolutionCards" }): Promise<void>;
   resolveAttack(
@@ -437,6 +438,7 @@ export interface SelectionPort {
       selectionContext?: "attackTarget" | "partitionActivation" | "materialSaveActivation";
       /** Preview the full group while a single candidate represents activating the keyword. */
       visibleInstanceIds?: string[];
+      allowedTargetCombinations?: string[][];
       selectionGoal?: DecisionSelectionGoal;
     },
   ): Promise<string[]>;

@@ -1,5 +1,198 @@
 [
   {
+    "version": "1.50.2-beta",
+    "releasedAt": "2026-11-03",
+    "summaryKey": "releases.1.50.2-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.50.2-beta.fix.monitamon"
+      }
+    ]
+  },
+  {
+    "version": "1.50.1-beta",
+    "releasedAt": "2026-11-03",
+    "summaryKey": "releases.1.50.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.50.1-beta.fix.replayAnnotations"
+      }
+    ]
+  },
+  {
+    "version": "1.50.0-beta",
+    "releasedAt": "2026-11-03",
+    "summaryKey": "releases.1.50.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.50.0-beta.feature.replayAnnotations"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.feature.logTiming"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.feature.botDeck"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.50.0-beta.fix.bacchusmon"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.fix.partition",
+        "issue": 6487
+      },
+      {
+        "textKey": "releases.1.50.0-beta.fix.privateRooms"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.fix.logBadge"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.fix.security3d"
+      },
+      {
+        "textKey": "releases.1.50.0-beta.fix.storyShuffle"
+      }
+    ]
+  },
+  {
+    "version": "1.49.0-beta",
+    "releasedAt": "2026-11-03",
+    "summaryKey": "releases.1.49.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.49.0-beta.feature.armorPurge"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.feature.avatars"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.feature.bd01"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.feature.linkInfo"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.feature.arena3d"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.feature.connection"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.49.0-beta.fix.attackRedirect",
+        "issue": 6455
+      },
+      {
+        "textKey": "releases.1.49.0-beta.fix.battleSoftLock",
+        "issue": 6467
+      },
+      {
+        "textKey": "releases.1.49.0-beta.fix.cardLanguage"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.fix.droppedPlayers"
+      },
+      {
+        "textKey": "releases.1.49.0-beta.fix.phoneBoard"
+      }
+    ]
+  },
+  {
+    "version": "1.48.0-beta",
+    "releasedAt": "2026-11-02",
+    "summaryKey": "releases.1.48.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.48.0-beta.feature.matchIntro"
+      },
+      {
+        "textKey": "releases.1.48.0-beta.feature.notices"
+      },
+      {
+        "textKey": "releases.1.48.0-beta.feature.artPicker"
+      },
+      {
+        "textKey": "releases.1.48.0-beta.feature.tournaments"
+      },
+      {
+        "textKey": "releases.1.48.0-beta.feature.arena3d"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.48.0-beta.fix.artsDigivolve",
+        "issue": 6453
+      },
+      {
+        "textKey": "releases.1.48.0-beta.fix.lowestDp"
+      },
+      {
+        "textKey": "releases.1.48.0-beta.fix.replaysScroll"
+      }
+    ]
+  },
+  {
+    "version": "1.47.0-beta",
+    "releasedAt": "2026-11-02",
+    "summaryKey": "releases.1.47.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.47.0-beta.feature.arena3d"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.feature.tournaments"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.feature.rooms"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.feature.community"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.feature.cards"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.47.0-beta.fix.leaveProtection",
+        "issue": 6414
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.progress",
+        "issue": 6426
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.fragment",
+        "issue": 6425
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.exactNames",
+        "issue": 6424
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.turnOrder"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.yuu",
+        "issue": 6439
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.costLock"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.seventhCruz"
+      },
+      {
+        "textKey": "releases.1.47.0-beta.fix.spectatorHand"
+      }
+    ]
+  },
+  {
     "version": "1.46.0-beta",
     "releasedAt": "2026-11-01",
     "summaryKey": "releases.1.46.0-beta.summary",

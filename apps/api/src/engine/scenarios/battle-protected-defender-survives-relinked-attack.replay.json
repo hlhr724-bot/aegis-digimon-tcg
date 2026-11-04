@@ -878,9 +878,24 @@
     {
       "kind": "intent",
       "seat": 1,
+      "ok": true,
+      "stateVersion": 109,
+      "engineEvents": 155,
       "intent": {
         "type": "respondDecision",
         "decisionId": "dec-16",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s1-4"]
+        }
+      }
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-17",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-33"]
@@ -895,7 +910,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-17",
+        "decisionId": "dec-18",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-42"]
@@ -922,7 +937,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-18",
+        "decisionId": "dec-19",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1006,7 +1021,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-19",
+        "decisionId": "dec-20",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1021,7 +1036,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-20",
+        "decisionId": "dec-21",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-15"]
@@ -1036,7 +1051,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-21",
+        "decisionId": "dec-22",
         "response": {
           "kind": "orderTriggers",
           "order": [
@@ -1058,7 +1073,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-22",
+        "decisionId": "dec-23",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-10"]
@@ -1089,7 +1104,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-23",
+        "decisionId": "dec-24",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1104,7 +1119,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-24",
+        "decisionId": "dec-25",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["hidden-s0-9acd780c0bf746535b9a51fd"]
@@ -1119,7 +1134,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-25",
+        "decisionId": "dec-26",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-2"]
@@ -1134,7 +1149,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-26",
+        "decisionId": "dec-27",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-15"]

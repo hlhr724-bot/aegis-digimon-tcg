@@ -3,10 +3,12 @@ import { deckOddsPtBR } from "@/i18n/deckOdds.pt-BR";
 import { tournamentCircuitsPtBR } from "@/i18n/tournamentCircuits.pt-BR";
 import { tournamentOfficialRequestPtBR } from "@/i18n/tournamentOfficialRequest.pt-BR";
 import { matchQueuePtBR } from "@/i18n/matchQueue.pt-BR";
+import { matchIntroPtBR } from "@/i18n/matchIntro.pt-BR";
 import { staffRolesPtBR } from "@/i18n/staffRoles.pt-BR";
 import { tournamentDetailPtBR } from "@/i18n/tournamentDetail.pt-BR";
 import { tournamentSpectatorsPtBR } from "@/i18n/tournamentSpectators.pt-BR";
 import { publicReplaysPtBR } from "@/i18n/publicReplays.pt-BR";
+import { replayAnnotationsPtBR } from "@/i18n/replayAnnotations.pt-BR";
 import { achievementsPt } from "@/i18n/achievements.pt-BR";
 import { rankedPt } from "@/i18n/ranked.pt-BR";
 import { friendsPtBR } from "@/i18n/friends.pt-BR";
@@ -829,9 +831,14 @@ export const ptBR: Record<keyof typeof en, string> = {
   "settings.noticeDuration": "Duração dos avisos",
   "settings.noticeDurationDesc":
     "Quanto tempo os avisos de efeito e os painéis de cartas ficam na tela. Passe o mouse sobre um aviso para mantê-lo aberto.",
+  "settings.noticeDurationShort": "Curta",
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Longa",
   "settings.noticeDurationLongest": "Mais longa",
+  "settings.noticeSize": "Tamanho dos avisos",
+  "settings.noticeSizeDesc": "O tamanho dos avisos de efeito e dos painéis de cartas. Compacto cobre menos o campo.",
+  "settings.noticeSizeNormal": "Normal",
+  "settings.noticeSizeCompact": "Compacto",
   "settings.groupIdenticalTamers": "Agrupar Tamers idênticos",
   "settings.groupIdenticalTamersDesc":
     "Mostra Tamers idênticos juntos no campo organizado. Desative para exibir cada cópia separadamente.",
@@ -1030,7 +1037,6 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.dragIntent.use": "USAR",
   "game.dragIntent.attack": "ATACAR",
   "game.matchLog": "Registro da partida",
-  "game.matchLogUnread": "Registro da partida, {count} novas",
   "game.matchLogExpand": "Expandir registro da partida",
   "game.matchLogDrag": "Arraste para mover",
   "settings.matchLogDisplay": "Exibição do registro da partida",
@@ -1269,6 +1275,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.recoveryOpp": "A segurança do oponente aumentou",
   "overlay.liveDp": "DP atual",
   "overlay.baseDp": "DP impresso",
+  "overlay.linkDp": "DP de Link +{dp}",
   "overlay.keywords": "Palavras-chave",
   "overlay.restrictions": "Restrições",
   "overlay.heldDp": "{delta} DP bloqueado enquanto protegido",
@@ -1324,6 +1331,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.activatePartitionPrompt": "Você quer ativar Partition?",
   "overlay.activateBlitzPrompt": "Você quer ativar Blitz?",
   "overlay.digivolveHostPrompt": "Escolha a carta que vai digivolver.",
+  "overlay.armorPurgePrompt": "Usar ＜Armor Purge＞?",
   "overlay.attackAlreadyResolving": "Não é possível iniciar outro ataque enquanto este ataque está em andamento.",
   "overlay.deckTop": "Topo do deck",
   "overlay.deckBottom": "Fundo do deck",
@@ -1877,7 +1885,33 @@ export const ptBR: Record<keyof typeof en, string> = {
   "tournaments.reason.passwordInvalid": "Use no máximo 128 caracteres na senha do evento.",
   "tournaments.reason.incorrectPassword": "A senha do evento está incorreta.",
   "tournaments.play.join": "Entrar na partida",
-  "tournaments.play.ready": "Estou pronto",
+  "tournaments.play.ready": "Pronto",
+  "tournaments.presence.label": "Pronto",
+  "tournaments.presence.at": "{player}: {time}",
+  "tournaments.presence.notYet": "{player}: ainda não",
+  "tournaments.history.ready": "Prontos: {times}",
+  "tournaments.schedule.roundStarted": "Rodada {round} iniciada",
+  "tournaments.schedule.phaseRoundStarted": "{round} iniciada",
+  "tournaments.structure.roundRobin": "Todos contra todos",
+  "tournaments.reason.topCutSizeInvalid": "Escolha um tamanho de Top Cut da lista e ligue o Top Cut antes.",
+  "tournaments.reason.roundsInvalid": "Escolha de 1 a 10 rodadas. Só eventos suíços podem definir isso.",
+  "tournaments.reason.tiebreakersInvalid":
+    "Escolha pelo menos um critério de desempate, sem repetir, entre os que essa estrutura oferece.",
+  "tournaments.standings.tiebreakOrder":
+    "Empates em pontos são decididos nesta ordem: {order}. Um sorteio decide qualquer empate que sobrar.",
+  "tournaments.reason.pointsInvalid":
+    "Use números inteiros de 0 a 10. Vitória deve valer mais que empate, e empate pelo menos o mesmo que derrota.",
+  "tournaments.badge.noTopCut": "Sem Top Cut (poucos jogadores)",
+  "tournaments.standings.rank": "Posição",
+  "tournaments.standings.player": "Jogador",
+  "tournaments.standings.points": "Pontos",
+  "tournaments.standings.record": "V-D-E",
+  "tournaments.standings.matchWinRate": "MW%",
+  "tournaments.standings.opponentMatchWinRate": "OMW%",
+  "tournaments.standings.byes": "+{count} bye",
+  "tournaments.standings.tiebreakNote":
+    "Empates em pontos são decididos pela taxa de vitórias (MW%), depois pela dos oponentes (OMW%) e depois pelo confronto direto.",
+  "tournaments.catalog.winner": "Vencedor: {player}",
   "tournaments.play.waitingGame": "Aguardando seu adversário entrar nesta partida do torneio.",
   "tournaments.play.waiting": "Aguardando o adversário confirmar presença.",
   "tournaments.pairings.title": "Ajustar pareamentos",
@@ -1896,7 +1930,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "tournaments.create.structure": "Formato",
   "tournaments.create.bestOf": "Duração do confronto",
   "tournaments.create.topCut": "Top Cut",
-  "tournaments.create.topCutDesc": "No fim, os melhores do suíço vão para uma chave eliminatória.",
+  "tournaments.create.topCutDesc": "No fim, os melhores jogadores vão para uma chave eliminatória.",
   "tournaments.create.allowBots": "Permitir bots",
   "tournaments.create.allowBotsDesc": "Preenche as vagas vazias com bots quando o check-in fecha.",
   "tournaments.create.banlist": "Cartas proibidas",
@@ -1989,7 +2023,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "tournaments.reason.nameTooLong": "Esse nome é longo demais.",
   "tournaments.reason.structureInvalid": "Escolha suíço ou eliminação simples.",
   "tournaments.reason.bestOfInvalid": "Escolha melhor de uma ou melhor de três.",
-  "tournaments.reason.topCutRequiresSwiss": "O Top Cut só funciona em torneio suíço.",
+  "tournaments.reason.topCutRequiresSwiss": "Top Cut só funciona com suíço ou todos contra todos.",
   "tournaments.reason.banlistModeUnknown": "Não reconhecemos essa opção de cartas proibidas.",
   "tournaments.reason.banlistSetUnknown": "Não temos data de lançamento confirmada para essa coleção.",
   "tournaments.reason.maxPlayersOutOfRange": "Escolha um limite de jogadores entre 2 e 1024.",
@@ -2162,7 +2196,8 @@ export const ptBR: Record<keyof typeof en, string> = {
   "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Escolha uma cópia",
   "deck.artEditingCopy": "Editando a cópia {number}. Escolha uma arte para salvar imediatamente.",
-  "deck.artApplyAll": "Usar em todas as cópias",
+  "deck.artAllCopies": "Todas as cópias",
+  "deck.artEditingAllCopies": "Editando todas as cópias. Escolha uma arte para salvar imediatamente.",
   "deck.artDoubleClickHint": "Clique duas vezes em uma arte para usá-la em todas as cópias deste deck.",
   "common.done": "Concluir",
   ...foundationPtBR,
@@ -2181,11 +2216,13 @@ export const ptBR: Record<keyof typeof en, string> = {
   ...tournamentDetailPtBR,
   ...tournamentSpectatorsPtBR,
   ...publicReplaysPtBR,
+  ...replayAnnotationsPtBR,
   ...tournamentCircuitsPtBR,
   ...tournamentOfficialRequestPtBR,
   ...matchQueuePtBR,
   ...deckMatchupPtBR,
   ...deckOddsPtBR,
+  ...matchIntroPtBR,
   ...staffRolesPtBR,
   ...achievementsPt,
   ...learnPtBR,

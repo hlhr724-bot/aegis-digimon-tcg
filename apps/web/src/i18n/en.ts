@@ -3,10 +3,12 @@ import { deckOddsEn } from "@/i18n/deckOdds.en";
 import { tournamentCircuitsEn } from "@/i18n/tournamentCircuits.en";
 import { tournamentOfficialRequestEn } from "@/i18n/tournamentOfficialRequest.en";
 import { matchQueueEn } from "@/i18n/matchQueue.en";
+import { matchIntroEn } from "@/i18n/matchIntro.en";
 import { staffRolesEn } from "@/i18n/staffRoles.en";
 import { tournamentDetailEn } from "@/i18n/tournamentDetail.en";
 import { tournamentSpectatorsEn } from "@/i18n/tournamentSpectators.en";
 import { publicReplaysEn } from "@/i18n/publicReplays.en";
+import { replayAnnotationsEn } from "@/i18n/replayAnnotations.en";
 import { achievementsEn } from "@/i18n/achievements.en";
 import { rankedEn } from "@/i18n/ranked.en";
 import { friendsEn } from "@/i18n/friends.en";
@@ -827,9 +829,14 @@ export const en = {
   "settings.noticeDuration": "Notice duration",
   "settings.noticeDurationDesc":
     "How long effect notices and card panels stay on screen. Hover over a notice to keep it open.",
+  "settings.noticeDurationShort": "Short",
   "settings.noticeDurationNormal": "Normal",
   "settings.noticeDurationLong": "Long",
   "settings.noticeDurationLongest": "Longest",
+  "settings.noticeSize": "Notice size",
+  "settings.noticeSizeDesc": "How large effect notices and card panels are. Compact covers less of the board.",
+  "settings.noticeSizeNormal": "Normal",
+  "settings.noticeSizeCompact": "Compact",
   "settings.groupIdenticalTamers": "Group identical Tamers",
   "settings.groupIdenticalTamersDesc":
     "Show identical Tamers together in the organized field. Turn off to display each copy separately.",
@@ -1026,7 +1033,6 @@ export const en = {
   "game.dragIntent.use": "USE",
   "game.dragIntent.attack": "ATTACK",
   "game.matchLog": "Match log",
-  "game.matchLogUnread": "Match log, {count} new",
   "game.matchLogExpand": "Expand match log",
   "game.matchLogDrag": "Drag to move",
   "settings.matchLogDisplay": "Match log display",
@@ -1263,6 +1269,7 @@ export const en = {
   "overlay.recoveryOpp": "Opponent's security increased",
   "overlay.liveDp": "Live DP",
   "overlay.baseDp": "Printed DP",
+  "overlay.linkDp": "Link DP +{dp}",
   "overlay.keywords": "Keywords",
   "overlay.restrictions": "Restrictions",
   "overlay.heldDp": "{delta} DP blocked while protected",
@@ -1318,6 +1325,7 @@ export const en = {
   "overlay.activatePartitionPrompt": "Do you want to activate Partition?",
   "overlay.activateBlitzPrompt": "Do you want to activate Blitz?",
   "overlay.digivolveHostPrompt": "Choose the card that will digivolve.",
+  "overlay.armorPurgePrompt": "Use ＜Armor Purge＞?",
   "overlay.attackAlreadyResolving": "Another attack cannot start while this attack is resolving.",
   "overlay.deckTop": "Top of the deck",
   "overlay.deckBottom": "Bottom of the deck",
@@ -1868,7 +1876,33 @@ export const en = {
   "tournaments.reason.passwordInvalid": "Use at most 128 characters for the event password.",
   "tournaments.reason.incorrectPassword": "The event password is incorrect.",
   "tournaments.play.join": "Enter game",
-  "tournaments.play.ready": "I am ready",
+  "tournaments.play.ready": "Ready",
+  "tournaments.presence.label": "Ready",
+  "tournaments.presence.at": "{player}: {time}",
+  "tournaments.presence.notYet": "{player}: not yet",
+  "tournaments.history.ready": "Ready: {times}",
+  "tournaments.schedule.roundStarted": "Round {round} started",
+  "tournaments.schedule.phaseRoundStarted": "{round} started",
+  "tournaments.structure.roundRobin": "Round robin",
+  "tournaments.reason.topCutSizeInvalid": "Pick a Top Cut size from the list, and turn on Top Cut first.",
+  "tournaments.reason.roundsInvalid": "Pick a round count from 1 to 10. Only Swiss events can set it.",
+  "tournaments.reason.tiebreakersInvalid":
+    "Pick at least one tiebreaker, without repeats, from the ones this structure offers.",
+  "tournaments.standings.tiebreakOrder":
+    "Ties on points are broken in this order: {order}. A random draw settles any tie left.",
+  "tournaments.reason.pointsInvalid":
+    "Use whole numbers from 0 to 10. A win must be worth more than a draw, and a draw at least as much as a loss.",
+  "tournaments.badge.noTopCut": "No Top Cut (too few players)",
+  "tournaments.standings.rank": "Rank",
+  "tournaments.standings.player": "Player",
+  "tournaments.standings.points": "Points",
+  "tournaments.standings.record": "W-L-D",
+  "tournaments.standings.matchWinRate": "MW%",
+  "tournaments.standings.opponentMatchWinRate": "OMW%",
+  "tournaments.standings.byes": "+{count} bye",
+  "tournaments.standings.tiebreakNote":
+    "Ties on points are broken by match win rate (MW%), then opponents' match win rate (OMW%), then head-to-head.",
+  "tournaments.catalog.winner": "Winner: {player}",
   "tournaments.play.waitingGame": "Waiting for your assigned opponent to enter this tournament game.",
   "tournaments.play.waiting": "Waiting for the opponent to confirm presence.",
   "tournaments.pairings.title": "Adjust pairings",
@@ -1887,7 +1921,7 @@ export const en = {
   "tournaments.create.structure": "Structure",
   "tournaments.create.bestOf": "Match length",
   "tournaments.create.topCut": "Top Cut",
-  "tournaments.create.topCutDesc": "At the end, the best Swiss players move into a knockout bracket.",
+  "tournaments.create.topCutDesc": "At the end, the best players move into a knockout bracket.",
   "tournaments.create.allowBots": "Allow bots",
   "tournaments.create.allowBotsDesc": "Fill any empty seats with bots when check-in closes.",
   "tournaments.create.banlist": "Banned cards",
@@ -1980,7 +2014,7 @@ export const en = {
   "tournaments.reason.nameTooLong": "That name is too long.",
   "tournaments.reason.structureInvalid": "Choose Swiss or single elimination.",
   "tournaments.reason.bestOfInvalid": "Choose best of one or best of three.",
-  "tournaments.reason.topCutRequiresSwiss": "Top Cut only works with a Swiss tournament.",
+  "tournaments.reason.topCutRequiresSwiss": "Top Cut only works with Swiss or round robin.",
   "tournaments.reason.banlistModeUnknown": "We do not recognize that banned-cards option.",
   "tournaments.reason.banlistSetUnknown": "We have no confirmed release date for that set.",
   "tournaments.reason.maxPlayersOutOfRange": "Pick a player limit between 2 and 1024.",
@@ -2148,7 +2182,8 @@ export const en = {
   "deck.kindDual": "Dual",
   "deck.artCopyPrompt": "Choose a copy",
   "deck.artEditingCopy": "Editing copy {number}. Choose artwork to save it immediately.",
-  "deck.artApplyAll": "Use on all copies",
+  "deck.artAllCopies": "All copies",
+  "deck.artEditingAllCopies": "Editing all copies. Choose artwork to save it immediately.",
   "deck.artDoubleClickHint": "Double-click an art to use it on every copy in this deck.",
   "common.done": "Done",
   ...foundationEn,
@@ -2167,11 +2202,13 @@ export const en = {
   ...tournamentDetailEn,
   ...tournamentSpectatorsEn,
   ...publicReplaysEn,
+  ...replayAnnotationsEn,
   ...tournamentCircuitsEn,
   ...tournamentOfficialRequestEn,
   ...matchQueueEn,
   ...deckMatchupEn,
   ...deckOddsEn,
+  ...matchIntroEn,
   ...staffRolesEn,
   ...achievementsEn,
   ...learnEn,

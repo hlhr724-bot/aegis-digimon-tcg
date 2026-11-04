@@ -30,7 +30,6 @@ describe("BT20 Unleash the Dragon Gene skip-play arena scenario", () => {
       ]),
     );
     expect(pick.options?.min).toBe(0);
-    expect(pick.options?.purpose).toBe("acceptedOptional");
 
     expect(
       s.engine.applyIntent(0, {

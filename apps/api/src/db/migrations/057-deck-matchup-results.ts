@@ -1,7 +1,7 @@
 import type { Migration } from "#api/db/migrator";
 
 export const deckMatchupResults: Migration = {
-  id: "054-deck-matchup-results",
+  id: "057-deck-matchup-results",
   up: async (db) => {
     await db.query(`
       CREATE TABLE IF NOT EXISTS deck_matchup_results (

@@ -30,14 +30,16 @@ const FRAGMENT_SHADER = `
   uniform vec2 uHalfSize;
   uniform vec2 uBounds;
   uniform float uCenterDepth;
+  uniform float uStrength;
+  uniform float uCenterFade;
+  uniform float uBoundsFade;
+  uniform vec2 uScreenFade;
+  uniform float uWash;
   varying vec2 vPoint;
   varying vec4 vClip;
   const float AURA_CORNER = 2.4;
   const float AURA_FALLOFF = 2.0;
   const float BOUNDS_CORNER = 1.8;
-  const float BOUNDS_FADE = 1.4;
-  const vec2 SCREEN_FADE = vec2(0.12, 0.1);
-  const float CENTER_FADE = 2.0;
   const float SWEEP_SPEED = 6.5;
   const float SWEEP_SOFT = 1.8;
   const float SWEEP_WIDTH = 0.5;
@@ -57,7 +59,7 @@ const FRAGMENT_SHADER = `
 
   float getScreenFade() {
     vec2 screen = abs(vClip.xy / vClip.w);
-    vec2 fade = 1.0 - smoothstep(vec2(1.0) - SCREEN_FADE, vec2(1.0), screen);
+    vec2 fade = 1.0 - smoothstep(vec2(1.0) - uScreenFade, vec2(1.0), screen);
     return fade.x * fade.y;
   }
 
@@ -74,8 +76,8 @@ const FRAGMENT_SHADER = `
     float spread = max(region, 0.0) / AURA_FALLOFF;
     float body = exp(-spread * spread);
     float bounds = getRoundedBoxDistance(point, uBounds, BOUNDS_CORNER);
-    float boundsFade = smoothstep(0.0, BOUNDS_FADE, -bounds);
-    float centerFade = smoothstep(0.0, CENTER_FADE, depth);
+    float boundsFade = smoothstep(0.0, uBoundsFade, -bounds);
+    float centerFade = smoothstep(0.0, uCenterFade, depth);
     float shore = mix(0.72, 1.0, smoothstep(0.0, uBounds.y, depth));
     return body * boundsFade * centerFade * shore * getScreenFade();
   }
@@ -147,6 +149,50 @@ const FRAGMENT_SHADER = `
     return uSurge * vec2(lines * 1.3, 0.45 + swells * 1.4);
   }
 
+  float getWashEnvelope(vec2 point) {
+    float across = smoothstep(0.0, uBoundsFade, uBounds.x - abs(point.x));
+    return across * getScreenFade() * uWeight;
+  }
+
+  float getSparkField(vec2 point, float inward, float time) {
+    const float CELL = 0.7;
+    vec2 flow = vec2(point.x, inward - time * 0.45);
+    vec2 cell = floor(flow / CELL);
+    float pick = hash21(cell + 3.7);
+    if (pick < 0.4) {
+      return 0.0;
+    }
+    vec2 jitter = vec2(hash21(cell + 11.3), hash21(cell + 27.1)) - 0.5;
+    vec2 local = (fract(flow / CELL) - 0.5 - jitter * 0.6) * CELL;
+    float radius = length(local);
+    float twinkle = 0.5 + 0.5 * sin(time * 3.0 + pick * 40.0);
+    float life = sin(3.14159 * fract(time * 0.3 + hash21(cell + 5.9)));
+    float core = exp(-(radius * radius) / 0.0012);
+    float halo = exp(-(radius * radius) / 0.012) * 0.35;
+    return (core + halo) * life * (0.55 + 0.45 * twinkle);
+  }
+
+  vec2 getWash(vec2 point, float depth) {
+    float time = uTime * uFlow;
+    float envelope = getWashEnvelope(point);
+    if (envelope <= 0.002) {
+      return vec2(0.0);
+    }
+    float toward = clamp(depth / uBounds.y, 0.0, 1.0);
+    float inward = uBounds.y - depth;
+    vec2 sweep = getSweep(inward, uTime);
+    vec2 core = vec2(point.x / (uHalfSize.x * 1.05), (depth - uCenterDepth) / (uHalfSize.y * 1.25));
+    float pool = exp(-dot(core, core) * 1.1);
+    float rise = smoothstep(0.0, 0.25, depth / uBounds.y);
+    float fill = (pool * 0.75 + smoothstep(0.2, 1.0, toward) * 0.15) * rise;
+    float sparks = 0.0;
+    if (uFlow > 0.0) {
+      sparks = getSparkField(point, inward, time) * (0.6 + pool * 0.4) * rise * 1.6;
+    }
+    vec2 surge = getSurge(inward, pool);
+    return vec2((fill + surge.y * 0.4) * sweep.x, (sparks + surge.x) * sweep.x + sweep.y) * envelope;
+  }
+
   vec3 getMutedColor(vec3 color) {
     vec3 grey = vec3(dot(color, vec3(0.2126, 0.7152, 0.0722)));
     vec3 lightTone = mix(mix(color, grey, 0.4), uSurface, 0.12);
@@ -157,6 +203,23 @@ const FRAGMENT_SHADER = `
   void main() {
     vec2 point = vPoint;
     float depth = point.y * uFacing;
+    if (uWash > 0.5) {
+      vec2 wash = getWash(point, depth) * uStrength;
+      if (wash.x + wash.y <= 0.002) {
+        discard;
+      }
+      vec3 washFill = mix(getMutedColor(uColor), uColor, 0.65);
+      vec3 washLineDark = mix(uAccent, vec3(1.0), 0.45);
+      vec3 washLineLight = mix(uColor, uAccent, 0.25);
+      vec3 washLine = mix(washLineDark, washLineLight, uLight);
+      float lineShare = clamp(wash.y / max(wash.x + wash.y, 0.001), 0.0, 1.0);
+      vec3 washColor = mix(washFill, washLine, lineShare);
+      float darkAlpha = clamp(wash.x * 0.7 + wash.y, 0.0, 1.0);
+      float lightAlpha = clamp(wash.x * 0.5 + wash.y * 0.95, 0.0, 0.92);
+      gl_FragColor = mix(vec4(washColor * mix(0.3, 1.0, lineShare), darkAlpha), vec4(washColor, lightAlpha), uLight);
+      #include <colorspace_fragment>
+      return;
+    }
     float scanDensity = fwidth(depth) / SCAN_PITCH;
     float time = uTime * uFlow;
     float warp = getWarp(point, time);
@@ -181,7 +244,7 @@ const FRAGMENT_SHADER = `
     vec2 surge = getSurge(bentInward, swells);
     float field = 0.3 + swells + shimmer * (1.0 + uSurge * 2.0) + scan + crest.y + surge.y;
     float highlight = (crest.x + surge.x) * sweep.x + sweep.y;
-    float intensity = envelope * (field * sweep.x + highlight * mix(1.0, 0.7, uLight));
+    float intensity = envelope * uStrength * (field * sweep.x + highlight * mix(1.0, 0.7, uLight));
     if (intensity <= 0.002) {
       discard;
     }
@@ -221,6 +284,11 @@ export function buildActiveSideAuraMaterial(facing: number): ShaderMaterial {
       uHalfSize: { value: new Vector2(1, 1) },
       uBounds: { value: new Vector2(1, 1) },
       uCenterDepth: { value: 0 },
+      uStrength: { value: 1 },
+      uCenterFade: { value: 2 },
+      uBoundsFade: { value: 1.4 },
+      uScreenFade: { value: new Vector2(0.12, 0.1) },
+      uWash: { value: 0 },
     },
   });
 }

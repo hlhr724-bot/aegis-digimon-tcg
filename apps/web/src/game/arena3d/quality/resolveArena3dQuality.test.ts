@@ -55,6 +55,7 @@ describe("arena 3D quality resolution", () => {
     expect(medium.antialias).toBe(low.antialias);
     expect(high.textureBudgetBytes).toBeLessThan(Arena3dQuality.HIGH.textureBudgetBytes);
     expect(high.floorSegments).toBeLessThan(Arena3dQuality.HIGH.floorSegments);
+    expect(high).toMatchObject({ maxDpr: 3, frameRate: 60, textureWidth: 768 });
   });
 
   it("returns the same touch entry on every call so the memoized scene does not re-render", () => {

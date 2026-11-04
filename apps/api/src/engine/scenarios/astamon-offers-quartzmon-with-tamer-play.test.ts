@@ -8,7 +8,7 @@ const record = JSON.parse(
   readFileSync(new URL("./astamon-offers-quartzmon-with-tamer-play.replay.json", import.meta.url), "utf8"),
 ) as ReplayRecord;
 
-const astamonEffectInput = 118;
+const astamonEffectInput = 120;
 const astamonPermanentId = "perm-14";
 const tamerWithSavePermanentId = "perm-12";
 

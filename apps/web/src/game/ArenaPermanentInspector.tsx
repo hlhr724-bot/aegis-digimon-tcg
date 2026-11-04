@@ -247,6 +247,7 @@ export function ArenaPermanentInspector({
                 {top && top.playCost >= 0 ? (
                   <span>{t(top.isDualCard ? "game.useCostsMemory" : "game.costsMemory", { count: top.playCost })}</span>
                 ) : null}
+                {top?.linkDp ? <span>{t("overlay.linkDp", { dp: top.linkDp.toLocaleString(locale) })}</span> : null}
                 {groupedInspectorEvolutionCosts(top?.evoCosts ?? []).map((cost) => {
                   const colorsByLabel = new Map(cost.colors.map((color) => [t(`game.color.${color}`), color]));
                   return (
@@ -286,6 +287,17 @@ export function ArenaPermanentInspector({
               {printed.requirements ? (
                 <p>
                   <EffectText inspector asciiBrackets text={printed.requirements} cardId={detail.cardId} allowContext />
+                </p>
+              ) : null}
+              {top?.linkRequirement ? (
+                <p data-role="link-requirement">
+                  <EffectText
+                    inspector
+                    asciiBrackets
+                    text={top.linkRequirement.trim()}
+                    cardId={detail.cardId}
+                    allowContext
+                  />
                 </p>
               ) : null}
             </details>
@@ -334,34 +346,32 @@ export function ArenaPermanentInspector({
                 </p>
               </div>
             ) : null}
-            {detail.printedOnly
-              ? [
-                  {
-                    role: "printed-inherited",
-                    label: t("library.inheritedEffect"),
-                    text: top?.inheritedEffectText,
-                  },
-                  {
-                    role: "printed-linked",
-                    label: t("overlay.role.linked"),
-                    text: top?.linkEffect,
-                  },
-                  {
-                    role: "printed-security",
-                    label: t("library.securityEffect"),
-                    text: top?.securityEffectText,
-                  },
-                ]
-                  .filter((effect) => effect.text)
-                  .map((effect) => (
-                    <div key={effect.role} className="arena-permanent-inspector__effect" data-role={effect.role}>
-                      <span className="arena-permanent-inspector__effect-label">{effect.label}</span>
-                      <p>
-                        <EffectText inspector asciiBrackets text={effect.text!} cardId={detail.cardId} />
-                      </p>
-                    </div>
-                  ))
-              : null}
+            {[
+              {
+                role: "printed-inherited",
+                label: t("library.inheritedEffect"),
+                text: detail.printedOnly ? top?.inheritedEffectText : undefined,
+              },
+              {
+                role: "printed-linked",
+                label: t("library.linkEffect"),
+                text: top?.linkEffect,
+              },
+              {
+                role: "printed-security",
+                label: t("library.securityEffect"),
+                text: detail.printedOnly ? top?.securityEffectText : undefined,
+              },
+            ]
+              .filter((effect) => effect.text)
+              .map((effect) => (
+                <div key={effect.role} className="arena-permanent-inspector__effect" data-role={effect.role}>
+                  <span className="arena-permanent-inspector__effect-label">{effect.label}</span>
+                  <p>
+                    <EffectText inspector asciiBrackets text={effect.text!} cardId={detail.cardId} />
+                  </p>
+                </div>
+              ))}
           </div>
           {supporting.length > 0 && !sideSources ? (
             <ArenaInspectorSourcesStrip key={detail.cardId} cards={supporting} onZoom={onZoom} />

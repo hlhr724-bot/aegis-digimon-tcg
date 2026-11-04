@@ -167,6 +167,36 @@ it("places eligible cards first in each zone without changing their relative ord
   expect(candidates.map((candidate) => candidate.instanceId)).toEqual(originalOrder);
 });
 
+it("keeps every card in place when a pick makes other cards unselectable", () => {
+  const view = (picks: string[], blocked: ReadonlySet<string>) => (
+    <I18nProvider>
+      <DecisionCandidateGrid
+        candidates={["first", "second", "third", "fourth"].map((instanceId) => ({
+          instanceId,
+          cardId: "BT1-010",
+          selectable: !blocked.has(instanceId),
+        }))}
+        picks={picks}
+        min={0}
+        max={2}
+        selectedPlayCost={0}
+        withinPlayCostBudget
+        selectedDP={0}
+        onTogglePick={vi.fn<(instanceId: string) => void>()}
+      />
+    </I18nProvider>
+  );
+  const order = () =>
+    screen
+      .getAllByRole("button")
+      .filter((button) => button.hasAttribute("data-instance-id"))
+      .map((button) => button.dataset.instanceId);
+  const { rerender } = render(view([], new Set()));
+  expect(order()).toEqual(["first", "second", "third", "fourth"]);
+  rerender(view(["first", "third"], new Set(["second"])));
+  expect(order()).toEqual(["first", "second", "third", "fourth"]);
+});
+
 it("places cards within the DP budget before cards that cannot be selected", () => {
   grid(
     [

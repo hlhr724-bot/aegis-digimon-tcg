@@ -63,6 +63,9 @@ import { ReplayRecording } from "../replays/recording.js";
 import { replayDownload } from "../replays/download.js";
 import { replayLibrary } from "../replays/runtime.js";
 import type { ReplayLibrary } from "../replays/ReplayLibrary.js";
+import { LiveReplayAnnotator } from "#api/replays/annotations/LiveReplayAnnotator";
+import type { ReplayAnnotationStore } from "#api/replays/annotations/ReplayAnnotationStore";
+import { LIVE_REPLAY_ANNOTATION_CHANNEL } from "@aegis/shared/replays/annotations/LiveReplayAnnotation";
 import {
   GameState,
   MATCH_EXPIRED_CLOSE_CODE,
@@ -412,6 +415,14 @@ export class AegisRoom extends Room<{
   private rollbackSequence = 0;
   private rollbackPending?: { id: string; seat: Seat; target: { index: number; turn?: number } };
   private replayRecording?: ReplayRecording;
+  private readonly liveReplayAnnotator = new LiveReplayAnnotator({
+    store: {
+      addMarker: (params) => this.replayAnnotations().addMarker(params),
+      addNote: (params) => this.replayAnnotations().addNote(params),
+    },
+    recording: () => this.replayRecording,
+    turn: () => this.state.turnCount,
+  });
   private readonly spectatorReplayDownloads = new Map<string, Promise<ReplayDownloadMessage>>();
   private replayDownloads = new Map<Seat, Promise<ReplayDownloadMessage>>();
   private replayFinished = false;
@@ -728,6 +739,7 @@ export class AegisRoom extends Room<{
     }
     options.displayName = entry.displayName;
     options.avatarId = entry.avatarId;
+    if (entry.avatarUrl) this.liveAvatarUrlByClient.set(client.sessionId, entry.avatarUrl);
     options.deck = {
       mainDeck: [...entry.deck.mainDeck],
       eggDeck: [...entry.deck.eggDeck],
@@ -1010,7 +1022,7 @@ export class AegisRoom extends Room<{
       this.storyBattleId = battle.id;
       this.soloBattle = battle;
       if (battle.shuffleDecks) {
-        shuffleStoryDecks({ fixture: battle.fixture, seed });
+        shuffleStoryDecks({ fixture: battle.fixture, seed, randomKey });
       }
       this.scenarioFixture = battle.fixture;
       options.allowRollback = false;
@@ -1307,6 +1319,10 @@ export class AegisRoom extends Room<{
         this.handleChat(client, payload);
         return;
       }
+      if (type === LIVE_REPLAY_ANNOTATION_CHANNEL) {
+        this.handleLiveReplayAnnotation(client, payload);
+        return;
+      }
       if (type === GUEST_APPROVAL_CHANNEL) {
         if (!this.matchStartRequested) {
           this.guestApproval?.handleMessage({ senderSessionId: client.sessionId, payload });
@@ -1424,6 +1440,7 @@ export class AegisRoom extends Room<{
           accountId: this.accountByClient.get(player.sessionId),
           displayName: player.displayName,
           ...(player.avatarId ? { avatarId: player.avatarId } : {}),
+          ...(player.avatarUrl ? { avatarUrl: player.avatarUrl } : {}),
           deck: {
             mainDeck: [...deck.mainDeck],
             eggDeck: [...deck.eggDeck],
@@ -2276,6 +2293,7 @@ export class AegisRoom extends Room<{
     this.withBatch(() => {
       this.engine.seatPlayer(seat, client.sessionId, options);
       this.state.players[seat]!.equippedRankedTier = this.equippedRankedTierByClient.get(client.sessionId) ?? "";
+      this.state.players[seat]!.avatarUrl = this.liveAvatarUrlByClient.get(client.sessionId) ?? "";
     });
     this.seatByClient.set(client.sessionId, seat);
     this.recordReplaySeat(seat, options.deck, {
@@ -3336,6 +3354,10 @@ export class AegisRoom extends Room<{
     return replayLibrary;
   }
 
+  protected replayAnnotations(): Pick<ReplayAnnotationStore, "addMarker" | "addNote"> {
+    return replayLibrary.annotations;
+  }
+
   /** A failed index write still delivers the file; the player can download it or save it to Drive as a guest would. */
   private replayIndex(
     seat: Seat | -1,
@@ -3632,6 +3654,18 @@ export class AegisRoom extends Room<{
       client.leave(MESSAGE_FLOOD_CLOSE_CODE);
     }
     return false;
+  }
+
+  private handleLiveReplayAnnotation(client: Client, payload: unknown): void {
+    const authorId = this.accountByClient.get(client.sessionId) ?? this.spectatorIdentities.get(client.sessionId)?.id;
+    void this.liveReplayAnnotator
+      .handle({ authorId, payload })
+      .then((result) => {
+        if (this.clients.includes(client)) {
+          client.send(LIVE_REPLAY_ANNOTATION_CHANNEL, result);
+        }
+      })
+      .catch((error: unknown) => this.debugError("[AegisRoom] replay annotation failed", error));
   }
 
   private handleChat(client: Client, payload: unknown): void {
@@ -4033,6 +4067,7 @@ export class AegisRoom extends Room<{
       restored.roomCode = previous.roomCode;
       restored.spectatorCode = previous.spectatorCode;
       restored.series.assign(previous.series.toJSON());
+      restored.guestApproval = previous.guestApproval;
       restored.allowRollback = true;
       restored.rollbackRevision = previous.rollbackRevision + 1;
       for (const seat of [0, 1] as const) {
@@ -4041,6 +4076,7 @@ export class AegisRoom extends Room<{
         player.sessionId = identity.sessionId;
         player.displayName = identity.displayName;
         player.avatarId = identity.avatarId;
+        player.avatarUrl = identity.avatarUrl;
         player.equippedRankedTier = identity.equippedRankedTier;
         player.botPersonaId = identity.botPersonaId;
         player.hideIdentityFromSpectators = identity.hideIdentityFromSpectators;

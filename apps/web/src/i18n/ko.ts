@@ -3,10 +3,12 @@ import { deckOddsKo } from "@/i18n/deckOdds.ko";
 import { tournamentCircuitsKo } from "@/i18n/tournamentCircuits.ko";
 import { tournamentOfficialRequestKo } from "@/i18n/tournamentOfficialRequest.ko";
 import { matchQueueKo } from "@/i18n/matchQueue.ko";
+import { matchIntroKo } from "@/i18n/matchIntro.ko";
 import { staffRolesKo } from "@/i18n/staffRoles.ko";
 import { tournamentDetailKo } from "@/i18n/tournamentDetail.ko";
 import { tournamentSpectatorsKo } from "@/i18n/tournamentSpectators.ko";
 import { publicReplaysKo } from "@/i18n/publicReplays.ko";
+import { replayAnnotationsKo } from "@/i18n/replayAnnotations.ko";
 import { achievementsKo } from "@/i18n/achievements.ko";
 import { rankedKo } from "@/i18n/ranked.ko";
 import { friendsEn } from "@/i18n/friends.en";
@@ -1070,9 +1072,14 @@ const interfaceMessages = {
   "settings.noticeDuration": "알림 표시 시간",
   "settings.noticeDurationDesc":
     "효과 알림과 카드 패널이 화면에 머무는 시간입니다. 알림 위에 마우스를 올리면 계속 표시됩니다.",
+  "settings.noticeDurationShort": "짧게",
   "settings.noticeDurationNormal": "보통",
   "settings.noticeDurationLong": "길게",
   "settings.noticeDurationLongest": "가장 길게",
+  "settings.noticeSize": "알림 크기",
+  "settings.noticeSizeDesc": "효과 알림과 카드 패널의 크기입니다. 작게 하면 필드를 덜 가립니다.",
+  "settings.noticeSizeNormal": "보통",
+  "settings.noticeSizeCompact": "작게",
   "settings.groupIdenticalTamers": "동일한 테이머 묶기",
   "settings.groupIdenticalTamersDesc":
     "정리된 필드에서 동일한 테이머를 묶어 표시합니다. 끄면 각 카드를 개별적으로 표시합니다.",
@@ -1267,7 +1274,6 @@ const interfaceMessages = {
   "game.dragIntent.use": "사용",
   "game.dragIntent.attack": "어택",
   "game.matchLog": "대전 로그",
-  "game.matchLogUnread": "대전 로그, 새 항목 {count}개",
   "game.matchLogExpand": "대전 로그 확대",
   "game.matchLogDrag": "드래그하여 이동",
   "settings.matchLogDisplay": "대전 로그 표시",
@@ -1498,6 +1504,7 @@ const interfaceMessages = {
   "overlay.recoveryOpp": "상대 시큐리티가 늘었습니다",
   "overlay.liveDp": "현재 DP",
   "overlay.baseDp": "원래 DP",
+  "overlay.linkDp": "링크 DP +{dp}",
   "overlay.keywords": "키워드",
   "overlay.restrictions": "제한",
   "overlay.heldDp": "{delta} DP (보호 중이라 미적용)",
@@ -1553,6 +1560,7 @@ const interfaceMessages = {
   "overlay.activatePartitionPrompt": "≪분할≫을 발동하시겠습니까?",
   "overlay.activateBlitzPrompt": "≪블리츠≫를 발동하시겠습니까?",
   "overlay.digivolveHostPrompt": "진화할 카드를 선택하세요.",
+  "overlay.armorPurgePrompt": "≪아머 해제≫를 사용하시겠습니까?",
   "overlay.attackAlreadyResolving": "이 어택을 처리하는 동안에는 다른 어택을 시작할 수 없습니다.",
   "overlay.deckTop": "덱 맨 위",
   "overlay.deckBottom": "덱 맨 아래",
@@ -2090,7 +2098,31 @@ const interfaceMessages = {
   "tournaments.reason.passwordInvalid": "Use at most 128 characters for the event password.",
   "tournaments.reason.incorrectPassword": "The event password is incorrect.",
   "tournaments.play.join": "Enter game",
-  "tournaments.play.ready": "I am ready",
+  "tournaments.play.ready": "Ready",
+  "tournaments.presence.label": "Ready",
+  "tournaments.presence.at": "{player}: {time}",
+  "tournaments.presence.notYet": "{player}: not yet",
+  "tournaments.history.ready": "Ready: {times}",
+  "tournaments.schedule.roundStarted": "Round {round} started",
+  "tournaments.schedule.phaseRoundStarted": "{round} started",
+  "tournaments.structure.roundRobin": "리그전",
+  "tournaments.reason.topCutSizeInvalid": "목록에서 탑 컷 인원을 고르고, 먼저 탑 컷을 켜세요.",
+  "tournaments.reason.roundsInvalid": "라운드 수는 1~10 중에서 고르세요. 스위스 드로만 설정할 수 있습니다.",
+  "tournaments.reason.tiebreakersInvalid": "이 방식에서 쓸 수 있는 타이브레이커를 중복 없이 하나 이상 고르세요.",
+  "tournaments.standings.tiebreakOrder":
+    "승점이 같으면 다음 순서로 정합니다: {order}. 그래도 같으면 추첨으로 정합니다.",
+  "tournaments.reason.pointsInvalid": "0~10의 정수를 쓰세요. 승은 무보다 커야 하고, 무는 패 이상이어야 합니다.",
+  "tournaments.badge.noTopCut": "No Top Cut (too few players)",
+  "tournaments.standings.rank": "Rank",
+  "tournaments.standings.player": "Player",
+  "tournaments.standings.points": "Points",
+  "tournaments.standings.record": "W-L-D",
+  "tournaments.standings.matchWinRate": "MW%",
+  "tournaments.standings.opponentMatchWinRate": "OMW%",
+  "tournaments.standings.byes": "+{count} bye",
+  "tournaments.standings.tiebreakNote":
+    "Ties on points are broken by match win rate (MW%), then opponents' match win rate (OMW%), then head-to-head.",
+  "tournaments.catalog.winner": "Winner: {player}",
   "tournaments.play.waitingGame": "Waiting for your assigned opponent to enter this tournament game.",
   "tournaments.play.waiting": "Waiting for the opponent to confirm presence.",
   "tournaments.pairings.title": "Adjust pairings",
@@ -2109,7 +2141,7 @@ const interfaceMessages = {
   "tournaments.create.structure": "진행 방식",
   "tournaments.create.bestOf": "대전 방식",
   "tournaments.create.topCut": "탑 컷",
-  "tournaments.create.topCutDesc": "스위스 라운드가 끝나면 상위 플레이어가 토너먼트(녹아웃) 대진표로 진출합니다.",
+  "tournaments.create.topCutDesc": "라운드가 끝나면 상위 플레이어가 토너먼트 대진표로 진출합니다.",
   "tournaments.create.allowBots": "봇 허용",
   "tournaments.create.allowBotsDesc": "체크인이 끝났을 때 빈자리를 봇으로 채웁니다.",
   "tournaments.create.banlist": "금지 카드",
@@ -2197,7 +2229,7 @@ const interfaceMessages = {
   "tournaments.reason.nameTooLong": "이름이 너무 깁니다.",
   "tournaments.reason.structureInvalid": "스위스 또는 싱글 엘리미네이션을 선택하세요.",
   "tournaments.reason.bestOfInvalid": "단판 또는 3판 2선승제를 선택하세요.",
-  "tournaments.reason.topCutRequiresSwiss": "탑 컷은 스위스 드로 대회에서만 사용할 수 있습니다.",
+  "tournaments.reason.topCutRequiresSwiss": "탑 컷은 스위스 드로나 리그전에서만 쓸 수 있습니다.",
   "tournaments.reason.banlistModeUnknown": "알 수 없는 금지 카드 옵션입니다.",
   "tournaments.reason.banlistSetUnknown": "그 세트의 확정된 발매일이 없습니다.",
   "tournaments.reason.maxPlayersOutOfRange": "최대 인원은 2명에서 1024명 사이로 정하세요.",
@@ -2344,7 +2376,8 @@ const interfaceMessages = {
   "deck.kindDual": "듀얼",
   "deck.artCopyPrompt": "카드를 선택하세요",
   "deck.artEditingCopy": "{number}번째 카드를 편집 중입니다. 일러스트를 선택하면 바로 저장됩니다.",
-  "deck.artApplyAll": "모든 카드에 적용",
+  "deck.artAllCopies": "모든 카드",
+  "deck.artEditingAllCopies": "모든 카드를 편집 중입니다. 일러스트를 선택하면 바로 저장됩니다.",
   "deck.artDoubleClickHint": "일러스트를 더블클릭하면 이 덱의 같은 카드 전부에 적용됩니다.",
   "common.done": "완료",
   "redesign.foundation.arena.preview": "내 색상과 배경으로 본 보드 미리보기",
@@ -2398,7 +2431,15 @@ const interfaceMessages = {
   "redesign.foundation.boardStyle.arena3d": "아레나 3D",
   "redesign.foundation.boardStyle.arena3dDesc":
     "실험적 기능입니다. 카드와 효과가 3D로 표시되며 배터리를 더 사용합니다.",
-  "redesign.foundation.boardStyle.unsupported": "이 기기에서는 3D 아레나를 표시할 수 없어 클래식 보드를 사용합니다.",
+  "redesign.foundation.boardStyle.unsupported":
+    "3D를 사용할 수 없습니다: 이 브라우저는 WebGL을 사용할 수 없습니다. 브라우저 설정에서 하드웨어 가속을 켠 뒤 페이지를 새로고침하세요.",
+  "redesign.foundation.boardStyle.unsupportedTouch":
+    "3D를 사용할 수 없습니다: 이 기기의 브라우저는 WebGL을 사용할 수 없습니다. 브라우저를 업데이트하거나 다른 브라우저를 사용해 보세요.",
+  "redesign.foundation.boardStyle.restoring": "3D 보드를 복원하는 중…",
+  "redesign.foundation.boardStyle.stopped": "이 기기에서 3D가 멈췄습니다. 클래식 보드를 표시합니다.",
+  "redesign.foundation.boardStyle.retry": "다시 시도",
+  "redesign.foundation.boardStyle.unavailableInMatch":
+    "이 브라우저는 3D를 실행할 수 없습니다. WebGL이 꺼져 있을 수 있습니다. 클래식 보드를 표시합니다.",
   "redesign.foundation.arena3dQuality.title": "3D 품질",
   "redesign.foundation.arena3dQuality.auto": "자동",
   "redesign.foundation.arena3dQuality.low": "낮음",
@@ -2873,11 +2914,13 @@ const interfaceMessages = {
   ...tournamentDetailKo,
   ...tournamentSpectatorsKo,
   ...publicReplaysKo,
+  ...replayAnnotationsKo,
   ...tournamentCircuitsKo,
   ...tournamentOfficialRequestKo,
   ...matchQueueKo,
   ...deckMatchupKo,
   ...deckOddsKo,
+  ...matchIntroKo,
   ...staffRolesKo,
   ...achievementsKo,
   "profile.filter.deck": "덱",

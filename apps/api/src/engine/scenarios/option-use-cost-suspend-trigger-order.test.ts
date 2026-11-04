@@ -72,6 +72,13 @@ describe("Option use-cost suspension triggers", () => {
         decisionId: watcher.decisionId,
         response: { kind: "optional", accept: true },
       });
+      const handPlay = await nextDecision(s, watcher.decisionId);
+      expect(handPlay).toMatchObject({ seat: 1, kind: "selectCards", sourceCardId: "BT26-049" });
+      answer(s, 1, {
+        type: "respondDecision",
+        decisionId: handPlay.decisionId,
+        response: { kind: "selectCards", instanceIds: handPlay.options!.candidateInstanceIds! },
+      });
       await settleAcrossTimers(() => s.state.pendingDecision === undefined);
       expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard.cardId)).toEqual(["BT26-049", "BT26-091"]);
     } finally {

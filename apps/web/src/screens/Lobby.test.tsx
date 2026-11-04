@@ -3,6 +3,7 @@ import { releaseDateForCard } from "@aegis/shared/cards/cardPool";
 import { allCards } from "@aegis/shared/cards/registry";
 import { deckLegality } from "@aegis/shared/decks/legality";
 import type { CommunityRandomResult } from "@aegis/shared/decks/CommunityRandomResult";
+import type { ComponentProps } from "react";
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -120,6 +121,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.useRealTimers();
   localStorage.removeItem("aegis.botSettings");
+  localStorage.removeItem("aegis.botDeck");
   localStorage.removeItem("aegis:locale");
   localStorage.removeItem("aegis:match-timer");
 });
@@ -1328,6 +1330,55 @@ it("remembers difficulty and style and sends them when starting practice", () =>
   fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
   expect(screen.getByRole("combobox", { name: "Difficulty" })).toHaveProperty("value", "beginner");
   expect(screen.getByRole("combobox", { name: "Style" })).toHaveProperty("value", "defensive");
+});
+
+describe("the bot's deck choice", () => {
+  type StartHandler = ComponentProps<typeof Lobby>["onStart"];
+
+  function renderPracticeLobby(onStart = vi.fn<StartHandler>()) {
+    const view = renderConfiguredLobby(
+      <I18nProvider>
+        <Lobby
+          player={{ name: "Tamer", color: "Blue", shards: 0 }}
+          decks={DECKS}
+          activeDeckId={DECKS[0]!.id}
+          onSelectDeck={() => undefined}
+          onCopyDeck={() => undefined}
+          onNav={() => undefined}
+          onStart={onStart}
+        />
+      </I18nProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Practice vs AI/ }));
+    return { view, botDeck: screen.getByLabelText("Bot's deck") as HTMLSelectElement };
+  }
+
+  beforeEach(() => vi.setSystemTime(BEFORE_EX13_RELEASE));
+  afterEach(() => vi.useRealTimers());
+
+  it("restores the last chosen deck in the next session and starts with it", () => {
+    const first = renderPracticeLobby();
+    const preset = [...first.botDeck.querySelectorAll<HTMLOptionElement>("optgroup option")].find(
+      (option) => !option.disabled && FAMOUS_DECKS.some((deck) => deck.id === option.value),
+    )!;
+    fireEvent.change(first.botDeck, { target: { value: preset.value } });
+    first.view.unmount();
+
+    const onStart = vi.fn<StartHandler>();
+    const second = renderPracticeLobby(onStart);
+    expect(second.botDeck.value).toBe(preset.value);
+    fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
+    expect(onStart.mock.calls[0]?.slice(0, 3)).toEqual(["bot", undefined, preset.value]);
+  });
+
+  it("falls back to a random deck when the remembered deck no longer exists", () => {
+    localStorage.setItem("aegis.botDeck", "mine:deleted-deck");
+    const onStart = vi.fn<StartHandler>();
+    const { botDeck } = renderPracticeLobby(onStart);
+    expect(botDeck.value).toBe("");
+    fireEvent.click(screen.getByRole("button", { name: "Play vs Bot" }));
+    expect(onStart.mock.calls[0]?.slice(0, 3)).toEqual(["bot", undefined, undefined]);
+  });
 });
 
 describe("quick match launch", () => {

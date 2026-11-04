@@ -7,13 +7,33 @@ import type { ActionScope } from "../dispatch.js";
 import { definitionMatches, hasExactName } from "../matching/definition.js";
 import { permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
 import { countMatching, scaleFactor } from "../scaling.js";
-import { DEFAULT_PLAY_ZONES, candidateLooseInstances, looseCardsInZone, pickLoose } from "../targeting/loose.js";
+import {
+  DEFAULT_PLAY_ZONES,
+  candidateLooseInstances,
+  looseCardsInZone,
+  pickLoose,
+  type LooseCandidate,
+} from "#api/engine/effects/interpreter/targeting/loose";
 import { stackHostMatches } from "../targeting/stackHostMatches.js";
 import { runPlayPerLevel } from "./dna.js";
 import { CardKind, effectiveStaticNames, getCardDefinition, resolveTokenCardId } from "@aegis/shared";
 import type { Action, Filter, Scaling, Seat, Target } from "@aegis/shared";
 import { availableEffectPlayAssembly, playEffectInstances } from "./effectPlayAssembly.js";
 import { availableEffectPlayDigiXrosReduction } from "./effectPlayDigiXrosAvailability.js";
+
+type HandPlaySelectionParams = {
+  ctx: EffectContext;
+  candidates: readonly LooseCandidate[];
+  chooser?: Target["chooser"];
+};
+
+function canDeclineHandPlaySelection({ ctx, candidates, chooser }: HandPlaySelectionParams): boolean {
+  if (chooser === "opponent" || candidates.length === 0) {
+    return false;
+  }
+  const handIds = new Set(Array.from(ctx.game.player(ctx.source.ownerSeat).hand, (card) => card.instanceId));
+  return candidates.every((candidate) => handIds.has(candidate.instanceId));
+}
 
 /**
  * The card kinds a play target explicitly asks for, across its filter and every alternative.
@@ -406,7 +426,7 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
       }
       const selected = await ctx.ask.selectCards(ctx, {
         candidates: candidates.map((c) => c.instanceId),
-        min: action.optional ? 0 : 1,
+        min: action.optional || canDeclineHandPlaySelection({ ctx, candidates }) ? 0 : 1,
         max: candidates.length,
         maxTotalPlayCost: budget,
       });
@@ -777,7 +797,10 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
               .filter((instanceId, index, all) => all.indexOf(instanceId) === index)
           : undefined;
       const asker = playCostAdjustedTarget.chooser === "opponent" ? requireOpponentAsk(ctx) : ctx.ask;
-      const chosen = await pickLoose(ctx, playCostAdjustedTarget, candidates, undefined, asker, visibleZoneIds);
+      const selectionTarget = canDeclineHandPlaySelection({ ctx, candidates, chooser: playCostAdjustedTarget.chooser })
+        ? { ...playCostAdjustedTarget, upTo: true, minimum: 0 }
+        : playCostAdjustedTarget;
+      const chosen = await pickLoose(ctx, selectionTarget, candidates, undefined, asker, visibleZoneIds);
       if (playCostAdjustedTarget.chooser === "opponent" && action.optional === true) {
         ctx.lastOpponentDeclined = chosen.length === 0;
       }
@@ -902,7 +925,14 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
       const scaledReduction =
         action.costReductionScaling !== undefined ? scaleFactor(ctx, action.costReductionScaling) : 0;
       const costDelta = payCost ? (action.costReduction ?? 0) + scaledReduction : 0;
-      const pfzChosen = await pickLoose(ctx, action.target, pfzCandidates);
+      const selectionTarget = canDeclineHandPlaySelection({
+        ctx,
+        candidates: pfzCandidates,
+        chooser: action.target.chooser,
+      })
+        ? { ...action.target, upTo: true, minimum: 0 }
+        : action.target;
+      const pfzChosen = await pickLoose(ctx, selectionTarget, pfzCandidates);
       if (pfzChosen.length > 0) {
         const chosenCards = pfzChosen
           .map((instanceId) => pfzCandidates.find((candidate) => candidate.instanceId === instanceId))

@@ -9,7 +9,25 @@ export function parseCreateTournament(
 ): { input: CreateTournamentInput; block: string } | undefined {
   const { name, block, startsAt, maxPlayers, structure, topCut, bestOf, allowBots, banlist } = body;
   if (typeof name !== "string" || !Number.isFinite(startsAt) || !Number.isInteger(maxPlayers)) return undefined;
-  if (structure !== undefined && structure !== "swiss" && structure !== "single_elimination") return undefined;
+  if (
+    structure !== undefined &&
+    structure !== "swiss" &&
+    structure !== "round_robin" &&
+    structure !== "single_elimination"
+  ) {
+    return undefined;
+  }
+  if (!isOptionalInteger(body.topCutSize) || !isOptionalInteger(body.rounds)) return undefined;
+  if (body.tiebreakers !== undefined && body.tiebreakers !== null && !Array.isArray(body.tiebreakers)) {
+    return undefined;
+  }
+  if (
+    body.points !== undefined &&
+    body.points !== null &&
+    (typeof body.points !== "object" || Array.isArray(body.points))
+  ) {
+    return undefined;
+  }
   if (bestOf !== undefined && bestOf !== 1 && bestOf !== 3) return undefined;
   if (body.description !== undefined && typeof body.description !== "string") {
     return undefined;
@@ -33,6 +51,10 @@ export function parseCreateTournament(
       format: body.format as CreateTournamentInput["format"],
       structure: structure ?? "single_elimination",
       topCut: topCut === true,
+      topCutSize: (body.topCutSize as number | null | undefined) ?? null,
+      rounds: (body.rounds as number | null | undefined) ?? null,
+      tiebreakers: (body.tiebreakers as CreateTournamentInput["tiebreakers"]) ?? null,
+      points: (body.points as CreateTournamentInput["points"]) ?? null,
       bestOf: bestOf ?? 1,
       startsAt: Number(startsAt),
       maxPlayers: Number(maxPlayers),
@@ -42,6 +64,10 @@ export function parseCreateTournament(
     },
     block: typeof block === "string" && block.trim() ? block.trim() : latestReleasedProductLabel(),
   };
+}
+
+function isOptionalInteger(value: unknown): boolean {
+  return value === undefined || value === null || Number.isInteger(value);
 }
 
 function parseBanlistPolicy(value: unknown): BanlistPolicy | undefined {

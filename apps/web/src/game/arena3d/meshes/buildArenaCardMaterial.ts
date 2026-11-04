@@ -44,7 +44,7 @@ const FRAGMENT_SHADER = `
     }
     vec3 art = uBaseColor;
     if (uHasMap > 0.5) {
-      art *= texture2D(uMap, vUv).rgb;
+      art *= texture2D(uMap, vUv, -0.6).rgb;
     } else {
       art *= 0.82 + 0.18 * vUv.y;
     }

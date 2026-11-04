@@ -10,6 +10,23 @@ type ArenaLayoutVariantShape = {
   zones: ArenaZoneSlots;
   memoryScale: number;
   pitchDegrees: number;
+  aura: ArenaAuraTuning;
+};
+
+type ArenaAuraTuning = {
+  strength: number;
+  centerFade: number;
+  boundsFade: number;
+  screenFadeX: number;
+  wash: boolean;
+};
+
+const ROOMY_AURA: ArenaAuraTuning = {
+  strength: 1,
+  centerFade: 2,
+  boundsFade: 1.4,
+  screenFadeX: 0.12,
+  wash: false,
 };
 
 const WIDE_ZONES: ArenaZoneSlots = {
@@ -38,7 +55,7 @@ const SHORT_ZONES: ArenaZoneSlots = {
   [`${Side.Viewer}:${ArenaZone.RAISING.value}`]: { x: -5.3, z: 3.2 },
 };
 
-const TALL_PILE_DEPTH = 4.95;
+const TALL_PILE_DEPTH = 5.28;
 const TALL_PILE_NEAR_X = 1.85;
 const TALL_PILE_FAR_X = 3.3;
 
@@ -64,6 +81,7 @@ export const ArenaLayoutVariant = {
     zones: WIDE_ZONES,
     memoryScale: 1,
     pitchDegrees: 62,
+    aura: ROOMY_AURA,
   },
   SHORT: {
     name: "SHORT",
@@ -73,15 +91,17 @@ export const ArenaLayoutVariant = {
     zones: SHORT_ZONES,
     memoryScale: 1,
     pitchDegrees: 62,
+    aura: ROOMY_AURA,
   },
   TALL: {
     name: "TALL",
     value: "tall",
-    bounds: { halfWidth: 3.95, halfDepth: 6.25 },
-    lanes: { digimonDepth: 1.22, supportDepth: 3.06, columnPitch: 1.5, halfWidth: 3.6 },
+    bounds: { halfWidth: 3.95, halfDepth: 6.58 },
+    lanes: { digimonDepth: 1.55, supportDepth: 3.39, columnPitch: 1.5, halfWidth: 3.6 },
     zones: TALL_ZONES,
     memoryScale: 0.5,
     pitchDegrees: 66,
+    aura: { strength: 1, centerFade: 0.9, boundsFade: 0.6, screenFadeX: 0.04, wash: true },
   },
 } as const satisfies Record<string, ArenaLayoutVariantShape>;
 

@@ -726,6 +726,21 @@
       "stateVersion": 46
     },
     {
+      "kind": "intent",
+      "seat": 0,
+      "ok": true,
+      "stateVersion": 47,
+      "engineEvents": 75,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-7",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-42"]
+        }
+      }
+    },
+    {
       "ok": true,
       "kind": "intent",
       "seat": 0,
@@ -741,7 +756,7 @@
             "s0-51::subtrigger/opt/s0-51/printed/EX13-002/ir-35-0/s0-51/EX13-002/ir-35-0/0": true
           }
         },
-        "decisionId": "dec-7"
+        "decisionId": "dec-8"
       },
       "engineEvents": 79,
       "stateVersion": 50
@@ -756,13 +771,13 @@
           "kind": "orderTriggers",
           "order": [
             "s0-42::subtrigger/opt/s0-42/printed/BT11-112/ir-35-1/s0-42/BT11-112/ir-35-1/0",
-            "s0-36::subtrigger/whenUnsuspended~perm-2~s0-36~s0-36%2FEX13-069%2Fir-35-0%2F0/When any of your Digimon unsuspend, by suspending this Tamer, \uff1cDraw 1\uff1e. After, 1 of your Digimon may digivolve into a Digimon card with [Veedramon] in its name in the hand with the cost reduced by 2."
+            "s0-36::subtrigger/whenUnsuspended~perm-2~s0-36~s0-36%2FEX13-069%2Fir-35-0%2F0/When any of your Digimon unsuspend, by suspending this Tamer, ＜Draw 1＞. After, 1 of your Digimon may digivolve into a Digimon card with [Veedramon] in its name in the hand with the cost reduced by 2."
           ],
           "optionalAnswers": {
-            "s0-36::subtrigger/whenUnsuspended~perm-2~s0-36~s0-36%2FEX13-069%2Fir-35-0%2F0/When any of your Digimon unsuspend, by suspending this Tamer, \uff1cDraw 1\uff1e. After, 1 of your Digimon may digivolve into a Digimon card with [Veedramon] in its name in the hand with the cost reduced by 2.": true
+            "s0-36::subtrigger/whenUnsuspended~perm-2~s0-36~s0-36%2FEX13-069%2Fir-35-0%2F0/When any of your Digimon unsuspend, by suspending this Tamer, ＜Draw 1＞. After, 1 of your Digimon may digivolve into a Digimon card with [Veedramon] in its name in the hand with the cost reduced by 2.": true
           }
         },
-        "decisionId": "dec-8"
+        "decisionId": "dec-9"
       },
       "engineEvents": 86,
       "stateVersion": 57
@@ -777,7 +792,7 @@
           "kind": "chooseTargets",
           "instanceIds": ["perm-1"]
         },
-        "decisionId": "dec-9"
+        "decisionId": "dec-10"
       },
       "engineEvents": 93,
       "stateVersion": 63
@@ -792,7 +807,7 @@
           "kind": "selectCards",
           "instanceIds": ["s0-25"]
         },
-        "decisionId": "dec-10"
+        "decisionId": "dec-11"
       },
       "engineEvents": 93,
       "stateVersion": 63
@@ -822,7 +837,7 @@
           "kind": "optional",
           "accept": false
         },
-        "decisionId": "dec-11"
+        "decisionId": "dec-12"
       },
       "engineEvents": 106,
       "stateVersion": 73
@@ -847,7 +862,7 @@
           "kind": "chooseTargets",
           "instanceIds": ["perm-1"]
         },
-        "decisionId": "dec-12"
+        "decisionId": "dec-13"
       },
       "engineEvents": 110,
       "stateVersion": 77
@@ -884,7 +899,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-13"
+        "decisionId": "dec-14"
       },
       "engineEvents": 121,
       "stateVersion": 87
@@ -930,7 +945,7 @@
             "s1-13::s1-13/alliance/0": false
           }
         },
-        "decisionId": "dec-14"
+        "decisionId": "dec-15"
       },
       "engineEvents": 131,
       "stateVersion": 94
@@ -945,7 +960,7 @@
           "kind": "selectCards",
           "instanceIds": ["s1-14"]
         },
-        "decisionId": "dec-15"
+        "decisionId": "dec-16"
       },
       "engineEvents": 132,
       "stateVersion": 95
@@ -960,7 +975,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-16"
+        "decisionId": "dec-17"
       },
       "engineEvents": 137,
       "stateVersion": 100
@@ -975,7 +990,7 @@
           "kind": "chooseOption",
           "optionIndex": 1
         },
-        "decisionId": "dec-17"
+        "decisionId": "dec-18"
       },
       "engineEvents": 138,
       "stateVersion": 101
@@ -990,7 +1005,7 @@
           "kind": "selectCards",
           "instanceIds": ["s1-24", "s1-32"]
         },
-        "decisionId": "dec-18"
+        "decisionId": "dec-19"
       },
       "engineEvents": 143,
       "stateVersion": 103
@@ -1005,7 +1020,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-19"
+        "decisionId": "dec-20"
       },
       "engineEvents": 145,
       "stateVersion": 105
@@ -1020,7 +1035,7 @@
           "kind": "selectCards",
           "instanceIds": ["s1-11"]
         },
-        "decisionId": "dec-20"
+        "decisionId": "dec-21"
       },
       "engineEvents": 145,
       "stateVersion": 105
@@ -1042,7 +1057,7 @@
             "s1-52::subtrigger/whenTrashedFromHand~perm-3~s1-52~s1-52%2FBT14-006%2Fir-35-0%2F0/When a [Dark Animal] or [SoC] Digimon card is trashed from your hand, this Digimon may digivolve into that card./activation-3": true
           }
         },
-        "decisionId": "dec-21"
+        "decisionId": "dec-22"
       },
       "engineEvents": 148,
       "stateVersion": 107
@@ -1057,7 +1072,7 @@
           "kind": "selectCards",
           "instanceIds": []
         },
-        "decisionId": "dec-22"
+        "decisionId": "dec-23"
       },
       "engineEvents": 156,
       "stateVersion": 113
@@ -1070,8 +1085,8 @@
         "type": "declareBlock",
         "blockerPermanentId": "perm-1"
       },
-      "engineEvents": 159,
-      "stateVersion": 116
+      "engineEvents": 161,
+      "stateVersion": 118
     },
     {
       "ok": true,
@@ -1083,10 +1098,10 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-23"
+        "decisionId": "dec-24"
       },
-      "engineEvents": 160,
-      "stateVersion": 117
+      "engineEvents": 162,
+      "stateVersion": 119
     },
     {
       "ok": true,
@@ -1097,8 +1112,8 @@
         "accept": true,
         "permanentId": "perm-3"
       },
-      "engineEvents": 169,
-      "stateVersion": 126
+      "engineEvents": 171,
+      "stateVersion": 128
     },
     {
       "ok": true,
@@ -1108,8 +1123,8 @@
         "type": "playCard",
         "instanceId": "s1-5"
       },
-      "engineEvents": 182,
-      "stateVersion": 136
+      "engineEvents": 184,
+      "stateVersion": 138
     },
     {
       "ok": true,
@@ -1121,10 +1136,10 @@
           "kind": "selectCards",
           "instanceIds": ["s1-23"]
         },
-        "decisionId": "dec-24"
+        "decisionId": "dec-25"
       },
-      "engineEvents": 190,
-      "stateVersion": 138
+      "engineEvents": 192,
+      "stateVersion": 140
     },
     {
       "ok": true,
@@ -1136,10 +1151,10 @@
           "kind": "selectCards",
           "instanceIds": ["s1-35"]
         },
-        "decisionId": "dec-25"
+        "decisionId": "dec-26"
       },
-      "engineEvents": 190,
-      "stateVersion": 138
+      "engineEvents": 192,
+      "stateVersion": 140
     },
     {
       "ok": true,
@@ -1151,10 +1166,10 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-26"
+        "decisionId": "dec-27"
       },
-      "engineEvents": 193,
-      "stateVersion": 141
+      "engineEvents": 195,
+      "stateVersion": 143
     },
     {
       "ok": true,
@@ -1163,8 +1178,8 @@
       "intent": {
         "type": "hatchEgg"
       },
-      "engineEvents": 203,
-      "stateVersion": 149
+      "engineEvents": 205,
+      "stateVersion": 151
     },
     {
       "ok": true,
@@ -1177,8 +1192,8 @@
         "useAlternateCost": true,
         "alternateRequirementIndex": 0
       },
-      "engineEvents": 206,
-      "stateVersion": 151
+      "engineEvents": 208,
+      "stateVersion": 153
     },
     {
       "ok": true,
@@ -1188,8 +1203,8 @@
         "type": "playCard",
         "instanceId": "s0-0"
       },
-      "engineEvents": 209,
-      "stateVersion": 153
+      "engineEvents": 211,
+      "stateVersion": 155
     },
     {
       "ok": true,
@@ -1201,10 +1216,10 @@
           "kind": "selectCards",
           "instanceIds": ["s0-41"]
         },
-        "decisionId": "dec-27"
+        "decisionId": "dec-28"
       },
-      "engineEvents": 217,
-      "stateVersion": 155
+      "engineEvents": 219,
+      "stateVersion": 157
     },
     {
       "ok": true,
@@ -1216,10 +1231,10 @@
           "kind": "orderCards",
           "order": ["s0-44", "hidden-s0-443ea60430810668e62c17ce"]
         },
-        "decisionId": "dec-28"
+        "decisionId": "dec-29"
       },
-      "engineEvents": 218,
-      "stateVersion": 156
+      "engineEvents": 220,
+      "stateVersion": 158
     },
     {
       "ok": true,
@@ -1228,8 +1243,8 @@
       "intent": {
         "type": "hatchEgg"
       },
-      "engineEvents": 225,
-      "stateVersion": 163
+      "engineEvents": 227,
+      "stateVersion": 165
     },
     {
       "ok": true,
@@ -1240,8 +1255,8 @@
         "effectKey": "LM-062/ir-27-0",
         "sourceInstanceId": "s1-41"
       },
-      "engineEvents": 231,
-      "stateVersion": 167
+      "engineEvents": 233,
+      "stateVersion": 169
     },
     {
       "ok": true,
@@ -1253,10 +1268,10 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-29"
+        "decisionId": "dec-30"
       },
-      "engineEvents": 233,
-      "stateVersion": 169
+      "engineEvents": 235,
+      "stateVersion": 171
     },
     {
       "ok": true,
@@ -1268,10 +1283,10 @@
           "kind": "chooseTargets",
           "instanceIds": ["perm-3"]
         },
-        "decisionId": "dec-30"
+        "decisionId": "dec-31"
       },
-      "engineEvents": 233,
-      "stateVersion": 169
+      "engineEvents": 235,
+      "stateVersion": 171
     },
     {
       "ok": true,
@@ -1283,10 +1298,10 @@
           "kind": "selectCards",
           "instanceIds": ["s1-23"]
         },
-        "decisionId": "dec-31"
+        "decisionId": "dec-32"
       },
-      "engineEvents": 233,
-      "stateVersion": 169
+      "engineEvents": 235,
+      "stateVersion": 171
     },
     {
       "ok": true,
@@ -1304,21 +1319,6 @@
             "s1-36::subtrigger/whenOneOfYoursDigivolves~perm-10~s1-36~s1-36%2FBT20-089%2Fir-35-1%2F1/whenOneOfYoursDigivolves/occurrence/whenOneOfYoursDigivolves%7Cperm-10%7Cs1-36%7CwhenOneOfYoursDigivolves%7C%7Cs1-36%2FBT20-089%2Fir-35-1%2F1%7Cdigivolve%3Aperm-3%3As1-23": true
           }
         },
-        "decisionId": "dec-32"
-      },
-      "engineEvents": 238,
-      "stateVersion": 171
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 1,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "chooseTargets",
-          "instanceIds": ["perm-3"]
-        },
         "decisionId": "dec-33"
       },
       "engineEvents": 240,
@@ -1331,13 +1331,28 @@
       "intent": {
         "type": "respondDecision",
         "response": {
-          "kind": "optional",
-          "accept": true
+          "kind": "chooseTargets",
+          "instanceIds": ["perm-3"]
         },
         "decisionId": "dec-34"
       },
       "engineEvents": 242,
       "stateVersion": 175
+    },
+    {
+      "ok": true,
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        },
+        "decisionId": "dec-35"
+      },
+      "engineEvents": 244,
+      "stateVersion": 177
     },
     {
       "ok": true,
@@ -1353,10 +1368,10 @@
             "s1-13::subtrigger/opt/s1-13/printed/BT14-074/ir-35-0/s1-13/BT14-074/ir-35-0/0"
           ]
         },
-        "decisionId": "dec-35"
+        "decisionId": "dec-36"
       },
-      "engineEvents": 248,
-      "stateVersion": 179
+      "engineEvents": 250,
+      "stateVersion": 181
     },
     {
       "ok": true,
@@ -1368,10 +1383,10 @@
           "kind": "selectCards",
           "instanceIds": ["s1-30"]
         },
-        "decisionId": "dec-36"
+        "decisionId": "dec-37"
       },
-      "engineEvents": 254,
-      "stateVersion": 181
+      "engineEvents": 256,
+      "stateVersion": 183
     },
     {
       "ok": true,
@@ -1383,10 +1398,10 @@
           "kind": "selectCards",
           "instanceIds": ["s1-33"]
         },
-        "decisionId": "dec-37"
+        "decisionId": "dec-38"
       },
-      "engineEvents": 254,
-      "stateVersion": 181
+      "engineEvents": 256,
+      "stateVersion": 183
     },
     {
       "ok": true,
@@ -1398,10 +1413,10 @@
           "kind": "orderCards",
           "order": ["s1-17", "s1-9"]
         },
-        "decisionId": "dec-38"
+        "decisionId": "dec-39"
       },
-      "engineEvents": 255,
-      "stateVersion": 182
+      "engineEvents": 257,
+      "stateVersion": 184
     },
     {
       "ok": true,
@@ -1413,10 +1428,10 @@
           "kind": "selectCards",
           "instanceIds": ["s1-46"]
         },
-        "decisionId": "dec-39"
+        "decisionId": "dec-40"
       },
-      "engineEvents": 256,
-      "stateVersion": 183
+      "engineEvents": 258,
+      "stateVersion": 185
     },
     {
       "ok": true,
@@ -1430,8 +1445,8 @@
         "vortex": false,
         "attackerPermanentId": "perm-3"
       },
-      "engineEvents": 266,
-      "stateVersion": 191
+      "engineEvents": 268,
+      "stateVersion": 193
     },
     {
       "ok": true,
@@ -1447,10 +1462,10 @@
             "s1-23::s1-23/alliance/0": true
           }
         },
-        "decisionId": "dec-40"
+        "decisionId": "dec-41"
       },
-      "engineEvents": 267,
-      "stateVersion": 192
+      "engineEvents": 269,
+      "stateVersion": 194
     },
     {
       "ok": true,
@@ -1460,8 +1475,8 @@
         "type": "respondAlliance",
         "allyPermanentId": "perm-15"
       },
-      "engineEvents": 270,
-      "stateVersion": 194
+      "engineEvents": 272,
+      "stateVersion": 196
     },
     {
       "ok": true,
@@ -1475,8 +1490,8 @@
         "vortex": false,
         "attackerPermanentId": "perm-3"
       },
-      "engineEvents": 282,
-      "stateVersion": 206
+      "engineEvents": 284,
+      "stateVersion": 208
     },
     {
       "ok": true,
@@ -1486,8 +1501,8 @@
         "type": "respondAlliance",
         "allyPermanentId": "perm-14"
       },
-      "engineEvents": 285,
-      "stateVersion": 208
+      "engineEvents": 287,
+      "stateVersion": 210
     },
     {
       "ok": true,
@@ -1497,37 +1512,7 @@
         "type": "playCard",
         "instanceId": "s1-28"
       },
-      "engineEvents": 298,
-      "stateVersion": 219
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 1,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "optional",
-          "accept": true
-        },
-        "decisionId": "dec-41"
-      },
-      "engineEvents": 302,
-      "stateVersion": 220
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 1,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "chooseTargets",
-          "instanceIds": ["perm-3", "perm-17"]
-        },
-        "decisionId": "dec-42"
-      },
-      "engineEvents": 303,
+      "engineEvents": 300,
       "stateVersion": 221
     },
     {
@@ -1540,10 +1525,40 @@
           "kind": "optional",
           "accept": true
         },
+        "decisionId": "dec-42"
+      },
+      "engineEvents": 304,
+      "stateVersion": 222
+    },
+    {
+      "ok": true,
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "response": {
+          "kind": "chooseTargets",
+          "instanceIds": ["perm-3", "perm-17"]
+        },
         "decisionId": "dec-43"
       },
-      "engineEvents": 307,
-      "stateVersion": 224
+      "engineEvents": 305,
+      "stateVersion": 223
+    },
+    {
+      "ok": true,
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        },
+        "decisionId": "dec-44"
+      },
+      "engineEvents": 309,
+      "stateVersion": 226
     }
   ],
   "matchId": "921dc75d-19b6-403c-b146-0d4ff6c983e9",

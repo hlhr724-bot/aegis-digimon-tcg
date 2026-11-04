@@ -32,6 +32,19 @@ describe("Free Tamer play before automatic pass", () => {
           response: { kind: "optional", accept },
         }),
       ).toEqual({ ok: true });
+      if (accept) {
+        const selected = await replay.applyIntent(1, {
+          type: "respondDecision",
+          decisionId: replay.state.pendingDecision!.decisionId,
+          response: {
+            kind: "selectCards",
+            instanceIds: [player.hand.find((card) => card.cardId === "BT12-094")!.instanceId],
+          },
+        });
+        if (!selected.ok) {
+          throw new Error(selected.reason);
+        }
+      }
       const changes = events.filter((event) => event.kind === "memoryChanged");
       expect(changes.filter((event) => event.reason !== "passTurn")).toEqual([]);
       expect(player.battleArea.some((permanent) => permanent.topCard.cardId === "BT12-094")).toBe(accept);

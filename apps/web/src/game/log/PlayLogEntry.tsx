@@ -7,6 +7,7 @@ import { MemoryBadge } from "@/game/log/MemoryBadge";
 import { LogActorAvatar } from "@/game/log/LogActorAvatar";
 import { LogEntryCards } from "@/game/log/LogEntryCards";
 import { getLogEntrySeat } from "@/game/log/getLogEntrySeat";
+import { LogEffectDetails } from "@/game/log/LogEffectDetails";
 
 type Props = {
   entry: LogEntry;
@@ -30,6 +31,7 @@ export function PlayLogEntry({ entry, playerNames, playerAvatars, viewerSeat, hi
           <CardLinkedText text={entry.text} cardIds={entry.cardIds} highlight={highlight} onOpenCard={onOpenCard} />
           {entry.memory ? <MemoryBadge memory={entry.memory} /> : null}
         </p>
+        {entry.effect ? <LogEffectDetails effect={entry.effect} /> : null}
         <LogEntryCards cardIds={entry.cardIds} onOpenCard={onOpenCard} />
       </div>
     </div>

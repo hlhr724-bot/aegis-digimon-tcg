@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useMemo, useState, type RefObject } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState, type RefObject } from "react";
 import type { CardInstance, FieldEffectView, Permanent } from "@aegis/shared";
 import { ClientErrorBoundary } from "@/clientErrors/ClientErrorBoundary";
 import { REDUCED_MOTION_QUERY } from "@/design/motion/reducedMotionQuery";
@@ -10,6 +10,9 @@ import { Side } from "@/game/side";
 import type { ArenaFieldStore } from "@/game/arena3d/field/createArenaFieldStore";
 import { buildArenaFieldCards } from "@/game/arena3d/field/buildArenaFieldCards";
 import { buildArenaZoneCards, type ArenaSideZones } from "@/game/arena3d/field/buildArenaZoneCards";
+import { Arena3dNotice } from "@/game/arena3d/fallback/Arena3dNotice";
+import { Arena3dSceneStatus } from "@/game/arena3d/fallback/Arena3dSceneStatus";
+import { useArena3dSceneRecovery } from "@/game/arena3d/fallback/useArena3dSceneRecovery";
 import { isWebGlAvailable } from "@/game/arena3d/isWebGlAvailable";
 import type { Arena3dQuality } from "@/game/arena3d/quality/Arena3dQuality";
 import { AUTO_ARENA_3D_QUALITY } from "@/game/arena3d/quality/Arena3dQualityChoice";
@@ -29,6 +32,7 @@ import type { MatchFinaleTone } from "@/game/match/finale/MatchFinaleTone";
 import type { PermanentBurst } from "@/game/showcases";
 import type { AttackAnnouncement } from "@/game/sidePanels";
 import { createLazyComponent } from "@/net/createLazyComponent";
+import { useTranslation } from "@/i18n/useTranslation";
 import "@/game/arena3d/cues/arena3dCueOverlay.css";
 
 type Props = {
@@ -74,6 +78,11 @@ function probeDeviceQuality(): Arena3dQuality | undefined {
   return signals ? probeArena3dQuality(signals) : undefined;
 }
 
+function SceneCrashSignal({ onCrash }: { onCrash: () => void }) {
+  useEffect(onCrash, [onCrash]);
+  return null;
+}
+
 function getActiveSide(displayedTurnSeat: number | undefined, viewerSeat: number): number {
   if (displayedTurnSeat === undefined || displayedTurnSeat < 0) {
     return 0;
@@ -114,10 +123,11 @@ function Arena3dLayerScene(props: Props) {
   const [probed] = useState(probeDeviceQuality);
   const [deviceClass] = useState(readArena3dDeviceClass);
   const [downgrades, setDowngrades] = useState(0);
-  const [contextLost, setContextLost] = useState(false);
+  const recovery = useArena3dSceneRecovery();
+  const { t } = useTranslation();
+  const [noticeDismissed, setNoticeDismissed] = useState(false);
   const quality = resolveArena3dQuality({ choice: qualityChoice, probed, downgrades, deviceClass });
   const handleDowngrade = useCallback(() => setDowngrades((count) => count + 1), []);
-  const handleContextLost = useCallback(() => setContextLost(true), []);
   const pulses = useArenaPulses({
     board,
     viewerSeat,
@@ -159,7 +169,7 @@ function Arena3dLayerScene(props: Props) {
   const opponentEffects = summarizeArenaFieldEffects(props.opponentFieldEffects);
   const fieldEffects = useMemo<Record<Side, ArenaFieldEffectState>>(
     () => ({ [Side.Viewer]: viewerEffects, [Side.Opponent]: opponentEffects }),
-    [viewerEffects.active, viewerEffects.harmful, opponentEffects.active, opponentEffects.harmful],
+    [viewerEffects.signature, opponentEffects.signature],
   );
 
   const opponentBreedingId = props.opponentBreeding?.permanentId;
@@ -173,13 +183,24 @@ function Arena3dLayerScene(props: Props) {
     [opponentBreedingId, viewerBreedingId],
   );
 
-  if (contextLost) {
-    return null;
+  if (recovery.status === Arena3dSceneStatus.RESTARTING.value) {
+    return <Arena3dNotice message={t("redesign.foundation.boardStyle.restoring")} />;
+  }
+
+  if (recovery.status === Arena3dSceneStatus.STOPPED.value) {
+    return noticeDismissed ? null : (
+      <Arena3dNotice
+        message={t("redesign.foundation.boardStyle.stopped")}
+        retryLabel={t("redesign.foundation.boardStyle.retry")}
+        onRetry={recovery.retry}
+        onDismiss={() => setNoticeDismissed(true)}
+      />
+    );
   }
 
   return (
     <div className="arena-3d-scene" aria-hidden="true">
-      <ClientErrorBoundary fallback={null}>
+      <ClientErrorBoundary key={recovery.sceneKey} fallback={<SceneCrashSignal onCrash={recovery.handleCrash} />}>
         <Suspense fallback={null}>
           <Arena3dScene
             board={board}
@@ -202,7 +223,7 @@ function Arena3dLayerScene(props: Props) {
             fieldEffects={fieldEffects}
             breedingFocus={props.breedingFocus}
             onDowngrade={handleDowngrade}
-            onContextLost={handleContextLost}
+            onContextLost={recovery.handleContextLost}
           />
         </Suspense>
       </ClientErrorBoundary>

@@ -12,7 +12,7 @@ const effectKey = "BT22-026/ir-27-0";
 
 describe("hand-warp-digivolve-offered", () => {
   it("offers the hand digivolution and warps Gabumon into MetalGarurumon for 6 memory", async () => {
-    const replay = await runReplay(record, { untilInput: 56 });
+    const replay = await runReplay(record, { untilInput: 58 });
     expect(replay.divergences).toEqual([]);
     const metalGarurumon = replay.state.players[seat]!.hand.find((card) => card.cardId === metalGarurumonId)!;
     const gabumon = replay.state.players[seat]!.battleArea.find(

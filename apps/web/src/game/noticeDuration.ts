@@ -4,16 +4,18 @@ import type { TranslationKey } from "../i18n";
 const STORAGE_KEY = "aegis.notice.duration";
 
 /** How long notices and card panels stay readable, as a multiple of the default reading time. */
-export const NOTICE_DURATIONS = ["normal", "long", "longest"] as const;
+export const NOTICE_DURATIONS = ["short", "normal", "long", "longest"] as const;
 export type NoticeDuration = (typeof NOTICE_DURATIONS)[number];
 
 export const NOTICE_DURATION_SCALE: Record<NoticeDuration, number> = {
+  short: 0.6,
   normal: 1,
   long: 1.5,
   longest: 2,
 };
 
 export const NOTICE_DURATION_LABELS: Record<NoticeDuration, TranslationKey> = {
+  short: "settings.noticeDurationShort",
   normal: "settings.noticeDurationNormal",
   long: "settings.noticeDurationLong",
   longest: "settings.noticeDurationLongest",

@@ -8,6 +8,7 @@ import { evaluateCondition } from "../conditions.js";
 import { isPermanentUnaffectable, permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
 import { selfTargetPermanent } from "../matching/selfTarget.js";
 import { scaleFactor } from "../scaling.js";
+import { CardKind } from "@aegis/shared";
 import type { Condition, Filter, Permanent, Seat, Target } from "@aegis/shared";
 
 /**
@@ -154,6 +155,12 @@ export function candidatePermanents(
  * (and thus client-intent validation in resolvePermanentTargets) runs over this narrowed pool, a
  * client naming a permanent outside the superlative set is rejected.
  */
+function isDigimonPermanent(ctx: EffectContext, permanent: Permanent): boolean {
+  if (permanent.topCard === undefined) return false;
+  const kinds = ctx.game.definitionOf(permanent.topCard).kinds;
+  return (ctx.game.effectiveKinds?.(permanent.permanentId, kinds) ?? kinds).includes(CardKind.Digimon);
+}
+
 function narrowToSuperlative(
   ctx: EffectContext,
   pool: Permanent[],
@@ -202,8 +209,7 @@ function narrowToSuperlative(
   if (superlative === "highestDP" || superlative === "lowestDP") {
     const withDp: { permanent: Permanent; dp: number }[] = [];
     for (const permanent of pool) {
-      // DP must be defined and positive to be comparable (Tamers/Options have 0/undefined DP)
-      if (permanent.currentDP === undefined || permanent.currentDP <= 0) continue;
+      if (permanent.currentDP === undefined || !isDigimonPermanent(ctx, permanent)) continue;
       withDp.push({ permanent, dp: permanent.currentDP });
     }
     if (withDp.length === 0) return [];

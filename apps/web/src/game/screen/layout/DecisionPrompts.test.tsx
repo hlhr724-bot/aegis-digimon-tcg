@@ -537,3 +537,49 @@ it.each([false, undefined])(
     expect(screen.queryByRole("button", { name: /pass|no selection/i })).toBeNull();
   },
 );
+
+it.each([true, false])(
+  "asks Armor Purge as use or don't use with the Digimon already chosen on board/dialog (%s)",
+  (answerOnBoard) => {
+    const onRespond = vi.fn<(response: DecisionResponse) => void>();
+    render(
+      <I18nProvider>
+        <DecisionPrompts
+          decision={{
+            decisionId: "armor-purge",
+            seat: 0,
+            kind: "selectCards",
+            promptText: "Stegomon",
+            sourceCardId: "BT27-048",
+            options: {
+              min: 0,
+              max: 1,
+              candidateInstanceIds: ["stegomon-top"],
+              selectionGoal: "protect",
+              promptKey: "armorPurge",
+            },
+          }}
+          answerOnBoard={answerOnBoard}
+          permanents={[]}
+          sourceCardId="BT27-048"
+          candidates={[{ instanceId: "stegomon-top", cardId: "BT27-048", zone: "battle" }]}
+          allowsPick={() => true}
+          picks={[]}
+          min={0}
+          max={1}
+          triggerDetails={[]}
+          opponentSecurityCount={5}
+          onTogglePick={() => {}}
+          onRespond={onRespond}
+          onOpenDialog={() => {}}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.getByText("Use ＜Armor Purge＞?")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /confirm targets/i })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Use" }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "selectCards", instanceIds: ["stegomon-top"] });
+    fireEvent.click(screen.getByRole("button", { name: "Don't use" }));
+    expect(onRespond).toHaveBeenLastCalledWith({ kind: "selectCards", instanceIds: [] });
+  },
+);

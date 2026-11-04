@@ -786,24 +786,9 @@
         "type": "respondDecision",
         "response": {
           "kind": "selectCards",
-          "instanceIds": ["s1-14"]
+          "instanceIds": ["s1-14", "s1-42"]
         },
         "decisionId": "dec-10"
-      },
-      "engineEvents": 99,
-      "stateVersion": 60
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 1,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "selectCards",
-          "instanceIds": ["s1-42"]
-        },
-        "decisionId": "dec-11"
       },
       "engineEvents": 99,
       "stateVersion": 60
@@ -818,7 +803,7 @@
           "kind": "orderCards",
           "order": ["s1-2", "s1-3"]
         },
-        "decisionId": "dec-12"
+        "decisionId": "dec-11"
       },
       "engineEvents": 100,
       "stateVersion": 61
@@ -881,7 +866,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-13"
+        "decisionId": "dec-12"
       },
       "engineEvents": 120,
       "stateVersion": 76
@@ -896,7 +881,7 @@
           "kind": "selectCards",
           "instanceIds": ["s1-1"]
         },
-        "decisionId": "dec-14"
+        "decisionId": "dec-13"
       },
       "engineEvents": 121,
       "stateVersion": 77
@@ -923,7 +908,7 @@
           "kind": "optional",
           "accept": false
         },
-        "decisionId": "dec-15"
+        "decisionId": "dec-14"
       },
       "engineEvents": 137,
       "stateVersion": 86
@@ -972,7 +957,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-16"
+        "decisionId": "dec-15"
       },
       "engineEvents": 147,
       "stateVersion": 94
@@ -987,7 +972,7 @@
           "kind": "selectCards",
           "instanceIds": ["s1-42"]
         },
-        "decisionId": "dec-17"
+        "decisionId": "dec-16"
       },
       "engineEvents": 148,
       "stateVersion": 95
@@ -1002,7 +987,7 @@
           "kind": "selectCards",
           "instanceIds": ["s1-41"]
         },
-        "decisionId": "dec-18"
+        "decisionId": "dec-17"
       },
       "engineEvents": 153,
       "stateVersion": 97
@@ -1017,7 +1002,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-19"
+        "decisionId": "dec-18"
       },
       "engineEvents": 157,
       "stateVersion": 100
@@ -1032,7 +1017,7 @@
           "kind": "chooseTargets",
           "instanceIds": ["perm-9"]
         },
-        "decisionId": "dec-20"
+        "decisionId": "dec-19"
       },
       "engineEvents": 158,
       "stateVersion": 101
@@ -1047,7 +1032,7 @@
           "kind": "selectCards",
           "instanceIds": ["player"]
         },
-        "decisionId": "dec-21"
+        "decisionId": "dec-20"
       },
       "engineEvents": 159,
       "stateVersion": 102
@@ -1062,7 +1047,7 @@
           "kind": "orderTriggers",
           "order": ["s1-41::s1-41/alliance/0", "s1-41::EX13-058/ir-12-0"]
         },
-        "decisionId": "dec-22"
+        "decisionId": "dec-21"
       },
       "engineEvents": 160,
       "stateVersion": 103
@@ -1088,7 +1073,7 @@
           "kind": "selectCards",
           "instanceIds": ["s1-14"]
         },
-        "decisionId": "dec-23"
+        "decisionId": "dec-22"
       },
       "engineEvents": 165,
       "stateVersion": 107
@@ -1103,7 +1088,7 @@
           "kind": "selectCards",
           "instanceIds": ["s1-40"]
         },
-        "decisionId": "dec-24"
+        "decisionId": "dec-23"
       },
       "engineEvents": 174,
       "stateVersion": 111
@@ -1118,7 +1103,7 @@
           "kind": "orderCards",
           "order": ["s1-22", "s1-27", "s1-4"]
         },
-        "decisionId": "dec-25"
+        "decisionId": "dec-24"
       },
       "engineEvents": 175,
       "stateVersion": 112
@@ -1133,7 +1118,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-26"
+        "decisionId": "dec-25"
       },
       "engineEvents": 177,
       "stateVersion": 114
@@ -1162,7 +1147,7 @@
             "s0-18::EX13-059/ir-11-0": true
           }
         },
-        "decisionId": "dec-27"
+        "decisionId": "dec-26"
       },
       "engineEvents": 185,
       "stateVersion": 122
@@ -1177,7 +1162,7 @@
           "kind": "chooseTargets",
           "instanceIds": ["perm-2"]
         },
-        "decisionId": "dec-28"
+        "decisionId": "dec-27"
       },
       "engineEvents": 187,
       "stateVersion": 124
@@ -1192,7 +1177,7 @@
           "kind": "selectCards",
           "instanceIds": ["s0-8"]
         },
-        "decisionId": "dec-29"
+        "decisionId": "dec-28"
       },
       "engineEvents": 194,
       "stateVersion": 128
@@ -1207,7 +1192,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-30"
+        "decisionId": "dec-29"
       },
       "engineEvents": 199,
       "stateVersion": 132
@@ -1222,7 +1207,7 @@
           "kind": "selectCards",
           "instanceIds": ["s0-4", "s0-6", "s0-28"]
         },
-        "decisionId": "dec-31"
+        "decisionId": "dec-30"
       },
       "engineEvents": 200,
       "stateVersion": 133

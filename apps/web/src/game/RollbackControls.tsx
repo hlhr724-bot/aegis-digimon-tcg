@@ -52,63 +52,67 @@ export function RollbackControls({
   };
   return (
     <>
-      <Popover.Root open={open && !pending && !state.rollbackBusy} onOpenChange={setOpen}>
-        <Popover.Trigger asChild>
-          <button
-            type="button"
-            className={buttonClass}
-            onClick={(event) => {
-              if (menu) event.stopPropagation();
-            }}
-            aria-label={t("rollback.controls")}
-            title={t("rollback.controls")}
-            disabled={pending || state.rollbackBusy || (!canUndoAction && !canRollbackTurn)}
-          >
-            <Icons.RotateCcw size={17} />
-            {menu ? t("rollback.controls") : null}
-          </button>
-        </Popover.Trigger>
-        <Popover.Portal>
-          <Popover.Content
-            className="rollback-menu"
-            align="end"
-            sideOffset={8}
-            collisionPadding={12}
-            aria-label={t("rollback.controls")}
-          >
-            <div className="rollback-menu__header">
-              <strong>{t("rollback.controls")}</strong>
-              <Popover.Close className="rollback-menu__close" aria-label={t("common.close")}>
-                <Icons.X size={16} />
-              </Popover.Close>
-            </div>
+      {canUndoAction || canRollbackTurn ? (
+        <Popover.Root open={open && !pending && !state.rollbackBusy} onOpenChange={setOpen}>
+          <Popover.Trigger asChild>
             <button
               type="button"
-              className="rollback-menu__action"
-              disabled={!canUndoAction}
-              onClick={() => request(RollbackKind.ACTION.value)}
+              className={buttonClass}
+              onClick={(event) => {
+                if (menu) event.stopPropagation();
+              }}
+              aria-label={t("rollback.controls")}
+              title={t("rollback.controls")}
+              disabled={pending || state.rollbackBusy}
             >
-              <Icons.RotateCcw size={18} />
-              <span>{t("rollback.undo")}</span>
+              <Icons.RotateCcw size={17} />
+              {menu ? t("rollback.controls") : null}
             </button>
-            <button
-              type="button"
-              className="rollback-menu__action"
-              disabled={!canRollbackTurn}
-              onClick={() => request(RollbackKind.TURN.value)}
+          </Popover.Trigger>
+          <Popover.Portal>
+            <Popover.Content
+              className="rollback-menu"
+              align="end"
+              sideOffset={8}
+              collisionPadding={12}
+              aria-label={t("rollback.controls")}
             >
-              <Icons.Clock size={18} />
-              <span>{t("rollback.turn")}</span>
-            </button>
-            <details className="rollback-menu__help">
-              <summary>{t("rollback.help")}</summary>
-              <p>{t("rollback.optionHint")}</p>
-              <p>{t("rollback.turnHint")}</p>
-              <p>{t("rollback.hiddenHint")}</p>
-            </details>
-          </Popover.Content>
-        </Popover.Portal>
-      </Popover.Root>
+              <div className="rollback-menu__header">
+                <strong>{t("rollback.controls")}</strong>
+                <Popover.Close className="rollback-menu__close" aria-label={t("common.close")}>
+                  <Icons.X size={16} />
+                </Popover.Close>
+              </div>
+              {canUndoAction ? (
+                <button
+                  type="button"
+                  className="rollback-menu__action"
+                  onClick={() => request(RollbackKind.ACTION.value)}
+                >
+                  <Icons.RotateCcw size={18} />
+                  <span>{t("rollback.undo")}</span>
+                </button>
+              ) : null}
+              {canRollbackTurn ? (
+                <button
+                  type="button"
+                  className="rollback-menu__action"
+                  onClick={() => request(RollbackKind.TURN.value)}
+                >
+                  <Icons.Clock size={18} />
+                  <span>{t("rollback.turn")}</span>
+                </button>
+              ) : null}
+              <details className="rollback-menu__help">
+                <summary>{t("rollback.help")}</summary>
+                <p>{t("rollback.optionHint")}</p>
+                <p>{t("rollback.turnHint")}</p>
+                <p>{t("rollback.hiddenHint")}</p>
+              </details>
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover.Root>
+      ) : null}
       {failed
         ? createPortal(
             <Dialog className="rollback-consent" labelledBy={`${id}-failed`} onClose={() => setFailed(false)}>

@@ -1203,12 +1203,11 @@
   border-top: 1px solid var(--ds-line);
 }
 
-/* ---- Row lists (participants, banlist, matches, standings) ---- */
+/* ---- Row lists (participants, banlist, matches) ---- */
 
 .tournaments-banlist,
 .tournaments-participants,
-.tournaments-matches,
-.tournaments-standings {
+.tournaments-matches {
   display: flex;
   flex-direction: column;
   list-style: none;
@@ -1230,8 +1229,7 @@
 
 .tournaments-banlist li,
 .tournaments-participants li,
-.tournaments-matches li,
-.tournaments-standings li {
+.tournaments-matches li {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1241,19 +1239,76 @@
   font-size: var(--ds-text-sm);
 }
 
+.tournaments-participants li[data-dropped] {
+  color: var(--ds-text-3);
+}
+
 .tournaments-banlist li:first-child,
 .tournaments-participants li:first-child,
-.tournaments-matches li:first-child,
-.tournaments-standings li:first-child {
+.tournaments-matches li:first-child {
   padding-top: 0;
   border-top: 0;
 }
 
-.tournaments-standings li > span:first-child {
-  min-width: 3ch;
+.tournaments-standings-scroll {
+  margin-top: var(--ds-space-2);
+  overflow-x: auto;
+}
+
+.tournaments-standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ds-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.tournaments-standings-table th,
+.tournaments-standings-table td {
+  padding: var(--ds-space-2);
+  border-top: 1px solid var(--ds-line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tournaments-standings-table thead th {
+  border-top: 0;
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+}
+
+.tournaments-standings-table tbody th {
+  min-width: 8rem;
+  font-weight: 500;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.tournaments-standings-table td:first-child {
   color: var(--ds-text-3);
   font-family: var(--ds-font-mono);
   font-size: var(--ds-text-xs);
+}
+
+.tournaments-standings-table__byes,
+.tournaments-match-presence,
+.tournaments-my-match__presence span {
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-xs);
+}
+
+.tournaments-standings-table__byes {
+  margin-left: var(--ds-space-1);
+}
+
+.tournaments-match-presence {
+  flex-basis: 100%;
+}
+
+.tournaments-my-match__presence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1) var(--ds-space-3);
 }
 
 .tournaments-banlist__id,
@@ -1829,4 +1884,35 @@
   .tournaments-entry-hero__body h2 {
     font-size: 19px;
   }
+}
+
+.tournaments-format dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.tournaments-format dd {
+  align-self: center;
+}
+
+.tournaments-format dt .aegis-help-tip {
+  width: 22px;
+  height: 22px;
+}
+
+.tournaments-format dt .aegis-help-tip::before {
+  inset: -11px;
+}
+
+.tournaments-format__scale {
+  display: grid;
+  gap: 2px;
+  margin: var(--ds-space-2) 0;
+  padding-left: var(--ds-space-4);
+}
+
+.tournaments-format__order {
+  margin: 0;
+  padding-left: var(--ds-space-4);
 }

@@ -35,8 +35,11 @@ import { readAttackArrowClock } from "./attackArrowClock";
 import { boardActions } from "./screen/boardActions";
 import { matchIntents } from "./screen/matchIntents";
 import { PendingMatchBoard } from "./screen/layout/PendingMatchBoard";
+import { MatchIntroOverlay } from "@/game/overlay/match/MatchIntroOverlay";
+import { useMatchIntro } from "@/game/screen/hooks/useMatchIntro";
 import { pendingMatchNotice } from "./screen/model/pendingMatchNotice";
 import { getGuestApprovalView } from "@/game/screen/model/getGuestApprovalView";
+import { isMatchIntroStarting } from "@/game/screen/model/isMatchIntroStarting";
 import { GUEST_APPROVAL_CHANNEL } from "@aegis/shared/protocol/GuestApprovalMessage";
 import { sourceHostChoiceFor } from "./screen/model/sourceHostChoice";
 import { BoardStage, type BoardAnchors } from "./screen/layout/BoardStage";
@@ -395,8 +398,10 @@ function GameScreenSession({
       setBotError(t("game.botConnectionFailedDetail"));
     });
   }, [vsBot, room, status, botDeckId, botSettings, t]);
+  const botSeatPending =
+    vsBot && !botError && (status === "connecting" || status === "connected") && !bothSeated(state);
   useBotMatchStartDeadline({
-    waiting: vsBot && !botError && (status === "connecting" || status === "connected") && !bothSeated(state),
+    waiting: botSeatPending,
     onExpired: () => {
       clientErrorReporter.capture({
         kind: ClientErrorKind.ERROR.value,
@@ -987,6 +992,41 @@ function GameScreenSession({
     t,
   });
 
+  const matchIntro = useMatchIntro({
+    roomId: room?.roomId,
+    eligible:
+      !spectating &&
+      !replayMode &&
+      !demoConnection &&
+      !joinOptions.devScenario &&
+      !findTutorialLesson(joinOptions.storyBattleId),
+    awaitingOpponent: botSeatPending,
+    matchStarting: isMatchIntroStarting({ status, state, guestApproval }),
+  });
+  const introViewer = state?.players[viewerSeat];
+  const introOpponent = state?.players[otherSeat(viewerSeat)];
+  const matchIntroOverlay = matchIntro.visible ? (
+    <MatchIntroOverlay
+      viewer={{
+        name: introViewer?.displayName || joinOptions.displayName,
+        avatarId: introViewer?.avatarId,
+        avatarUrl: introViewer?.avatarUrl,
+      }}
+      opponent={
+        bothSeated(state)
+          ? {
+              name: introOpponent?.displayName || t("game.opponent"),
+              avatarId: introOpponent?.avatarId,
+              avatarUrl: introOpponent?.avatarUrl,
+              botPersonaId: introOpponent?.botPersonaId,
+            }
+          : undefined
+      }
+      leaving={matchIntro.leaving}
+      onSkip={matchIntro.skip}
+    />
+  ) : null;
+
   if (
     status === "reconnecting" ||
     status === "error" ||
@@ -1033,37 +1073,42 @@ function GameScreenSession({
             });
     const guestRequest = guestApproval?.kind === "hostReview" ? guestApproval.guest : undefined;
     return (
-      <PendingMatchBoard
-        title={notice.title}
-        detail={notice.detail}
-        spinner={notice.spinner}
-        actionLabel={notice.actionLabel}
-        roomCode={notice.roomCode}
-        guestRequest={guestRequest}
-        onAnswerGuest={
-          guestRequest
-            ? (accept) => room?.send(GUEST_APPROVAL_CHANNEL, { guestSessionId: guestRequest.sessionId, accept })
-            : undefined
-        }
-        status={
-          "searchingQueue" in notice && notice.searchingQueue ? (
-            <MatchQueueActivity
-              className="waiting-dialog__queue-activity"
-              viewerQueued
-              selection={getMatchQueueSelection({
-                options: {
-                  ...joinOptions,
-                  ranked: startMode === "ranked",
-                  betaBattleMode: startMode === "beta",
-                  unlimited: startMode === "unlimited" || joinOptions.unlimited,
-                },
-              })}
-            />
-          ) : undefined
-        }
-        onAction={notice.exitTo ? () => onExit(notice.exitTo!) : undefined}
-        onCancel={() => onExit("lobby")}
-      />
+      <>
+        {matchIntro.visible ? null : (
+          <PendingMatchBoard
+            title={notice.title}
+            detail={notice.detail}
+            spinner={notice.spinner}
+            actionLabel={notice.actionLabel}
+            roomCode={notice.roomCode}
+            guestRequest={guestRequest}
+            onAnswerGuest={
+              guestRequest
+                ? (accept) => room?.send(GUEST_APPROVAL_CHANNEL, { guestSessionId: guestRequest.sessionId, accept })
+                : undefined
+            }
+            status={
+              "searchingQueue" in notice && notice.searchingQueue ? (
+                <MatchQueueActivity
+                  className="waiting-dialog__queue-activity"
+                  viewerQueued
+                  selection={getMatchQueueSelection({
+                    options: {
+                      ...joinOptions,
+                      ranked: startMode === "ranked",
+                      betaBattleMode: startMode === "beta",
+                      unlimited: startMode === "unlimited" || joinOptions.unlimited,
+                    },
+                  })}
+                />
+              ) : undefined
+            }
+            onAction={notice.exitTo ? () => onExit(notice.exitTo!) : undefined}
+            onCancel={() => onExit("lobby")}
+          />
+        )}
+        {matchIntroOverlay}
+      </>
     );
   }
 
@@ -1803,6 +1848,7 @@ function GameScreenSession({
       onExit={onExit}
       returnsToRoom={isPrivateMatch}
       arenaDeckColors={arenaLook.deckColors}
+      mulliganHeld={matchIntro.visible}
       onRematch={
         spectating
           ? () => onExit("lobby")
@@ -2136,5 +2182,10 @@ function GameScreenSession({
       }}
     />
   );
-  return <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>;
+  return (
+    <>
+      <ViewerCardArtIdsContext.Provider value={viewerCardArtIds}>{board}</ViewerCardArtIdsContext.Provider>
+      {matchIntroOverlay}
+    </>
+  );
 }

@@ -37,6 +37,57 @@ follow this rule. Unseated clients receive neither conversation, and payloads
 cannot select a different sender role or audience. Existing moderation and
 per-sender cooldowns apply within each conversation.
 
+## Replay annotations
+
+Signed-in players can annotate a match with emoji markers and text notes. The
+match ID is the replay summary ID (`MatchReplay.id`). Annotations belong to
+their author and are private. See [replay annotations](REPLAY-ANNOTATIONS.md)
+for the model and limits.
+
+Live annotations use the `replayAnnotation` room message
+(`LIVE_REPLAY_ANNOTATION_CHANNEL`). The client sends `{ kind: "marker", emoji }`
+or `{ kind: "note", text }`. The room derives the author from the seat or
+spectator account and the moment from its own recording: the latest recorded
+frame and the current turn. It answers only the sender with
+`{ kind: "marker", marker }`, `{ kind: "note", note }` or
+`{ kind: "rejected", reason }`. Reasons are `sign_in_required`, `unavailable`
+(no recording, or the recording hit its limit), `limit_reached`, `too_fast`
+(one annotation per second per author), and `invalid`. Annotations never enter
+the state patch, the event channel, the replay file, or the input record, so
+the opponent cannot see or infer them.
+
+HTTP endpoints. All responses send `Cache-Control: private, no-store`.
+
+| Method and path                                    | Who                       | Result                                            |
+| -------------------------------------------------- | ------------------------- | ------------------------------------------------- |
+| `GET /replays/annotations/:matchId`                | Anyone                    | `ReplayAnnotations`: the viewer's own annotations |
+| `POST /replays/annotations/:matchId/markers`       | Signed-in, allowed viewer | 201 with the `ReplayMarker`                       |
+| `DELETE /replays/annotations/:matchId/markers/:id` | The marker's author       | `{ ok: true }`                                    |
+| `POST /replays/annotations/:matchId/notes`         | Signed-in, allowed viewer | 201 with the `ReplayNote`                         |
+| `PATCH /replays/annotations/:matchId/notes/:id`    | The note's author         | The updated `ReplayNote`                          |
+| `DELETE /replays/annotations/:matchId/notes/:id`   | The note's author         | `{ ok: true }`                                    |
+
+- Markers take `{ frameIndex, turn, emoji }`; notes take
+  `{ frameIndex, turn, text }`; a note edit takes `{ text }`.
+- `frameIndex` is an integer from 0 to 4999, `turn` an integer from 0 to 10000,
+  and `emoji` exactly one emoji (`isReplayMarkerEmoji`): one grapheme made only of
+  emoji code points, at most 32 UTF-16 units. `ReplayMarkerEmoji` lists the 8
+  presets the client offers first.
+- The API normalizes note text with `normalizeReplayNoteText`: it strips control
+  and direction-override characters, keeps up to one blank line, and trims.
+  The result must be 1 to 500 code points.
+- Errors: 400 `invalid_moment`, `invalid_emoji` or `invalid_text`, 401
+  `authentication_required`, 403 `not_allowed`, 404 for a malformed ID or an
+  annotation the caller does not own, 409 `limit_reached`, and 429
+  `too_many_requests`.
+- A viewer may annotate a match when they have their own `account_replays` row
+  for it, or when a saved replay of it is shared with them under the existing
+  visibility rules.
+- Annotations are private: only their author can read them, even on a public
+  replay. `GET` returns the signed-in viewer's own `markers` and `notes`,
+  `canAnnotate`, and `ownReplayIds` (the viewer's saved replays of the match,
+  used for moment links). Guests get empty lists and `canAnnotate: false`.
+
 ## Live match list
 
 `GET /spectate/live?offset=0&limit=10` returns a `LiveMatchPage`:

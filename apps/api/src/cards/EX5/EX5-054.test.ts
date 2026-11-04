@@ -299,7 +299,10 @@ describe("EX5-054 MetalEtemon", () => {
     const s = setupEngine(
       {
         0: {
-          battleArea: [{ card: CARD, as: "source", suspended: true }],
+          battleArea: [
+            { card: CARD, as: "source", suspended: true },
+            { card: "BT1-009", as: "attacked", suspended: true },
+          ],
           hand: [{ card: "BT11-041", as: "paid" }],
           security: ["BT1-009", "BT1-010"],
         },
@@ -314,7 +317,7 @@ describe("EX5-054 MetalEtemon", () => {
       s.engine.applyIntent(1, {
         type: "attack",
         attackerPermanentId: s.perm("attacker").permanentId,
-        target: { kind: "permanent", permanentId: sourceId },
+        target: { kind: "permanent", permanentId: s.perm("attacked").permanentId },
       }),
     ).toEqual({ ok: true });
     await settle(

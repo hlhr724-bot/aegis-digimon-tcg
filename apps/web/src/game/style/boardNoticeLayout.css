@@ -83,7 +83,7 @@
      every notice and deletion panel over both battle rows. It stays compact and
      scrolls instead, so the field and a security clash remain readable. */
   .aegis-arena .game-board .game-board-notices > .narration-slot[data-slot] {
-    width: min(26rem, 100%);
+    width: min(calc(26rem * var(--notice-scale, 1)), 100%);
     max-height: min(26rem, 42svh);
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -91,7 +91,7 @@
   }
 
   .aegis-arena .game-board .game-board-notices .side-panel__cards {
-    --panel-row-w: 22rem;
+    --panel-row-w: calc(22rem * var(--notice-scale, 1));
   }
 
   /* The security clash plays in this same center lane. An earlier "Deleted" notice left

@@ -11,6 +11,7 @@ import { observe } from "../testkit/observe.js";
 
 const METAL_ETEMON_ID = fixturePermanentId("own-metaletemon");
 const ATTACKER_ID = fixturePermanentId("opponent-metaletemon-agumon");
+const ATTACKED_ID = fixturePermanentId("own-attacked-digimon");
 
 // Discord 1558441146781536346: MetalEtemon (EX5-054) switches an opponent's attack "to this
 // Digimon or the player". Q3647: the player is MetalEtemon's controller, never the attacker's
@@ -30,7 +31,7 @@ describe("MetalEtemon switches an attack to its own player", () => {
       s.engine.applyIntent(1, {
         type: "attack",
         attackerPermanentId: ATTACKER_ID,
-        target: { kind: "permanent", permanentId: METAL_ETEMON_ID },
+        target: { kind: "permanent", permanentId: ATTACKED_ID },
       }),
     ).toEqual({ ok: true });
     await settleAcrossTimers(

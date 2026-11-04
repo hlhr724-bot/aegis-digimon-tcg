@@ -15,7 +15,7 @@ const record = JSON.parse(
 
 describe("Revealed DUAL cards use their Option side", () => {
   it("uses the selected Gundramon without offering an illegal play destination", async () => {
-    const replay = await runReplay(record, { untilInput: 51 });
+    const replay = await runReplay(record, { untilInput: 52 });
     try {
       expect(replay.divergences).toEqual([]);
       expect(replay.state.pendingDecision?.kind).toBe("selectCards");

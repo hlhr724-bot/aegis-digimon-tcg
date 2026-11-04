@@ -40,7 +40,13 @@ export function armorPurgeLeaveReplacements(
             (
               await ctx.ask.selectCards(
                 { ...ctx, activeEffectText: description },
-                { candidates: [sourceInstanceId], min: 0, max: 1, selectionGoal: DecisionSelectionGoal.PROTECT.value },
+                {
+                  candidates: [sourceInstanceId],
+                  min: 0,
+                  max: 1,
+                  selectionGoal: DecisionSelectionGoal.PROTECT.value,
+                  promptKey: "armorPurge",
+                },
               )
             ).includes(sourceInstanceId);
           if (!accept) return false;

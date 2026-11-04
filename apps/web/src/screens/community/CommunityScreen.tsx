@@ -5,6 +5,7 @@ import { CommunityPage } from "@/community/CommunityPage";
 import { CommunitySection } from "@/community/CommunitySection";
 import { SuccessToast } from "@/design/SuccessToast";
 import { useTranslation } from "@/i18n/useTranslation";
+import { ViewerCardLanguage } from "@/screens/cardLanguage/ViewerCardLanguage";
 import { CommunityBrowse } from "@/screens/community/CommunityBrowse";
 import { CommunityDeckPage } from "@/screens/community/CommunityDeckPage";
 import { CommunityMeta } from "@/screens/community/CommunityMeta";
@@ -50,20 +51,22 @@ export function CommunityScreen({
   };
   return (
     <CommunityPage section={activeSection} metaAvailable={metaAvailable === true} onSectionChange={onSectionChange}>
-      <CommunityContent
-        deckId={deckId}
-        section={section}
-        metaAvailable={metaAvailable}
-        signedIn={signedIn}
-        accountId={accountId}
-        isAdmin={isAdmin}
-        onOpenDeck={onOpenDeck}
-        onBack={onBack}
-        onOpenRanked={onOpenRanked}
-        onPlay={onPlay}
-        onCopy={copy}
-        onNotice={setToast}
-      />
+      <ViewerCardLanguage>
+        <CommunityContent
+          deckId={deckId}
+          section={section}
+          metaAvailable={metaAvailable}
+          signedIn={signedIn}
+          accountId={accountId}
+          isAdmin={isAdmin}
+          onOpenDeck={onOpenDeck}
+          onBack={onBack}
+          onOpenRanked={onOpenRanked}
+          onPlay={onPlay}
+          onCopy={copy}
+          onNotice={setToast}
+        />
+      </ViewerCardLanguage>
       {toast ? <SuccessToast message={toast} onDismiss={dismissToast} /> : null}
     </CommunityPage>
   );

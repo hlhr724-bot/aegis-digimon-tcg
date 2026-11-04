@@ -332,7 +332,10 @@ function hasValidResponseShape(response: DecisionResponse): boolean {
 }
 
 function satisfiesAllowedTargetCombinations(open: OpenDecision, response: DecisionResponse): boolean {
-  if (open.allowedTargetCombinations === undefined || response.kind !== "chooseTargets") {
+  if (
+    open.allowedTargetCombinations === undefined ||
+    (response.kind !== "chooseTargets" && response.kind !== "selectCards")
+  ) {
     return true;
   }
   const selected = response.instanceIds;

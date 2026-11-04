@@ -6,7 +6,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-it("logs one process metrics line per minute with search usage and room counts", () => {
+it("logs one process metrics line per minute with search usage, event-loop delay, and room counts", () => {
   vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
   const lines: string[] = [];
   const stopObserving = addLogSink((line) => lines.push(line));
@@ -24,4 +24,6 @@ it("logs one process metrics line per minute with search usage and room counts",
   expect(metricLines).toHaveLength(1);
   const [, report] = (JSON.parse(metricLines[0]!) as { data: [string, Record<string, number>] }).data;
   expect(report).toMatchObject({ searchesStarted: 7, rooms: 3, botRooms: 2, clients: 4 });
+  expect(report.eventLoopDelayP99Ms).toBeGreaterThanOrEqual(0);
+  expect(report.eventLoopDelayMaxMs).toBeGreaterThanOrEqual(0);
 });
