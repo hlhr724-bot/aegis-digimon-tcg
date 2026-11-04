@@ -1,4 +1,22 @@
 {
+  "releases.1.52.0-beta.summary": {
+    "en": "BD02 arrives with Renamon, Sekkamon, Tenkomon and Valner Dragnogh, and deck matchup tests start and finish faster.",
+    "pt-BR": "BD02 chega com Renamon, Sekkamon, Tenkomon e Valner Dragnogh, e os testes de confronto de decks começam e terminam mais rápido.",
+    "es": "Llega BD02 con Renamon, Sekkamon, Tenkomon y Valner Dragnogh, y las pruebas de enfrentamiento de mazos empiezan y terminan más rápido.",
+    "it": "Arriva BD02 con Renamon, Sekkamon, Tenkomon e Valner Dragnogh, e i test di scontro tra mazzi iniziano e finiscono più velocemente."
+  },
+  "releases.1.52.0-beta.feature.bd02": {
+    "en": "Adds BD02 Renamon, Sekkamon, Tenkomon and Valner Dragnogh, with English and Japanese art.",
+    "pt-BR": "Adiciona Renamon, Sekkamon, Tenkomon e Valner Dragnogh de BD02, com artes em inglês e japonês.",
+    "es": "Añade Renamon, Sekkamon, Tenkomon y Valner Dragnogh de BD02, con artes en inglés y japonés.",
+    "it": "Aggiunge Renamon, Sekkamon, Tenkomon e Valner Dragnogh di BD02, con illustrazioni in inglese e giapponese."
+  },
+  "releases.1.52.0-beta.fix.matchupSpeed": {
+    "en": "Deck matchup tests against bots start sooner and each simulated game runs about three times faster.",
+    "pt-BR": "Os testes de confronto de decks contra bots começam mais cedo e cada partida simulada roda cerca de três vezes mais rápido.",
+    "es": "Las pruebas de enfrentamiento de mazos contra bots empiezan antes y cada partida simulada se ejecuta unas tres veces más rápido.",
+    "it": "I test di scontro tra mazzi contro i bot iniziano prima e ogni partita simulata è circa tre volte più veloce."
+  },
   "releases.1.51.2-beta.summary": {
     "en": "Card selections respect available Tamers and exact trash costs, DUAL Option costs use the correct effect type, and hover zoom works on hand and field cards.",
     "pt-BR": "As seleções de cartas respeitam os Tamers disponíveis e os custos exatos de descarte, os custos de Options DUAL usam o tipo correto de efeito e o zoom ao passar o mouse funciona nas cartas da mão e do campo.",
