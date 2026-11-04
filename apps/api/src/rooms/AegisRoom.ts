@@ -449,6 +449,7 @@ export class AegisRoom extends Room<{
    * room through the visibility port, so an undisposed view keeps the whole match alive.
    */
   private issuedViews = new Set<NonNullable<Client["view"]>>();
+  private previousPatchCarriedChanges = true;
   /**
    * Bot drivers by seat. An array rather than one field because a tournament confrontation between
    * two bots has to run with nobody connected at all, so both seats can be driven at once.
@@ -3070,6 +3071,15 @@ export class AegisRoom extends Room<{
     }
   };
 
+  private stateChangedSinceLastPatch(): boolean {
+    const serializer = Reflect.get(this, "_serializer") as { encoder?: { hasChanges: boolean } } | undefined;
+    return serializer?.encoder?.hasChanges !== false;
+  }
+
+  private patchIsIdle(): boolean {
+    return this.clients.length > 0 && !this.previousPatchCarriedChanges && !this.stateChangedSinceLastPatch();
+  }
+
   /**
    * Refresh the public per-zone count mirrors before every state broadcast. The
    * hidden zones (deck/hand/security) are redacted per seat, so only these counts
@@ -3081,6 +3091,10 @@ export class AegisRoom extends Room<{
     // Colyseus starts its patch timer before onCreate, which can await a private-code lookup
     // or reject before the engine exists. There is nothing to synchronize until it is ready.
     if (!this.engine) return;
+    if (this.patchIsIdle()) {
+      this.engine.flushHandAffordances();
+      if (!this.stateChangedSinceLastPatch()) return;
+    }
     // Not a replay input: the counts are derived from the zone arrays, and the replay recomputes them.
     this.engine.syncCounts();
     this.engine.flushHandAffordances();
@@ -3103,6 +3117,7 @@ export class AegisRoom extends Room<{
    */
   override broadcastPatch(): boolean {
     const hasChanges = super.broadcastPatch();
+    this.previousPatchCarriedChanges = hasChanges;
     if (!this.engine) return hasChanges;
     for (const client of this.clients) {
       if (client.view === undefined) continue;

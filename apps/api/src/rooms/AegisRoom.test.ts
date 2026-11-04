@@ -81,6 +81,21 @@ function intentSender(room: AegisRoom): (client: Client, intent: { type: string 
   return (room as unknown as { handleIntent: (c: Client, i: { type: string }) => void }).handleIntent.bind(room);
 }
 
+function encodeWithRealEncoder(room: AegisRoom): void {
+  const encoder = new Encoder(room.state);
+  room.setSerializer({
+    id: "schema",
+    encoder,
+    reset: () => {},
+    getFullState: () => new Uint8Array(),
+    applyPatches: (clients: Client[]) => {
+      const hasChanges = encoder.hasChanges;
+      encoder.discardChanges();
+      return hasChanges && clients.length > 0;
+    },
+  } as unknown as Parameters<AegisRoom["setSerializer"]>[0]);
+}
+
 function joinBothSeats(room: AegisRoom): [Client, Client] {
   const a = fakeClient("session-a");
   const b = fakeClient("session-b");
@@ -127,6 +142,47 @@ describe("AegisRoom patch lifecycle", () => {
       joinBothSeats(room);
       const player = room.state.players[0]!;
       player.deckCount = -1;
+      room.broadcastPatch();
+      expect(player.deckCount).toBe(player.deck.length);
+    } finally {
+      room.onDispose();
+    }
+  });
+
+  it("skips patch preparation while the state is idle and resumes on the next change", () => {
+    const room = makeRoom();
+    try {
+      joinBothSeats(room);
+      encodeWithRealEncoder(room);
+      room.broadcastPatch();
+      room.broadcastPatch();
+      const engine = (room as unknown as { engine: { syncCounts(): void } }).engine;
+      const syncCounts = vi.spyOn(engine, "syncCounts");
+      room.broadcastPatch();
+      expect(syncCounts).not.toHaveBeenCalled();
+      const player = room.state.players[0]!;
+      player.deckCount = -1;
+      room.broadcastPatch();
+      expect(syncCounts).toHaveBeenCalledTimes(1);
+      expect(player.deckCount).toBe(player.deck.length);
+    } finally {
+      room.onDispose();
+    }
+  });
+
+  it("prepares the patch after one that carried a change made by a clock timer", () => {
+    const room = makeRoom();
+    try {
+      joinBothSeats(room);
+      encodeWithRealEncoder(room);
+      room.broadcastPatch();
+      room.broadcastPatch();
+      const player = room.state.players[0]!;
+      room.clock.setTimeout(() => {
+        player.deckCount = -1;
+      }, 0);
+      room.broadcastPatch();
+      expect(player.deckCount).toBe(-1);
       room.broadcastPatch();
       expect(player.deckCount).toBe(player.deck.length);
     } finally {
