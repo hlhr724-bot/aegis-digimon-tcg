@@ -196,6 +196,9 @@ describe("BT23-101 Hudiemon", () => {
 
   it.each([
     ["cost-5 CS", "BT23-010", true, "hand"],
+    ["CS Tamer", "BT23-084", true, "hand"],
+    ["Comet Hammer Option", "BT23-096", false, "hand"],
+    ["Destruction Cannon Option", "P-238", false, "hand"],
     ["cost-6 CS", "BT23-008", false, "hand"],
     ["cost-5 non-CS", "BT1-010", false, "hand"],
     ["cost-5 CS in trash", "BT23-010", false, "trash"],

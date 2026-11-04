@@ -17,10 +17,12 @@ export async function payTrashCost(ctx: EffectContext, cost: Cost, out?: { paidC
     const candidates = candidateTrashCostInstances(ctx, { ...cost.target, filter }, ["hand", "digivolutionCards"]);
     const want = cost.target.count === "all" ? candidates.length : (cost.target.count ?? 1);
     if (want <= 0 || candidates.length < want) return false;
+    const selectionCtx = want > 1 ? { ...ctx, payingDeclinableCost: true } : ctx;
+    const minimum = want > 1 ? want : 0;
     const chosen = ctx.costIsTheQuestion
-      ? await ctx.ask.selectCards(ctx, {
+      ? await ctx.ask.selectCards(selectionCtx, {
           candidates: candidates.map((candidate) => candidate.instanceId),
-          min: 0,
+          min: minimum,
           max: want,
         })
       : await pickLoose(ctx, { ...cost.target, filter, count: want }, candidates);
@@ -288,13 +290,15 @@ export async function payTrashCost(ctx: EffectContext, cost: Cost, out?: { paidC
     }
     const want = cost.target.count === "all" ? candidates.length : (cost.target.count ?? 1);
     if (candidates.length < want) return false;
+    const selectionCtx = want > 1 ? { ...ctx, payingDeclinableCost: true } : ctx;
+    const minimum = want > 1 ? want : 0;
     // Where this cost is the clause's only question, the selection is always asked —
     // never auto-taken from a hand with exactly one match — and it may be answered with
     // nothing, which declines the whole clause.
     const chosen = ctx.costIsTheQuestion
-      ? await ctx.ask.selectCards(ctx, {
+      ? await ctx.ask.selectCards(selectionCtx, {
           candidates: candidates.map((candidate) => candidate.instanceId),
-          min: 0,
+          min: minimum,
           max: want,
         })
       : await pickLoose(ctx, { ...handTarget, count: want }, candidates);

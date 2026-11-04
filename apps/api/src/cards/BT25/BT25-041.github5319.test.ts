@@ -62,7 +62,7 @@ describe("GitHub #5319 — same-name BT25-041 printed security payment control",
             deck: Array(4).fill("BT1-009"),
           },
         },
-        { autoAcceptOptional: true, autoChooseOption: true, preferOptionIndex: 1 },
+        { autoAcceptOptional: true, autoSelectCards: true, autoChooseOption: true, preferOptionIndex: 1 },
       );
       s.state.memory = initialMemory;
       const optionId = s.inst("paidCard").instanceId;
@@ -133,6 +133,18 @@ describe("GitHub #5319 — same-name BT25-041 printed security payment control",
         type: "respondDecision",
         decisionId: choice.decisionId,
         response: { kind: "selectCards", instanceIds: [optionId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () => s.state.pendingDecision?.kind === "selectCards" && s.decisions.at(-1)!.req.sourceCardId === "ST23-15",
+    );
+    const optionPlay = s.decisions.at(-1)!.req;
+    expect(optionPlay.options?.candidateInstanceIds).toEqual([s.inst("otherChoice").instanceId]);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: optionPlay.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("otherChoice").instanceId] },
       }),
     ).toEqual({ ok: true });
     await settle(() => s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "BT25-041"));

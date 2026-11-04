@@ -1,5 +1,27 @@
 [
   {
+    "version": "1.51.2-beta",
+    "releasedAt": "2026-11-04",
+    "summaryKey": "releases.1.51.2-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.51.2-beta.fix.revealHost",
+        "issue": 6524
+      },
+      {
+        "textKey": "releases.1.51.2-beta.fix.exactTrash",
+        "issue": 6528
+      },
+      {
+        "textKey": "releases.1.51.2-beta.fix.dualOption"
+      },
+      {
+        "textKey": "releases.1.51.2-beta.fix.hoverZoom"
+      }
+    ]
+  },
+  {
     "version": "1.51.1-beta",
     "releasedAt": "2026-11-04",
     "summaryKey": "releases.1.51.1-beta.summary",

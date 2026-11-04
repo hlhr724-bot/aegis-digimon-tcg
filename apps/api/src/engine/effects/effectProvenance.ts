@@ -25,9 +25,13 @@ export function effectProvenanceKinds(ctx: EffectContext, opts: { isLinked?: boo
   // The catalog lists both kinds so either face can be referenced; that union
   // must not make an Option's [Main] count as an opponent's Digimon effect.
   if (ctx.source?.definition?.isDualCard) {
-    if (ctx.activeTiming === "Main") return [CardKind.Option];
+    if (ctx.activeTiming === "Main" || isBeingUsedAsOption(ctx)) return [CardKind.Option];
     return [...new Set([CardKind.Digimon, ...(hostKinds ?? [])])];
   }
   if (host === undefined || hostKinds === undefined) return [...printedKinds];
   return [...new Set([...printedKinds, ...hostKinds])];
+}
+
+function isBeingUsedAsOption(ctx: EffectContext): boolean {
+  return ctx.trigger?.wouldBePlayedAsOption === true && ctx.trigger.wouldBePlayedInstanceId === ctx.source.instanceId;
 }

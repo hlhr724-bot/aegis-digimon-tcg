@@ -24,6 +24,8 @@ import { useScrollOverflow } from "./useScrollOverflow";
 import { HandSourceFocus } from "./HandSourceFocus";
 import { HandHoverFace } from "./HandHoverFace";
 import { useHandArrivalArt } from "./useHandArrivalArt";
+import { useBoardHoverZoom } from "./useBoardHoverZoom";
+import { CardZoomPreview } from "@/design/CardZoomPreview";
 import type { EffectActivation } from "../effectSource";
 import { motionPreference } from "@/design/motion/motionPreference";
 import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
@@ -111,6 +113,9 @@ export function Hand({
   const overflow = useScrollOverflow(rowEl, n * 2 + Number(handOverflows));
   const { pointerPicked, tapSelection, inspect, beginPick, movePick, finishPick, cancelPick } =
     useHandPickGesture(selection);
+  const zoomedEntry =
+    draggingInstanceId || touchLayout ? undefined : cards.find((entry) => entry.instanceId === hoveredInstanceId);
+  const zoomPoint = useBoardHoverZoom(zoomedEntry?.instanceId ?? null);
   return (
     <div className="game-hand-scroller">
       <div
@@ -391,6 +396,15 @@ export function Hand({
               ? selection.pickedInstanceIds.includes(sourceEntry.instanceId)
               : selectedInstanceId === sourceEntry.instanceId
           }
+        />
+      ) : null}
+      {zoomedEntry && zoomPoint ? (
+        <CardZoomPreview
+          cardId={zoomedEntry.cardId}
+          artId={zoomedEntry.artId}
+          x={zoomPoint.x}
+          y={zoomPoint.y}
+          fallbackIndex={0}
         />
       ) : null}
       {overflow.start ? <HandScrollCue direction="start" onClick={() => scrollByCard(-1)} /> : null}

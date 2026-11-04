@@ -262,9 +262,8 @@ export function setupEngine(boardOrOpts?: BoardSpec | SetupEngineOptions, maybeO
         (instanceOwnerSeat(state, req.sourceInstanceId) ?? seat) === seat;
       const isHandCostSelection =
         req.kind === "selectCards" &&
-        (req.options?.min ?? 1) === 0 &&
-        // An accepted "you may" pick (a paid evolution's destination) is no cost to refuse.
-        req.options?.purpose !== "acceptedOptional" &&
+        ((req.options?.min ?? 1) === 0 || req.options?.declinesCost === true) &&
+        req.options?.purpose === "cost" &&
         (req.options?.candidateInstanceIds?.length ?? 0) > 0 &&
         sourceIsOwnedByResponder &&
         req.options!.candidateInstanceIds!.every((instanceId) =>

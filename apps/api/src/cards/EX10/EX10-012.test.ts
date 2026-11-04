@@ -668,7 +668,11 @@ describe("EX10-012 — [Security] free play", () => {
     expect(s.state.players[1]!.hand.map((c) => c.instanceId).sort()).toEqual(
       [s.inst("traitOnlyTooHigh").instanceId, s.inst("noMatch").instanceId].sort(),
     );
-    expect(s.decisions.filter(({ seat, req }) => seat === 1 && req.kind === "selectCards")).toHaveLength(0);
+    expect(
+      s.decisions
+        .filter(({ seat, req }) => seat === 1 && req.kind === "selectCards")
+        .map(({ req }) => req.options?.candidateInstanceIds),
+    ).toEqual([[s.inst("textOnly").instanceId]]);
   });
 
   it("plays the same card from the trash", async () => {
