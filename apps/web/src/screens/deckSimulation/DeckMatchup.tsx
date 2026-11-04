@@ -1,39 +1,49 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { VALIDATED_FAMOUS_DECKS } from "@aegis/shared";
-import type { MatchupJob } from "@aegis/shared/deckSimulation/MatchupJob";
+import { VALIDATED_FAMOUS_DECKS, type CommunityDeckSummary } from "@aegis/shared";
+import type { MatchupJob, MatchupOpponentResult } from "@aegis/shared/deckSimulation/MatchupJob";
 import { MatchupJobStatus } from "@aegis/shared/deckSimulation/MatchupJobStatus";
 import { COMMUNITY_MATCHUP_LIMITS } from "@aegis/shared/deckSimulation/COMMUNITY_MATCHUP_LIMITS";
 import { MATCHUP_GAME_COUNTS } from "@aegis/shared/deckSimulation/MATCHUP_GAME_COUNTS";
+import { matchupDeckKey } from "@aegis/shared/deckSimulation/matchupDeckKey";
+import type { SavedMatchupResult } from "@aegis/shared/deckSimulation/SavedMatchupResult";
 import { AccountApiError } from "@/account/client";
+import { Icons } from "@/design/icons";
 import type { TranslationKey } from "@/i18n/translationTypes";
 import { useTranslation } from "@/i18n/useTranslation";
-import { expand, MAIN_TARGET, total, type CountMap } from "@/screens/deckCounts";
-import { CommunityOpponentPicker } from "@/screens/deckSimulation/CommunityOpponentPicker";
-import { matchupApi, type MatchupOpponentChoice } from "@/screens/deckSimulation/matchupApi";
-import { MatchupOpponentTable } from "@/screens/deckSimulation/MatchupOpponentTable";
-import { SimulationSelect } from "@/screens/deckSimulation/SimulationSelect";
-import { WinRateBand } from "@/screens/deckSimulation/WinRateBand";
-import { Icons } from "@/design/icons";
 import { ReplayViewer, useReplayFile } from "@/replays/ReplayViewer";
+import { CommunityOpponentPicker } from "@/screens/deckSimulation/CommunityOpponentPicker";
+import { famousDeckCoverCard } from "@/screens/deckSimulation/famousDeckCoverCard";
+import { FamousOpponentPicker } from "@/screens/deckSimulation/FamousOpponentPicker";
+import { matchupApi, type MatchupOpponentChoice } from "@/screens/deckSimulation/matchupApi";
+import type { MatchupDeckArt } from "@/screens/deckSimulation/MatchupDeckArt";
+import { MatchupOpponentSource } from "@/screens/deckSimulation/MatchupOpponentSource";
+import { MatchupResults } from "@/screens/deckSimulation/MatchupResults";
 import { usePolling } from "@/tournaments/hooks";
 import "@/screens/deckBuilder.css";
 
 interface DeckMatchupProps {
-  main: CountMap;
-  egg: CountMap;
-  format: string;
+  deckId: string;
+  mainDeck: readonly string[];
+  eggDeck: readonly string[];
+  format: string | undefined;
+  art: MatchupDeckArt;
 }
 
-const MIRROR = "mirror";
-const COMMUNITY = "community";
 const POLL_MS = 1500;
+const DEFAULT_FAMOUS_DECK = VALIDATED_FAMOUS_DECKS[0]?.deckId ?? "";
+const SOURCES = Object.values(MatchupOpponentSource);
+
+const REQUEST_ERRORS: Record<string, TranslationKey> = {
+  invalid_deck: "deckMatchup.error.invalidDeck",
+  invalid_opponent: "deckMatchup.error.invalidOpponent",
+};
 
 function errorKey(error: unknown): TranslationKey {
   if (error instanceof AccountApiError) {
     if (error.status === 401) return "deckMatchup.error.signIn";
     if (error.status === 409) return "deckMatchup.error.inProgress";
-    if (error.status === 400) return "deckMatchup.error.invalid";
+    if (error.status === 400) return REQUEST_ERRORS[error.code ?? ""] ?? "deckMatchup.error.failed";
     if (error.status === 429 || error.status === 503) return "deckMatchup.error.busy";
   }
   return "deckMatchup.error.failed";
@@ -43,24 +53,48 @@ function isFinished(job: MatchupJob): boolean {
   return Object.values(MatchupJobStatus).find((entry) => entry.value === job.status)?.isFinished ?? true;
 }
 
-const percent = (value: number) => `${Math.round(value * 100)}%`;
+type StartedOpponents = { source: MatchupOpponentSource; famousDeckId: string };
 
-export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
-  const { t } = useTranslation();
-  const [opponent, setOpponent] = useState(MIRROR);
-  const [singleGames, setSingleGames] = useState<number>(MATCHUP_GAME_COUNTS[1]);
-  const [communityGames, setCommunityGames] = useState<number>(COMMUNITY_MATCHUP_LIMITS.gamesPerOpponent[0]);
+export function DeckMatchup({ deckId, mainDeck, eggDeck, format, art }: DeckMatchupProps) {
+  const { t, locale } = useTranslation();
+  const [source, setSource] = useState<MatchupOpponentSource>(MatchupOpponentSource.COMMUNITY.value);
+  const [famousDeckId, setFamousDeckId] = useState(DEFAULT_FAMOUS_DECK);
   const [communityDeckIds, setCommunityDeckIds] = useState<string[]>([]);
-  const community = opponent === COMMUNITY;
-  const games = community ? communityGames : singleGames;
-  const gameChoices: readonly number[] = community ? COMMUNITY_MATCHUP_LIMITS.gamesPerOpponent : MATCHUP_GAME_COUNTS;
+  const [communityGames, setCommunityGames] = useState<number>(COMMUNITY_MATCHUP_LIMITS.gamesPerOpponent[0]);
+  const [singleGames, setSingleGames] = useState<number>(MATCHUP_GAME_COUNTS[1]);
+  const [seenCommunityDecks, setSeenCommunityDecks] = useState<ReadonlyMap<string, CommunityDeckSummary>>(new Map());
+  const [started, setStarted] = useState<StartedOpponents | undefined>();
   const [job, setJob] = useState<MatchupJob | undefined>();
   const [error, setError] = useState<TranslationKey | undefined>();
+  const [saved, setSaved] = useState<SavedMatchupResult | undefined>();
   const viewer = useReplayFile();
   const [replayFailed, setReplayFailed] = useState(false);
+  const community = source === MatchupOpponentSource.COMMUNITY.value;
+  const games = community ? communityGames : singleGames;
+  const gameChoices: readonly number[] = community ? COMMUNITY_MATCHUP_LIMITS.gamesPerOpponent : MATCHUP_GAME_COUNTS;
   const running = job !== undefined && !isFinished(job);
-  const deckReady = total(main) === MAIN_TARGET;
+  const opponentCount =
+    communityDeckIds.length === 0 ? COMMUNITY_MATCHUP_LIMITS.defaultOpponents : communityDeckIds.length;
 
+  const rememberCommunityDecks = useCallback((decks: readonly CommunityDeckSummary[]) => {
+    setSeenCommunityDecks((current) => new Map([...current, ...decks.map((deck) => [deck.id, deck] as const)]));
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    matchupApi
+      .latest(deckId)
+      .then((result) => {
+        if (active) setSaved(result);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [deckId]);
+
+  const shownJob = job ?? saved?.job;
+  const savedIsStale = saved !== undefined && saved.deckKey !== matchupDeckKey({ mainDeck, eggDeck });
   const jobId = job?.id;
   const refresh = useCallback(async () => {
     if (jobId === undefined) return;
@@ -76,20 +110,30 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
   const start = async () => {
     setError(undefined);
     const choice: MatchupOpponentChoice =
-      opponent === MIRROR
+      source === MatchupOpponentSource.MIRROR.value
         ? { mirror: true }
         : community
           ? { community: communityDeckIds.length === 0 ? {} : { deckIds: communityDeckIds } }
-          : { famousDeckId: opponent };
+          : { famousDeckId };
     try {
-      setJob(
-        await matchupApi.start({
-          deck: { mainDeck: expand(main), eggDeck: expand(egg) },
-          opponent: choice,
-          games,
-          format,
-        }),
-      );
+      const created = await matchupApi.start({
+        deck: { mainDeck: [...mainDeck], eggDeck: [...eggDeck] },
+        opponent: choice,
+        games,
+        format,
+        deckId,
+      });
+      setStarted({ source, famousDeckId });
+      setJob(created);
+    } catch (failure) {
+      setError(errorKey(failure));
+    }
+  };
+
+  const cancel = async () => {
+    if (jobId === undefined) return;
+    try {
+      setJob(await matchupApi.cancel(jobId));
     } catch (failure) {
       setError(errorKey(failure));
     }
@@ -105,179 +149,148 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
     }
   };
 
-  const cancel = async () => {
-    if (jobId === undefined) return;
-    try {
-      setJob(await matchupApi.cancel(jobId));
-    } catch (failure) {
-      setError(errorKey(failure));
+  const artFor = (opponent: MatchupOpponentResult): MatchupDeckArt => {
+    if (opponent.coverCardId !== undefined || opponent.colors !== undefined) {
+      return { coverCardId: opponent.coverCardId, color: opponent.colors?.[0] ?? "" };
     }
+    const communityDeck =
+      opponent.communityDeckId === undefined ? undefined : seenCommunityDecks.get(opponent.communityDeckId);
+    if (communityDeck)
+      return { coverCardId: communityDeck.coverCardId ?? undefined, color: communityDeck.colors[0] ?? "" };
+    const famous =
+      started?.source === MatchupOpponentSource.FAMOUS.value
+        ? VALIDATED_FAMOUS_DECKS.find((deck) => deck.deckId === started.famousDeckId)
+        : undefined;
+    if (famous) return { coverCardId: famousDeckCoverCard(famous), color: famous.colors[0] ?? "" };
+    return art;
   };
 
-  const finished = job !== undefined && isFinished(job);
-  const progress = job === undefined || job.requestedGames === 0 ? 0 : job.completedGames / job.requestedGames;
-  const notices: string[] =
-    job === undefined
-      ? []
-      : [
-          job.invalidGames > 0 ? t("deckMatchup.invalid", { count: job.invalidGames }) : undefined,
-          job.status === MatchupJobStatus.TIMED_OUT.value
-            ? t("deckMatchup.timedOut", { done: job.completedGames })
-            : undefined,
-          job.status === MatchupJobStatus.FAILED.value ? t("deckMatchup.error.failed") : undefined,
-          job.status === MatchupJobStatus.CANCELLED.value
-            ? t("deckMatchup.cancelled", { done: job.completedGames })
-            : undefined,
-        ].filter((notice): notice is string => notice !== undefined);
-
   return (
-    <section className="deck-sim deck-matchup" aria-label={t("deckMatchup.title")}>
-      <div className="deck-stat-label">{t("deckMatchup.title")}</div>
-      <div className="deck-sim__controls">
-        <SimulationSelect
-          wrapperClassName="deck-sim__grow"
-          aria-label={t("deckMatchup.opponent")}
-          value={opponent}
-          disabled={running}
-          onChange={(event) => setOpponent(event.target.value)}
-        >
-          <option value={MIRROR}>{t("deckMatchup.mirror")}</option>
-          <option value={COMMUNITY}>{t("deckMatchup.community.option")}</option>
-          {VALIDATED_FAMOUS_DECKS.map((deck) => (
-            <option key={deck.deckId} value={deck.deckId}>
-              {deck.name} · {deck.block}
-            </option>
+    <div className="deck-matchup">
+      <section className="deck-matchup__step" aria-labelledby="deck-matchup-opponents">
+        <h3 id="deck-matchup-opponents" className="deck-matchup__step-title">
+          <span className="deck-matchup__step-number" aria-hidden="true">
+            1
+          </span>
+          {t("deckMatchup.step.opponents")}
+        </h3>
+        <div className="deck-segmented deck-matchup__sources" role="group" aria-label={t("deckMatchup.sources")}>
+          {SOURCES.map((entry) => (
+            <button
+              key={entry.value}
+              type="button"
+              aria-pressed={source === entry.value}
+              disabled={running}
+              onClick={() => setSource(entry.value)}
+            >
+              {t(`deckMatchup.source.${entry.value}`)}
+            </button>
           ))}
-        </SimulationSelect>
-        <SimulationSelect
-          wrapperClassName="deck-matchup__games"
-          aria-label={t("deckMatchup.games")}
-          value={games}
-          disabled={running}
-          onChange={(event) => (community ? setCommunityGames : setSingleGames)(Number(event.target.value))}
-        >
-          {gameChoices.map((count) => (
-            <option key={count} value={count}>
-              {t(community ? "deckMatchup.gamesEach" : "deckMatchup.gameCount", { count })}
-            </option>
-          ))}
-        </SimulationSelect>
-        {running ? (
-          <button type="button" className="deck-sim-button" onClick={() => void cancel()}>
-            <Icons.X size={14} />
-            {t("deckMatchup.cancel")}
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="deck-sim-button"
-            data-variant="primary"
-            disabled={!deckReady}
-            onClick={() => void start()}
-          >
-            <Icons.Play size={14} />
-            {t("deckMatchup.run")}
-          </button>
-        )}
-      </div>
-      {community ? (
-        <CommunityOpponentPicker selected={communityDeckIds} disabled={running} onChange={setCommunityDeckIds} />
-      ) : null}
-      {error === undefined ? null : (
-        <p className="deck-sim__alert" role="alert">
-          {t(error)}
-        </p>
-      )}
-      {job === undefined ? null : (
-        <div className="deck-matchup__result" aria-live="polite">
-          {running ? (
-            <div className="deck-matchup__progress">
-              <p>
-                {job.status === MatchupJobStatus.QUEUED.value
-                  ? t("deckMatchup.queued")
-                  : t("deckMatchup.running", { done: job.completedGames, total: job.requestedGames })}
-              </p>
-              <div className="deck-matchup__progress-track" aria-hidden="true">
-                <span style={{ width: percent(progress) }} />
-              </div>
-            </div>
-          ) : null}
-          {job.score !== null && job.interval !== null ? (
-            <div className="deck-matchup__summary" data-final={finished}>
-              <div className="deck-matchup__headline">
-                <div
-                  className="deck-matchup__score"
-                  role="group"
-                  aria-label={t("deckMatchup.score", { score: percent(job.score) })}
-                >
-                  <span className="deck-matchup__score-label">{t("deckMatchup.table.score")}</span>
-                  <span className="deck-matchup__score-value">{percent(job.score)}</span>
-                </div>
-                <p className="deck-matchup__record">
-                  {t("deckMatchup.record", { wins: job.wins, losses: job.losses, draws: job.draws })}
-                </p>
-              </div>
-              <WinRateBand score={job.score} interval={job.interval} />
-              <p className="deck-sim__hint">
-                {t("deckMatchup.interval", { low: percent(job.interval[0]), high: percent(job.interval[1]) })}
-              </p>
-            </div>
-          ) : null}
-          {notices.map((notice) => (
-            <p key={notice} className="deck-sim__notice">
-              <Icons.CircleAlert size={14} />
-              {notice}
-            </p>
-          ))}
-          {job.opponents.length > 1 ? <MatchupOpponentTable opponents={job.opponents} /> : null}
-          {job.samples.length > 0 ? (
-            <div className="deck-matchup__samples">
-              <div className="deck-sim__subhead">{t("deckMatchup.samples")}</div>
-              <ul aria-label={t("deckMatchup.samples")}>
-                {job.samples.map((sample) => (
-                  <li key={sample.index} className="deck-matchup__sample">
-                    <span className="deck-matchup__result-badge" data-result={sample.result}>
-                      {t(`deckMatchup.result.${sample.result}`)}
-                    </span>
-                    <span className="deck-matchup__sample-text">
-                      <span className="deck-matchup__sample-title">
-                        {job.opponents.length > 1
-                          ? t("deckMatchup.sampleTitleAgainst", {
-                              index: sample.index + 1,
-                              opponent: job.opponents[sample.opponentIndex]?.name ?? "",
-                            })
-                          : t("deckMatchup.sampleTitle", { index: sample.index + 1 })}
-                      </span>
-                      <span className="deck-matchup__sample-detail">
-                        {t("deckMatchup.sampleDetail", {
-                          turns: sample.turns,
-                          order: t(sample.wentFirst ? "deckOdds.goingFirst" : "deckOdds.goingSecond"),
-                        })}
-                      </span>
-                    </span>
-                    <button
-                      type="button"
-                      className="deck-sim-button"
-                      data-size="small"
-                      aria-label={t("deckMatchup.watchGame", { index: sample.index + 1 })}
-                      disabled={viewer.loading}
-                      onClick={() => void watch(sample.index)}
-                    >
-                      <Icons.PlayCircle size={14} />
-                      {t("deckMatchup.watchShort")}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
         </div>
-      )}
-      {replayFailed || viewer.error !== undefined ? (
-        <p className="deck-sim__alert" role="alert">
-          {t("deckMatchup.replayUnavailable")}
+        {community ? (
+          <CommunityOpponentPicker
+            selected={communityDeckIds}
+            disabled={running}
+            onChange={setCommunityDeckIds}
+            onDecksLoaded={rememberCommunityDecks}
+          />
+        ) : null}
+        {source === MatchupOpponentSource.FAMOUS.value ? (
+          <FamousOpponentPicker selected={famousDeckId} disabled={running} onChange={setFamousDeckId} />
+        ) : null}
+        {source === MatchupOpponentSource.MIRROR.value ? (
+          <div className="deck-matchup__mirror">
+            <Icons.Bot size={20} aria-hidden="true" />
+            <div>
+              <p className="deck-matchup__mirror-title">{t("deckMatchup.mirror.title")}</p>
+              <p className="deck-sim__hint">{t("deckMatchup.mirror.body")}</p>
+            </div>
+          </div>
+        ) : null}
+      </section>
+
+      <section className="deck-matchup__step" aria-labelledby="deck-matchup-games">
+        <h3 id="deck-matchup-games" className="deck-matchup__step-title">
+          <span className="deck-matchup__step-number" aria-hidden="true">
+            2
+          </span>
+          {t("deckMatchup.step.games")}
+        </h3>
+        <div className="deck-matchup__run">
+          <div className="deck-segmented deck-matchup__games" role="group" aria-label={t("deckMatchup.step.games")}>
+            {gameChoices.map((count) => (
+              <button
+                key={count}
+                type="button"
+                aria-pressed={games === count}
+                disabled={running}
+                onClick={() => (community ? setCommunityGames : setSingleGames)(count)}
+              >
+                {t(community ? "deckMatchup.gamesEach" : "deckMatchup.gameCount", { count })}
+              </button>
+            ))}
+          </div>
+          {running ? (
+            <button type="button" className="deck-sim-button" onClick={() => void cancel()}>
+              <Icons.X size={14} />
+              {t("deckMatchup.cancel")}
+            </button>
+          ) : (
+            <button type="button" className="deck-sim-button" data-variant="primary" onClick={() => void start()}>
+              <Icons.Play size={14} />
+              {t(shownJob === undefined ? "deckMatchup.run" : "deckMatchup.runAgain")}
+            </button>
+          )}
+        </div>
+        <p className="deck-sim__hint">
+          {community ? `${t("deckMatchup.games.total", { total: games * opponentCount, count: games })} ` : ""}
+          {t("deckMatchup.games.hint")}
         </p>
-      ) : null}
+        {error === undefined ? null : (
+          <p className="deck-sim__alert" role="alert">
+            {t(error)}
+          </p>
+        )}
+      </section>
+
+      {shownJob === undefined ? null : (
+        <section className="deck-matchup__step" aria-labelledby="deck-matchup-results">
+          <h3 id="deck-matchup-results" className="deck-matchup__step-title">
+            <span className="deck-matchup__step-number" aria-hidden="true">
+              3
+            </span>
+            {t(job === undefined ? "deckMatchup.saved.title" : "deckMatchup.step.results")}
+          </h3>
+          {job === undefined && saved !== undefined ? (
+            <div className="deck-matchup__saved">
+              <p className="deck-sim__hint">
+                {t("deckMatchup.saved.when", {
+                  date: new Date(saved.savedAt).toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" }),
+                })}
+              </p>
+              {savedIsStale ? (
+                <p className="deck-sim__notice">
+                  <Icons.CircleAlert size={14} />
+                  {t("deckMatchup.saved.stale")}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+          <MatchupResults
+            job={shownJob}
+            running={running}
+            watchDisabled={viewer.loading}
+            artFor={artFor}
+            onWatch={(index) => void watch(index)}
+          />
+          {replayFailed || viewer.error !== undefined ? (
+            <p className="deck-sim__alert" role="alert">
+              {t("deckMatchup.replayUnavailable")}
+            </p>
+          ) : null}
+        </section>
+      )}
+
       <p className="deck-sim__note">{t("deckMatchup.note")}</p>
       {viewer.replay === undefined
         ? null
@@ -287,6 +300,6 @@ export function DeckMatchup({ main, egg, format }: DeckMatchupProps) {
             </div>,
             document.body,
           )}
-    </section>
+    </div>
   );
 }
