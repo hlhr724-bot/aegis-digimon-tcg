@@ -9,5 +9,9 @@ export const MATCHUP_LIMITS = {
   idleWorkerMs: 60_000,
   busyHostRetryMs: 2_000,
   busyHostLoadPerCore: 1.5,
+  spareCores: 1,
+  maxThrottledShare: 0.25,
+  minCpuSampleWindowMs: 1_000,
+  maxCpuSampleWindowMs: 10_000,
   startsPerAccount: { capacity: 6, refillMs: 10 * 60_000 },
 } as const;

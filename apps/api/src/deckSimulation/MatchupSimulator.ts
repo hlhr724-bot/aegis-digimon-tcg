@@ -1,9 +1,9 @@
 import { randomInt, randomUUID } from "node:crypto";
-import { availableParallelism, loadavg } from "node:os";
 import { MatchupGameResult } from "@aegis/shared/deckSimulation/MatchupGameResult";
 import type { MatchupJob, MatchupSampleGame, MatchupTally } from "@aegis/shared/deckSimulation/MatchupJob";
 import { MatchupJobStatus } from "@aegis/shared/deckSimulation/MatchupJobStatus";
 import { matchupDeckKey } from "@aegis/shared/deckSimulation/matchupDeckKey";
+import { createCgroupCpuBusyCheck } from "#api/deckSimulation/createCgroupCpuBusyCheck";
 import type { FinishedMatchup } from "#api/deckSimulation/FinishedMatchup";
 import { MATCHUP_LIMITS } from "#api/deckSimulation/MATCHUP_LIMITS";
 import { MatchupLimitError } from "#api/deckSimulation/MatchupLimitError";
@@ -55,8 +55,14 @@ function tally(counts: Counts, requestedGames: number): MatchupTally {
   };
 }
 
-function hostIsBusy(): boolean {
-  return loadavg()[0]! > availableParallelism() * MATCHUP_LIMITS.busyHostLoadPerCore;
+function defaultHostBusyCheck(): () => boolean {
+  return createCgroupCpuBusyCheck({
+    spareCores: MATCHUP_LIMITS.spareCores,
+    maxThrottledShare: MATCHUP_LIMITS.maxThrottledShare,
+    minSampleWindowMs: MATCHUP_LIMITS.minCpuSampleWindowMs,
+    maxSampleWindowMs: MATCHUP_LIMITS.maxCpuSampleWindowMs,
+    hostLoadPerCore: MATCHUP_LIMITS.busyHostLoadPerCore,
+  });
 }
 
 export class MatchupSimulator {
@@ -72,7 +78,7 @@ export class MatchupSimulator {
 
   constructor({
     spawnWorker = spawnMatchupWorker,
-    isHostBusy = hostIsBusy,
+    isHostBusy = defaultHostBusyCheck(),
     now = Date.now,
     limits,
     onFinished,
