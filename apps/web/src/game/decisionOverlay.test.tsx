@@ -25,6 +25,33 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+it.each([0, 1, 2])("requires two hand cards for an exact trash cost while retaining refusal: %s", (count) => {
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  const ids = ["first-cost", "second-cost"];
+  render(
+    <I18nProvider>
+      <DecisionOverlay
+        request={{
+          decisionId: "exact-hand-trash-cost",
+          seat: 0,
+          kind: "selectCards",
+          promptText: "WereGarurumon (X Antibody)",
+          sourceCardId: "EX5-023",
+          options: { candidateInstanceIds: ids, min: 2, max: 2, purpose: "cost", declinesCost: true },
+        }}
+        sourceCardId="EX5-023"
+        candidates={ids.map((instanceId) => ({ instanceId, cardId: "BT1-009", sourceCount: 0 }))}
+        picks={ids.slice(0, count)}
+        onTogglePick={vi.fn<(instanceId: string) => void>()}
+        onRespond={onRespond}
+      />
+    </I18nProvider>,
+  );
+  expect((screen.getByRole("button", { name: "Confirm targets" }) as HTMLButtonElement).disabled).toBe(count < 2);
+  fireEvent.click(screen.getByRole("button", { name: "Don't use" }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: [] });
+});
+
 it("shows a complete authored Chinese step while preserving the optional response", async () => {
   const onRespond = vi.fn<(response: DecisionResponse) => void>();
   render(

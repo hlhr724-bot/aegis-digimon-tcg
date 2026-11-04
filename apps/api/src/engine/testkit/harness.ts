@@ -262,7 +262,7 @@ export function setupEngine(boardOrOpts?: BoardSpec | SetupEngineOptions, maybeO
         (instanceOwnerSeat(state, req.sourceInstanceId) ?? seat) === seat;
       const isHandCostSelection =
         req.kind === "selectCards" &&
-        (req.options?.min ?? 1) === 0 &&
+        ((req.options?.min ?? 1) === 0 || req.options?.declinesCost === true) &&
         req.options?.purpose === "cost" &&
         (req.options?.candidateInstanceIds?.length ?? 0) > 0 &&
         sourceIsOwnedByResponder &&

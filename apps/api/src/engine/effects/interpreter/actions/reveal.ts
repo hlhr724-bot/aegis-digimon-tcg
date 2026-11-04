@@ -326,15 +326,20 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
     // Do not ask for a card whose only printed destination has no legal host.
     // A reveal play or used Option can introduce a Tamer before placement, so
     // retain the deferred host check for primary or alternative routes.
-    if (spec.to === "underTamer" && !spec.orDispositions?.length && !mayIntroduceTamer) {
-      const hasHost = ctx.game
-        .player(seat)
-        .battleArea.some(
-          (permanent) =>
-            permanent.topCard !== undefined &&
-            ctx.game.definitionOf(permanent.topCard).kinds.includes(CardKind.Tamer) &&
-            (spec.underFilter === undefined || permanentMatchesFilter(ctx, permanent, spec.underFilter, ctx.source)),
-        );
+    if ((spec.to === "underTamer" || spec.to === "placeUnder") && !spec.orDispositions?.length && !mayIntroduceTamer) {
+      const hasHost = ctx.game.player(seat).battleArea.some((permanent) => {
+        if (permanent.topCard === undefined) {
+          return false;
+        }
+        const definition = ctx.game.definitionOf(permanent.topCard);
+        if (spec.to === "underTamer" && !definition.kinds.includes(CardKind.Tamer)) {
+          return false;
+        }
+        if (spec.to === "placeUnder" && spec.underFilter === undefined && !isDigimon(definition)) {
+          return false;
+        }
+        return spec.underFilter === undefined || permanentMatchesFilter(ctx, permanent, spec.underFilter, ctx.source);
+      });
       if (!hasHost) return undefined;
     }
 
