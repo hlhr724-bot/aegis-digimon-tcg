@@ -525,12 +525,27 @@ describe("reporting one game's result", () => {
     });
   });
 
-  it("does not release the game's room on dispose the way the legacy bracket does", async () => {
+  it("releases an unstarted game when its room closes so the players can enter a new room", async () => {
     const series = await startSeries();
     const room = makeRoom("room-1");
     await seatBoth(room, series.id);
     room.onDispose();
-    expect((await store.series(series.id))?.games[0]?.roomId).toBe("room-1");
+    await vi.waitFor(async () => {
+      expect((await store.series(series.id))?.games[0]).toMatchObject({ roomId: null, status: "allocated" });
+    });
+  });
+
+  it("keeps a started game bound to its room when the room closes", async () => {
+    const series = await startSeries();
+    const room = makeRoom("room-1");
+    await seatBoth(room, series.id);
+    (room as unknown as { startMatchNow: () => void }).startMatchNow();
+    await vi.waitFor(async () => {
+      expect((await store.series(series.id))?.games[0]?.status).toBe("playing");
+    });
+    room.onDispose();
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    expect((await store.series(series.id))?.games[0]).toMatchObject({ roomId: "room-1", status: "playing" });
   });
 });
 
