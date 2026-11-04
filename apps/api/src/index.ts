@@ -49,7 +49,7 @@ import { accountStore } from "./accounts/runtime.js";
 import { replayLibrary } from "./replays/runtime.js";
 import { createDeploymentRuntime, installDeploymentRoutes, type DeploymentSlot } from "./deployment/runtime.js";
 import { DeploymentServer } from "./deployment/DeploymentServer.js";
-import { isActiveDeploymentSlot, setRoomCreationAdmission } from "./deployment/admission.js";
+import { canCreateRoom, isActiveDeploymentSlot, setRoomCreationAdmission } from "./deployment/admission.js";
 import { corsOriginForRequest } from "./http/cors.js";
 import { mailerFromEnv } from "./email/mailer.js";
 import { turnstileVerifier } from "#api/accounts/turnstileVerifier";
@@ -166,6 +166,7 @@ setRoomCodeDirectory(cluster.roomCodes);
 activeMatchRuntime.directory = createActiveMatchDirectory({ presence: cluster.presence, keyPrefix: cluster.keyPrefix });
 setSeriesDirectory(createSeriesDirectory(cluster.presence, cluster.keyPrefix));
 
+const ADMISSION_WATCH_INTERVAL_MS = 10_000;
 const configuredSlot = process.env.AEGIS_DEPLOYMENT_SLOT ?? "legacy";
 if (!/^(?:blue|red|green|legacy|g-[a-f0-9]{12})$/.test(configuredSlot)) {
   throw new Error(`Invalid AEGIS_DEPLOYMENT_SLOT: ${configuredSlot}`);
@@ -186,6 +187,8 @@ const deploymentRuntime = createDeploymentRuntime({
   broadcastAcceptingNewRooms: cluster.broadcastAcceptingNewRooms,
 });
 setRoomCreationAdmission(() => deploymentRuntime.allowMatchmaking("create"));
+const admissionWatch = setInterval(canCreateRoom, ADMISSION_WATCH_INTERVAL_MS);
+admissionWatch.unref();
 const stopProcessMetricsLog = startProcessMetricsLog({
   readSearchUsage: () => getLiveSearchWorkerPool().readUsage(),
   countRooms: () => {
@@ -325,6 +328,7 @@ const shutdown = (signal: string) => {
   stopProviderSync();
   stopRankedMaintenance();
   stopProcessMetricsLog();
+  clearInterval(admissionWatch);
   log(`[aegis/api] ${signal} received — shutting down gracefully`);
   // Close the HTTP server immediately so the port is freed before node --watch
   // spawns the next instance, avoiding EADDRINUSE on fast restarts.

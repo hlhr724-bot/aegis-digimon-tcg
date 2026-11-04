@@ -1,14 +1,23 @@
 import { readFileSync } from "node:fs";
 
 let acceptsRoomCreation = () => true;
+let drainStartedAt: number | undefined;
 
 /** Both HTTP matchmaking and internal tournament room creation use this gate. */
 export function setRoomCreationAdmission(check: () => boolean): void {
   acceptsRoomCreation = check;
+  drainStartedAt = undefined;
 }
 
 export function canCreateRoom(): boolean {
-  return acceptsRoomCreation();
+  const accepting = acceptsRoomCreation();
+  drainStartedAt = accepting ? undefined : (drainStartedAt ?? Date.now());
+  return accepting;
+}
+
+export function deploymentDrainStartedAt(): number | undefined {
+  canCreateRoom();
+  return drainStartedAt;
 }
 
 /** Directory-mounted manifest survives atomic replacement and process restarts. */

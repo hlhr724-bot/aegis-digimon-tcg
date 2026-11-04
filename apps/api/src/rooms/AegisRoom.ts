@@ -55,7 +55,7 @@ import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { validateDecklist } from "../engine/deckValidation.js";
 import { log, logError, withMatchLog } from "../logger.js";
 import { CloseCode, Room, Client, ServerError, matchMaker, type Delayed } from "colyseus";
-import { canCreateRoom } from "../deployment/admission.js";
+import { canCreateRoom, deploymentDrainStartedAt } from "../deployment/admission.js";
 import { tokenBucketLimiter, type TokenBucketOptions } from "../http/rateLimit.js";
 import { getRoomRandomness } from "#api/rooms/getRoomRandomness";
 import { randomBytes, randomUUID } from "node:crypto";
@@ -500,7 +500,6 @@ export class AegisRoom extends Room<{
   private matchLimitInterval: Delayed | undefined;
   private gameOverAt: number | undefined;
   private lastPlayerActionAt: number | undefined;
-  private drainingSince: number | undefined;
   /** How many games this room's match runs to; only casual and private rooms play more than one. */
   private bestOf: MatchBestOf = 1;
   private casualSeries: CasualSeries | undefined;
@@ -3641,8 +3640,8 @@ export class AegisRoom extends Room<{
   private enforceMatchLimits(): void {
     if (!this.matchStartRequested) return;
     const now = Date.now();
-    this.drainingSince = canCreateRoom() ? undefined : (this.drainingSince ?? now);
-    if (this.drainingSince !== undefined && now - this.drainingSince >= DRAINING_MATCH_LIMIT_MS) {
+    const drainStartedAt = deploymentDrainStartedAt();
+    if (drainStartedAt !== undefined && now - drainStartedAt >= DRAINING_MATCH_LIMIT_MS) {
       this.expireMatch("draining");
       return;
     }
