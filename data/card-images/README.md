@@ -261,3 +261,11 @@ Japanese reveal scans. Each 951 x 1295 px attachment is cropped to
 `(41, 41, 909, 1254)`, producing 868 x 1213 px WebP images at quality 90
 without the white outer margin. The SAMPLE watermark is preserved. The
 Japanese scan supplies the Japanese name and text transcriptions.
+
+## BD02 Tenkomon, 2026-11-04
+
+BD02-03 and its `-J` printing come from the user-provided official English and
+Japanese reveal scans. Each 951 x 1295 px attachment is cropped to
+`(41, 41, 909, 1254)`, producing 868 x 1213 px WebP images at quality 90
+without the white outer margin. The SAMPLE watermark is preserved. The
+Japanese scan supplies the Japanese name and text transcriptions.

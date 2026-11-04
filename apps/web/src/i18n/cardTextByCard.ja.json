@@ -15598,5 +15598,8 @@
   "BD01-10": {
     "[StartofYourMainPhase]IfyouhavearedDigimonwiththe[ALYSION]trait,gain1memory.[YourTurn]AllofyourredDigimonwiththe[ALYSION]traitget+1000DP.": "【自分のメインフェイズ開始時】特徴「アリシオン」を持つ赤の自分のデジモンがいるなら、メモリー+1。\n【自分のターン】特徴「アリシオン」を持つ赤の自分のデジモン全てをDP+1000。",
     "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BD02-03": {
+    "[WhenAttacking][OncePerTurn]Trashthebottomdigivolutioncardof1ofyouropponent'sDigimon.": "【アタック時】[ターン1回] 相手のデジモン1体の進化元を下から1枚破棄する。"
   }
 }

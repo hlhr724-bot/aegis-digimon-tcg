@@ -75,7 +75,7 @@ const SET_RELEASE_ORDER: Record<string, number> = {
 };
 
 // Sets with no single release date — always sorted to the bottom.
-const MISC_SETS: Record<string, number> = { LM: 1, P: 2, BD01: 3 };
+const MISC_SETS: Record<string, number> = { LM: 1, P: 2, BD01: 3, BD02: 4 };
 
 // Approximate EN release year per promo (set "P"), keyed by the highest P-NNN of
 // each year's wave. Boundaries are derived from which promo pack contains each
