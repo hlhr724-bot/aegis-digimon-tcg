@@ -49,6 +49,12 @@ describe("release dates", () => {
     expect(isBetaOnlyCard(card("BD01-02"), "9999-12-30")).toBe(true);
   });
 
+  it("keeps the app-only BD02 set in beta without listing it as a product", () => {
+    expect(releaseDateForSet("BD02")).toBeUndefined();
+    expect(isBetaOnlyCard(card("BD02-03"), "2026-11-04")).toBe(true);
+    expect(isBetaOnlyCard(card("BD02-03"), "9999-12-30")).toBe(true);
+  });
+
   it("keeps each limited product behind its own release date", () => {
     expect(releaseDateForSet("LM")).toBeUndefined();
     expect(releaseDateForCard(card("LM-001"))).toBe("2024-02-16");
