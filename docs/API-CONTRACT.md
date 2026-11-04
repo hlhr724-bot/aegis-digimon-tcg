@@ -246,6 +246,64 @@ from the series record. Spectators cannot request another seat's deck. The
 post-duel viewer copies this snapshot through the ordinary personal-deck save
 workflow; source edits, unpublishing and moderation cannot change that copy.
 
+## Deck simulation matchups
+
+`POST /account/deck-simulations/matchups` needs a session. The body is
+`{ deck: { mainDeck, eggDeck }, opponent, games, format?, deckId? }`. `opponent` is
+`{ mirror: true }`, `{ famousDeckId }` (a `VALIDATED_FAMOUS_DECKS` id), `{ deck, name? }`
+or `{ community: { deckIds? } }`. For one opponent, `games` is one of
+`MATCHUP_GAME_COUNTS` (10, 20 or 40). For community decks, `games` is the count per
+opponent, 4 or 8 (`COMMUNITY_MATCHUP_LIMITS`), and `deckIds` holds 1 to 5 distinct public
+deck ids. Without `deckIds`, the server picks its default set: the 5 most liked public
+decks that are legal for `format`. The server loads community decks itself and accepts
+only public decks (not hidden by moderation, not unpublished) that pass `deckLegality`
+for `format`; otherwise it answers `400 invalid_opponent`. The server validates the
+player's deck with `validateDecklist` for `format` in beta battle mode, so cards before
+their release date are allowed, and the bots play with the same rule. `deckId` is the
+client's saved deck id (1 to 64 characters); when present, the server saves the finished
+result for that deck. It answers `202` with a `MatchupJob`
+(`@aegis/shared/deckSimulation/MatchupJob`): the overall tally plus one tally per
+opponent in `opponents`, each with `coverCardId` and `colors` when known.
+
+A job lives in the memory of the API process that started it. In production the gateway
+spreads plain HTTP requests across the slot's processes, so the job carries `owner`, the
+gateway path of that process (for example `api/red/p1`). Clients send every later request
+for the job to `/<owner>/account/deck-simulations/matchups/:id...`; the gateway routes
+that path to the owning process, also while its slot drains. `owner` is absent in
+single-process mode, where every address reaches the same process.
+
+`GET /account/deck-simulations/matchups/:id` returns the caller's `MatchupJob`, or
+`404` for an unknown, expired or foreign job. Clients poll it until `status` is
+`completed`, `timed-out`, `cancelled` or `failed`. `score` counts a draw as half a win, and
+`interval` is the 95% Wilson interval of that score. Games that end on an engine
+error count in `invalidGames`, not in the score.
+
+`GET /account/deck-simulations/matchups/:id/replays/:index` returns one sample game as a
+gzipped `MatchReplay` (`application/gzip`), the same file the replay viewer opens.
+`index` is a `samples[].index` from the job. It answers `404` for a game without a
+sample, an expired job or another account's job.
+
+`DELETE /account/deck-simulations/matchups/:id` cancels the caller's job. A queued job
+ends as `cancelled` at once. A running job stops at the current game and keeps the
+results it already has.
+
+`GET /account/deck-simulations/decks/:deckId/latest-matchup` returns the caller's last
+saved result for that deck as a `SavedMatchupResult`: `{ deckKey, savedAt, job }`.
+`deckKey` is `matchupDeckKey` of the tested list, so clients can tell when the deck has
+changed since. `job` has no sample games. It answers `404` when nothing is saved. Any API
+process can answer it, because the result lives in Postgres.
+
+| Status | Error               | Meaning                                         |
+| ------ | ------------------- | ----------------------------------------------- |
+| 400    | `invalid_*`         | Bad game count, format, deck or opponent        |
+| 401    |                     | No session                                      |
+| 409    | `job_in_progress`   | The account already has a queued or running job |
+| 429    | `too_many_requests` | Read or start rate limit                        |
+| 503    | `queue_full`        | The process queue is full                       |
+
+Jobs live only in API process memory. A restart or a blue/green switch loses them.
+See [deck simulation](DECK_SIMULATION.md) for limits.
+
 ## Optional match timer
 
 Casual (`aegis` and `aegis_beta`) join options include `matchTimer: boolean`.

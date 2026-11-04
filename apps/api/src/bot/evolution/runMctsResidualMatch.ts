@@ -16,7 +16,7 @@ import type { MctsResidualMatchOptions } from "#api/bot/evolution/MctsResidualMa
 import type { RecordedResidualChoice } from "#api/bot/evolution/RecordedResidualChoice";
 import { SEED_RESIDUAL } from "#api/bot/evolution/residualPolicy";
 import { orderMctsActions } from "#api/bot/evolution/orderMctsActions";
-import type { HeuristicProgram } from "#api/bot/evolution/heuristic";
+import { chooseHeuristic, type HeuristicProgram } from "#api/bot/evolution/heuristic";
 import { runReplayContinuation } from "#api/bot/evolution/runReplayContinuation";
 
 function searchWindow(choice: RecordedResidualChoice, seed: number, program?: HeuristicProgram): TrainingWindow {
@@ -36,6 +36,11 @@ function searchWindow(choice: RecordedResidualChoice, seed: number, program?: He
     actions: [{ intent: choice.baseline, label: "Current residual policy" }, ...alternatives],
   };
   return program === undefined ? window : orderMctsActions({ window, program });
+}
+
+function rolloutChooser(program: HeuristicProgram | undefined, seed: number): (window: TrainingWindow) => number {
+  if (program === undefined) return () => 0;
+  return (window) => chooseHeuristic(program, window, seed);
 }
 
 function searchable(choice: RecordedResidualChoice): boolean {
@@ -113,6 +118,7 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
   const simulate = async (
     engineSnapshot: GameEngineSnapshot,
     root: TrainingWindow,
+    expectedInformation: string,
     choose: (window: TrainingWindow) => number,
     sampleSeed: number,
     signal: AbortSignal,
@@ -121,9 +127,9 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
     let result;
     try {
       result = await runReplayContinuation({
-        engineSnapshot: structuredClone(engineSnapshot),
+        engineSnapshot,
         seat: searchSeat,
-        expectedInformation: informationKey(root),
+        expectedInformation,
         sampleSeed,
         seenOpponentCards: options.seenOpponentCards,
         program: programs[searchSeat]!,
@@ -173,6 +179,7 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
         const start = performance.now();
         const signal = choice.signal ?? new AbortController().signal;
         let leafEvaluations = 0;
+        const expectedInformation = informationKey(root);
         const search = await searchMcts({
           root,
           seat: searchSeat,
@@ -180,11 +187,13 @@ export async function runMctsResidualMatch(options: MctsResidualMatchOptions) {
           exploration: options.exploration,
           maxDurationMs: options.maxSearchTimeMs,
           signal,
-          rolloutChoose: () => 0,
+          rootWidening: options.rootWidening,
+          rolloutChoose: rolloutChooser(options.rolloutProgram, options.searchSeed + transcript.length),
           simulate: async (choose, simulation) => {
             const result = await simulate(
               engineSnapshot,
               root,
+              expectedInformation,
               choose,
               (options.searchSeed + transcript.length * 7919 + simulation * 104729) >>> 0,
               signal,

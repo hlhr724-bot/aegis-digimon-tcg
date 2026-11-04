@@ -864,9 +864,24 @@
     {
       "kind": "intent",
       "seat": 0,
+      "ok": true,
+      "stateVersion": 56,
+      "engineEvents": 88,
       "intent": {
         "type": "respondDecision",
         "decisionId": "dec-14",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-561a59b49ad5b2fcecbeb5bb6e2a0c71feb157a3c028366f5820ad413947816e"]
+        }
+      }
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-15",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-081147ee898e6f4bb4e2c8eeaf751b81fd137106002b48e062f2dcb2cf87b494"]
@@ -881,7 +896,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-15",
+        "decisionId": "dec-16",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-919c3f2a947b45d47d8daae73d24a2ce83b390a0b70ad757718cca25c36bd78a"]
@@ -918,7 +933,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-16",
+        "decisionId": "dec-17",
         "response": {
           "kind": "orderTriggers",
           "order": [],
@@ -934,7 +949,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-17",
+        "decisionId": "dec-18",
         "response": {
           "kind": "optional",
           "accept": true
@@ -949,7 +964,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-18",
+        "decisionId": "dec-19",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-081147ee898e6f4bb4e2c8eeaf751b81fd137106002b48e062f2dcb2cf87b494"]
@@ -964,7 +979,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-19",
+        "decisionId": "dec-20",
         "response": {
           "kind": "orderTriggers",
           "order": [],
@@ -980,7 +995,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-20",
+        "decisionId": "dec-21",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-1"]
@@ -995,7 +1010,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-21",
+        "decisionId": "dec-22",
         "response": {
           "kind": "orderTriggers",
           "order": [],
@@ -1012,7 +1027,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-22",
+        "decisionId": "dec-23",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-53b6d6e69945c85ed35f63ad12f6dc507b31c5f6dc7b645d37474a456c6d5237"]
@@ -1027,7 +1042,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-23",
+        "decisionId": "dec-24",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1042,7 +1057,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-24",
+        "decisionId": "dec-25",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-cb7f566ec8b063c85d65b22a081baf1013c0489a81354da308c96442d702375f"]
@@ -1057,7 +1072,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-25",
+        "decisionId": "dec-26",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-ca608c743073f308c02e947138f4fc0b181efa323cfd4d681307dd2ea1fb096e"]
@@ -1072,7 +1087,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-26",
+        "decisionId": "dec-27",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-388ff79439ffabcaf8a9b621670cce9640b08546e7da976c72f5b63061974f96"]
@@ -1087,7 +1102,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-27",
+        "decisionId": "dec-28",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-ae8b3244477369b1391b279f690528505f009143837c608b336b52f6ac4b66d7"]
@@ -1102,7 +1117,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-28",
+        "decisionId": "dec-29",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1117,7 +1132,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-29",
+        "decisionId": "dec-30",
         "response": {
           "kind": "chooseOption",
           "optionIndex": 0
@@ -1132,7 +1147,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-30",
+        "decisionId": "dec-31",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1147,7 +1162,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-31",
+        "decisionId": "dec-32",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-388ff79439ffabcaf8a9b621670cce9640b08546e7da976c72f5b63061974f96"]
@@ -1196,7 +1211,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-32",
+        "decisionId": "dec-33",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-30a649beb1e24de3e442022ae885b735fd19622f50389c9d32c6d9784349f0f0"]
@@ -1223,7 +1238,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-33",
+        "decisionId": "dec-34",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-12"]
@@ -1238,7 +1253,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-34",
+        "decisionId": "dec-35",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-3"]
@@ -1253,7 +1268,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-35",
+        "decisionId": "dec-36",
         "response": {
           "kind": "optional",
           "accept": false
@@ -1268,7 +1283,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-36",
+        "decisionId": "dec-37",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-10"]
@@ -1295,7 +1310,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-37",
+        "decisionId": "dec-38",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-4082b3237830bf15199a4e71a1df1d0459a78fbd0c970b123ce011a0a6c12404"]
@@ -1310,7 +1325,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-38",
+        "decisionId": "dec-39",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-c4cc2a9439823fc9b7f7b528d90d019aaff1d60b121ea5642fbba111a32df449"]
@@ -1325,7 +1340,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-39",
+        "decisionId": "dec-40",
         "response": {
           "kind": "orderCards",
           "order": [
@@ -1358,7 +1373,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-40",
+        "decisionId": "dec-41",
         "response": {
           "kind": "optional",
           "accept": false
@@ -1385,7 +1400,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-41",
+        "decisionId": "dec-42",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1400,7 +1415,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-42",
+        "decisionId": "dec-43",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-a82f89f67bd3425f1814a797ddf0babddb3bf5704e545eba158da54c4081ecb9"]
@@ -1415,7 +1430,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-43",
+        "decisionId": "dec-44",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-4"]
@@ -1430,7 +1445,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-44",
+        "decisionId": "dec-45",
         "response": {
           "kind": "optional",
           "accept": false
@@ -1445,7 +1460,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-45",
+        "decisionId": "dec-46",
         "response": {
           "kind": "orderTriggers",
           "order": [],
@@ -1462,7 +1477,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-46",
+        "decisionId": "dec-47",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-10"]
@@ -1477,7 +1492,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-47",
+        "decisionId": "dec-48",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-ca608c743073f308c02e947138f4fc0b181efa323cfd4d681307dd2ea1fb096e"]
@@ -1492,7 +1507,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-48",
+        "decisionId": "dec-49",
         "response": {
           "kind": "orderTriggers",
           "order": [],
@@ -1509,7 +1524,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-49",
+        "decisionId": "dec-50",
         "response": {
           "kind": "selectCards",
           "instanceIds": [
@@ -1527,7 +1542,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-50",
+        "decisionId": "dec-51",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-10"]
@@ -1542,7 +1557,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-51",
+        "decisionId": "dec-52",
         "response": {
           "kind": "chooseOption",
           "optionIndex": 1
@@ -1557,7 +1572,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-52",
+        "decisionId": "dec-53",
         "response": {
           "kind": "orderCards",
           "order": [
@@ -1575,7 +1590,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-53",
+        "decisionId": "dec-54",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-8"]
@@ -1590,7 +1605,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-54",
+        "decisionId": "dec-55",
         "response": {
           "kind": "optional",
           "accept": false
@@ -1605,7 +1620,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-55",
+        "decisionId": "dec-56",
         "response": {
           "kind": "orderTriggers",
           "order": [],
@@ -1621,7 +1636,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-56",
+        "decisionId": "dec-57",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-c707b8d82d5114c84d6adf81da2db30deeb150fa45a0c52b4d49298d87f5638d"]
@@ -1636,7 +1651,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-57",
+        "decisionId": "dec-58",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1651,7 +1666,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-58",
+        "decisionId": "dec-59",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s1-43fff22c926f1f580072b095aaa55f40c3376ffc23452f9067b8c1f70fff1556"]
@@ -1666,7 +1681,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-59",
+        "decisionId": "dec-60",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-7"]
@@ -1681,7 +1696,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-60",
+        "decisionId": "dec-61",
         "response": {
           "kind": "optional",
           "accept": false
@@ -1718,7 +1733,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-61",
+        "decisionId": "dec-62",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-388ff79439ffabcaf8a9b621670cce9640b08546e7da976c72f5b63061974f96"]
@@ -1733,7 +1748,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-62",
+        "decisionId": "dec-63",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-2e43680fb19cfdfcfea7d3769ff4b9cd7ce7089acaa467afff18509cc148d2d1"]
@@ -1748,7 +1763,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-63",
+        "decisionId": "dec-64",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-09bc774b10589ed2a258cfcb11a5a5efed4a11b402c20a11f7eec353da0b2cdd"]
@@ -1763,7 +1778,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-64",
+        "decisionId": "dec-65",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1778,7 +1793,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-65",
+        "decisionId": "dec-66",
         "response": {
           "kind": "selectCards",
           "instanceIds": [
@@ -1796,7 +1811,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-66",
+        "decisionId": "dec-67",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-10"]
@@ -1811,7 +1826,7 @@
       "seat": 1,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-67",
+        "decisionId": "dec-68",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1826,7 +1841,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-68",
+        "decisionId": "dec-69",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-56049f095be9db31b4eb117390ccaebb655f72e374c27c4d86c4502d8ec3a262"]
@@ -1841,7 +1856,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-69",
+        "decisionId": "dec-70",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-d9e5173a06cd86fb917a6264894d6d9ab5a29d8f14c36564d87f3fd34a62a97b"]
@@ -1856,7 +1871,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-70",
+        "decisionId": "dec-71",
         "response": {
           "kind": "orderTriggers",
           "order": [],
@@ -1872,7 +1887,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-71",
+        "decisionId": "dec-72",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1887,7 +1902,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-72",
+        "decisionId": "dec-73",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-fdc0e87631fbfc354560307c740f27e8f9e723351e9c5c88132cb8fa8b86acf9"]
@@ -1902,7 +1917,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-73",
+        "decisionId": "dec-74",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-91e3ddd839b69f92c4640734ee8357c1add22c8f057f63565cf00ee5526f9f2b"]
@@ -1917,7 +1932,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-74",
+        "decisionId": "dec-75",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-16", "perm-21"]
@@ -1932,7 +1947,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-75",
+        "decisionId": "dec-76",
         "response": {
           "kind": "optional",
           "accept": true
@@ -1947,7 +1962,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-76",
+        "decisionId": "dec-77",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-18"]
@@ -1962,7 +1977,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-77",
+        "decisionId": "dec-78",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["perm-21"]
@@ -1988,7 +2003,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-78",
+        "decisionId": "dec-79",
         "response": {
           "kind": "optional",
           "accept": true
@@ -2003,7 +2018,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-79",
+        "decisionId": "dec-80",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-2e43680fb19cfdfcfea7d3769ff4b9cd7ce7089acaa467afff18509cc148d2d1"]
@@ -2018,7 +2033,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-80",
+        "decisionId": "dec-81",
         "response": {
           "kind": "chooseOption",
           "optionIndex": 0
@@ -2033,7 +2048,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-81",
+        "decisionId": "dec-82",
         "response": {
           "kind": "optional",
           "accept": true
@@ -2048,7 +2063,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-82",
+        "decisionId": "dec-83",
         "response": {
           "kind": "selectCards",
           "instanceIds": [
@@ -2066,7 +2081,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-83",
+        "decisionId": "dec-84",
         "response": {
           "kind": "chooseTargets",
           "instanceIds": ["perm-16"]
@@ -2081,7 +2096,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-84",
+        "decisionId": "dec-85",
         "response": {
           "kind": "orderTriggers",
           "order": [],
@@ -2097,7 +2112,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-85",
+        "decisionId": "dec-86",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-69f7c3dc7248d33b581dd8405a7e4a0cecdf38b622de94ba072407ec8444341d"]
@@ -2112,7 +2127,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-86",
+        "decisionId": "dec-87",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-fafe1cfb4bd5a8443f484030e47c5bcc5f87091cdbc8612b42432c036c697359"]
@@ -2127,7 +2142,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-87",
+        "decisionId": "dec-88",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-60c3435cefad6c632f5c488d32f3777927d3be061b940546fc2dc0e6d38a6183"]
@@ -2142,7 +2157,7 @@
       "seat": 0,
       "intent": {
         "type": "respondDecision",
-        "decisionId": "dec-88",
+        "decisionId": "dec-89",
         "response": {
           "kind": "selectCards",
           "instanceIds": ["s0-006c897f5a1607e9c8edcea5f4bc1e2fe4a4fa76bd316c560c3d6fd1612a4d88"]

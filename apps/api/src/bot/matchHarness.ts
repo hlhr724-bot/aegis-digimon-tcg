@@ -8,7 +8,7 @@ import { BotPlayer } from "./BotPlayer.js";
 import { createEvaluationPolicy, type BotPolicy } from "./policy.js";
 import { resolveBotProfile, type BotProfile, type BotProfileName } from "./profiles.js";
 import { createMatchReplayRecorder, type MatchReplayCursor } from "#api/bot/createMatchReplayRecorder";
-import type { ReplayRecord } from "#api/replays/inputs/types";
+import type { ReplayDeckRules, ReplayRecord } from "#api/replays/inputs/types";
 import "../cards/index.js";
 
 /**
@@ -53,6 +53,8 @@ export interface MatchOptions {
   /** Decode both client projections after each action and check hidden zones. */
   verifyProjections?: boolean;
   recordReplay?: boolean;
+  /** Deck-legality options passed to `seatPlayer` for both seats. */
+  deckRules?: ReplayDeckRules;
   fixture?: ScenarioFixture;
 }
 
@@ -251,9 +253,11 @@ export async function runBotMatch(options: MatchOptions): Promise<MatchResult> {
 
   for (const seat of [0, 1] as const) {
     const deck = options.seats[seat].deck ?? (seat === 0 ? RED_DECK : BLUE_DECK);
-    const seatPlayer = () => engine.seatPlayer(seat, `bot-${seat}`, { displayName: stats[seat].label, deck });
+    const deckRules = options.deckRules ?? {};
+    const seatPlayer = () =>
+      engine.seatPlayer(seat, `bot-${seat}`, { displayName: stats[seat].label, deck, ...deckRules });
     if (recorder) {
-      recorder.seatPlayer(seat, deck, seatPlayer);
+      recorder.seatPlayer(seat, deck, seatPlayer, deckRules);
     } else {
       seatPlayer();
     }

@@ -52,6 +52,7 @@ type DeckListParams = {
   onSelectDeck: (id: string) => void;
   onDelete: (id: string) => void;
   onPlay: () => void;
+  onTest: (deck: DeckListing) => void;
   signedIn?: boolean;
 };
 
@@ -75,6 +76,7 @@ export function DeckList({
   onSelectDeck,
   onDelete,
   onPlay,
+  onTest,
   signedIn = false,
 }: DeckListParams) {
   const { t } = useTranslation();
@@ -227,6 +229,7 @@ export function DeckList({
               onPlay={onPlay}
               onDelete={setDeleting}
               onPublishAction={(deck, mode) => setPublishing({ deck, mode })}
+              onTest={onTest}
             />
           </section>
         </div>
@@ -249,6 +252,7 @@ type DeckListContentParams = {
   onPlay: () => void;
   onDelete: (deck: DeckListing) => void;
   onPublishAction: (deck: DeckListing, mode: PublishMode) => void;
+  onTest: (deck: DeckListing) => void;
 };
 
 function DeckListContent({
@@ -265,6 +269,7 @@ function DeckListContent({
   onPlay,
   onDelete,
   onPublishAction,
+  onTest,
 }: DeckListContentParams) {
   const { t } = useTranslation();
   if (decks.length === 0) {
@@ -312,6 +317,7 @@ function DeckListContent({
             signedIn={signedIn}
             publication={publications.get(deck.id)}
             onPublishAction={(mode) => onPublishAction(deck, mode)}
+            onTest={() => onTest(deck)}
           />
         ))}
       </div>
@@ -330,6 +336,7 @@ type DeckListRowParams = {
   signedIn: boolean;
   publication: CommunityPublication | undefined;
   onPublishAction: (mode: PublishMode) => void;
+  onTest: () => void;
 };
 
 function DeckListRow({
@@ -343,6 +350,7 @@ function DeckListRow({
   signedIn,
   publication,
   onPublishAction,
+  onTest,
 }: DeckListRowParams) {
   const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
@@ -479,6 +487,17 @@ function DeckListRow({
         {legal ? (
           <Button size="sm" icon={Icons.Swords} onClick={onPlay}>
             {t("common.play")}
+          </Button>
+        ) : null}
+        {signedIn && legal ? (
+          <Button
+            size="sm"
+            variant="ghost"
+            icon={Icons.Bot}
+            aria-label={t("deckMatchup.openLabel", { name: deck.name })}
+            onClick={onTest}
+          >
+            {t("deckMatchup.open")}
           </Button>
         ) : null}
         {signedIn ? <DeckPublishActions deck={deck} publication={publication} onAction={onPublishAction} /> : null}

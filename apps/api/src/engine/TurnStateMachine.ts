@@ -156,6 +156,22 @@ export class TurnStateMachine {
     this.memory = memory ?? new MemoryGauge(state, emit);
   }
 
+  appendContinuousRecomputeContext(key: unknown[]): void {
+    const frame = this.frame;
+    key.push(
+      frame?.seat,
+      frame?.turnCount,
+      frame?.activePhaseCompleted,
+      frame?.drawPhaseRan,
+      frame?.breedingPhaseRan,
+      frame?.mainPhaseRan,
+      frame?.endWindowsRun,
+      this.mainInputReady,
+      this.turnActive,
+      this.running,
+    );
+  }
+
   /**
    * Run the whole game loop until the match ends. The first turn player must already
    * be set on `state.turnSeat` by setup (deck-and-setup subsystem) before this is

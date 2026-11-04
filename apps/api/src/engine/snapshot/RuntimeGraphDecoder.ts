@@ -9,7 +9,8 @@ type FieldParams = { key: string };
 export class RuntimeGraphDecoder {
   readonly #snapshot: RuntimeGraphSnapshot;
   #ports: RuntimeGraphPorts;
-  #values = new Map<number, unknown>();
+  readonly #values: unknown[];
+  readonly #decoded: Uint8Array;
   #callbacksInProgress = new Set<number>();
   #referencesInProgress = new Set<number>();
   #failed = false;
@@ -17,11 +18,19 @@ export class RuntimeGraphDecoder {
   #portsBound = false;
   #runtimeDecoded = false;
 
-  constructor({ snapshot, createCallback, objects, references }: RuntimeGraphDecodeParams) {
+  constructor({ snapshot, createCallback, objects, references, seeds }: RuntimeGraphDecodeParams) {
     if (snapshot.version !== 1 || !Array.isArray(snapshot.nodes)) {
       throw new Error("Unsupported runtime graph snapshot");
     }
     this.#snapshot = snapshot;
+    this.#values = new Array<unknown>(snapshot.nodes.length);
+    this.#decoded = new Uint8Array(snapshot.nodes.length);
+    for (const [index, value] of seeds ?? []) {
+      if (!Number.isSafeInteger(index) || index < 0 || index >= snapshot.nodes.length) {
+        throw new Error("Runtime graph seed is out of bounds");
+      }
+      this.#remember(index, value);
+    }
     this.#ports = { createCallback, objects, references };
     references?.beginDecode();
   }
@@ -46,6 +55,14 @@ export class RuntimeGraphDecoder {
       }
       return this.#decode(matches[0]![1]);
     });
+  }
+
+  decodedEntries(): [number, unknown][] {
+    const entries: [number, unknown][] = [];
+    for (let index = 0; index < this.#decoded.length; index++) {
+      if (this.#decoded[index] === 1) entries.push([index, this.#values[index]]);
+    }
+    return entries;
   }
 
   bindRuntimePorts(ports: RuntimeGraphPorts): void {
@@ -103,12 +120,12 @@ export class RuntimeGraphDecoder {
       throw new Error("Invalid runtime graph reference");
     }
     const index = value.reference;
-    if (this.#values.has(index)) {
-      return this.#values.get(index);
-    }
     const node = this.#snapshot.nodes[index];
     if (node === undefined) {
       throw new Error("Runtime graph reference is out of bounds");
+    }
+    if (this.#decoded[index] === 1) {
+      return this.#values[index];
     }
     if (node.kind === RuntimeNodeKind.REFERENCE.value) {
       this.#runtimeDecoded = true;
@@ -121,7 +138,7 @@ export class RuntimeGraphDecoder {
       this.#referencesInProgress.add(index);
       const object = this.#ports.references.resolve({ key: node.key, payload: this.#decode(node.payload) });
       this.#referencesInProgress.delete(index);
-      this.#values.set(index, object);
+      this.#remember(index, object);
       return object;
     }
     if (node.kind === RuntimeNodeKind.RESOURCE.value) {
@@ -129,7 +146,7 @@ export class RuntimeGraphDecoder {
         throw new Error("Runtime object registry is missing");
       }
       const object = this.#ports.objects.allocate(node.key);
-      this.#values.set(index, object);
+      this.#remember(index, object);
       this.#ports.objects.hydrate({ value: object, key: node.key, payload: this.#decode(node.payload) });
       return object;
     }
@@ -141,12 +158,12 @@ export class RuntimeGraphDecoder {
       this.#callbacksInProgress.add(index);
       const callback = this.#ports.createCallback({ key: node.key, payload: this.#decode(node.payload) });
       this.#callbacksInProgress.delete(index);
-      this.#values.set(index, callback);
+      this.#remember(index, callback);
       return callback;
     }
     if (node.kind === RuntimeNodeKind.ARRAY.value) {
       const array: unknown[] = [];
-      this.#values.set(index, array);
+      this.#remember(index, array);
       for (const entry of node.values) {
         if (entry !== null && typeof entry === "object" && "hole" in entry && entry.hole === true) {
           array.length++;
@@ -158,7 +175,7 @@ export class RuntimeGraphDecoder {
     }
     if (node.kind === RuntimeNodeKind.MAP.value) {
       const map = new Map<unknown, unknown>();
-      this.#values.set(index, map);
+      this.#remember(index, map);
       for (const [key, mapped] of node.entries) {
         map.set(this.#decode(key), this.#decode(mapped));
       }
@@ -166,7 +183,7 @@ export class RuntimeGraphDecoder {
     }
     if (node.kind === RuntimeNodeKind.SET.value) {
       const set = new Set<unknown>();
-      this.#values.set(index, set);
+      this.#remember(index, set);
       for (const entry of node.values) {
         set.add(this.#decode(entry));
       }
@@ -176,15 +193,20 @@ export class RuntimeGraphDecoder {
       throw new Error("Invalid runtime graph node kind");
     }
     const object = Object.create(node.nullPrototype ? null : Object.prototype) as Record<string, unknown>;
-    this.#values.set(index, object);
+    this.#remember(index, object);
     for (const [key, entry] of node.entries) {
-      Object.defineProperty(object, key, {
-        value: this.#decode(entry),
-        writable: true,
-        enumerable: true,
-        configurable: true,
-      });
+      const decoded = this.#decode(entry);
+      if (key === "__proto__") {
+        Object.defineProperty(object, key, { value: decoded, writable: true, enumerable: true, configurable: true });
+      } else {
+        object[key] = decoded;
+      }
     }
     return object;
+  }
+
+  #remember(index: number, value: unknown): void {
+    this.#values[index] = value;
+    this.#decoded[index] = 1;
   }
 }

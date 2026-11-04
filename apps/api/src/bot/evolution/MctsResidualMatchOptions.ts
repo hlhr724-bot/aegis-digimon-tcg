@@ -3,6 +3,7 @@ import type { Decklist } from "#api/engine/setup";
 import type { HeuristicProgram } from "#api/bot/evolution/heuristic";
 import type { SearchReport } from "#api/bot/evolution/mcts";
 import type { SeenOpponentCards } from "#api/bot/evolution/SeenOpponentCards";
+import type { RootWidening } from "#api/bot/evolution/RootWidening";
 
 export type MctsResidualMatchOptions = {
   seed: number;
@@ -17,6 +18,8 @@ export type MctsResidualMatchOptions = {
   rolloutTurns?: number;
   maxRolloutDecisions?: number;
   moveOrderingProgram?: HeuristicProgram;
+  rolloutProgram?: HeuristicProgram;
+  rootWidening?: RootWidening;
   searchSeed: number;
   seenOpponentCards?: SeenOpponentCards;
   maxSearches?: number;

@@ -12,7 +12,7 @@ const record: ReplayRecord = JSON.parse(
 it("lets Sayo & Koh play a same-level stack card at the start of the opponent's turn without a DNA result in hand", async () => {
   let latestDecision: DecisionRequest | undefined;
   const replay = await runReplay(record, {
-    untilInput: 154,
+    untilInput: 156,
     onDecision: (request) => {
       latestDecision = request;
     },

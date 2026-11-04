@@ -4,6 +4,18 @@ import { registerIrCard } from "./effects/interpreter.js";
 import { setupEngine, settle } from "./testkit/harness.js";
 import "../cards/index.js";
 
+async function chooseEffectPlayedCards(s: ReturnType<typeof setupEngine>): Promise<void> {
+  await settle(() => s.state.pendingDecision?.kind === "selectCards");
+  const decision = s.state.pendingDecision!;
+  expect(
+    s.engine.applyIntent(0, {
+      type: "respondDecision",
+      decisionId: decision.decisionId,
+      response: { kind: "selectCards", instanceIds: [s.inst("played-a").instanceId, s.inst("played-b").instanceId] },
+    }),
+  ).toEqual({ ok: true });
+}
+
 it.each([false, true])(
   "BT19-087 preserves the optional processing cost during effect DigiXros (accept=%s)",
   async (accept) => {
@@ -125,6 +137,7 @@ it("prepares every pending paid DigiXros play in one replacement batch", async (
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("caller").instanceId })).toEqual({
       ok: true,
     });
+    await chooseEffectPlayedCards(s);
     await settle(() => s.state.pendingDecision?.kind === "selectCards");
     let decision = s.state.pendingDecision!;
     expect(
@@ -226,6 +239,7 @@ it("applies two EX10-064 quota grants independently across one play batch", asyn
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("caller").instanceId })).toEqual({
       ok: true,
     });
+    await chooseEffectPlayedCards(s);
     await settle(() => s.state.pendingDecision?.kind === "selectCards");
     let decision = s.state.pendingDecision!;
     expect(
@@ -284,6 +298,7 @@ it("declining a batch replacement leaves both expansion sources and materials un
     residual: [],
   });
   try {
+    const options = { autoSelectCards: false, autoChooseOption: true };
     const s = setupEngine(
       {
         0: {
@@ -308,13 +323,23 @@ it("declining a batch replacement leaves both expansion sources and materials un
           ],
         },
       },
-      { autoDeclineOptional: true, autoSelectCards: true, autoChooseOption: true },
+      options,
     );
     await s.ready();
     s.state.memory = 9;
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("caller").instanceId })).toEqual({
       ok: true,
     });
+    await chooseEffectPlayedCards(s);
+    options.autoSelectCards = true;
+    await settle(() => s.state.pendingDecision?.kind === "optional");
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "optional", accept: false },
+      }),
+    ).toEqual({ ok: true });
     await settle(
       () =>
         s.state.pendingDecision === undefined &&

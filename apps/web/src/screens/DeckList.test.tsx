@@ -36,6 +36,7 @@ function renderList() {
         onSelectDeck={() => undefined}
         onDelete={() => undefined}
         onPlay={() => undefined}
+        onTest={() => undefined}
       />
     </I18nProvider>,
   );

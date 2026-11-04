@@ -62,7 +62,14 @@ describe("Play-cost trash triggers", () => {
         response: { kind: "optional", accept: true },
       });
 
-      const onPlay = await nextDecision(s, watcher.decisionId);
+      const handPlay = await nextDecision(s, watcher.decisionId);
+      expect(handPlay).toMatchObject({ seat: 0, kind: "selectCards", sourceCardId: "BT26-049" });
+      answer(s, 0, {
+        type: "respondDecision",
+        decisionId: handPlay.decisionId,
+        response: { kind: "selectCards", instanceIds: handPlay.options!.candidateInstanceIds! },
+      });
+      const onPlay = await nextDecision(s, handPlay.decisionId);
       expect(onPlay).toMatchObject({ seat: 0, kind: "chooseTargets", sourceCardId: "BT25-049" });
       expect(fieldCardIds(s, 0)).toEqual(["BT26-049", "BT25-088", "BT25-049", "BT26-091"]);
       answer(s, 0, {

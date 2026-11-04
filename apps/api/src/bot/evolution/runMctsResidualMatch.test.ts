@@ -274,4 +274,27 @@ describe("residual policy with real-engine MCTS", () => {
       expect(game.searches).toHaveLength(1);
     },
   );
+
+  it("completes valid searches with a heuristic rollout program and root widening", async () => {
+    const game = await runMctsResidualMatch({
+      seed: 719,
+      learnerSeat: 0,
+      decks: [RED_DECK, BLUE_DECK],
+      program: SEED_RESIDUAL,
+      simulations: 6,
+      searchSeed: 917,
+      maxSearches: 2,
+      rolloutTurns: 1,
+      moveOrderingProgram: SEED_HEURISTIC,
+      rolloutProgram: SEED_HEURISTIC,
+      rootWidening: { coefficient: 1, exponent: 0.5 },
+    });
+    expect(game.valid).toBe(true);
+    expect(game.searches).toHaveLength(2);
+    for (const search of game.searches) {
+      expect(search.completed).toBe(6);
+      expect(search.invalid).toBe(0);
+      expect(search.root.filter((edge) => edge.visits > 0).length).toBeLessThanOrEqual(2);
+    }
+  });
 });

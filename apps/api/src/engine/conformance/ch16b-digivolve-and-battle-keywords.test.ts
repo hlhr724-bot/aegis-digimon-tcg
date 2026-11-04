@@ -794,6 +794,14 @@ describe("§16-15 <Rush> (comprehensive-0233)", () => {
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId })).toEqual({
       ok: true,
     });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("yellow").instanceId] },
+      }),
+    ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "chooseTargets");
     const rushDecision = s.state.pendingDecision!;
     const request = s.decisions.find(({ req }) => req.decisionId === rushDecision.decisionId)!.req;

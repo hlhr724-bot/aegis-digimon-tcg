@@ -184,6 +184,13 @@ the development pool, Master reached 0.65 against legacy only in Aggressive, wit
 a lower bound above 0.60, and it was not clearly stronger than Expert. More rollouts in this root-only search have not shown a measurable gain. A stronger Master needs a better
 evaluator or search beyond Main decisions.
 
+The residual MCTS used for training and evaluation (`runMctsResidualMatch`) gained two
+opt-in options in November 2026: a heuristic rollout program and root progressive
+widening. Together they scored +0.11 at an equal time budget in a 142-task screen, but a
+reserved-seed confirmation (119 tasks) measured only +0.03, with an interval including zero. They
+do not touch the paired root search of Expert and Master, and no level default changed.
+See [rollout program and root widening](../../apps/api/src/bot/evolution/README.md#rollout-program-and-root-widening).
+
 Difficulty is resolved in `apps/api/src/bot/levels/createLevelBotOptions.ts` and the
 configuration table lives in `BOT_LEVEL_CONFIGS.ts`. Style preserves the existing
 serialized `balanced`, `aggressive` and `defensive` values. Residual scoring starts
@@ -277,6 +284,139 @@ a structured clone. Each decision posts about 355 KB. A structured clone costs
 must stay JSON-safe: finite numbers only, and no meaning in `undefined` fields. Today
 the only fields JSON drops are undefined `level` values in the root observation, and
 the root checks already compare the observation through JSON.
+
+**Rollout bookkeeping (November 2026).** A CPU profile of residual MCTS games
+(`runMctsResidualMatch`, 32 rollouts per search, one-turn horizon) found three costs that
+only serve snapshots or repeat work:
+
+| Cost                                                                                         | Share of profile | Change                                                                              |
+| -------------------------------------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------- |
+| `structuredClone` of the engine snapshot before every rollout                                | 9.5%             | Rollouts restore from the shared snapshot, as live search already does              |
+| Scoped static primitives built a field map and two registry entries in every continuous pass | 6.3%             | Skipped when the engine has snapshots disabled, which every rollout engine has      |
+| Effect contexts and re-materialized IR effects registered for snapshots                      | about 2%         | Skipped, or checked before copying the effect metadata, when snapshots are disabled |
+
+The root information key is also computed once per search instead of once per rollout.
+Only engines with snapshots disabled skip the bookkeeping, so live matches still snapshot
+the same objects.
+
+The measurement ran the same three games (seeds 719, 811 and 913, 16 rollouts, 6
+searches each, 272 rollouts per run) with the old and new builds side by side, three
+times, on a shared 10-core machine with load averages of 8 to 20. Wall time was
+unusable at that load, so the table uses main-thread CPU time, minus the CPU of the same
+game without search:
+
+| Round | Before (rollouts per CPU second) | After | Change |
+| ----- | -------------------------------- | ----- | ------ |
+| 1     | 12.0                             | 15.0  | +25%   |
+| 2     | 13.2                             | 15.8  | +19%   |
+| 3     | 14.0                             | 17.2  | +22%   |
+
+On a quiet moment before the load rose, the old build ran 43 to 44 rollouts per wall
+second on the same games. Every run of both builds produced the same search reports,
+decisions and winner digests. `residualMctsDecisionIdentity.test.ts` pins the root
+visits, mean rewards and chosen actions of a fixed-seed, fixed-count residual search;
+an intentional change to search or rules behavior must update it. What remains is
+engine work: continuous recompute (about 30%), continuous-state publish (16%) and
+snapshot restore (9%). The opportunities table above still applies.
+
+**Restore and root reuse (November 2026, round 2).** A rollout-only profile (9 real search
+roots, warm modules) put snapshot restore at 19% of rollout CPU. Four changes keep every
+result identical:
+
+| Cost                                                                                             | Change                                                                           |
+| ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Every restore rebuilt all schema layouts, twice, including a SHA-256 fingerprint per class       | Layouts are computed once per process; they depend only on the schema classes    |
+| The graph decoder kept decoded nodes in a `Map` and set every object field with `defineProperty` | Decoded nodes sit in an array; fields are assigned directly, except `__proto__`  |
+| Schema hydration built a temporary `Map` per object                                              | Payloads in layout order take a direct path; any other payload uses the old path |
+| Each rollout re-hashed and re-serialized the shared root window                                  | The root keys are computed once per root window                                  |
+
+Measured with both builds side by side, with matching digests in every run:
+
+| Workload                                        | Before      | After       | Change     |
+| ----------------------------------------------- | ----------- | ----------- | ---------- |
+| Rollouts only, 108 per round, rounds 2–4 summed | 3.59–3.65 s | 3.37–3.41 s | +5% to +8% |
+| Residual MCTS bench, warm, 272 rollouts per run | 52.8–56.0/s | 55.6–59.1/s | +5% to +6% |
+
+The bench numbers are rollouts per main-thread CPU second, from local scripts that are not
+committed. The bench plays each game once before measuring, because card modules load
+lazily the first time a rollout meets a sampled card, which makes a process's first games
+slower.
+
+**Where MCTS time goes now.** In the warm residual MCTS bench, the continuous recompute
+takes 42% of CPU (`derivePass` 26%, `publishContinuousState` 16.5%). Restore is 9%, the
+bot policy about 10%, and the tree itself under 1%. Each one-turn rollout runs about 60
+recomputes, and each converges in one pass. The calls come from timing windows (one
+before and one after every window, even when nothing fires), sub-trigger firing, duration
+sweeps and turn steps.
+
+**Skipping unchanged recomputes (November 2026, round 3).** A shadow measurement over the
+same 108 rollouts (6,503 recomputes) compared a full engine fingerprint before each
+recompute with the one left by the previous recompute. 67% found nothing changed, and in
+every such case the recompute changed nothing (only ID counters moved). The after-window
+recompute was unchanged 99.6% of the time. Search rollout engines now skip those requests;
+see [skipping unchanged recomputes](../../docs/ARCHITECTURE.md#skipping-unchanged-recomputes).
+Schema allocation during restore also skips the constructor (`Object.create` plus
+`Schema.initialize`), because hydration writes every field anyway.
+
+Restore then became the largest rollout cost (17%). Rollouts now decode a snapshot's game
+state once per search (`prepareGameEngineRestore`, cached per snapshot by
+`preparedGameEngineRestoreFor`) and give each rollout a field-by-field copy
+(`createEngineSchemaCloner`). The copies seed the per-rollout decode of the rest of the
+graph, so ledgers and references point at the rollout's own objects. Preparation returns
+nothing, and the rollout uses the full decode, when the rest of the graph references a
+non-schema value inside the state. On 24 real search roots, prepared and full restores gave
+byte-identical engine snapshots.
+
+Two smaller rollout-only savings followed, each measured side by side against the build
+before it: reusing the continuous effects built for a card source across passes (3–4% less
+rollout CPU) and skipping three projections that only clients read (2–2.6%). Swapping in the
+equivalent `chooseFastHeuristic` for rollout heuristics showed no measurable gain, because
+rollout windows are small, so it was not kept.
+
+Measured against the build before round 2, with both builds side by side:
+
+| Workload                                                 | Before      | After       | Change                             |
+| -------------------------------------------------------- | ----------- | ----------- | ---------------------------------- |
+| Residual MCTS bench, warm, rollouts per CPU second       | 56.6–58.2   | 79.0–87.4   | +37% to +51%                       |
+| Rollouts alone, CPU time for the same 324 rollouts       | 3.65–3.77 s | 2.54–2.57 s | 1.44–1.47× rollouts per CPU second |
+| Rollout fidelity: 576 rollouts from 24 real search roots | —           | —           | 0 differ                           |
+
+All three bench games kept the same search reports and decisions, and 64.6% of rollout
+recomputes were skipped. Three lessons from the work:
+
+- **A recompute renews watcher identity.** It re-installs every continuous watcher under a
+  fresh id, and once-per-timing bookkeeping observes that. A shadow fingerprint that ignores
+  ids cannot see this; two recorded replays caught it. Skips renew the ids, but live engines
+  still diverged on one replay, so only rollout engines skip.
+- **Instrumentation must not change timing.** An early wrapper bumped the clock when an
+  async ledger method settled, through `.then()`. The extra microtask reordered concurrent
+  engine flows and broke a replay. The clock now bumps synchronously, and the three async
+  `SubTriggerRegistry` methods bump in their own `finally` blocks (`fireSnapshot` only when
+  it had watchers to fire).
+- **Not every recompute is idempotent.** Some hand watchers (`whenTrashedFromHand`) are
+  re-added as non-continuous subscriptions on every recompute. Verify mode found this in
+  BT6 card tests. A recompute that changes the non-continuous subscription count now stores
+  no key, so the next one runs in full.
+
+The design follows Forge's AI-side caching, which reuses a decision when no tracked state
+has changed ([Forge PR #11314](https://github.com/Card-Forge/forge/pull/11314)), and the
+same shadow-check idea: `AEGIS_VERIFY_CONTINUOUS_SKIPS=1` reruns every skipped recompute in
+the API tests and fails on any difference.
+
+Other options considered and not taken:
+
+- **Sequential Halving at the root.** It improves decisions per rollout, not rollout speed,
+  and needs a strength test.
+- **Skip hand and trash cards before building their continuous effects.** Builder guards
+  differ (hand, trash, breeding, always-on, custom), so a pre-filter would copy their rules
+  outside the builders.
+- **Reuse built effects across passes.** Effect identity would change for watchers installed
+  during a pass. The gain is about 3–4%.
+- **Skip client-only projections in rollouts.** The bot reads the attack, activatable-effect
+  and summoning-sickness projections; the rest add up to about 3%.
+- **Parallel MCTS (batched simulations with virtual loss).** It cuts latency, not CPU per
+  rollout. Evolution runs already play games in parallel processes, and live search shares
+  two workers per process with other matches.
 
 ### Snapshot coverage and combat search
 

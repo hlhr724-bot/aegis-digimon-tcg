@@ -115,3 +115,15 @@ it("refuses custom collection state and keeps literal prototype keys inert", () 
   expect(restored["__proto__"]).toEqual({ captured: true });
   expect(Object.hasOwn({}, "captured")).toBe(false);
 });
+
+it("restores a literal prototype key on an ordinary object as an own field", () => {
+  const object = JSON.parse('{"__proto__":{"captured":true},"kept":1}') as Record<string, unknown>;
+  const restored = decodeRuntimeGraph({
+    snapshot: JSON.parse(JSON.stringify(encodeRuntimeGraph({ value: object }))),
+  }) as Record<string, unknown>;
+  expect(Object.getPrototypeOf(restored)).toBe(Object.prototype);
+  expect(Object.hasOwn(restored, "__proto__")).toBe(true);
+  expect(Object.getOwnPropertyDescriptor(restored, "__proto__")?.value).toEqual({ captured: true });
+  expect(restored.kept).toBe(1);
+  expect((restored as { captured?: boolean }).captured).toBeUndefined();
+});

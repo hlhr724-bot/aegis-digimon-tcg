@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { OPENING_HAND_SIZE } from "@aegis/shared/rules/OPENING_HAND_SIZE";
+import { SECURITY_STACK_SIZE } from "@aegis/shared/rules/SECURITY_STACK_SIZE";
 import { ArraySchema } from "@colyseus/schema";
 import { CardInstance, GameState, type Seat } from "@aegis/shared";
 import {
@@ -12,8 +14,6 @@ import {
   setSecurityStack,
   runSetup,
   finalizeSecurity,
-  OPENING_HAND_SIZE,
-  SECURITY_STACK_SIZE,
   type Decklist,
 } from "./setup.js";
 import { RED_DECK, BLUE_DECK } from "./testDecks.js";

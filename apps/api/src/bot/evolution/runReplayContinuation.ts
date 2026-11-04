@@ -7,6 +7,7 @@ import { determinizeFromArchetypes } from "#api/bot/evolution/determinizeFromArc
 import type { GameEngine } from "#api/engine/GameEngine";
 import type { GameEngineSnapshot } from "#api/engine/snapshot/GameEngineSnapshot";
 import { restoreGameEngine } from "#api/engine/snapshot/restoreGameEngine";
+import { preparedGameEngineRestoreFor } from "#api/engine/snapshot/preparedGameEngineRestoreFor";
 import type { BotPolicy } from "#api/bot/policy";
 import { performance } from "node:perf_hooks";
 import type { Intent } from "@aegis/shared/protocol/intents";
@@ -78,16 +79,49 @@ function mergeSeenOpponentCards({
   };
 }
 
+type RootWindowKeys = {
+  information: string;
+  observation: string;
+  observationWithoutHistory: string;
+  selected: string;
+  request: string | undefined;
+  combat: string | undefined;
+};
+
+const rootWindowKeys = new WeakMap<TrainingWindow, RootWindowKeys>();
+
+function observationWithoutHistory(window: TrainingWindow): string {
+  const { history: _history, ...observation } = window.observation;
+  return JSON.stringify(observation);
+}
+
+function requestKey(window: TrainingWindow): string | undefined {
+  return JSON.stringify(window.request === undefined ? undefined : { ...window.request, decisionId: undefined });
+}
+
+function keysForRoot(root: TrainingWindow): RootWindowKeys {
+  const cached = rootWindowKeys.get(root);
+  if (cached !== undefined) return cached;
+  const keys = {
+    information: informationKey(root),
+    observation: JSON.stringify(root.observation),
+    observationWithoutHistory: observationWithoutHistory(root),
+    selected: JSON.stringify(root.selected),
+    request: requestKey(root),
+    combat: JSON.stringify(root.combat),
+  };
+  rootWindowKeys.set(root, keys);
+  return keys;
+}
+
 function matchesRootWindow(window: TrainingWindow, root: TrainingWindow): boolean {
-  const { history: _windowHistory, ...windowObservation } = window.observation;
-  const { history: _rootHistory, ...rootObservation } = root.observation;
+  const keys = keysForRoot(root);
   return (
     window.kind === root.kind &&
-    JSON.stringify(windowObservation) === JSON.stringify(rootObservation) &&
-    JSON.stringify(window.selected) === JSON.stringify(root.selected) &&
-    JSON.stringify(window.request === undefined ? undefined : { ...window.request, decisionId: undefined }) ===
-      JSON.stringify(root.request === undefined ? undefined : { ...root.request, decisionId: undefined }) &&
-    JSON.stringify(window.combat) === JSON.stringify(root.combat)
+    observationWithoutHistory(window) === keys.observationWithoutHistory &&
+    JSON.stringify(window.selected) === keys.selected &&
+    requestKey(window) === keys.request &&
+    JSON.stringify(window.combat) === keys.combat
   );
 }
 
@@ -183,8 +217,13 @@ export async function runReplayContinuation(input: Params) {
     engine = run.engine;
     state = run.state;
   } else {
-    const restored = restoreGameEngine({ snapshot: input.engineSnapshot!, hooks });
+    const restored = restoreGameEngine({
+      snapshot: input.engineSnapshot!,
+      hooks,
+      prepared: preparedGameEngineRestoreFor(input.engineSnapshot!),
+    });
     restored.engine.runtimeObjects.disableSnapshots();
+    restored.engine.searchRollout = true;
     engine = restored.engine;
     state = restored.engine.state;
     void restored.completion.catch((error) => failures.push(error instanceof Error ? error.message : String(error)));
@@ -202,10 +241,10 @@ export async function runReplayContinuation(input: Params) {
     }
   }
   const root = input.rootWindow ?? getReplaySearchWindow({ engine, seat: input.seat });
+  const rootKeys = input.rootWindow === undefined ? undefined : keysForRoot(input.rootWindow);
   if (
-    informationKey(root) !== input.expectedInformation ||
-    (input.rootWindow !== undefined &&
-      JSON.stringify(trainingObservation(state, input.seat)) !== JSON.stringify(root.observation))
+    (rootKeys?.information ?? informationKey(root)) !== input.expectedInformation ||
+    (rootKeys !== undefined && JSON.stringify(trainingObservation(state, input.seat)) !== rootKeys.observation)
   ) {
     throw new Error("Replay root observation or offered actions changed");
   }
@@ -222,9 +261,9 @@ export async function runReplayContinuation(input: Params) {
     await determinize(engine, input.seat, input.sampleSeed);
   }
   const visibleRootMatches =
-    input.rootWindow === undefined
+    rootKeys === undefined
       ? informationKey(getReplaySearchWindow({ engine, seat: input.seat })) === input.expectedInformation
-      : JSON.stringify(trainingObservation(state, input.seat)) === JSON.stringify(root.observation);
+      : JSON.stringify(trainingObservation(state, input.seat)) === rootKeys.observation;
   if (!visibleRootMatches) {
     throw new Error("Hidden sampling changed the visible root");
   }
