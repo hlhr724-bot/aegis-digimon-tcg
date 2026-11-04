@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { matchupDeckKey } from "@aegis/shared/deckSimulation/matchupDeckKey";
 import { RED_DECK } from "#api/engine/testDecks";
+import { addLogSink } from "#api/logger";
 import { MatchupSimulator } from "#api/deckSimulation/MatchupSimulator";
 import type { MatchupRequest } from "#api/deckSimulation/MatchupRequest";
 import type { MatchupWorkerHandle } from "#api/deckSimulation/MatchupWorkerHandle";
@@ -197,6 +198,43 @@ describe("MatchupSimulator", () => {
     expect(simulator.replay({ accountId: "b", jobId: job.id, index: 0 })).toBeUndefined();
   });
 
+  it("logs each sample replay request with whether the file was still available", () => {
+    const lines: string[] = [];
+    const stopObserving = addLogSink((line) => lines.push(line));
+    let clockMs = 0;
+    const worker = createFakeWorker();
+    const simulator = new MatchupSimulator({
+      spawnWorker: () => worker.handle,
+      isHostBusy: () => false,
+      now: () => clockMs,
+    });
+    const job = simulator.start({ accountId: "a", request });
+    worker.emit({ type: "ready" });
+    worker.emit({
+      type: "game",
+      jobId: job.id,
+      index: 0,
+      opponentIndex: 0,
+      playerFirst: true,
+      outcome: { result: "win", reason: "security", turns: 9 },
+      replayFile: new Uint8Array([31, 139, 8]),
+    });
+    worker.emit({ type: "finished", jobId: job.id, end: "completed" });
+    clockMs = 4_000;
+    simulator.replay({ accountId: "a", jobId: job.id, index: 0 });
+    simulator.replay({ accountId: "a", jobId: job.id, index: 5 });
+    stopObserving();
+    simulator.close();
+    const opened = lines
+      .map((line) => JSON.parse(line) as { data: [string, Record<string, unknown>] })
+      .filter((entry) => entry.data[0] === "deckSimulation.replayOpened")
+      .map((entry) => entry.data[1]);
+    expect(opened).toEqual([
+      { jobId: job.id, index: 0, available: true, msSinceFinished: 4_000 },
+      { jobId: job.id, index: 5, available: false, msSinceFinished: 4_000 },
+    ]);
+  });
+
   it("allows one unfinished job per account and a bounded queue", () => {
     const simulator = new MatchupSimulator({
       spawnWorker: () => createFakeWorker().handle,
@@ -221,6 +259,47 @@ describe("MatchupSimulator", () => {
     vi.advanceTimersByTime(2_000);
     worker.emit({ type: "ready" });
     expect(simulator.get({ accountId: "a", jobId: job.id })?.status).toBe("running");
+    simulator.close();
+  });
+
+  it("starts the worker while the host check is still measuring", () => {
+    vi.useFakeTimers();
+    const hostChecks: boolean[] = [true, false];
+    const worker = createFakeWorker();
+    let spawned = 0;
+    const simulator = new MatchupSimulator({
+      spawnWorker: () => {
+        spawned++;
+        return worker.handle;
+      },
+      isHostBusy: () => hostChecks.shift() ?? false,
+    });
+    const job = simulator.start({ accountId: "a", request });
+    expect(spawned).toBe(1);
+    expect(hostChecks).toHaveLength(1);
+    worker.emit({ type: "ready" });
+    expect(simulator.get({ accountId: "a", jobId: job.id })?.status).toBe("running");
+    simulator.close();
+  });
+
+  it("retires a worker that was started for a job that expired in the queue", () => {
+    vi.useFakeTimers();
+    let clockMs = 0;
+    const worker = createFakeWorker();
+    const simulator = new MatchupSimulator({
+      spawnWorker: () => worker.handle,
+      isHostBusy: () => true,
+      now: () => clockMs,
+      limits: { queuedJobTimeoutMs: 5_000, idleWorkerMs: 3_000 },
+    });
+    const job = simulator.start({ accountId: "a", request });
+    worker.emit({ type: "ready" });
+    clockMs = 5_000;
+    vi.advanceTimersByTime(1_000);
+    expect(simulator.get({ accountId: "a", jobId: job.id })?.status).toBe("timed-out");
+    expect(worker.terminations()).toBe(0);
+    vi.advanceTimersByTime(3_000);
+    expect(worker.terminations()).toBe(1);
     simulator.close();
   });
 

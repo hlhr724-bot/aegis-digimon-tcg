@@ -170,7 +170,7 @@ const PROMO_PRODUCTS: ReadonlyArray<Readonly<PromoProduct>> = [
   { date: "2026-10-01", cardIds: "245 246 247 248 249 250" }, // Store Tournament 2026 Vol. 4
 ];
 
-const APP_ONLY_SETS: ReadonlySet<string> = new Set(["BD01"]);
+const APP_ONLY_SETS: ReadonlySet<string> = new Set(["BD01", "BD02"]);
 const APP_ONLY_RELEASE_DATE: ReleaseDate = "9999-12-31";
 
 const PROMO_RELEASE_DATES: Readonly<Record<string, ReleaseDate>> = Object.freeze(

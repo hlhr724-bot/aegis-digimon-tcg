@@ -248740,5 +248740,138 @@
     ],
     "coverage": "full",
     "residual": []
+  },
+  "BD02-02": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "RevealAdd",
+            "revealCount": 5,
+            "add": [
+              {
+                "filter": {
+                  "controllerDefault": "mine",
+                  "colors": ["Blue"],
+                  "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }]
+                },
+                "count": 1,
+                "to": "hand"
+              }
+            ],
+            "rest": "deckBottom"
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BD02-03": {
+    "effects": [
+      {
+        "trigger": "WhenAttacking",
+        "actions": [
+          {
+            "kind": "TrashDigivolution",
+            "target": {
+              "filter": { "controller": "opponent", "kind": ["Digimon"], "digivolutionCards": "hasAny" },
+              "count": 1
+            },
+            "amount": 1,
+            "fromTop": false
+          }
+        ],
+        "isInherited": true,
+        "frequency": "OncePerTurn"
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BD02-04": {
+    "effects": [
+      {
+        "trigger": "WhenAttacking",
+        "actions": [
+          {
+            "kind": "Unsuspend",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "condition": {
+              "kind": "opponentHasNone",
+              "filter": { "digivolutionCards": "hasAny", "controllerDefault": "opponent", "kind": ["Digimon"] },
+              "raw": "your opponent has no Digimon with digivolution cards"
+            }
+          }
+        ],
+        "isInherited": true,
+        "frequency": "OncePerTurn"
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BD02-08": {
+    "effects": [
+      {
+        "trigger": "StartOfYourMainPhase",
+        "actions": [
+          {
+            "kind": "GainMemory",
+            "amount": 1,
+            "condition": {
+              "kind": "youHave",
+              "filter": {
+                "controllerDefault": "mine",
+                "kind": ["Digimon"],
+                "colors": ["Blue"],
+                "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }]
+              },
+              "raw": "you have a blue Digimon with the [ALYSION] trait"
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "Main",
+        "actions": [
+          {
+            "kind": "GainKeyword",
+            "target": {
+              "filter": {
+                "controller": "mine",
+                "kind": ["Digimon"],
+                "colors": ["Blue"],
+                "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }]
+              },
+              "count": 1
+            },
+            "keyword": { "keyword": "Piercing", "raw": "＜Piercing＞" },
+            "duration": "forTheTurn",
+            "cost": {
+              "kind": "suspend",
+              "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+              "raw": "By suspending this Tamer"
+            },
+            "optional": true,
+            "abortOnDecline": true
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "payCost": false
+          }
+        ],
+        "isSecurity": true
+      }
+    ],
+    "coverage": "full",
+    "residual": []
   }
 }

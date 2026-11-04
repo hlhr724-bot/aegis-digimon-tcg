@@ -8,7 +8,7 @@ export const MATCHUP_LIMITS = {
   sampleReplays: 3,
   finishedJobTtlMs: 15 * 60_000,
   idleWorkerMs: 60_000,
-  busyHostRetryMs: 2_000,
+  busyHostRetryMs: 1_000,
   busyHostLoadPerCore: 1.5,
   spareCores: 1,
   maxThrottledShare: 0.25,

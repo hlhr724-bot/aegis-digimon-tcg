@@ -111300,5 +111300,97 @@
     "rarity": "U",
     "maxCountInDeck": 4,
     "imageId": "BD01-10"
+  },
+  {
+    "cardId": "BD02-02",
+    "set": "BD02",
+    "nameEn": "Renamon",
+    "nameJp": "レナモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Data"],
+    "types": ["Beastkin", "ALYSION"],
+    "effectText": "[On Play] Reveal the top 5 cards of your deck. Add 1 blue [ALYSION] trait card among them to the hand. Return the rest to the bottom of the deck.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BD02-02"
+  },
+  {
+    "cardId": "BD02-03",
+    "set": "BD02",
+    "nameEn": "Tenkomon",
+    "nameJp": "テンコモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 5,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Virus"],
+    "types": ["Mysterious Beast", "ALYSION"],
+    "inheritedEffectText": "[When Attacking][Once Per Turn] Trash the bottom digivolution card of 1 of your opponent's Digimon.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BD02-03"
+  },
+  {
+    "cardId": "BD02-04",
+    "set": "BD02",
+    "nameEn": "Sekkamon",
+    "nameJp": "セッカモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 6000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 4,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Virus"],
+    "types": ["Beastkin", "ALYSION"],
+    "inheritedEffectText": "[When Attacking][Once Per Turn] If your opponent has no Digimon with digivolution cards, this Digimon unsuspends.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BD02-04"
+  },
+  {
+    "cardId": "BD02-08",
+    "set": "BD02",
+    "nameEn": "Valner Dragnogh",
+    "nameJp": "ヴァルナー・ドラグノフ",
+    "colors": ["Blue"],
+    "kinds": ["Tamer"],
+    "playCost": 3,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["ALYSION"],
+    "effectText": "[Start of Your Main Phase] If you have a blue Digimon with the [ALYSION] trait, gain 1 memory.\n[Main] By suspending this Tamer, 1 of your blue Digimon with the [ALYSION] trait gains ＜Piercing＞ for the turn. (When this Digimon deletes your opponent's Digimon in battle while attacking, it checks security before the attack ends.)",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BD02-08"
   }
 ]
