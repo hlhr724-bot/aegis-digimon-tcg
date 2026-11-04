@@ -1,4 +1,28 @@
 {
+  "releases.1.51.0-beta.summary": {
+    "en": "Test your decks against bots and see your draw odds in the deck editor. You can now decline effect plays from your hand.",
+    "pt-BR": "Teste seus decks contra bots e veja as chances de compra no editor de decks. Agora você pode recusar jogar cartas da mão por efeito.",
+    "es": "Prueba tus mazos contra bots y consulta las probabilidades de robo en el editor de mazos. Ahora puedes rechazar jugar cartas de la mano por efecto.",
+    "it": "Metti alla prova i tuoi mazzi contro i bot e consulta le probabilità di pesca nell'editor dei mazzi. Ora puoi rifiutare di giocare carte dalla mano tramite effetto."
+  },
+  "releases.1.51.0-beta.feature.deckTest": {
+    "en": "Select Test vs. bots on a saved deck to play bot matches against community decks, famous decks or a mirror match. Each result shows a verdict, the record and a likely win-rate range, and you can watch sample games turn by turn. The latest result for each deck is saved.",
+    "pt-BR": "Selecione Testar contra bots em um deck salvo para jogar partidas de bots contra decks da comunidade, decks famosos ou o espelho. Cada resultado mostra um veredito, o placar e uma faixa provável de vitórias, e você pode assistir a partidas de exemplo turno a turno. O último resultado de cada deck fica salvo.",
+    "es": "Selecciona Probar contra bots en un mazo guardado para jugar partidas de bots contra mazos de la comunidad, mazos famosos o el espejo. Cada resultado muestra un veredicto, el récord y un rango probable de victorias, y puedes ver partidas de ejemplo turno a turno. Se guarda el último resultado de cada mazo.",
+    "it": "Seleziona Prova contro i bot su un mazzo salvato per giocare partite tra bot contro mazzi della community, mazzi famosi o lo specchio. Ogni risultato mostra un verdetto, il record e un intervallo probabile di vittorie, e puoi guardare partite di esempio turno per turno. L'ultimo risultato di ogni mazzo viene salvato."
+  },
+  "releases.1.51.0-beta.feature.drawOdds": {
+    "en": "The deck editor shows the chance to draw your key cards and a Level 3 Digimon in the opening hand and by each of your first 6 turns, with or without a mulligan.",
+    "pt-BR": "O editor de decks mostra a chance de comprar suas cartas-chave e um Digimon Nível 3 na mão inicial e até cada um dos seus 6 primeiros turnos, com ou sem mulligan.",
+    "es": "El editor de mazos muestra la probabilidad de robar tus cartas clave y un Digimon de Nivel 3 en la mano inicial y antes de cada uno de tus 6 primeros turnos, con o sin mulligan.",
+    "it": "L'editor dei mazzi mostra la probabilità di pescare le tue carte chiave e un Digimon di Livello 3 nella mano iniziale ed entro ciascuno dei tuoi primi 6 turni, con o senza mulligan."
+  },
+  "releases.1.51.0-beta.fix.declineHandPlay": {
+    "en": "Effects that play a card from your hand, such as Murasamemon (BT25-041), let you choose no card. Your hand is private, so you were never required to reveal a valid card. Costs you already paid stay paid.",
+    "pt-BR": "Efeitos que jogam uma carta da sua mão, como Murasamemon (BT25-041), permitem não escolher nenhuma carta. Sua mão é privada, então você nunca foi obrigado a revelar uma carta válida. Custos já pagos continuam pagos.",
+    "es": "Los efectos que juegan una carta de tu mano, como Murasamemon (BT25-041), permiten no elegir ninguna carta. Tu mano es privada, así que nunca estuviste obligado a revelar una carta válida. Los costes ya pagados siguen pagados.",
+    "it": "Gli effetti che giocano una carta dalla tua mano, come Murasamemon (BT25-041), permettono di non scegliere alcuna carta. La tua mano è privata, quindi non sei mai stato obbligato a rivelare una carta valida. I costi già pagati restano pagati."
+  },
   "releases.1.50.2-beta.summary": {
     "en": "Monitamon can add any 2 eligible revealed cards.",
     "pt-BR": "Monitamon pode adicionar quaisquer 2 cartas válidas reveladas.",
