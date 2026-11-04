@@ -91,6 +91,7 @@ export function DecisionCandidateGrid({
   return (
     <div className="decision-overlay__selection" style={{ marginBottom: 18 }}>
       <div
+        className="decision-overlay__selection-count"
         style={{
           fontSize: 11,
           fontWeight: 700,

@@ -1,3 +1,4 @@
+import { DecisionAttackTarget } from "@/game/overlay/choice/DecisionAttackTarget";
 import "@/game/overlay/choice/sourceCardPicker.css";
 import { getCardTextField } from "@/i18n/getCardTextField";
 import { useTranslatedCardText } from "@/i18n/useTranslatedCardText";
@@ -356,6 +357,59 @@ export function DecisionOverlay({
               choice={digivolveCostChoice}
               onChoose={(optionIndex) => onRespond({ kind: "chooseOption", optionIndex })}
               onViewBoard={() => setIsViewingBoard(true)}
+            />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (isSelect && request.options?.selectionContext === "attackTarget") {
+    return (
+      <>
+        {boardReturn}
+        <div hidden={isViewingBoard}>
+          <DecisionBackdrop side={docksOnRail} />
+          <div
+            ref={panelRef}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-label={dialogLabel}
+            data-prompt-surface={surface}
+            className={`game-modal__panel game-modal__panel--bare decision-overlay effect-prompt-family decision-overlay--attack-target${candidates.length > 1 ? " decision-overlay--multiple-targets" : ""}`}
+            onKeyDown={(event) => trapDialogFocus({ event, panelRef })}
+          >
+            <DecisionAttackTarget
+              sourceCardId={sourceCardId}
+              effectText={
+                request.options?.effectText ? (
+                  <EffectStepText
+                    text={request.options.effectText}
+                    emphasis={emphasis}
+                    cardId={request.options.effectTextCardId ?? sourceCardId}
+                    timing={request.options.timing}
+                    field={getCardTextField({
+                      cardId: request.options.effectTextCardId ?? sourceCardId,
+                      timing: request.options.timing,
+                      isInherited: request.options.isInherited,
+                      text: request.options.effectText,
+                    })}
+                  />
+                ) : undefined
+              }
+              contextText={contextText}
+              candidates={candidates}
+              picks={picks}
+              min={min}
+              max={max}
+              canConfirm={canConfirm}
+              onTogglePick={onTogglePick}
+              onConfirm={confirmSelect}
+              onPass={() =>
+                onRespond({ kind: request.kind === "selectCards" ? "selectCards" : "chooseTargets", instanceIds: [] })
+              }
+              onOpenBoard={() => setIsViewingBoard(true)}
             />
           </div>
         </div>

@@ -1,0 +1,162 @@
+.game-modal__panel.effect-prompt-family.decision-overlay--attack-target[data-prompt-surface] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.game-modal__panel.effect-prompt-family.decision-overlay--attack-target[data-prompt-surface="center"] {
+  width: min(30rem, calc(100vw - var(--ds-space-8))) !important;
+}
+
+.game-modal__panel.effect-prompt-family.decision-overlay--attack-target.decision-overlay--multiple-targets[data-prompt-surface="center"] {
+  width: min(44rem, calc(100vw - var(--ds-space-8))) !important;
+}
+
+.attack-target__header {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.attack-target__source {
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--ds-line);
+  border-radius: var(--ds-radius-sm);
+  background: none;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.attack-target__source:disabled {
+  cursor: default;
+}
+
+.attack-target__heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.attack-target__heading h2 {
+  margin: var(--ds-space-1) 0 0;
+  font: 700 1.25rem / 1.2 var(--ds-font-display);
+  color: var(--ds-text);
+}
+
+.attack-target__card-name {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  line-height: 1.4;
+  color: var(--ds-text-2);
+  overflow-wrap: anywhere;
+}
+
+.attack-target__context {
+  margin: var(--ds-space-2) 0 0;
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-xs);
+  line-height: 1.5;
+}
+
+.decision-overlay--attack-target .decision-overlay__view-board--compact {
+  flex: none;
+  width: var(--ds-touch-target);
+  height: var(--ds-touch-target);
+  min-width: var(--ds-touch-target);
+  padding: 0;
+  border-color: var(--ds-line);
+  color: var(--ds-text-2);
+}
+
+.attack-target__effect {
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+}
+
+.attack-target__effect summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  min-height: var(--ds-touch-target);
+  padding-block: var(--ds-space-2);
+  border-block: 1px solid var(--ds-line);
+  cursor: pointer;
+  list-style: none;
+}
+
+.attack-target__effect summary::-webkit-details-marker {
+  display: none;
+}
+
+.attack-target__effect[open] summary svg {
+  rotate: 180deg;
+}
+
+.attack-target__effect summary:focus-visible {
+  outline: 2px solid var(--ds-focus);
+  outline-offset: 2px;
+}
+
+.attack-target__effect p {
+  margin: var(--ds-space-3) 0 0;
+  line-height: 1.6;
+}
+
+.game-modal__panel.effect-prompt-family.decision-overlay--attack-target[data-prompt-surface]
+  .decision-overlay__selection-count {
+  margin: 0 0 var(--ds-space-2) !important;
+  font-size: var(--ds-text-xs) !important;
+  font-weight: 500 !important;
+  color: var(--ds-text-3) !important;
+}
+
+.game-modal__panel.effect-prompt-family.decision-overlay--attack-target[data-prompt-surface] .decision-overlay__grid {
+  padding: 0;
+}
+
+.decision-overlay--attack-target .decision-candidate-tile:has(.decision-overlay__candidate--security) {
+  flex: 1 1 100%;
+  width: 100%;
+}
+
+.decision-overlay--attack-target .decision-security-target {
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3);
+  border-width: 1px;
+  min-height: 5rem;
+  font-size: var(--ds-text-sm);
+  transition:
+    border-color var(--t-hover, 120ms),
+    background-color var(--t-hover, 120ms);
+}
+
+.decision-overlay--attack-target .decision-security-target > div {
+  width: 2rem !important;
+  height: 2.8rem !important;
+}
+
+.decision-overlay--attack-target .decision-overlay__candidate--security[aria-pressed="true"] .decision-security-target {
+  background: color-mix(in srgb, var(--ds-accent) 8%, var(--ds-fill));
+  box-shadow: 0 0 0 1px var(--ds-accent);
+  color: var(--ds-text);
+}
+
+.attack-target__actions {
+  display: flex;
+  gap: var(--ds-space-3);
+  padding-top: var(--ds-space-3);
+  border-top: 1px solid var(--ds-line);
+}
+
+.attack-target__actions > button {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--ds-touch-target);
+}
+
+@media (width < 768px), (height < 520px) and (orientation: landscape) {
+  .game-modal__panel.effect-prompt-family.decision-overlay--attack-target[data-prompt-surface="center"] {
+    width: 100vw !important;
+  }
+}
