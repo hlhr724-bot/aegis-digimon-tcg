@@ -176,10 +176,20 @@ describe("EX5-045 Chuumon", () => {
         response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const handPick = s.state.pendingDecision!;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: handPick.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("source").instanceId] },
+      }),
+    ).toEqual({ ok: true });
     await settle(() => s.state.players[0]!.battleArea.some((permanent) => permanent.topCard?.cardId === "EX5-045"));
     await settle(() => s.state.pendingDecision?.kind === "selectCards");
     const revealPlay = s.state.pendingDecision!;
     expect(revealPlay.decisionId).not.toBe(securityPlay.decisionId);
+    expect(revealPlay.decisionId).not.toBe(handPick.decisionId);
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",

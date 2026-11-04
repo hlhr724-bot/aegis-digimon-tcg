@@ -159,8 +159,8 @@ describe("EX9-054 deletion play through the asynchronous policy", () => {
       expect(
         windows
           .filter((window) => window.kind === "selectCards" && window.selected.length === 0)
-          .map((window) => window.actions.map((action) => action.sourceId)),
-      ).toEqual(choice < 0 ? [] : [candidates]);
+          .map((window) => window.actions.map((action) => action.sourceId ?? action.label)),
+      ).toEqual(choice < 0 ? [] : [[...candidates, "Finish selection"]]);
       expect(setup.state.players[seat]!.battleArea.map((unit) => unit.topCard.instanceId)).toEqual(
         choice < 0 ? [] : [candidates[choice]],
       );

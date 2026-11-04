@@ -165,7 +165,7 @@ describe("EX3-069 Trial of the Four Great Dragons", () => {
           s.inst("magnadramon").instanceId,
           s.inst("unrelated").instanceId,
         ],
-        min: 1,
+        min: 0,
         max: 1,
         timing: "Main",
       },

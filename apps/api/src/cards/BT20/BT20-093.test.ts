@@ -285,6 +285,18 @@ describe("BT20-093 Unleash the Dragon Gene", () => {
           response: { kind: "optional", accept: true },
         }),
       ).toEqual({ ok: true });
+      if (zone === "hand") {
+        await settle(() => s.state.pendingDecision?.kind === "selectCards");
+        const handPick = s.decisions.at(-1)!.req;
+        expect(handPick.options?.candidateInstanceIds).toEqual([dracomonId]);
+        expect(
+          s.engine.applyIntent(1, {
+            type: "respondDecision",
+            decisionId: handPick.decisionId,
+            response: { kind: "selectCards", instanceIds: [dracomonId] },
+          }),
+        ).toEqual({ ok: true });
+      }
       await settle(
         () => s.events.some((event) => event.kind === "attackEnded") && s.state.pendingDecision === undefined,
       );

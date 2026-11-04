@@ -227,6 +227,15 @@ describe("BT10-053 Ajatarmon — KB Q&A rulings", () => {
         effectKey: mainEffect!.effectKey,
       }),
     ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const handPick = s.state.pendingDecision!;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: handPick.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("palmon").instanceId] },
+      }),
+    ).toEqual({ ok: true });
     await settle(() =>
       s.state.players[0]!.battleArea.some((permanent) => permanent.topCard.instanceId === s.inst("palmon").instanceId),
     );

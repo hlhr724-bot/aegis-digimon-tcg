@@ -246,6 +246,15 @@ describe("EX3-011 Lavogaritamon", () => {
         response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    expect(s.state.pendingDecision).toMatchObject({ kind: "selectCards" });
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "selectCards", instanceIds: [hinaId] },
+      }),
+    ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision === undefined);
     expect(s.state.players[0]!.battleArea.some(({ topCard }) => topCard.cardId === "EX3-065")).toBe(true);
   });

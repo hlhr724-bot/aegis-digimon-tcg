@@ -158,11 +158,12 @@ export async function unsuspendAllForSeat(engine: GameEngine, seat: Seat): Promi
         const response = await engine.decisions.request({
           seat,
           kind: "selectCards",
-          promptText: `Trash ${handTrashCost} card${handTrashCost === 1 ? "" : "s"} from your hand to unsuspend engine Digimon?`,
+          promptText: `Trash ${handTrashCost} card${handTrashCost === 1 ? "" : "s"} from your hand to unsuspend this Digimon?`,
           options: {
             candidateInstanceIds: Array.from(player.hand, (card) => card.instanceId),
             min: 0,
             max: handTrashCost,
+            purpose: "cost",
           },
         });
         if (response.kind !== "selectCards" || response.instanceIds.length !== handTrashCost) continue;

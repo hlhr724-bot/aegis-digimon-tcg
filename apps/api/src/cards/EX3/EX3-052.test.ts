@@ -208,6 +208,9 @@ describe("EX3-052 Jazarichmon", () => {
         response: { kind: "optional", accept: true },
       }),
     ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    expect(payload(s.state.pendingDecision!).candidateInstanceIds).toEqual([s.inst("hina").instanceId]);
+    await respond({ s, kind: "selectCards", instanceIds: [s.inst("hina").instanceId] });
     await settle(
       () =>
         s.state.pendingDecision === undefined &&
