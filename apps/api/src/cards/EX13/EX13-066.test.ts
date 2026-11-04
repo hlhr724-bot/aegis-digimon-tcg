@@ -539,6 +539,18 @@ describe("EX13-066 Option side — Mickey Bullet (Awakened)", () => {
       s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("mickey").instanceId, useAs: "option" }),
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const handPlay = s.state.pendingDecision!;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: handPlay.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("artsTarget").instanceId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.state.pendingDecision?.kind === "selectCards" && s.state.pendingDecision.decisionId !== handPlay.decisionId,
+    );
     const decision = s.state.pendingDecision!;
     expect(decision.promptText).toContain("Arts Digivolve");
     expect(

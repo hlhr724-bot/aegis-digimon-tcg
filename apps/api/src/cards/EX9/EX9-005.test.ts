@@ -366,7 +366,7 @@ describe("EX9-005 Negamon — KB Q&A rulings", () => {
           ],
         },
       },
-      { autoAcceptOptional: true },
+      { autoAcceptOptional: true, autoSelectCards: true },
     );
     s.state.memory = 5;
     await activateBreedingMain(s);

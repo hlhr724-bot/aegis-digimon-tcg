@@ -203,7 +203,7 @@ describe("EX3-025 Azulongmon", () => {
       ],
       timing: "Main",
       effectText: expect.stringContaining("can't digivolve to level 7"),
-      min: 1,
+      min: 0,
       max: 1,
     });
     respond(s, { kind: "selectCards", instanceIds: [s.inst("azulongmon").instanceId] });

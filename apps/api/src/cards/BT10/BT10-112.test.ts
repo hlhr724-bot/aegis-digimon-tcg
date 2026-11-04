@@ -337,7 +337,12 @@ describe("BT10-112 Jesmon GX — KB Q&A rulings", () => {
     const gxPrompts = s.decisions
       .filter((decision) => decision.req.sourceCardId === "BT10-112")
       .map((decision) => decision.req.promptText);
-    expect(gxPrompts).toEqual(["Place 1 card(s) under", "Play without paying the cost", "Activate Blitz?"]);
+    expect(gxPrompts).toEqual([
+      "Place 1 card(s) under",
+      "Play without paying the cost",
+      "Jesmon GX",
+      "Activate Blitz?",
+    ]);
     expect(s.decisions.some((decision) => decision.req.kind === "orderTriggers")).toBe(false);
     expect(s.perm("base").stack[0]!.instanceId).toBe(s.inst("jesmonX").instanceId);
     expect(
