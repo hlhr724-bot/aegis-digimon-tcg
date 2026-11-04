@@ -1,4 +1,40 @@
 {
+  "releases.1.53.0-beta.summary": {
+    "en": "Find DUAL cards, keep deleted decks deleted, and pass optional attacks without losing their bonuses.",
+    "pt-BR": "Encontre cartas DUAL, mantenha decks excluídos fora da lista e passe ataques opcionais sem perder seus bônus.",
+    "es": "Encuentra cartas DUAL, mantén los mazos eliminados fuera de la lista y pasa ataques opcionales sin perder sus bonificaciones.",
+    "it": "Trova le carte DUAL, mantieni i mazzi eliminati fuori dall’elenco e passa gli attacchi opzionali senza perdere i bonus."
+  },
+  "releases.1.53.0-beta.feature.dualFilter": {
+    "en": "Use the Dual card type filter to show only DUAL cards. They also appear under both Digimon and Option.",
+    "pt-BR": "Use o filtro de tipo Dual para mostrar apenas cartas DUAL. Elas também aparecem nos filtros Digimon e Opção.",
+    "es": "Usa el filtro de tipo Dual para mostrar solo cartas DUAL. También aparecen en los filtros Digimon y Opción.",
+    "it": "Usa il filtro di tipo Dual per mostrare solo le carte DUAL. Compaiono anche nei filtri Digimon e Opzione."
+  },
+  "releases.1.53.0-beta.fix.deckDeletion": {
+    "en": "Deck deletions that could not reach the server are retried after synchronization. An older save in progress can no longer bring back a deck you deleted.",
+    "pt-BR": "Exclusões de decks que não chegaram ao servidor são tentadas novamente na sincronização. Um salvamento antigo em andamento não pode mais trazer de volta um deck excluído.",
+    "es": "Las eliminaciones de mazos que no llegaron al servidor se vuelven a intentar al sincronizar. Un guardado anterior en curso ya no puede recuperar un mazo eliminado.",
+    "it": "Le eliminazioni dei mazzi che non hanno raggiunto il server vengono riprovate alla sincronizzazione. Un salvataggio precedente in corso non può più ripristinare un mazzo eliminato."
+  },
+  "releases.1.53.0-beta.fix.optionalAttack": {
+    "en": "Final Judgment and other cost-free optional attacks let you choose Pass while selecting the target, keeping bonuses already granted. The attack dialog now has clearer Pass and Attack actions.",
+    "pt-BR": "Final Judgment e outros ataques opcionais sem custo permitem escolher Passar na seleção de alvo, mantendo os bônus já concedidos. A janela de ataque agora tem ações Passar e Atacar mais claras.",
+    "es": "Final Judgment y otros ataques opcionales sin coste permiten elegir Pasar al seleccionar el objetivo, conservando las bonificaciones ya otorgadas. El diálogo de ataque muestra con más claridad las acciones Pasar y Atacar.",
+    "it": "Final Judgment e gli altri attacchi opzionali senza costo permettono di scegliere Passa durante la selezione del bersaglio, mantenendo i bonus già concessi. La finestra di attacco mostra più chiaramente le azioni Passa e Attacca."
+  },
+  "releases.1.53.0-beta.fix.tamerDp": {
+    "en": "A Tamer that retains a DP modifier after De-Digivolve now shows that modifier. Copies with different modifiers remain distinguishable.",
+    "pt-BR": "Um Tamer que mantém um modificador de DP após De-Digivolve agora exibe esse modificador. Cópias com modificadores diferentes continuam distinguíveis.",
+    "es": "Un Tamer que conserva un modificador de DP tras De-Digivolve ahora muestra ese modificador. Las copias con modificadores distintos se mantienen diferenciadas.",
+    "it": "Un Tamer che mantiene un modificatore di DP dopo De-Digivolve ora lo mostra. Le copie con modificatori diversi rimangono distinguibili."
+  },
+  "releases.1.53.0-beta.fix.selectionMarkers": {
+    "en": "Selection and material-order markers sit beside the card edge, leaving the artwork and keyword badges clear, including on suspended cards.",
+    "pt-BR": "Marcadores de seleção e ordem de materiais ficam junto à borda da carta, sem cobrir a arte ou os indicadores de palavras-chave, inclusive em cartas suspensas.",
+    "es": "Los marcadores de selección y orden de materiales se sitúan junto al borde de la carta, sin cubrir la ilustración ni los indicadores de palabras clave, incluso en cartas suspendidas.",
+    "it": "Gli indicatori di selezione e ordine dei materiali si trovano accanto al bordo della carta, lasciando libere l’illustrazione e le parole chiave, anche sulle carte sospese."
+  },
   "releases.1.52.1-beta.summary": {
     "en": "Game updates reach every player sooner after a release.",
     "pt-BR": "As atualizações do jogo chegam mais cedo a todos os jogadores depois de uma nova versão.",
