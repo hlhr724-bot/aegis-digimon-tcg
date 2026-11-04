@@ -14,10 +14,16 @@ export type StartMatchupParams = {
 
 const MATCHUPS_PATH = "/account/deck-simulations/matchups";
 
+export type MatchupJobRef = Pick<MatchupJob, "id" | "owner">;
+
+function jobPath({ id, owner }: MatchupJobRef): string {
+  return `${owner === undefined ? "" : `/${owner}`}${MATCHUPS_PATH}/${encodeURIComponent(id)}`;
+}
+
 export const matchupApi = {
   start: (params: StartMatchupParams) =>
     request<MatchupJob>(MATCHUPS_PATH, { method: "POST", body: JSON.stringify(params) }),
-  get: (jobId: string) => request<MatchupJob>(`${MATCHUPS_PATH}/${encodeURIComponent(jobId)}`),
+  get: (job: MatchupJobRef) => request<MatchupJob>(jobPath(job)),
   async latest(deckId: string): Promise<SavedMatchupResult | undefined> {
     try {
       return await request<SavedMatchupResult>(
@@ -28,13 +34,13 @@ export const matchupApi = {
       throw error;
     }
   },
-  async replayFile(jobId: string, index: number): Promise<Blob> {
-    const response = await fetch(`${accountApi.base}${MATCHUPS_PATH}/${encodeURIComponent(jobId)}/replays/${index}`, {
+  async replayFile(job: MatchupJobRef, index: number): Promise<Blob> {
+    const response = await fetch(`${accountApi.base}${jobPath(job)}/replays/${index}`, {
       credentials: "include",
       cache: "no-store",
     });
     if (!response.ok) throw new AccountApiError(response.status);
     return response.blob();
   },
-  cancel: (jobId: string) => request<MatchupJob>(`${MATCHUPS_PATH}/${encodeURIComponent(jobId)}`, { method: "DELETE" }),
+  cancel: (job: MatchupJobRef) => request<MatchupJob>(jobPath(job), { method: "DELETE" }),
 };

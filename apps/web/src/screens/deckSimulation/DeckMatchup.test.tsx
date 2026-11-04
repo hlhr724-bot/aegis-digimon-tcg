@@ -200,6 +200,32 @@ describe("DeckMatchup", () => {
     expect(body.games).toBe(4);
   });
 
+  it("keeps checking the job on the API process that started it", async () => {
+    const owner = "api/red/p2";
+    const running: MatchupJob = {
+      ...finishedJob,
+      status: "running",
+      owner,
+      completedGames: 0,
+      score: null,
+      interval: null,
+    };
+    const fetch = stubFetch((path) =>
+      path.endsWith("/account/deck-simulations/matchups")
+        ? new Response(JSON.stringify(running), { status: 202 })
+        : new Response(JSON.stringify({ ...finishedJob, owner }), { status: 200 }),
+    );
+    renderMatchup();
+    fireEvent.click(screen.getByRole("button", { name: "Mirror" }));
+    fireEvent.click(screen.getByRole("button", { name: "Start test" }));
+    expect(await screen.findByRole("group", { name: "Win rate 63%" }, { timeout: 4000 })).toBeTruthy();
+    const polls = fetch.mock.calls.map(([path]) => String(path)).filter((path) => path.includes(finishedJob.id));
+    expect(polls.length).toBeGreaterThan(0);
+    expect(polls.every((path) => path.endsWith(`/${owner}/account/deck-simulations/matchups/${finishedJob.id}`))).toBe(
+      true,
+    );
+  });
+
   it("names the deck-building problem when the server refuses the deck", async () => {
     stubFetch(() => new Response(JSON.stringify({ error: "invalid_deck" }), { status: 400 }));
     renderMatchup();

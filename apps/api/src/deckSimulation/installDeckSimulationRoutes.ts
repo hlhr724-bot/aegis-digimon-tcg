@@ -1,4 +1,5 @@
 import type { Express, NextFunction, Request, Response } from "express";
+import type { MatchupJob } from "@aegis/shared/deckSimulation/MatchupJob";
 import type { AuthSession } from "#api/accounts/AccountStore";
 import { tokenBucketLimiter } from "#api/http/rateLimit";
 import { MATCHUP_LIMITS } from "#api/deckSimulation/MATCHUP_LIMITS";
@@ -19,10 +20,12 @@ type Params = {
   simulator: MatchupSimulator;
   communityDecks: CommunityMatchupDecks;
   results: Pick<DeckMatchupResultStore, "latest">;
+  owner?: string;
   session: (req: Request) => Promise<AuthSession | undefined>;
 };
 
-export function installDeckSimulationRoutes({ app, simulator, communityDecks, results, session }: Params): void {
+export function installDeckSimulationRoutes({ app, simulator, communityDecks, results, owner, session }: Params): void {
+  const owned = (job: MatchupJob): MatchupJob => (owner === undefined ? job : { ...job, owner });
   const reads = tokenBucketLimiter({ capacity: 60, refillMs: 1000 });
   const starts = tokenBucketLimiter(MATCHUP_LIMITS.startsPerAccount);
   const route =
@@ -63,7 +66,7 @@ export function installDeckSimulationRoutes({ app, simulator, communityDecks, re
         return;
       }
       try {
-        res.status(202).json(simulator.start({ accountId, request }));
+        res.status(202).json(owned(simulator.start({ accountId, request })));
       } catch (error) {
         if (error instanceof MatchupLimitError) {
           res.status(error.code === "job_in_progress" ? 409 : 503).json({ error: error.code });
@@ -99,7 +102,7 @@ export function installDeckSimulationRoutes({ app, simulator, communityDecks, re
         res.sendStatus(404);
         return;
       }
-      res.json(job);
+      res.json(owned(job));
     }),
   );
 
@@ -112,7 +115,7 @@ export function installDeckSimulationRoutes({ app, simulator, communityDecks, re
         res.sendStatus(404);
         return;
       }
-      res.json(job);
+      res.json(owned(job));
     }),
   );
 

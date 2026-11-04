@@ -96,15 +96,16 @@ export function DeckMatchup({ deckId, mainDeck, eggDeck, format, art }: DeckMatc
   const shownJob = job ?? saved?.job;
   const savedIsStale = saved !== undefined && saved.deckKey !== matchupDeckKey({ mainDeck, eggDeck });
   const jobId = job?.id;
+  const jobOwner = job?.owner;
   const refresh = useCallback(async () => {
     if (jobId === undefined) return;
     try {
-      setJob(await matchupApi.get(jobId));
+      setJob(await matchupApi.get({ id: jobId, owner: jobOwner }));
     } catch (failure) {
       setError(errorKey(failure));
       setJob(undefined);
     }
-  }, [jobId]);
+  }, [jobId, jobOwner]);
   usePolling(refresh, POLL_MS, running);
 
   const start = async () => {
@@ -133,7 +134,7 @@ export function DeckMatchup({ deckId, mainDeck, eggDeck, format, art }: DeckMatc
   const cancel = async () => {
     if (jobId === undefined) return;
     try {
-      setJob(await matchupApi.cancel(jobId));
+      setJob(await matchupApi.cancel({ id: jobId, owner: jobOwner }));
     } catch (failure) {
       setError(errorKey(failure));
     }
@@ -143,7 +144,7 @@ export function DeckMatchup({ deckId, mainDeck, eggDeck, format, art }: DeckMatc
     if (jobId === undefined) return;
     setReplayFailed(false);
     try {
-      await viewer.open(await matchupApi.replayFile(jobId, index));
+      await viewer.open(await matchupApi.replayFile({ id: jobId, owner: jobOwner }, index));
     } catch {
       setReplayFailed(true);
     }

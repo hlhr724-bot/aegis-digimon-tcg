@@ -1,5 +1,6 @@
 import { installDeckSimulationRoutes } from "#api/deckSimulation/installDeckSimulationRoutes";
 import { DeckMatchupResultStore } from "#api/deckSimulation/DeckMatchupResultStore";
+import { matchupOwnerPath } from "#api/deckSimulation/matchupOwnerPath";
 import { MatchupSimulator } from "#api/deckSimulation/MatchupSimulator";
 import { playsScoredRounds } from "@aegis/shared/tournaments/playsScoredRounds";
 import type { TournamentOwnDeck } from "@aegis/shared/tournaments/TournamentOwnDeck";
@@ -168,6 +169,7 @@ export function installAccountRoutes(
     }),
     communityDecks,
     results: matchupResults,
+    owner: matchupOwnerPath(process.env),
     session: sessionFromRequest,
   });
   installReplayAnnotationRoutes({ app, store: replays.annotations, session: sessionFromRequest });

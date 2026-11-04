@@ -30,6 +30,7 @@ export interface MatchupOpponentResult extends MatchupTally {
 
 export interface MatchupJob extends MatchupTally {
   id: string;
+  owner?: string;
   status: MatchupJobStatus;
   opponents: MatchupOpponentResult[];
   samples: MatchupSampleGame[];
