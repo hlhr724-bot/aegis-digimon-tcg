@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { RED_DECK, BLUE_DECK } from "#api/engine/testDecks";
+import { validateDecklist } from "#api/engine/deckValidation";
 import { parseMatchupRequest } from "#api/deckSimulation/parseMatchupRequest";
 
 const deck = { mainDeck: [...RED_DECK.mainDeck], eggDeck: [...RED_DECK.eggDeck] };
@@ -28,6 +29,17 @@ describe("parseMatchupRequest", () => {
       kind: "community",
       deckIds: undefined,
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("accepts a deck that holds a card before its release date", () => {
+    vi.useFakeTimers({ now: new Date("2026-11-01T12:00:00Z"), toFake: ["Date"] });
+    const unreleased = { mainDeck: ["LM-065", ...RED_DECK.mainDeck.slice(1)], eggDeck: [...RED_DECK.eggDeck] };
+    expect(validateDecklist(unreleased).ok).toBe(false);
+    expect(parseMatchupRequest({ deck: unreleased, opponent: { mirror: true }, games: 10 }).deck).toEqual(unreleased);
   });
 
   it.each([

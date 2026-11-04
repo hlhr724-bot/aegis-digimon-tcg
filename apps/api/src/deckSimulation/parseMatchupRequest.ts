@@ -24,7 +24,7 @@ function parseDecklist(input: unknown, code: string, format: DeckFormat | undefi
     throw new MatchupRequestError(code);
   }
   const deck = { mainDeck: [...mainDeck] as string[], eggDeck: [...eggDeck] as string[] };
-  if (!validateDecklist(deck, { format }).ok) throw new MatchupRequestError(code);
+  if (!validateDecklist(deck, { format, betaBattleMode: true }).ok) throw new MatchupRequestError(code);
   return deck;
 }
 

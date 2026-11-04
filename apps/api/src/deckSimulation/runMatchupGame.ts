@@ -9,6 +9,7 @@ import { MATCHUP_PLAYER_SEAT } from "#api/deckSimulation/MATCHUP_PLAYER_SEAT";
 import type { MatchupGameOutcome } from "#api/deckSimulation/MatchupGameOutcome";
 
 const MATCHUP_TURN_LIMIT = 60;
+const MATCHUP_DECK_RULES = { betaBattleMode: true } as const;
 
 type Params = {
   deck: Decklist;
@@ -60,6 +61,7 @@ export async function runMatchupGame({
     seats: [standardSeat(deck, seed), standardSeat(opponent, seed)],
     turnLimit: MATCHUP_TURN_LIMIT,
     recordReplay,
+    deckRules: MATCHUP_DECK_RULES,
     signal,
   });
   const result = !isCleanGame(match)

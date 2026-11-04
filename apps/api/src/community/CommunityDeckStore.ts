@@ -361,7 +361,7 @@ export class CommunityDeckStore {
         isEligibleCommunityDeck({
           deck: { mainDeck: row.main_deck, eggDeck: row.egg_deck },
           format,
-          betaAllowed: false,
+          betaAllowed: true,
         }),
       )
       .slice(0, limit)

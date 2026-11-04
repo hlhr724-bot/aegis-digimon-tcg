@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { BLUE_DECK, RED_DECK } from "#api/engine/testDecks";
 import type { MatchupGameOutcome } from "#api/deckSimulation/MatchupGameOutcome";
 import type { MatchupJobTask } from "#api/deckSimulation/MatchupJobTask";
@@ -23,6 +23,28 @@ function createTask(overrides: Partial<MatchupJobTask> = {}): MatchupJobTask {
 }
 
 describe("runMatchupJob", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("plays a deck that holds a card before its release date", async () => {
+    vi.useFakeTimers({ now: new Date("2026-11-01T12:00:00Z"), toFake: ["Date"], shouldAdvanceTime: true });
+    const unreleased = { mainDeck: ["LM-065", ...RED_DECK.mainDeck.slice(1)], eggDeck: [...RED_DECK.eggDeck] };
+    const games: MatchupGameOutcome[] = [];
+    const end = await runMatchupJob({
+      task: createTask({
+        request: { deck: unreleased, opponents: [{ name: "Blue", deck: BLUE_DECK }], gamesPerOpponent: 1 },
+        sampleLimit: 0,
+        deadlineEpochMs: Date.now() + 600_000,
+      }),
+      signal: new AbortController().signal,
+      onGame: (game) => games.push(game.outcome),
+    });
+    expect(end).toBe("completed");
+    expect(games).toHaveLength(1);
+    expect(games[0]!.turns).toBeGreaterThan(0);
+  }, 300_000);
+
   it("plays each opponent in turn and exports only the sample games as viewer replays", async () => {
     const games: {
       index: number;
