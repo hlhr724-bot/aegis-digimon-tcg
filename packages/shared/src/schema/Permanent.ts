@@ -153,4 +153,5 @@ export class Permanent extends Schema {
   @type("string") heldDpEffectsJson = "";
   @type("string") manualMarker = "";
   @type(["string"]) manualStatuses = new ArraySchema<string>();
+  @type("int32") retainedDpDelta = 0;
 }

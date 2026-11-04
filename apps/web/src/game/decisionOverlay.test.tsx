@@ -5105,3 +5105,49 @@ it.each([true, false])(
     });
   },
 );
+
+it.each([0, 1])("keeps attack target actions explicit with minimum %i", (min) => {
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  render(
+    <I18nProvider>
+      <DecisionOverlay
+        request={{
+          decisionId: "attack-target-actions",
+          promptText: "Choose an attack target",
+          seat: 0,
+          kind: "selectCards",
+          sourceCardId: "BT25-057",
+          options: {
+            selectionContext: "attackTarget",
+            candidateInstanceIds: ["player"],
+            min,
+            max: 1,
+            timing: "Main",
+            effectText:
+              "[Main] 1 of your Digimon gains ＜Rush＞, ＜Security A. +1＞ and +5000 DP for the turn. Then, it may attack.",
+          },
+        }}
+        sourceCardId="BT25-057"
+        contextText="Cougarmon attacks. Choose its target."
+        candidates={[{ instanceId: "player" }]}
+        picks={["player"]}
+        onTogglePick={() => undefined}
+        onRespond={onRespond}
+      />
+    </I18nProvider>,
+  );
+  expect(screen.getByRole("heading", { name: "Attack" })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "None" })).toBeNull();
+  expect(document.querySelector("details")?.open).toBe(false);
+  expect(screen.getByText("Cougarmon attacks. Choose its target.")).toBeTruthy();
+  expect(document.querySelector("details")?.textContent).toContain("+5000 DP");
+  expect(document.querySelector("details")?.textContent).not.toContain("Cougarmon attacks");
+  expect(screen.getByRole("button", { name: "View board" }).textContent).toBe("");
+  if (min === 0) {
+    fireEvent.click(screen.getByRole("button", { name: "Pass" }));
+  }
+  expect(screen.queryByRole("button", { name: "Pass" }) !== null).toBe(min === 0);
+  expect(onRespond.mock.calls).toEqual(min === 0 ? [[{ kind: "selectCards", instanceIds: [] }]] : []);
+  fireEvent.click(screen.getByRole("button", { name: "Attack" }));
+  expect(onRespond).toHaveBeenLastCalledWith({ kind: "selectCards", instanceIds: ["player"] });
+});

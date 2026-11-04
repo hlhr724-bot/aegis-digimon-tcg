@@ -44,6 +44,7 @@ export default defineConfig({
   },
   test: {
     projects: [
+      { extends: true, test: { name: "deck-sync", include: ["src/App.deckDeletion.test.tsx"], environment: "jsdom" } },
       { extends: true, test: { name: "ranked-ui", include: ["src/ranked/**/*.test.tsx"], environment: "jsdom" } },
       {
         extends: true,
@@ -156,6 +157,7 @@ export default defineConfig({
         test: {
           name: "default",
           exclude: [
+            "src/App.deckDeletion.test.tsx",
             "src/game/screen/hooks/useBoardMeasurements.test.tsx",
             "src/replays/ReplayPlayer.test.tsx",
             "src/replays/annotations/**/*.test.tsx",

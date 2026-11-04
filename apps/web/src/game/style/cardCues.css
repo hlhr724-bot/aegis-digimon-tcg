@@ -1435,13 +1435,13 @@
 
 .game-permanent__picked-mark {
   position: absolute;
-  top: -0.6rem;
-  right: -0.6rem;
+  top: var(--ds-space-1);
+  right: -1rem;
   z-index: 5;
   display: grid;
   place-items: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: clamp(16px, calc(var(--permanent-width, 116px) * 0.16), 18px);
+  aspect-ratio: 1;
   border: 1.5px solid var(--target-rim);
   border-radius: 50%;
   color: var(--target-on-accent);
@@ -1458,6 +1458,6 @@
 }
 
 .game-permanent[data-suspended] > .game-permanent__picked-mark {
-  top: calc(var(--permanent-width, 76px) * 0.2 - 0.6rem);
-  right: calc(var(--permanent-width, 76px) * -0.2 - 0.6rem);
+  top: calc(var(--permanent-width, 116px) * 0.2 + var(--ds-space-1));
+  right: calc(var(--permanent-width, 116px) * -0.2 - 1rem);
 }

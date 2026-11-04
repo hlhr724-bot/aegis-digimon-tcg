@@ -329,7 +329,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta, reference }: TokenI
   const dpContentWidth = width - px(18) - 4 - (hasDelta ? px(6) : 0);
   const dpFontLimit = dpContentWidth / (totalCharacterWidth + deltaCharacterWidth);
   const dpReadout =
-    dpValue > 0 ? (
+    dpValue > 0 || hasDelta ? (
       <span
         data-card-dp
         style={{
@@ -353,7 +353,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta, reference }: TokenI
           overflow: "hidden",
         }}
       >
-        {formatDp(dpValue)}
+        {dpValue > 0 ? formatDp(dpValue) : null}
         {deltaNode && (renderDpDelta ? renderDpDelta(deltaNode) : deltaNode)}
       </span>
     ) : null;

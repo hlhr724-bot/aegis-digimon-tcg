@@ -662,3 +662,19 @@ it("prefixes the card name with the first field reference and keeps every refere
   expect(screen.getByRole("button").getAttribute("data-permanent-id")).toBe("perm-18");
   setFieldReferenceVisible(false);
 });
+
+it("shows a retained DP reduction on a Tamer without assigning it a DP stat", () => {
+  const perm = opponentWithDpDown();
+  perm.topCard = Object.assign(new CardInstance(), { cardId: "BT4-092", instanceId: "tamer" });
+  perm.baseDP = 0;
+  perm.currentDP = 0;
+  Object.assign(perm, { retainedDpDelta: -3000 });
+  const { container } = render(
+    <I18nProvider>
+      <PermanentView perm={perm} onClick={() => undefined} />
+    </I18nProvider>,
+  );
+  expect(container.querySelector('[data-dp="down"]')?.textContent).toContain("−3K");
+  expect(container.querySelector("[data-card-dp]")?.textContent).not.toContain("0");
+  expect(screen.getByRole("button", { name: /Marcus Damon/ }).getAttribute("aria-label")).not.toContain("0 DP");
+});

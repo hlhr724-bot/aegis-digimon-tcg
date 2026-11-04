@@ -908,6 +908,7 @@ const interfaceMessages = {
   "library.kind.DigiEgg": "数码蛋",
   "library.kind.Tamer": "驯兽师",
   "library.kind.Option": "选项卡",
+  "library.kind.Dual": "双重",
   "deck.eyebrow": "卡组编辑",
   "deck.title": "你的卡组",
   "deck.empty": "你还没有任何卡组。",

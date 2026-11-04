@@ -1,5 +1,32 @@
 [
   {
+    "version": "1.53.0-beta",
+    "releasedAt": "2026-11-04",
+    "summaryKey": "releases.1.53.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.53.0-beta.feature.dualFilter"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.53.0-beta.fix.deckDeletion",
+        "issue": 6539
+      },
+      {
+        "textKey": "releases.1.53.0-beta.fix.optionalAttack",
+        "issue": 6541
+      },
+      {
+        "textKey": "releases.1.53.0-beta.fix.tamerDp",
+        "issue": 6544
+      },
+      {
+        "textKey": "releases.1.53.0-beta.fix.selectionMarkers"
+      }
+    ]
+  },
+  {
     "version": "1.52.1-beta",
     "releasedAt": "2026-11-04",
     "summaryKey": "releases.1.52.1-beta.summary",

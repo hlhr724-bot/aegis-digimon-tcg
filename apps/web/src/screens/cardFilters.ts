@@ -4,15 +4,14 @@
 import { useMemo, useState } from "react";
 import { type CardColor, type CardDefinition } from "@aegis/shared";
 import { isCardInQueriedFieldGroup } from "@aegis/shared/cards/isCardInQueriedFieldGroup";
-import { colorKey, kindOf, type ColorName } from "../design/theme";
+import { colorKey, type ColorName } from "../design/theme";
 import { collectionOrder } from "./cardSorting";
 import { matchesCostBucket } from "@/screens/matchesCostBucket";
 import { matchesDigivolutionCostFilter, type DigivolutionCostFilter } from "@/screens/matchesDigivolutionCostFilter";
 import { findCardKeywords } from "@/screens/findCardKeywords";
 import { KEYWORD_FILTERS, type KeywordFilter, type KeywordFilterOption } from "@/screens/KeywordFilter";
 import { matchesKeywordFilter } from "@/screens/matchesKeywordFilter";
-
-export const KIND_FILTERS = ["Digimon", "DigiEgg", "Tamer", "Option"] as const;
+import { matchesKindFilter, type KindFilter } from "@/screens/matchesKindFilter";
 
 export const LEVEL_FILTERS = [2, 3, 4, 5, 6, 7] as const;
 
@@ -23,8 +22,6 @@ export const COST_FILTERS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 1
 export const RARITY_FILTERS = ["C", "U", "R", "SR", "UR", "SEC", "P", "-"] as const;
 
 export const CARD_SORTS = ["releaseDate", "name", "dp", "level", "playCost", "type", "cardNumber", "random"] as const;
-
-export type KindFilter = (typeof KIND_FILTERS)[number];
 
 export type LevelFilter = (typeof LEVEL_FILTERS)[number];
 
@@ -221,7 +218,7 @@ export function useCardFilter(
       const searchMatch = cardSearchMatch(c, query);
       if (searchMatch === "none") return false;
       if (!matchesColorFilter({ cardColors: c.colors, selectedColors: colors, mode: colorFilterMode })) return false;
-      if (kinds.length && !kinds.includes(kindOf(c) as KindFilter)) return false;
+      if (!matchesKindFilter({ card: c, selectedKinds: kinds })) return false;
       if (!matchesLevelFilter(c.level, levels)) return false;
       if (!matchesCostFilter(c.playCost, costs)) return false;
       if (!matchesDigivolutionCostFilter({ evoCosts: c.evoCosts, selectedCosts: digivolutionCosts })) return false;

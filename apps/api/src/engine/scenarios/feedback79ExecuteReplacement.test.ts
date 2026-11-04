@@ -71,15 +71,12 @@ async function resolve(
     else if (req.kind === "chooseOption") response = { kind: "chooseOption", optionIndex: 0 };
     else if (req.kind === "selectCards" || req.kind === "chooseTargets") {
       const ids = req.options?.candidateInstanceIds ?? [];
-      response = {
-        kind: req.kind,
-        instanceIds:
-          (req.options?.min ?? 1) === 0
-            ? []
-            : ids.includes("player")
-              ? ["player"]
-              : ids.slice(0, req.options?.min ?? 1),
-      };
+      const count = req.options?.selectionContext === "attackTarget" ? 1 : (req.options?.min ?? 1);
+      let instanceIds = ids.slice(0, count);
+      if (count > 0 && ids.includes("player")) {
+        instanceIds = ["player"];
+      }
+      response = { kind: req.kind, instanceIds };
     } else throw new Error(`Unhandled decision ${req.kind}`);
     expect(s.engine.applyIntent(seat, { type: "respondDecision", decisionId: req.decisionId, response })).toEqual({
       ok: true,

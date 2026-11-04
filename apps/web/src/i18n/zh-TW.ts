@@ -913,6 +913,7 @@ const interfaceMessages = {
   "library.kind.DigiEgg": "數碼蛋",
   "library.kind.Tamer": "馴獸師",
   "library.kind.Option": "選項",
+  "library.kind.Dual": "雙重",
   "deck.eyebrow": "卡組構築器",
   "deck.title": "你的卡組",
   "deck.empty": "你還沒有任何卡組。",
