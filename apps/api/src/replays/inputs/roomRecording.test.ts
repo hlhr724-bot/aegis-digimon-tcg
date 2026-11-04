@@ -317,6 +317,7 @@ describe("AegisRoom replay recording", () => {
         },
       }),
       markGamePlaying: async () => true,
+      releaseUnstartedGame: async () => true,
     } as unknown as SeriesStore;
     class TournamentRoom extends AegisRoom {
       protected override accounts(): AccountStore {

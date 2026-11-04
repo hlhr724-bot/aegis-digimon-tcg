@@ -875,6 +875,14 @@ describe("EX13-065 Sistermon Blanc (Awakened) / Divine Pierce (Awakened)", () =>
         useAs: "option",
       }),
     ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("freePlay").instanceId] },
+      }),
+    ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "chooseTargets");
 
     expect(s.perm("freePlay").currentDP).toBe(0);
@@ -960,6 +968,18 @@ describe("EX13-065 Sistermon Blanc (Awakened) / Divine Pierce (Awakened)", () =>
       }),
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const handPlay = s.state.pendingDecision!;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: handPlay.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("artsTarget").instanceId] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.state.pendingDecision?.kind === "selectCards" && s.state.pendingDecision.decisionId !== handPlay.decisionId,
+    );
     const decision = s.state.pendingDecision!;
     expect(decision.promptText).toContain("Arts Digivolve");
     expect(

@@ -440,6 +440,7 @@ export interface SelectionPort {
       visibleInstanceIds?: string[];
       allowedTargetCombinations?: string[][];
       selectionGoal?: DecisionSelectionGoal;
+      purpose?: "cost";
     },
   ): Promise<string[]>;
 }

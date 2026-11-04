@@ -341,7 +341,7 @@ describe("EX2-072 Blue Card", () => {
           security: [{ card: "EX2-072", as: "securityOption" }, ...inertSecurity],
         },
       },
-      { autoAcceptOptional: true, autoOrderTriggers: true },
+      { autoAcceptOptional: true, autoOrderTriggers: true, autoSelectCards: true },
     );
     await s.ready();
     expect(

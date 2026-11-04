@@ -180,13 +180,13 @@ describe("BT11-054 Panjyamon — KB Q&A rulings", () => {
           ],
         },
       },
-      { autoAcceptOptional: true },
+      { autoAcceptOptional: true, autoSelectCards: true },
     );
     s.state.memory = 10;
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("jeri").instanceId })).toEqual({ ok: true });
     await settle(() => s.state.players[0]!.battleArea.length === 3 && s.state.pendingDecision === undefined);
-    // Leomon is the only legal [Leomon] target, so the engine plays it without a card prompt.
-    expect(s.decisions.map(({ req }) => req.kind)).toEqual(["optional"]);
+    expect(s.decisions.map(({ req }) => req.kind)).toEqual(["optional", "selectCards"]);
+    expect(s.decisions[1]!.req.options?.candidateInstanceIds).toEqual([s.inst("leomon").instanceId]);
     expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard?.instanceId)).toContain(
       s.inst("leomon").instanceId,
     );
