@@ -114,7 +114,7 @@ describe("EX5-023 WereGarurumon (X Antibody)", () => {
       }),
     ).toEqual({ ok: true });
     await settle(() => s.state.pendingDecision?.kind === "selectCards");
-    expect(s.decisions.at(-1)?.req.options).toMatchObject({ min: 0, purpose: "cost" });
+    expect(s.decisions.at(-1)?.req.options).toMatchObject({ min: 2, max: 2, purpose: "cost", declinesCost: true });
     expect(
       s.engine.applyIntent(0, {
         type: "respondDecision",

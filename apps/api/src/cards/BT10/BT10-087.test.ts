@@ -224,13 +224,13 @@ describe("BT10-087 Taiki Kudo", () => {
     expect(toHand).toMatchObject({ cardIds: [added.cardId] });
   });
 
-  it("suspends itself to use DigiXros materials placed under a different Tamer", async () => {
+  it.each(["BT10-089", "BT10-087"])("suspends only itself when DigiXros materials are under %s", async (hostCard) => {
     const s = setupEngine({
       0: {
         battleArea: [
           { card: "BT10-087", as: "taiki" },
           {
-            card: "BT10-089",
+            card: hostCard,
             as: "otherTamer",
             under: [
               { card: "BT10-019", as: "greymon" },
@@ -263,6 +263,7 @@ describe("BT10-087 Taiki Kudo", () => {
 
     const metalGreymon = s.state.players[0]!.battleArea.find((permanent) => permanent.topCard.cardId === "BT10-024")!;
     expect(s.perm("taiki").isSuspended).toBe(true);
+    expect(s.perm("otherTamer").isSuspended).toBe(false);
     expect(metalGreymon.stack.map((card) => card.instanceId)).toEqual(
       expect.arrayContaining([s.inst("greymon").instanceId, s.inst("mailbirdramon").instanceId]),
     );
