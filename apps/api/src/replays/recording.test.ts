@@ -11,7 +11,7 @@ import {
   type SequencedServerEvent,
 } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
-import { projectReplay, ReplayRecording } from "./recording.js";
+import { projectReplay, recordingState, ReplayRecording } from "./recording.js";
 import { replayDownload } from "./download.js";
 
 function card(id: string, ownerSeat: 0 | 1, faceUp = true): CardInstance {
@@ -214,5 +214,30 @@ describe("neutral spectator replay export", () => {
     expect(file.json).not.toContain("changed-later");
     expect(file.json).not.toContain("secret-decision");
     expect(file.json).not.toContain("private-session");
+  });
+});
+
+describe("recorded frame state", () => {
+  it("keeps every serialized schema field except hidden zones and the open decision", () => {
+    const game = state();
+    const faceUp = card("battle", 0);
+    game.players[0]!.battleArea.push(
+      Object.assign(new Permanent(), { permanentId: "p0", controllerSeat: 0, topCard: faceUp }),
+    );
+    game.players[0]!.trash.push(card("trash", 0));
+    const full = JSON.parse(JSON.stringify(game.toJSON()));
+    const recorded = JSON.parse(JSON.stringify(recordingState(game)));
+
+    const { pendingDecision: _decision, combatWindow: _window, ...publicFields } = full;
+    expect(Object.keys(recorded).sort()).toEqual(Object.keys(publicFields).sort());
+    for (const seat of [0, 1]) {
+      const player = recorded.players[seat];
+      expect(Object.keys(player).sort()).toEqual(Object.keys(full.players[seat]).sort());
+      expect([player.deck, player.eggDeck, player.security]).toEqual([[], [], []]);
+      expect(player.hand).toEqual(full.players[seat].hand);
+      expect(player.battleArea).toEqual(full.players[seat].battleArea);
+      expect(player.trash).toEqual(full.players[seat].trash);
+    }
+    expect(recorded.memory).toBe(full.memory);
   });
 });

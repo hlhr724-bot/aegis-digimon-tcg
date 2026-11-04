@@ -155,6 +155,21 @@ fresh room ticket. The room consumes that ticket and checks the policy again
 before it admits the socket, so a forged join cannot skip the check. A slot
 without the room answers `404 match_not_live`.
 
+## Tournament game entry
+
+`POST /series/:id/authorize-game` returns a ticket for the series' next open
+game. The token is valid for 2 minutes and works for one room.
+
+- Calling it again while the caller's earlier token is unused issues a new
+  token and expires the old one. A player who lost their token (failed join,
+  reload) can always retry.
+- A room is bound to its game on the first claim. If that room closes before
+  the match starts, the server releases the game (`room_claimed` back to
+  `allocated`), so the players can enter a new room. A game that has started
+  (`playing`) stays bound: its result or the series deadline closes it.
+- A room that refuses a tournament join logs `tournament.join.refused` with the
+  game ID and the reason.
+
 ## Optional rollback
 
 `allowRollback` defaults to `false`. Casual random queues, including Beta and

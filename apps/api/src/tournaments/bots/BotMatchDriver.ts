@@ -242,9 +242,6 @@ export class BotMatchDriver {
         continue;
       }
       if (issued.reason === "no_games_remaining") return "no_games_remaining";
-      // `authorization_live` means this seat is already holding a usable token — most often because
-      // the driver was restarted. Waiting for it to expire is the safe move; re-issuing would leave
-      // two live tokens for one seat.
       return "retry";
     }
     if (authorizations.length === 0) return "retry";

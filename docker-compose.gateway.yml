@@ -18,14 +18,12 @@ services:
           - aegis-web
           - aegis-rollout-gateway
     healthcheck:
-      test:
-        - CMD
-        - node
-        - -e
-        - fetch('http://127.0.0.1/deployment/manifest.json').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
-      interval: 5s
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/deployment/manifest.json"]
+      interval: 30s
       timeout: 3s
-      retries: 12
+      retries: 3
+      start_period: 30s
+      start_interval: 2s
     logging:
       driver: json-file
       options:

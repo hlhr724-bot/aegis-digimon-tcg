@@ -449,6 +449,7 @@ export class AegisRoom extends Room<{
    * room through the visibility port, so an undisposed view keeps the whole match alive.
    */
   private issuedViews = new Set<NonNullable<Client["view"]>>();
+  private previousPatchCarriedChanges = true;
   /**
    * Bot drivers by seat. An array rather than one field because a tournament confrontation between
    * two bots has to run with nobody connected at all, so both seats can be driven at once.
@@ -770,6 +771,11 @@ export class AegisRoom extends Room<{
     }
   }
 
+  private refuseTournamentJoin(gameId: string, reason: string): undefined {
+    this.debug("tournament.join.refused", { gameId, reason });
+    return undefined;
+  }
+
   /**
    * Establishes who is joining, by whichever of the two tournament flows the options describe (see
    * {@link AegisJoinOptions}), or by the plain room ticket for casual and ranked play.
@@ -827,10 +833,10 @@ export class AegisRoom extends Room<{
         authorizationToken: token,
         roomId: this.roomId,
       });
-      if (!entry.ok) return undefined;
+      if (!entry.ok) return this.refuseTournamentJoin(gameId, entry.reason);
       const tournament = await this.accounts().tournament(entry.value.authorization.tournamentId);
       if (!tournament || tournament.format !== this.state.format) {
-        return undefined;
+        return this.refuseTournamentJoin(gameId, tournament ? "format_mismatch" : "tournament_not_found");
       }
       this.tournamentRules = tournament;
       options.format = tournament.format;
@@ -856,7 +862,10 @@ export class AegisRoom extends Room<{
           // Claiming binds this room to the game exactly once; the opponent's own authorization
           // then finds it already bound to this room and is admitted to it.
           const claimed = await this.series().claimGame({ gameId, authorizationToken: token, roomId: this.roomId });
-          if (!claimed.ok) return false;
+          if (!claimed.ok) {
+            this.refuseTournamentJoin(gameId, claimed.reason);
+            return false;
+          }
           this.tournamentGameId = gameId;
           this.tournamentId = tournament.id;
           return true;
@@ -1902,9 +1911,10 @@ export class AegisRoom extends Room<{
     this.tournamentBotRoomIdleTimeout?.clear();
     this.matchClockInterval?.clear();
     this.matchLimitInterval?.clear();
-    // Legacy only. A Tournament Game's room binding is permanent by design: the game either
-    // finished here or is voided by the scheduler, and re-binding it to a second room would be the
-    // duplicate-claim the UNIQUE room_id exists to prevent.
+    if (this.tournamentGameId)
+      void this.series()
+        .releaseUnstartedGame(this.tournamentGameId, this.roomId)
+        .catch((error: unknown) => this.debugError("[AegisRoom] failed to release unstarted tournament game", error));
     if (!this.tournamentGameId && this.tournamentMatchId)
       void this.accounts()
         .releaseTournamentRoom(this.tournamentMatchId, this.roomId)
@@ -3061,6 +3071,15 @@ export class AegisRoom extends Room<{
     }
   };
 
+  private stateChangedSinceLastPatch(): boolean {
+    const serializer = Reflect.get(this, "_serializer") as { encoder?: { hasChanges: boolean } } | undefined;
+    return serializer?.encoder?.hasChanges !== false;
+  }
+
+  private patchIsIdle(): boolean {
+    return this.clients.length > 0 && !this.previousPatchCarriedChanges && !this.stateChangedSinceLastPatch();
+  }
+
   /**
    * Refresh the public per-zone count mirrors before every state broadcast. The
    * hidden zones (deck/hand/security) are redacted per seat, so only these counts
@@ -3072,6 +3091,10 @@ export class AegisRoom extends Room<{
     // Colyseus starts its patch timer before onCreate, which can await a private-code lookup
     // or reject before the engine exists. There is nothing to synchronize until it is ready.
     if (!this.engine) return;
+    if (this.patchIsIdle()) {
+      this.engine.flushHandAffordances();
+      if (!this.stateChangedSinceLastPatch()) return;
+    }
     // Not a replay input: the counts are derived from the zone arrays, and the replay recomputes them.
     this.engine.syncCounts();
     this.engine.flushHandAffordances();
@@ -3094,6 +3117,7 @@ export class AegisRoom extends Room<{
    */
   override broadcastPatch(): boolean {
     const hasChanges = super.broadcastPatch();
+    this.previousPatchCarriedChanges = hasChanges;
     if (!this.engine) return hasChanges;
     for (const client of this.clients) {
       if (client.view === undefined) continue;
