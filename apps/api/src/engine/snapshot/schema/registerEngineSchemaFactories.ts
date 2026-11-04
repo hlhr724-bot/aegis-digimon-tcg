@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { $childType, $numFields, $refId, ArraySchema, type Schema } from "@colyseus/schema";
+import { $childType, $numFields, $refId, ArraySchema, Schema } from "@colyseus/schema";
 import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
 import { ENGINE_SCHEMA_CLASSES } from "#api/engine/snapshot/schema/ENGINE_SCHEMA_CLASSES";
 import { EngineSchemaKind } from "#api/engine/snapshot/schema/EngineSchemaKind";
@@ -14,6 +14,7 @@ type Layout = {
   prototype: object;
   fingerprint: string;
   fields: Map<string, PropertyDescriptor>;
+  names: string[];
   annotated: Set<string>;
   types: Map<string, unknown>;
   symbols: Set<symbol>;
@@ -21,6 +22,8 @@ type Layout = {
 type LayoutParams = { entry: ClassEntry; classKeys: Map<Function, string> };
 type DescribeParams = { value: object; layout: Layout };
 type HydrateParams = DescribeParams & { payload: unknown };
+type OrderParams = { layout: Layout; payload: SchemaPayload };
+type ValidPayloadParams = OrderParams & { value: object };
 type TypeParams = { value: unknown; classKeys: Map<Function, string> };
 type ValidateFieldParams = { value: unknown; type: unknown };
 type ArrayTypeParams = { value: ArraySchema<unknown>; classKeys: Map<Function, string> };
@@ -45,24 +48,48 @@ const PRIMITIVE_CHILD_TYPES = new Set([
 ]);
 const VISIBILITY_PORT = Symbol.for("aegis.visibilityPort");
 
-export function registerEngineSchemaFactories({ objects }: Params): void {
+type SchemaRegistrations = {
+  classKeys: Map<Function, string>;
+  classes: Map<string, SchemaConstructor>;
+  layouts: { entry: ClassEntry; layout: Layout }[];
+  arrayNames: Set<string>;
+  arraySymbols: Set<symbol>;
+};
+
+let schemaRegistrations: SchemaRegistrations | undefined;
+
+function getSchemaRegistrations(): SchemaRegistrations {
+  if (schemaRegistrations !== undefined) {
+    return schemaRegistrations;
+  }
   const classKeys = new Map<Function, string>(ENGINE_SCHEMA_CLASSES.map((entry) => [entry.constructor, entry.key]));
   const classes = new Map<string, SchemaConstructor>(
     ENGINE_SCHEMA_CLASSES.map((entry) => [entry.key, entry.constructor]),
   );
-  for (const entry of ENGINE_SCHEMA_CLASSES) {
-    const layout = getLayout({ entry, classKeys });
+  const layouts = ENGINE_SCHEMA_CLASSES.map((entry) => ({ entry, layout: getLayout({ entry, classKeys }) }));
+  const arrayTemplate = new ArraySchema<unknown>();
+  schemaRegistrations = {
+    classKeys,
+    classes,
+    layouts,
+    arrayNames: new Set(Object.getOwnPropertyNames(arrayTemplate)),
+    arraySymbols: new Set([...Object.getOwnPropertySymbols(arrayTemplate), $refId]),
+  };
+  return schemaRegistrations;
+}
+
+export function registerEngineSchemaFactories({ objects }: Params): void {
+  const { classKeys, classes, layouts, arrayNames: names, arraySymbols: symbols } = getSchemaRegistrations();
+  for (const { entry, layout } of layouts) {
+    const SchemaClass = entry.constructor;
     objects.registerFactory({
       key: entry.key,
-      prototype: entry.constructor.prototype,
-      allocate: () => new entry.constructor(),
+      prototype: SchemaClass.prototype,
+      allocate: () => allocateSchema(SchemaClass),
       describe: (value) => describeSchema({ value, layout }),
       hydrate: ({ value, payload }) => hydrateSchema({ value, payload, layout }),
     });
   }
-  const arrayTemplate = new ArraySchema<unknown>();
-  const names = new Set(Object.getOwnPropertyNames(arrayTemplate));
-  const symbols = new Set([...Object.getOwnPropertySymbols(arrayTemplate), $refId]);
   objects.registerFactory({
     key: EngineSchemaKind.ARRAY.value,
     prototype: ArraySchema.prototype,
@@ -93,6 +120,12 @@ export function registerEngineSchemaFactories({ objects }: Params): void {
       }
     },
   });
+}
+
+function allocateSchema(SchemaClass: SchemaConstructor): Schema {
+  const instance = Object.create(SchemaClass.prototype) as Schema;
+  Schema.initialize(instance);
+  return instance;
 }
 
 function getLayout({ entry, classKeys }: LayoutParams): Layout {
@@ -136,6 +169,7 @@ function getLayout({ entry, classKeys }: LayoutParams): Layout {
     prototype: entry.constructor.prototype,
     fingerprint,
     fields,
+    names: [...fields.keys()],
     annotated,
     types,
     symbols: new Set([...Object.getOwnPropertySymbols(template), $refId, VISIBILITY_PORT]),
@@ -185,6 +219,48 @@ function hydrateSchema({ value, layout, payload }: HydrateParams): void {
   if (!isSchemaPayload(payload) || payload.fingerprint !== layout.fingerprint) {
     throw new Error("Schema layout fingerprint mismatch or invalid payload");
   }
+  const absent = absentFieldsInLayoutOrder({ layout, payload });
+  if (absent === undefined) {
+    hydrateUnorderedSchema({ value, layout, payload });
+    return;
+  }
+  for (const [name, entry] of payload.fields) {
+    validateFieldValue({ value: entry, type: layout.types.get(name) });
+  }
+  for (const name of absent) {
+    Reflect.deleteProperty(value, name);
+  }
+  for (const [name, entry] of payload.fields) {
+    Reflect.set(value, name, entry);
+  }
+}
+
+function absentFieldsInLayoutOrder({ layout, payload }: OrderParams): string[] | undefined {
+  const absent: string[] = [];
+  let cursor = 0;
+  for (const [name] of payload.fields) {
+    while (cursor < layout.names.length && layout.names[cursor] !== name) {
+      if (layout.annotated.has(layout.names[cursor]!)) {
+        return undefined;
+      }
+      absent.push(layout.names[cursor]!);
+      cursor++;
+    }
+    if (cursor === layout.names.length) {
+      return undefined;
+    }
+    cursor++;
+  }
+  for (; cursor < layout.names.length; cursor++) {
+    if (layout.annotated.has(layout.names[cursor]!)) {
+      return undefined;
+    }
+    absent.push(layout.names[cursor]!);
+  }
+  return absent;
+}
+
+function hydrateUnorderedSchema({ value, layout, payload }: ValidPayloadParams): void {
   const fields = new Map<string, unknown>();
   for (const [name, entry] of payload.fields) {
     if (!layout.fields.has(name) || fields.has(name)) {
@@ -192,8 +268,10 @@ function hydrateSchema({ value, layout, payload }: HydrateParams): void {
     }
     fields.set(name, entry);
   }
-  if ([...layout.annotated].some((name) => !fields.has(name))) {
-    throw new Error("Schema payload is missing an annotated field");
+  for (const name of layout.annotated) {
+    if (!fields.has(name)) {
+      throw new Error("Schema payload is missing an annotated field");
+    }
   }
   for (const [name, type] of layout.types) {
     validateFieldValue({ value: fields.get(name), type });

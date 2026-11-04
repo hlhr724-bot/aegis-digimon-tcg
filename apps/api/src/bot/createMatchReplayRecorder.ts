@@ -5,6 +5,7 @@ import type { GameState } from "@aegis/shared/schema/GameState";
 import {
   REPLAY_FORMAT,
   type ReplayDeck,
+  type ReplayDeckRules,
   type ReplayInput,
   type ReplayRecord,
   type ReplayRules,
@@ -67,12 +68,19 @@ export function createMatchReplayRecorder({ seed, firstSeat, state }: Params) {
     return { stateVersion, engineEvents };
   }
 
-  function seatPlayer(seat: Seat, deck: ReplayDeck, run: () => void) {
+  function seatPlayer(seat: Seat, deck: ReplayDeck, run: () => void, deckRules: ReplayDeckRules = {}) {
     const placement = getPlacement();
     const recorded = structuredClone(deck);
     withBatch(run);
     decks[seat] = recorded;
-    inputs.push({ kind: "seat", seat, deck: structuredClone(recorded), deckRules: {}, bot: true, ...placement });
+    inputs.push({
+      kind: "seat",
+      seat,
+      deck: structuredClone(recorded),
+      deckRules: structuredClone(deckRules),
+      bot: true,
+      ...placement,
+    });
   }
 
   function startMatch(run: () => void) {

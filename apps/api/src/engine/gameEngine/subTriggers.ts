@@ -1,3 +1,4 @@
+import { bumpEngineMutationClock } from "#api/engine/mutationClock/bumpEngineMutationClock";
 import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
 import { resolveDerivedDuringAttackStep } from "#api/engine/gameEngine/resolveDerivedDuringAttackStep";
 import { buildSubTriggerEffectKey } from "#api/engine/gameEngine/buildSubTriggerEffectKey";
@@ -1390,6 +1391,7 @@ export function looseSourceLeftInstallZone(
   if (sub.sourceRootZoneDeparted === true) return true;
   if (rootZoneOfLooseInstance(engine.state, sourceInstanceId) === sub.sourceRootZone) return false;
   sub.sourceRootZoneDeparted = true;
+  bumpEngineMutationClock();
   return true;
 }
 

@@ -14,6 +14,7 @@ import { AccountStore } from "../accounts/AccountStore.js";
 import { installAccountRoutes } from "../accounts/routes.js";
 import { createMemoryPool } from "../db/memoryPool.fixture.js";
 import type { DeckReportTracker, NewDeckReport } from "./deckReports.js";
+import { CommunityDeckStore } from "#api/community/CommunityDeckStore";
 
 type Player = { id: string; cookie: string };
 type Harness = { url: string; store: AccountStore; reports: NewDeckReport[]; close: () => Promise<void> };
@@ -588,6 +589,37 @@ describe("community random selection", () => {
   it("refuses unknown formats and beta values", async () => {
     expect((await call("/community/decks/random?format=unknown")).status).toBe(400);
     expect((await call("/community/decks/random?beta=yes")).status).toBe(400);
+  });
+});
+
+describe("community matchup opponents", () => {
+  it("defaults to the most liked public legal decks and never returns hidden, unpublished or illegal ones", async () => {
+    const author = await signIn("Matchup Author");
+    const popular = await saveAndPublish(author, "matchup-popular", "Popular", otherList!);
+    const plain = await saveAndPublish(author, "matchup-plain", "Plain");
+    const hidden = await saveAndPublish(author, "matchup-hidden", "Hidden");
+    const unpublished = await saveAndPublish(author, "matchup-unpublished", "Unpublished");
+    const illegal = await saveAndPublish(author, "matchup-illegal", "Illegal");
+    await harness.store.pool.query("UPDATE public_decks SET like_count=9 WHERE id=$1", [popular.id]);
+    await harness.store.pool.query("UPDATE public_decks SET like_count=20 WHERE id IN ($1,$2,$3)", [
+      hidden.id,
+      unpublished.id,
+      illegal.id,
+    ]);
+    await harness.store.pool.query("UPDATE public_decks SET status='hidden' WHERE id=$1", [hidden.id]);
+    await harness.store.pool.query("UPDATE public_decks SET status='unpublished' WHERE id=$1", [unpublished.id]);
+    await harness.store.pool.query("UPDATE public_decks SET main_deck='[]'::jsonb WHERE id=$1", [illegal.id]);
+    const decks = new CommunityDeckStore(harness.store);
+    const defaults = await decks.matchupOpponents({ format: "standard", deckIds: undefined, limit: 5 });
+    expect(defaults.map((deck) => deck.id)).toEqual([popular.id, plain.id]);
+    expect(defaults[0]!.mainDeck).toEqual(otherList!.mainDeck);
+    const chosen = await decks.matchupOpponents({
+      format: "standard",
+      deckIds: [plain.id, hidden.id, popular.id, illegal.id],
+      limit: 5,
+    });
+    expect(chosen.map((deck) => deck.id)).toEqual([plain.id, popular.id]);
+    expect(await decks.matchupOpponents({ format: "standard", deckIds: ["not-a-uuid"], limit: 5 })).toEqual([]);
   });
 });
 

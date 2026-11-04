@@ -1,3 +1,5 @@
+import { deckMatchupZhTW } from "@/i18n/deckMatchup.zh-TW";
+import { deckOddsZhTW } from "@/i18n/deckOdds.zh-TW";
 import { tournamentCircuitsZhTW } from "@/i18n/tournamentCircuits.zh-TW";
 import { tournamentOfficialRequestZhTW } from "@/i18n/tournamentOfficialRequest.zh-TW";
 import { matchQueueZhTW } from "@/i18n/matchQueue.zh-TW";
@@ -2840,6 +2842,8 @@ const interfaceMessages = {
   ...tournamentCircuitsZhTW,
   ...tournamentOfficialRequestZhTW,
   ...matchQueueZhTW,
+  ...deckMatchupZhTW,
+  ...deckOddsZhTW,
   ...matchIntroZhTW,
   ...staffRolesZhTW,
   ...achievementsZhTw,

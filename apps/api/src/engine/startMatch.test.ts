@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { GameState, Phase, type Seat, type ServerEvent, type DecisionRequest } from "@aegis/shared";
 import { GameEngine, type GameEngineHooks } from "./GameEngine.js";
 import { RED_DECK, BLUE_DECK, MAIN_DECK_SIZE } from "./testDecks.js";
-import { OPENING_HAND_SIZE, SECURITY_STACK_SIZE } from "./setup.js";
+import { OPENING_HAND_SIZE } from "@aegis/shared/rules/OPENING_HAND_SIZE";
+import { SECURITY_STACK_SIZE } from "@aegis/shared/rules/SECURITY_STACK_SIZE";
 
 /**
  * Headless match-start + turn-loop integration test (subsystems: deck-and-setup,

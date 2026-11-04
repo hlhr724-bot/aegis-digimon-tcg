@@ -1,3 +1,4 @@
+import { bumpEngineMutationClock } from "#api/engine/mutationClock/bumpEngineMutationClock";
 import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRuntimeObjectKind";
 import type { RuntimeReferenceRegistry } from "#api/engine/snapshot/RuntimeReferenceRegistry";
 import type { RuntimeObjectRegistry } from "#api/engine/snapshot/RuntimeObjectRegistry";
@@ -814,6 +815,7 @@ export class SubTriggerRegistry {
       return fired;
     } finally {
       this.activeResolutionDepth--;
+      if (matching.length > 0) bumpEngineMutationClock();
     }
   }
 
@@ -1075,6 +1077,7 @@ export class SubTriggerRegistry {
       return reduction;
     } finally {
       this.activeResolutionDepth--;
+      bumpEngineMutationClock();
     }
   }
 
@@ -1160,6 +1163,7 @@ export class SubTriggerRegistry {
       return activated;
     } finally {
       this.activeResolutionDepth--;
+      bumpEngineMutationClock();
     }
   }
 
@@ -1196,6 +1200,20 @@ export class SubTriggerRegistry {
   clearContinuous(): void {
     this.subs = this.subs.filter((s) => !s.continuous);
     this.replacements = this.replacements.filter((r) => !r.continuous);
+  }
+
+  nonContinuousCount(): number {
+    let count = 0;
+    for (const sub of this.subs) if (sub.continuous !== true) count++;
+    for (const replacement of this.replacements) if (replacement.continuous !== true) count++;
+    return count;
+  }
+
+  renewContinuousIdentities(): void {
+    this.subs = this.subs.map((sub) => (sub.continuous ? { ...sub, id: this.seq++ } : sub));
+    this.replacements = this.replacements.map((replacement) =>
+      replacement.continuous ? { ...replacement, id: this.seq++ } : replacement,
+    );
   }
 
   /** Clear everything (fresh match). */

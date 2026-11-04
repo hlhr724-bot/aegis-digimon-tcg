@@ -10,6 +10,7 @@ import { createBlankDeck, type DeckListing } from "../game/decks";
 import { useTranslation } from "../i18n";
 import { DeckEditor } from "./DeckEditor";
 import { DeckList } from "./DeckList";
+import { DeckMatchupPage } from "@/screens/deckSimulation/DeckMatchupPage";
 import "./deckBuilder.css";
 
 export function DeckBuilder({
@@ -33,8 +34,12 @@ export function DeckBuilder({
 }) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState<DeckListing | null>(initialEditingDeck ?? null);
+  const [testing, setTesting] = useState<DeckListing | null>(null);
   if (editing) {
     return <DeckEditor deck={editing} onSave={onSaveDeck} onClose={() => setEditing(null)} onNav={onNav} />;
+  }
+  if (testing) {
+    return <DeckMatchupPage deck={testing} onBack={() => setTesting(null)} />;
   }
   return (
     <DeckList
@@ -45,6 +50,7 @@ export function DeckBuilder({
       onSelectDeck={onSelectDeck}
       onDelete={onDeleteDeck}
       onPlay={() => onNav("lobby")}
+      onTest={setTesting}
       signedIn={signedIn}
     />
   );

@@ -25,6 +25,8 @@ Three workspaces. Dependencies point inward: both apps depend on `@aegis/shared`
 - Every card is a declarative `CompiledCard` registered with `registerIrCard` (`apps/api/src/engine/effects/interpreter/registration/module.ts`). The interpreter in `engine/effects/interpreter/` runs it. `registerCard` with a hand-written `EffectModule` is legacy.
 - `effects.json` is a generated snapshot. Edit the card module, then run the sync command from [cards and rules](cards-and-rules.md).
 - Continuous effects are recomputed from active sources (`engine/effects/continuous.ts`). They are never stored as permanent mutations.
+- Search rollout engines skip a recompute when nothing it reads has changed; live matches never do. See [skipping unchanged recomputes](../../docs/ARCHITECTURE.md#skipping-unchanged-recomputes). Engine state that static effects read must change through the schema or a ledger method, or be added to the recompute key.
+- Search rollouts restore engines from a per-search prepared snapshot (`engine/snapshot/prepareGameEngineRestore.ts`): the game state is decoded once and copied per rollout by `createEngineSchemaCloner`. A new schema class or field must keep `preparedGameEngineRestore.test.ts` passing; live matches and replays use the full decode.
 
 ### Trigger resolution
 

@@ -7,11 +7,12 @@ import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRunt
 
 type Params = Omit<RuntimeEffectSnapshot, "methods"> & { effect: Effect };
 
-export function trackRuntimeEffect({ effect, ...metadata }: Params): void {
-  const objects = sourceRuntimeObjectRegistries.get(metadata.source);
+export function trackRuntimeEffect(params: Params): void {
+  const objects = sourceRuntimeObjectRegistries.get(params.source);
   if (objects === undefined || !objects.snapshotsEnabled) {
     return;
   }
+  const { effect, ...metadata } = params;
   const methods = new Map<string, RuntimeCallback>();
   for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(effect))) {
     if (typeof descriptor.value === "function") {

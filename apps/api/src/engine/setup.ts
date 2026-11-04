@@ -3,6 +3,8 @@ import type { StatefulRng } from "#api/engine/random/StatefulRng";
 import { createHash, createHmac } from "node:crypto";
 import { CardInstance, PlayerState, Zone, type GameState, type Seat } from "@aegis/shared";
 import { resolveCardArt } from "@aegis/shared";
+import { OPENING_HAND_SIZE } from "@aegis/shared/rules/OPENING_HAND_SIZE";
+import { SECURITY_STACK_SIZE } from "@aegis/shared/rules/SECURITY_STACK_SIZE";
 import { clearBattleArea, clearZone, fillZone, insertCard, setBreeding, takeTop } from "./state/access.js";
 
 /**
@@ -27,11 +29,6 @@ import { clearBattleArea, clearZone, fillZone, insertCard, setBreeding, takeTop 
  * engine owns *when* mulligan/first-player are decided (they need a client round
  * trip); this module owns the deterministic mechanics each decision triggers.
  */
-
-/** Cards drawn for the opening hand (Comprehensive Rules §5-2-1-4). */
-export const OPENING_HAND_SIZE = 5;
-/** Cards set face-down as the initial security stack (Comprehensive Rules §5-2-1-6). */
-export const SECURITY_STACK_SIZE = 5;
 
 /** A deterministic PRNG returning floats in [0, 1). */
 export type Rng = () => number;
