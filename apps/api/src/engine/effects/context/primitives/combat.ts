@@ -15,6 +15,7 @@ export interface AttackDecisionProvenance {
 }
 
 export interface ForceAttackOptions {
+  optionalForSeat?: Seat;
   withoutSuspending?: boolean;
   attackTargetScope?: AttackTargetScope;
   vortex?: boolean;

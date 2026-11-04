@@ -173,7 +173,7 @@ export function PermanentView({
   const zoomPoint = useBoardHoverZoom(hovered && topId && !faceDown && !pending ? perm.permanentId : null);
   if (!perm.topCard || (!topId && !faceDown)) return null;
   const def = topId ? getCardDefinition(topId) : undefined;
-  const delta = perm.currentDP - originalDP(perm);
+  const delta = perm.retainedDpDelta || perm.currentDP - originalDP(perm);
   const hasDpDelta = delta !== 0;
   const activeKeywords = resolvePermanentKeywordEntries({ perm, keywordLabels });
   // Server truth (`Permanent.keywords`): the resolved keyword list already folds a
@@ -383,10 +383,10 @@ export function PermanentView({
           suspendDelayMs={suspendDelayMs}
           selected={highlight}
           attackable={candidate}
-          dp={perm.currentDP}
+          dp={perm.retainedDpDelta ? 0 : perm.currentDP}
           dpDelta={hasDpDelta && !dpBadgeSuppressed ? delta : undefined}
           renderDpDelta={(node) => (
-            <PermanentDpDeltaHint delta={delta} baseDp={originalDP(perm)}>
+            <PermanentDpDeltaHint delta={delta} baseDp={perm.retainedDpDelta ? undefined : originalDP(perm)}>
               {node}
             </PermanentDpDeltaHint>
           )}

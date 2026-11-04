@@ -6,13 +6,12 @@
 .game-permanent__material-order {
   position: absolute;
   z-index: 4;
-  top: -0.5rem;
-  left: 50%;
-  translate: -50% 0;
+  top: var(--ds-space-1);
+  right: -1rem;
   display: grid;
   place-items: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: clamp(16px, calc(var(--permanent-width, 116px) * 0.16), 18px);
+  aspect-ratio: 1;
   border: 2px solid var(--ds-sheet);
   border-radius: 50%;
   background: var(--ds-accent);
@@ -20,6 +19,11 @@
   font-weight: 800;
   pointer-events: none;
 }
+.game-permanent[data-suspended] > .game-permanent__material-order {
+  top: calc(var(--permanent-width, 116px) * 0.2 + var(--ds-space-1));
+  right: calc(var(--permanent-width, 116px) * -0.2 - 1rem);
+}
+
 .board-prompt.dna-material-choice[data-prompt-surface][data-variant="field-selection"] .board-prompt__actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -74,11 +74,12 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     const candidates = forceAttackCandidates(attackerPermanentId, opts);
     if (combat === undefined || attacker === undefined || candidates.length === 0) return;
     const controllerSeat = attacker.controllerSeat;
-    const promptTarget = async (): Promise<string> => {
+    const optional = opts?.optionalForSeat === controllerSeat;
+    const promptTarget = async (): Promise<string | undefined> => {
       const chosen = await engine.ask.selectInstances(
         controllerSeat,
         candidates,
-        1,
+        optional ? 0 : 1,
         1,
         "Choose the attack target for the forced attack.",
         {
@@ -90,6 +91,9 @@ export function createCombatVerbs(pc: PrimitivesContext) {
           selectionContext: "attackTarget",
         },
       );
+      if (optional) {
+        return chosen[0];
+      }
       return chosen[0] ?? candidates[0]!;
     };
     const pick = opts?.chooseTarget === undefined ? await promptTarget() : await opts.chooseTarget(candidates);

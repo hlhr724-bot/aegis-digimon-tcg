@@ -520,3 +520,53 @@ describe("BT25-057 Monarchlizamon — KB Q&A rulings", () => {
     expect(s.perm("tamer").stack.some((card) => !card.faceUp)).toBe(true);
   });
 });
+
+describe("Final Judgment optional attack", () => {
+  it("allows declining the attack after choosing to keep the granted bonuses", async () => {
+    const s = setupEngine({
+      0: { battleArea: [{ card: "BT25-035", as: "target" }], hand: [{ card: CARD_ID, as: "option" }] },
+      1: { security: ["BT1-001", "BT1-001"] },
+    });
+    await s.ready();
+    s.state.memory = 10;
+    const originalDp = s.perm("target").currentDP;
+    expect(
+      s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("option").instanceId, useAs: "option" }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "optional");
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "optional", accept: true },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    const decision = s.decisions.at(-1)!.req;
+    expect(decision.options?.selectionContext).toBe("attackTarget");
+    expect(decision.options?.min).toBe(0);
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: decision.decisionId,
+        response: { kind: "selectCards", instanceIds: [] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards" || s.state.pendingDecision === undefined);
+    const artsResult = s.state.pendingDecision
+      ? s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: s.state.pendingDecision.decisionId,
+          response: { kind: "selectCards", instanceIds: [] },
+        })
+      : { ok: true };
+    expect(artsResult).toEqual({ ok: true });
+    await settle(() => !s.state.pendingDecision);
+    expect(s.perm("target").currentDP).toBe(originalDp + 5000);
+    expect(s.perm("target").isSuspended).toBe(false);
+    expect(s.events.some((event) => event.kind === "attackDeclared")).toBe(false);
+    expect(s.state.players[1]!.security).toHaveLength(2);
+    expect(s.state.players[0]!.trash.some((card) => card.instanceId === s.inst("option").instanceId)).toBe(true);
+    expect(s.state.memory).toBe(6);
+  });
+});

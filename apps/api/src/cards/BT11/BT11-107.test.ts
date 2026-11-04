@@ -129,13 +129,16 @@ describe("BT11-107 Hades Force — KB Q&A rulings", () => {
   const NENE_AMANO_BLACK_TAMER = "BT10-092";
   const METALGREYMON_WHEN_ATTACKING_GAIN_3 = "BT1-021";
 
-  const acceptEverything: Answer = (req) =>
-    req.kind === "optional"
-      ? { kind: "optional", accept: true }
-      : {
-          kind: req.kind === "chooseTargets" ? "chooseTargets" : "selectCards",
-          instanceIds: (req.options?.candidateInstanceIds ?? []).slice(0, req.options?.min ?? 0),
-        };
+  const acceptEverything: Answer = (req) => {
+    if (req.kind === "optional") {
+      return { kind: "optional", accept: true };
+    }
+    const count = req.options?.selectionContext === "attackTarget" ? 1 : (req.options?.min ?? 0);
+    return {
+      kind: req.kind === "chooseTargets" ? "chooseTargets" : "selectCards",
+      instanceIds: (req.options?.candidateInstanceIds ?? []).slice(0, count),
+    };
+  };
 
   const isBudgetDeletionPrompt = (req: DecisionRequest) =>
     req.kind === "chooseTargets" && req.options?.maxTotalPlayCost !== undefined;

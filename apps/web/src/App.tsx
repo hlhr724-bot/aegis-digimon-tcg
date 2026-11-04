@@ -1,3 +1,6 @@
+import { enqueueDeckMutation } from "@/account/decks/enqueueDeckMutation";
+import { getDeletedDecks } from "@/account/decks/getDeletedDecks";
+import { setDeckDeleted } from "@/account/decks/setDeckDeleted";
 import { hasAccountCapability } from "@aegis/shared/account/hasAccountCapability";
 import { highestAccountRole } from "@/account/roles/highestAccountRole";
 import type { TournamentSpectateTarget } from "@/tournaments/TournamentSpectateTarget";
@@ -339,6 +342,8 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
   const setDark = setDarkMode;
   const [account, setAccount] = useState<RemoteAccount | null>();
   const [decksReady, setDecksReady] = useState(false);
+  const pendingDeckMutations = useRef(new Map<string, Promise<void>>());
+  const editedDeckIds = useRef(new Set<string>());
 
   useEffect(() => {
     saveIdentity(player);
@@ -359,18 +364,61 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
         setDecksReady(true);
         return;
       }
-      const remote = await accountApi.decks();
+      const fetched = await accountApi.decks();
+      const deleted = getDeletedDecks({ accountId: remoteAccount.id });
+      const fetchedIds = new Set(fetched.map((deck) => deck.id));
+      for (const [id, deletion] of deleted) {
+        if (!deletion.acknowledged && !fetchedIds.has(id) && !editedDeckIds.current.has(id)) {
+          setDeckDeleted({ accountId: remoteAccount.id, deckId: id, deleted: true, acknowledged: true });
+        }
+      }
+      for (const deck of fetched) {
+        const deletion = deleted.get(deck.id);
+        if (deletion === undefined || editedDeckIds.current.has(deck.id)) {
+          continue;
+        }
+        if (deletion.acknowledged) {
+          setDeckDeleted({ accountId: remoteAccount.id, deckId: deck.id, deleted: false });
+          continue;
+        }
+        await enqueueDeckMutation({
+          pending: pendingDeckMutations.current,
+          deckId: deck.id,
+          perform: async () => {
+            if (getDeletedDecks({ accountId: remoteAccount.id }).has(deck.id)) {
+              await accountApi.deleteDeck(deck.id);
+              setDeckDeleted({ accountId: remoteAccount.id, deckId: deck.id, deleted: true, acknowledged: true });
+            }
+          },
+        }).catch(() => undefined);
+      }
+      const deletedIds = getDeletedDecks({ accountId: remoteAccount.id });
+      const remote = fetched.filter((deck) => !deletedIds.has(deck.id));
       const remoteIds = new Set(remote.map((deck) => deck.id));
-      const localDecks = loadDecks();
+      const localDecks = loadDecks().filter((deck) => !deletedIds.has(deck.id));
       const localOnly = localDecks.filter((deck) => !remoteIds.has(deck.id)).slice(0, Math.max(0, 100 - remote.length));
-      for (const deck of localOnly) await accountApi.saveDeck(deck);
-      // Decks saved before the api stored covers come back without one; keep the local choice and backfill it.
       const localCovers = new Map(localDecks.map((deck) => [deck.id, deck.coverCardId]));
       const backfilled = remote
         .filter((deck) => !deck.coverCardId && localCovers.get(deck.id))
         .map((deck) => ({ ...deck, coverCardId: localCovers.get(deck.id) }));
-      for (const deck of backfilled) await accountApi.saveDeck(deck);
-      setDecks((local) => [...remote, ...backfilled].reduce((all, deck) => upsertDeck(all, deck), local));
+      for (const deck of [...localOnly, ...backfilled]) {
+        await enqueueDeckMutation({
+          pending: pendingDeckMutations.current,
+          deckId: deck.id,
+          perform: async () => {
+            if (!editedDeckIds.current.has(deck.id) && !getDeletedDecks({ accountId: remoteAccount.id }).has(deck.id)) {
+              await accountApi.saveDeck(deck);
+            }
+          },
+        });
+      }
+      setDecks((local) => {
+        const currentDeletedIds = getDeletedDecks({ accountId: remoteAccount.id });
+        return [...remote, ...backfilled]
+          .filter((deck) => !editedDeckIds.current.has(deck.id))
+          .reduce((all, deck) => upsertDeck(all, deck), local)
+          .filter((deck) => !currentDeletedIds.has(deck.id));
+      });
       setDecksReady(true);
     })().catch(() => setAccount(null));
   }, []);
@@ -386,31 +434,66 @@ function LoadedAppShell({ famousDecks }: { famousDecks: readonly DeckListing[] }
 
   const saveDeck = (deck: DeckListing, setActive: boolean) => {
     const filtered = { ...filterDeckToKnownCards(deck), updatedAt: Date.now() };
+    editedDeckIds.current.add(deck.id);
+    if (account) {
+      setDeckDeleted({ accountId: account.id, deckId: deck.id, deleted: false });
+    }
     setDecks((ds) => upsertDeck(ds, filtered));
-    void accountApi
-      .me()
-      .then((remoteAccount) => (remoteAccount ? accountApi.saveDeck(filtered) : undefined))
-      .catch(() => undefined);
+    void enqueueDeckMutation({
+      pending: pendingDeckMutations.current,
+      deckId: deck.id,
+      perform: async () => {
+        const remoteAccount = account ?? (await accountApi.me());
+        if (remoteAccount && !getDeletedDecks({ accountId: remoteAccount.id }).has(deck.id)) {
+          await accountApi.saveDeck(filtered);
+        }
+      },
+    }).catch(() => undefined);
     if (setActive) setActiveDeckId(deck.id);
   };
 
   async function saveDeckLanguage(deck: DeckListing) {
     const updated = { ...deck, updatedAt: Date.now() };
+    editedDeckIds.current.add(deck.id);
     if (account) {
-      await accountApi.saveDeck(updated);
+      await enqueueDeckMutation({
+        pending: pendingDeckMutations.current,
+        deckId: deck.id,
+        perform: async () => {
+          if (!getDeletedDecks({ accountId: account.id }).has(deck.id)) {
+            await accountApi.saveDeck(updated);
+          }
+        },
+      });
     }
-    setDecks((current) => upsertDeck(current, updated));
+    if (!account || !getDeletedDecks({ accountId: account.id }).has(deck.id)) {
+      setDecks((current) => upsertDeck(current, updated));
+    }
   }
 
   const deleteDeck = (id: string) => {
+    editedDeckIds.current.add(id);
+    if (account) {
+      setDeckDeleted({ accountId: account.id, deckId: id, deleted: true });
+    }
     const remaining = removeDeck(decks, id);
     setDeckFavorite({ deckId: id, favorite: false });
     setDecks(remaining);
     if (activeDeckId === id) setActiveDeckId(selectableDecks({ personalDecks: remaining, famousDecks })[0]?.id ?? "");
-    void accountApi
-      .me()
-      .then((remoteAccount) => (remoteAccount ? accountApi.deleteDeck(id) : undefined))
-      .catch(() => undefined);
+    void enqueueDeckMutation({
+      pending: pendingDeckMutations.current,
+      deckId: id,
+      perform: async () => {
+        const remoteAccount = account ?? (await accountApi.me());
+        if (remoteAccount) {
+          if (!account) {
+            setDeckDeleted({ accountId: remoteAccount.id, deckId: id, deleted: true });
+          }
+          await accountApi.deleteDeck(id);
+          setDeckDeleted({ accountId: remoteAccount.id, deckId: id, deleted: true, acknowledged: true });
+        }
+      },
+    }).catch(() => undefined);
   };
 
   const shared = {

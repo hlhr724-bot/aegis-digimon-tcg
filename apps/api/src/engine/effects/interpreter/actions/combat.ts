@@ -143,6 +143,13 @@ export async function runCombatAction(ctx: EffectContext, action: Action, scope:
       }
       const overrides: ForceAttackOptions = {
         ...attackActionOptions(action),
+        optionalForSeat:
+          action.optional === true &&
+          action.cost === undefined &&
+          action.additionalCost === undefined &&
+          (action.additionalCosts?.length ?? 0) === 0
+            ? ctx.source.ownerSeat
+            : undefined,
         afterAttackTriggers: fireDeferredSuspensionTriggers,
       };
       await withEffectAttackOptions(ctx, overrides, async (opts) => {

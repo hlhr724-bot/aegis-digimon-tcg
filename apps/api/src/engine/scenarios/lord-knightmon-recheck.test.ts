@@ -103,6 +103,10 @@ describe("LordKnightmon re-check", () => {
     const offers: string[][] = [];
     await resolveAll(s, (request) => {
       if (request.kind === "optional" && request.sourceCardId === "BT22-067") return { kind: "optional", accept: true };
+      if (request.options?.selectionContext === "attackTarget") {
+        expect(request.options).toMatchObject({ min: 0, max: 1, candidateInstanceIds: ["player"] });
+        return { kind: request.kind, instanceIds: ["player"] };
+      }
       if (isRevealPick(request)) {
         offers.push([...(request.options?.candidateInstanceIds ?? [])]);
         return { kind: "selectCards", instanceIds: [EFFECT_ATTACK_SKULLKNIGHTMON] };

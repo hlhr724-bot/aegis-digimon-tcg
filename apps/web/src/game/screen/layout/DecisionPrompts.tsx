@@ -175,7 +175,7 @@ export function DecisionPrompts({
                 request={decision}
                 sourceCardId={sourceCardId}
                 confirmLabel={attackConfirmLabel}
-                contextText={decision.options?.effectTextEmphasis ? undefined : attackClause}
+                contextText={attackClause}
                 candidates={candidates
                   .filter((card) => sourceHost?.cardIds === undefined || sourceHost.cardIds.has(card.instanceId))
                   .map((card) => {

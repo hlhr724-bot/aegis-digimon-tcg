@@ -22,7 +22,7 @@ export function permanentAriaLabel({
   hasDpDelta,
   t,
 }: {
-  perm: Pick<Permanent, "isSuspended" | "summoningSick" | "currentDP">;
+  perm: Pick<Permanent, "isSuspended" | "summoningSick" | "currentDP" | "retainedDpDelta">;
   heldSuspended?: boolean;
   restrictions: readonly RestrictionBadge[];
   fate?: PendingFateBadge;
@@ -43,8 +43,7 @@ export function permanentAriaLabel({
     fate ? t(fate.labelKey) : undefined,
   ].filter((state): state is string => state !== undefined);
   const stateLabel = states.length ? ` (${states.join(", ")})` : "";
-  const dpLabel = hasDpDelta
-    ? `, ${perm.currentDP.toLocaleString()} DP, DP ${delta > 0 ? "+" : "−"}${formatDp(Math.abs(delta))}`
-    : "";
+  const currentDpLabel = perm.retainedDpDelta ? "" : `${perm.currentDP.toLocaleString()} DP, `;
+  const dpLabel = hasDpDelta ? `, ${currentDpLabel}DP ${delta > 0 ? "+" : "−"}${formatDp(Math.abs(delta))}` : "";
   return `${cardName}${stateLabel}${dpLabel}`;
 }

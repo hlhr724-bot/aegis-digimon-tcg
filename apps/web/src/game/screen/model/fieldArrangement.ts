@@ -57,6 +57,7 @@ function appearanceKey(permanent: Permanent, suspended: boolean): string | undef
     permanent.summoningSick,
     suspended,
     permanent.currentDP,
+    permanent.retainedDpDelta,
     permanent.originalNameOverride,
     [...permanent.keywords],
     [...permanent.grantedKeywords],
