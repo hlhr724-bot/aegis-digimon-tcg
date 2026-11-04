@@ -7,18 +7,19 @@ import { EngineRuntimeObjectKind } from "#api/engine/snapshot/context/EngineRunt
 
 type Params = Omit<RuntimeEffectSnapshot, "methods"> & { effect: Effect };
 
-export function trackRuntimeEffect(params: Params): void {
-  const objects = sourceRuntimeObjectRegistries.get(params.source);
+export function trackRuntimeEffect({ effect, cardId, timing, index, source, definition }: Params): void {
+  const objects = sourceRuntimeObjectRegistries.get(source);
   if (objects === undefined || !objects.snapshotsEnabled) {
     return;
   }
-  const { effect, ...metadata } = params;
   const methods = new Map<string, RuntimeCallback>();
-  for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(effect))) {
-    if (typeof descriptor.value === "function") {
-      methods.set(key, descriptor.value as RuntimeCallback);
+  const properties = effect as unknown as Record<string, unknown>;
+  for (const key of Object.keys(properties)) {
+    const value = properties[key];
+    if (typeof value === "function") {
+      methods.set(key, value as RuntimeCallback);
     }
   }
-  runtimeEffectSnapshots.set(effect, { ...metadata, methods });
+  runtimeEffectSnapshots.set(effect, { cardId, timing, index, source, definition, methods });
   objects.track({ value: effect, key: EngineRuntimeObjectKind.IR_EFFECT.value });
 }

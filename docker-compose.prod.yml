@@ -183,9 +183,11 @@ services:
       test:
         - CMD-SHELL
         - pg_isready -U ${POSTGRES_USER:-aegis} -d ${POSTGRES_DB:-aegis}
-      interval: 5s
+      interval: 30s
       timeout: 5s
-      retries: 10
+      retries: 3
+      start_period: 30s
+      start_interval: 2s
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
