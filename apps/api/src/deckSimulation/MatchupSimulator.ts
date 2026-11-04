@@ -160,10 +160,20 @@ export class MatchupSimulator {
   }
 
   #prune(): void {
+    this.#expireQueued();
     for (const [id, job] of this.#jobs) {
       if (job.finishedAt !== undefined && this.#now() - job.finishedAt > this.#limits.finishedJobTtlMs) {
         this.#jobs.delete(id);
       }
+    }
+  }
+
+  #expireQueued(): void {
+    for (const jobId of [...this.#queue]) {
+      const job = this.#jobs.get(jobId)!;
+      if (this.#now() - job.createdAt < this.#limits.queuedJobTimeoutMs) continue;
+      this.#queue.splice(this.#queue.indexOf(jobId), 1);
+      this.#settle(job, MatchupJobStatus.TIMED_OUT.value);
     }
   }
 
@@ -196,6 +206,7 @@ export class MatchupSimulator {
   }
 
   #pump(): void {
+    this.#expireQueued();
     if (this.#slot?.currentJobId !== undefined || this.#queue.length === 0) return;
     if (this.#isHostBusy()) {
       clearTimeout(this.#retryTimer);

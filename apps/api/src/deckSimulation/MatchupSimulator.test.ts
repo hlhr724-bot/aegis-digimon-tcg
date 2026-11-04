@@ -224,6 +224,27 @@ describe("MatchupSimulator", () => {
     simulator.close();
   });
 
+  it("times out a job that stays queued because the host never frees up", () => {
+    vi.useFakeTimers();
+    let clockMs = 0;
+    const worker = createFakeWorker();
+    const simulator = new MatchupSimulator({
+      spawnWorker: () => worker.handle,
+      isHostBusy: () => true,
+      now: () => clockMs,
+      limits: { queuedJobTimeoutMs: 10_000 },
+    });
+    const job = simulator.start({ accountId: "a", request });
+    clockMs = 9_000;
+    vi.advanceTimersByTime(9_000);
+    expect(simulator.get({ accountId: "a", jobId: job.id })?.status).toBe("queued");
+    clockMs = 10_000;
+    expect(simulator.get({ accountId: "a", jobId: job.id })?.status).toBe("timed-out");
+    expect(simulator.start({ accountId: "a", request }).status).toBe("queued");
+    expect(worker.posted).toHaveLength(0);
+    simulator.close();
+  });
+
   it("stops a worker that runs past the time budget and starts a fresh one", () => {
     vi.useFakeTimers();
     const workers = [createFakeWorker(), createFakeWorker()];
