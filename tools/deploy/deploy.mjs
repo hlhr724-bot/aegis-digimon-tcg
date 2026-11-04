@@ -80,7 +80,14 @@ export function buildSlotCompose({ slot, revision, apiEnvironment, network, stat
       mem_limit: `${REDIS_MEMORY_MIB}m`,
       volumes: ["redis_data:/data"],
       networks: { default: { aliases: [`aegis-${slot}-redis`] } },
-      healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: "5s", timeout: "3s", retries: 10 },
+      healthcheck: {
+        test: ["CMD", "redis-cli", "ping"],
+        interval: "30s",
+        timeout: "3s",
+        retries: 3,
+        start_period: "30s",
+        start_interval: "1s",
+      },
       logging: { driver: "json-file", options: { "max-size": "20m", "max-file": "3" } },
     },
   };
