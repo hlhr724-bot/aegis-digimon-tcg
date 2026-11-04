@@ -1,9 +1,9 @@
 import { randomInt, randomUUID } from "node:crypto";
-import { availableParallelism, loadavg } from "node:os";
 import { MatchupGameResult } from "@aegis/shared/deckSimulation/MatchupGameResult";
 import type { MatchupJob, MatchupSampleGame, MatchupTally } from "@aegis/shared/deckSimulation/MatchupJob";
 import { MatchupJobStatus } from "@aegis/shared/deckSimulation/MatchupJobStatus";
 import { matchupDeckKey } from "@aegis/shared/deckSimulation/matchupDeckKey";
+import { createCgroupCpuBusyCheck } from "#api/deckSimulation/createCgroupCpuBusyCheck";
 import type { FinishedMatchup } from "#api/deckSimulation/FinishedMatchup";
 import { MATCHUP_LIMITS } from "#api/deckSimulation/MATCHUP_LIMITS";
 import { MatchupLimitError } from "#api/deckSimulation/MatchupLimitError";
@@ -12,6 +12,7 @@ import type { MatchupWorkerHandle } from "#api/deckSimulation/MatchupWorkerHandl
 import type { MatchupWorkerMessage } from "#api/deckSimulation/MatchupWorkerMessage";
 import { spawnMatchupWorker } from "#api/deckSimulation/spawnMatchupWorker";
 import { wilsonScoreInterval } from "#api/deckSimulation/wilsonScoreInterval";
+import { log } from "#api/logger";
 
 type Counts = { wins: number; losses: number; draws: number; invalidGames: number };
 
@@ -55,8 +56,14 @@ function tally(counts: Counts, requestedGames: number): MatchupTally {
   };
 }
 
-function hostIsBusy(): boolean {
-  return loadavg()[0]! > availableParallelism() * MATCHUP_LIMITS.busyHostLoadPerCore;
+function defaultHostBusyCheck(): () => boolean {
+  return createCgroupCpuBusyCheck({
+    spareCores: MATCHUP_LIMITS.spareCores,
+    maxThrottledShare: MATCHUP_LIMITS.maxThrottledShare,
+    minSampleWindowMs: MATCHUP_LIMITS.minCpuSampleWindowMs,
+    maxSampleWindowMs: MATCHUP_LIMITS.maxCpuSampleWindowMs,
+    hostLoadPerCore: MATCHUP_LIMITS.busyHostLoadPerCore,
+  });
 }
 
 export class MatchupSimulator {
@@ -72,7 +79,7 @@ export class MatchupSimulator {
 
   constructor({
     spawnWorker = spawnMatchupWorker,
-    isHostBusy = hostIsBusy,
+    isHostBusy = defaultHostBusyCheck(),
     now = Date.now,
     limits,
     onFinished,
@@ -144,6 +151,14 @@ export class MatchupSimulator {
     job.status = status;
     job.finishedAt = this.#now();
     const view = this.#view(job);
+    log("deckSimulation.finished", {
+      jobId: job.id,
+      status,
+      durationMs: job.finishedAt - job.createdAt,
+      completedGames: view.completedGames,
+      requestedGames: view.requestedGames,
+      invalidGames: view.invalidGames,
+    });
     if (job.request.deckId === undefined || view.completedGames === 0) return;
     this.#onFinished?.({
       accountId: job.accountId,
@@ -154,10 +169,20 @@ export class MatchupSimulator {
   }
 
   #prune(): void {
+    this.#expireQueued();
     for (const [id, job] of this.#jobs) {
       if (job.finishedAt !== undefined && this.#now() - job.finishedAt > this.#limits.finishedJobTtlMs) {
         this.#jobs.delete(id);
       }
+    }
+  }
+
+  #expireQueued(): void {
+    for (const jobId of [...this.#queue]) {
+      const job = this.#jobs.get(jobId)!;
+      if (this.#now() - job.createdAt < this.#limits.queuedJobTimeoutMs) continue;
+      this.#queue.splice(this.#queue.indexOf(jobId), 1);
+      this.#settle(job, MatchupJobStatus.TIMED_OUT.value);
     }
   }
 
@@ -190,6 +215,7 @@ export class MatchupSimulator {
   }
 
   #pump(): void {
+    this.#expireQueued();
     if (this.#slot?.currentJobId !== undefined || this.#queue.length === 0) return;
     if (this.#isHostBusy()) {
       clearTimeout(this.#retryTimer);
@@ -203,6 +229,7 @@ export class MatchupSimulator {
     clearTimeout(slot.idleTimer);
     slot.currentJobId = job.id;
     job.status = MatchupJobStatus.RUNNING.value;
+    log("deckSimulation.started", { jobId: job.id, queuedMs: this.#now() - job.createdAt });
     const deadlineEpochMs = this.#now() + this.#limits.timeBudgetMs;
     slot.hungTimer = setTimeout(
       () => this.#abandonHungWorker(job.id),
