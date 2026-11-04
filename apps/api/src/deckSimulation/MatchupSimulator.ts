@@ -123,7 +123,14 @@ export class MatchupSimulator {
   replay({ accountId, jobId, index }: { accountId: string; jobId: string; index: number }): Uint8Array | undefined {
     this.#prune();
     const job = this.#jobs.get(jobId);
-    return job?.accountId === accountId ? job.replays.get(index) : undefined;
+    const file = job?.accountId === accountId ? job.replays.get(index) : undefined;
+    log("deckSimulation.replayOpened", {
+      jobId,
+      index,
+      available: file !== undefined,
+      ...(job?.finishedAt === undefined ? {} : { msSinceFinished: this.#now() - job.finishedAt }),
+    });
+    return file;
   }
 
   cancel({ accountId, jobId }: { accountId: string; jobId: string }): MatchupJob | undefined {
