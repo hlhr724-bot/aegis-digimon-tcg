@@ -248,3 +248,14 @@ it("displays each identical Tamer separately when grouping is disabled while ret
   ]);
   expect(field.map((item) => item.permanentId)).toEqual(["perm-8", "perm-12", "perm-15", "perm-16"]);
 });
+
+it("keeps Tamers with different retained DP reductions in separate groups", () => {
+  const plain = permanent("plain", AMI_AIBA);
+  const reduced = permanent("reduced", AMI_AIBA);
+  reduced.retainedDpDelta = -3000;
+  const sameReduction = permanent("same-reduction", AMI_AIBA);
+  sameReduction.retainedDpDelta = -3000;
+  expect(
+    arrangeField([plain, reduced, sameReduction], plainOptions).support.map((group) => ids(group.members)),
+  ).toEqual([["plain"], ["reduced", "same-reduction"]]);
+});
