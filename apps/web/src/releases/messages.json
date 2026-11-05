@@ -1,4 +1,34 @@
 {
+  "releases.1.54.0-beta.summary": {
+    "en": "New BT27 cards, a choice of battle lanes and smoother security attacks in the 3D arena.",
+    "pt-BR": "Novas cartas BT27, escolha de linhas de batalha e ataques à segurança mais fluidos na arena 3D.",
+    "es": "Nuevas cartas BT27, elección de filas de batalla y ataques a la seguridad más fluidos en la arena 3D.",
+    "it": "Nuove carte BT27, scelta delle file di battaglia e attacchi alla sicurezza più fluidi nell’arena 3D."
+  },
+  "releases.1.54.0-beta.feature.cards": {
+    "en": "Play BT27-062 Maildramon and BT27-104 King Drasil, with English and Japanese artwork.",
+    "pt-BR": "Jogue com BT27-062 Maildramon e BT27-104 King Drasil, com artes em inglês e japonês.",
+    "es": "Juega con BT27-062 Maildramon y BT27-104 King Drasil, con ilustraciones en inglés y japonés.",
+    "it": "Gioca con BT27-062 Maildramon e BT27-104 King Drasil, con illustrazioni in inglese e giapponese."
+  },
+  "releases.1.54.0-beta.feature.lanes": {
+    "en": "Choose one or two battle lanes in the 3D board style settings.",
+    "pt-BR": "Escolha uma ou duas linhas de batalha nas configurações de estilo do campo 3D.",
+    "es": "Elige una o dos filas de batalla en los ajustes de estilo del campo 3D.",
+    "it": "Scegli una o due file di battaglia nelle impostazioni dello stile del campo 3D."
+  },
+  "releases.1.54.0-beta.fix.performance": {
+    "en": "Security attacks and visual effects in the 3D arena run more smoothly, especially on phones.",
+    "pt-BR": "Ataques à segurança e efeitos visuais na arena 3D ficam mais fluidos, especialmente em celulares.",
+    "es": "Los ataques a la seguridad y los efectos visuales de la arena 3D son más fluidos, especialmente en móviles.",
+    "it": "Gli attacchi alla sicurezza e gli effetti visivi nell’arena 3D sono più fluidi, soprattutto sui telefoni."
+  },
+  "releases.1.54.0-beta.fix.fieldEffects": {
+    "en": "The opponent’s field effect list stays on screen when opened on narrow displays.",
+    "pt-BR": "A lista de efeitos de campo do oponente permanece dentro da tela quando aberta em telas estreitas.",
+    "es": "La lista de efectos de campo del oponente permanece dentro de la pantalla al abrirla en pantallas estrechas.",
+    "it": "L’elenco degli effetti di campo dell’avversario rimane sullo schermo quando viene aperto su display stretti."
+  },
   "releases.1.53.1-beta.summary": {
     "en": "Corrections for optional effects, face-down ACE cards, Save and bots after rollback.",
     "pt-BR": "Correções de efeitos opcionais, cartas ACE viradas para baixo, Save e bots após rollback.",

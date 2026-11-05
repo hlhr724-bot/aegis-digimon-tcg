@@ -1,5 +1,26 @@
 [
   {
+    "version": "1.54.0-beta",
+    "releasedAt": "2026-11-05",
+    "summaryKey": "releases.1.54.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.54.0-beta.feature.cards"
+      },
+      {
+        "textKey": "releases.1.54.0-beta.feature.lanes"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.54.0-beta.fix.performance"
+      },
+      {
+        "textKey": "releases.1.54.0-beta.fix.fieldEffects"
+      }
+    ]
+  },
+  {
     "version": "1.53.1-beta",
     "releasedAt": "2026-11-05",
     "summaryKey": "releases.1.53.1-beta.summary",
