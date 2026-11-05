@@ -15611,5 +15611,13 @@
   "BD02-08": {
     "[StartofYourMainPhase]IfyouhaveablueDigimonwiththe[ALYSION]trait,gain1memory.[Main]BysuspendingthisTamer,1ofyourblueDigimonwiththe[ALYSION]traitgains<Piercing>fortheturn.(WhenthisDigimondeletesyouropponent'sDigimoninbattlewhileattacking,itcheckssecuritybeforetheattackends.)": "【自分のメインフェイズ開始時】特徴「アリシオン」を持つ青の自分のデジモンがいるなら、メモリー+1。\n【メイン】このテイマーをレストさせることで、ターン終了まで、特徴「アリシオン」を持つ青の自分のデジモン1体は≪貫通≫（アタック中のこのデジモンがバトルで相手のデジモンを消滅させたとき、アタック終了前にチェックする）を得る。",
     "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BT27-062": {
+    "[WhenAttacking][OncePerTurn]Youmayplayoruse1cardwith[Knightmon]initstextfromyourhandwiththecostreducedby2.": "【アタック時】[ターン1回] 自分の手札から、「ナイトモン」の記述があるカード1枚を支払うコスト-2で登場/使用できる。",
+    "[AllTurns][OncePerTurn]WhenthisDigimonwouldleavethebattlearea,bydeleting1ofyourotherDigimonwith[Knightmon]initstext,itdoesn'tleave.": "【お互いのターン】[ターン1回] このデジモンがバトルエリアを離れるとき、「ナイトモン」の記述がある他の自分のデジモン1体を消滅させることで、離れない。"
+  },
+  "BT27-104": {
+    "[StartofYourMainPhase]Byplacing1cardfromyourhandunderthisTamer,<Draw1>andgain1memory.[EndofYourTurn]BysuspendingthisTamer,activate1oftheeffectsbelow:・1ofyourDigimonmaydigivolveintoa[RoyalKnight]traitcardunderthisTamerwiththecostreducedby2.・Youmayuse1usecost5orhigher[RoyalKnight]traitOptioncardfromyourhandorunderthisTamerwiththecostreducedby3.": "【自分のメインフェイズ開始時】自分の手札1枚をこのテイマーの下に置くことで、≪1ドロー≫、メモリー+1。\n【自分のターン終了時】このテイマーをレストさせることで、以下の効果から1つを発揮する。\n・自分のデジモン1体をこのテイマーの下の特徴「ロイヤルナイツ」を持つカードに支払うコスト-2で進化できる。\n・自分の手札かこのテイマーの下から、特徴「ロイヤルナイツ」を持つ使用コスト5以上のオプションカード1枚を支払うコスト-3で使用できる。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
   }
 }
