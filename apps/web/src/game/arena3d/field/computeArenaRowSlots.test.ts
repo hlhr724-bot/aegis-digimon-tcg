@@ -1,9 +1,11 @@
 import type { Permanent } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
+import { BattleLanes } from "@/design/battleLanes";
 import { ARENA_ROW_LAYOUT } from "@/game/arena3d/field/arenaWorldLayout";
 import { ArenaLayoutVariant } from "@/game/arena3d/field/ArenaLayoutVariant";
 import { computeArenaRowSlots } from "@/game/arena3d/field/computeArenaRowSlots";
 import { getArenaColumnX } from "@/game/arena3d/field/getArenaColumnX";
+import { resolveArenaLanes } from "@/game/arena3d/field/resolveArenaLanes";
 import { Side } from "@/game/side";
 
 function buildPermanent(permanentId: string, stackSize = 0): Permanent {
@@ -101,5 +103,44 @@ describe.each(LAYOUTS)("computeArenaRowSlots on the $name layout", ({ lanes }) =
       isSuspended: (permanent) => permanent.permanentId === "e2",
     });
     expect(slots.map((slot) => slot.column)).toEqual([1, 2, 3]);
+  });
+});
+
+describe.each(LAYOUTS)("computeArenaRowSlots with one lane on the $name layout", ({ lanes: twoLanes }) => {
+  const lanes = resolveArenaLanes(twoLanes, BattleLanes.One);
+
+  it("puts Tamers and Options after the Digimon in one lane between the two lane depths", () => {
+    const slots = computeArenaRowSlots({
+      side: Side.Viewer,
+      lanes,
+      arrangement: {
+        digimon: buildPermanents("d", 2),
+        support: buildPermanents("s", 2).map((permanent) => ({ key: permanent.permanentId, members: [permanent] })),
+      },
+      isSuspended: NEVER_SUSPENDED,
+    });
+
+    const depth = (twoLanes.digimonDepth + twoLanes.supportDepth) / 2;
+    expect(slots.map((slot) => slot.fieldKey)).toEqual(["d0", "d1", "s0", "s1"]);
+    expect(slots.every((slot) => slot.z === depth)).toBe(true);
+    expect(slots.map((slot) => slot.column)).toEqual([0, 1, 2, 3]);
+  });
+
+  it("packs a single lane that holds more than five cards inside the lane width", () => {
+    const slots = computeArenaRowSlots({
+      side: Side.Opponent,
+      lanes,
+      arrangement: {
+        digimon: buildPermanents("d", 4),
+        support: buildPermanents("s", 3).map((permanent) => ({ key: permanent.permanentId, members: [permanent] })),
+      },
+      isSuspended: NEVER_SUSPENDED,
+    });
+
+    expect(slots).toHaveLength(7);
+    expect(new Set(slots.map((slot) => slot.z))).toEqual(new Set([-lanes.digimonDepth]));
+    expect(slots.every((slot) => slot.column === undefined)).toBe(true);
+    const last = slots.at(-1)!;
+    expect(last.x + last.width / 2).toBeLessThanOrEqual(lanes.halfWidth + 0.001);
   });
 });

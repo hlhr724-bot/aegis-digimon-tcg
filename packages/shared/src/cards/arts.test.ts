@@ -67,3 +67,10 @@ it("offers Japanese printings for Spencer Damon, Nanami, Kouki, & Ivan, and Bio 
     expect(cardImageUrls(cardId, `${cardId}-J`)[0]).toContain(`/${cardId}-J.webp`);
   }
 });
+
+it("offers Japanese printings for Maildramon and King Drasil", () => {
+  for (const cardId of ["BT27-062", "BT27-104"]) {
+    expect(getCardArts(cardId).map((art) => art.artId)).toEqual([cardId, `${cardId}-J`]);
+    expect(cardImageUrls(cardId, `${cardId}-J`)[0]).toContain(`/${cardId}-J.webp`);
+  }
+});

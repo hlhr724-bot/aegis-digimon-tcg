@@ -7,10 +7,7 @@ import {
   MeshBasicMaterial,
   NormalBlending,
   Object3D,
-  Plane,
-  Raycaster,
   ShaderMaterial,
-  Vector2,
   Vector3,
   type Camera,
   type Group,
@@ -19,7 +16,9 @@ import {
 } from "three";
 import type { ArenaActivity } from "@/game/arena3d/ArenaActivity";
 import type { ArenaCameraImpulse } from "@/game/arena3d/ArenaCameraImpulse";
-import type { ArenaPulse, ScreenPoint } from "@/game/arena3d/ArenaPulse";
+import type { ArenaPulse } from "@/game/arena3d/ArenaPulse";
+import { createArenaPulseAnchorResolver } from "@/game/arena3d/createArenaPulseAnchorResolver";
+import type { ArenaTrackedField } from "@/game/arena3d/field/ArenaTrackedField";
 import { ArenaPulseKind } from "@/game/arena3d/ArenaPulseKind";
 import type { ArenaRippleBuffer } from "@/game/arena3d/createArenaRippleBuffer";
 import {
@@ -37,6 +36,7 @@ import { FINALE_IMPACT_AT_MS } from "@/game/timings";
 
 type Props = {
   pulses: readonly ArenaPulse[];
+  field: ArenaTrackedField;
   projectionCamera: Camera;
   ripples: ArenaRippleBuffer;
   impulse: RefObject<ArenaCameraImpulse>;
@@ -110,7 +110,6 @@ type PulseMaterials = {
 
 const BEAM_TRAVEL_SECONDS = 0.38;
 const BEAM_WIDTH = 0.55;
-const FLOOR_PLANE = new Plane(new Vector3(0, 1, 0), 0);
 const HELIX_RINGS = [0, 1, 2];
 const SHARD_PLACER = new Object3D();
 const KEEPER_COLOR = "#ffffff";
@@ -624,6 +623,7 @@ function getSideAnchor(side: Side): Vector3 {
 
 export function ArenaPulseLayer({
   pulses,
+  field,
   projectionCamera,
   ripples,
   impulse,
@@ -635,26 +635,12 @@ export function ArenaPulseLayer({
 }: Props) {
   const canvas = useThree((state) => state.gl.domElement);
   const clock = useThree((state) => state.clock);
+  const size = useThree((state) => state.size);
   const [effects, setEffects] = useState<readonly ActiveEffect[]>([]);
   const started = useRef(new Set<string>());
-  const raycaster = useMemo(() => new Raycaster(), []);
 
   useEffect(() => {
-    let canvasRect: DOMRect | undefined;
-    const projectToFloor = (point: ScreenPoint | undefined, side: Side): Vector3 => {
-      canvasRect ??= canvas.getBoundingClientRect();
-      const rect = canvasRect;
-      if (!point || rect.width === 0 || rect.height === 0) {
-        return getSideAnchor(side);
-      }
-      const normalized = new Vector2(
-        ((point.x - rect.left) / rect.width) * 2 - 1,
-        -((point.y - rect.top) / rect.height) * 2 + 1,
-      );
-      raycaster.setFromCamera(normalized, projectionCamera);
-      const hit = raycaster.ray.intersectPlane(FLOOR_PLANE, new Vector3());
-      return hit ?? getSideAnchor(side);
-    };
+    const resolve = createArenaPulseAnchorResolver({ field, camera: projectionCamera, canvas, size });
     const fresh: ActiveEffect[] = [];
     for (const pulse of pulses) {
       if (started.current.has(pulse.key)) {
@@ -663,8 +649,8 @@ export function ArenaPulseLayer({
       started.current.add(pulse.key);
       const entry = findArenaPulseKind(pulse.kind);
       const now = clock.elapsedTime;
-      const position = projectToFloor(pulse.screenPoint, pulse.side);
-      const target = pulse.targetPoint ? projectToFloor(pulse.targetPoint, getOppositeSide(pulse.side)) : undefined;
+      const position = resolve(pulse.origin) ?? getSideAnchor(pulse.side);
+      const target = pulse.target ? (resolve(pulse.target) ?? getSideAnchor(getOppositeSide(pulse.side))) : undefined;
       if (entry.value === ArenaPulseKind.FINALE.value) {
         fresh.push(
           ...startFinale({
@@ -730,7 +716,7 @@ export function ArenaPulseLayer({
     if (fresh.length > 0) {
       setEffects((current) => [...current, ...fresh]);
     }
-  }, [pulses, projectionCamera, canvas, clock, raycaster, ripples, impulse, energy, activity, reducedMotion]);
+  }, [pulses, field, projectionCamera, canvas, size, clock, ripples, impulse, energy, activity, reducedMotion]);
 
   const removeEffect = (key: string) => {
     setEffects((current) => current.filter((effect) => effect.key !== key));

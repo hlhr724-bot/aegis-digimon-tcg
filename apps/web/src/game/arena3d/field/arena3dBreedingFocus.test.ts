@@ -33,7 +33,7 @@ describe("breeding area on the 3D field", () => {
 
   it("hides the DOM dim once the canvas draws the board, so the GL scene dims it instead", () => {
     const selector =
-      '.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field > .game-breeding-mode {';
+      '.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field > .game-breeding-mode {';
     const start = fieldStyles.indexOf(selector);
     expect(start).toBeGreaterThan(-1);
     expect(fieldStyles.slice(start, fieldStyles.indexOf("}", start))).toContain("display: none");

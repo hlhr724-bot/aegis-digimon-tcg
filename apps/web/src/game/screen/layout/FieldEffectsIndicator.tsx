@@ -29,6 +29,16 @@ const restrictionLabels: Record<string, TranslationKey> = {
 const BADGE_WIDTH = 64;
 const BADGE_HEIGHT = 44;
 const ORB_GAP = 4;
+const LIST_WIDTH = 320;
+const LIST_VIEWPORT_GAP = 40;
+const LIST_EDGE_GAP = 8;
+
+type BadgeCorner = { right: number; top: number; opensRight: boolean };
+
+function opensRight(right: number): boolean {
+  const listWidth = Math.min(LIST_WIDTH, window.innerWidth - LIST_VIEWPORT_GAP);
+  return window.innerWidth - right - listWidth < LIST_EDGE_GAP;
+}
 
 type OrbAvoidance = {
   field: Element;
@@ -66,7 +76,7 @@ export function FieldEffectsIndicator({
   const anchor = useRef<HTMLSpanElement>(null);
   const details = useRef<HTMLDetailsElement>(null);
   const [portalHost, setPortalHost] = useState<HTMLElement>();
-  const [corner, setCorner] = useState<{ right: number; top: number }>();
+  const [corner, setCorner] = useState<BadgeCorner>();
   useLayoutEffect(() => {
     // Fixed positioning escapes battle-row clipping. The badge must stay inside the
     // board: the arena board isolates its own stacking context, so a badge portalled
@@ -90,8 +100,15 @@ export function FieldEffectsIndicator({
       const right = Math.max(8, window.innerWidth - Math.min(bounds.right, visible.right) + 4);
       const preferredTop = compact ? (ownField ? bounds.bottom - 30 : bounds.top - 28) : bounds.top + 4;
       const top = avoidTurnOrb({ field: field!, ownField, right, top: preferredTop, badge: details.current });
-      const next = top >= visible.top && top + BADGE_HEIGHT <= visible.bottom ? { right, top } : undefined;
-      setCorner((previous) => (previous?.right === next?.right && previous?.top === next?.top ? previous : next));
+      const next =
+        top >= visible.top && top + BADGE_HEIGHT <= visible.bottom
+          ? { right, top, opensRight: opensRight(right) }
+          : undefined;
+      setCorner((previous) =>
+        previous?.right === next?.right && previous?.top === next?.top && previous?.opensRight === next?.opensRight
+          ? previous
+          : next,
+      );
     }
     const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(measure);
     observer?.observe(row);
@@ -177,8 +194,8 @@ export function FieldEffectsIndicator({
   const badge = (
     <details
       ref={details}
-      className={`game-field-effects${harmful ? " game-field-effects--warning" : ""}${ownField ? " game-field-effects--own" : ""}`}
-      style={{ position: "fixed", ...corner }}
+      className={`game-field-effects${harmful ? " game-field-effects--warning" : ""}${ownField ? " game-field-effects--own" : ""}${corner?.opensRight ? " game-field-effects--opens-right" : ""}`}
+      style={{ position: "fixed", right: corner?.right, top: corner?.top }}
     >
       <summary aria-label={`${title}: ${summary}`}>
         <span className="game-field-effects__chip">

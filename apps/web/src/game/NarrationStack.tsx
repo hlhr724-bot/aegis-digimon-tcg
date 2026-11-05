@@ -134,14 +134,21 @@ function Slot({
   // Before paint, so a moment arriving never shows the column scrolled to the old one.
   useLayoutEffect(() => {
     const element = column.current;
-    if (!element) return;
-    if (scrolls() && anchor === "bottom" && followsNewest.current) element.scrollTop = element.scrollHeight;
+    if (!element || anchor !== "bottom") return;
+    const frame = requestAnimationFrame(() => {
+      if (followsNewest.current && scrolls()) element.scrollTop = element.scrollHeight;
+    });
+    return () => cancelAnimationFrame(frame);
   }, [count, anchor, children]);
   useLayoutEffect(() => {
     const element = column.current;
     if (!element || slot !== "narration-text") return;
     const stage = element.closest<HTMLElement>(".aegis-stage") ?? document.documentElement;
-    const update = () => stage.style.setProperty("--narration-text-top", `${element.getBoundingClientRect().top}px`);
+    const update = () => {
+      const top = `${element.getBoundingClientRect().top}px`;
+      if (stage.style.getPropertyValue("--narration-text-top") !== top)
+        stage.style.setProperty("--narration-text-top", top);
+    };
     update();
     const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(update);
     observer?.observe(element);
@@ -167,7 +174,6 @@ function Slot({
       followsNewest.current = atBottom && !leavingBottom.current;
       update();
     };
-    update();
     element.addEventListener("scroll", onScroll, { passive: true });
     /* The column also grows and shrinks without scrolling and without a new moment: a
        card's art arrives late, a clause rewraps. Watching the box and its moments keeps
@@ -175,6 +181,7 @@ function Slot({
     // Feature-detected rather than assumed: the test renderer has no ResizeObserver, and
     // without one the scroll listener above still keeps the chevron right.
     const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(update);
+    if (!observer) update();
     observer?.observe(element);
     for (const child of element.children) observer?.observe(child);
     return () => {

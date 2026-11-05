@@ -1,4 +1,5 @@
 import type { Permanent } from "@aegis/shared";
+import { BattleLanes } from "@/design/battleLanes";
 import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
 import { ARENA_ROW_LAYOUT, type ArenaLaneLayout } from "@/game/arena3d/field/arenaWorldLayout";
 import type { ArenaRowSlot } from "@/game/arena3d/field/ArenaRowSlot";
@@ -131,6 +132,9 @@ export function computeArenaRowSlots({ side, lanes, arrangement, isSuspended }: 
   const support = arrangement.support.map((group) =>
     buildLaneCard(group.members[0]!, group.members, group.key, isSuspended),
   );
+  if (lanes.count === BattleLanes.One) {
+    return placeLane({ cards: [...digimon, ...support], side, lanes, depth: lanes.digimonDepth });
+  }
   return [
     ...placeLane({ cards: digimon, side, lanes, depth: lanes.digimonDepth }),
     ...placeLane({ cards: support, side, lanes, depth: lanes.supportDepth }),

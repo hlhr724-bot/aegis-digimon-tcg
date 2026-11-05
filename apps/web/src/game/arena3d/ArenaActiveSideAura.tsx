@@ -6,6 +6,7 @@ import type { ArenaPulse } from "@/game/arena3d/ArenaPulse";
 import { ArenaPulseKind } from "@/game/arena3d/ArenaPulseKind";
 import type { ArenaSideColors } from "@/game/arena3d/ArenaSideColors";
 import type { ArenaLayoutVariantEntry } from "@/game/arena3d/field/ArenaLayoutVariant";
+import type { ArenaLaneLayout } from "@/game/arena3d/field/arenaWorldLayout";
 import type { Arena3dQualityEntry } from "@/game/arena3d/quality/Arena3dQuality";
 import { measureArenaSlotGrid } from "@/game/arena3d/slots/measureArenaSlotGrid";
 import { Side } from "@/game/side";
@@ -14,6 +15,7 @@ import { FINALE_IMPACT_AT_MS } from "@/game/timings";
 type Props = {
   colors: ArenaSideColors;
   layout: ArenaLayoutVariantEntry;
+  lanes: ArenaLaneLayout;
   activeSide: number;
   quality: Arena3dQualityEntry;
   reducedMotion: boolean;
@@ -64,7 +66,7 @@ const SURGE_DECAY_RATE = 1.4;
 const SURGE_SECONDS = 2.6;
 const CALM_SURGE_PEAK = 0.45;
 
-function measureAuraRegion({ lanes }: ArenaLayoutVariantEntry): AuraRegion {
+function measureAuraRegion(lanes: ArenaLaneLayout): AuraRegion {
   const grid = measureArenaSlotGrid(lanes);
   return {
     halfSize: new Vector2(grid.halfWidth + AURA_MARGIN_X, grid.halfDepth + AURA_MARGIN_Z),
@@ -96,7 +98,7 @@ function applySideColors({ material, color, accent, colors }: SideMaterialParams
   material.needsUpdate = true;
 }
 
-export function ArenaActiveSideAura({ colors, layout, activeSide, quality, reducedMotion, pulses }: Props) {
+export function ArenaActiveSideAura({ colors, layout, lanes, activeSide, quality, reducedMotion, pulses }: Props) {
   const viewerMaterial = useMemo(() => buildActiveSideAuraMaterial(1), []);
   const opponentMaterial = useMemo(() => buildActiveSideAuraMaterial(-1), []);
   const viewerMesh = useRef<Mesh>(null);
@@ -121,7 +123,7 @@ export function ArenaActiveSideAura({ colors, layout, activeSide, quality, reduc
   }, [viewerMaterial, opponentMaterial, colors]);
 
   useEffect(() => {
-    const region = measureAuraRegion(layout);
+    const region = measureAuraRegion(lanes);
     for (const material of [viewerMaterial, opponentMaterial]) {
       material.uniforms.uHalfSize!.value.copy(region.halfSize);
       material.uniforms.uBounds!.value.set(halfWidth, halfDepth);
@@ -132,7 +134,7 @@ export function ArenaActiveSideAura({ colors, layout, activeSide, quality, reduc
       material.uniforms.uScreenFade!.value.x = layout.aura.screenFadeX;
       material.uniforms.uWash!.value = layout.aura.wash ? 1 : 0;
     }
-  }, [viewerMaterial, opponentMaterial, layout, halfWidth, halfDepth]);
+  }, [viewerMaterial, opponentMaterial, layout, lanes, halfWidth, halfDepth]);
 
   useEffect(() => {
     for (const material of [viewerMaterial, opponentMaterial]) {

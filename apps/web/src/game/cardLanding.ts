@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import evidence from "./particleLight.json";
+import { isInsideLiveArena3d } from "@/game/arena3d/isInsideLiveArena3d";
 
 const plane = evidence.spatial.cardPlane;
 const angle = (plane.parentAngle * Math.PI) / 180;
@@ -34,16 +35,21 @@ export function useCardLanding(cueKey: string) {
   useLayoutEffect(() => {
     const frame = ref.current;
     const board = frame?.closest(".game-board");
-    const parent = frame?.offsetParent;
-    if (!frame || !board || !(parent instanceof HTMLElement)) return;
+    if (!frame || !board || isInsideLiveArena3d(frame)) return;
+    const offsetParent = frame.offsetParent;
+    if (!(offsetParent instanceof HTMLElement)) return;
+    const parent: HTMLElement = offsetParent;
+    function write(name: string, value: string) {
+      if (frame!.style.getPropertyValue(name) !== value) frame!.style.setProperty(name, value);
+    }
     function measure() {
       const box = board!.getBoundingClientRect();
-      const origin = parent!.getBoundingClientRect();
+      const origin = parent.getBoundingClientRect();
       const left = origin.left + frame!.offsetLeft;
       const top = origin.top + frame!.offsetTop;
-      frame!.style.setProperty("--card-landing-origin-x", `${box.left + box.width / 2 - left}px`);
-      frame!.style.setProperty("--card-landing-origin-y", `${box.top + box.height / 2 - top}px`);
-      frame!.style.setProperty("--card-landing-rise", `${frame!.offsetWidth * CARD_LANDING_RISE}px`);
+      write("--card-landing-origin-x", `${box.left + box.width / 2 - left}px`);
+      write("--card-landing-origin-y", `${box.top + box.height / 2 - top}px`);
+      write("--card-landing-rise", `${frame!.offsetWidth * CARD_LANDING_RISE}px`);
     }
     measure();
     const observer = new ResizeObserver(measure);

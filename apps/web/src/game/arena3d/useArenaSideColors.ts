@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import type { ArenaSideColors } from "@/game/arena3d/ArenaSideColors";
 import { resolveCssColor } from "@/game/arena3d/resolveCssColor";
 
@@ -56,6 +56,7 @@ function hasSameColors(left: ArenaSideColors, right: ArenaSideColors): boolean {
 
 export function useArenaSideColors({ board, paletteKey }: Params): ArenaSideColors {
   const [colors, setColors] = useState<ArenaSideColors>(FALLBACK_COLORS);
+  const refreshedBoard = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const element = board.current;
@@ -66,7 +67,6 @@ export function useArenaSideColors({ board, paletteKey }: Params): ArenaSideColo
       const next = readSideColors(element);
       setColors((current) => (hasSameColors(current, next) ? current : next));
     };
-    refresh();
     let frame = 0;
     const scheduleRefresh = () => {
       if (frame === 0) {
@@ -76,6 +76,9 @@ export function useArenaSideColors({ board, paletteKey }: Params): ArenaSideColo
         });
       }
     };
+    if (refreshedBoard.current === element) scheduleRefresh();
+    else refresh();
+    refreshedBoard.current = element;
     const observer = new MutationObserver(scheduleRefresh);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme"] });
     const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");

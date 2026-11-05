@@ -1,3 +1,4 @@
+import { BattleLanes } from "@/design/battleLanes";
 import { ArenaZone } from "@/game/arena3d/ArenaZone";
 import type { ArenaLaneLayout, ArenaZoneSlots } from "@/game/arena3d/field/arenaWorldLayout";
 import { Side } from "@/game/side";
@@ -77,7 +78,7 @@ export const ArenaLayoutVariant = {
     name: "WIDE",
     value: "wide",
     bounds: { halfWidth: 8.4, halfDepth: 4.85 },
-    lanes: { digimonDepth: 1.62, supportDepth: 3.62, columnPitch: 1.74, halfWidth: 6.1 },
+    lanes: { count: BattleLanes.Two, digimonDepth: 1.62, supportDepth: 3.62, columnPitch: 1.74, halfWidth: 6.1 },
     zones: WIDE_ZONES,
     memoryScale: 1,
     pitchDegrees: 62,
@@ -87,7 +88,7 @@ export const ArenaLayoutVariant = {
     name: "SHORT",
     value: "short",
     bounds: { halfWidth: 9.95, halfDepth: 4.4 },
-    lanes: { digimonDepth: 1.32, supportDepth: 3.26, columnPitch: 1.74, halfWidth: 6.1 },
+    lanes: { count: BattleLanes.Two, digimonDepth: 1.32, supportDepth: 3.26, columnPitch: 1.74, halfWidth: 6.1 },
     zones: SHORT_ZONES,
     memoryScale: 1,
     pitchDegrees: 62,
@@ -97,7 +98,7 @@ export const ArenaLayoutVariant = {
     name: "TALL",
     value: "tall",
     bounds: { halfWidth: 3.95, halfDepth: 6.58 },
-    lanes: { digimonDepth: 1.55, supportDepth: 3.39, columnPitch: 1.5, halfWidth: 3.6 },
+    lanes: { count: BattleLanes.Two, digimonDepth: 1.55, supportDepth: 3.39, columnPitch: 1.5, halfWidth: 3.6 },
     zones: TALL_ZONES,
     memoryScale: 0.5,
     pitchDegrees: 66,

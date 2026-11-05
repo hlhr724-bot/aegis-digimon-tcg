@@ -111392,5 +111392,48 @@
     "rarity": "U",
     "maxCountInDeck": 4,
     "imageId": "BD02-08"
+  },
+  {
+    "cardId": "BT27-062",
+    "set": "BT27",
+    "nameEn": "Maildramon",
+    "nameJp": "メイルドラモン",
+    "colors": ["Black"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 4000,
+    "evoCosts": [
+      {
+        "color": "Black",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Armor Form"],
+    "attributes": ["Free"],
+    "types": ["Cyborg"],
+    "effectText": "[When Attacking] [Once Per Turn] You may play or use 1 card with [Knightmon] in its text from your hand with the cost reduced by 2.",
+    "inheritedEffectText": "[All Turns] [Once Per Turn] When this Digimon would leave the battle area, by deleting 1 of your other Digimon with [Knightmon] in its text, it doesn't leave.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-062"
+  },
+  {
+    "cardId": "BT27-104",
+    "set": "BT27",
+    "nameEn": "King Drasil",
+    "nameJp": "イグドラシル",
+    "colors": ["White"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["TS"],
+    "effectText": "[Start of Your Main Phase] By placing 1 card from your hand under this Tamer, ＜Draw 1＞ and gain 1 memory.\n[End of Your Turn] By suspending this Tamer, activate 1 of the effects below:\n・1 of your Digimon may digivolve into a [Royal Knight] trait card under this Tamer with the cost reduced by 2.\n・You may use 1 use cost 5 or higher [Royal Knight] trait Option card from your hand or under this Tamer with the cost reduced by 3.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "SEC",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-104"
   }
 ]

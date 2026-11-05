@@ -7,6 +7,8 @@ import type { RegisterParticleLight } from "./ParticleLightScope";
 import { getParticleLightCanvasSize } from "@/game/getParticleLightCanvasSize";
 import { motionPreference } from "@/design/motion/motionPreference";
 
+const CLOCK_SYNC_FRAMES = 6;
+
 /** Local presentation ownership, never part of the server's scene payload. */
 export interface ParticleLightOwner {
   id: string;
@@ -59,7 +61,11 @@ export function mountIndependentParticleLight(
   const animation: Animation = ownAnimation;
   let active = true,
     frame = 0,
-    previousAge: number | undefined;
+    paintedFrames = 0,
+    previousAge: number | undefined,
+    anchorAge = 0,
+    anchorTime = 0,
+    ageRate = 0;
   let finish!: () => void;
   const finished = new Promise<void>((resolve) => {
     finish = resolve;
@@ -101,20 +107,31 @@ export function mountIndependentParticleLight(
   }
   function sync() {
     if (!sourceClock.isConnected || source.playState === "idle") return;
-    animation.playbackRate = source.playbackRate;
+    if (animation.playbackRate !== source.playbackRate) animation.playbackRate = source.playbackRate;
     if (source.playState === "paused" || source.startTime === null) {
       animation.pause();
       animation.currentTime = source.currentTime;
     } else {
       if (animation.playState === "paused") animation.play();
-      if (typeof source.startTime === "number") animation.startTime = source.startTime;
-      else animation.currentTime = source.currentTime;
+      if (typeof source.startTime === "number") {
+        if (animation.startTime !== source.startTime) animation.startTime = source.startTime;
+      } else animation.currentTime = source.currentTime;
     }
+  }
+  function anchorClock() {
+    sync();
+    anchorAge = Number(animation.currentTime ?? 0) - delay;
+    anchorTime = performance.now();
+    ageRate = animation.playState === "running" ? animation.playbackRate : 0;
+  }
+  function currentAge() {
+    return anchorAge + (performance.now() - anchorTime) * ageRate;
   }
   function paint() {
     if (!active) return;
-    sync();
-    const age = Number(animation.currentTime ?? 0) - delay;
+    if (paintedFrames % CLOCK_SYNC_FRAMES === 0) anchorClock();
+    paintedFrames += 1;
+    const age = currentAge();
     if (age !== previousAge) {
       paintParticleLight(canvas, age, palette);
       previousAge = age;
@@ -132,7 +149,6 @@ export function mountIndependentParticleLight(
   const unregister = register?.(dispose);
   resize.observe(anchor);
   window.addEventListener("resize", size);
-  size();
   paint();
   owner.enqueue({
     id: owner.id,
@@ -154,7 +170,6 @@ export function mountIndependentParticleLight(
   return () => {
     // A source removed before its departure never emits. A completed departure
     // leaves its decorative tail owned by the queue, including clear/skip/unmount.
-    sync();
-    if (Number(animation.currentTime ?? 0) - delay < 0) dispose();
+    if (currentAge() < 0) dispose();
   };
 }

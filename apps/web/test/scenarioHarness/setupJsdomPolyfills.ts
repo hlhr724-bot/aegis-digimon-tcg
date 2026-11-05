@@ -69,3 +69,13 @@ if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
     dispatchEvent: () => false,
   })) as unknown as typeof window.matchMedia;
 }
+
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+  const computeStyle = window.getComputedStyle.bind(window);
+  window.getComputedStyle = ((element: Element, pseudoElement?: string | null) => {
+    if (!pseudoElement) return computeStyle(element);
+    const declaration = document.createElement("span").style;
+    declaration.setProperty("content", "none");
+    return declaration;
+  }) as typeof window.getComputedStyle;
+}

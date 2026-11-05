@@ -13,7 +13,7 @@
 import { shouldConfirmCardPlay } from "@/game/cardConfirmation/shouldConfirmCardPlay";
 import { CardConfirmationMode } from "@/game/cardConfirmation/CardConfirmationMode";
 
-import type { MutableRefObject } from "react";
+import { startTransition, type MutableRefObject } from "react";
 import {
   type AssemblyPlan,
   type AttackTarget,
@@ -184,8 +184,10 @@ export function matchIntents({
     if (room) {
       intents.attack(room, attackerPermanentId, target, vortex);
     }
-    setSelPerm(null);
-    setVortexMode(false);
+    startTransition(() => {
+      setSelPerm(null);
+      setVortexMode(false);
+    });
   };
 
   const respondDecision = (response: DecisionResponse) => {

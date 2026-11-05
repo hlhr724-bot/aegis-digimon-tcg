@@ -1,9 +1,9 @@
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-permanent {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-permanent {
   filter: none !important;
   translate: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   .game-permanent
   > .game-card-enter
@@ -11,7 +11,7 @@
   translate: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   :is(.game-permanent, .game-breeding-slot)
   .game-card-enter {
@@ -19,32 +19,43 @@
   translate: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-permanent::before,
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-permanent::after,
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-dp-pulse::before,
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-dp-pulse::after,
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-permanent::before,
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-permanent::after,
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-dp-pulse::before,
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-dp-pulse::after,
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   :is(.game-permanent, .game-breeding-slot)
   :is(.battle-burst, .game-card-sparkles, .game-claw, .game-dp-pulse i),
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .game-breeding-slot--lit::before,
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) > .game-effect-focus,
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .game-spotlight,
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .game-delete-burst {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .game-breeding-slot--lit::before,
+.game-board[data-board-style="arena3d"][data-arena-3d-live] > .game-effect-focus,
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .game-spotlight,
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .game-delete-burst {
   opacity: 0 !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-summoning-ring {
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
+  .game-delete-burst
+  .game-field-shatter__shard:not(:first-child) {
+  animation: none !important;
+}
+
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-card-sparkle {
+  animation-duration: 1ms !important;
+  animation-delay: 0s !important;
+}
+
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-summoning-ring {
   opacity: 0 !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-dp-pulse {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-dp-pulse {
   border-color: transparent !important;
   background: none !important;
   box-shadow: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-dp-pulse em {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-dp-pulse em {
   top: 36% !important;
   min-width: 0 !important;
   padding: 1px 6px !important;
@@ -59,23 +70,20 @@
   scale: 1 calc(1 / var(--arena-3d-squash, 1)) !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
-  .arena-3d-field
-  .game-pile--effect-source
-  .game-pile__top {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-pile--effect-source .game-pile__top {
   outline-color: transparent !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .game-hand-dock {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .game-hand-dock {
   transition: filter 220ms ease-out;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas):has(> .game-effect-focus) .game-hand-dock {
+.game-board[data-board-style="arena3d"][data-arena-3d-live]:has(> .game-effect-focus) .game-hand-dock {
   filter: brightness(0.72);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .game-hand-dock {
+  .game-board[data-board-style="arena3d"][data-arena-3d-live] .game-hand-dock {
     transition: none;
   }
 }

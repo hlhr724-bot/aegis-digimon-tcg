@@ -1,3 +1,4 @@
+import type { BattleLanes } from "@/design/battleLanes";
 import type { ArenaZone } from "@/game/arena3d/ArenaZone";
 import type { Side } from "@/game/side";
 
@@ -32,6 +33,7 @@ export type ArenaZonePoint = { x: number; z: number };
 export type ArenaZoneSlots = Partial<Record<ArenaZoneKey, ArenaZonePoint>>;
 
 export type ArenaLaneLayout = {
+  count: BattleLanes;
   digimonDepth: number;
   supportDepth: number;
   columnPitch: number;

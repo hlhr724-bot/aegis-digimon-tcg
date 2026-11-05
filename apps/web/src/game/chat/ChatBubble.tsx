@@ -79,9 +79,12 @@ export function ChatBubble({
       setShown(undefined);
       return;
     }
-    setShown({ id: entryId, position: bubblePosition(board, side) });
+    const frame = requestAnimationFrame(() => setShown({ id: entryId, position: bubblePosition(board, side) }));
     const timer = setTimeout(() => setShown(undefined), duration);
-    return () => clearTimeout(timer);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
   }, [entryId, duration, side, boardRef]);
 
   const visible = entry !== undefined && shown?.id === entry.id;
