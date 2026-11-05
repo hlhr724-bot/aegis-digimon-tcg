@@ -1,4 +1,46 @@
 {
+  "releases.1.53.1-beta.summary": {
+    "en": "Corrections for optional effects, face-down ACE cards, Save and bots after rollback.",
+    "pt-BR": "Correções de efeitos opcionais, cartas ACE viradas para baixo, Save e bots após rollback.",
+    "es": "Correcciones de efectos opcionales, cartas ACE boca abajo, Save y bots después de un rollback.",
+    "it": "Correzioni per effetti opzionali, carte ACE coperte, Save e bot dopo un rollback."
+  },
+  "releases.1.53.1-beta.fix.belphemon": {
+    "en": "Belphemon: Sleep Mode now lets you decline its two-card discard cost directly on the board.",
+    "pt-BR": "Belphemon: Sleep Mode agora permite recusar o custo de descartar duas cartas diretamente no campo.",
+    "es": "Belphemon: Sleep Mode ahora permite rechazar el coste de descartar dos cartas directamente en el campo.",
+    "it": "Belphemon: Sleep Mode ora permette di rifiutare il costo di scartare due carte direttamente sul campo."
+  },
+  "releases.1.53.1-beta.fix.impmon": {
+    "en": "Impmon X Antibody lets you decline recovery after paying its optional discard cost.",
+    "pt-BR": "Impmon X Antibody permite recusar a recuperação após pagar seu custo opcional de descarte.",
+    "es": "Impmon X Antibody permite rechazar la recuperación después de pagar su coste opcional de descarte.",
+    "it": "Impmon X Antibody permette di rifiutare il recupero dopo aver pagato il costo opzionale di scarto."
+  },
+  "releases.1.53.1-beta.fix.save": {
+    "en": "Deckerdramon and Gumdramon can only use Save to go under a Tamer.",
+    "pt-BR": "Deckerdramon e Gumdramon só podem usar Save para serem colocados sob um Tamer.",
+    "es": "Deckerdramon y Gumdramon solo pueden usar Save para colocarse debajo de un Tamer.",
+    "it": "Deckerdramon e Gumdramon possono usare Save solo per essere collocati sotto un Tamer."
+  },
+  "releases.1.53.1-beta.fix.hiddenAce": {
+    "en": "Face-down ACE cards exposed by De-Digivolve or Armor Purge no longer cause an incorrect Overflow memory loss.",
+    "pt-BR": "Cartas ACE viradas para baixo expostas por De-Digivolve ou Armor Purge não causam mais perda indevida de memória por Overflow.",
+    "es": "Las cartas ACE boca abajo expuestas por De-Digivolve o Armor Purge ya no causan una pérdida incorrecta de memoria por Overflow.",
+    "it": "Le carte ACE coperte esposte da De-Digivolve o Armor Purge non causano più una perdita errata di memoria per Overflow."
+  },
+  "releases.1.53.1-beta.fix.botRollback": {
+    "en": "Bots resume their actions after a rollback during pending effect resolution.",
+    "pt-BR": "Bots voltam a agir após um rollback durante a resolução de efeitos pendentes.",
+    "es": "Los bots vuelven a actuar después de un rollback durante la resolución de efectos pendientes.",
+    "it": "I bot riprendono ad agire dopo un rollback durante la risoluzione di effetti in sospeso."
+  },
+  "releases.1.53.1-beta.fix.blueFlare": {
+    "en": "Blue Flare now uses its printed trait spelling on all affected cards.",
+    "pt-BR": "Blue Flare agora usa a grafia impressa do traço em todas as cartas afetadas.",
+    "es": "Blue Flare ahora usa la grafía impresa del rasgo en todas las cartas afectadas.",
+    "it": "Blue Flare ora usa la grafia stampata del tratto su tutte le carte interessate."
+  },
   "releases.1.53.0-beta.summary": {
     "en": "Find DUAL cards, keep deleted decks deleted, and pass optional attacks without losing their bonuses.",
     "pt-BR": "Encontre cartas DUAL, mantenha decks excluídos fora da lista e passe ataques opcionais sem perder seus bônus.",
