@@ -6,6 +6,13 @@ import { mountIndependentParticleLight, type ParticleLightOwner } from "./indepe
 import { ParticleLightScopeContext } from "./ParticleLightScope";
 import { getParticleLightCanvasSize } from "@/game/getParticleLightCanvasSize";
 import { motionPreference } from "@/design/motion/motionPreference";
+import { isInsideLiveArena3d } from "@/game/arena3d/isInsideLiveArena3d";
+import { scheduleIdleTask } from "@/game/scheduleIdleTask";
+
+const INDEPENDENT_LIGHT_MOUNT_TIMEOUT_MS = 150;
+
+const ARENA_3D_HIDDEN_BURST_SELECTOR =
+  ".game-delete-burst, .arena-3d-field .game-permanent, .arena-3d-field .game-breeding-slot";
 
 /** The CSS clock owns delay/seek/pause; landing groups share the arrival clock. */
 export function ParticleLight({
@@ -24,18 +31,24 @@ export function ParticleLight({
     const canvas = canvasRef.current!,
       clock = clockRef.current!;
     if (typeof clock.getAnimations !== "function") return;
-    if (owner) return mountIndependentParticleLight(canvas, clock, palette, owner, register);
+    if (owner) {
+      let release: (() => void) | undefined;
+      const cancelMount = scheduleIdleTask(() => {
+        release = mountIndependentParticleLight(canvas, clock, palette, owner, register);
+      }, INDEPENDENT_LIGHT_MOUNT_TIMEOUT_MS);
+      return () => {
+        cancelMount();
+        release?.();
+      };
+    }
+    if (canvas.closest(ARENA_3D_HIDDEN_BURST_SELECTOR) && isInsideLiveArena3d(canvas)) return;
     let frame = 0,
       animation: Animation | undefined,
       previousAge: number | undefined;
-    function size() {
-      const dimensions = getParticleLightCanvasSize({
-        width: canvas.clientWidth,
-        height: canvas.clientHeight,
-        pixelRatio: window.devicePixelRatio,
-      });
-      canvas.width = dimensions.width;
-      canvas.height = dimensions.height;
+    function size(width: number, height: number) {
+      const dimensions = getParticleLightCanvasSize({ width, height, pixelRatio: window.devicePixelRatio });
+      if (canvas.width !== dimensions.width) canvas.width = dimensions.width;
+      if (canvas.height !== dimensions.height) canvas.height = dimensions.height;
     }
     function paint() {
       animation ??= clock
@@ -61,13 +74,12 @@ export function ParticleLight({
       previousAge = undefined;
       paint();
     }
-    const resize = new ResizeObserver(() => {
-      size();
+    const resize = new ResizeObserver((entries) => {
+      const box = entries.at(-1)?.contentRect;
+      size(box?.width ?? canvas.clientWidth, box?.height ?? canvas.clientHeight);
       restart();
     });
     resize.observe(canvas);
-    size();
-    restart();
     const unsubscribeMotion = motionPreference.subscribe(restart);
     return () => {
       cancelAnimationFrame(frame);

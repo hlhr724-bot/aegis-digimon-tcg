@@ -1,8 +1,9 @@
-import { useLayoutEffect, useRef, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { CardMini } from "../design/cards";
 import type { ColorName } from "../design/theme";
 import { CardBurst } from "./CardBurst";
 import { FIELD_FRACTURE, type FieldShatterFace } from "./fieldShatter";
+import { isInsideLiveArena3d } from "@/game/arena3d/isInsideLiveArena3d";
 
 export function FieldCardShatter({
   cardId,
@@ -16,8 +17,12 @@ export function FieldCardShatter({
   face: FieldShatterFace;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
+  const [fallbackArt, setFallbackArt] = useState(false);
   useLayoutEffect(() => {
-    if (!face.clone || !ref.current) return;
+    setFallbackArt(!face.clone && !!ref.current && !isInsideLiveArena3d(ref.current));
+  }, [face]);
+  useLayoutEffect(() => {
+    if (!face.clone || !ref.current || isInsideLiveArena3d(ref.current)) return;
     const copies = [...ref.current.querySelectorAll(".game-field-shatter__face")].map((slot) => {
       const clone = face.clone!.cloneNode(true) as HTMLElement;
       clone.inert = true;
@@ -41,7 +46,7 @@ export function FieldCardShatter({
           }
         >
           <span className="game-field-shatter__face">
-            {face.clone ? null : <CardMini cardId={cardId} artId={artId} width={face.width} zoomOnHover={false} />}
+            {fallbackArt ? <CardMini cardId={cardId} artId={artId} width={face.width} zoomOnHover={false} /> : null}
           </span>
         </span>
       ))}

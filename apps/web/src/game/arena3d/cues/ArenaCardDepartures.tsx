@@ -4,7 +4,7 @@ import { Vector3, type Camera, type Mesh, type ShaderMaterial } from "three";
 import type { CardTextureCache } from "@/design/webglCard/createCardTextureCache";
 import type { ArenaActivity } from "@/game/arena3d/ArenaActivity";
 import { CARD_FLOOR_HEIGHT } from "@/game/arena3d/arenaSceneLayout";
-import { getArenaDeleteBurstCenter } from "@/game/arena3d/cues/getArenaDeleteBurstCenter";
+import { getArenaDeleteBurstBoardPoint } from "@/game/arena3d/cues/getArenaDeleteBurstBoardPoint";
 import { ARENA_ROW_LAYOUT } from "@/game/arena3d/field/arenaWorldLayout";
 import { buildArenaCardUrls } from "@/game/arena3d/field/buildArenaCardUrls";
 import { createArenaFloorProjector } from "@/game/arena3d/field/createArenaFloorProjector";
@@ -12,7 +12,6 @@ import { ArenaCardFace } from "@/game/arena3d/meshes/ArenaCardFace";
 import type { DeleteBurst } from "@/game/match/types";
 
 type Props = {
-  board: RefObject<HTMLElement | null>;
   deleteBursts: readonly DeleteBurst[];
   backUrl: string;
   cache: CardTextureCache;
@@ -91,7 +90,6 @@ function DepartingCard({ departure, cache, onDone }: DepartureProps) {
 }
 
 export function ArenaCardDepartures({
-  board,
   deleteBursts,
   backUrl,
   cache,
@@ -99,22 +97,22 @@ export function ArenaCardDepartures({
   activity,
   reducedMotion,
 }: Props) {
-  const canvas = useThree((state) => state.gl.domElement);
+  const size = useThree((state) => state.size);
   const projector = useMemo(createArenaFloorProjector, []);
   const seen = useRef(new Set<number>());
   const [departures, setDepartures] = useState<readonly Departure[]>([]);
 
   useEffect(() => {
     const fresh: Departure[] = [];
-    projector.begin(projectionCamera, canvas.getBoundingClientRect());
+    projector.begin(projectionCamera, new DOMRect(0, 0, size.width, size.height));
     for (const burst of deleteBursts) {
       if (seen.current.has(burst.key) || burst.stackStrip || !burst.cardId) {
         continue;
       }
       seen.current.add(burst.key);
-      const center = getArenaDeleteBurstCenter({ board: board.current, burst });
+      const center = getArenaDeleteBurstBoardPoint(burst);
       const position = new Vector3();
-      if (reducedMotion || !center || !projector.project(center.x, center.y, position)) {
+      if (reducedMotion || !projector.project(center.x, center.y, position)) {
         continue;
       }
       const edge = new Vector3();
@@ -139,7 +137,7 @@ export function ArenaCardDepartures({
       );
       setDepartures((current) => [...current, ...fresh]);
     }
-  }, [deleteBursts, board, backUrl, projector, projectionCamera, canvas, activity, reducedMotion]);
+  }, [deleteBursts, backUrl, projector, projectionCamera, size, activity, reducedMotion]);
 
   const removeDeparture = (key: number) => {
     setDepartures((current) => current.filter((departure) => departure.key !== key));

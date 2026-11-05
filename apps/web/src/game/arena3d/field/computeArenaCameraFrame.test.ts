@@ -52,7 +52,14 @@ const CASES = [
 ] as const;
 
 describe.each(CASES)("computeArenaCameraFrame on a $name", ({ canvasWidth, canvasHeight, field, layout }) => {
-  const frame = computeArenaCameraFrame({ canvasWidth, canvasHeight, field, origin: field, layout });
+  const frame = computeArenaCameraFrame({
+    canvasWidth,
+    canvasHeight,
+    field,
+    origin: field,
+    layout,
+    lanes: layout.lanes,
+  });
   const camera = createArenaFrameCamera(frame);
   const { halfWidth, halfDepth } = layout.bounds;
   const corners = [

@@ -2,6 +2,7 @@ import { PerspectiveCamera, Vector3 } from "three";
 import { CAMERA_FOV_DEGREES } from "@/game/arena3d/arenaSceneLayout";
 import type { ArenaCameraFrame, ArenaScreenRect } from "@/game/arena3d/field/ArenaCameraFrame";
 import type { ArenaLayoutVariantEntry } from "@/game/arena3d/field/ArenaLayoutVariant";
+import type { ArenaLaneLayout } from "@/game/arena3d/field/arenaWorldLayout";
 import { createArenaFloorProjector } from "@/game/arena3d/field/createArenaFloorProjector";
 
 type Params = {
@@ -10,6 +11,7 @@ type Params = {
   field: ArenaScreenRect;
   origin: { left: number; top: number };
   layout: ArenaLayoutVariantEntry;
+  lanes: ArenaLaneLayout;
 };
 
 type Corner = readonly [number, number];
@@ -96,5 +98,6 @@ export function computeArenaCameraFrame(params: Params): ArenaCameraFrame {
     fieldLeft: params.origin.left,
     fieldTop: params.origin.top,
     layout: params.layout,
+    lanes: params.lanes,
   };
 }

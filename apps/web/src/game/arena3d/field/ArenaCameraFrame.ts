@@ -1,4 +1,5 @@
 import type { ArenaLayoutVariantEntry } from "@/game/arena3d/field/ArenaLayoutVariant";
+import type { ArenaLaneLayout } from "@/game/arena3d/field/arenaWorldLayout";
 
 export type ArenaScreenRect = {
   left: number;
@@ -15,4 +16,5 @@ export type ArenaCameraFrame = {
   fieldLeft: number;
   fieldTop: number;
   layout: ArenaLayoutVariantEntry;
+  lanes: ArenaLaneLayout;
 };

@@ -5,7 +5,9 @@ import type { ArenaPulse, ScreenPoint } from "@/game/arena3d/ArenaPulse";
 import { ArenaPulseKind } from "@/game/arena3d/ArenaPulseKind";
 import type { ArenaSideColors } from "@/game/arena3d/ArenaSideColors";
 import { ArenaZone } from "@/game/arena3d/ArenaZone";
-import { getArenaDeleteBurstCenter } from "@/game/arena3d/cues/getArenaDeleteBurstCenter";
+import { getArenaDeleteBurstBoardPoint } from "@/game/arena3d/cues/getArenaDeleteBurstBoardPoint";
+import type { ArenaFieldStore } from "@/game/arena3d/field/createArenaFieldStore";
+import type { ArenaZoneKey } from "@/game/arena3d/field/arenaWorldLayout";
 import { findArenaZoneElement } from "@/game/arena3d/findArenaZoneElement";
 import { findAttackerPermanentId } from "@/game/arena3d/findAttackerPermanentId";
 import { getElementCenter } from "@/game/arena3d/getElementCenter";
@@ -29,6 +31,7 @@ type PileCounts = {
 
 type Params = {
   board: RefObject<HTMLElement | null>;
+  store: ArenaFieldStore;
   viewerSeat: number;
   sideColors: ArenaSideColors;
   permanents: RefObject<Record<string, HTMLDivElement | null>>;
@@ -55,9 +58,22 @@ type PileWatch = {
 };
 
 const MAX_PULSES = 24;
-function getPointSide(board: HTMLElement | null, point: ScreenPoint): Side {
-  const rect = board?.getBoundingClientRect();
-  return rect && point.y < rect.top + rect.height / 2 ? Side.Opponent : Side.Viewer;
+
+function getBoardPointSide(store: ArenaFieldStore, point: ScreenPoint): Side {
+  const height = store.get().frame?.canvasHeight;
+  return height !== undefined && point.y < height / 2 ? Side.Opponent : Side.Viewer;
+}
+
+function zoneKey(side: Side, zone: ArenaZone): ArenaZoneKey {
+  return `${side}:${zone}`;
+}
+
+function locateElement(element: Element | null | undefined): () => ScreenPoint | undefined {
+  return () => getElementCenter(element);
+}
+
+function locateZone(board: RefObject<HTMLElement | null>, side: Side, zone: ArenaZone): () => ScreenPoint | undefined {
+  return () => getElementCenter(findArenaZoneElement({ board: board.current, side, zone }));
 }
 
 function getBurstKind(variant: BurstVariant): ArenaPulseKind {
@@ -111,6 +127,7 @@ function buildPileWatches(counts: PileCounts): PileWatch[] {
 
 export function useArenaPulses({
   board,
+  store,
   viewerSeat,
   sideColors,
   permanents,
@@ -153,18 +170,17 @@ export function useArenaPulses({
     const area = side === Side.Viewer ? battleAreas.current.viewer : battleAreas.current.opponent;
     const attackerId = findAttackerPermanentId({ battleArea: area, cardId: attackAnnouncement.cardId });
     const attacker = attackerId ? permanents.current?.[attackerId] : undefined;
-    const security = findArenaZoneElement({
-      board: board.current,
-      side: getOppositeSide(side),
-      zone: ArenaZone.SECURITY.value,
-    });
+    const defender = getOppositeSide(side);
     emit({
       key: `attack:${attackAnnouncement.id}`,
       kind: ArenaPulseKind.ATTACK.value,
       color: getSideColor(side),
       side,
-      screenPoint: getElementCenter(attacker),
-      targetPoint: getElementCenter(security),
+      origin: { permanentId: attackerId, locate: locateElement(attacker) },
+      target: {
+        zoneKey: zoneKey(defender, ArenaZone.SECURITY.value),
+        locate: locateZone(board, defender, ArenaZone.SECURITY.value),
+      },
       permanentId: attackerId,
     });
   }, [attackAnnouncement, board, permanents, emit, getSideColor]);
@@ -181,8 +197,8 @@ export function useArenaPulses({
       kind: ArenaPulseKind.ATTACK.value,
       color: getSideColor(side),
       side,
-      screenPoint: getElementCenter(attacker),
-      targetPoint: getElementCenter(defender),
+      origin: { permanentId: fieldClash.attacker.permanentId, locate: locateElement(attacker) },
+      target: { permanentId: fieldClash.defender.permanentId, locate: locateElement(defender) },
       permanentId: fieldClash.attacker.permanentId,
       targetPermanentId: fieldClash.defender.permanentId,
     });
@@ -214,7 +230,7 @@ export function useArenaPulses({
         kind: ArenaPulseKind.IMPACT.value,
         color: getSideColor(getOppositeSide(side)),
         side,
-        screenPoint: getElementCenter(element),
+        origin: { permanentId, locate: locateElement(element) },
         permanentId,
       });
     }
@@ -231,18 +247,17 @@ export function useArenaPulses({
         continue;
       }
       seenBursts.current.add(burst.key);
-      const { side, anchor } = resolveArenaBurstAnchor({
-        board: board.current,
-        burst,
-        viewerSeat,
-        element: permanents.current?.[burst.permanentId],
-      });
+      const element = permanents.current?.[burst.permanentId];
+      const { side, anchor } = resolveArenaBurstAnchor({ board: board.current, burst, viewerSeat, element });
       emit({
         key: `burst:${burst.key}`,
         kind: getBurstKind(burst.variant),
         color: COLORS[burst.color].base,
         side,
-        screenPoint: getElementCenter(anchor),
+        origin: {
+          permanentId: element && anchor === element ? burst.permanentId : undefined,
+          locate: locateElement(anchor),
+        },
         permanentId: burst.permanentId,
       });
     }
@@ -254,20 +269,17 @@ export function useArenaPulses({
         continue;
       }
       seenDeletions.current.add(burst.key);
-      const point = getArenaDeleteBurstCenter({ board: board.current, burst });
-      if (!point) {
-        continue;
-      }
-      const side = getPointSide(board.current, point);
+      const point = getArenaDeleteBurstBoardPoint(burst);
+      const side = getBoardPointSide(store, point);
       emit({
         key: `field-delete:${burst.key}`,
         kind: ArenaPulseKind.DELETE.value,
         color: burst.color ? COLORS[burst.color].base : getSideColor(side),
         side,
-        screenPoint: point,
+        origin: { boardPoint: point },
       });
     }
-  }, [deleteBursts, board, emit, getSideColor]);
+  }, [deleteBursts, store, emit, getSideColor]);
 
   useEffect(() => {
     if (securityHitSeat === null) {
@@ -279,9 +291,10 @@ export function useArenaPulses({
       kind: ArenaPulseKind.SECURITY.value,
       color: getSideColor(getOppositeSide(side)),
       side,
-      screenPoint: getElementCenter(
-        findArenaZoneElement({ board: board.current, side, zone: ArenaZone.SECURITY.value }),
-      ),
+      origin: {
+        zoneKey: zoneKey(side, ArenaZone.SECURITY.value),
+        locate: locateZone(board, side, ArenaZone.SECURITY.value),
+      },
     });
   }, [securityHitSeat, viewerSeat, board, emit, getSideColor]);
 
@@ -292,15 +305,17 @@ export function useArenaPulses({
     const side = finale.winnerSeat === viewerSeat ? Side.Viewer : Side.Opponent;
     const attackerId = finale.attacker?.permanentId;
     const attacker = attackerId ? permanents.current?.[attackerId] : undefined;
+    const loser = getOppositeSide(side);
     emit({
       key: `finale:${finale.key}`,
       kind: ArenaPulseKind.FINALE.value,
       color: finaleTone ? findMatchFinaleTone(finaleTone).tint : getSideColor(side),
       side,
-      screenPoint: getElementCenter(attacker),
-      targetPoint: getElementCenter(
-        findArenaZoneElement({ board: board.current, side: getOppositeSide(side), zone: ArenaZone.SECURITY.value }),
-      ),
+      origin: { permanentId: attackerId, locate: locateElement(attacker) },
+      target: {
+        zoneKey: zoneKey(loser, ArenaZone.SECURITY.value),
+        locate: locateZone(board, loser, ArenaZone.SECURITY.value),
+      },
       permanentId: attackerId,
     });
   }, [finale, finaleTone, viewerSeat, board, permanents, emit, getSideColor]);
@@ -324,9 +339,7 @@ export function useArenaPulses({
         kind: watch.kind,
         color: getSideColor(watch.side),
         side: watch.side,
-        screenPoint: getElementCenter(
-          findArenaZoneElement({ board: board.current, side: watch.side, zone: watch.zone }),
-        ),
+        origin: { zoneKey: zoneKey(watch.side, watch.zone), locate: locateZone(board, watch.side, watch.zone) },
       });
     });
   }, [viewerDeck, opponentDeck, viewerTrash, opponentTrash, board, emit, getSideColor]);

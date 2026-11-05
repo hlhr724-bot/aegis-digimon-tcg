@@ -1,4 +1,6 @@
 import type { AnimationStepContext } from "./animationQueue";
+import { freezeComputedStyleTree } from "./freezeComputedStyleTree";
+import { ARENA_3D_LIVE_ATTRIBUTE, isInsideLiveArena3d } from "@/game/arena3d/isInsideLiveArena3d";
 import { waitForPaintedAnimation } from "./paintedAnimationClock";
 import { TIMINGS } from "./timings";
 import { useCallback, useLayoutEffect, useRef, type RefObject } from "react";
@@ -20,6 +22,31 @@ export interface FieldShatterFace {
 }
 
 const departures = new WeakMap<HTMLElement, Map<string, FieldShatterFace>>();
+const recentCaptures = new WeakMap<HTMLElement, { face: FieldShatterFace; capturedAt: number }>();
+const RECENT_CAPTURE_REUSE_MS = 1000;
+
+function copyFieldShatterFace(face: FieldShatterFace): FieldShatterFace {
+  return {
+    ...face,
+    clone: face.clone?.cloneNode(true) as HTMLElement | undefined,
+    stackClone: face.stackClone?.cloneNode(true) as HTMLElement | undefined,
+    handStackClone: face.handStackClone?.cloneNode(true) as HTMLElement | undefined,
+  };
+}
+
+function captureDepartureFace(permanent: HTMLElement, board: HTMLElement, includeStack: boolean) {
+  return isInsideLiveArena3d(board)
+    ? measureFieldShatterFace(permanent, board)
+    : captureFieldShatterFace(permanent, board, includeStack);
+}
+
+function takeRecentCapture(element: HTMLElement): FieldShatterFace | undefined {
+  const recent = recentCaptures.get(element);
+  recentCaptures.delete(element);
+  return recent && performance.now() - recent.capturedAt < RECENT_CAPTURE_REUSE_MS
+    ? copyFieldShatterFace(recent.face)
+    : undefined;
+}
 
 /** Capture before DOM removal; late image loading, resizing and scrolling are included. */
 export function useFieldShatterOrigin(
@@ -39,8 +66,8 @@ export function useFieldShatterOrigin(
     (element: HTMLDivElement | null) => {
       const previous = live.current;
       if (!element && previous?.isConnected) {
-        const board = previous.closest<HTMLElement>(".game-board");
-        const face = board && captureFieldShatterFace(previous, board, true);
+        const board = previous.closest<HTMLElement>(`.game-board:not([${ARENA_3D_LIVE_ATTRIBUTE}])`);
+        const face = board && (takeRecentCapture(previous) ?? captureDepartureFace(previous, board, true));
         if (board && face) {
           const saved = departures.get(board) ?? new Map<string, FieldShatterFace>();
           departures.set(board, saved);
@@ -82,11 +109,12 @@ export function resolveFieldDepartureFace({
   // only when they have no directly registered permanent.
   const direct = elements[id];
   const element = direct?.isConnected ? direct : elements[cached?.permanentId ?? id];
-  return element?.isConnected && board
-    ? (captureFieldShatterFace(element, board, includeStack) ?? cached)
-    : board
-      ? (takeFieldShatterOrigin(board, id) ?? cached)
-      : cached;
+  if (element?.isConnected && board) {
+    const face = captureDepartureFace(element, board, includeStack);
+    if (face) recentCaptures.set(element, { face: copyFieldShatterFace(face), capturedAt: performance.now() });
+    return face ?? cached;
+  }
+  return board ? (takeFieldShatterOrigin(board, id) ?? cached) : cached;
 }
 
 export function useFieldShatterOrigins(boardRef: RefObject<HTMLDivElement | null>) {
@@ -142,25 +170,11 @@ export function measureFieldShatterFace(permanent: HTMLElement, board: HTMLEleme
   };
 }
 
+const FROZEN_FIELD_REMOVED_ATTRIBUTES = ["id", "tabindex", "data-drop"];
+
 /** Freeze one tree; the face and both stack orientations copy its already frozen declarations. */
 function freezeFieldTree(original: HTMLElement) {
-  const clone = original.cloneNode(true) as HTMLElement;
-  const originals = [original, ...original.querySelectorAll<HTMLElement>("*")];
-  const copies = [clone, ...clone.querySelectorAll<HTMLElement>("*")];
-  originals.forEach((element, index) => {
-    const style = getComputedStyle(element);
-    const declarations = [];
-    for (const property of style) {
-      const priority = style.getPropertyPriority(property);
-      declarations.push(`${property}:${style.getPropertyValue(property)}${priority ? " !important" : ""};`);
-    }
-    const copy = copies[index]!;
-    copy.style.cssText = declarations.join("");
-    copy.style.animation = "none";
-    copy.style.transition = "none";
-    for (const attribute of ["id", "tabindex", "data-drop"]) copy.removeAttribute(attribute);
-  });
-  return clone;
+  return freezeComputedStyleTree(original, FROZEN_FIELD_REMOVED_ATTRIBUTES);
 }
 
 /** All 41 fragments share this already loaded physical face. */

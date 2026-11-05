@@ -1,3 +1,4 @@
+import { BattleLanes } from "@/design/battleLanes";
 import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
 import { ARENA_VISIBLE_SOURCE_LIMIT } from "@/game/arena3d/field/arenaCardStackLayout";
 import type { ArenaRowSlot } from "@/game/arena3d/field/ArenaRowSlot";
@@ -92,9 +93,13 @@ function placeLaneTiles(params: LaneParams): ArenaSlotTile[] {
   return placePackedTiles(params);
 }
 
+function listLaneDepths(lanes: ArenaLaneLayout): number[] {
+  return lanes.count === BattleLanes.One ? [lanes.digimonDepth] : [lanes.digimonDepth, lanes.supportDepth];
+}
+
 export function computeArenaSlotTiles({ rows, lanes }: Params): ArenaSlotTile[] {
   return [Side.Viewer, Side.Opponent].flatMap((side) =>
-    [lanes.digimonDepth, lanes.supportDepth].flatMap((depth) =>
+    listLaneDepths(lanes).flatMap((depth) =>
       placeLaneTiles({
         lanes,
         depth,

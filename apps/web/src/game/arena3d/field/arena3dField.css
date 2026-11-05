@@ -26,7 +26,7 @@
   background: radial-gradient(ellipse at 50% 50%, transparent 62%, rgb(40 30 60 / 16%) 100%);
 }
 
-.aegis-arena .game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) {
+.aegis-arena .game-board[data-board-style="arena3d"][data-arena-3d-live] {
   background: transparent !important;
 }
 
@@ -150,7 +150,7 @@
   display: none;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field:not([data-arena-layout="tall"])
   .game-memory-gauge__track {
   border: 0 !important;
@@ -158,7 +158,7 @@
   box-shadow: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field:not([data-arena-layout="tall"])
   :is(.game-memory-coin, .game-memory-arc, .game-memory-prediction, .game-memory-prediction__marker) {
   opacity: 0 !important;
@@ -253,7 +253,7 @@
   transform: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-security-shield {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-security-shield {
   border: 0 !important;
   background: none !important;
   box-shadow: none !important;
@@ -261,13 +261,13 @@
   filter: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-security-shield::before,
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-security-shield::after,
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-security-shield__label {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-security-shield::before,
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-security-shield::after,
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-security-shield__label {
   display: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-security-shield__count {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-security-shield__count {
   position: absolute !important;
   inset: auto auto -0.5rem 50% !important;
   translate: -50% 0 !important;
@@ -284,14 +284,14 @@
   font: 700 0.8rem / 1 var(--ds-font-display) !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   .game-security-shield
   .game-security-shield__count {
   transform: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] {
   background: transparent !important;
 }
 
@@ -475,13 +475,13 @@
   top: calc(100% + 0.25rem);
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   :is(.game-permanent, .game-breeding-slot)
   .game-card-enter
   > :is([data-state], [data-card-back]),
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-pile__top,
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-pile__top,
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   .game-pile__top
   > :is([data-state], [data-card-back]) {
@@ -490,21 +490,21 @@
   box-shadow: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   :is(.game-permanent, .game-breeding-slot, .game-pile__top)
   :is([data-state], [data-card-back])
   > :is(img, svg),
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   :is(.game-permanent__source, .game-permanent__link, .game-copy-edge),
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   :is(.game-pile__layer, .game-pile__shuffle-face, .game-security-cards) {
   opacity: 0 !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   :is(.game-utility-slot, .game-breeding-slot__box, .game-pile:not(:has(.game-pile__top))) {
   border-color: transparent !important;
@@ -517,8 +517,7 @@
 }
 
 .game-board[data-board-style="arena3d"] .arena-3d-field .game-breeding-slot > :not(.game-breeding-slot__box),
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
-  :is(.game-breeding-slot__empty, .arena-3d-row__empty) {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] :is(.game-breeding-slot__empty, .arena-3d-row__empty) {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -530,7 +529,7 @@
   border: 0;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   .game-security-shield--opp
   .game-security-shield__count {
@@ -730,11 +729,11 @@
   }
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field > .game-breeding-mode {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field > .game-breeding-mode {
   display: none;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   :is(
     .game-opponent-bar,
     .game-player-dock,
@@ -745,7 +744,7 @@
   transition: filter var(--t-dialog-in, 180ms) ease-out;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas):has(.arena-3d-field > .game-breeding-mode)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]:has(.arena-3d-field > .game-breeding-mode)
   :is(
     .game-opponent-bar,
     .game-player-dock,
@@ -758,7 +757,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+  .game-board[data-board-style="arena3d"][data-arena-3d-live]
     :is(
       .game-opponent-bar,
       .game-player-dock,
@@ -771,7 +770,7 @@
   }
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   :is(.game-egg-deck--hatchable .game-pile__top, .game-breeding-slot--focus .game-breeding-slot__box):not(
     :focus-visible
@@ -779,7 +778,7 @@
   outline: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   .game-security-pile
   :is(.game-security-cards, .game-security-cards *) {

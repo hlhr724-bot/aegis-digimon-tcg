@@ -159,3 +159,13 @@
     animation: none;
   }
 }
+.game-field-effects--opens-right .game-field-effects__list {
+  right: auto;
+  left: 0;
+}
+.game-field-effects--opens-right[open] .game-field-effects__list {
+  transform-origin: top left;
+}
+.game-field-effects--own.game-field-effects--opens-right[open] .game-field-effects__list {
+  transform-origin: bottom left;
+}

@@ -1,4 +1,4 @@
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field .game-permanent__field-reference {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-permanent__field-reference {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
@@ -10,22 +10,22 @@
   white-space: nowrap !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-slot > .game-permanent {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-slot > .game-permanent {
   transform: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   :is([data-card-info] > [data-cost], [data-card-info] > [data-card-kind], [data-card-name]) {
   visibility: hidden !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field [data-card-footer] {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field [data-card-footer] {
   padding: 0 4% 4% !important;
   background: none !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field [data-card-dp] {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field [data-card-dp] {
   padding: 1px 5px !important;
   border-color: rgb(255 255 255 / 22%) !important;
   border-radius: 6px !important;
@@ -33,13 +33,13 @@
   box-shadow: 0 1px 4px rgb(0 0 0 / 45%) !important;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas) .arena-3d-field [data-card-level] {
+.game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field [data-card-level] {
   border: 1px solid rgb(255 255 255 / 18%);
   background: rgb(8 12 22 / 80%) !important;
   box-shadow: 0 1px 4px rgb(0 0 0 / 40%);
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-slot
   :is(
     [data-card-level],
@@ -56,7 +56,7 @@
   scale: 1 calc(1 / var(--arena-3d-squash, 1));
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-field
   :is([data-arena-3d-row][data-drag-intent], [data-arena-3d-row] [data-drop][data-drag-intent]) {
   outline: none !important;
@@ -69,7 +69,7 @@
   pointer-events: none;
 }
 
-.game-board[data-board-style="arena3d"]:has(> .arena-3d-scene canvas)
+.game-board[data-board-style="arena3d"][data-arena-3d-live]
   .arena-3d-slot
   > .game-permanent
   > .game-card-enter

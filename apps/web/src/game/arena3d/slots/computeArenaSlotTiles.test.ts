@@ -1,9 +1,11 @@
 import type { Permanent } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
+import { BattleLanes } from "@/design/battleLanes";
 import type { ArenaRowSlot } from "@/game/arena3d/field/ArenaRowSlot";
 import { ARENA_ROW_LAYOUT } from "@/game/arena3d/field/arenaWorldLayout";
 import { ArenaLayoutVariant } from "@/game/arena3d/field/ArenaLayoutVariant";
 import { computeArenaRowSlots } from "@/game/arena3d/field/computeArenaRowSlots";
+import { resolveArenaLanes } from "@/game/arena3d/field/resolveArenaLanes";
 import type { ArenaSlotTile } from "@/game/arena3d/slots/ArenaSlotTile";
 import { ArenaSlotTileKind } from "@/game/arena3d/slots/ArenaSlotTileKind";
 import { computeArenaSlotTiles } from "@/game/arena3d/slots/computeArenaSlotTiles";
@@ -91,5 +93,33 @@ describe("computeArenaSlotTiles", () => {
     expect(lane).toHaveLength(8);
     expect(countKind(lane, ArenaSlotTileKind.EMPTY.value)).toBe(0);
     expect(new Set(lane.map((tile) => tile.width)).size).toBe(1);
+  });
+});
+
+describe("computeArenaSlotTiles with one lane", () => {
+  it("draws one row of five tiles per side at the single lane depth", () => {
+    const lanes = resolveArenaLanes(LANES, BattleLanes.One);
+    const rows = {
+      [Side.Viewer]: computeArenaRowSlots({
+        side: Side.Viewer,
+        lanes,
+        arrangement: {
+          digimon: [buildPermanent("viewer-d0")],
+          support: [{ key: "viewer-s0", members: [buildPermanent("viewer-s0")] }],
+        },
+        isSuspended: () => false,
+      }),
+      [Side.Opponent]: [],
+    };
+
+    const tiles = computeArenaSlotTiles({ rows, lanes });
+
+    expect(tiles).toHaveLength(ARENA_ROW_LAYOUT.columns * 2);
+    expect(new Set(tiles.map((tile) => Math.abs(tile.z)))).toEqual(new Set([lanes.digimonDepth]));
+    expect(
+      selectLane(tiles, Side.Viewer, lanes.digimonDepth).filter(
+        (tile) => tile.kind === ArenaSlotTileKind.OCCUPIED.value,
+      ),
+    ).toHaveLength(2);
   });
 });

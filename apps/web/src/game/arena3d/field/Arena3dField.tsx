@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 import type { PerspectiveCamera } from "three";
+import { useBattleLanePreference } from "@/design/battleLanes";
 import { CARD_DIMENSIONS } from "@/design/webglCard/cardDimensions";
 import { ArenaZone } from "@/game/arena3d/ArenaZone";
 import { Arena3dFieldContext, type Arena3dFieldContextValue } from "@/game/arena3d/field/Arena3dFieldContext";
@@ -17,6 +18,7 @@ import { computeArenaFieldInsetTop } from "@/game/arena3d/field/computeArenaFiel
 import type { createArenaFieldFrame } from "@/game/arena3d/field/createArenaFieldFrame";
 import type { ArenaFieldStore, ArenaZoneSlot } from "@/game/arena3d/field/createArenaFieldStore";
 import { projectArenaPoint } from "@/game/arena3d/field/projectArenaPoint";
+import { resolveArenaLanes } from "@/game/arena3d/field/resolveArenaLanes";
 import { selectArenaLayoutVariant } from "@/game/arena3d/field/selectArenaLayoutVariant";
 import { Side } from "@/game/side";
 import "@/game/arena3d/field/arena3dField.css";
@@ -161,6 +163,7 @@ export function Arena3dField({ board, store, pileWidth, raisingWidth, portrait, 
   const container = useRef<HTMLDivElement>(null);
   const [measurement, setMeasurement] = useState<Measurement | undefined>(undefined);
   const [createFrame, setCreateFrame] = useState<FieldFrameFactory | undefined>(() => fieldFrameFactory);
+  const battleLanes = useBattleLanePreference();
 
   useEffect(() => {
     if (createFrame) {
@@ -231,15 +234,17 @@ export function Arena3dField({ board, store, pileWidth, raisingWidth, portrait, 
       width: measurement.width,
       height: measurement.height - measurement.insetTop,
     };
+    const layout = selectArenaLayoutVariant({ portrait, width: field.width, height: field.height });
     const { frame, camera } = createFrame({
       canvasWidth: measurement.canvasWidth,
       canvasHeight: measurement.canvasHeight,
       field,
       origin: { left: measurement.left, top: measurement.top },
-      layout: selectArenaLayoutVariant({ portrait, width: field.width, height: field.height }),
+      layout,
+      lanes: resolveArenaLanes(layout.lanes, battleLanes),
     });
     return { frame, camera, store };
-  }, [createFrame, measurement, store, portrait]);
+  }, [createFrame, measurement, store, portrait, battleLanes]);
 
   useEffect(() => {
     if (value) {
@@ -256,6 +261,7 @@ export function Arena3dField({ board, store, pileWidth, raisingWidth, portrait, 
       style={style}
       data-ready={value ? true : undefined}
       data-arena-layout={value?.frame.layout.value}
+      data-arena-lanes={value?.frame.lanes.count}
     >
       {value ? <Arena3dFieldContext.Provider value={value}>{children}</Arena3dFieldContext.Provider> : null}
     </div>

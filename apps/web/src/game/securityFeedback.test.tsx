@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { CardInstance, Permanent } from "@aegis/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NoticeStack } from "./NoticeStack";
@@ -158,7 +158,7 @@ describe("security feedback", () => {
     expect(screen.getByTestId("security-clash").querySelector(".battle-clash__flash")).toBeNull();
   });
 
-  it("stages a destroyed security card alone with nothing printed around it", () => {
+  it("stages a destroyed security card alone with nothing printed around it", async () => {
     render(
       <I18nProvider>
         <SecurityClash
@@ -174,6 +174,11 @@ describe("security feedback", () => {
     expect(scene.querySelector(".battle-clash__outcome")).toBeNull();
     expect(scene.textContent).toBe("");
     expect(scene.querySelectorAll(".game-card-shatter__shard")).toHaveLength(41);
+    await waitFor(() => {
+      const faces = [...scene.querySelectorAll(".game-card-shatter__shard")].map((shard) => shard.innerHTML);
+      expect(faces[0]).not.toBe("");
+      expect(new Set(faces).size).toBe(1);
+    });
     expect(scene.querySelector(".battle-clash__shatter")).toBeTruthy();
     expect(scene.getAttribute("aria-label")).toContain("Agumon");
   });

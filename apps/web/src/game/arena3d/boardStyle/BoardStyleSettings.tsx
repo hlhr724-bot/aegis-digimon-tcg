@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import { ArenaLookSettings } from "@/design/ArenaLookSettings";
 import type { ArenaDeckColors } from "@/design/arenaPalette";
+import { BattleLanes, setBattleLanes, useBattleLanePreference } from "@/design/battleLanes";
 import { Icons, type IconComponent } from "@/design/icons";
 import { playSound } from "@/design/sound";
 import { COARSE_POINTER_QUERY, useMediaQuery } from "@/design/useMediaQuery";
@@ -37,10 +38,55 @@ const STYLE_OPTIONS: readonly StyleOption[] = [
   { style: BoardStyle.ARENA_3D.value, labelKey: BoardStyle.ARENA_3D.labelKey, icon: Icons.Hexagon },
 ];
 
+type LaneOption = {
+  lanes: BattleLanes;
+  count: number;
+  labelKey: TranslationKey;
+};
+
+const LANE_OPTIONS: readonly LaneOption[] = [
+  { lanes: BattleLanes.Two, count: 2, labelKey: "redesign.foundation.arena.lanes.two" },
+  { lanes: BattleLanes.One, count: 1, labelKey: "redesign.foundation.arena.lanes.one" },
+];
+
 const QUALITY_OPTIONS: readonly QualityOption[] = [
   { choice: AUTO_ARENA_3D_QUALITY, labelKey: "redesign.foundation.arena3dQuality.auto" },
   ...Object.values(Arena3dQuality).map((entry) => ({ choice: entry.value, labelKey: entry.labelKey })),
 ];
+
+function Arena3dLaneSettings() {
+  const { t } = useTranslation();
+  const groupName = useId();
+  const selected = useBattleLanePreference();
+  return (
+    <fieldset className="aegis-arena-look__group">
+      <legend className="aegis-arena-look__legend">{t("redesign.foundation.arena.lanes")}</legend>
+      <div className="aegis-arena-look__segments">
+        {LANE_OPTIONS.map((option) => (
+          <label key={option.lanes} className="aegis-arena-look__segment">
+            <input
+              type="radio"
+              className="aegis-sr-only"
+              name={groupName}
+              value={option.lanes}
+              checked={option.lanes === selected}
+              onChange={() => {
+                setBattleLanes(option.lanes);
+                playSound("select");
+              }}
+            />
+            <span className="aegis-arena-look__lanes-icon" aria-hidden="true">
+              {Array.from({ length: option.count }, (_, lane) => (
+                <span key={lane} />
+              ))}
+            </span>
+            <span>{t(option.labelKey)}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
 
 function Arena3dQualitySettings() {
   const { t } = useTranslation();
@@ -126,6 +172,7 @@ export function BoardStyleSettings({ deckColors }: Props) {
       </fieldset>
       {arena3dActive ? (
         <>
+          <Arena3dLaneSettings />
           <ArenaEnvironmentSettings />
           <Arena3dQualitySettings />
         </>

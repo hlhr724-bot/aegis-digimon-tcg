@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, type RefObject } from "react";
 import type { AnimationQueue, AnimationStepContext } from "./animationQueue";
 import { motionPreference } from "@/design/motion/motionPreference";
+import { freezeComputedStyleTree } from "./freezeComputedStyleTree";
 
 export const BREEDING_TRANSFER_MS = 200;
 const OUT_CUBIC = "cubic-bezier(0.333333, 1, 0.666667, 1)";
@@ -43,24 +44,10 @@ export function useBreedingTransferOrigin(permanentId: string | undefined) {
 }
 
 /** Freeze the drawn stack, including its responsive styles, before a state patch removes it. */
+const SNAPSHOT_REMOVED_ATTRIBUTES = ["id", "data-permanent-id", "data-drop", "tabindex"];
+
 function snapshot(element: HTMLElement): HTMLElement {
-  const clone = element.cloneNode(true) as HTMLElement;
-  const originals = [element, ...element.querySelectorAll<HTMLElement>("*")];
-  const copies = [clone, ...clone.querySelectorAll<HTMLElement>("*")];
-  originals.forEach((original, index) => {
-    const copy = copies[index]!;
-    const style = getComputedStyle(original);
-    for (let propertyIndex = 0; propertyIndex < style.length; propertyIndex++) {
-      const property = style.item(propertyIndex);
-      copy.style.setProperty(property, style.getPropertyValue(property));
-    }
-    copy.style.animation = "none";
-    copy.style.transition = "none";
-    copy.removeAttribute("id");
-    copy.removeAttribute("data-permanent-id");
-    copy.removeAttribute("data-drop");
-    copy.removeAttribute("tabindex");
-  });
+  const clone = freezeComputedStyleTree(element, SNAPSHOT_REMOVED_ATTRIBUTES);
   clone.inert = true;
   clone.setAttribute("aria-hidden", "true");
   clone.style.pointerEvents = "none";
