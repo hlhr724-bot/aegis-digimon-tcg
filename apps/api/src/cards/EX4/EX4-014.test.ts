@@ -19,7 +19,7 @@ describe("EX4-014 Gaossmon", () => {
       evoCosts: [{ color: "Blue", level: 2, memoryCost: 0 }],
       forms: ["Rookie"],
       attributes: ["Virus"],
-      types: ["Reptile", "BlueFlare"],
+      types: ["Reptile", "Blue Flare"],
       effectText:
         "[Your Turn][Once Per Turn] When a card with the [Blue Flare] trait is played, . ＜Draw 1＞ (Draw 1 card from your deck.) When a card with the [Twilight] trait is played, return 1 Digimon card with DigiXros requirements from your trash to your hand.",
     });

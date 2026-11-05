@@ -68,6 +68,7 @@ export function createBotArmOptions({
       profile,
       seed,
       policy: { ...policy, name: `${specialized ? "validated-pilot" : "certified"}:${program.title}` },
+      rebindEngine: (nextEngine) => createBotArmOptions({ arm, engine: nextEngine, seat, deck, onFallback, style }),
       canChooseMainAction: () => mainActionReady(engine),
     };
   }
@@ -83,6 +84,7 @@ export function createBotArmOptions({
       standard,
       onFallback,
     }),
+    rebindEngine: (nextEngine) => createBotArmOptions({ arm, engine: nextEngine, seat, deck, onFallback, style }),
     canChooseMainAction: () => mainActionReady(engine),
     policyTimeoutMs: CANDIDATE_TIMEOUT_MS,
   };

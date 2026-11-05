@@ -21,7 +21,7 @@ describe("BT11-031 ZeigGreymon", () => {
       ],
       forms: ["Mega"],
       attributes: ["Virus"],
-      types: ["Cyborg", "BlueFlare"],
+      types: ["Cyborg", "Blue Flare"],
     });
     expect(compiled).toMatchObject({
       effects: [

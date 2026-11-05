@@ -99,6 +99,8 @@ export function createLevelBotOptions({
         ? seenResidualPolicy
         : seenConfiguredPolicy;
   return {
+    rebindEngine: (nextEngine) =>
+      createLevelBotOptions({ difficulty, style, engine: nextEngine, seat, deck, seed, searchTiming }),
     difficulty,
     profile,
     seed,

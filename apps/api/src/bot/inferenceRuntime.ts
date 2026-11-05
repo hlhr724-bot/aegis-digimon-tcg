@@ -94,6 +94,7 @@ export function trainedBotOptions(input: {
       noteRejected: disable,
       onEngineRejection: disable,
     },
+    rebindEngine: (engine) => trainedBotOptions({ ...input, engine }),
     canChooseMainAction: () => mainActionReady(input.engine),
     policyTimeoutMs: 1_000,
   };

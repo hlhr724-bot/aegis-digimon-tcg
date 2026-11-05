@@ -21,7 +21,7 @@ describe("BT11-019 Shoutmon X7", () => {
       ],
       forms: ["Mega"],
       attributes: ["Data"],
-      types: ["Composite", "Xros Heart", "BlueFlare"],
+      types: ["Composite", "Xros Heart", "Blue Flare"],
     });
     expect(digiXrosRequirementFor("BT11-019")).toEqual([
       {

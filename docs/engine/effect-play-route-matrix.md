@@ -329,3 +329,9 @@ Compared with the reviewed catalog after the bracket corrections (`373533af17`),
 Re-running the three absence searches (`DNA digivolv`, `app fus`, `burst digivolv`) over the effect fields returns the same counts as the reviewed catalog (134, 38 and 7 cards). No new card provides DNA, App Fusion, Burst, or a security or deck-reveal recipient, so the 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rule-source fingerprint remain applicable.
 
 After this bounded review, the catalog fingerprint changes from `66359d05278a5f652017fb71f9ebb1e1caa250e5f44d105386a2de7510c0a1d3` to `af81130a84a6fec753e17a6b92dfe531029233ee13399a430a1583529b45c995`. Catalog drift remains an error; no validator or test expectation is weakened.
+
+### Catalog review after Blue Flare spelling correction (2026-11-05)
+
+Compared with `develop` at `70f9d6bcc7`, all 4,570 card identities remain unchanged. Exactly 21 records change, exclusively in `types`: `BlueFlare` becomes `Blue Flare`. Removing spaces produces identical old and new trait values, matching the existing trait comparison. Every printed effect, evolution requirement, play cost and recipient zone is unchanged.
+
+No provider or exclusion changes: the 22 covered cells, eight reviewed provider absences, candidate lists, scenario evidence and rules fingerprint remain applicable. The catalog fingerprint changes from `9e27b486e60cca9887a4be09c5aa7e7fb5fbde5d749505843b57e5b3ea29275c` to `a97a75dc2e2d782a19fd80ef76de3d899aaee896fac4765b01092098a0a0a1a9` after this bounded comparison. Catalog drift remains an error; no validator is weakened.

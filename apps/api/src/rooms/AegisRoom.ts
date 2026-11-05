@@ -4118,7 +4118,7 @@ export class AegisRoom extends Room<{
         const seat = this.seatByClient.get(client.sessionId);
         if (seat !== undefined || this.spectatorClients.has(client.sessionId)) this.assignView(client, seat);
       }
-      for (const seat of [0, 1] as const) this.bots[seat] = this.bots[seat]?.restartAfterRollback(restored);
+      for (const seat of [0, 1] as const) this.bots[seat] = this.bots[seat]?.restartAfterRollback(this.engine);
       this.debug("replay.rollback", {
         replaySeq: this.nextReplaySeq(),
         index: target.index,

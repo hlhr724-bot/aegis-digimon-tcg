@@ -16,7 +16,7 @@ describe("EX4-001 Missimon", () => {
       level: 2,
       playCost: -1,
       dp: 0,
-      types: ["Machine", "BlueFlare"],
+      types: ["Machine", "Blue Flare"],
       inheritedEffectText: "[On Deletion] If you have a Digimon in play, . ＜Draw 1＞ (Draw 1 card from your deck.)",
     });
   });

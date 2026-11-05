@@ -26,3 +26,8 @@ describe("Rule name phrasings", () => {
     expect(effectiveSubstringOnlyNames(thundermon)).toContain("Mamemon");
   });
 });
+
+it.each(["BT10-025", "BT10-020", "EX4-018"])("uses the printed Blue Flare trait spelling for %s", (cardId) => {
+  expect(effectiveStaticTraits(getCardDefinition(cardId)!)).toContain("Blue Flare");
+  expect(effectiveStaticTraits(getCardDefinition(cardId)!)).not.toContain("BlueFlare");
+});

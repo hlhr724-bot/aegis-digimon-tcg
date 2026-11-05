@@ -583,3 +583,38 @@ it.each([true, false])(
     expect(onRespond).toHaveBeenLastCalledWith({ kind: "selectCards", instanceIds: [] });
   },
 );
+
+it("allows declining an exact two-card hand cost on the board", () => {
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  render(
+    <I18nProvider>
+      <DecisionPrompts
+        decision={{
+          decisionId: "declinable-hand-cost",
+          seat: 0,
+          kind: "selectCards",
+          promptText: "Belphemon: Sleep Mode",
+          options: { candidateInstanceIds: ["first", "second"], min: 2, max: 2, declinesCost: true, purpose: "cost" },
+        }}
+        answerOnBoard
+        permanents={[]}
+        sourceCardId="BT13-088"
+        candidates={[
+          { instanceId: "first", cardId: "BT1-009", zone: "hand" },
+          { instanceId: "second", cardId: "BT1-009", zone: "hand" },
+        ]}
+        allowsPick={() => true}
+        picks={[]}
+        min={2}
+        max={2}
+        triggerDetails={[]}
+        opponentSecurityCount={5}
+        onTogglePick={() => {}}
+        onRespond={onRespond}
+        onOpenDialog={() => {}}
+      />
+    </I18nProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Cancel effect" }));
+  expect(onRespond).toHaveBeenCalledWith({ kind: "selectCards", instanceIds: [] });
+});
