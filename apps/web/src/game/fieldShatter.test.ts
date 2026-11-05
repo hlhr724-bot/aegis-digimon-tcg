@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
+import { renderHook } from "@testing-library/react";
 import { expect, it, vi } from "vitest";
 import fracture from "./fieldFracture.json";
-import { captureFieldShatterFace, measureFieldShatterFace, resolveFieldDepartureFace } from "./fieldShatter";
+import {
+  captureFieldShatterFace,
+  measureFieldShatterFace,
+  resolveFieldDepartureFace,
+  takeFieldShatterOrigin,
+  useFieldShatterOrigin,
+} from "./fieldShatter";
 
 it.each([false, true])(
   "captures both grouped physical departures after their representative changes (stack=%s)",
@@ -62,7 +69,7 @@ it("freezes a departing face and both stack orientations from one descendant sty
   board.className = "game-board";
   board.innerHTML = `<div data-permanent-id="departing" style="rotate:none;transform:none;scale:none">
     <div class="game-card-enter" style="rotate:none;transform:none;scale:none">
-      <div data-state="active" style="width:100px;height:140px;box-sizing:border-box;rotate:none;transform:none;scale:none">
+      <div data-state="active" style="width:100px;height:140px;box-sizing:border-box;rotate:none;transform:none;scale:none;--unused-tint:red">
         <span id="chrome" tabindex="0" style="color:rgb(12,34,56);--caption:'text; with: separators'">Printed face</span>
       </div>
     </div>
@@ -75,7 +82,8 @@ it("freezes a departing face and both stack orientations from one descendant sty
   permanent.getBoundingClientRect = face.getBoundingClientRect;
   board.getBoundingClientRect = () => new DOMRect(0, 0, 800, 1000);
   const styleOf = window.getComputedStyle.bind(window);
-  const style = vi.spyOn(window, "getComputedStyle").mockImplementation((element) => {
+  const style = vi.spyOn(window, "getComputedStyle").mockImplementation((element, pseudo) => {
+    if (pseudo) return { content: element === label ? '"caption"' : "none" } as CSSStyleDeclaration;
     const computed = styleOf(element);
     // The browser's declaration is iterable; jsdom's declaration needs this adapter.
     Object.defineProperty(computed, Symbol.iterator, {
@@ -87,12 +95,13 @@ it("freezes a departing face and both stack orientations from one descendant sty
   });
   try {
     const captured = captureFieldShatterFace(permanent, board, true)!;
-    expect(style.mock.calls.filter(([element]) => element === label)).toHaveLength(1);
+    expect(style.mock.calls.filter(([element, pseudo]) => element === label && !pseudo)).toHaveLength(1);
     label.style.color = "red";
     for (const clone of [captured.clone!, captured.stackClone!, captured.handStackClone!]) {
       const frozen = clone.querySelector("span")!;
       expect(frozen.style.color).toBe("rgb(12, 34, 56)");
       expect(frozen.style.getPropertyValue("--caption")).toBe("'text; with: separators'");
+      expect(frozen.parentElement!.style.getPropertyValue("--unused-tint")).toBe("");
       expect(frozen.style.animation).toBe("none");
       expect(frozen.hasAttribute("id")).toBe(false);
       expect(frozen.hasAttribute("tabindex")).toBe(false);
@@ -129,4 +138,78 @@ it("the extracted irregular mesh covers the full printed plane without gaps or o
   for (let x = 0.371; x < 100; x += 1.037)
     for (let y = 0.613; y < 100; y += 1.079)
       expect(fracture.polygons.filter((polygon) => contains(polygon, x, y))).toHaveLength(1);
+});
+
+it("reuses the departure face the queue just captured when the field removes that card", () => {
+  const board = document.createElement("div");
+  board.className = "game-board";
+  board.innerHTML = `<div data-permanent-id="leaving" style="rotate:none;transform:none;scale:none">
+    <div class="game-card-enter" style="rotate:none;transform:none;scale:none">
+      <div data-state="active" style="width:100px;height:140px;box-sizing:border-box;rotate:none;transform:none;scale:none">
+        <span>Printed face</span>
+      </div>
+    </div>
+  </div>`;
+  document.body.append(board);
+  const permanent = board.firstElementChild as HTMLElement;
+  const face = permanent.querySelector<HTMLElement>("[data-state]")!;
+  face.getBoundingClientRect = () => new DOMRect(10, 20, 100, 140);
+  permanent.getBoundingClientRect = face.getBoundingClientRect;
+  board.getBoundingClientRect = () => new DOMRect(0, 0, 800, 1000);
+  const styleOf = window.getComputedStyle.bind(window);
+  const style = vi
+    .spyOn(window, "getComputedStyle")
+    .mockImplementation((element, pseudo) =>
+      pseudo ? ({ content: "none" } as CSSStyleDeclaration) : styleOf(element),
+    );
+  const { result } = renderHook(() => useFieldShatterOrigin("leaving", "leaving-top"));
+  result.current(permanent as HTMLDivElement);
+  const departed = resolveFieldDepartureFace({
+    id: "leaving",
+    board,
+    elements: { leaving: permanent },
+    cached: undefined,
+  })!;
+  style.mockClear();
+  try {
+    result.current(null);
+    expect(style).not.toHaveBeenCalled();
+    const remembered = takeFieldShatterOrigin(board, "leaving")!;
+    expect(remembered).toMatchObject({ x: departed.x, y: departed.y, width: departed.width });
+    expect(remembered.clone).not.toBe(departed.clone);
+    expect(remembered.clone!.textContent).toContain("Printed face");
+  } finally {
+    style.mockRestore();
+    board.remove();
+  }
+});
+
+it("keeps only the position of a departing face when a live 3D board draws the departure", () => {
+  const board = document.createElement("div");
+  board.className = "game-board";
+  board.dataset.boardStyle = "arena3d";
+  board.setAttribute("data-arena-3d-live", "");
+  board.innerHTML = `<div class="arena-3d-scene"><canvas></canvas></div>
+  <div data-permanent-id="leaving" style="rotate:none;transform:none;scale:none">
+    <div class="game-card-enter" style="rotate:none;transform:none;scale:none">
+      <div data-state="active" style="width:100px;height:140px;box-sizing:border-box;rotate:none;transform:none;scale:none"></div>
+    </div>
+  </div>`;
+  document.body.append(board);
+  const permanent = board.querySelector<HTMLElement>("[data-permanent-id]")!;
+  const face = permanent.querySelector<HTMLElement>("[data-state]")!;
+  face.getBoundingClientRect = () => new DOMRect(10, 20, 100, 140);
+  board.getBoundingClientRect = () => new DOMRect(0, 0, 800, 1000);
+  try {
+    const departed = resolveFieldDepartureFace({
+      id: "leaving",
+      board,
+      elements: { leaving: permanent },
+      cached: undefined,
+    })!;
+    expect(departed).toMatchObject({ x: 60, y: 90, width: 100, height: 140 });
+    expect(departed.clone).toBeUndefined();
+  } finally {
+    board.remove();
+  }
 });

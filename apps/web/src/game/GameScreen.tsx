@@ -118,6 +118,7 @@ import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { intents } from "../net/intents";
 import { useRoom, type MatchMode, type SeriesGameTicket, type UseRoomResult } from "../net/useRoom";
 import { seriesView } from "./seriesModel";
+import { createOrderedDeferral } from "@/net/createOrderedDeferral";
 import { getRematchView } from "@/game/getRematchView";
 import { singleServerBatch, type ServerBatch } from "../net/serverBatches";
 import { selectPresentedState, type StateSnapshot } from "../net/presentedState";
@@ -599,6 +600,7 @@ function GameScreenSession({
   // Every cue the server provokes: sounds, panels, banners, the security clash,
   // the draw flights. The hook sequences them on the animation queue; this
   // component only renders what it reports.
+  const deferPresentationReport = useMemo(createOrderedDeferral, []);
   const cues = useMatchCues({
     snapshots,
     batches: cueBatches,
@@ -654,7 +656,9 @@ function GameScreenSession({
     },
     onActionRejected: (reason) => ping(rejectionMessage(reason, t)),
     onPresentationReport: (report) => {
-      room?.send(PRESENTATION_CHANNEL, { ...report, rollbackRevision: room.state.rollbackRevision });
+      if (!room) return;
+      const message = { ...report, rollbackRevision: room.state.rollbackRevision };
+      deferPresentationReport(() => room.send(PRESENTATION_CHANNEL, message));
     },
     devProbe,
     presentationPacing,

@@ -3,6 +3,8 @@ import type { PlayerState } from "@aegis/shared";
 import { permanentVisualElement } from "../dropZones";
 import type { SpotlightSubject } from "../../spotlight";
 import { measureFieldShatterFace, type FieldShatterFace } from "../../fieldShatter";
+import { isInsideLiveArena3d } from "@/game/arena3d/isInsideLiveArena3d";
+import { scheduleIdleTask } from "@/game/scheduleIdleTask";
 
 /** What the board's geometry gives the layers drawn over it. */
 export type BoardMeasurements = {
@@ -24,6 +26,13 @@ export type BoardMeasurements = {
  * connection gates. The state is replaced only when the geometry actually moved, so an
  * effect that runs on every commit still settles in one pass.
  */
+const MEASUREMENT_TIMEOUT_MS = 100;
+
+function hasArrivedPermanent(previous: string, next: string): boolean {
+  const known = new Set(previous.split(/[|,]/));
+  return next.split(/[|,]/).some((id) => id !== "" && !known.has(id));
+}
+
 export function useBoardMeasurements({
   viewer,
   opponent,
@@ -62,10 +71,11 @@ export function useBoardMeasurements({
       perm.topCard?.cardId ? [[perm.permanentId, perm.topCard.cardId] as const] : [],
     ),
   );
-  function measurePermanents() {
+  function measurePermanents(idle: boolean) {
     const board = boardRef.current;
     if (!board) return;
     const boardRect = board.getBoundingClientRect();
+    const measuresFaces = idle || !isInsideLiveArena3d(board);
     for (const [permanentId, element] of Object.entries(permRefs.current)) {
       if (!element?.isConnected) continue;
       const rect = permanentVisualElement(element).getBoundingClientRect();
@@ -75,7 +85,7 @@ export function useBoardMeasurements({
         y: rect.top + rect.height / 2 - boardRect.top,
       };
       permCentersRef.current[permanentId] = center;
-      const face = measureFieldShatterFace(element, board);
+      const face = measuresFaces ? measureFieldShatterFace(element, board) : undefined;
       if (face) permFacesRef.current[permanentId] = face;
       // A deletion by an effect names the card instance rather than the permanent, so the top
       // card is remembered as a second way in to the same position.
@@ -135,25 +145,45 @@ export function useBoardMeasurements({
     setSpotlightSubjects(next);
     setBoardSize({ width: boardRect.width, height: boardRect.height });
   }
-  const measureLatestRef = useRef<() => void>(() => undefined);
-  measureLatestRef.current = () => {
-    measurePermanents();
+  const measureLatestRef = useRef<(idle?: boolean) => void>(() => undefined);
+  measureLatestRef.current = (idle = false) => {
+    measurePermanents(idle);
     measureSpotlight();
   };
-  useEffect(() => {
-    measureLatestRef.current();
+  const measuredSignatureRef = useRef<string | undefined>(undefined);
+  const cancelMeasurementRef = useRef<(() => void) | undefined>(undefined);
+  const scheduleIdleMeasurementRef = useRef(() => {
+    if (cancelMeasurementRef.current) {
+      return;
+    }
+    cancelMeasurementRef.current = scheduleIdleTask(() => {
+      cancelMeasurementRef.current = undefined;
+      measureLatestRef.current(true);
+    }, MEASUREMENT_TIMEOUT_MS);
+  });
+  const measurementFrameRef = useRef<number | undefined>(undefined);
+  const scheduleFrameMeasurementRef = useRef(() => {
+    if (measurementFrameRef.current !== undefined) {
+      return;
+    }
+    measurementFrameRef.current = requestAnimationFrame(() => {
+      measurementFrameRef.current = undefined;
+      cancelMeasurementRef.current?.();
+      cancelMeasurementRef.current = undefined;
+      measureLatestRef.current();
+    });
   });
   useEffect(() => {
-    let frame: number | undefined;
-    function scheduleMeasurement() {
-      if (frame !== undefined) {
-        return;
-      }
-      frame = requestAnimationFrame(() => {
-        frame = undefined;
-        measureLatestRef.current();
-      });
+    const previous = measuredSignatureRef.current;
+    measuredSignatureRef.current = battleAreaSignature;
+    if (previous === undefined || hasArrivedPermanent(previous, battleAreaSignature)) {
+      measureLatestRef.current();
+      return;
     }
+    scheduleIdleMeasurementRef.current();
+  });
+  useEffect(() => {
+    const scheduleMeasurement = scheduleFrameMeasurementRef.current;
     const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(scheduleMeasurement);
     for (const element of [boardRef.current, fieldRef.current, ...Object.values(permRefs.current)]) {
       if (element) {
@@ -166,8 +196,11 @@ export function useBoardMeasurements({
       observer?.disconnect();
       window.removeEventListener("resize", scheduleMeasurement);
       document.removeEventListener("scroll", scheduleMeasurement, true);
-      if (frame !== undefined) {
-        cancelAnimationFrame(frame);
+      cancelMeasurementRef.current?.();
+      cancelMeasurementRef.current = undefined;
+      if (measurementFrameRef.current !== undefined) {
+        cancelAnimationFrame(measurementFrameRef.current);
+        measurementFrameRef.current = undefined;
       }
     };
   }, [battleAreaSignature]);

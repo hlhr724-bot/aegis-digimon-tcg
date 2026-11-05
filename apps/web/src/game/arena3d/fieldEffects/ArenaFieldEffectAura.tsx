@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { AdditiveBlending, NormalBlending, type Mesh, type ShaderMaterial } from "three";
 import type { ArenaSideColors } from "@/game/arena3d/ArenaSideColors";
 import type { ArenaLayoutVariantEntry } from "@/game/arena3d/field/ArenaLayoutVariant";
+import type { ArenaLaneLayout } from "@/game/arena3d/field/arenaWorldLayout";
 import { buildFieldEffectAuraMaterial } from "@/game/arena3d/fieldEffects/buildFieldEffectAuraMaterial";
 import { findArenaFieldEffectArrival } from "@/game/arena3d/fieldEffects/findArenaFieldEffectArrival";
 import { getArenaFieldEffectArrivalProgress } from "@/game/arena3d/fieldEffects/getArenaFieldEffectArrivalProgress";
@@ -19,6 +20,7 @@ import { Side } from "@/game/side";
 type Props = {
   colors: ArenaSideColors;
   layout: ArenaLayoutVariantEntry;
+  lanes: ArenaLaneLayout;
   fieldEffects: Readonly<Record<Side, ArenaFieldEffectState>>;
   quality: Arena3dQualityEntry;
   reducedMotion: boolean;
@@ -65,12 +67,12 @@ function createSideTrack(facing: number): SideTrack {
   };
 }
 
-export function ArenaFieldEffectAura({ colors, layout, fieldEffects, quality, reducedMotion }: Props) {
+export function ArenaFieldEffectAura({ colors, layout, lanes, fieldEffects, quality, reducedMotion }: Props) {
   const tracks = useMemo<Record<Side, SideTrack>>(
     () => ({ [Side.Viewer]: createSideTrack(1), [Side.Opponent]: createSideTrack(-1) }),
     [],
   );
-  const grid = measureArenaSlotGrid(layout.lanes);
+  const grid = measureArenaSlotGrid(lanes);
   const planeWidth = (grid.halfWidth + FRAME_MARGIN + PLANE_MARGIN) * 2;
   const planeDepth = (grid.halfDepth + FRAME_MARGIN + PLANE_MARGIN) * 2;
 

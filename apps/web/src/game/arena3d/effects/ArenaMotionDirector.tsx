@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { Vector3, type Camera } from "three";
 import type { ArenaPulse } from "@/game/arena3d/ArenaPulse";
@@ -6,7 +6,7 @@ import { ArenaPulseKind } from "@/game/arena3d/ArenaPulseKind";
 import { ArenaCardMotionKind, type ArenaCardMotionKindEntry } from "@/game/arena3d/effects/ArenaCardMotionKind";
 import type { ArenaCardMotionRegistry } from "@/game/arena3d/effects/createArenaCardMotionRegistry";
 import type { ArenaTrackedField } from "@/game/arena3d/field/ArenaTrackedField";
-import { createArenaFloorProjector } from "@/game/arena3d/field/createArenaFloorProjector";
+import { createArenaPulseAnchorResolver } from "@/game/arena3d/createArenaPulseAnchorResolver";
 import { getOppositeSide } from "@/game/arena3d/getOppositeSide";
 import { Side } from "@/game/side";
 import { FINALE_IMPACT_AT_MS } from "@/game/timings";
@@ -62,14 +62,14 @@ function addMotion(
 export function ArenaMotionDirector({ pulses, field, motions, projectionCamera, reducedMotion }: Props) {
   const canvas = useThree((state) => state.gl.domElement);
   const clock = useThree((state) => state.clock);
-  const projector = useMemo(createArenaFloorProjector, []);
+  const size = useThree((state) => state.size);
   const started = useRef(new Set<string>());
 
   useEffect(() => {
     if (reducedMotion) {
       return;
     }
-    projector.begin(projectionCamera, canvas.getBoundingClientRect());
+    const resolve = createArenaPulseAnchorResolver({ field, camera: projectionCamera, canvas, size });
     const now = clock.elapsedTime;
     for (const pulse of pulses) {
       if (started.current.has(pulse.key)) {
@@ -78,11 +78,7 @@ export function ArenaMotionDirector({ pulses, field, motions, projectionCamera, 
       started.current.add(pulse.key);
       if (pulse.kind === ArenaPulseKind.ATTACK.value && pulse.permanentId) {
         const from = findPosition(field, pulse.permanentId);
-        let to = findPosition(field, pulse.targetPermanentId);
-        if (!to && pulse.targetPoint) {
-          const projected = new Vector3();
-          to = projector.project(pulse.targetPoint.x, pulse.targetPoint.y, projected) ? projected : undefined;
-        }
+        const to = findPosition(field, pulse.targetPermanentId) ?? resolve(pulse.target);
         addMotion(motions, {
           permanentId: pulse.permanentId,
           kind: ArenaCardMotionKind.LUNGE,
@@ -104,10 +100,9 @@ export function ArenaMotionDirector({ pulses, field, motions, projectionCamera, 
         continue;
       }
       if (pulse.kind === ArenaPulseKind.FINALE.value) {
-        const impact = new Vector3();
-        const hasImpact = pulse.targetPoint
-          ? projector.project(pulse.targetPoint.x, pulse.targetPoint.y, impact)
-          : false;
+        const resolvedImpact = resolve(pulse.target);
+        const impact = resolvedImpact ?? new Vector3();
+        const hasImpact = resolvedImpact !== undefined;
         if (pulse.permanentId) {
           addMotion(motions, {
             permanentId: pulse.permanentId,
@@ -169,7 +164,7 @@ export function ArenaMotionDirector({ pulses, field, motions, projectionCamera, 
         }
       }
     }
-  }, [pulses, field, motions, projectionCamera, canvas, clock, projector, reducedMotion]);
+  }, [pulses, field, motions, projectionCamera, canvas, size, clock, reducedMotion]);
 
   return null;
 }

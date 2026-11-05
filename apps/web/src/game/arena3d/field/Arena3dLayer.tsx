@@ -130,6 +130,7 @@ function Arena3dLayerScene(props: Props) {
   const handleDowngrade = useCallback(() => setDowngrades((count) => count + 1), []);
   const pulses = useArenaPulses({
     board,
+    store: props.store,
     viewerSeat,
     sideColors: colors,
     permanents: props.permanents,

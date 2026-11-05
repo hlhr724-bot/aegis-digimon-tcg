@@ -1,3 +1,4 @@
+import type { ArenaPulseAnchor } from "@/game/arena3d/ArenaPulseAnchor";
 import type { ArenaPulseKind } from "@/game/arena3d/ArenaPulseKind";
 import type { Side } from "@/game/side";
 
@@ -8,8 +9,8 @@ export type ArenaPulse = {
   kind: ArenaPulseKind;
   color: string;
   side: Side;
-  screenPoint?: ScreenPoint;
-  targetPoint?: ScreenPoint;
+  origin?: ArenaPulseAnchor;
+  target?: ArenaPulseAnchor;
   permanentId?: string;
   targetPermanentId?: string;
 };

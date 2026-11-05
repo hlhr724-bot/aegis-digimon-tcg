@@ -1,6 +1,7 @@
 import type { PerspectiveCamera } from "three";
 import type { ArenaCameraFrame, ArenaScreenRect } from "@/game/arena3d/field/ArenaCameraFrame";
 import type { ArenaLayoutVariantEntry } from "@/game/arena3d/field/ArenaLayoutVariant";
+import type { ArenaLaneLayout } from "@/game/arena3d/field/arenaWorldLayout";
 import { computeArenaCameraFrame } from "@/game/arena3d/field/computeArenaCameraFrame";
 import { createArenaFrameCamera } from "@/game/arena3d/field/createArenaFrameCamera";
 
@@ -10,6 +11,7 @@ type Params = {
   field: ArenaScreenRect;
   origin: { left: number; top: number };
   layout: ArenaLayoutVariantEntry;
+  lanes: ArenaLaneLayout;
 };
 
 export type ArenaFieldFrame = {

@@ -11,6 +11,8 @@ type Props = {
   reducedMotion: boolean;
 };
 
+const MAX_LATE_GAPS = 240;
+
 type Settings = {
   frameRate: number;
   reducedMotion: boolean;
@@ -30,6 +32,7 @@ export function ArenaFrameDriver({ activity, frameRate, reducedMotion }: Props) 
     clock.autoStart = false;
     clock.stop();
     const pacer = createArenaFramePacer();
+    let lastRenderAt: number | undefined;
     const previousInvalidate = get().invalidate;
     let dirty = true;
     let origin: number | undefined;
@@ -55,8 +58,12 @@ export function ArenaFrameDriver({ activity, frameRate, reducedMotion }: Props) 
       dirty = false;
       scene.renderedFrames += 1;
       if (verdict === ArenaFrameVerdict.LATE.value) {
-        scene.lateFrames += 1;
+        scene.lateGaps.push({ start: lastRenderAt ?? now, end: now });
+        if (scene.lateGaps.length > MAX_LATE_GAPS) {
+          scene.lateGaps.shift();
+        }
       }
+      lastRenderAt = now;
       get().advance((now - origin) / 1000, true);
     };
     frame = requestAnimationFrame(tick);

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { BattleLanes, getBattleLanes, setBattleLanes } from "@/design/battleLanes";
 import { BoardStyle } from "@/game/arena3d/boardStyle/BoardStyle";
 import { BoardStyleSettings } from "@/game/arena3d/boardStyle/BoardStyleSettings";
 import { boardStylePreference } from "@/game/arena3d/boardStyle/boardStylePreference";
@@ -36,6 +37,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   boardStylePreference.setStyle(BoardStyle.CLASSIC.value);
+  setBattleLanes(BattleLanes.Two);
 });
 
 describe("the board style settings", () => {
@@ -73,5 +75,18 @@ describe("the board style settings", () => {
 
     expect(screen.getByRole<HTMLInputElement>("radio", { name: "Arena 3D" }).disabled).toBe(false);
     expect(screen.queryByText(UNSUPPORTED_TEXT)).toBeNull();
+  });
+
+  it("lets the 3D board choose one or two battle lanes", () => {
+    vi.spyOn(webGl, "isWebGlAvailable").mockReturnValue(true);
+    boardStylePreference.setStyle(BoardStyle.ARENA_3D.value);
+    renderSettings();
+
+    const two = screen.getByRole<HTMLInputElement>("radio", { name: /Two lanes/ });
+    const one = screen.getByRole<HTMLInputElement>("radio", { name: /One lane/ });
+    expect(two.checked).toBe(true);
+    fireEvent.click(one);
+    expect(getBattleLanes()).toBe(BattleLanes.One);
+    expect(one.checked).toBe(true);
   });
 });

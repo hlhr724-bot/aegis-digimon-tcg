@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useSyncExternalStore, type RefObject } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera, Vector3 } from "three";
 import { Side } from "@/game/side";
 import { createCardTextureCache } from "@/design/webglCard/createCardTextureCache";
@@ -39,6 +39,7 @@ import type { Arena3dQualityEntry } from "@/game/arena3d/quality/Arena3dQuality"
 import { ArenaQualityGovernor } from "@/game/arena3d/quality/ArenaQualityGovernor";
 import type { ArenaFieldEffectState } from "@/game/arena3d/slots/ArenaFieldEffectState";
 import { ArenaSlotTiles } from "@/game/arena3d/slots/ArenaSlotTiles";
+import { ARENA_3D_LIVE_ATTRIBUTE } from "@/game/arena3d/isInsideLiveArena3d";
 
 type Props = {
   board: RefObject<HTMLElement | null>;
@@ -75,12 +76,23 @@ function EnergyDecay({ energy }: EnergyProps) {
   return null;
 }
 
+function ArenaLiveBoardMarker() {
+  const canvas = useThree((state) => state.gl.domElement);
+  useEffect(() => {
+    const board = canvas.closest(".game-board");
+    board?.setAttribute(ARENA_3D_LIVE_ATTRIBUTE, "");
+    return () => board?.removeAttribute(ARENA_3D_LIVE_ATTRIBUTE);
+  }, [canvas]);
+  return null;
+}
+
 function ArenaSceneContents(props: Props) {
   const { board, environment, colors, pulses, activeSide, artSrc, reducedMotion, quality, cards, zones } = props;
   const field = useMemo(createArenaTrackedField, []);
   const snapshot = useSyncExternalStore(props.store.subscribe, props.store.get);
   const frame = snapshot.frame;
   const layout = frame?.layout ?? ArenaLayoutVariant.WIDE;
+  const lanes = frame?.lanes ?? layout.lanes;
   const referenceCamera = useMemo(
     () => (frame ? createArenaFrameCamera(frame) : new PerspectiveCamera(CAMERA_FOV_DEGREES, 1, 0.1, 200)),
     [frame],
@@ -110,7 +122,7 @@ function ArenaSceneContents(props: Props) {
     pacedUntil: 0,
     frameRateCap: Number.POSITIVE_INFINITY,
     renderedFrames: 0,
-    lateFrames: 0,
+    lateGaps: [],
   });
   const EnvironmentScene = ARENA_ENVIRONMENT_SCENES[environment];
 
@@ -118,6 +130,7 @@ function ArenaSceneContents(props: Props) {
 
   return (
     <>
+      <ArenaLiveBoardMarker />
       <ArenaLayoutSync
         board={board}
         store={props.store}
@@ -139,6 +152,7 @@ function ArenaSceneContents(props: Props) {
       <ArenaActiveSideAura
         colors={colors}
         layout={layout}
+        lanes={lanes}
         activeSide={activeSide}
         quality={quality}
         reducedMotion={reducedMotion}
@@ -147,13 +161,14 @@ function ArenaSceneContents(props: Props) {
       <ArenaFieldEffectAura
         colors={colors}
         layout={layout}
+        lanes={lanes}
         fieldEffects={props.fieldEffects}
         quality={quality}
         reducedMotion={reducedMotion}
       />
       <ArenaSlotTiles
         rows={snapshot.rows}
-        lanes={layout.lanes}
+        lanes={lanes}
         field={field}
         colors={colors}
         activeSide={activeSide}
@@ -212,7 +227,6 @@ function ArenaSceneContents(props: Props) {
       />
       <ArenaCardCueLayer field={field} isLight={colors.isLight} activity={activity} reducedMotion={reducedMotion} />
       <ArenaCardDepartures
-        board={board}
         deleteBursts={props.deleteBursts}
         backUrl={props.backUrl}
         cache={cache}
@@ -222,6 +236,7 @@ function ArenaSceneContents(props: Props) {
       />
       <ArenaPulseLayer
         pulses={pulses}
+        field={field}
         projectionCamera={referenceCamera}
         ripples={ripples}
         impulse={impulse}

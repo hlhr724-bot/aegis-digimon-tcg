@@ -61,7 +61,7 @@ function measureSlotBox({ frame, camera, slot }: SlotBoxParams): SlotBox {
 
 export function Arena3dPositionedRow({ side, arrangement, isSuspended, renderCard, rowProps, emptyLabel }: Props) {
   const arena = useContext(Arena3dFieldContext);
-  const lanes = arena?.frame.layout.lanes;
+  const lanes = arena?.frame.lanes;
   const slots = lanes ? computeArenaRowSlots({ side, lanes, arrangement, isSuspended }) : [];
 
   useLayoutEffect(() => {

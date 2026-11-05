@@ -12,6 +12,7 @@ import type { SecurityClashScene } from "../../securityClash";
 import { readAttackArrowClock, type AttackArrowClock } from "../../attackArrowClock";
 import { DragKind } from "../enums";
 import { permanentVisualElement } from "../dropZones";
+import { isInsideLiveArena3d } from "@/game/arena3d/isInsideLiveArena3d";
 import type { TrackingArrowGeometry } from "../types";
 
 /**
@@ -98,6 +99,8 @@ export function useTrackingArrow({
     (phasePresentationPending ? null : openAttackArrow);
 
   const [trackingArrow, setTrackingArrow] = useState<TrackingArrowGeometry | null>(null);
+  const shownArrowRef = useRef(trackingArrow);
+  shownArrowRef.current = trackingArrow;
   const trackingArrowRef = useRef<TrackingArrow | null>(null);
   trackingArrowRef.current = trackingArrowRequest;
   const arrowClockRef = useRef(fieldClash?.arrowClock);
@@ -160,6 +163,7 @@ export function useTrackingArrow({
         const attacker = permRefs.current[request.from.permanentId];
         const rotating =
           attacker &&
+          !isInsideLiveArena3d(attacker) &&
           permanentVisualElement(attacker)
             .getAnimations?.()
             .some(
@@ -218,7 +222,8 @@ export function useTrackingArrow({
           (retainedClockRef.current?.key === request.key ? retainedClockRef.current : undefined),
       });
     };
-    solve();
+    if (shownArrowRef.current) solve();
+    else frame = window.requestAnimationFrame(solve);
     return () => window.cancelAnimationFrame(frame);
   }, [trackingArrowActive, viewerSeat, requestIdentity]);
   return trackingArrow;
