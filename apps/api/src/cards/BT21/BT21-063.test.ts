@@ -50,7 +50,12 @@ describe("BT21-063 Gumdramon", () => {
       expect.objectContaining({
         trigger: "OnDeletion",
         actions: [
-          { kind: "PlaceUnder", target: { filter: { isSelfRef: true }, count: 1, isSelf: true }, optional: true },
+          {
+            kind: "PlaceUnder",
+            underFilter: { controller: "mine", kind: ["Tamer"], excludeToken: true },
+            target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
+            optional: true,
+          },
         ],
         keywords: [{ keyword: "Save", raw: "＜Save＞" }],
       }),
