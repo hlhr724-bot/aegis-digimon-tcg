@@ -27,7 +27,7 @@ describe("EX4-020 MetalGreymon", () => {
       ],
       forms: ["Ultimate"],
       attributes: ["Virus"],
-      types: ["Cyborg", "BlueFlare"],
+      types: ["Cyborg", "Blue Flare"],
     });
     expect(runtimeCompiledCard(CARD)).toMatchObject({ coverage: "full", residual: [] });
     expect(compiled.digiXrosRequirement).toEqual([

@@ -18,7 +18,7 @@ describe("BT11-022 Dracomon", () => {
       evoCosts: [{ color: "Blue", level: 2, memoryCost: 0 }],
       forms: ["Rookie"],
       attributes: ["Data"],
-      types: ["Dragon", "BlueFlare"],
+      types: ["Dragon", "Blue Flare"],
     });
     expect(compiled.digivolutionRequirement).toEqual([{ names: ["Bebydomon"], cost: 0, isAlternate: true }]);
     expect(compiled).toMatchObject({
