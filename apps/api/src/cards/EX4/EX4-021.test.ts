@@ -26,7 +26,7 @@ describe("EX4-021 GreyKnightsmon", () => {
       ],
       forms: ["Mega"],
       attributes: ["Virus"],
-      types: ["Dark Knight", "BlueFlare", "Twilight"],
+      types: ["Dark Knight", "Blue Flare", "Twilight"],
     });
     expect(runtimeCompiledCard(EX4_021)).toMatchObject({ coverage: "full", residual: [] });
     expect(runtimeCompiledCard(EX4_021)).toMatchObject({
