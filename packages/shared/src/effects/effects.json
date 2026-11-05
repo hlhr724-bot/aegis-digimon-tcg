@@ -5663,6 +5663,7 @@
         "actions": [
           {
             "kind": "PlaceUnder",
+            "underFilter": { "controller": "mine", "kind": ["Tamer"], "excludeToken": true },
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "optional": true,
             "position": "bottom"
@@ -18645,10 +18646,12 @@
             "cost": {
               "kind": "trash",
               "target": { "filter": { "zone": "hand", "controller": "mine", "kind": ["Option"] }, "count": 1 },
-              "raw": "By trashing 1 Option card in your hand"
+              "raw": "By trashing 1 Option card in your hand",
+              "optional": true
             },
             "optional": true,
-            "abortOnDecline": true
+            "abortOnDecline": true,
+            "payCostBeforeOptional": true
           }
         ]
       },
@@ -18673,10 +18676,12 @@
             "cost": {
               "kind": "trash",
               "target": { "filter": { "zone": "hand", "controller": "mine", "kind": ["Option"] }, "count": 1 },
-              "raw": "By trashing 1 Option card in your hand"
+              "raw": "By trashing 1 Option card in your hand",
+              "optional": true
             },
             "optional": true,
-            "abortOnDecline": true
+            "abortOnDecline": true,
+            "payCostBeforeOptional": true
           }
         ]
       },
@@ -76188,6 +76193,7 @@
         "actions": [
           {
             "kind": "PlaceUnder",
+            "underFilter": { "controller": "mine", "kind": ["Tamer"], "excludeToken": true },
             "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
             "optional": true,
             "position": "bottom"

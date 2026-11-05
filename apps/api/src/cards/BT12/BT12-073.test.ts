@@ -161,3 +161,44 @@ describe("BT12-073 Impmon (X Antibody)", () => {
     expect(s.state.players[0]!.deck).toHaveLength(2);
   });
 });
+
+it("can refuse recovery after paying the Option discard", async () => {
+  const s = setupEngine({
+    0: {
+      hand: [
+        { card: "BT12-073", as: "imp" },
+        { card: "BT1-109", as: "payment" },
+      ],
+      trash: [{ card: "BT10-010", as: "wizard" }],
+    },
+  });
+  s.state.memory = 10;
+  expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("imp").instanceId })).toEqual({ ok: true });
+  await settle(() => s.state.pendingDecision !== undefined);
+  expect(
+    s.engine.applyIntent(0, {
+      type: "respondDecision",
+      decisionId: s.state.pendingDecision!.decisionId,
+      response: { kind: "selectCards", instanceIds: [s.inst("payment").instanceId] },
+    }),
+  ).toEqual({ ok: true });
+  await settle(
+    () =>
+      s.decisions.length === 2 ||
+      s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("wizard").instanceId),
+  );
+  expect(s.decisions.at(-1)!.req.kind).toBe("optional");
+  expect(
+    s.engine.applyIntent(0, {
+      type: "respondDecision",
+      decisionId: s.state.pendingDecision!.decisionId,
+      response: { kind: "optional", accept: false },
+    }),
+  ).toEqual({ ok: true });
+  await settle(() => s.state.pendingDecision === undefined);
+  expect(s.state.players[0]!.trash.map((card) => card.instanceId)).toEqual(
+    expect.arrayContaining([s.inst("payment").instanceId, s.inst("wizard").instanceId]),
+  );
+  expect(s.state.players[0]!.hand).toHaveLength(0);
+  expect(s.state.memory).toBe(6);
+});

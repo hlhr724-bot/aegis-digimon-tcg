@@ -33,6 +33,7 @@ export const compiled: CompiledCard = {
       actions: [
         {
           kind: "PlaceUnder",
+          underFilter: { controller: "mine", kind: ["Tamer"], excludeToken: true },
           target: {
             filter: {
               isSelfRef: true,

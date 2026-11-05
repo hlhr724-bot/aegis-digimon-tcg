@@ -256,7 +256,7 @@ export function DecisionPrompts({
           onConfirm={() => onRespond({ kind: boardSelectionKind, instanceIds: picks })}
           onNoSelection={() => onRespond({ kind: boardSelectionKind, instanceIds: [] })}
           onCancelActivation={
-            decision.options?.canCancelActivation === true
+            decision.options?.canCancelActivation === true || decision.options?.declinesCost === true
               ? () => onRespond({ kind: boardSelectionKind, instanceIds: [] })
               : undefined
           }

@@ -12,7 +12,7 @@ describe("BT11-095 Taiki, Kiriha, & Nene", () => {
       colors: ["White"],
       kinds: ["Tamer"],
       playCost: 4,
-      types: ["Xros Heart", "BlueFlare", "General"],
+      types: ["Xros Heart", "Blue Flare", "General"],
     });
     expect(compiled.effects).toMatchObject([
       {

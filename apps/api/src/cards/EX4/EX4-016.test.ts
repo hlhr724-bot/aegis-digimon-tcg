@@ -21,7 +21,7 @@ describe("EX4-016 Greymon", () => {
         { color: "Blue", level: 3, memoryCost: 3 },
         { color: "Black", level: 3, memoryCost: 3 },
       ],
-      types: ["Dinosaur", "BlueFlare"],
+      types: ["Dinosaur", "Blue Flare"],
     });
     expect(runtimeCompiledCard("EX4-016")).toMatchObject({ coverage: "full", residual: [] });
     expect(runtimeCompiledCard("EX4-016")?.effects).toMatchObject([

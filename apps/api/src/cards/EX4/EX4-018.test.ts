@@ -28,7 +28,7 @@ describe("EX4-018 MailBirdramon", () => {
         { color: "Blue", level: 3, memoryCost: 3 },
         { color: "Black", level: 3, memoryCost: 3 },
       ],
-      types: ["Machine", "BlueFlare"],
+      types: ["Machine", "Blue Flare"],
       effectText: expect.stringContaining("lowest level"),
       inheritedEffectText: expect.stringContaining("can't be deleted"),
     });

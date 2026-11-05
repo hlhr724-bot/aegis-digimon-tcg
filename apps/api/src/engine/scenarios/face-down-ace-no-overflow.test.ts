@@ -39,3 +39,36 @@ describe("Face-down ACE arena scenario", () => {
     expect(s.state.pendingDecision).toBeUndefined();
   });
 });
+
+it("Armor Purge leaves a face-down ACE hidden and rule-trashes it without Overflow", async () => {
+  const s = setupEngine(
+    {
+      0: {
+        battleArea: [
+          {
+            card: "BT8-012",
+            as: "armor",
+            suspended: true,
+            under: [{ card: "EX9-065", as: "hiddenAce", faceUp: false }],
+          },
+        ],
+      },
+      1: { battleArea: [{ card: "BT1-025", as: "attacker" }] },
+    },
+    { autoSelectCards: true },
+  );
+  s.state.turnSeat = 1;
+  await s.ready();
+  const memory = s.state.memory;
+  expect(
+    s.engine.applyIntent(1, {
+      type: "attack",
+      attackerPermanentId: s.perm("attacker").permanentId,
+      target: { kind: "permanent", permanentId: s.perm("armor").permanentId },
+    }),
+  ).toEqual({ ok: true });
+  await settle(() => s.events.some((event) => event.kind === "attackEnded"));
+  expect(s.state.players[0]!.battleArea).toHaveLength(0);
+  expect(s.state.players[0]!.trash.map((card) => card.cardId)).toEqual(expect.arrayContaining(["BT8-012", "EX9-065"]));
+  expect(s.state.memory).toBe(memory);
+});

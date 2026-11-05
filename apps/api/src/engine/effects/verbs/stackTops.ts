@@ -146,7 +146,6 @@ export function createStackTopsVerbs(pc: PrimitivesContext) {
     const controllerSeat = permanent.controllerSeat;
     setTopCard(permanent, newTop);
     continuous.reanchorCustomEffectGrants(oldTop.instanceId, newTop.instanceId);
-    newTop.faceUp = true;
     oldTop.faceUp = true;
     insertCard(player(oldTop.ownerSeat), Zone.Trash, oldTop);
     const def = requireCardDefinition(newTop.cardId);
