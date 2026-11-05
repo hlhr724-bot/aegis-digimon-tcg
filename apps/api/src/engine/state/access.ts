@@ -352,7 +352,9 @@ function recordSourceFacing(card: CardInstance): void {
  * The displaced card is the caller's to place — this only writes the field.
  */
 export function setTopCard(permanent: Permanent, card: CardInstance): void {
-  faceDownSources.delete(card);
+  if (card.faceUp) {
+    faceDownSources.delete(card);
+  }
   permanent.topCard = card;
   fieldRevision.bump();
   notifyPermanentCard(permanent, card);

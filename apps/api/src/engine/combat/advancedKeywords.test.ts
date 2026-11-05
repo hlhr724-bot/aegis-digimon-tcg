@@ -526,7 +526,7 @@ describe("§16-19 <Armor Purge> — trash this Digimon's own top card to prevent
     const p1 = s.state.players[1] as PlayerState;
     const holder = digimon(0, 5000, "BT8-012"); // printed <Armor Purge> (Flamedramon)
     holder.isSuspended = true;
-    holder.stack.push(instance(NON_KEYWORD_CARD, 0, false)); // the card revealed underneath
+    holder.stack.push(instance(NON_KEYWORD_CARD, 0, true));
     const underlyingInstanceId = holder.stack[0]!.instanceId;
     p0.battleArea.push(holder);
     const attacker = digimon(1, 9000, NON_KEYWORD_CARD);
