@@ -1,3 +1,7 @@
+import { createLevelBotOptions } from "#api/bot/levels/createLevelBotOptions";
+import { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
+import { BotStyle } from "@aegis/shared/bot/BotStyle";
+import { settleAcrossTimers } from "#api/engine/testkit/harness";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ClientState, type Client } from "colyseus";
 import { Phase, type Intent, type Seat } from "@aegis/shared";
@@ -617,4 +621,35 @@ describe("consensual match rollback", () => {
     expect(room.state.rollbackRevision).toBe(1);
     expect(room.state.pendingDecision?.decisionId).toBe(decision.decisionId);
   });
+});
+
+it("rebinds a leveled bot to the restored engine before its next Main phase", async () => {
+  const { room, clients } = await start({ botRoom: true });
+  const options = createLevelBotOptions({
+    engine: engine(room),
+    seat: 1,
+    deck: BLUE_DECK,
+    seed: 42,
+    difficulty: BotDifficulty.STANDARD.value,
+    style: BotStyle.DEFENSIVE.value,
+  });
+  const sent = vi.fn<(intent: Intent) => ReturnType<typeof send>>((intent) => send(room, 1, intent));
+  Reflect.get(room, "bots")[1] = new BotPlayer(1, room.state, sent, { ...options, thinkDelay: idle });
+  expect(send(room, 0, { type: "hatchEgg" })).toEqual({ ok: true });
+  await idle();
+  await request(room, clients[0]!, RollbackKind.ACTION.value);
+  await main(room);
+  expect(send(room, 0, { type: "endPhase" })).toEqual({ ok: true });
+  await settleAcrossTimers(() =>
+    sent.mock.calls.some(([intent]) => intent.type !== "hatchEgg" && room.state.phase === Phase.Main),
+  );
+  expect(
+    sent.mock.calls.some(
+      ([intent]) =>
+        intent.type === "playCard" ||
+        intent.type === "digivolve" ||
+        intent.type === "attack" ||
+        intent.type === "endPhase",
+    ),
+  ).toBe(true);
 });

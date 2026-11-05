@@ -86,6 +86,7 @@ export function evolvedBotOptions(input: {
       noteRejected: disable,
       onEngineRejection: disable,
     },
+    rebindEngine: (engine) => evolvedBotOptions({ ...input, engine }),
     canChooseMainAction: () => mainActionReady(input.engine),
     policyTimeoutMs: 1_000,
   };

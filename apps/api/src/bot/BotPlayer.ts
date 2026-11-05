@@ -1,3 +1,4 @@
+import type { GameEngine } from "#api/engine/GameEngine";
 import type { BotThinkRange } from "#api/bot/BotThinkRange";
 import type { BotDifficulty } from "@aegis/shared/bot/BotDifficulty";
 import { performance } from "node:perf_hooks";
@@ -64,6 +65,7 @@ const PRESENTATION_POLL_MS = 50;
 const MAX_MAIN_PHASE_ACTIONS = 40;
 
 export interface BotOptions {
+  rebindEngine?: (engine: GameEngine) => BotOptions | undefined;
   difficulty?: BotDifficulty;
   minThinkMs?: number;
   maxThinkMs?: number;
@@ -175,8 +177,9 @@ export class BotPlayer {
   }
 
   /** Stop this seat and settle bounded inference waits without issuing a fallback. */
-  restartAfterRollback(state: GameState): BotPlayer {
-    return new BotPlayer(this.seat, state, this.sendIntent, this.options);
+  restartAfterRollback(engine: GameEngine): BotPlayer {
+    const options = { ...this.options, ...this.options.rebindEngine?.(engine) };
+    return new BotPlayer(this.seat, engine.state, this.sendIntent, options);
   }
 
   resumeAfterRollback(): void {
