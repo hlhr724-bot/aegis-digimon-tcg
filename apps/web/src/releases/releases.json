@@ -1,5 +1,37 @@
 [
   {
+    "version": "1.53.1-beta",
+    "releasedAt": "2026-11-05",
+    "summaryKey": "releases.1.53.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.53.1-beta.fix.belphemon",
+        "issue": 6567
+      },
+      {
+        "textKey": "releases.1.53.1-beta.fix.impmon",
+        "issue": 6565
+      },
+      {
+        "textKey": "releases.1.53.1-beta.fix.save",
+        "issue": 6562
+      },
+      {
+        "textKey": "releases.1.53.1-beta.fix.hiddenAce",
+        "issue": 6558
+      },
+      {
+        "textKey": "releases.1.53.1-beta.fix.botRollback",
+        "issue": 6561
+      },
+      {
+        "textKey": "releases.1.53.1-beta.fix.blueFlare",
+        "issue": 6554
+      }
+    ]
+  },
+  {
     "version": "1.53.0-beta",
     "releasedAt": "2026-11-04",
     "summaryKey": "releases.1.53.0-beta.summary",
