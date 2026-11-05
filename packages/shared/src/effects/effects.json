@@ -248879,5 +248879,188 @@
     ],
     "coverage": "full",
     "residual": []
+  },
+  "BT27-062": {
+    "effects": [
+      {
+        "trigger": "WhenAttacking",
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "Modal",
+            "choose": 1,
+            "labels": ["Play a [Knightmon]-text card", "Use a [Knightmon]-text Option"],
+            "options": [
+              [
+                {
+                  "kind": "PlayWithoutCost",
+                  "effectTextPart": "You may play or use 1 card with [Knightmon] in its text from your hand with the cost reduced by 2.",
+                  "target": {
+                    "filter": {
+                      "controllerDefault": "mine",
+                      "zone": "hand",
+                      "kind": ["Digimon", "Tamer"],
+                      "nameOrTrait": [{ "tokens": ["Knightmon"], "match": "text" }]
+                    },
+                    "count": 1
+                  },
+                  "from": ["hand"],
+                  "payCost": true,
+                  "reduceCostBy": 2,
+                  "optional": true
+                }
+              ],
+              [
+                {
+                  "kind": "UseOptionWithoutCost",
+                  "effectTextPart": "You may play or use 1 card with [Knightmon] in its text from your hand with the cost reduced by 2.",
+                  "filter": {
+                    "controllerDefault": "mine",
+                    "zone": "hand",
+                    "kind": ["Option"],
+                    "nameOrTrait": [{ "tokens": ["Knightmon"], "match": "text" }]
+                  },
+                  "from": ["hand"],
+                  "payCost": true,
+                  "reduceCostBy": 2,
+                  "optional": true
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "AllTurns",
+        "isInherited": true,
+        "frequency": "OncePerTurn",
+        "actions": [
+          {
+            "kind": "Replacement",
+            "event": "wouldLeavePlay",
+            "sourceFilter": { "isSelfRef": true, "zone": "battleArea" },
+            "actions": [
+              {
+                "kind": "Prevent",
+                "mode": "leavePlay",
+                "cost": {
+                  "kind": "deleteOwn",
+                  "target": {
+                    "filter": {
+                      "controller": "mine",
+                      "kind": ["Digimon"],
+                      "excludeSelf": true,
+                      "nameOrTrait": [{ "tokens": ["Knightmon"], "match": "text" }]
+                    },
+                    "count": 1
+                  },
+                  "raw": "by deleting 1 of your other Digimon with [Knightmon] in its text"
+                },
+                "optional": true,
+                "abortOnDecline": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
+  },
+  "BT27-104": {
+    "effects": [
+      {
+        "trigger": "StartOfYourMainPhase",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "cost": {
+              "kind": "place",
+              "target": { "filter": { "controller": "mine", "zone": "hand" }, "count": 1 },
+              "underFilter": { "isSelfRef": true },
+              "host": "self",
+              "destination": "digivolutionStack",
+              "position": "bottom",
+              "raw": "By placing 1 card from your hand under this Tamer"
+            },
+            "optional": true,
+            "abortOnDecline": true,
+            "actions": [
+              { "kind": "Draw", "controller": "mine", "amount": 1 },
+              { "kind": "GainMemory", "amount": 1 }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "EndOfYourTurn",
+        "actions": [
+          {
+            "kind": "CostGatedBlock",
+            "cost": {
+              "kind": "suspend",
+              "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+              "raw": "By suspending this Tamer"
+            },
+            "optional": true,
+            "abortOnDecline": true,
+            "actions": [
+              {
+                "kind": "Modal",
+                "choose": 1,
+                "labels": ["Digivolve into a [Royal Knight] card under this Tamer", "Use a [Royal Knight] Option"],
+                "options": [
+                  [
+                    {
+                      "kind": "Digivolve",
+                      "effectTextPart": "1 of your Digimon may digivolve into a [Royal Knight] trait card under this Tamer with the cost reduced by 2.",
+                      "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+                      "into": {
+                        "controllerDefault": "mine",
+                        "kind": ["Digimon"],
+                        "nameOrTrait": [{ "tokens": ["Royal Knight"], "match": "trait" }]
+                      },
+                      "from": ["underThisTamer"],
+                      "reduceCost": 2,
+                      "payCost": true,
+                      "optional": true
+                    }
+                  ],
+                  [
+                    {
+                      "kind": "UseOptionWithoutCost",
+                      "effectTextPart": "You may use 1 use cost 5 or higher [Royal Knight] trait Option card from your hand or under this Tamer with the cost reduced by 3.",
+                      "filter": {
+                        "controllerDefault": "mine",
+                        "kind": ["Option"],
+                        "playCostGte": 5,
+                        "nameOrTrait": [{ "tokens": ["Royal Knight"], "match": "trait" }]
+                      },
+                      "from": ["hand", "underThisTamer"],
+                      "payCost": true,
+                      "reduceCostBy": 3,
+                      "optional": true
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "trigger": "Security",
+        "isSecurity": true,
+        "actions": [
+          {
+            "kind": "PlayWithoutCost",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "payCost": false
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": []
   }
 }
