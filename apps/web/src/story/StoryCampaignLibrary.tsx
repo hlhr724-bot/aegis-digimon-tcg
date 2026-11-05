@@ -28,7 +28,9 @@ export function StoryCampaignLibrary({ completed, onSelect }: Params) {
   const visible = campaigns.filter(
     (campaign) =>
       (!medium || campaign.medium === medium) &&
-      campaign.title.toLocaleLowerCase(locale).includes(query.trim().toLocaleLowerCase(locale)),
+      [campaign.title, text(campaign.title)].some((title) =>
+        title.toLocaleLowerCase(locale).includes(query.trim().toLocaleLowerCase(locale)),
+      ),
   );
   return (
     <section className="story-library" aria-labelledby="story-library-heading">
@@ -47,11 +49,11 @@ export function StoryCampaignLibrary({ completed, onSelect }: Params) {
         />
         <div>
           <span className="story-library__eyebrow">{text("Your next adventure")}</span>
-          <h2 id="story-featured-title">{featured.title}</h2>
+          <h2 id="story-featured-title">{text(featured.title)}</h2>
           <p>
             {completed ? featuredCompleted : "—"} / {featuredBattles.length} {text("Battles completed")}
           </p>
-          <progress value={featuredCompleted} max={featuredBattles.length} aria-label={featured.title} />
+          <progress value={featuredCompleted} max={featuredBattles.length} aria-label={text(featured.title)} />
           <Button onClick={() => onSelect(featured.id)}>{text("Continue campaign")}</Button>
         </div>
       </section>
@@ -72,7 +74,7 @@ export function StoryCampaignLibrary({ completed, onSelect }: Params) {
         <nav className="story-library__filters" aria-label={text("Campaign category")}>
           {["", ...new Set(campaigns.map((campaign) => campaign.medium))].map((value) => (
             <button type="button" key={value} aria-pressed={medium === value} onClick={() => setMedium(value)}>
-              {value || text("All campaigns")}
+              {text(value || "All campaigns")}
             </button>
           ))}
         </nav>
@@ -89,16 +91,16 @@ export function StoryCampaignLibrary({ completed, onSelect }: Params) {
               <button
                 type="button"
                 onClick={() => onSelect(campaign.id)}
-                aria-label={`${text("Explore campaign")} · ${campaign.title}`}
+                aria-label={`${text("Explore campaign")} · ${text(campaign.title)}`}
               >
                 <img src={storyCampaignArtwork[campaign.id] ?? storyCampaignArtwork.liberator} alt="" loading="lazy" />
                 <div className="story-library__copy">
-                  <span className="story-library__medium">{campaign.medium}</span>
+                  <span className="story-library__medium">{text(campaign.medium)}</span>
                   <h2>{getTranslatedStoryText({ text: campaign.title, locale })}</h2>
                   <p>
                     {completed ? count : "—"} / {battles.length} {text("Battles")}
                   </p>
-                  <progress value={count} max={battles.length} aria-label={campaign.title} />
+                  <progress value={count} max={battles.length} aria-label={text(campaign.title)} />
                   <span className="story-library__play" aria-hidden="true">
                     ▶
                   </span>

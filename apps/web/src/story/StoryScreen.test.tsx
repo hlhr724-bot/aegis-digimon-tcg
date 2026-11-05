@@ -49,6 +49,24 @@ it("filters campaigns by search and medium", () => {
   expect(screen.getByText("No campaigns found.")).toBeTruthy();
 });
 
+it("localizes the library and searches both Chinese and original campaign titles", async () => {
+  localStorage.setItem("aegis:locale", "zh-CN");
+  renderStory();
+  expect(screen.getByRole("heading", { level: 1, name: "选择你的故事" })).toBeTruthy();
+  expect(screen.getAllByRole("heading", { name: "数码宝贝界放者" })).toHaveLength(2);
+  const search = screen.getByRole("searchbox", { name: "搜索故事" });
+  fireEvent.change(search, { target: { value: "世界2" } });
+  expect(screen.getByRole("button", { name: "探索故事 · 数码宝贝世界2" })).toBeTruthy();
+  fireEvent.change(search, { target: { value: "Seekers" } });
+  fireEvent.click(screen.getByRole("button", { name: "动画" }));
+  expect(screen.getByText("未找到相关故事。")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "网络小说" }));
+  fireEvent.click(screen.getByRole("button", { name: "探索故事 · 数码宝贝追寻者" }));
+  expect(await screen.findByRole("heading", { name: /^追寻者之战 — / })).toBeTruthy();
+  expect(screen.getAllByText(/ · 第4章/).length).toBeGreaterThan(0);
+  expect(screen.getByText("起始手牌5张 · 不可调度")).toBeTruthy();
+});
+
 it("opens every World 2 encounter as a battle without exposing deck lists, sources or dates", async () => {
   const start = renderStory();
   fireEvent.click(screen.getByRole("button", { name: "Explore campaign · Digimon World 2" }));

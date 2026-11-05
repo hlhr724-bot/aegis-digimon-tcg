@@ -53,7 +53,7 @@ export function StoryCatalogScreen({ campaignId, signedIn, onStart }: Params) {
         <p role="status">
           {completed} / {battleIds.length} {text("Battles completed")}
         </p>
-        <progress value={completed} max={battleIds.length} aria-label={campaign?.title} />
+        <progress value={completed} max={battleIds.length} aria-label={campaign && text(campaign.title)} />
       </div>
       <p>{text("Choose a battle. Your partner is ready for the challenge.")}</p>
       {!loaded && <p role="status">{t("common.loading")}</p>}
@@ -71,7 +71,7 @@ export function StoryCatalogScreen({ campaignId, signedIn, onStart }: Params) {
               </div>
               <div className="story-catalog-list__body">
                 <p className="story-catalog-list__location">
-                  {String(index + 1).padStart(2, "0")} · {battle.chapterId}
+                  {String(index + 1).padStart(2, "0")} · {battle.chapterId && text(battle.chapterId)}
                   {difficulty && <> · {t(`story.difficulty.${difficulty.value}`)}</>}
                   {battle.isOptional && <> · {t("story.optionalChallenge")}</>}
                 </p>
