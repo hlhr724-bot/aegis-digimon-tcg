@@ -4,6 +4,7 @@ import { getDecisionEffectSummary } from "#api/engine/effects/interpreter/getDec
 import type { EffectContext } from "../../EffectContext.js";
 import { evaluateCondition } from "../conditions.js";
 import { canPayCost } from "../costs.js";
+import { isPrintedByCondition } from "../isPrintedByCondition.js";
 import { describeAction } from "../describe.js";
 import { runAction } from "../dispatch.js";
 import { scaleFactor } from "../scaling.js";
@@ -409,7 +410,10 @@ function canAttemptModalAction(ctx: EffectContext, action: Action): boolean {
   ) {
     return false;
   }
-  if (action.cost !== undefined && typeof action.cost !== "number" && !canPayCost(ctx, action.cost)) return false;
+  if (action.cost !== undefined && typeof action.cost !== "number") {
+    if (!canPayCost(ctx, action.cost)) return false;
+    if (isPrintedByCondition(action.cost)) return true;
+  }
   // A PlaceUnder is attemptable only when both an eligible card and a legal host exist.
   // Without this the modal is offered with no legal destination, the activation cost is
   // charged, and the placement silently no-ops (BT17-050 Q2803).
