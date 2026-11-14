@@ -1534,3 +1534,38 @@ it.each(["dp", "restriction"] as const)(
     }
   },
 );
+
+describe("a memory gain raised by a security check", () => {
+  it("keeps the gauge where it was until the revealed card's clause has been read", async () => {
+    const view = renderChain("sequential");
+    await advance(0);
+    view.feedChain([
+      [
+        {
+          kind: "securityRevealed",
+          seat: 1,
+          revealedCardId: "BT4-111",
+          attackerPermanentId: "perm-a",
+          attackerDP: 12000,
+          hasSecurityEffect: true,
+          isDigimon: false,
+          securityCountBefore: 3,
+        },
+        {
+          kind: "effectTriggered",
+          seat: 1,
+          sourceCardId: "BT4-111",
+          sourceInstanceId: "jack-raid",
+          effectKey: "BT4-111/security",
+          description: "[Security] Gain 2 memory.",
+          timing: "Security",
+        },
+        { kind: "memoryChanged", from: 4, to: 2, reason: "gainMemory" },
+      ],
+    ]);
+
+    expect(view.result.current.heldMemory?.memory).toBe(4);
+    await advance(10_000);
+    expect(view.result.current.heldMemory).toBeUndefined();
+  });
+});
