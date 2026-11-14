@@ -55,6 +55,7 @@ export interface EffectContext {
   activeEffectText?: string;
   /** Catalog provenance for a copied clause, independent of its activating rules source. */
   activeEffectTextCardId?: string;
+  printedEffectCardId?: string;
   activeEffectTextPart?: string;
   activeEffectTextEmphasis?: string;
   activeEffectIsInherited?: boolean;
