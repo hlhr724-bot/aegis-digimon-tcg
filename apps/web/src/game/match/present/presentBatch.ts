@@ -467,18 +467,15 @@ export function presentServerBatch({
   batchVersionsRef.current.set(batchId, stateVersion);
   if (batchVersionsRef.current.size > 120)
     batchVersionsRef.current.delete(batchVersionsRef.current.keys().next().value!);
-  if (!replayingHistory && !continuingBatch)
-    progress.present(
-      batchId,
-      // A resumed unit's first results batch waits out the fresh beat over the board before it.
-      attackReady
-        ? boardBeforeAttack
-        : sequenced?.resumed
-          ? stateVersion - 1
-          : sequenced
-            ? announcedBoardVersion(fresh, sequenced, stateVersion)
-            : stateVersion,
-    );
+  // A resumed unit's first results batch waits out the fresh beat over the board before it.
+  const presentedBoardVersion = attackReady
+    ? boardBeforeAttack
+    : sequenced?.resumed
+      ? stateVersion - 1
+      : sequenced
+        ? announcedBoardVersion(fresh, sequenced, stateVersion)
+        : stateVersion;
+  if (!replayingHistory && !continuingBatch) progress.present(batchId, presentedBoardVersion);
   if (!replayingHistory) traceCueBatch(`${batchId} ${fresh.map((event) => event.kind).join(",")}`);
   const {
     refusal,
@@ -908,10 +905,10 @@ export function presentServerBatch({
     }
     // A paced unit pins the complete snapshot through its announcement. A legacy gauge
     // hold from a later queued unit would replace that snapshot's earlier memory value.
-    if (!unitGate)
+    if (!unitGate || presentedBoardVersion === stateVersion)
       enqueueMemoryHold({
         fresh,
-        announceGate: batchAnnounceGate,
+        announceGate: unitGate ?? batchAnnounceGate,
         turnSeat: turnSeatBeforeBatch,
         memoryHoldKeyRef,
         setHeldMemory,
