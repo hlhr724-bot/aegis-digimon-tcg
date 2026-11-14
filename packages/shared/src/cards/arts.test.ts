@@ -121,6 +121,12 @@ it("offers Japanese printings for the ST25 and ST26 reveal cards", () => {
     "ST25-04",
     "ST25-05",
     "ST25-06",
+    "ST26-01",
+    "ST26-02",
+    "ST26-03",
+    "ST26-04",
+    "ST26-05",
+    "ST26-06",
   ]) {
     expect(getCardArts(cardId).map((art) => art.artId)).toEqual([cardId, `${cardId}-J`]);
     expect(cardImageUrls(cardId, `${cardId}-J`)[0]).toContain(`/${cardId}-J.webp`);

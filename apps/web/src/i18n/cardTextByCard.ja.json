@@ -15729,5 +15729,28 @@
   "BT27-016": {
     "[Digivolve][Jesmon]:Cost1<Progress><Piercing><Engage>[WhenDigivolving][WhenAttacking][OncePerTurn]ThisDigimongets+6000DPuntilyouropponent'sturnends.Then,byreturning1ofyourotherDigimonor1[Jesmon]or[XAntibody]fromthisDigimon'sdigivolutioncardstothebottomofthedeck,activate1[Main]effectonthiscard'sOptionside.": "〔進化〕「ジエスモン」:コスト1\n≪プログレス≫ ≪貫通≫ ≪急襲≫（自分のターン終了時、このデジモンでアタックできる）\n【進化時】【アタック時】[ターン1回]相手のターン終了まで、このデジモンをDP+6000。その後、このデジモンの進化元の「ジエスモン」/「X抗体」1枚か、他の自分のデジモン1体をデッキの下に戻すことで、このカードのオプション側の【メイン】効果1つを発揮する。",
     "UseReq.<[Huckmon]intext>[Main]Byplacing1ofyouropponent'slowestDPDigimonasthebottomsecuritycard,trashtheirtopsecuritycard.<ArtsDigivolve>": "≪使用条件《「ハックモン」記述》≫（指定の条件で色条件を満たせる）\n【メイン】最もDPの低い相手のデジモン1体をセキュリティの下に置くことで、相手のセキュリティを上から1枚破棄する。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
+  },
+  "ST26-01": {
+    "[YourTurn]WhileyouropponenthasnoDigimonwithdigivolutioncards,this[Ice-Snow]traitDigimoncan'tbedeletedinbattle.": "【自分のターン】進化元を持つ相手のデジモンがいない間、特徴「氷雪型」を持つこのデジモンはバトルで消滅しない。"
+  },
+  "ST26-02": {
+    "[WhenMoving][OnPlay]Trashthebottomdigivolutioncardof1ofyouropponent'sDigimon.Then,ifyouropponenthasnoDigimonwithdigivolutioncards,<Draw1>.(Draw1cardfromyourdeck.)[Rule]Trait:Has[Ice-Snow]Type.": "【移動時】【登場時】相手のデジモン1体の進化元を下から1枚破棄する。その後、進化元を持つ相手のデジモンがいないなら、≪1ドロー≫（自分のデッキからカードを1枚引く）。\n〈ルール〉特徴:タイプ「氷雪型」を持つ。",
+    "[WhenAttacking]IfthisDigimonhasthe[Ice-Snow]trait,youmaychangetheattacktargetto1ofyouropponent'sunsuspendedDigimonwiththefewestdigivolutioncards.": "【アタック時】このデジモンが特徴「氷雪型」を持つなら、アタックの対象を最も進化元枚数の少ないアクティブ状態の相手のデジモン1体に変更できる。"
+  },
+  "ST26-03": {
+    "[OnPlay][WhenDigivolving]Ifyouhave1orfewerTamers,youmayplay1[ValnerDragnogh]fromyourhandwithoutpayingthecost.[Rule]Trait:Has[Ice-Snow]Type.": "【登場時】【進化時】自分のテイマーが1体以下なら、自分の手札から、「ヴァルナー・ドラグノフ」1枚をコストを支払わず登場できる。\n〈ルール〉特徴:タイプ「氷雪型」を持つ。",
+    "[EndofAttack][OncePerTurn]Gain1memory.": "【アタック終了時】［ターン1回］メモリー+1。"
+  },
+  "ST26-04": {
+    "<Iceclad>(OtherthanagainstSecurityDigimon,comparethenumberofdigivolutioncardsinsteadofDPinthisDigimon'sbattles.)[OnPlay][WhenDigivolving]Trashany3digivolutioncardsfromyouropponent'sDigimon.Then,1oftheirDigimonorTamerscan'tsuspenduntiltheirturnends.[Rule]Trait:Has[Ice-Snow]Type.": "≪氷装≫（このデジモンのセキュリティデジモン以外とのバトルではDPではなく進化元枚数を比べる）\n【登場時】【進化時】相手のデジモンの進化元を選んで3枚破棄する。その後、相手のターン終了まで、相手のデジモン/テイマー1体はレストできない。\n〈ルール〉特徴:タイプ「氷雪型」を持つ。",
+    "[EndofYourTurn][OncePerTurn]Trashthebottom2digivolutioncardsof1ofyouropponent'sDigimon.Ifthiseffectdidn'ttrash,this[Ice-Snow]traitDigimonmayunsuspend.": "【自分のターン終了時】［ターン1回］相手のデジモン1体の進化元を下から2枚破棄する。この効果で破棄しなかったなら、特徴「氷雪型」を持つこのデジモンをアクティブにできる。"
+  },
+  "ST26-05": {
+    "<Iceclad><Piercing><Blocker>[WhenDigivolving]Trashany3digivolutioncardsfromyouropponent'sDigimon.Then,ifyouropponenthasnoDigimonwithdigivolutioncards,1ofyour[Ice-Snow]traitDigimonmayattackwithoutsuspending.[WhenAttacking]Youmayreturn1ofyouropponent'sDigimonwithnodigivolutioncardstothebottomofthedeck.": "≪氷装≫ ≪貫通≫ ≪ブロッカー≫\n【進化時】相手のデジモンの進化元を選んで3枚破棄する。その後、進化元を持つ相手のデジモンがいないなら、特徴「氷雪型」を持つ自分のデジモン1体でレストせずアタックできる。\n【アタック時】進化元を持たない相手のデジモン1体をデッキの下に戻せる。",
+    "[Main]Trashallcardsfromunder1ofyouropponent'sDigimonorTamers.Then,2oftheirDigimonorTamerscan'tsuspenduntiltheirturnends.<ArtsDigivolve>": "【メイン】相手のデジモン/テイマー1体の下のカードを全て破棄する。その後、相手のターン終了まで、相手のデジモン/テイマー2体はレストできない。\n≪アーツ進化≫（使用後、破棄する代わりに自分のカードをこのカードにコストを支払わず進化できる）"
+  },
+  "ST26-06": {
+    "[StartofYourTurn]Ifyouhave2orlessmemory,setitto3.[AllTurns]WhenyourDigimonareplayedordigivolve,ifanyofthemhavethe[Ice-Snow]trait,bysuspendingthisTamer,trashthebottom2digivolutioncardsof1ofyouropponent'sDigimon.After,ifyouropponenthasnoDigimonwithdigivolutioncards,<Draw1>.(Draw1cardfromyourdeck.)": "【自分のターン開始時】メモリーが2以下なら、3にする。\n【お互いのターン】自分のデジモンが登場/進化したとき、そのデジモンが特徴「氷雪型」を持つなら、このテイマーをレストさせることで、相手のデジモン1体の進化元を下から2枚破棄する。さらに、進化元を持つ相手のデジモンがいないなら、≪1ドロー≫（自分のデッキからカードを1枚引く）。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
   }
 }

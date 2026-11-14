@@ -369,3 +369,13 @@ transcriptions.
 | ------------------------------------------------------------ | ------------- | --------------------- | ---------- |
 | BT27-001-J, BT27-016, BT27-016-J, BT27-016_P1, BT27-016_P1-J | 951 x 1295 px | `(41, 41, 909, 1254)` | 868 x 1213 |
 | BT27-001                                                     | 881 x 1200 px | `(38, 38, 842, 1162)` | 804 x 1124 |
+
+## ST26 Viximon line and Valner Dragnogh, 2026-11-14
+
+ST26-01 through ST26-06 and their `-J` printings come from the user-provided
+official English and Japanese reveal scans. Each 951 x 1295 px attachment is
+cropped to `(41, 41, 909, 1254)`, producing 868 x 1213 px WebP images at
+quality 90 without the white outer margin. The English ST26-01 and ST26-02
+scans are 881 x 1200 px; they are cropped to `(38, 38, 842, 1162)`, producing
+804 x 1124 px images. The SAMPLE watermark is preserved. The Japanese scans
+supply the Japanese name and text transcriptions.
