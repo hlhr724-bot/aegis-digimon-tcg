@@ -19,6 +19,7 @@ import { BattleLanes, useBattleLanePreference } from "../../../design/battleLane
 import { COARSE_POINTER_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
 import { twoRowsFit } from "./twoRowsFit";
 import { motionPreference } from "@/design/motion/motionPreference";
+import { getTurnedCardInlineMargin } from "@/game/getTurnedCardInlineMargin";
 
 const CARD_ASPECT = 1.4;
 /** The design's --ds-touch-target minimum also applies to each permanent's button wrapper. */
@@ -531,9 +532,9 @@ export function laneContentWidth(
   preferStacked = false,
 ): number {
   if (cards.length === 0) return 0;
-  const suspendedMargin = Math.ceil(width * 0.2);
+  const turnMargin = getTurnedCardInlineMargin(width);
   const frames = cards.reduce((total, card) => {
-    const turn = card.suspended ? suspendedMargin : 0;
+    const turn = card.suspended || !preferStacked ? turnMargin : 0;
     const start = card.sources
       ? Math.max(turn, 4 + (card.sources - 1) * Math.min(sourceStep, sourceFanStepLimit(width, card.sources)))
       : turn;

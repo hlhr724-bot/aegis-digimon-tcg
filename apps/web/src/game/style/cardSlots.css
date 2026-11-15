@@ -11,6 +11,7 @@
   width: var(--field-slot-width);
   height: calc(var(--field-slot-width) * 1.4);
   min-height: var(--ds-touch-target, 44px);
+  margin-inline: calc((1 - var(--field-prefer-stacked, 0)) * var(--field-slot-turn-margin, 0px));
   pointer-events: none;
 }
 
