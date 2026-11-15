@@ -13801,7 +13801,7 @@
     "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][OnDeletion]Suspend1ofyouropponent'sDigimon.": "〔進化〕特徴に「NSo」を持つLv.3:コスト2\n\n【登場時】【消滅時】相手のデジモン1体をレストさせる。"
   },
   "P-164": {
-    "[OnPlay][WhenDigivolving]Byplacing1Level5orlowerDigimoncardwith[Aqua]/[SeaAnimal]inanyofitstraitsfromyourhandas1ofyourDigimon'sbottomdigivolutioncard,<Draw1>[Rule]Trait:Has[Aquatic]type.": "【登場時】【進化時】自分の手札から、特徴に「水棲」を含むLv.5以下のデジモンカード1枚をこのデジモンの進化元の下に置くことで、≪1ドロー≫。\n〈ルール〉特徴:タイプ「水棲型」を持つ。",
+    "[OnPlay][WhenDigivolving]Byplacing1level5orlowerDigimoncardwith[Aqua]or[SeaAnimal]inanyofitstraitsfromyourhandasthisDigimon'sbottomdigivolutioncard,<Draw1>.[Rule]Trait:Has[Aquatic]Type.": "【登場時】【進化時】自分の手札から、特徴に「水棲」を含むLv.5以下のデジモンカード1枚をこのデジモンの進化元の下に置くことで、≪1ドロー≫。\n〈ルール〉特徴:タイプ「水棲型」を持つ。",
     "[EndofAttack][OncePerTurn]<Draw1>.": "【アタック終了時】[ターンに1回]≪1ドロー≫"
   },
   "P-165": {
