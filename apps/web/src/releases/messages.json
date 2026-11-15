@@ -1,4 +1,64 @@
 {
+  "releases.1.73.0-beta.summary": {
+    "en": "This update adds the ST26 Viximon starter deck and three more BT27 cards, and fixes a batch of player-reported card problems.",
+    "pt-BR": "Esta atualização adiciona o deck inicial ST26 de Viximon e mais três cartas de BT27, e corrige vários problemas de cartas relatados pelos jogadores.",
+    "es": "Esta actualización añade el mazo de inicio ST26 de Viximon y tres cartas más de BT27, y corrige varios problemas de cartas reportados por los jugadores.",
+    "it": "Questo aggiornamento aggiunge il mazzo iniziale ST26 di Viximon e altre tre carte di BT27, e corregge vari problemi delle carte segnalati dai giocatori."
+  },
+  "releases.1.73.0-beta.feature.st26Viximon": {
+    "en": "Added the ST26 starter cards: Viximon, Renamon, Tenkomon, Sekkamon, Yukinamon and Valner Dragnogh.",
+    "pt-BR": "Adicionadas as cartas do deck inicial ST26: Viximon, Renamon, Tenkomon, Sekkamon, Yukinamon e Valner Dragnogh.",
+    "es": "Se añadieron las cartas del mazo de inicio ST26: Viximon, Renamon, Tenkomon, Sekkamon, Yukinamon y Valner Dragnogh.",
+    "it": "Aggiunte le carte del mazzo iniziale ST26: Viximon, Renamon, Tenkomon, Sekkamon, Yukinamon e Valner Dragnogh."
+  },
+  "releases.1.73.0-beta.feature.bt27Gemmon": {
+    "en": "Added Gemmon (BT27-006), Liskmon (BT27-011) and Reptilimon (BT27-014) from BT27.",
+    "pt-BR": "Adicionados Gemmon (BT27-006), Liskmon (BT27-011) e Reptilimon (BT27-014) de BT27.",
+    "es": "Se añadieron Gemmon (BT27-006), Liskmon (BT27-011) y Reptilimon (BT27-014) de BT27.",
+    "it": "Aggiunti Gemmon (BT27-006), Liskmon (BT27-011) e Reptilimon (BT27-014) da BT27."
+  },
+  "releases.1.73.0-beta.fix.beelstarmonCost": {
+    "en": "Beelstarmon (BT6-112) in play keeps its full play cost while another copy is in your hand, so it no longer dies to its own \"play cost 7 or less\" Options.",
+    "pt-BR": "Beelstarmon (BT6-112) em jogo mantém o custo de jogo completo enquanto outra cópia está na sua mão, então não morre mais para as próprias Opções de \"custo de jogo 7 ou menos\".",
+    "es": "Beelstarmon (BT6-112) en juego mantiene su coste de juego completo mientras otra copia está en tu mano, así que ya no muere con sus propias Opciones de \"coste de juego 7 o menos\".",
+    "it": "Beelstarmon (BT6-112) in gioco mantiene il costo di gioco completo mentre un'altra copia è nella tua mano, quindi non muore più per le proprie Opzioni \"costo di gioco 7 o meno\"."
+  },
+  "releases.1.73.0-beta.fix.highestDpEgg": {
+    "en": "Effects that pick the highest or lowest DP Digimon, such as Ravemon's, now count Digi-Egg cards in the battle area like Mother D-Reaper.",
+    "pt-BR": "Efeitos que escolhem o Digimon com mais ou menos DP, como o de Ravemon, agora contam cartas Digi-Egg na área de batalha, como Mother D-Reaper.",
+    "es": "Los efectos que eligen al Digimon con más o menos DP, como el de Ravemon, ahora cuentan las cartas Digi-Egg en la zona de batalla, como Mother D-Reaper.",
+    "it": "Gli effetti che scelgono il Digimon con più o meno DP, come quello di Ravemon, ora contano le carte Digi-Egg nell'area di battaglia, come Mother D-Reaper."
+  },
+  "releases.1.73.0-beta.fix.laterByCost": {
+    "en": "Accepting an effect in the trigger order no longer pays its later \"by\" costs for you; MirageGaogamon (BT25-029) asks before trashing a Tamer's card.",
+    "pt-BR": "Aceitar um efeito na ordem dos gatilhos não paga mais por você os custos \"ao\" seguintes; MirageGaogamon (BT25-029) pergunta antes de descartar uma carta do Tamer.",
+    "es": "Aceptar un efecto en el orden de activación ya no paga por ti sus costes \"al\" posteriores; MirageGaogamon (BT25-029) pregunta antes de descartar una carta del Tamer.",
+    "it": "Accettare un effetto nell'ordine degli attivatori non paga più per te i costi \"per\" successivi; MirageGaogamon (BT25-029) chiede prima di scartare una carta del Domatore."
+  },
+  "releases.1.73.0-beta.fix.shellmonPlacement": {
+    "en": "Shellmon (P-164) places the card from your hand under itself, as printed, and its text now matches the card.",
+    "pt-BR": "Shellmon (P-164) coloca a carta da sua mão embaixo de si mesmo, como impresso, e o texto agora corresponde à carta.",
+    "es": "Shellmon (P-164) coloca la carta de tu mano debajo de sí mismo, como está impreso, y su texto ahora coincide con la carta.",
+    "it": "Shellmon (P-164) mette la carta dalla tua mano sotto di sé, come stampato, e il suo testo ora corrisponde alla carta."
+  },
+  "releases.1.73.0-beta.fix.borrowedMain": {
+    "en": "When Jesmon GX uses a Royal Knight's effect that activates a [Main] on that card's Option side, the [Main] now resolves.",
+    "pt-BR": "Quando Jesmon GX usa um efeito de Royal Knight que ativa um [Main] do lado Opção dessa carta, o [Main] agora é resolvido.",
+    "es": "Cuando Jesmon GX usa un efecto de Royal Knight que activa un [Main] del lado Opción de esa carta, el [Main] ahora se resuelve.",
+    "it": "Quando Jesmon GX usa un effetto di un Royal Knight che attiva un [Main] sul lato Opzione di quella carta, il [Main] ora si risolve."
+  },
+  "releases.1.73.0-beta.fix.kingEtemonReturn": {
+    "en": "KingEtemon can choose to return 10 cards even when you can't play Digimon by effects.",
+    "pt-BR": "KingEtemon pode escolher devolver 10 cartas mesmo quando você não pode jogar Digimon por efeitos.",
+    "es": "KingEtemon puede elegir devolver 10 cartas incluso cuando no puedes jugar Digimon por efectos.",
+    "it": "KingEtemon può scegliere di rimettere 10 carte anche quando non puoi giocare Digimon tramite effetti."
+  },
+  "releases.1.73.0-beta.fix.securityMemoryPacing": {
+    "en": "A security card that gains memory, such as Jack Raid, now shows the memory change after the card is revealed.",
+    "pt-BR": "Uma carta de segurança que ganha memória, como Jack Raid, agora mostra a mudança de memória depois que a carta é revelada.",
+    "es": "Una carta de seguridad que gana memoria, como Jack Raid, ahora muestra el cambio de memoria después de revelar la carta.",
+    "it": "Una carta di sicurezza che fa guadagnare memoria, come Jack Raid, ora mostra il cambio di memoria dopo che la carta viene rivelata."
+  },
   "releases.1.72.1-beta.summary": {
     "en": "This update makes deck names easier to read on the deck list.",
     "pt-BR": "Esta atualização deixa os nomes dos decks mais fáceis de ler na lista de decks.",

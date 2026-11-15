@@ -43,7 +43,7 @@ describe("release dates", () => {
     expect(isBetaOnlyCard(card(cardId), "2027-01-22")).toBe(false);
   });
 
-  it.each(["SD01-02", "SD02-02", "ED01-01", "ED01-10", "ST25-01", "ST25-05"])(
+  it.each(["SD01-02", "SD02-02", "ED01-01", "ED01-10", "ST25-01", "ST25-05", "ST26-01", "ST26-05"])(
     "keeps %s in beta until the ST25 and ST26 release",
     (cardId) => {
       expect(releaseDateForCard(card(cardId))).toBe("2026-12-04");

@@ -1,5 +1,41 @@
 [
   {
+    "version": "1.73.0-beta",
+    "releasedAt": "2026-11-14",
+    "summaryKey": "releases.1.73.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.73.0-beta.feature.st26Viximon"
+      },
+      {
+        "textKey": "releases.1.73.0-beta.feature.bt27Gemmon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.73.0-beta.fix.beelstarmonCost"
+      },
+      {
+        "textKey": "releases.1.73.0-beta.fix.highestDpEgg"
+      },
+      {
+        "textKey": "releases.1.73.0-beta.fix.laterByCost"
+      },
+      {
+        "textKey": "releases.1.73.0-beta.fix.shellmonPlacement"
+      },
+      {
+        "textKey": "releases.1.73.0-beta.fix.borrowedMain"
+      },
+      {
+        "textKey": "releases.1.73.0-beta.fix.kingEtemonReturn"
+      },
+      {
+        "textKey": "releases.1.73.0-beta.fix.securityMemoryPacing"
+      }
+    ]
+  },
+  {
     "version": "1.72.1-beta",
     "releasedAt": "2026-11-13",
     "summaryKey": "releases.1.72.1-beta.summary",

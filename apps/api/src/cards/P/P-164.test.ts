@@ -29,7 +29,9 @@ describe("P-164 Shellmon", () => {
                 count: 1,
                 from: ["hand"],
               },
-              host: { filter: { controller: "mine", kind: ["Digimon"] }, count: 1 },
+              destination: "digivolutionStack",
+              position: "bottom",
+              host: "self",
             },
           },
         ],
@@ -55,7 +57,7 @@ describe("P-164 Shellmon", () => {
     );
   });
 
-  it("draws after placing a level-5-or-lower Aqua card from hand under a Digimon", async () => {
+  it("draws after placing a level-5-or-lower Aqua card from hand under Shellmon itself", async () => {
     const s = setupEngine(
       {
         0: {
@@ -76,10 +78,12 @@ describe("P-164 Shellmon", () => {
       ok: true,
     });
     await settle(
-      () => s.state.pendingDecision === undefined && s.perm("host").stack.some((card) => card.instanceId === aquaId),
+      () =>
+        s.state.pendingDecision === undefined && s.perm("shellmon").stack.some((card) => card.instanceId === aquaId),
     );
     expect(s.state.memory).toBe(6);
-    expect(s.perm("host").stack.some((card) => card.instanceId === aquaId)).toBe(true);
+    expect(s.perm("shellmon").stack.map((card) => card.instanceId)).toEqual([aquaId]);
+    expect(s.perm("host").stack).toHaveLength(0);
     expect(s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("drawn").instanceId)).toBe(true);
   });
 
@@ -105,7 +109,7 @@ describe("P-164 Shellmon", () => {
     });
     await settle(() => s.state.pendingDecision === undefined && s.state.memory === 6);
 
-    expect(s.perm("host").stack.some((card) => card.instanceId === aquabeastId)).toBe(true);
+    expect(s.perm("shellmon").stack.map((card) => card.instanceId)).toEqual([aquabeastId]);
     expect(s.state.players[0]!.hand.map((card) => card.instanceId)).toEqual([s.inst("drawn").instanceId]);
   });
 

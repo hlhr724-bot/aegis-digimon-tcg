@@ -1,10 +1,10 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ja",
-  "catalogCards": 4600,
+  "catalogCards": 4609,
   "sourceCards": 4477,
-  "translatedCards": 4394,
-  "translatedFields": 6947,
+  "translatedCards": 4403,
+  "translatedFields": 6964,
   "missing": [
     {
       "cardId": "BT12-002",
@@ -16091,6 +16091,41 @@
     "BT27-016": {
       "effectText": "data/card-images/BT27-016-J.webp",
       "optionEffect": "data/card-images/BT27-016-J.webp"
+    },
+    "ST26-01": {
+      "inheritedEffectText": "data/card-images/ST26-01-J.webp"
+    },
+    "ST26-02": {
+      "effectText": "data/card-images/ST26-02-J.webp",
+      "inheritedEffectText": "data/card-images/ST26-02-J.webp"
+    },
+    "ST26-03": {
+      "effectText": "data/card-images/ST26-03-J.webp",
+      "inheritedEffectText": "data/card-images/ST26-03-J.webp"
+    },
+    "ST26-04": {
+      "effectText": "data/card-images/ST26-04-J.webp",
+      "inheritedEffectText": "data/card-images/ST26-04-J.webp"
+    },
+    "ST26-05": {
+      "effectText": "data/card-images/ST26-05-J.webp",
+      "optionEffect": "data/card-images/ST26-05-J.webp"
+    },
+    "ST26-06": {
+      "effectText": "data/card-images/ST26-06-J.webp",
+      "securityEffectText": "data/card-images/ST26-06-J.webp"
+    },
+    "BT27-006": {
+      "effectText": "data/card-images/BT27-006-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-006-J.webp"
+    },
+    "BT27-011": {
+      "effectText": "data/card-images/BT27-011-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-011-J.webp"
+    },
+    "BT27-014": {
+      "effectText": "data/card-images/BT27-014-J.webp",
+      "inheritedEffectText": "data/card-images/BT27-014-J.webp"
     }
   }
 }

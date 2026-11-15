@@ -702,4 +702,99 @@ describe("BT25-029 MirageGaogamon — KB Q&A rulings", () => {
 
     expect(s.state.players[1]!.hand.map((card) => card.instanceId)).toContain(s.inst("levelFive").instanceId);
   });
+
+  it("still asks the Tamer trash after its When Attacking effect was accepted in the trigger order", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT25-029", as: "mirage", under: ["BT25-023"] },
+            { card: "BT1-085", as: "tamer", under: [{ card: "BT1-001", as: "cost", faceUp: false }] },
+          ],
+          deck: ["BT1-009", "BT1-009", "BT1-009"],
+        },
+        1: {
+          battleArea: [{ card: "BT1-020", as: "levelFive" }],
+          deck: ["BT1-009", "BT1-009", "BT1-009"],
+          security: ["BT1-009"],
+        },
+      },
+      { autoOrderTriggers: false },
+    );
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("mirage").permanentId,
+        target: { kind: "player" },
+      }),
+    ).toEqual({ ok: true });
+    const answered: string[] = [];
+    const orderResults: { ok: boolean }[] = [];
+    for (let step = 0; step < 20; step += 1) {
+      await settle(
+        () => s.state.pendingDecision !== undefined || s.events.some((event) => event.kind === "attackEnded"),
+      );
+      const pending = s.state.pendingDecision;
+      if (pending === undefined) {
+        break;
+      }
+      const decision = s.decisions.find(({ req }) => req.decisionId === pending.decisionId)!.req;
+      const fromMirage = decision.sourceCardId === "BT25-029";
+      if (decision.kind === "orderTriggers") {
+        const triggerCardIds = decision.options?.triggerCardIds ?? [];
+        const mirageIndex = triggerCardIds.indexOf("BT25-029");
+        const orderIndexes = [
+          mirageIndex,
+          ...triggerCardIds.map((_, index) => index).filter((index) => index !== mirageIndex),
+        ];
+        answered.push("order");
+        const orderResult = s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: decision.decisionId,
+          response: {
+            kind: "orderTriggers",
+            order: [],
+            orderIndexes,
+            optionalAnswersByIndex: triggerCardIds.map((cardId) => (cardId === "BT25-029" ? true : null)),
+          },
+        });
+        orderResults.push(orderResult);
+      } else if (decision.kind === "chooseTargets" && fromMirage) {
+        answered.push("return target");
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: decision.decisionId,
+          response: { kind: "chooseTargets", instanceIds: [s.perm("levelFive").permanentId] },
+        });
+      } else if (decision.kind === "selectCards" && fromMirage) {
+        answered.push("forced Tamer trash");
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: decision.decisionId,
+          response: { kind: "selectCards", instanceIds: [s.inst("tamer").instanceId] },
+        });
+      } else if (decision.kind === "optional") {
+        answered.push(
+          fromMirage && decision.options?.effectTextEmphasis?.includes("by trashing")
+            ? "Tamer trash declined"
+            : "other declined",
+        );
+        s.engine.applyIntent(0, {
+          type: "respondDecision",
+          decisionId: decision.decisionId,
+          response: { kind: "optional", accept: false },
+        });
+      } else {
+        throw new Error(`unexpected decision ${decision.kind}`);
+      }
+    }
+
+    expect(answered).toContain("Tamer trash declined");
+    expect(answered).not.toContain("forced Tamer trash");
+    expect(s.state.players[1]!.hand.map((card) => card.instanceId)).toContain(s.inst("levelFive").instanceId);
+    expect(s.perm("tamer").stack.map((card) => card.instanceId)).toEqual([s.inst("cost").instanceId]);
+    expect(s.state.players[0]!.trash.map((card) => card.instanceId)).not.toContain(s.inst("cost").instanceId);
+    expect(orderResults).toEqual([{ ok: true }]);
+  });
 });

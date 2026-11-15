@@ -387,6 +387,7 @@ export async function runActivateForeignEffect(
             activeTiming: eff.trigger,
             activeEffectText: eff.description ?? describeEffect(eff),
             activeEffectTextCardId: borrowed.sourceCardId,
+            printedEffectCardId: borrowed.sourceCardId,
           },
           eff,
         );
@@ -727,18 +728,22 @@ export async function runUseOptionWithoutCost(
  * [Main] effect (so a silent no-op cannot hide a missing main ability).
  */
 export async function runActivateMain(ctx: EffectContext): Promise<void> {
-  const compiled = runtimeCompiledCard(ctx.source.cardId);
-  const mains = (compiled === undefined ? [] : withPrintedClauses(ctx.source.cardId, compiled).effects).filter(
+  const printedCardId = ctx.printedEffectCardId ?? ctx.source.cardId;
+  const compiled = runtimeCompiledCard(printedCardId);
+  const mains = (compiled === undefined ? [] : withPrintedClauses(printedCardId, compiled).effects).filter(
     (e) => e.trigger === "Main" && !e.isSecurity,
   );
   if (mains.length === 0) {
-    unsupported(ctx, { kind: "ActivateMain" }, `ActivateMain found no [Main] effect on ${ctx.source.cardId}`);
+    unsupported(ctx, { kind: "ActivateMain" }, `ActivateMain found no [Main] effect on ${printedCardId}`);
     return;
   }
   // A DUAL Digimon directly activating its Option-side [Main] produces an Option effect,
   // not a Digimon effect (BT25-104 Q6496-Q6498). Narrow the physical dual definition only
   // for this borrowed Main body so source-kind-qualified immunity sees the correct face.
-  const sourceKinds = ctx.source.definition.kinds;
+  const sourceKinds =
+    printedCardId === ctx.source.cardId
+      ? ctx.source.definition.kinds
+      : ctx.game.definitionOf({ cardId: printedCardId }).kinds;
   const activatesDualOptionFace = sourceKinds.includes(CardKind.Digimon) && sourceKinds.includes(CardKind.Option);
   const mainCtx = activatesDualOptionFace ? { ...ctx, effectSourceKinds: [CardKind.Option] } : ctx;
   const outerTiming = mainCtx.activeTiming;
@@ -754,7 +759,7 @@ export async function runActivateMain(ctx: EffectContext): Promise<void> {
   try {
     for (const [index, effect] of mains.entries()) {
       const resolved = ctx.fx.announceEffect?.(ctx, {
-        effectKey: effect.effectKey ?? `${ctx.source.cardId}/main/${index}`,
+        effectKey: effect.effectKey ?? `${printedCardId}/main/${index}`,
         description: describeEffect(effect),
         timing: "Main",
         ...(effect.isInherited === true ? { isInherited: true } : {}),

@@ -1,4 +1,5 @@
 import type { Action } from "@aegis/shared";
+import { isPrintedByCondition } from "./isPrintedByCondition.js";
 
 /**
  * §15-7-5: an optional `by [cost], [effect]` processing condition may pay its
@@ -14,7 +15,7 @@ export function allowsOptionalProcessingCostWithoutTarget(action: Action): boole
   const printedByCondition =
     action.optional === true &&
     [action.cost, action.additionalCost, ...(action.additionalCosts ?? []), ...(action.costOptions ?? [])].some(
-      (cost) => typeof cost !== "number" && /^\s*by\b/i.test(cost?.raw ?? ""),
+      isPrintedByCondition,
     );
   const placementSource =
     action.kind === "Delete" ? (action.cost?.kind === "place" ? action.cost.target?.from : undefined) : undefined;

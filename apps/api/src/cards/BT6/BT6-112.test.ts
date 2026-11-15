@@ -237,6 +237,78 @@ describe("BT6-112 static play-cost reduction by trash [Three Musketeers] / cost-
   });
 });
 
+describe("BT6-112 hand play-cost reduction stays off the battle area", () => {
+  it("survives its own play-cost-7 sweep while another copy waits in hand", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT6-112", as: "fieldBeelstarmon" },
+            { card: "BT1-009", as: "cheapAlly" },
+          ],
+          hand: [
+            { card: "BT6-112", as: "handBeelstarmon" },
+            { card: "BT6-105", as: "sweep" },
+          ],
+          trash: ["BT6-095", "BT6-095", "ST14-12", "ST14-12", "BT9-097", "BT9-097"],
+        },
+        1: { battleArea: [{ card: "BT1-014", as: "opponentDigimon" }] },
+      },
+      { autoSelectCards: true },
+    );
+    s.state.memory = 7;
+    await s.ready();
+    const fieldBeelstarmonId = s.perm("fieldBeelstarmon").permanentId;
+    const cheapAllyInstanceId = s.perm("cheapAlly").topCard.instanceId;
+    const opponentInstanceId = s.perm("opponentDigimon").topCard.instanceId;
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("sweep").instanceId })).toEqual({ ok: true });
+    await settle(() => s.state.players[1]!.trash.some((card) => card.instanceId === opponentInstanceId));
+    await settle();
+
+    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.permanentId)).toEqual([fieldBeelstarmonId]);
+    expect(s.state.players[0]!.trash.some((card) => card.instanceId === cheapAllyInstanceId)).toBe(true);
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    expect(s.state.players[0]!.hand.some((card) => card.instanceId === s.inst("handBeelstarmon").instanceId)).toBe(
+      true,
+    );
+    expect(s.state.memory).toBe(0);
+  });
+
+  it("survives the play-cost-7 sweep its On Play uses while another copy waits in hand", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          hand: [
+            { card: "BT6-112", as: "playedBeelstarmon" },
+            { card: "BT6-112", as: "handBeelstarmon" },
+          ],
+          trash: [{ card: "BT6-105", as: "sweep" }, "BT6-095", "ST14-12", "ST14-12", "BT9-097", "BT9-097"],
+        },
+        1: { battleArea: [{ card: "BT1-014", as: "opponentDigimon" }] },
+      },
+      { autoSelectCards: true },
+    );
+    s.state.memory = 6;
+    await s.ready();
+    const sweepId = s.inst("sweep").instanceId;
+    const playedInstanceId = s.inst("playedBeelstarmon").instanceId;
+    const opponentInstanceId = s.perm("opponentDigimon").topCard.instanceId;
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: playedInstanceId })).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.state.players[1]!.trash.some((card) => card.instanceId === opponentInstanceId) &&
+        s.state.players[0]!.trash.some((card) => card.instanceId === sweepId),
+    );
+    await settle();
+
+    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.topCard.instanceId)).toEqual([playedInstanceId]);
+    expect(s.state.players[1]!.battleArea).toHaveLength(0);
+    expect(s.state.memory).toBe(0);
+  });
+});
+
 describe("BT6-112 BeelStarmon — KB Q&A rulings", () => {
   type Setup = ReturnType<typeof setupEngine>;
   const playBeelStarmon = async (s: Setup) => {

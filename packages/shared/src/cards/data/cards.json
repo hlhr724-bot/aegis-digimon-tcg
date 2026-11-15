@@ -98357,7 +98357,7 @@
     "forms": ["Champion"],
     "attributes": ["Data"],
     "types": ["Mollusk", "LIBERATOR", "Aquatic"],
-    "effectText": "[On Play] [When Digivolving] By placing 1 Level 5 or lower Digimon card with [Aqua]/[Sea Animal] in any of its traits from your hand as 1 of your Digimon's bottom digivolution card, ＜Draw 1＞ \n[Rule] Trait: Has [Aquatic] type.",
+    "effectText": "[On Play] [When Digivolving] By placing 1 level 5 or lower Digimon card with [Aqua] or [Sea Animal] in any of its traits from your hand as this Digimon's bottom digivolution card, ＜Draw 1＞.\n[Rule] Trait: Has [Aquatic] Type.",
     "inheritedEffectText": "[End of Attack] [Once Per Turn] ＜Draw 1＞.",
     "rarity": "P",
     "maxCountInDeck": 4,
@@ -111971,6 +111971,149 @@
     "imageId": "ST25-06"
   },
   {
+    "cardId": "ST26-01",
+    "set": "ST26",
+    "nameEn": "Viximon",
+    "nameJp": "ポコモン",
+    "colors": ["Blue"],
+    "kinds": ["DigiEgg"],
+    "level": 2,
+    "playCost": -1,
+    "dp": 0,
+    "evoCosts": [],
+    "forms": ["In-Training"],
+    "attributes": ["-"],
+    "types": ["Lesser", "ALYSION"],
+    "inheritedEffectText": "[Your Turn] While your opponent has no Digimon with digivolution cards, this [Ice-Snow] trait Digimon can't be deleted in battle.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "ST26-01"
+  },
+  {
+    "cardId": "ST26-02",
+    "set": "ST26",
+    "nameEn": "Renamon",
+    "nameJp": "レナモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 1000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Data"],
+    "types": ["Beastkin", "ALYSION"],
+    "effectText": "[When Moving] [On Play] Trash the bottom digivolution card of 1 of your opponent's Digimon. Then, if your opponent has no Digimon with digivolution cards, ＜Draw 1＞. (Draw 1 card from your deck.)\n[Rule] Trait: Has [Ice-Snow] Type.",
+    "inheritedEffectText": "[When Attacking] If this Digimon has the [Ice-Snow] trait, you may change the attack target to 1 of your opponent's unsuspended Digimon with the fewest digivolution cards.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "ST26-02"
+  },
+  {
+    "cardId": "ST26-03",
+    "set": "ST26",
+    "nameEn": "Tenkomon",
+    "nameJp": "テンコモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Virus"],
+    "types": ["Mysterious Beast", "ALYSION"],
+    "effectText": "[On Play] [When Digivolving] If you have 1 or fewer Tamers, you may play 1 [Valner Dragnogh] from your hand without paying the cost.\n[Rule] Trait: Has [Ice-Snow] Type.",
+    "inheritedEffectText": "[End of Attack] [Once Per Turn] Gain 1 memory.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "ST26-03"
+  },
+  {
+    "cardId": "ST26-04",
+    "set": "ST26",
+    "nameEn": "Sekkamon",
+    "nameJp": "セッカモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Virus"],
+    "types": ["Beastkin", "ALYSION"],
+    "effectText": "＜Iceclad＞ (Other than against Security Digimon, compare the number of digivolution cards instead of DP in this Digimon's battles.)\n[On Play] [When Digivolving] Trash any 3 digivolution cards from your opponent's Digimon. Then, 1 of their Digimon or Tamers can't suspend until their turn ends.\n[Rule] Trait: Has [Ice-Snow] Type.",
+    "inheritedEffectText": "[End of Your Turn] [Once Per Turn] Trash the bottom 2 digivolution cards of 1 of your opponent's Digimon. If this effect didn't trash, this [Ice-Snow] trait Digimon may unsuspend.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "ST26-04"
+  },
+  {
+    "cardId": "ST26-05",
+    "set": "ST26",
+    "nameEn": "Yukinamon",
+    "nameJp": "ユキナモン/氷獣戯画",
+    "colors": ["Blue"],
+    "kinds": ["Digimon", "Option"],
+    "level": 6,
+    "playCost": 5,
+    "dp": 12000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 5,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Virus"],
+    "types": ["Ice-Snow", "ALYSION"],
+    "effectText": "＜Iceclad＞ ＜Piercing＞ ＜Blocker＞\n[When Digivolving] Trash any 3 digivolution cards from your opponent's Digimon. Then, if your opponent has no Digimon with digivolution cards, 1 of your [Ice-Snow] trait Digimon may attack without suspending.\n[When Attacking] You may return 1 of your opponent's Digimon with no digivolution cards to the bottom of the deck.",
+    "rarity": "SR",
+    "maxCountInDeck": 4,
+    "imageId": "ST26-05",
+    "isDualCard": true,
+    "dualEffect": "Ice Beast Caricatures",
+    "optionColorRequirements": ["Blue"],
+    "optionEffect": "[Main] Trash all cards from under 1 of your opponent's Digimon or Tamers. Then, 2 of their Digimon or Tamers can't suspend until their turn ends.\n＜Arts Digivolve＞"
+  },
+  {
+    "cardId": "ST26-06",
+    "set": "ST26",
+    "nameEn": "Valner Dragnogh",
+    "nameJp": "ヴァルナー・ドラグノフ",
+    "colors": ["Blue"],
+    "kinds": ["Tamer"],
+    "playCost": 4,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["ALYSION"],
+    "effectText": "[Start of Your Turn] If you have 2 or less memory, set it to 3.\n[All Turns] When your Digimon are played or digivolve, if any of them have the [Ice-Snow] trait, by suspending this Tamer, trash the bottom 2 digivolution cards of 1 of your opponent's Digimon. After, if your opponent has no Digimon with digivolution cards, ＜Draw 1＞. (Draw 1 card from your deck.)",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "ST26-06"
+  },
+  {
     "cardId": "BT27-005",
     "set": "BT27",
     "nameEn": "Motimon",
@@ -112124,5 +112267,83 @@
     "dualEffect": "Ultimate Seibaken",
     "optionColorRequirements": ["White"],
     "optionEffect": "Use Req. ＜[Huckmon] in text＞\n[Main] By placing 1 of your opponent's lowest DP Digimon as the bottom security card, trash their top security card.\n＜Arts Digivolve＞"
+  },
+  {
+    "cardId": "BT27-006",
+    "set": "BT27",
+    "nameEn": "Gemmon",
+    "nameJp": "ジェムモン",
+    "colors": ["Red"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Vaccine"],
+    "types": ["Mythical Beast", "ALYSION"],
+    "effectText": "[Digivolve] Lv.2 w/[Gemmon] in text: Cost 0\n[On Play] Reveal the top 3 cards of your deck. Add 1 card with the [ALYSION] trait and 1 red Tamer card among them to the hand. Return the rest to the bottom of the deck.",
+    "inheritedEffectText": "[Your Turn] This Digimon gets +2000 DP.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-006"
+  },
+  {
+    "cardId": "BT27-011",
+    "set": "BT27",
+    "nameEn": "Liskmon",
+    "nameJp": "リスクモン",
+    "colors": ["Red"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 4,
+    "dp": 4000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Vaccine"],
+    "types": ["Bird Dragon", "ALYSION"],
+    "effectText": "[Digivolve] Lv.3 w/[Gemmon] in text: Cost 2\n＜Raid＞\n[When Moving] [When Digivolving] 1 of your Digimon gets +3000 DP for the turn. Then, if you have a Digimon with 8000 DP or more, ＜Draw 1＞.",
+    "inheritedEffectText": "＜Raid＞ (When this Digimon attacks, you may change the attack target to 1 of your opponent's unsuspended Digimon with the highest DP.)",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-011"
+  },
+  {
+    "cardId": "BT27-014",
+    "set": "BT27",
+    "nameEn": "Reptilimon",
+    "nameJp": "レプティリモン",
+    "colors": ["Red"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Vaccine"],
+    "types": ["Dragon Warrior", "ALYSION"],
+    "effectText": "[Digivolve] Lv.4 w/[Gemmon] in text: Cost 3\n＜Engage＞\n[On Play] [When Digivolving] 1 of your Digimon gains ＜Piercing＞ and +3000 DP for the turn.\n[Your Turn] This Digimon with 12000 DP or more gains ＜Rush＞.",
+    "inheritedEffectText": "[Your Turn] This Digimon with [Gemmon] in its text gains ＜Engage＞. (At the end of your turn, this Digimon may attack.)",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-014"
   }
 ]
