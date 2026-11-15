@@ -1,5 +1,28 @@
 [
   {
+    "version": "1.74.0-beta",
+    "releasedAt": "2026-11-15",
+    "summaryKey": "releases.1.74.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.74.0-beta.feature.bt27Rubeusdramon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.74.0-beta.fix.valnerDraw",
+        "issue": 6882
+      },
+      {
+        "textKey": "releases.1.74.0-beta.fix.grandGalemonOptional",
+        "issue": 6884
+      },
+      {
+        "textKey": "releases.1.74.0-beta.fix.battleRowColumns"
+      }
+    ]
+  },
+  {
     "version": "1.73.0-beta",
     "releasedAt": "2026-11-14",
     "summaryKey": "releases.1.73.0-beta.summary",
