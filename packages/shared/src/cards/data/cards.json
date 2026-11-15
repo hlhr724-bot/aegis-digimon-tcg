@@ -98357,7 +98357,7 @@
     "forms": ["Champion"],
     "attributes": ["Data"],
     "types": ["Mollusk", "LIBERATOR", "Aquatic"],
-    "effectText": "[On Play] [When Digivolving] By placing 1 Level 5 or lower Digimon card with [Aqua]/[Sea Animal] in any of its traits from your hand as 1 of your Digimon's bottom digivolution card, ＜Draw 1＞ \n[Rule] Trait: Has [Aquatic] type.",
+    "effectText": "[On Play] [When Digivolving] By placing 1 level 5 or lower Digimon card with [Aqua] or [Sea Animal] in any of its traits from your hand as this Digimon's bottom digivolution card, ＜Draw 1＞.\n[Rule] Trait: Has [Aquatic] Type.",
     "inheritedEffectText": "[End of Attack] [Once Per Turn] ＜Draw 1＞.",
     "rarity": "P",
     "maxCountInDeck": 4,
