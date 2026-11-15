@@ -1,6 +1,7 @@
 import type { PoolClient } from "pg";
 import type { GameRecord, SeriesRecord } from "#api/tournaments/series/SeriesStore";
 import { recordCompetitiveFacts } from "#api/ranked/recordCompetitiveFacts";
+import { TOURNAMENT_GAME_FACT_PREFIX } from "#api/ranked/archetypes/TOURNAMENT_GAME_FACT_PREFIX";
 
 type Params = { db: PoolClient; game: GameRecord; series: SeriesRecord; result: string; finishedAt: number };
 
@@ -25,7 +26,7 @@ export async function recordTournamentGameFacts({ db, game, series, result, fini
   }
   await recordCompetitiveFacts({
     db,
-    matchId: `tournament-game:${game.id}`,
+    matchId: `${TOURNAMENT_GAME_FACT_PREFIX}${game.id}`,
     roomId: game.roomId ?? game.id,
     origin: "tournament",
     format: tournament.format,

@@ -49,11 +49,28 @@ Roles reflect the latest finalized season, including removal when the account di
 
 ## Matchups
 
-Match facts use frozen deck contents, origin, format, region, time and classifier version. Tournament facts are captured per played human game without altering tournament counters or Elo. Bots and voided games are excluded. Archetype classification is deferred; new match facts use unidentified archetypes and classifier version 0. Private decklists and identities are not returned by aggregate endpoints.
+Match facts use frozen deck contents, origin, format, region, time and classifier version. Tournament facts are captured per played human game without altering tournament counters or Elo. Bots and voided games are excluded. New match facts start unidentified with classifier version 0. Private decklists and identities are not returned by aggregate endpoints.
 
 Aggregates require at least 30 distinct games and ten distinct participants before showing a win rate. Mirror matches count once toward the sample threshold; outcome percentages use player perspectives. Unidentified archetypes have no published win rate. Ranked and tournament origins are separately selectable.
 
-External data integrations are deferred. Matchup statistics use only Aegis ranked and tournament results.
+### Archetype classification
+
+The ranked maintenance sweep names the archetype of each match fact whose classifier version is below the current one, 100 facts per sweep. It reads the frozen main deck of both players: `match_deck_snapshots` for ranked games and the `tournament_games` seat snapshots for tournament games. Existing facts are classified by the same sweep after a deploy.
+
+A deck takes the archetype name of the DigiLab decklist in `deck_provider_snapshots` that shares the most main-deck cards with it, counting each copy once. Equally close lists resolve to the first archetype name in code-unit order. Reference lists are cached for one hour.
+
+A deck that shares fewer than 25 cards with every DigiLab list falls back in this order:
+
+1. The bundled famous deck that shares the most cards, with the same 25-card minimum.
+2. The name of its key Digimon: the level 6 or higher Digimon with the most copies, then the higher level, then the lower card ID. A deck without such a Digimon uses its most played Digimon.
+
+Key Digimon names are a heuristic, so one deck family can split across several names. A fact stays unidentified only when its deck was not kept or holds no known Digimon.
+
+The first time maintenance names an archetype, it saves that archetype's cover card and up to two card colours in `competitive_archetypes`. DigiLab archetypes use the provider's display card and colours, famous decks use their listed colours and key Digimon, and key Digimon names use that card. The meta endpoint returns them as `coverCardId` and `colors` so the client can show card art and deck colours.
+
+Facts stay at classifier version 0 while no reference list exists, so a server without a provider collection classifies them once a collection is published. Classified facts keep their archetype when later collections change. Raise `ARCHETYPE_CLASSIFIER_VERSION` to reclassify every fact after a rule change.
+
+Matchup statistics use only Aegis ranked and tournament results. DigiLab lists supply archetype names only.
 
 ### Equipped frames in matches
 
