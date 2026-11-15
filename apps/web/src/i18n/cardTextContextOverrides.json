@@ -26,7 +26,7 @@
   "P-187": {
     "cardId": "P-187",
     "field": "effectText",
-    "source": "[When Digivolving] ＜Recovery +1 (Deck)＞. Then, if DNA digivolving, by placing 1 other Digimon or Tamer as the top or bottom security card, trash your opponent's top security card.\n[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
+    "source": "[DNA Digivolve] Purple Lv.5 + Yellow Lv.5: Cost 0\n[When Digivolving] ＜Recovery +1 (Deck)＞. Then, if DNA digivolving, by placing 1 other Digimon or Tamer as the top or bottom security card, trash your opponent's top security card.\n[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
     "fragment": "You may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
     "context": "[When Digivolving] [When Attacking] [Once Per Turn] By trashing your top security card, you may play 1 purple or yellow Digimon card with 6000 DP or less from your hand or trash without paying the cost.",
     "timings": ["WhenDigivolving", "WhenAttacking"]

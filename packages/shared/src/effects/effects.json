@@ -251090,5 +251090,214 @@
     ],
     "coverage": "full",
     "residual": []
+  },
+  "BT27-006": {
+    "effects": [
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "RevealAdd",
+            "revealCount": 3,
+            "add": [
+              {
+                "effectTextPart": "Add 1 card with the [ALYSION] trait",
+                "filter": { "controllerDefault": "mine", "nameOrTrait": [{ "tokens": ["ALYSION"], "match": "trait" }] },
+                "count": 1,
+                "to": "hand"
+              },
+              {
+                "effectTextPart": "1 red Tamer card among them to the hand.",
+                "filter": { "controllerDefault": "mine", "kind": ["Tamer"], "colors": ["Red"] },
+                "count": 1,
+                "to": "hand"
+              }
+            ],
+            "rest": "deckBottom"
+          }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "isInherited": true,
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "amount": 2000,
+            "duration": "permanent"
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 2, "texts": ["Gemmon"], "cost": 0, "isAlternate": true }]
+  },
+  "BT27-011": {
+    "effects": [
+      { "trigger": "Static", "actions": [], "keywords": [{ "keyword": "Raid", "raw": "＜Raid＞" }] },
+      {
+        "trigger": "WhenMoving",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "1 of your Digimon gets +3000 DP for the turn.",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+            "amount": 3000,
+            "duration": "forTheTurn"
+          },
+          {
+            "kind": "Draw",
+            "effectTextPart": "Then, if you have a Digimon with 8000 DP or more, ＜Draw 1＞.",
+            "controller": "mine",
+            "amount": 1,
+            "condition": {
+              "kind": "youHave",
+              "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "dp": { "op": "gte", "value": 8000 } },
+              "raw": "you have a Digimon with 8000 DP or more"
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "ModifyDP",
+            "effectTextPart": "1 of your Digimon gets +3000 DP for the turn.",
+            "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
+            "amount": 3000,
+            "duration": "forTheTurn"
+          },
+          {
+            "kind": "Draw",
+            "effectTextPart": "Then, if you have a Digimon with 8000 DP or more, ＜Draw 1＞.",
+            "controller": "mine",
+            "amount": 1,
+            "condition": {
+              "kind": "youHave",
+              "filter": { "controllerDefault": "mine", "kind": ["Digimon"], "dp": { "op": "gte", "value": 8000 } },
+              "raw": "you have a Digimon with 8000 DP or more"
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "Static",
+        "isInherited": true,
+        "actions": [],
+        "keywords": [{ "keyword": "Raid", "raw": "＜Raid＞" }]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 3, "texts": ["Gemmon"], "cost": 2, "isAlternate": true }]
+  },
+  "BT27-014": {
+    "effects": [
+      { "trigger": "Static", "actions": [], "keywords": [{ "keyword": "Engage", "raw": "＜Engage＞" }] },
+      {
+        "trigger": "OnPlay",
+        "actions": [
+          {
+            "kind": "SelectBind",
+            "effectTextPart": "1 of your Digimon gains ＜Piercing＞ and +3000 DP for the turn.",
+            "target": {
+              "filter": { "controller": "mine", "kind": ["Digimon"] },
+              "count": 1,
+              "bindAs": "reptilimonBoostTarget"
+            }
+          },
+          {
+            "kind": "GainKeyword",
+            "keyword": { "keyword": "Piercing", "raw": "＜Piercing＞" },
+            "target": { "filter": {}, "count": 1, "fromSelectionRef": "reptilimonBoostTarget" },
+            "duration": "forTheTurn"
+          },
+          {
+            "kind": "ModifyDP",
+            "amount": 3000,
+            "duration": "forTheTurn",
+            "target": { "filter": {}, "count": 1, "fromSelectionRef": "reptilimonBoostTarget" }
+          }
+        ]
+      },
+      {
+        "trigger": "WhenDigivolving",
+        "actions": [
+          {
+            "kind": "SelectBind",
+            "effectTextPart": "1 of your Digimon gains ＜Piercing＞ and +3000 DP for the turn.",
+            "target": {
+              "filter": { "controller": "mine", "kind": ["Digimon"] },
+              "count": 1,
+              "bindAs": "reptilimonBoostTarget"
+            }
+          },
+          {
+            "kind": "GainKeyword",
+            "keyword": { "keyword": "Piercing", "raw": "＜Piercing＞" },
+            "target": { "filter": {}, "count": 1, "fromSelectionRef": "reptilimonBoostTarget" },
+            "duration": "forTheTurn"
+          },
+          {
+            "kind": "ModifyDP",
+            "amount": 3000,
+            "duration": "forTheTurn",
+            "target": { "filter": {}, "count": 1, "fromSelectionRef": "reptilimonBoostTarget" }
+          }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "actions": [
+          {
+            "kind": "GainKeyword",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "keyword": { "keyword": "Rush", "raw": "＜Rush＞" },
+            "duration": "permanent",
+            "condition": { "kind": "selfDpAtLeast", "value": 12000, "raw": "this Digimon has 12000 DP or more" }
+          }
+        ]
+      },
+      {
+        "trigger": "YourTurn",
+        "isInherited": true,
+        "actions": [
+          {
+            "kind": "GainKeyword",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "keyword": { "keyword": "Engage", "raw": "＜Engage＞" },
+            "duration": "permanent",
+            "condition": {
+              "kind": "selfTopHasText",
+              "filter": { "nameOrTrait": [{ "tokens": ["Gemmon"], "match": "text" }] },
+              "raw": "this Digimon has [Gemmon] in its text"
+            }
+          }
+        ]
+      },
+      {
+        "trigger": "EndOfYourTurn",
+        "isInherited": true,
+        "condition": {
+          "kind": "selfTopHasText",
+          "filter": { "nameOrTrait": [{ "tokens": ["Gemmon"], "match": "text" }] },
+          "raw": "this Digimon has [Gemmon] in its text"
+        },
+        "description": "＜Engage＞: at the end of this turn, this Digimon may attack.",
+        "actions": [
+          {
+            "kind": "Attack",
+            "target": { "filter": { "isSelfRef": true }, "count": 1, "isSelf": true },
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "coverage": "full",
+    "residual": [],
+    "digivolutionRequirement": [{ "level": 4, "texts": ["Gemmon"], "cost": 3, "isAlternate": true }]
   }
 }

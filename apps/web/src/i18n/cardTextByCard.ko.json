@@ -11479,7 +11479,7 @@
     "[Digivolve]Lv.3w/[NSo]trait:Cost2[OnPlay][OnDeletion]Suspend1ofyouropponent'sDigimon.": "〔진화〕특징 「NSo」를 가진 Lv.3 : 코스트 2【등장 시】【소멸 시】상대의 디지몬 1마리를 레스트시킨다."
   },
   "P-164": {
-    "[OnPlay][WhenDigivolving]Byplacing1Level5orlowerDigimoncardwith[Aqua]/[SeaAnimal]inanyofitstraitsfromyourhandas1ofyourDigimon'sbottomdigivolutioncard,<Draw1>[Rule]Trait:Has[Aquatic]type.": "【등장 시】【진화 시】자신의 패에서 특징으로 「수생」을 포함하는 Lv.5 이하의 디지몬 카드 1장을 이 디지몬의 진화원 아래에 놓는 것으로, 《1 드로우》. 〈룰〉특징: 유형 「수생형」을 가진다.",
+    "[OnPlay][WhenDigivolving]Byplacing1level5orlowerDigimoncardwith[Aqua]or[SeaAnimal]inanyofitstraitsfromyourhandasthisDigimon'sbottomdigivolutioncard,<Draw1>.[Rule]Trait:Has[Aquatic]Type.": "【등장 시】【진화 시】자신의 패에서 특징으로 「수생」을 포함하는 Lv.5 이하의 디지몬 카드 1장을 이 디지몬의 진화원 아래에 놓는 것으로, 《1 드로우》. 〈룰〉특징: 유형 「수생형」을 가진다.",
     "[EndofAttack][OncePerTurn]<Draw1>.": "【어택 종료 시】[턴 1회]《1 드로우》"
   },
   "P-165": {
