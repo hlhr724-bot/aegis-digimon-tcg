@@ -9,9 +9,7 @@ function isTamerPermanent(permanent: ObservedPermanent): boolean {
 }
 
 function isDigimonPermanent(permanent: ObservedPermanent): boolean {
-  if (permanent.top?.kinds?.length) {
-    return permanent.top.kinds.includes("Digimon");
-  }
+  if (permanent.top?.kinds?.includes("Digimon")) return true;
   return (permanent.top?.level ?? 0) > 0 || permanent.dp > 0;
 }
 
@@ -86,14 +84,14 @@ function evaluatePlayer(
   let readyBoardAttackers = 0;
 
   for (const permanent of player.board) {
-    if (isTamerPermanent(permanent)) {
+    const isTamer = isTamerPermanent(permanent);
+    if (isTamer) {
       tamerCount += 1;
       const tamerWeight = tamerCount <= 2 ? 0.427793 : 0.092359;
       value += tamerWeight + Math.min(0.08, (permanent.top?.playCost ?? 0) * 0.015);
-      continue;
     }
     if (!isDigimonPermanent(permanent)) {
-      value += 0.1;
+      if (!isTamer) value += 0.1;
       continue;
     }
 

@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { setupEngine } from "#api/engine/testkit/harness";
+import { advance } from "#api/engine/testkit/advance";
 import { trainingObservation } from "#api/bot/training/observation";
 import { evaluateSearchPosition } from "#api/bot/evolution/evaluateSearchPosition";
 import { BOT_PROFILES, DEFAULT_BOT_PROFILE } from "#api/bot/profiles";
+import "#api/cards/index";
+
+const logit = (probability: number): number => Math.log(probability / (1 - probability));
 
 describe("bounded public-position evaluation", () => {
   it("reverses advantage between seats and values extra security", async () => {
@@ -113,6 +117,48 @@ describe("bounded public-position evaluation", () => {
     nonLethalSa0.players[0]!.board[0]!.securityAttack = 0;
     expect(evaluateSearchPosition(nonLethalSa0)).toBeLessThan(evaluateSearchPosition(nonLethalSa1));
   });
+
+  it("credits a Tamer treated as a Digimon as the ready attacker behind a zero-security lethal threat", async () => {
+    const setup = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT12-092", as: "marcus" },
+            { card: "BT12-034", as: "agumon" },
+          ],
+          deck: ["BT1-009", "BT1-010", "BT1-011"],
+          security: ["BT1-009"],
+        },
+        1: { deck: ["BT1-009", "BT1-010", "BT1-011"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await setup.ready();
+    setup.state.memory = 3;
+    const loop = setup.engine.startTurnLoop();
+    await advance(setup.engine).waitForMainPhase(0);
+    expect(setup.perm("marcus").currentDP).toBe(3000);
+
+    const marcusId = setup.perm("marcus").permanentId;
+    const agumonId = setup.perm("agumon").permanentId;
+    const observation = trainingObservation(setup.state, 0);
+    const observedMarcus = observation.players[0]!.board.find((unit) => unit.permanentId === marcusId)!;
+    expect(observedMarcus.top.kinds).toEqual(["Tamer"]);
+    expect(observedMarcus.dp).toBe(3000);
+    expect(observedMarcus.canAttackPlayer).toBe(true);
+    observation.players[0]!.board.find((unit) => unit.permanentId === agumonId)!.canAttackPlayer = false;
+
+    const idle = structuredClone(observation);
+    idle.players[0]!.board.find((unit) => unit.permanentId === marcusId)!.canAttackPlayer = false;
+    expect(logit(evaluateSearchPosition(observation)) - logit(evaluateSearchPosition(idle))).toBeGreaterThan(1.5);
+
+    const covered = structuredClone(observation);
+    covered.players[1]!.securityCount = 1;
+    expect(logit(evaluateSearchPosition(observation)) - logit(evaluateSearchPosition(covered))).toBeGreaterThan(3);
+
+    setup.engine.applyIntent(0, { type: "surrender" });
+    await loop;
+  }, 60_000);
 
   it("accounts for cannotBlock, cannotAttack, and suspended statuses", async () => {
     const setup = setupEngine({
