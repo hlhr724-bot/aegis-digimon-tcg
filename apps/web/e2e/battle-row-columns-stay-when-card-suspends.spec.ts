@@ -18,6 +18,19 @@ async function columnPositions(scenario: ScenarioPage) {
   }, NEIGHBOUR_ID);
 }
 
+async function laneColumns(scenario: ScenarioPage) {
+  return scenario.page.evaluate(() =>
+    [...document.querySelectorAll(".game-battle-row--you .game-battle-lane")].map((lane) =>
+      [...lane.children]
+        .filter((child) => !child.matches(".game-battle-row__turn-clearance"))
+        .map((child) => {
+          const rect = child.getBoundingClientRect();
+          return [Math.round(rect.left), Math.round(rect.width)];
+        }),
+    ),
+  );
+}
+
 for (const colorScheme of ["light", "dark"] as const) {
   test(`battle row columns stay in place when a card suspends on a wide ${colorScheme} board`, async ({ scenario }) => {
     const { page } = scenario;
@@ -27,6 +40,8 @@ for (const colorScheme of ["light", "dark"] as const) {
     await scenario.resolveUntil((s) => s.phase === "Main" && s.turnSeat === 0 && !s.pendingDecision);
     const upright = await columnPositions(scenario);
     expect(upright.emptySlots.length).toBeGreaterThan(0);
+    const [digimonLane, supportLane] = await laneColumns(scenario);
+    expect(supportLane).toEqual(digimonLane);
 
     await scenario.attack(ATTACKER_ID);
     await scenario.resolveUntil(
