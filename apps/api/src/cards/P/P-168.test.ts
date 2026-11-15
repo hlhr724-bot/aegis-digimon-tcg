@@ -55,10 +55,7 @@ describe("P-168 Yao Qinglan", () => {
     const s = setupEngine(
       {
         0: {
-          battleArea: [
-            { card: "P-168", as: "yao" },
-            { card: "BT1-033", as: "host" },
-          ],
+          battleArea: [{ card: "P-168", as: "yao" }],
           hand: [
             { card: "P-164", as: "shellmon" },
             { card: "BT1-033", as: "placed" },
@@ -70,14 +67,18 @@ describe("P-168 Yao Qinglan", () => {
       },
       { autoAcceptOptional: true, autoSelectCards: true, preferInstanceIds: preferred },
     );
-    preferred.push(s.inst("placed").instanceId, s.perm("host").topCard!.instanceId, s.inst("whamon").instanceId);
+    preferred.push(s.inst("placed").instanceId, s.inst("shellmon").instanceId, s.inst("whamon").instanceId);
     await s.ready();
     s.state.memory = 10;
+    const shellmonHost = () =>
+      s.state.players[0]!.battleArea.find((permanent) =>
+        permanent.stack.some((card) => card.instanceId === s.inst("shellmon").instanceId),
+      );
     expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("shellmon").instanceId })).toEqual({
       ok: true,
     });
-    await settle(() => s.perm("host").topCard.cardId === "BT7-027");
-    expect(s.perm("host").stack.some((card) => card.instanceId === s.inst("placed").instanceId)).toBe(true);
+    await settle(() => shellmonHost()?.topCard?.cardId === "BT7-027");
+    expect(shellmonHost()!.stack.some((card) => card.instanceId === s.inst("placed").instanceId)).toBe(true);
     expect(s.perm("yao").isSuspended).toBe(true);
     expect(s.state.memory).toBe(4);
   });
