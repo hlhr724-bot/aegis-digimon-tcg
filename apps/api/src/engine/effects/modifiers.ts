@@ -1059,6 +1059,9 @@ export class ModifierLedger {
     let matched = false;
     const intrinsicKeys = new Set<object>();
     for (const a of this.playCostAdjustments) {
+      if (a.intrinsicCardId !== undefined && facts.permanentId !== undefined) {
+        continue;
+      }
       if (!a.match(facts)) continue;
       if (a.intrinsicCardId === facts.def.cardId && a.intrinsicEffectKey !== undefined) {
         if (intrinsicKeys.has(a.intrinsicEffectKey)) continue;
