@@ -695,7 +695,11 @@ export class AegisRoom extends Room<{
       account &&
       [...this.accountByClient.values()].includes(account.id)
     ) {
-      return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ALREADY_IN_MATCH.value });
+      return refuseJoin({
+        roomId: this.roomId,
+        reason: ConnectionErrorCode.ALREADY_IN_MATCH.value,
+        accountId: account.id,
+      });
     }
     // The host of a private room is always allowed; anybody after them needs the code.
     if (this.isPrivate && this.clients.length > 0 && options.roomCode !== this.state.roomCode) {
@@ -736,7 +740,7 @@ export class AegisRoom extends Room<{
         }),
       });
       if (claimRefusal) {
-        return refuseJoin({ roomId: this.roomId, reason: claimRefusal });
+        return refuseJoin({ roomId: this.roomId, reason: claimRefusal, accountId: account.id });
       }
     }
     if (account) {
@@ -763,7 +767,7 @@ export class AegisRoom extends Room<{
         claim: await claimAccountRoom({ accounts: this.accounts(), accountId: entry.accountId, roomId: this.roomId }),
       });
       if (claimRefusal) {
-        return refuseJoin({ roomId: this.roomId, reason: claimRefusal });
+        return refuseJoin({ roomId: this.roomId, reason: claimRefusal, accountId: entry.accountId });
       }
     }
     options.displayName = entry.displayName;
