@@ -201855,8 +201855,10 @@
                 "count": 1,
                 "from": ["hand"]
               },
-              "raw": "By placing 1 Level 5 or lower Digimon card with [Aqua]/[Sea Animal] in any of its traits from your hand as 1 of your Digimon's bottom digivolution card",
-              "host": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 }
+              "raw": "By placing 1 level 5 or lower Digimon card with [Aqua] or [Sea Animal] in any of its traits from your hand as this Digimon's bottom digivolution card",
+              "destination": "digivolutionStack",
+              "position": "bottom",
+              "host": "self"
             },
             "optional": true,
             "abortOnDecline": true
@@ -201882,8 +201884,10 @@
                 "count": 1,
                 "from": ["hand"]
               },
-              "raw": "By placing 1 Level 5 or lower Digimon card with [Aqua]/[Sea Animal] in any of its traits from your hand as 1 of your Digimon's bottom digivolution card",
-              "host": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 }
+              "raw": "By placing 1 level 5 or lower Digimon card with [Aqua] or [Sea Animal] in any of its traits from your hand as this Digimon's bottom digivolution card",
+              "destination": "digivolutionStack",
+              "position": "bottom",
+              "host": "self"
             },
             "optional": true,
             "abortOnDecline": true
