@@ -4,4 +4,6 @@ export type RankedDeckStats = {
   wins: number;
   players: number;
   winrate: number | null;
+  coverCardId: string | null;
+  colors: string[];
 };
