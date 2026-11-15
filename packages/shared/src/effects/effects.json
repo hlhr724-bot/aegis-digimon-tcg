@@ -18622,7 +18622,8 @@
                   { "tokens": ["Demon Lord"], "match": "trait" }
                 ]
               },
-              "count": 1
+              "count": 1,
+              "upTo": true
             },
             "to": "hand",
             "cost": {
@@ -18652,7 +18653,8 @@
                   { "tokens": ["Demon Lord"], "match": "trait" }
                 ]
               },
-              "count": 1
+              "count": 1,
+              "upTo": true
             },
             "to": "hand",
             "cost": {
@@ -69794,7 +69796,8 @@
                 "controller": "mine",
                 "nameOrTrait": [{ "tokens": ["SoC", "SEEKERS"], "match": "trait" }]
               },
-              "count": 1
+              "count": 1,
+              "upTo": true
             },
             "to": "hand",
             "cost": {
@@ -69818,7 +69821,8 @@
                 "controller": "mine",
                 "nameOrTrait": [{ "tokens": ["SoC", "SEEKERS"], "match": "trait" }]
               },
-              "count": 1
+              "count": 1,
+              "upTo": true
             },
             "to": "hand",
             "cost": {
@@ -75527,7 +75531,8 @@
                 "zone": "trash",
                 "nameOrTrait": [{ "tokens": ["Vemmon"], "match": "text" }]
               },
-              "count": 1
+              "count": 1,
+              "upTo": true
             },
             "to": "hand",
             "cost": {
@@ -87396,7 +87401,8 @@
                 "kind": ["Digimon", "Tamer", "Option"],
                 "nameOrTrait": [{ "tokens": ["CS"], "match": "trait" }]
               },
-              "count": 1
+              "count": 1,
+              "upTo": true
             },
             "to": "hand",
             "cost": {
@@ -102339,7 +102345,8 @@
                 "colors": ["Red", "Blue"],
                 "nameOrTrait": [{ "tokens": ["Iliad"], "match": "trait" }]
               },
-              "count": 1
+              "count": 1,
+              "upTo": true
             },
             "to": "hand",
             "cost": {
@@ -102366,7 +102373,8 @@
                 "colors": ["Red", "Blue"],
                 "nameOrTrait": [{ "tokens": ["Iliad"], "match": "trait" }]
               },
-              "count": 1
+              "count": 1,
+              "upTo": true
             },
             "to": "hand",
             "cost": {
@@ -170538,7 +170546,8 @@
                 "kind": ["Digimon"],
                 "nameOrTrait": [{ "tokens": ["Dark Animal", "Shaman"], "match": "trait" }]
               },
-              "count": 1
+              "count": 1,
+              "upTo": true
             },
             "to": "hand",
             "cost": {
@@ -187010,7 +187019,8 @@
                 "kind": ["Digimon"],
                 "nameOrTrait": [{ "tokens": ["Puppet"], "match": "trait" }]
               },
-              "count": 1
+              "count": 1,
+              "upTo": true
             },
             "to": "hand",
             "cost": {
@@ -220184,7 +220194,8 @@
                 "kind": ["Digimon"],
                 "nameOrTrait": [{ "tokens": ["DATA SQUAD"], "match": "trait" }]
               },
-              "count": 1
+              "count": 1,
+              "upTo": true
             },
             "to": "hand",
             "cost": {
