@@ -12,7 +12,7 @@ Colyseus, and PostgreSQL; application modules use ESM.
 
 - Do not add comments under any circumstances: no inline, block, JSDoc, JSX, lint
   suppression, or commented-out code. Express intent through names, types, and small
-  functions; put explanations in the relevant Markdown documentation.
+  functions; put explanations in the PR description or your report.
 - Each exported helper lives in its own file, named after the helper. Only a helper
   private to a module may stay in that module. Do not export an internal helper just
   to test it; exercise its observable caller instead.

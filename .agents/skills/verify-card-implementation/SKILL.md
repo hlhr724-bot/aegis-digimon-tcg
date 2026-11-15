@@ -46,8 +46,9 @@ Map each clause to executable behavior. Check:
 
 Follow every shared primitive used by the module far enough to verify its real
 semantics. When the engine cannot express the card faithfully, improve the
-smallest reusable engine seam before implementing the card, and document that
-seam in `docs/audits/engine/<seam>.md` (kebab-case).
+smallest reusable engine seam before implementing the card, and describe that
+seam in the PR description. Do not add or edit Markdown files for it unless
+requested.
 
 Registration rules from [cards and rules](../../../internal-docs/ai/cards-and-rules.md):
 

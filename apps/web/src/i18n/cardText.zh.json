@@ -5586,5 +5586,7 @@
   "[Digivolve]Lv.4w/[Gemmon]intext:Cost3<Engage>[OnPlay][WhenDigivolving]1ofyourDigimongains<Piercing>and+3000DPfortheturn.[YourTurn]ThisDigimonwith12000DPormoregains<Rush>.": "【进化】记述有“宝石兽”的Lv.4：费用3\n《急袭》\n【登场时】【进化时】本回合中，我方的1只数码宝贝获得《贯通》效果，且DP+3000。\n【我方的回合】DP为12000或更多的此数码宝贝获得《速攻》效果。",
   "<Overclock([Puppet]Trait)>": "≪超频《特征“玩偶型”》≫",
   "<Overclock([Chuumon]/[Sukamon]inname)>": "≪超频《名称中包含“吱吱兽”/“大便兽”》≫",
-  "<Overclock([Chessmon]inname)>": "《超频（名称中包含“棋兽”）》"
+  "<Overclock([Chessmon]inname)>": "《超频（名称中包含“棋兽”）》",
+  "[Digivolve]Lv.5w/[Gemmon]intext:Cost3<Rush><Progress>[WhenDigivolving][WhenAttacking][OncePerTurn]Forevery8000DPthisDigimonhas,youmayactivatetheeffectbelow:・Delete1ofyouropponent'slowestDPDigimon.[AllTurns][OncePerTurn]Whenanyofyouropponent'sDigimonaredeleted,trashtheirtopsecuritycard.[Assembly-5]Lv.5×Lv.4×Lv.3,allRedw/[Gemmon]intext": "【进化】记述有“宝石兽”的Lv.5：费用3\n《速攻》《进程》\n【进化时】【攻击时】［每回合1次］此数码宝贝的DP每有8000，可以发动以下的效果。\n·消灭对方1只DP最低的数码宝贝。\n【双方的回合】［每回合1次］当对方的数码宝贝被消灭时，丢弃对方安防区最上方的1张卡牌。\n【组装-5】均为红色且记述有“宝石兽”的Lv.5×Lv.4×Lv.3",
+  "[StartofYourMainPhase]IfyouhaveaDigimonwith[Gemmon]initstext,gain1memory.[YourTurn]WhenyourDigimonareplayedordigivolve,ifanyofthemhavethe[ALYSION]trait,bysuspendingthisTamer,1ofyourDigimongets+3000DPfortheturn.After,ifyouhaveaDigimonwith8000DPormore,<Draw1>.": "【我方的主要阶段开始时】若我方场上存在记述有“宝石兽”的数码宝贝，则内存值+1。\n【我方的回合】当我方的数码宝贝登场/进化时，若该数码宝贝拥有“ALYSION”特征，则可将此驯兽师转换为休息状态，并在本回合中，使我方的1只数码宝贝的DP+3000。此后，若我方场上存在DP为8000或更多的数码宝贝，则《抽1张卡》。"
 }

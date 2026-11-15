@@ -32,5 +32,5 @@ storage boundaries so readers do not confuse them with database tables.
 
 Verify paths and commands against the repository. Update implementation and
 guidance together when they diverge. Do not add credentials, tokens, personal data,
-private infrastructure locations, or deployment-specific values. Do not create
-task-specific planning documents unless requested.
+private infrastructure locations, or deployment-specific values. Do not create or
+edit Markdown files unless requested, including task-specific planning documents.
