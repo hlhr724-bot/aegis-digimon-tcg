@@ -95,15 +95,23 @@ describe("fitLanes", () => {
   it("shrinks a crowded lane to fit the row before it scrolls, down to a floor", () => {
     const upright = { suspended: false, sources: 0, links: 0, copies: 1 };
     const suspended = { ...upright, suspended: true };
-    const crowded = { digimon: [...Array(7).fill(upright), ...Array(4).fill(suspended)], support: [upright] };
+    const crowded = { digimon: [...Array(5).fill(upright), ...Array(4).fill(suspended)], support: [upright] };
     const lanes = { placement: LanePlacement.Stacked, digimon: 87, support: 87 };
-    const content = { digimonCount: 11, supportCount: 1, supportScale: 1, sourceStep: 2, fitWidth: true };
+    const content = { digimonCount: 9, supportCount: 1, supportScale: 1, sourceStep: 2, fitWidth: true };
     const fitted = fitLanesToWidth(lanes, 1260, crowded, content);
     expect(fitted.digimon).toBeLessThan(87);
     expect(fitted.digimon).toBe(fitted.support);
     expect(laneContentWidth(crowded.digimon, fitted.digimon, 0.25, 2)).toBeLessThanOrEqual(1260);
     expect(fitLanesToWidth(lanes, 400, crowded, content).digimon).toBe(66);
     expect(fitLanesToWidth(lanes, 1260, crowded, { ...content, fitWidth: false })).toBe(lanes);
+  });
+  it("gives an upright card the same lane width as a turned card on a wide row", () => {
+    const upright = { suspended: false, sources: 0, links: 0, copies: 1 };
+    const turned = { ...upright, suspended: true };
+    expect(laneContentWidth([upright, upright], 100, 0.25, 4)).toBe(laneContentWidth([turned, upright], 100, 0.25, 4));
+    expect(laneContentWidth([upright, upright], 56, 0.25, 4, true)).toBeLessThan(
+      laneContentWidth([turned, upright], 56, 0.25, 4, true),
+    );
   });
   it("sizes a sideline row the same before and after its first Tamer", () => {
     const sideline = { supportScale: 1, reserveSupport: true, overlapLanes: true };

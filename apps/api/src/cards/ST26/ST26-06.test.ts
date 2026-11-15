@@ -96,6 +96,34 @@ describe("ST26-06 Valner Dragnogh", () => {
     expect(handSize(s)).toBe(0);
   });
 
+  it("draws after suspending when the opponent's only Digimon has no digivolution cards", async () => {
+    const s = await playFromHand(vanillaIceSnowLevel4, [], { autoAcceptOptional: true });
+    expect(s.perm("valner").isSuspended).toBe(true);
+    expect(handSize(s)).toBe(1);
+    assertNoLoudGap(s);
+  });
+
+  it("draws after suspending when the opponent has no Digimon", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: cardId, as: "valner" }],
+          hand: [{ card: vanillaIceSnowLevel4, as: "entering" }],
+          deck: [vanillaBlueLevel3, vanillaBlueLevel3],
+        },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 10;
+    await s.ready();
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("entering").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.players[0]!.battleArea.length === 2 && s.state.pendingDecision === undefined);
+    expect(s.perm("valner").isSuspended).toBe(true);
+    expect(handSize(s)).toBe(1);
+  });
+
   it("does nothing when the player declines to suspend", async () => {
     const s = await playFromHand(vanillaIceSnowLevel4, [source, source], { autoDeclineOptional: true });
     expect(s.perm("valner").isSuspended).toBe(false);

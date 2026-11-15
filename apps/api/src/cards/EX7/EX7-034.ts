@@ -25,6 +25,7 @@ export const compiled: CompiledCard = {
             },
             count: 1,
           },
+          optional: true,
         },
         {
           kind: "Restrict",
@@ -66,6 +67,7 @@ export const compiled: CompiledCard = {
             },
             raw: "when this Digimon attacks your opponent's Digimon",
           },
+          optional: true,
         },
       ],
       isInherited: true,

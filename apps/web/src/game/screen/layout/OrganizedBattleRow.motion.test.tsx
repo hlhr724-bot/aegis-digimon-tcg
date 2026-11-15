@@ -13,7 +13,7 @@ afterEach(() => {
 });
 
 it("replaces a departing card with its guide before measuring the remaining cards' motion", () => {
-  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(900);
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1100);
   vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(245);
   vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
     const siblings = [...(this.parentElement?.children ?? [])];

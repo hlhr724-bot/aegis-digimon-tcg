@@ -12299,7 +12299,7 @@
     "<Piercing>.": "≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンを消滅させたとき、アタック終了前にチェックする）"
   },
   "EX7-034": {
-    "<Vortex>(Attheendofyourturn,thisDigimonmayattackanopponent'sDigimon.Withthiseffect,itcanattacktheturnitwasplayed)[WhenDigivolving]Suspend1Digimon.IfthiseffectsuspendsyourDigimon,thisDigimonisn'taffectedbyyouropponent'sDigimon'seffectsuntiltheendoftheirturn.": "≪ヴォルテクス≫（自分のターン終了時、このデジモンで相手のデジモンにアタックできる。この効果では、登場したターンでもアタックできる）\n【進化時】デジモン1体をレストできる。この効果で自分のデジモンがレストしたなら、相手のターン終了まで、このデジモンは相手のデジモンの効果を受けない。",
+    "<Vortex>(Attheendofyourturn,thisDigimonmayattackanopponent'sDigimon.Withthiseffect,itcanattacktheturnitwasplayed)[WhenDigivolving]Youmaysuspend1Digimon.IfthiseffectsuspendsyourDigimon,thisDigimonisn'taffectedbyyouropponent'sDigimon'seffectsuntiltheendoftheirturn.": "≪ヴォルテクス≫（自分のターン終了時、このデジモンで相手のデジモンにアタックできる。この効果では、登場したターンでもアタックできる）\n【進化時】デジモン1体をレストできる。この効果で自分のデジモンがレストしたなら、相手のターン終了まで、このデジモンは相手のデジモンの効果を受けない。",
     "[YourTurn][OncePerTurn]WhenthisDigimonattacksyouropponent'sDigimon,youmayunsuspendthisDigimon.": "【自分のターン】[ターンに1回]このデジモンが相手のデジモンにアタックしたとき、このデジモンをアクティブにできる。"
   },
   "EX7-035": {

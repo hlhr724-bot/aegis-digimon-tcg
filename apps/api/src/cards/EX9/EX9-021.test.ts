@@ -1,3 +1,4 @@
+import { EffectTiming } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle, type SetupEngineOptions } from "../../engine/testkit/harness.js";
@@ -66,7 +67,55 @@ describe("EX9-021", () => {
     const alterS = s.state.players[0]!.battleArea[0]!;
     expect(alterS.topCard.cardId).toBe("EX9-021");
     expect(observe(s.engine).hasRestriction(alterS, "beAffected", "Digimon")).toBe(true);
+    expect(observe(s.engine).isRestrictedByEffect(alterS, "beAffected", "Option")).toBe(true);
+    expect(observe(s.engine).isRestrictedByEffect(alterS, "beAffected", "Tamer")).toBe(true);
     expect(s.state.players[1]!.trash.map((card) => card.cardId)).toEqual(expect.arrayContaining(["EX9-013"]));
+  });
+
+  it("ignores an opponent's Option security effect after DNA digivolving", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "EX9-013", as: "redMaterial" },
+            { card: "EX9-020", as: "blueMaterial" },
+          ],
+          hand: [{ card: "EX9-021", as: "alterS" }],
+        },
+        1: { security: [{ card: "ST1-16", as: "gaiaForce", faceUp: true }] },
+      },
+      { autoSelectCards: true, autoOrderTriggers: true },
+    );
+    s.state.memory = 10;
+    expect(
+      s.engine.applyIntent(0, {
+        type: "dnaDigivolve",
+        materialPermanentIds: [s.perm("redMaterial").permanentId, s.perm("blueMaterial").permanentId],
+        instanceId: s.inst("alterS").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[0]!.battleArea.length === 1 && s.state.pendingDecision === undefined);
+
+    await advance(s.engine).fireForInstance(EffectTiming.SecuritySkill, s.inst("gaiaForce"));
+    await settle(() => s.state.pendingDecision === undefined);
+
+    expect(s.state.players[0]!.battleArea.map((permanent) => permanent.topCard.cardId)).toEqual(["EX9-021"]);
+  });
+
+  it("is deleted by an opponent's Option security effect without DNA immunity", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "EX9-021", as: "alterS" }] },
+        1: { security: [{ card: "ST1-16", as: "gaiaForce", faceUp: true }] },
+      },
+      { autoSelectCards: true, autoOrderTriggers: true },
+    );
+    await s.ready();
+
+    await advance(s.engine).fireForInstance(EffectTiming.SecuritySkill, s.inst("gaiaForce"));
+    await settle(() => s.state.players[0]!.battleArea.length === 0);
+
+    expect(s.state.players[0]!.trash.map((card) => card.cardId)).toContain("EX9-021");
   });
 
   it("normal digivolution with a stack of at least 2 does not grant DNA immunity", async () => {

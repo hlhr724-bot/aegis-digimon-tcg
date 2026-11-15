@@ -88160,7 +88160,7 @@
     "forms": ["Ultimate"],
     "attributes": ["Data"],
     "types": ["Bird Dragon", "Vortex Warriors", "LIBERATOR"],
-    "effectText": "＜Vortex＞ (At the end of your turn, this Digimon may attack an opponent's Digimon. With this effect, it can attack the turn it was played)\n[When Digivolving] Suspend 1 Digimon. If this effect suspends your Digimon, this Digimon isn't affected by your opponent's Digimon's effects until the end of their turn.",
+    "effectText": "＜Vortex＞ (At the end of your turn, this Digimon may attack an opponent's Digimon. With this effect, it can attack the turn it was played)\n[When Digivolving] You may suspend 1 Digimon. If this effect suspends your Digimon, this Digimon isn't affected by your opponent's Digimon's effects until the end of their turn.",
     "inheritedEffectText": "[Your Turn] [Once Per Turn] When this Digimon attacks your opponent's Digimon, you may unsuspend this Digimon.",
     "rarity": "R",
     "maxCountInDeck": 4,
