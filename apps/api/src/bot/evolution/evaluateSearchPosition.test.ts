@@ -4,7 +4,8 @@ import { advance } from "#api/engine/testkit/advance";
 import { trainingObservation } from "#api/bot/training/observation";
 import { evaluateSearchPosition } from "#api/bot/evolution/evaluateSearchPosition";
 import { BOT_PROFILES, DEFAULT_BOT_PROFILE } from "#api/bot/profiles";
-import "#api/cards/index";
+import "#api/cards/BT12/BT12-034";
+import "#api/cards/BT12/BT12-092";
 
 const logit = (probability: number): number => Math.log(probability / (1 - probability));
 
