@@ -379,3 +379,12 @@ quality 90 without the white outer margin. The English ST26-01 and ST26-02
 scans are 881 x 1200 px; they are cropped to `(38, 38, 842, 1162)`, producing
 804 x 1124 px images. The SAMPLE watermark is preserved. The Japanese scans
 supply the Japanese name and text transcriptions.
+
+## BT27 Gemmon line, 2026-11-14
+
+BT27-006 Gemmon, BT27-011 Liskmon, BT27-014 Reptilimon and their `-J`
+printings come from the user-provided official English and Japanese reveal
+scans. Each 951 x 1295 px attachment is cropped to `(41, 41, 909, 1254)`,
+producing 868 x 1213 px WebP images at quality 90 without the white outer
+margin. The SAMPLE watermark is preserved. The Japanese scans supply the
+Japanese text transcriptions.

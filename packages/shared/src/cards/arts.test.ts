@@ -82,8 +82,8 @@ it("offers Japanese printings for the Gaomon line, MirageGaogamon, and Thomas H.
   }
 });
 
-it("offers Japanese printings for Gurimon, Motimon, Clockmon, and Andromon", () => {
-  for (const cardId of ["BT27-001", "BT27-005", "BT27-059", "BT27-063"]) {
+it("offers Japanese printings for Gurimon, Motimon, Gemmon, Liskmon, Reptilimon, Clockmon, and Andromon", () => {
+  for (const cardId of ["BT27-001", "BT27-005", "BT27-006", "BT27-011", "BT27-014", "BT27-059", "BT27-063"]) {
     expect(getCardArts(cardId).map((art) => art.artId)).toEqual([cardId, `${cardId}-J`]);
     expect(cardImageUrls(cardId, `${cardId}-J`)[0]).toContain(`/${cardId}-J.webp`);
   }

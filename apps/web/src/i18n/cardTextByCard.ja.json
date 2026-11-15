@@ -15752,5 +15752,17 @@
   "ST26-06": {
     "[StartofYourTurn]Ifyouhave2orlessmemory,setitto3.[AllTurns]WhenyourDigimonareplayedordigivolve,ifanyofthemhavethe[Ice-Snow]trait,bysuspendingthisTamer,trashthebottom2digivolutioncardsof1ofyouropponent'sDigimon.After,ifyouropponenthasnoDigimonwithdigivolutioncards,<Draw1>.(Draw1cardfromyourdeck.)": "【自分のターン開始時】メモリーが2以下なら、3にする。\n【お互いのターン】自分のデジモンが登場/進化したとき、そのデジモンが特徴「氷雪型」を持つなら、このテイマーをレストさせることで、相手のデジモン1体の進化元を下から2枚破棄する。さらに、進化元を持つ相手のデジモンがいないなら、≪1ドロー≫（自分のデッキからカードを1枚引く）。",
     "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BT27-006": {
+    "[Digivolve]Lv.2w/[Gemmon]intext:Cost0[OnPlay]Revealthetop3cardsofyourdeck.Add1cardwiththe[ALYSION]traitand1redTamercardamongthemtothehand.Returntheresttothebottomofthedeck.": "〔進化〕「ジェムモン」の記述があるLv.2:コスト0\n【登場時】自分のデッキの上から3枚オープンする。その中の特徴「アリシオン」を持つカード1枚と赤のテイマーカード1枚を手札に加える。残りはデッキの下に戻す。",
+    "[YourTurn]ThisDigimongets+2000DP.": "【自分のターン】このデジモンをDP+2000。"
+  },
+  "BT27-011": {
+    "[Digivolve]Lv.3w/[Gemmon]intext:Cost2<Raid>[WhenMoving][WhenDigivolving]1ofyourDigimongets+3000DPfortheturn.Then,ifyouhaveaDigimonwith8000DPormore,<Draw1>.": "〔進化〕「ジェムモン」の記述があるLv.3:コスト2\n≪突進≫\n【移動時】【進化時】ターン終了まで、自分のデジモン1体をDP+3000。その後、DP8000以上の自分のデジモンがいるなら、≪1ドロー≫。",
+    "<Raid>(WhenthisDigimonattacks,youmaychangetheattacktargetto1ofyouropponent'sunsuspendedDigimonwiththehighestDP.)": "≪突進≫（このデジモンがアタックしたとき、アタックの対象を最もDPの高いアクティブ状態の相手のデジモン1体に変更できる）"
+  },
+  "BT27-014": {
+    "[Digivolve]Lv.4w/[Gemmon]intext:Cost3<Engage>[OnPlay][WhenDigivolving]1ofyourDigimongains<Piercing>and+3000DPfortheturn.[YourTurn]ThisDigimonwith12000DPormoregains<Rush>.": "〔進化〕「ジェムモン」の記述があるLv.4:コスト3\n≪急襲≫\n【登場時】【進化時】ターン終了まで、自分のデジモン1体は≪貫通≫を得て、DP+3000。\n【自分のターン】DP12000以上のこのデジモンは≪速攻≫を得る。",
+    "[YourTurn]ThisDigimonwith[Gemmon]initstextgains<Engage>.(Attheendofyourturn,thisDigimonmayattack.)": "【自分のターン】「ジェムモン」の記述があるこのデジモンは≪急襲≫（自分のターン終了時、このデジモンでアタックできる）を得る。"
   }
 }
