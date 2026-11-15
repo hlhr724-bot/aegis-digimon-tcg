@@ -892,7 +892,7 @@ export const es: Record<keyof typeof en, string> = {
   "game.roomCodeInvalid": "Este código de sala es incorrecto o caducó. Revisa el código e inténtalo de nuevo.",
   "game.accountRequired": "Inicia sesión para unirte a esta partida.",
   "game.alreadyInMatch":
-    "Tu cuenta ya está en otra partida. Termínala o cierra otras pestañas de Aegis e inténtalo de nuevo.",
+    "Tu cuenta ya está en otra partida. Reanúdala aquí o termínala antes. Una partida que perdió la conexión libera tu cuenta en menos de un minuto.",
   "game.rankedSearchActive":
     "Tu cuenta está buscando una partida clasificatoria. Cancela esa búsqueda e inténtalo de nuevo.",
   "game.joinRefused": "El servidor no aceptó la conexión. Vuelve al lobby e inténtalo de nuevo.",

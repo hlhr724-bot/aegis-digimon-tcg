@@ -42,6 +42,21 @@ describe("connection notices", () => {
   });
 });
 
+describe("a join refused because the account is in another match", () => {
+  it("names the live match and offers resuming it beside the lobby exit", () => {
+    expect(getNotice({ error: "AEGIS_ALREADY_IN_MATCH" })).toMatchObject({
+      title: "Your match is still in progress",
+      spinner: false,
+      exitTo: "lobby",
+      resumable: true,
+    });
+  });
+
+  it("offers no resume for other connection failures", () => {
+    expect(getNotice({ error: "AEGIS_ROOM_FULL" }).resumable).toBe(false);
+  });
+});
+
 describe("matchmaking cancellation", () => {
   it.each(["casual", "ranked", "unlimited", "beta"] as const)(
     "offers cancelling the %s queue without a loss",

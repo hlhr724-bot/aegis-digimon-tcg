@@ -1,6 +1,7 @@
 import type { AccountStore } from "#api/accounts/AccountStore";
 import { RankedStore } from "#api/ranked/RankedStore";
 import { RankedSeasonStore } from "#api/ranked/RankedSeasonStore";
+import { RankedArchetypeStore } from "#api/ranked/archetypes/RankedArchetypeStore";
 import { syncRankedDiscordRoles } from "#api/ranked/syncRankedDiscordRoles";
 import { getRankedConfig } from "#api/ranked/getRankedConfig";
 import { logError } from "#api/logger";
@@ -8,6 +9,7 @@ import { logError } from "#api/logger";
 type Params = { accounts: AccountStore };
 
 export function startRankedMaintenance({ accounts }: Params): () => void {
+  const archetypes = new RankedArchetypeStore(accounts);
   let busy = false;
   let stopped = false;
   async function runSweep() {
@@ -19,6 +21,7 @@ export function startRankedMaintenance({ accounts }: Params): () => void {
       await new RankedStore(accounts).sweepQueue();
       await new RankedSeasonStore(accounts).getSeasons();
       await new RankedSeasonStore(accounts).finalizeSeasons();
+      await archetypes.classifyPendingFacts();
       await syncRankedDiscordRoles({ accounts });
     } catch (error) {
       logError("[ranked] maintenance failed", error);

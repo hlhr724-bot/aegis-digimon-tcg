@@ -1,4 +1,46 @@
 {
+  "releases.1.75.0-beta.summary": {
+    "en": "This update names the decks on the ranked Meta tab, lets you resume a match from a refused join and fixes four player-reported card problems.",
+    "pt-BR": "Esta atualização identifica os decks na aba Meta do ranqueado, permite retomar uma partida quando a entrada é recusada e corrige quatro problemas de cartas relatados pelos jogadores.",
+    "es": "Esta actualización identifica los mazos en la pestaña Meta de clasificatorias, te permite reanudar una partida cuando se rechaza la entrada y corrige cuatro problemas de cartas reportados por los jugadores.",
+    "it": "Questo aggiornamento identifica i mazzi nella scheda Meta delle classificate, ti permette di riprendere una partita quando l'ingresso viene rifiutato e corregge quattro problemi di carte segnalati dai giocatori."
+  },
+  "releases.1.75.0-beta.feature.rankedMetaDecks": {
+    "en": "The ranked Meta tab now names each deck and shows the ten most played decks as bars, with their cover card and colors. Decks from past matches are named within about an hour of the update.",
+    "pt-BR": "A aba Meta do ranqueado agora identifica cada deck e mostra os dez decks mais jogados em barras, com a carta de capa e as cores. Os decks de partidas anteriores são identificados em até cerca de uma hora após a atualização.",
+    "es": "La pestaña Meta de clasificatorias ahora identifica cada mazo y muestra los diez mazos más jugados en barras, con su carta de portada y sus colores. Los mazos de partidas anteriores se identifican en aproximadamente una hora tras la actualización.",
+    "it": "La scheda Meta delle classificate ora identifica ogni mazzo e mostra i dieci mazzi più giocati come barre, con la carta di copertina e i colori. I mazzi delle partite precedenti vengono identificati entro circa un'ora dall'aggiornamento."
+  },
+  "releases.1.75.0-beta.feature.resumeMatch": {
+    "en": "When you cannot join because your account is already in another match, the message now offers a Resume match button and explains that a match that lost its connection frees your account within a minute.",
+    "pt-BR": "Quando você não consegue entrar porque sua conta já está em outra partida, a mensagem agora oferece o botão Retomar partida e explica que uma partida que perdeu a conexão libera sua conta em até um minuto.",
+    "es": "Cuando no puedes entrar porque tu cuenta ya está en otra partida, el mensaje ahora ofrece el botón Reanudar partida y explica que una partida que perdió la conexión libera tu cuenta en un minuto como máximo.",
+    "it": "Quando non puoi entrare perché il tuo account è già in un'altra partita, il messaggio ora offre il pulsante Riprendi partita e spiega che una partita che ha perso la connessione libera il tuo account entro un minuto."
+  },
+  "releases.1.75.0-beta.fix.kimeramonAssembly": {
+    "en": "Kimeramon (EX9-074) no longer accepts two cards with the same name for Assembly. Text that treats a card as a level or as having a trait no longer counts as an extra name.",
+    "pt-BR": "Kimeramon (EX9-074) não aceita mais duas cartas com o mesmo nome no Assembly. Um texto que trata a carta como de um nível ou como tendo uma característica não conta mais como um nome extra.",
+    "es": "Kimeramon (EX9-074) ya no acepta dos cartas con el mismo nombre para Assembly. Un texto que trata la carta como de un nivel o como si tuviera un rasgo ya no cuenta como un nombre adicional.",
+    "it": "Kimeramon (EX9-074) non accetta più due carte con lo stesso nome per Assembly. Un testo che tratta la carta come di un livello o come dotata di un tratto non conta più come un nome aggiuntivo."
+  },
+  "releases.1.75.0-beta.fix.optionalReturn": {
+    "en": "Vemmon (BT21-056) and seven other cards with \"you may return\" effects now let you return nothing.",
+    "pt-BR": "Vemmon (BT21-056) e outras sete cartas com efeitos \"você pode devolver\" agora deixam você não devolver nada.",
+    "es": "Vemmon (BT21-056) y otras siete cartas con efectos \"puedes devolver\" ahora te dejan no devolver nada.",
+    "it": "Vemmon (BT21-056) e altre sette carte con effetti \"puoi far tornare\" ora ti lasciano non far tornare nulla."
+  },
+  "releases.1.75.0-beta.fix.luiFixedCost": {
+    "en": "Lui Ohwada (BT16-090) now plays Big Ukkomon for its fixed cost of 3 while Psychemon stops play cost reductions. A fixed cost is not a reduction.",
+    "pt-BR": "Lui Ohwada (BT16-090) agora joga Big Ukkomon pelo custo fixo de 3 enquanto Psychemon impede reduções de custo de jogo. Um custo fixo não é uma redução.",
+    "es": "Lui Ohwada (BT16-090) ahora juega a Big Ukkomon por su coste fijo de 3 mientras Psychemon impide las reducciones de coste de juego. Un coste fijo no es una reducción.",
+    "it": "Lui Ohwada (BT16-090) ora gioca Big Ukkomon al costo fisso di 3 mentre Psychemon impedisce le riduzioni del costo di gioco. Un costo fisso non è una riduzione."
+  },
+  "releases.1.75.0-beta.fix.dualOptionPrompt": {
+    "en": "Cards that are both a Digimon and an Option, such as Mickey Bullet, no longer ask whether to use them as an Option when you cannot play them. The game shows why the play is not allowed instead.",
+    "pt-BR": "Cartas que são Digimon e Option ao mesmo tempo, como Mickey Bullet, não perguntam mais se você quer usá-las como Option quando você não pode jogá-las. O jogo mostra o motivo de a jogada não ser permitida.",
+    "es": "Las cartas que son Digimon y Option a la vez, como Mickey Bullet, ya no preguntan si quieres usarlas como Option cuando no puedes jugarlas. El juego muestra por qué la jugada no está permitida.",
+    "it": "Le carte che sono sia Digimon sia Option, come Mickey Bullet, non chiedono più se usarle come Option quando non puoi giocarle. Il gioco mostra perché la giocata non è consentita."
+  },
   "releases.1.74.0-beta.summary": {
     "en": "This update adds two more BT27 cards, fixes two player-reported card problems and keeps the battle area columns steady.",
     "pt-BR": "Esta atualização adiciona mais duas cartas de BT27, corrige dois problemas de cartas relatados pelos jogadores e mantém as colunas da área de batalha no lugar.",
