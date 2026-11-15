@@ -1,5 +1,37 @@
 [
   {
+    "version": "1.75.0-beta",
+    "releasedAt": "2026-11-15",
+    "summaryKey": "releases.1.75.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.75.0-beta.feature.rankedMetaDecks"
+      },
+      {
+        "textKey": "releases.1.75.0-beta.feature.resumeMatch",
+        "issue": 6896
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.75.0-beta.fix.kimeramonAssembly",
+        "issue": 6888
+      },
+      {
+        "textKey": "releases.1.75.0-beta.fix.optionalReturn",
+        "issue": 6897
+      },
+      {
+        "textKey": "releases.1.75.0-beta.fix.luiFixedCost",
+        "issue": 6863
+      },
+      {
+        "textKey": "releases.1.75.0-beta.fix.dualOptionPrompt",
+        "issue": 6857
+      }
+    ]
+  },
+  {
     "version": "1.74.0-beta",
     "releasedAt": "2026-11-15",
     "summaryKey": "releases.1.74.0-beta.summary",
