@@ -38,6 +38,7 @@ import { PendingMatchBoard } from "./screen/layout/PendingMatchBoard";
 import { MatchIntroOverlay } from "@/game/overlay/match/MatchIntroOverlay";
 import { useMatchIntro } from "@/game/screen/hooks/useMatchIntro";
 import { pendingMatchNotice } from "./screen/model/pendingMatchNotice";
+import { ResumeActiveMatchAction } from "@/game/screen/layout/ResumeActiveMatchAction";
 import { getGuestApprovalView } from "@/game/screen/model/getGuestApprovalView";
 import { isMatchIntroStarting } from "@/game/screen/model/isMatchIntroStarting";
 import { GUEST_APPROVAL_CHANNEL } from "@aegis/shared/protocol/GuestApprovalMessage";
@@ -245,6 +246,7 @@ function GameScreenSession({
   botDeckId,
   botSettings,
   onExit,
+  onResumeMatch,
   onStartLesson,
   onRematch,
   onCopyUsedDeck,
@@ -281,6 +283,7 @@ function GameScreenSession({
   betaBattleMode?: boolean;
   unlimited?: boolean;
   onExit: (screen: Screen) => void;
+  onResumeMatch?: () => void;
   onStartLesson?: (lessonId: string) => void;
   onCopyUsedDeck?: (deck: DeckListing) => void;
   ownDeckIds?: ReadonlySet<string>;
@@ -1114,6 +1117,8 @@ function GameScreenSession({
                     },
                   })}
                 />
+              ) : "resumable" in notice && notice.resumable && onResumeMatch ? (
+                <ResumeActiveMatchAction onResume={onResumeMatch} />
               ) : undefined
             }
             onAction={notice.exitTo ? () => onExit(notice.exitTo!) : undefined}
