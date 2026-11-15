@@ -178926,7 +178926,8 @@
         "actions": [
           {
             "kind": "Suspend",
-            "target": { "filter": { "controllerDefault": "any", "kind": ["Digimon"] }, "count": 1 }
+            "target": { "filter": { "controllerDefault": "any", "kind": ["Digimon"] }, "count": 1 },
+            "optional": true
           },
           {
             "kind": "Restrict",
@@ -178949,7 +178950,8 @@
               "kind": "attackTargetMatchesFilter",
               "filter": { "controller": "opponent", "kind": ["Digimon"] },
               "raw": "when this Digimon attacks your opponent's Digimon"
-            }
+            },
+            "optional": true
           }
         ],
         "isInherited": true,

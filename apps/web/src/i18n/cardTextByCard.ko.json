@@ -10046,7 +10046,7 @@
     "<Piercing>.": "《관통》(이 디지몬이 어택한 배틀에서 상대의 디지몬을 소멸시켰을 때, 어택 종료 전에 체크한다)"
   },
   "EX7-034": {
-    "<Vortex>(Attheendofyourturn,thisDigimonmayattackanopponent'sDigimon.Withthiseffect,itcanattacktheturnitwasplayed)[WhenDigivolving]Suspend1Digimon.IfthiseffectsuspendsyourDigimon,thisDigimonisn'taffectedbyyouropponent'sDigimon'seffectsuntiltheendoftheirturn.": "《볼텍스》(자신의 턴 종료 시, 이 디지몬으로 상대의 디지몬에게 어택할 수 있다. 이 효과로는 등장한 턴에도 어택할 수 있다) 【진화 시】디지몬 1마리를 레스트시킬 수 있다. 이 효과로 자신의 디지몬이 레스트했다면, 상대의 턴 종료까지 이 디지몬은 상대의 디지몬의 효과를 받지 않는다.",
+    "<Vortex>(Attheendofyourturn,thisDigimonmayattackanopponent'sDigimon.Withthiseffect,itcanattacktheturnitwasplayed)[WhenDigivolving]Youmaysuspend1Digimon.IfthiseffectsuspendsyourDigimon,thisDigimonisn'taffectedbyyouropponent'sDigimon'seffectsuntiltheendoftheirturn.": "《볼텍스》(자신의 턴 종료 시, 이 디지몬으로 상대의 디지몬에게 어택할 수 있다. 이 효과로는 등장한 턴에도 어택할 수 있다) 【진화 시】디지몬 1마리를 레스트시킬 수 있다. 이 효과로 자신의 디지몬이 레스트했다면, 상대의 턴 종료까지 이 디지몬은 상대의 디지몬의 효과를 받지 않는다.",
     "[YourTurn][OncePerTurn]WhenthisDigimonattacksyouropponent'sDigimon,youmayunsuspendthisDigimon.": "【자신의 턴】[턴에 1회]이 디지몬이 상대의 디지몬에게 어택했을 때, 이 디지몬을 액티브로 할 수 있다."
   },
   "EX7-035": {
