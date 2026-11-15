@@ -21,7 +21,7 @@ describe("BT16-090 Lui Ohwada", () => {
             {
               kind: "PlayWithoutCost",
               payCost: true,
-              reduceCostBy: 9,
+              costOverride: 3,
               breeding: true,
               requiresEmpty: "breedingArea",
               optional: true,
@@ -87,6 +87,45 @@ describe("BT16-090 Lui Ohwada", () => {
     expect(s.state.players[0]?.battleArea.some((permanent) => permanent.topCard?.instanceId === luiId)).toBe(true);
     expect(s.state.players[0]?.trash.map((card) => card.instanceId)).toEqual(expect.arrayContaining([ukkoId, eggId]));
     expect(s.state.players[0]?.hand.some((card) => card.instanceId === bigId)).toBe(false);
+    expect(s.state.memory).toBe(0);
+  });
+
+  it("plays Big Ukkomon for its fixed cost of 3 while Psychemon stops play cost reductions", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT16-090", as: "lui" },
+            { card: "BT16-082", as: "ukkomon" },
+          ],
+          breeding: { card: "BT1-001", as: "egg" },
+          hand: [{ card: "BT16-083", as: "big" }],
+        },
+        1: { battleArea: [{ card: "BT8-071", as: "psychemon" }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    s.state.memory = 3;
+    const bigId = s.inst("big").instanceId;
+    const [effect] = observe(s.engine).activatableEffects(s.perm("lui")) as { effectKey: string }[];
+    expect(
+      s.engine.applyIntent(0, {
+        type: "activateEffect",
+        sourceInstanceId: s.perm("lui").topCard.instanceId,
+        effectKey: effect!.effectKey,
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () => s.state.players[0]?.breeding?.topCard?.instanceId === bigId && s.state.pendingDecision === undefined,
+      3000,
+    );
+
+    expect(s.state.players[0]?.hand.some((card) => card.instanceId === bigId)).toBe(false);
+    expect(s.state.players[0]?.trash.map((card) => card.instanceId)).toEqual(
+      expect.arrayContaining([s.inst("ukkomon").instanceId, s.inst("egg").instanceId]),
+    );
+    expect(s.perm("psychemon").topCard.cardId).toBe("BT8-071");
     expect(s.state.memory).toBe(0);
   });
 
