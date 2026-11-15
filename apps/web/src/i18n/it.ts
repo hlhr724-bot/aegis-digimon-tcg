@@ -1056,7 +1056,7 @@ const interfaceMessages = {
   "game.roomCodeInvalid": "Questo codice stanza è errato o scaduto. Controlla il codice e riprova.",
   "game.accountRequired": "Accedi per unirti a questa partita.",
   "game.alreadyInMatch":
-    "Il tuo account è già in un'altra partita. Terminala o chiudi le altre schede di Aegis, poi riprova.",
+    "Il tuo account è già in un'altra partita. Riprendila qui oppure terminala prima. Una partita che ha perso la connessione libera il tuo account entro un minuto.",
   "game.rankedSearchActive": "Il tuo account sta cercando una partita classificata. Annulla la ricerca, poi riprova.",
   "game.joinRefused": "Il server non ha accettato l'accesso. Torna alla lobby e riprova.",
   "game.seatTransferred": "Hai continuato questa partita su un altro dispositivo.",

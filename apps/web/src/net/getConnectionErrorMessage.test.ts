@@ -20,7 +20,7 @@ describe("connection error messages", () => {
     ["AEGIS_ACCOUNT_REQUIRED", "Sign in to join this match."],
     [
       "AEGIS_ALREADY_IN_MATCH",
-      "Your account is already in another match. Finish it or close other Aegis tabs, then try again.",
+      "Your account is already in another match. Resume it here, or finish it first. A match that lost its connection frees your account within a minute.",
     ],
     ["AEGIS_RANKED_SEARCH_ACTIVE", "Your account is searching for a ranked match. Cancel that search, then try again."],
     ["AEGIS_JOIN_REFUSED", "The server did not accept this join. Return to the lobby and try again."],

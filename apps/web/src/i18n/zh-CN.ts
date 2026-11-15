@@ -1100,7 +1100,8 @@ const interfaceMessages = {
   "game.roomSettingsMismatch": "这个房间的对战设置不同。请返回大厅重新搜索。",
   "game.roomCodeInvalid": "房间代码错误或已过期。请检查代码后重试。",
   "game.accountRequired": "请登录后加入这场对战。",
-  "game.alreadyInMatch": "你的账号已在另一场对战中。请先结束那场对战或关闭其他 Aegis 标签页，然后重试。",
+  "game.alreadyInMatch":
+    "你的账号已在另一场对战中。请在此继续对战，或先结束那场对战。连接中断的对战会在一分钟内释放你的账号。",
   "game.rankedSearchActive": "你的账号正在搜索排位对战。请取消搜索后重试。",
   "game.joinRefused": "服务器没有接受这次加入。请返回大厅后重试。",
   "game.seatTransferred": "你已在另一台设备上继续这场对战。",
