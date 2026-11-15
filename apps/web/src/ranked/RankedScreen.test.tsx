@@ -69,8 +69,16 @@ function mockApi(seasonList = [season]) {
       }
       if (url.includes("/ranked/meta")) {
         body = [
-          { archetype: "Greymon", games: 40, players: 12, wins: 24, winrate: 0.6 },
-          { archetype: "unknown", games: 20, players: 8, wins: 6, winrate: null },
+          {
+            archetype: "Greymon",
+            games: 40,
+            players: 12,
+            wins: 24,
+            winrate: 0.6,
+            coverCardId: null,
+            colors: ["Red"],
+          },
+          { archetype: "unknown", games: 20, players: 8, wins: 6, winrate: null, coverCardId: null, colors: [] },
         ];
       }
       if (url.includes("/ranked/matchups")) {
@@ -195,13 +203,13 @@ describe("ranked season screen", () => {
     expect(screen.getByRole("heading", { name: "Format rules" })).toBeTruthy();
     expect(screen.getByText(/Your saved deck must be legal/)).toBeTruthy();
   });
-  it("shows win share separately from win rate and keeps unidentified samples visible", async () => {
+  it("shows play share separately from win rate and keeps unidentified samples visible", async () => {
     const fetcher = mockApi();
     showScreen();
     await screen.findByRole("button", { name: "Player One" });
     fireEvent.click(screen.getByRole("button", { name: "Meta" }));
-    expect(await screen.findByRole("img", { name: "Winning decks" })).toBeTruthy();
-    expect(screen.getAllByText("80%").length).toBeGreaterThan(0);
+    expect(await screen.findByRole("heading", { name: "Most played decks" })).toBeTruthy();
+    expect(screen.getAllByText("66.7%").length).toBeGreaterThan(0);
     expect(screen.getAllByText("60%").length).toBeGreaterThan(0);
     expect(screen.getByText("Insufficient sample")).toBeTruthy();
     expect(screen.getAllByText("Unidentified").length).toBeGreaterThan(0);
