@@ -388,3 +388,15 @@ scans. Each 951 x 1295 px attachment is cropped to `(41, 41, 909, 1254)`,
 producing 868 x 1213 px WebP images at quality 90 without the white outer
 margin. The SAMPLE watermark is preserved. The Japanese scans supply the
 Japanese text transcriptions.
+
+## BT27 Rubeusdramon and Kanata Hondo, 2026-11-15
+
+BT27-018, BT27-086 and their `-J` printings come from the user-provided
+official English and Japanese reveal scans. The SAMPLE watermark is preserved
+and each crop is encoded as WebP at quality 90 without the white outer margin.
+The Japanese scans supply the Japanese text transcriptions.
+
+| Files                          | Source scan   | Crop box              | Output     |
+| ------------------------------ | ------------- | --------------------- | ---------- |
+| BT27-018, BT27-086, BT27-086-J | 951 x 1295 px | `(41, 41, 909, 1254)` | 868 x 1213 |
+| BT27-018-J                     | 921 x 1254 px | `(40, 40, 881, 1214)` | 841 x 1174 |
