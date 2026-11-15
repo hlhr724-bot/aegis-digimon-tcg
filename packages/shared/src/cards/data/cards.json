@@ -88160,7 +88160,7 @@
     "forms": ["Ultimate"],
     "attributes": ["Data"],
     "types": ["Bird Dragon", "Vortex Warriors", "LIBERATOR"],
-    "effectText": "＜Vortex＞ (At the end of your turn, this Digimon may attack an opponent's Digimon. With this effect, it can attack the turn it was played)\n[When Digivolving] Suspend 1 Digimon. If this effect suspends your Digimon, this Digimon isn't affected by your opponent's Digimon's effects until the end of their turn.",
+    "effectText": "＜Vortex＞ (At the end of your turn, this Digimon may attack an opponent's Digimon. With this effect, it can attack the turn it was played)\n[When Digivolving] You may suspend 1 Digimon. If this effect suspends your Digimon, this Digimon isn't affected by your opponent's Digimon's effects until the end of their turn.",
     "inheritedEffectText": "[Your Turn] [Once Per Turn] When this Digimon attacks your opponent's Digimon, you may unsuspend this Digimon.",
     "rarity": "R",
     "maxCountInDeck": 4,
@@ -112345,5 +112345,47 @@
     "rarity": "R",
     "maxCountInDeck": 4,
     "imageId": "BT27-014"
+  },
+  {
+    "cardId": "BT27-018",
+    "set": "BT27",
+    "nameEn": "Rubeusdramon",
+    "nameJp": "ルビウスドラモン",
+    "colors": ["Red"],
+    "kinds": ["Digimon"],
+    "level": 6,
+    "playCost": 12,
+    "dp": 12000,
+    "evoCosts": [
+      {
+        "color": "Red",
+        "level": 5,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Vaccine"],
+    "types": ["Dragon Warrior", "ALYSION"],
+    "effectText": "[Digivolve] Lv.5 w/[Gemmon] in text: Cost 3\n＜Rush＞ ＜Progress＞\n[When Digivolving] [When Attacking] [Once Per Turn] For every 8000 DP this Digimon has, you may activate the effect below:\n・Delete 1 of your opponent's lowest DP Digimon.\n[All Turns] [Once Per Turn] When any of your opponent's Digimon are deleted, trash their top security card.\n[Assembly -5] Lv.5 × Lv.4 × Lv.3, all Red w/[Gemmon] in text",
+    "rarity": "SR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-018"
+  },
+  {
+    "cardId": "BT27-086",
+    "set": "BT27",
+    "nameEn": "Kanata Hondo",
+    "nameJp": "本堂カナタ",
+    "colors": ["Red"],
+    "kinds": ["Tamer"],
+    "playCost": 3,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["ALYSION"],
+    "effectText": "[Start of Your Main Phase] If you have a Digimon with [Gemmon] in its text, gain 1 memory.\n[Your Turn] When your Digimon are played or digivolve, if any of them have the [ALYSION] trait, by suspending this Tamer, 1 of your Digimon gets +3000 DP for the turn. After, if you have a Digimon with 8000 DP or more, ＜Draw 1＞.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-086"
   }
 ]

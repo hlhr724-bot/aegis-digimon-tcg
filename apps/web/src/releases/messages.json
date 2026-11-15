@@ -1,4 +1,34 @@
 {
+  "releases.1.74.0-beta.summary": {
+    "en": "This update adds two more BT27 cards, fixes two player-reported card problems and keeps the battle area columns steady.",
+    "pt-BR": "Esta atualização adiciona mais duas cartas de BT27, corrige dois problemas de cartas relatados pelos jogadores e mantém as colunas da área de batalha no lugar.",
+    "es": "Esta actualización añade dos cartas más de BT27, corrige dos problemas de cartas reportados por los jugadores y mantiene en su sitio las columnas del área de batalla.",
+    "it": "Questo aggiornamento aggiunge altre due carte di BT27, corregge due problemi di carte segnalati dai giocatori e mantiene ferme le colonne dell'area di battaglia."
+  },
+  "releases.1.74.0-beta.feature.bt27Rubeusdramon": {
+    "en": "Added Rubeusdramon (BT27-018) and Kanata Hondo (BT27-086) from BT27.",
+    "pt-BR": "Adicionados Rubeusdramon (BT27-018) e Kanata Hondo (BT27-086) de BT27.",
+    "es": "Se añadieron Rubeusdramon (BT27-018) y Kanata Hondo (BT27-086) de BT27.",
+    "it": "Aggiunti Rubeusdramon (BT27-018) e Kanata Hondo (BT27-086) di BT27."
+  },
+  "releases.1.74.0-beta.fix.valnerDraw": {
+    "en": "Valner Dragnogh (ST26-06) now draws after you suspend it, even when the chosen Digimon has no digivolution cards to trash.",
+    "pt-BR": "Valner Dragnogh (ST26-06) agora compra a carta depois que você o suspende, mesmo quando o Digimon escolhido não tem cartas de digievolução para descartar.",
+    "es": "Valner Dragnogh (ST26-06) ahora roba la carta después de que lo suspendes, incluso cuando el Digimon elegido no tiene cartas de digievolución para descartar.",
+    "it": "Valner Dragnogh (ST26-06) ora pesca la carta dopo che lo sospendi, anche quando il Digimon scelto non ha carte di digievoluzione da scartare."
+  },
+  "releases.1.74.0-beta.fix.grandGalemonOptional": {
+    "en": "GrandGalemon (EX7-034) lets you choose whether to suspend a Digimon when it digivolves and whether to unsuspend when it attacks, as printed.",
+    "pt-BR": "GrandGalemon (EX7-034) deixa você escolher se suspende um Digimon ao digievoluir e se ativa novamente ao atacar, como impresso.",
+    "es": "GrandGalemon (EX7-034) te deja elegir si suspendes un Digimon al digievolucionar y si lo reactivas al atacar, como está impreso.",
+    "it": "GrandGalemon (EX7-034) ti lascia scegliere se sospendere un Digimon quando digievolve e se riattivarlo quando attacca, come stampato."
+  },
+  "releases.1.74.0-beta.fix.battleRowColumns": {
+    "en": "On wide screens, the battle area columns stay in place when a card suspends, and the second lane lines up with the Digimon lane.",
+    "pt-BR": "Em telas largas, as colunas da área de batalha ficam no lugar quando uma carta é suspensa, e a segunda fileira fica alinhada com a fileira dos Digimon.",
+    "es": "En pantallas anchas, las columnas del área de batalla se quedan en su sitio cuando una carta se suspende, y la segunda fila queda alineada con la fila de los Digimon.",
+    "it": "Sugli schermi larghi, le colonne dell'area di battaglia restano ferme quando una carta viene sospesa, e la seconda corsia è allineata con quella dei Digimon."
+  },
   "releases.1.73.0-beta.summary": {
     "en": "This update adds the ST26 Viximon starter deck and three more BT27 cards, and fixes a batch of player-reported card problems.",
     "pt-BR": "Esta atualização adiciona o deck inicial ST26 de Viximon e mais três cartas de BT27, e corrige vários problemas de cartas relatados pelos jogadores.",

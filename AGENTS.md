@@ -2,7 +2,7 @@
 
 - Use the Node and pnpm versions in root `package.json`; application code stays TypeScript and ESM.
 - The API owns game state, rules, authentication, authorization, and persistence. The client presents synchronized state and sends intents. See [architecture](docs/ARCHITECTURE.md).
-- Do not add comments under any circumstances: no inline, block, JSDoc, JSX, suppression comments, or commented-out code. Put explanations in Markdown.
+- Do not add comments under any circumstances: no inline, block, JSDoc, JSX, suppression comments, or commented-out code. Put explanations in the PR description or your report.
 - Every exported helper must have its own file, named after the helper. Only helpers private to their owning module may stay in that module.
 - Do not create `index` files or barrels. Import the owning file directly through configured aliases: `@/` in the web app, `#api/` in the API, `#shared/` inside shared, and `@aegis/shared/<domain>/<file>` across workspaces.
 - Organize source by domain and responsibility, colocate tests, types, enums, and helpers, and avoid generic helper/utility dumping grounds. Preserve the workspace, card-set, and scenario paths used by tooling.
@@ -15,11 +15,11 @@
 - For Discord reports, use [fix-discord-bug](.agents/skills/fix-discord-bug/SKILL.md), read the full thread and attachments, and follow the production host's instructions and resource guard.
 - For GitHub bug reports or an open-bug sweep, use [fix-github-bugs](.agents/skills/fix-github-bugs/SKILL.md); route authorized release and feedback closure to `aegis-release-feedback-closeout`.
 - Keep mockups, prototypes, and browser captures in ignored `.local/`; do not commit them to `docs/` or `apps/web/public/`.
-- Name regression tests and fixtures after behavior. Share preparation through `engine/scenario` and `setupScenario`; E2E uses `ScenarioPage.openFixture`. See [regression fixtures](docs/TESTING.md). Keep external IDs out of scenario identities; preserve necessary provenance in Markdown.
+- Name regression tests and fixtures after behavior. Share preparation through `engine/scenario` and `setupScenario`; E2E uses `ScenarioPage.openFixture`. See [regression fixtures](docs/TESTING.md). Keep external IDs out of scenario identities; preserve necessary provenance in the PR description.
 - Open fixtures on demand with `pnpm scenario open <behavior>` or an ignored `.local/scenarios/<name>.fixture.ts`; regression fixtures require no arena registration. Add permanent demos only when requested.
 - Follow [testing guidance](internal-docs/ai/testing.md) for engine, card, conformance, and browser changes. Never use fixed sleeps or `waitForTimeout` for E2E synchronization. Fix shared product code, not only fixtures.
 - Use Orca Browser through the public `orca` CLI for requested manual checks. Verify narrow/wide viewports and dark/light modes for layout changes.
 - Write GitHub issue titles, descriptions, comments, and verification reports in English. Follow the authorized branch and delivery scope; distinguish local changes from deployed fixes.
 - Use `develop` as the default development branch: create feature and fix branches from it and target it in PRs. Normal releases use a PR from `develop` into `main`, merged with a merge commit. See [development and release workflow](internal-docs/ai/development.md).
 - Never commit credentials or `.env` files, rewrite pushed history, force push, rebase, squash merge, hard reset, or push directly to main. Do not edit git identity or `.git/config`.
-- Do not create task-specific planning documents unless requested.
+- Do not create or edit Markdown files unless requested. This covers audits, READMEs, provenance notes, engine seam notes, and task-specific planning documents. Put that information in the PR description instead.
