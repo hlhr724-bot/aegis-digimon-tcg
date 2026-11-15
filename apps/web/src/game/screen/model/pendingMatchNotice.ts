@@ -23,6 +23,7 @@ export interface PendingMatchNotice {
   /** The screen the action returns to, when the notice offers one. */
   exitTo?: "lobby";
   searchingQueue?: boolean;
+  resumable?: boolean;
 }
 
 export function pendingMatchNotice({
@@ -69,6 +70,7 @@ export function pendingMatchNotice({
       spinner: false,
       actionLabel: t("game.returnToLobby"),
       exitTo: "lobby",
+      resumable: !botError && error === ConnectionErrorCode.ALREADY_IN_MATCH.value,
     };
   }
   if (spectating) {
@@ -144,6 +146,9 @@ function getConnectionFailureTitle(error: string | undefined): TranslationKey {
   }
   if (error === ConnectionErrorCode.TOURNAMENT_CANCELLED.value) {
     return "game.tournamentCancelledTitle";
+  }
+  if (error === ConnectionErrorCode.ALREADY_IN_MATCH.value) {
+    return "resumeMatch.title";
   }
   return "game.connectionLost";
 }

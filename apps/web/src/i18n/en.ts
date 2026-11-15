@@ -904,7 +904,7 @@ export const en = {
   "game.roomCodeInvalid": "This room code is wrong or has expired. Check the code and try again.",
   "game.accountRequired": "Sign in to join this match.",
   "game.alreadyInMatch":
-    "Your account is already in another match. Finish it or close other Aegis tabs, then try again.",
+    "Your account is already in another match. Resume it here, or finish it first. A match that lost its connection frees your account within a minute.",
   "game.rankedSearchActive": "Your account is searching for a ranked match. Cancel that search, then try again.",
   "game.joinRefused": "The server did not accept this join. Return to the lobby and try again.",
   "game.seatTransferred": "You continued this match on another device.",

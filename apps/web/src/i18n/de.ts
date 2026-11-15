@@ -1187,7 +1187,7 @@ const interfaceMessages = {
     "Dieser Raumcode ist falsch oder abgelaufen. Prüfen Sie den Code und versuchen Sie es erneut.",
   "game.accountRequired": "Melden Sie sich an, um dieser Partie beizutreten.",
   "game.alreadyInMatch":
-    "Ihr Konto ist bereits in einer anderen Partie. Beenden Sie sie oder schließen Sie andere Aegis-Tabs und versuchen Sie es erneut.",
+    "Ihr Konto ist bereits in einer anderen Partie. Setzen Sie sie hier fort oder beenden Sie sie zuerst. Eine Partie mit unterbrochener Verbindung gibt Ihr Konto innerhalb einer Minute frei.",
   "game.rankedSearchActive":
     "Ihr Konto sucht gerade eine Ranglistenpartie. Brechen Sie diese Suche ab und versuchen Sie es erneut.",
   "game.joinRefused": "Der Server hat den Beitritt abgelehnt. Kehren Sie zur Lobby zurück und versuchen Sie es erneut.",

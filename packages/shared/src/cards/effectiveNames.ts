@@ -61,6 +61,8 @@ function parsedStaticNameAliases(def: CardDefinition): Readonly<StaticNameAliase
   return frozen as Readonly<StaticNameAliases>;
 }
 
+const GRANTS_LEVEL_OR_TRAIT = /treated\s+as\s+(?:level\b|having\s+the\s+\[[^\]]+\]\s+trait)/i;
+
 function scanStaticNameAliases(def: CardDefinition): StaticNameAliases {
   // BT15-060's Omnimon alias is explicitly limited to the card while it is revealed
   // from a deck. It is supplied by the reveal-context definition projection instead
@@ -88,6 +90,7 @@ function scanStaticNameAliases(def: CardDefinition): StaticNameAliases {
   for (const phrase of aliasPhrases) {
     // A material-only alias must not satisfy ordinary evolution or name gates.
     if (/(?:for\s+(?:a\s+)?|When you would\s+)DigiXros\b/i.test(phrase)) continue;
+    if (GRANTS_LEVEL_OR_TRAIT.test(phrase)) continue;
     // "treated as HAVING [X]" / "[X] IN ITS NAME" is a substring grant only; the bare
     // "treated as [X]" (and "as if its name is [X]") is a full-name identity.
     // "treated as INCLUDING [X]" is the same inclusion grant (EX13-053, Q7377).

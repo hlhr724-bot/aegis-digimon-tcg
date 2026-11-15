@@ -43,7 +43,7 @@ export const compiled: CompiledCard = {
               },
               from: ["hand"],
               payCost: true,
-              reduceCostBy: 9,
+              costOverride: 3,
               breeding: true,
               requiresEmpty: "breedingArea",
               optional: true,

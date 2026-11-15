@@ -1395,6 +1395,7 @@ function LoadedAegisClient({
                   signedIn={!!account}
                   onLeaveForfeitsChange={setLeaveForfeitsMatch}
                   onStartLesson={startLesson}
+                  onResumeMatch={account ? resumeMatchFromAnotherDevice : undefined}
                   onExit={(next) => {
                     setSeriesGame(undefined);
                     if (spectatedTournamentMatch) {

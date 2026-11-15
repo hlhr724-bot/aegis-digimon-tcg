@@ -62,6 +62,7 @@ describe("BT21-056 Vemmon", () => {
         nameOrTrait: [{ tokens: ["Vemmon"], match: "text" }],
       },
       count: 1,
+      upTo: true,
     });
     expect(action?.cost).toEqual({
       kind: "trash",
@@ -178,6 +179,58 @@ describe("BT21-056 Vemmon", () => {
     ).toBe(true);
     expect(s.state.players[0]!.hand.some((card) => card.instanceId === costId)).toBe(true);
     expect(s.state.players[0]!.trash).toHaveLength(0);
+  });
+
+  it("pays the hand cost and may still return nothing, leaving the cost card in the trash (Q5082)", async () => {
+    const s = setupEngine({
+      0: {
+        hand: [
+          { card: "BT21-056", as: "played" },
+          { card: "BT11-061", as: "cost" },
+        ],
+      },
+    });
+    s.state.memory = 4;
+    await s.ready();
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("played").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.pendingDecision?.kind === "selectCards");
+    expect(s.decisions.at(-1)!.req.options).toMatchObject({
+      min: 0,
+      max: 1,
+      candidateInstanceIds: [s.inst("cost").instanceId],
+      purpose: "cost",
+    });
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "selectCards", instanceIds: [s.inst("cost").instanceId] },
+      }),
+    ).toEqual({ ok: true });
+
+    await settle(() => s.state.pendingDecision?.kind === "selectCards" && s.decisions.length === 2);
+    expect(s.decisions.at(-1)!.req.options).toMatchObject({
+      min: 0,
+      max: 1,
+      candidateInstanceIds: [s.inst("cost").instanceId],
+    });
+    expect(
+      s.engine.applyIntent(0, {
+        type: "respondDecision",
+        decisionId: s.state.pendingDecision!.decisionId,
+        response: { kind: "selectCards", instanceIds: [] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.pendingDecision === undefined);
+
+    const player = s.state.players[0]!;
+    expect(player.hand).toHaveLength(0);
+    expect(player.trash.map(({ instanceId }) => instanceId)).toEqual([s.inst("cost").instanceId]);
+    expect(player.battleArea.map(({ topCard }) => topCard.cardId)).toEqual(["BT21-056"]);
+    expect(s.state.memory).toBe(1);
   });
 
   it("declining recovery after public play leaves the hand cost and trash target in place", async () => {

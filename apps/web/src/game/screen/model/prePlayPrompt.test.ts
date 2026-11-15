@@ -45,3 +45,30 @@ describe("DigiXros expander Tamers", () => {
     expect(expanderIds(true)).toEqual([]);
   });
 });
+
+function dualOptionPrompt(playableFromHand: boolean) {
+  return prePlayPromptFor({
+    entry: {
+      instanceId: "dual-option",
+      cardId: "EX13-066",
+      activatableEffectsJson: "",
+      playableFromHand,
+      projectedPlayCost: playableFromHand ? 5 : -1,
+      digivolveTargetPermanentIds: [],
+      linkTargetPermanentIds: [],
+    },
+    viewer: new PlayerState(),
+    confirmDrop: true,
+    actionConfirmationsEnabled: true,
+  });
+}
+
+describe("dual card Option prompt", () => {
+  it("asks to use the Option side when the server projects the card as usable", () => {
+    expect(dualOptionPrompt(true)).toEqual({ kind: "dual", instanceId: "dual-option", cardId: "EX13-066" });
+  });
+
+  it("asks nothing when the server projects the Option as unusable, so its refusal reaches the player", () => {
+    expect(dualOptionPrompt(false)).toBeUndefined();
+  });
+});

@@ -1147,7 +1147,7 @@ const interfaceMessages = {
   "game.roomCodeInvalid": "방 코드가 잘못되었거나 만료되었습니다. 코드를 확인하고 다시 시도해 주세요.",
   "game.accountRequired": "이 대전에 참가하려면 로그인해 주세요.",
   "game.alreadyInMatch":
-    "이 계정은 이미 다른 대전에 참가 중입니다. 그 대전을 끝내거나 다른 Aegis 탭을 닫은 뒤 다시 시도해 주세요.",
+    "이 계정은 이미 다른 대전에 참가 중입니다. 여기에서 재개하거나 먼저 그 대전을 끝내 주세요. 연결이 끊긴 대전은 1분 안에 계정을 해제합니다.",
   "game.rankedSearchActive": "이 계정은 랭크 대전을 검색 중입니다. 검색을 취소한 뒤 다시 시도해 주세요.",
   "game.joinRefused": "서버가 참가를 받아들이지 않았습니다. 로비로 돌아가 다시 시도해 주세요.",
   "game.seatTransferred": "다른 기기에서 이 대전을 이어서 진행했습니다.",
