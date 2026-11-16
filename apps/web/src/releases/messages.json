@@ -1,4 +1,34 @@
 {
+  "releases.1.75.2-beta.summary": {
+    "en": "This update fixes four player-reported problems: a Digimon that kept ＜Collision＞ after giving it away, a suspend cost that offered suspended Digimon, a match that froze after an end-of-turn attack, and a Digimon left on the board at 0 DP.",
+    "pt-BR": "Esta atualização corrige quatro problemas relatados pelos jogadores: um Digimon que mantinha ＜Collision＞ depois de concedê-lo, um custo de suspender que oferecia Digimon já suspensos, uma partida que travava depois de um ataque no fim do turno e um Digimon que ficava em campo com 0 DP.",
+    "es": "Esta actualización corrige cuatro problemas reportados por los jugadores: un Digimon que conservaba ＜Collision＞ después de darlo, un coste de suspender que ofrecía Digimon ya suspendidos, una partida que se congelaba después de un ataque al final del turno y un Digimon que seguía en el tablero con 0 DP.",
+    "it": "Questo aggiornamento corregge quattro problemi segnalati dai giocatori: un Digimon che manteneva ＜Collision＞ dopo averlo concesso, un costo di sospensione che offriva Digimon già sospesi, una partita che si bloccava dopo un attacco a fine turno e un Digimon rimasto sul campo con 0 DP."
+  },
+  "releases.1.75.2-beta.fix.givenKeywords": {
+    "en": "A Digimon that gives a keyword to an opponent's Digimon no longer keeps it. MetalGreymon (EX10-008) no longer has ＜Collision＞ itself, so your opponent is no longer forced to block its attacks. Cards that give ＜Security A. -1＞ to an opponent's Digimon are corrected the same way.",
+    "pt-BR": "Um Digimon que concede uma palavra-chave a um Digimon do oponente não fica mais com ela. MetalGreymon (EX10-008) não tem mais ＜Collision＞, então o oponente não é mais obrigado a bloquear os ataques dele. Cartas que dão ＜Security A. -1＞ a um Digimon do oponente foram corrigidas da mesma forma.",
+    "es": "Un Digimon que da una palabra clave a un Digimon del oponente ya no la conserva. MetalGreymon (EX10-008) ya no tiene ＜Collision＞, así que tu oponente ya no está obligado a bloquear sus ataques. Las cartas que dan ＜Security A. -1＞ a un Digimon del oponente se corrigieron de la misma forma.",
+    "it": "Un Digimon che concede una parola chiave a un Digimon avversario non la mantiene più. MetalGreymon (EX10-008) non ha più ＜Collision＞, quindi il tuo avversario non è più obbligato a bloccare i suoi attacchi. Le carte che danno ＜Security A. -1＞ a un Digimon avversario sono state corrette allo stesso modo."
+  },
+  "releases.1.75.2-beta.fix.ceresmonSuspendCost": {
+    "en": "Ceresmon (BT26-032) now offers only unsuspended Digimon to pay \"by suspending 1 Digimon\". Choosing an already suspended Digimon used to pay nothing, so the card play never opened, also when Homeros (BT24-102) activated the effect again.",
+    "pt-BR": "Ceresmon (BT26-032) agora oferece apenas Digimon não suspensos para pagar \"suspendendo 1 Digimon\". Escolher um Digimon já suspenso não pagava nada, então a jogada da carta nunca abria, inclusive quando Homeros (BT24-102) ativava o efeito de novo.",
+    "es": "Ceresmon (BT26-032) ahora ofrece solo Digimon no suspendidos para pagar \"suspendiendo 1 Digimon\". Elegir un Digimon ya suspendido no pagaba nada, así que la jugada de la carta nunca se abría, también cuando Homeros (BT24-102) activaba el efecto otra vez.",
+    "it": "Ceresmon (BT26-032) ora offre solo Digimon non sospesi per pagare \"sospendendo 1 Digimon\". Scegliere un Digimon già sospeso non pagava nulla, quindi la giocata della carta non si apriva mai, anche quando Homeros (BT24-102) attivava di nuovo l'effetto."
+  },
+  "releases.1.75.2-beta.fix.endOfTurnRevealFreeze": {
+    "en": "A match no longer freezes when an end-of-turn attack, such as one with ＜Engage＞, reveals a security card with an effect. The next turn now starts normally.",
+    "pt-BR": "Uma partida não trava mais quando um ataque no fim do turno, como um com ＜Engage＞, revela uma carta de segurança com efeito. O próximo turno agora começa normalmente.",
+    "es": "Una partida ya no se congela cuando un ataque al final del turno, como uno con ＜Engage＞, revela una carta de seguridad con efecto. El siguiente turno ahora empieza con normalidad.",
+    "it": "Una partita non si blocca più quando un attacco a fine turno, come uno con ＜Engage＞, rivela una carta di sicurezza con un effetto. Il turno successivo ora inizia normalmente."
+  },
+  "releases.1.75.2-beta.fix.zeroDpDeletion": {
+    "en": "A Digimon whose DP drops to 0 because another effect changed its color, name or trait is now deleted at once, before the next effect resolves. Before, as with Jupitermon (BT26-033) after KingSukamon (EX13-031), it could stay on the board and keep using effects.",
+    "pt-BR": "Um Digimon cujo DP cai para 0 porque outro efeito mudou sua cor, nome ou traço agora é deletado na hora, antes de o próximo efeito resolver. Antes, como com Jupitermon (BT26-033) depois de KingSukamon (EX13-031), ele podia ficar em campo e continuar usando efeitos.",
+    "es": "Un Digimon cuyo DP baja a 0 porque otro efecto cambió su color, nombre o rasgo ahora se elimina de inmediato, antes de que se resuelva el siguiente efecto. Antes, como con Jupitermon (BT26-033) después de KingSukamon (EX13-031), podía quedarse en el tablero y seguir usando efectos.",
+    "it": "Un Digimon il cui DP scende a 0 perché un altro effetto ha cambiato il suo colore, nome o tratto ora viene eliminato subito, prima che si risolva l'effetto successivo. Prima, come con Jupitermon (BT26-033) dopo KingSukamon (EX13-031), poteva restare sul campo e continuare a usare effetti."
+  },
   "releases.1.75.1-beta.summary": {
     "en": "This update fixes three player-reported problems: effects that react to a deletion paid as a play cost, a lock that did not show on a Digimon, and the prompt for ordering effects that are not yours.",
     "pt-BR": "Esta atualização corrige três problemas relatados pelos jogadores: efeitos que reagem a uma deleção paga como custo de jogo, um bloqueio que não aparecia no Digimon e a tela para ordenar efeitos que não são seus.",
