@@ -29,6 +29,7 @@ import {
 } from "#api/engine/effects/interpreter/matching/permanent";
 import { candidatePermanents } from "#api/engine/effects/interpreter/targeting/permanents";
 import { getCardDefinition } from "@aegis/shared/cards/registry";
+import { CardKind } from "@aegis/shared/schema/enums";
 import type { Action } from "@aegis/shared/effects/ir/actions/action";
 import type { Cost } from "@aegis/shared/effects/ir/predicates/costs";
 import type { Filter } from "@aegis/shared/effects/ir/filters/filter";
@@ -284,6 +285,11 @@ export function createSubTriggerInstall({
           return refs.some((ref) => matchNameOrTrait(def as DefinitionFacts, ref));
         }
       : undefined;
+  const watchesBreedingArea = [sourceFilter?.zone].flat().includes("breeding");
+  const breedingDeletionGate =
+    (event === "onDeletionOf" || event === "whenLeavesPlay") && !watchesBreedingArea
+      ? (subCtx: EffectContext): boolean => subCtx.trigger.deletedFromBreeding !== true
+      : undefined;
   const deletionSourceFilterGate =
     (event === "onDeletionOf" || event === "whenLeavesPlay") && sourceFilter !== undefined
       ? (subCtx: EffectContext): boolean => {
@@ -351,6 +357,10 @@ export function createSubTriggerInstall({
             )
           ) {
             const { nameOrTrait: _nameOrTrait, ...rest } = snapshotFilter;
+            snapshotFilter = rest;
+          }
+          if (snapshotFilter.kind?.includes("Digimon") && definition.kinds.includes(CardKind.DigiEgg)) {
+            const { kind: _kind, ...rest } = snapshotFilter;
             snapshotFilter = rest;
           }
           if (!definitionMatches(snapshotFilter, definition as DefinitionFacts)) {
@@ -1053,6 +1063,7 @@ export function createSubTriggerInstall({
     addDigivolutionByEffectGate,
     digimonReturnsToHandGate,
     requireByEffectGate,
+    breedingDeletionGate,
     deletionSourceFilterGate,
     ownerMainPhaseGate,
     grantedEffectAffectableGate,
