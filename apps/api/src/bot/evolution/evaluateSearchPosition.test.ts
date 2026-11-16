@@ -70,6 +70,29 @@ describe("bounded public-position evaluation", () => {
     }
   });
 
+  it("keeps an empty zero-security tie neutral under all styles", async () => {
+    const setup = setupEngine({ 0: { security: [] }, 1: { security: [] } });
+    await setup.ready();
+    const observation = trainingObservation(setup.state, 0);
+    observation.memory = 0;
+
+    for (const profile of Object.values(BOT_PROFILES)) {
+      expect(evaluateSearchPosition(observation, profile)).toBeCloseTo(0.5, 9);
+    }
+  });
+
+  it("bounds the score contribution of memory in either direction", async () => {
+    const setup = setupEngine({});
+    await setup.ready();
+    const observation = trainingObservation(setup.state, 0);
+    const scoreAt = (memory: number) => evaluateSearchPosition({ ...observation, memory });
+
+    expect(scoreAt(-100)).toBe(scoreAt(-10));
+    expect(scoreAt(100)).toBe(scoreAt(10));
+    expect(scoreAt(0)).toBeGreaterThan(scoreAt(-10));
+    expect(scoreAt(10)).toBeGreaterThan(scoreAt(0));
+  });
+
   it("values security advantage more under the defensive style weights", async () => {
     const setup = setupEngine({ 0: { security: ["BT1-010", "BT1-011"] }, 1: { security: ["BT1-010"] } });
     await setup.ready();
