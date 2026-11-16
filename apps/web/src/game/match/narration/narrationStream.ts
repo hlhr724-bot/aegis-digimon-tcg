@@ -67,7 +67,7 @@ export interface NarrationStreamDeps {
   /** Freeze a queued clause's source against its own recorded board, before later results move it. */
   cardSiteAtVersion: (version: number | undefined) => { locate: EffectSourceLookup } | undefined;
   effectNarrationTracksRef: MutableRefObject<Map<Seat, string>>;
-  heldOriginsRef: MutableRefObject<WeakMap<object, { batchId: string; stateVersion: number; phaseOrder: number }>>;
+  heldOriginsRef: MutableRefObject<WeakMap<object, HeldNarrationOrigin>>;
   enqueuePhaseOrderRef: MutableRefObject<number | undefined>;
   batchVersionsRef: MutableRefObject<Map<string, number>>;
   narrationPhaseOrdersRef: MutableRefObject<Map<string, number>>;
@@ -106,6 +106,8 @@ export interface NarrationStreamDeps {
   narrationRef: MutableRefObject<ReadonlyMap<string, NarrationItem>>;
   awaitEffectConfirmation: (context: AnimationStepContext) => Promise<void> | undefined;
 }
+
+type HeldNarrationOrigin = { batchId: string; stateVersion: number; phaseOrder: number };
 
 type NarrationTrackParams = {
   unitId: number | undefined;
@@ -218,10 +220,11 @@ export function narrationStream(deps: NarrationStreamDeps) {
     item: NarrationItem,
     effectSourceHoldMs: number = TIMINGS.effectSourceHold,
     opts?: NarrationPlacement,
+    heldBatchOrigin?: HeldNarrationOrigin,
   ) {
     const body = item.notice?.body;
     const seat = item.side === "you" ? viewerSeat : otherSeat(viewerSeat);
-    const heldOrigin = heldOriginsRef.current.get(item.notice ?? item.panel ?? item);
+    const heldOrigin = heldOriginsRef.current.get(item.notice ?? item.panel ?? item) ?? heldBatchOrigin;
     const itemVersion = heldOrigin?.stateVersion ?? batchVersionsRef.current.get(item.batchId);
     const sourceIndex = cardSiteAtVersion(itemVersion);
     const initialSite =
@@ -740,6 +743,7 @@ export function narrationStream(deps: NarrationStreamDeps) {
     batchId: string,
     effectSourceHoldMs: number = TIMINGS.effectSourceHold,
     opts?: NarrationPlacement,
+    heldBatchOrigin?: HeldNarrationOrigin,
   ) {
     if (notices.length === 0 && panels.length === 0) return;
     const items = buildNarrationItems({
@@ -749,7 +753,7 @@ export function narrationStream(deps: NarrationStreamDeps) {
       nowMs: Date.now(),
       nextId: () => `narration-${(narrationSequenceRef.current += 1)}`,
     });
-    for (const item of items) enqueueNarrationItem(item, effectSourceHoldMs, opts);
+    for (const item of items) enqueueNarrationItem(item, effectSourceHoldMs, opts, heldBatchOrigin);
   }
 
   /** Raises whatever a security check has still not said, on the clock it is raised at. */
@@ -778,13 +782,16 @@ export function narrationStream(deps: NarrationStreamDeps) {
       [...ownNotices, ...ownPanels].map((item) => heldOriginsRef.current.get(item)?.batchId ?? lastBatchIdRef.current),
     );
     for (const batchId of origins) {
-      narrate(
-        ownNotices.filter((item) => (heldOriginsRef.current.get(item)?.batchId ?? lastBatchIdRef.current) === batchId),
-        ownPanels.filter((item) => (heldOriginsRef.current.get(item)?.batchId ?? lastBatchIdRef.current) === batchId),
-        batchId,
-        TIMINGS.effectSourceHold,
-        opts,
+      const batchNotices = ownNotices.filter(
+        (item) => (heldOriginsRef.current.get(item)?.batchId ?? lastBatchIdRef.current) === batchId,
       );
+      const batchPanels = ownPanels.filter(
+        (item) => (heldOriginsRef.current.get(item)?.batchId ?? lastBatchIdRef.current) === batchId,
+      );
+      const heldBatchOrigin = [...batchNotices, ...batchPanels]
+        .map((item) => heldOriginsRef.current.get(item))
+        .find((origin) => origin !== undefined);
+      narrate(batchNotices, batchPanels, batchId, TIMINGS.effectSourceHold, opts, heldBatchOrigin);
     }
   }
 
