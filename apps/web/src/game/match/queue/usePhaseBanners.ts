@@ -2,7 +2,12 @@ import { CardMovePosition } from "@aegis/shared/protocol/CardMovePosition";
 import { useLayoutEffect, useMemo, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
 import type { GameState, Seat, ServerEvent } from "@aegis/shared";
 import { Phase } from "@aegis/shared/schema/enums";
-import type { AnimationQueue, AnimationStep, AnimationStepContext } from "../../animationQueue";
+import {
+  DEFAULT_TRACK,
+  type AnimationQueue,
+  type AnimationStep,
+  type AnimationStepContext,
+} from "../../animationQueue";
 import type { SoundKind } from "../../../design/sound";
 import type { StateSnapshot } from "../../../net/presentedState";
 import type { NarrationItem } from "../../narration";
@@ -15,6 +20,7 @@ import { Side } from "../../side";
 import { UNSUSPEND_PHASE, UNSUSPEND_SWEEP_MS } from "../constants";
 import { CueTrack } from "../enums";
 import { OPTION_DOCK_TRACKS } from "../tracks";
+import { waitsForPhaseRibbons } from "./waitsForPhaseRibbons";
 import { buildInstanceSeatIndex } from "../../sidePanels";
 import type { DrawPhaseOwner, MatchCues, TurnTransitionCue, UnsuspendSweep } from "../types";
 
@@ -289,15 +295,22 @@ export function usePhaseBanners({
               ),
             ),
         );
-      const awaitingCue = queue.hasPendingStep(
-        (step) =>
-          step.track !== "phaseBanner" &&
+      const tracksHeldBehindRibbon = new Set<string>();
+      const awaitingCue = queue.hasPendingStep((step) => {
+        const track = step.track ?? DEFAULT_TRACK;
+        if (
+          track === "phaseBanner" ||
           // Audio callbacks have no painted handoff to finish before a ribbon.
-          step.track !== "sound" &&
-          step.track !== CueTrack.SecurityDock &&
-          !OPTION_DOCK_TRACKS.includes(step.track ?? "") &&
-          (stepPhaseOrdersRef.current.get(step) ?? 0) < phaseOrder,
-      );
+          track === "sound" ||
+          track === CueTrack.SecurityDock ||
+          OPTION_DOCK_TRACKS.includes(track) ||
+          tracksHeldBehindRibbon.has(track)
+        )
+          return false;
+        if ((stepPhaseOrdersRef.current.get(step) ?? 0) < phaseOrder) return true;
+        if (waitsForPhaseRibbons(step)) tracksHeldBehindRibbon.add(track);
+        return false;
+      });
       // A clause the ribbon is about to cover gets one readable beat first. The same budget
       // bounds it: a batch that keeps arriving must never hold the ribbon for good.
       const awaitingRead =

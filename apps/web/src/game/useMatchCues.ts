@@ -40,6 +40,7 @@ import { useResultHold } from "./match/queue/useResultHold";
 import { isFinitePlaybackStep } from "@/game/match/queue/isFinitePlaybackStep";
 import { useMatchFinale } from "@/game/match/queue/useMatchFinale";
 import { usePhaseBanners } from "./match/queue/usePhaseBanners";
+import { waitsForPhaseRibbons } from "./match/queue/waitsForPhaseRibbons";
 import { useDpPulses } from "./match/watchers/useDpPulses";
 import { useDrawWatcher } from "./match/watchers/useDrawWatcher";
 import { useRestrictionPulses } from "./match/watchers/useRestrictionPulses";
@@ -324,28 +325,24 @@ export function useMatchCues({
     });
     const counted = (step: AnimationStep): AnimationStep => {
       const phaseOrder = step.origin?.phaseOrder ?? enqueuePhaseOrderRef.current ?? completedPhaseOrderRef.current;
-      const gated =
-        step.track === "phaseBanner" ||
-        step.track === "unsuspendSweep" ||
-        step.track === CueTrack.DrawPresentation ||
-        step.track?.startsWith("turnDrawFlight-")
-          ? step
-          : {
-              ...step,
-              async run(context: AnimationStepContext) {
-                // Later server batches may arrive while a ribbon is still on screen.
-                // Keep their visual cues behind that ribbon, preserving its full duration.
-                while (
-                  (visiblePhaseBannerRef.current || completedPhaseOrderRef.current < phaseOrder) &&
-                  !context.cancelled &&
-                  !context.skipping &&
-                  context.mode === "live"
-                ) {
-                  await context.wait(16);
-                }
-                await step.run(context);
-              },
-            };
+      const gated = !waitsForPhaseRibbons(step)
+        ? step
+        : {
+            ...step,
+            async run(context: AnimationStepContext) {
+              // Later server batches may arrive while a ribbon is still on screen.
+              // Keep their visual cues behind that ribbon, preserving its full duration.
+              while (
+                (visiblePhaseBannerRef.current || completedPhaseOrderRef.current < phaseOrder) &&
+                !context.cancelled &&
+                !context.skipping &&
+                context.mode === "live"
+              ) {
+                await context.wait(16);
+              }
+              await step.run(context);
+            },
+          };
       // A replayed or drained step presents no moment of its own: reconnect history and a
       // screen with no animation to watch both render the live board (presentedState.ts).
       const countedStep =

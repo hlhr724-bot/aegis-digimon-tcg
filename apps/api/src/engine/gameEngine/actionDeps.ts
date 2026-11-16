@@ -180,6 +180,12 @@ export function resolutionDeps(
       // The window only rebuilds statics when it opens. A condition an earlier effect
       // changed (memory for BT17-016's immunity, Q2746) must be current for the next one.
       await engine.recomputeContinuousEffects();
+      if (engine.optionMainDepth > 0 || engine.effectResolutionDepth > 0) {
+        return;
+      }
+      if (hasRuleProcessPending(engine)) {
+        derivedPending.push(...(await collectRuleProcessPending(engine)));
+      }
     },
     turnSeat: runtimeState.turnSeat,
     listCandidateInstances: runtimeState.listCandidate,

@@ -1,4 +1,4 @@
-import { compiledEffects, getCardDefinition } from "@aegis/shared";
+import { compiledEffects, EffectTiming, getCardDefinition } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import { advance } from "../../engine/testkit/advance.js";
 import { setupEngine, settle } from "../../engine/testkit/harness.js";
@@ -374,6 +374,140 @@ describe("EX13-051 Guardromon", () => {
     expect(s.state.players[0]!.battleArea).toHaveLength(3);
     expect(s.state.players[0]!.trash).toHaveLength(0);
     expect(s.perm("guardromon").isSuspended).toBe(true);
+  });
+
+  function opposingBoard(guardromons: { as: string; suspended?: boolean }[]) {
+    return {
+      0: {
+        battleArea: [{ card: "EX13-024", as: "slayerdramon", under: ["BT1-010"] }],
+        hand: [{ card: "BT8-097", as: "crimsonBlaze" }],
+        deck: DECK,
+        security: ["BT1-009"],
+      },
+      1: {
+        battleArea: [
+          ...guardromons.map((guardromon) => ({ card: CARD_ID, ...guardromon })),
+          { card: ALLY_BLOCKER, as: "ally" },
+          { card: "EX12-054", as: "plainGuardromon" },
+        ],
+        deck: DECK,
+        security: ["BT1-010"],
+      },
+    };
+  }
+
+  async function useCrimsonBlaze(s: ReturnType<typeof setupEngine>) {
+    s.state.memory = 6;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("crimsonBlaze").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(
+      () =>
+        s.state.players[0]!.trash.some(({ cardId }) => cardId === "BT8-097") && s.state.pendingDecision === undefined,
+    );
+  }
+
+  it("two Guardromon each pay for the other, so Crimson Blaze deletes nothing", async () => {
+    const s = setupEngine(opposingBoard([{ as: "first" }, { as: "second" }]), {
+      autoAcceptOptional: true,
+      autoSelectCards: true,
+    });
+    await s.ready();
+
+    await useCrimsonBlaze(s);
+
+    expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard.cardId)).toEqual([
+      CARD_ID,
+      CARD_ID,
+      ALLY_BLOCKER,
+      "EX12-054",
+    ]);
+    expect(s.state.players[1]!.trash).toHaveLength(0);
+    expect(s.perm("first").isSuspended).toBe(true);
+    expect(s.perm("second").isSuspended).toBe(true);
+    expect(s.perm("ally").isSuspended).toBe(false);
+    expect(s.state.memory).toBe(4);
+  });
+
+  it("a lone paying Guardromon saves every other ＜Blocker＞ from Crimson Blaze and is itself deleted", async () => {
+    const s = setupEngine(opposingBoard([{ as: "exhausted", suspended: true }, { as: "payer" }]), {
+      autoAcceptOptional: true,
+      autoSelectCards: true,
+    });
+    await s.ready();
+    const payerInstanceId = s.perm("payer").topCard.instanceId;
+    const survivorIds = [s.perm("exhausted"), s.perm("ally"), s.perm("plainGuardromon")].map(
+      ({ permanentId }) => permanentId,
+    );
+
+    await useCrimsonBlaze(s);
+
+    expect(s.state.players[1]!.battleArea.map(({ permanentId }) => permanentId)).toEqual(survivorIds);
+    expect(s.state.players[1]!.trash.map(({ instanceId }) => instanceId)).toEqual([payerInstanceId]);
+    expect(s.decisions.filter(({ req }) => req.kind === "optional")).toHaveLength(1);
+  });
+
+  it("refusing the second Guardromon's payment leaves the first payer to Crimson Blaze", async () => {
+    const s = setupEngine(opposingBoard([{ as: "first" }, { as: "second" }]), { autoOrderTriggers: false });
+    await s.ready();
+    s.state.memory = 6;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("crimsonBlaze").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.pendingDecision?.kind === "orderTriggers");
+    const order = s.decisions.at(-1)!.req;
+    expect(order.options?.triggerCardIds).toEqual([CARD_ID, CARD_ID]);
+    expect(order.options?.triggerIsOptional).toEqual([true, true]);
+
+    expect(
+      s.engine.applyIntent(1, {
+        type: "respondDecision",
+        decisionId: order.decisionId,
+        response: { kind: "orderTriggers", order: [], orderIndexes: [0, 1], optionalAnswersByIndex: [true, false] },
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.state.players[0]!.trash.some(({ cardId }) => cardId === "BT8-097") && s.state.pendingDecision === undefined,
+    );
+
+    expect(s.state.players[1]!.battleArea.map(({ topCard }) => topCard.cardId)).toEqual([
+      CARD_ID,
+      ALLY_BLOCKER,
+      "EX12-054",
+    ]);
+    expect(s.state.players[1]!.trash.map(({ cardId }) => cardId)).toEqual([CARD_ID]);
+    expect(s.state.players[1]!.battleArea.filter(({ isSuspended }) => isSuspended)).toHaveLength(0);
+  });
+
+  it("Slayerdramon's return takes only the lone paying Guardromon and leaves the ＜Blocker＞ Digimon it saved", async () => {
+    const s = setupEngine(opposingBoard([{ as: "payer" }]), { autoAcceptOptional: true, autoSelectCards: true });
+    await s.ready();
+    const survivorIds = [s.perm("ally"), s.perm("plainGuardromon")].map(({ permanentId }) => permanentId);
+
+    await advance(s.engine).fire(EffectTiming.OnPlay, s.perm("slayerdramon"));
+    await settle(() => s.state.players[1]!.battleArea.length === 2 && s.state.pendingDecision === undefined);
+
+    expect(s.state.players[1]!.battleArea.map(({ permanentId }) => permanentId)).toEqual(survivorIds);
+    expect(s.state.players[1]!.deck.at(-1)!.cardId).toBe(CARD_ID);
+    expect(s.state.players[1]!.deck).toHaveLength(DECK.length + 1);
+    expect(s.state.players[1]!.trash).toHaveLength(0);
+  });
+
+  it("two Guardromon keep the whole board against Slayerdramon's return", async () => {
+    const s = setupEngine(opposingBoard([{ as: "first" }, { as: "second" }]), {
+      autoAcceptOptional: true,
+      autoSelectCards: true,
+    });
+    await s.ready();
+
+    await advance(s.engine).fire(EffectTiming.OnPlay, s.perm("slayerdramon"));
+    await settle(() => s.perm("first").isSuspended && s.perm("second").isSuspended);
+    await settle(() => s.state.pendingDecision === undefined);
+
+    expect(s.state.players[1]!.battleArea).toHaveLength(4);
+    expect(s.state.players[1]!.deck).toHaveLength(DECK.length);
+    expect(s.state.players[1]!.trash).toHaveLength(0);
   });
 
   function inheritedBoard(opts?: { allySuspended?: boolean }) {
