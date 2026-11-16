@@ -1552,6 +1552,9 @@ const interfaceMessages = {
     "Effetti precedenti ancora in attesa. Si risolvono quando terminano gli effetti qui sopra.",
   "overlay.presetMandatory": "Obbligatorio",
   "overlay.triggerReason": "Innescato da: {reason}",
+  "overlay.triggerOpponentEffect": "Effetto dell'avversario",
+  "overlay.orderOpponentEffectsNote":
+    "Sei il giocatore di turno, quindi scegli l'ordine di questi effetti, compresi quelli dell'avversario.",
   "overlay.presetLabel": "Risposta alle scelte facoltative di {name}",
   "overlay.triggerSourceField": "Campo",
   "overlay.triggerSourceInherited": "Ereditato da {name}",

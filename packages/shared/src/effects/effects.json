@@ -247795,7 +247795,7 @@
           {
             "kind": "SubTrigger",
             "event": "onDeletionOf",
-            "sourceFilter": { "controller": "any", "kind": ["Digimon"] },
+            "sourceFilter": { "controller": "any", "kind": ["Digimon"], "zone": ["battleArea", "breeding"] },
             "actions": [
               {
                 "effectTextPart": "1 of your Tamers may digivolve into a [Kurata's Army] trait Digimon card in the hand or trash without paying the cost.",

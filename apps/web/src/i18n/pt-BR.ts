@@ -1403,6 +1403,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.waitingEffectsHint": "Efeitos anteriores ainda pendentes. Eles resolvem quando os efeitos acima terminarem.",
   "overlay.presetMandatory": "Obrigatório",
   "overlay.triggerReason": "Motivo: {reason}",
+  "overlay.triggerOpponentEffect": "Efeito do oponente",
+  "overlay.orderOpponentEffectsNote":
+    "Você é o jogador do turno, então escolhe a ordem destes efeitos, incluindo os do oponente.",
   "overlay.presetLabel": "Resposta para as escolhas opcionais de {name}",
   "overlay.triggerSourceField": "Campo",
   "overlay.triggerSourceInherited": "Herdado por {name}",

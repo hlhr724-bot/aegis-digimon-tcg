@@ -1647,6 +1647,8 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "先に誘発した効果がまだ処理待ちです。上の効果が終わると処理されます。",
   "overlay.presetMandatory": "強制",
   "overlay.triggerReason": "誘発: {reason}",
+  "overlay.triggerOpponentEffect": "相手の効果",
+  "overlay.orderOpponentEffectsNote": "あなたがターンプレイヤーのため、相手の効果を含むこれらの効果の順番を選びます。",
   "overlay.presetLabel": "{name}の任意効果への回答",
   "overlay.triggerSourceField": "場",
   "overlay.triggerSourceInherited": "{name}の進化元効果",

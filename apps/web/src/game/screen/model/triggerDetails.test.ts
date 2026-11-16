@@ -126,6 +126,19 @@ describe("trigger chooser source labels", () => {
     ]);
   });
 
+  it("marks only the effects controlled by the other seat", () => {
+    const { viewer, opponent } = players();
+    const decision = orderTriggers(["opponent-field", "field-a", "trash-card"]);
+    const marked = triggerDetailsFor({
+      decision: { ...decision, options: { ...decision.options, triggerControllerSeats: [1, 0] } },
+      viewer,
+      opponent,
+      handInstanceIds: [],
+      t: translator("en"),
+    });
+    expect(marked.map((detail) => detail.controlledByOpponent)).toEqual([true, undefined, undefined]);
+  });
+
   it("leaves a source it cannot place unlabelled", () => {
     expect(sourceLabels(["unknown-card"])).toEqual([undefined]);
   });

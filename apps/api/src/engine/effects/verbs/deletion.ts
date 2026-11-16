@@ -189,6 +189,7 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
             removalCause: cause,
             removalMechanic: opts?.mechanic,
             deletedByDpZero: cause === "byRule" && deleted.currentDP === 0,
+            ...(deleted.inBreeding ? { deletedFromBreeding: true } : {}),
           },
           "selfSourceOnly",
         );
@@ -471,6 +472,7 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
             removalCause: cause,
             removalMechanic: opts?.mechanic,
             deletedByDpZero: cause === "byRule" && deleted.currentDP === 0,
+            ...(deleted.inBreeding ? { deletedFromBreeding: true } : {}),
           },
           deletionWatchersFired.has(permanentId) ? "excludeSelfSource" : undefined,
         );
@@ -482,6 +484,7 @@ export function createDeletionVerbs(pc: PrimitivesContext) {
           deletedTopCardId: deleted.topCard.cardId,
           removalCause: cause,
           ...(cause === "byEffect" ? { byEffectSeat: effectSeatStack.at(-1) ?? engine.controllerSeat() } : {}),
+          ...(deleted.inBreeding ? { deletedFromBreeding: true } : {}),
         });
         // whenTrashedByEffect (CAP-E8): fires only when this deletion was effect-driven.
         // The permanent is still live here so the watcher's sourceFilter.isSelfRef can match.

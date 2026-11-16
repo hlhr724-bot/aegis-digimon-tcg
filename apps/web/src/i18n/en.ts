@@ -1397,6 +1397,9 @@ export const en = {
   "overlay.waitingEffectsHint": "Earlier effects still pending. They resolve once the effects above are done.",
   "overlay.presetMandatory": "Mandatory",
   "overlay.triggerReason": "Triggered by: {reason}",
+  "overlay.triggerOpponentEffect": "Opponent's effect",
+  "overlay.orderOpponentEffectsNote":
+    "You are the turn player, so you choose the order of these effects, including your opponent's.",
   "overlay.presetLabel": "Answer for {name}'s optional choices",
   "overlay.triggerSourceField": "Field",
   "overlay.triggerSourceInherited": "Inherited by {name}",

@@ -153,6 +153,7 @@ export interface TriggerInfo {
   removalMechanic?: "Overclock";
   /** True when this simultaneous deletion batch is the rule check for Digimon at exactly 0 DP. */
   deletedByDpZero?: boolean;
+  deletedFromBreeding?: boolean;
   /** Top-card instance IDs that individually reached exactly 0 DP in this deletion window. */
   deletedByDpZeroInstanceIds?: string[];
   /** Security card currently being checked. */
