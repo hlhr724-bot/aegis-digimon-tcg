@@ -8373,7 +8373,10 @@ describe("cards that delete the Digimon this effect played", () => {
     await delayEffect.resolve(ctx);
 
     expect(recorder.calls.filter((c) => c.verb === "delayedDeletePlayed")).toEqual([
-      { verb: "delayedDeletePlayed", args: [PLAYED, "endOfOwnerTurn", "EX10-072"] },
+      {
+        verb: "delayedDeletePlayed",
+        args: [PLAYED, "endOfOwnerTurn", "EX10-072", "[Pending] At the end of your turn, delete this Digimon."],
+      },
     ]);
     // The played Digimon is NOT deleted on the spot (only the ＜Delay＞ cost's own trash runs).
     expect(
