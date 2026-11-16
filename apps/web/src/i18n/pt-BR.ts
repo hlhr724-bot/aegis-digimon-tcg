@@ -907,7 +907,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.roomCodeInvalid": "Este código de sala está errado ou expirou. Confira o código e tente novamente.",
   "game.accountRequired": "Entre na sua conta para participar desta partida.",
   "game.alreadyInMatch":
-    "Sua conta já está em outra partida. Termine-a ou feche outras abas do Aegis e tente novamente.",
+    "Sua conta já está em outra partida. Retome-a aqui ou termine-a antes. Uma partida que perdeu a conexão libera sua conta em até um minuto.",
   "game.rankedSearchActive": "Sua conta está procurando uma partida ranqueada. Cancele essa busca e tente novamente.",
   "game.joinRefused": "O servidor não aceitou a entrada. Volte ao lobby e tente novamente.",
   "game.seatTransferred": "Você continuou esta partida em outro aparelho.",
@@ -1403,6 +1403,9 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.waitingEffectsHint": "Efeitos anteriores ainda pendentes. Eles resolvem quando os efeitos acima terminarem.",
   "overlay.presetMandatory": "Obrigatório",
   "overlay.triggerReason": "Motivo: {reason}",
+  "overlay.triggerOpponentEffect": "Efeito do oponente",
+  "overlay.orderOpponentEffectsNote":
+    "Você é o jogador do turno, então escolhe a ordem destes efeitos, incluindo os do oponente.",
   "overlay.presetLabel": "Resposta para as escolhas opcionais de {name}",
   "overlay.triggerSourceField": "Campo",
   "overlay.triggerSourceInherited": "Herdado por {name}",

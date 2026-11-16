@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Icons } from "../design/icons";
 import { useFieldScrollArrows } from "@/game/fieldScrollArrows/useFieldScrollArrows";
 import { useTranslation } from "../i18n";
+import { getTurnedCardInlineMargin } from "@/game/getTurnedCardInlineMargin";
 import "./style/cardSlots.css";
 
 /** Horizontal overhang of a 1.4:1 card after a 90° turn, plus room for its outline and shadow. */
@@ -78,8 +79,10 @@ export function BattleRow({
           edgeClearance * 2 -
           occupied -
           gap * Math.max(0, cards.length + spacers - 1);
+        const slotTurnMargin =
+          style.getPropertyValue("--field-prefer-stacked").trim() === "1" ? 0 : getTurnedCardInlineMargin(cardWidth);
         const capacity = Math.floor(
-          (available + (cards.length + spacers === 0 ? gap : 0)) / (Math.max(44, cardWidth) + gap),
+          (available + (cards.length + spacers === 0 ? gap : 0)) / (Math.max(44, cardWidth) + 2 * slotTurnMargin + gap),
         );
         // Five is a visual guide, never a limit on how many permanents can be played.
         setEmptySlots(Math.max(cards.length === 0 ? 1 : 0, Math.min(5 - cards.length, capacity)));
@@ -154,7 +157,12 @@ export function BattleRow({
         data-card-slots={cardWidth !== undefined || undefined}
         style={{
           ...props.style,
-          ...(cardWidth === undefined ? {} : ({ "--field-slot-width": `${cardWidth}px` } as CSSProperties)),
+          ...(cardWidth === undefined
+            ? {}
+            : ({
+                "--field-slot-width": `${cardWidth}px`,
+                "--field-slot-turn-margin": `${getTurnedCardInlineMargin(cardWidth)}px`,
+              } as CSSProperties)),
         }}
       >
         {edgeClearance > 0 ? (

@@ -1106,7 +1106,8 @@ const interfaceMessages = {
   "game.roomSettingsMismatch": "這個房間的對戰設定不同。請返回大廳重新搜尋。",
   "game.roomCodeInvalid": "房間代碼錯誤或已過期。請檢查代碼後重試。",
   "game.accountRequired": "請登入後加入這場對戰。",
-  "game.alreadyInMatch": "你的帳號已在另一場對戰中。請先結束那場對戰或關閉其他 Aegis 分頁，然後重試。",
+  "game.alreadyInMatch":
+    "你的帳號已在另一場對戰中。請在此繼續對戰，或先結束那場對戰。連線中斷的對戰會在一分鐘內釋放你的帳號。",
   "game.rankedSearchActive": "你的帳號正在搜尋排位對戰。請取消搜尋後重試。",
   "game.joinRefused": "伺服器沒有接受這次加入。請返回大廳後重試。",
   "game.seatTransferred": "你已在另一台裝置上繼續這場對戰。",
@@ -1584,6 +1585,8 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "先前的效果仍在等待中。上方的效果處理完後，它們才會結算。",
   "overlay.presetMandatory": "強制",
   "overlay.triggerReason": "觸發原因：{reason}",
+  "overlay.triggerOpponentEffect": "對手的效果",
+  "overlay.orderOpponentEffectsNote": "你是回合玩家，因此由你決定這些效果的順序，包括對手的效果。",
   "overlay.presetLabel": "為{name}的可選選擇預設回答",
   "overlay.triggerSourceField": "場上",
   "overlay.triggerSourceInherited": "{name}的繼承效果",

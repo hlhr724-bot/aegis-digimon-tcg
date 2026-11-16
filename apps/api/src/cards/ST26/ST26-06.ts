@@ -11,11 +11,7 @@ const iceSnowDigimon: Filter = {
 
 const trashBottomTwoThenDraw: Action[] = [
   {
-    kind: "TrashDigivolution",
-    effectTextPart: "by suspending this Tamer, trash the bottom 2 digivolution cards of 1 of your opponent's Digimon.",
-    target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
-    amount: 2,
-    fromTop: false,
+    kind: "CostGatedBlock",
     cost: {
       kind: "suspend",
       optional: true,
@@ -24,17 +20,27 @@ const trashBottomTwoThenDraw: Action[] = [
     },
     optional: true,
     abortOnDecline: true,
-  },
-  {
-    kind: "Draw",
-    effectTextPart: "After, if your opponent has no Digimon with digivolution cards, ＜Draw 1＞.",
-    controller: "mine",
-    amount: 1,
-    condition: {
-      kind: "opponentHasNone",
-      filter: { digivolutionCards: "hasAny", controllerDefault: "opponent", kind: ["Digimon"] },
-      raw: "your opponent has no Digimon with digivolution cards",
-    },
+    actions: [
+      {
+        kind: "TrashDigivolution",
+        effectTextPart:
+          "by suspending this Tamer, trash the bottom 2 digivolution cards of 1 of your opponent's Digimon.",
+        target: { filter: { controller: "opponent", kind: ["Digimon"] }, count: 1 },
+        amount: 2,
+        fromTop: false,
+      },
+      {
+        kind: "Draw",
+        effectTextPart: "After, if your opponent has no Digimon with digivolution cards, ＜Draw 1＞.",
+        controller: "mine",
+        amount: 1,
+        condition: {
+          kind: "opponentHasNone",
+          filter: { digivolutionCards: "hasAny", controllerDefault: "opponent", kind: ["Digimon"] },
+          raw: "your opponent has no Digimon with digivolution cards",
+        },
+      },
+    ],
   },
 ];
 

@@ -1187,7 +1187,7 @@ const interfaceMessages = {
     "Dieser Raumcode ist falsch oder abgelaufen. Prüfen Sie den Code und versuchen Sie es erneut.",
   "game.accountRequired": "Melden Sie sich an, um dieser Partie beizutreten.",
   "game.alreadyInMatch":
-    "Ihr Konto ist bereits in einer anderen Partie. Beenden Sie sie oder schließen Sie andere Aegis-Tabs und versuchen Sie es erneut.",
+    "Ihr Konto ist bereits in einer anderen Partie. Setzen Sie sie hier fort oder beenden Sie sie zuerst. Eine Partie mit unterbrochener Verbindung gibt Ihr Konto innerhalb einer Minute frei.",
   "game.rankedSearchActive":
     "Ihr Konto sucht gerade eine Ranglistenpartie. Brechen Sie diese Suche ab und versuchen Sie es erneut.",
   "game.joinRefused": "Der Server hat den Beitritt abgelehnt. Kehren Sie zur Lobby zurück und versuchen Sie es erneut.",
@@ -1692,6 +1692,9 @@ const interfaceMessages = {
     "Frühere Effekte stehen noch aus. Sie werden abgehandelt, sobald die Effekte oben erledigt sind.",
   "overlay.presetMandatory": "Pflicht",
   "overlay.triggerReason": "Ausgelöst durch: {reason}",
+  "overlay.triggerOpponentEffect": "Effekt des Gegners",
+  "overlay.orderOpponentEffectsNote":
+    "Sie sind der Spieler am Zug und bestimmen die Reihenfolge dieser Effekte, auch die Ihres Gegners.",
   "overlay.presetLabel": "Antwort für die optionalen Entscheidungen von {name}",
   "overlay.triggerSourceField": "Feld",
   "overlay.triggerSourceInherited": "Vererbt an {name}",

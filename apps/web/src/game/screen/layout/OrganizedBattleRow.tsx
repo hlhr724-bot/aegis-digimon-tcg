@@ -19,6 +19,7 @@ import { BattleLanes, useBattleLanePreference } from "../../../design/battleLane
 import { COARSE_POINTER_QUERY, useMediaQuery } from "../../../design/useMediaQuery";
 import { twoRowsFit } from "./twoRowsFit";
 import { motionPreference } from "@/design/motion/motionPreference";
+import { getTurnedCardInlineMargin } from "@/game/getTurnedCardInlineMargin";
 
 const CARD_ASPECT = 1.4;
 /** The design's --ds-touch-target minimum also applies to each permanent's button wrapper. */
@@ -39,6 +40,13 @@ const PORTRAIT_LANE_GAP = 8;
 const PORTRAIT_ROW_CARDS = 5;
 const DIGIMON_GAP_SHARE = 0.25;
 const SUPPORT_GAP_SHARE = 0.3;
+
+function getSupportGapShare(digimonWidth: number, supportWidth: number): number {
+  if (supportWidth === digimonWidth) {
+    return DIGIMON_GAP_SHARE;
+  }
+  return SUPPORT_GAP_SHARE;
+}
 /** One lane has the row's whole height, so its cards may grow past the layout's card width, up to this share. */
 const SINGLE_LANE_GROWTH = 1.2;
 const TWO_ROW_GUIDE_SLOTS = 5;
@@ -531,9 +539,9 @@ export function laneContentWidth(
   preferStacked = false,
 ): number {
   if (cards.length === 0) return 0;
-  const suspendedMargin = Math.ceil(width * 0.2);
+  const turnMargin = getTurnedCardInlineMargin(width);
   const frames = cards.reduce((total, card) => {
-    const turn = card.suspended ? suspendedMargin : 0;
+    const turn = card.suspended || !preferStacked ? turnMargin : 0;
     const start = card.sources
       ? Math.max(turn, 4 + (card.sources - 1) * Math.min(sourceStep, sourceFanStepLimit(width, card.sources)))
       : turn;
@@ -571,7 +579,13 @@ export function fitLanesToWidth(
   const digimonWidth = (width: number) =>
     laneContentWidth(cards.digimon, width, DIGIMON_GAP_SHARE, step, preferStacked);
   const supportWidth = (width: number) =>
-    laneContentWidth(cards.support, supportFor(width), SUPPORT_GAP_SHARE, step, preferStacked);
+    laneContentWidth(
+      cards.support,
+      supportFor(width),
+      getSupportGapShare(width, supportFor(width)),
+      step,
+      preferStacked,
+    );
   const fits = {
     [LanePlacement.Stacked]: (width: number) => digimonWidth(width) <= rowWidth && supportWidth(width) <= rowWidth,
     [LanePlacement.SideBySide]: (width: number) => digimonWidth(width) + supportWidth(width) <= rowWidth,
@@ -1075,7 +1089,8 @@ export function OrganizedBattleRow({
   const digimonSlots = emptySlots(merged ? cards : digimonCards, lanes.digimon, DIGIMON_GAP_SHARE);
   // Two lanes always draw the support lane, outlining its places like the Digimon lane's.
   const drawsSupportLane = !merged && (hasSupport || content.reserveSupport);
-  const supportSlots = emptySlots(supportCards, lanes.support, SUPPORT_GAP_SHARE);
+  const supportGapShare = getSupportGapShare(lanes.digimon, lanes.support);
+  const supportSlots = emptySlots(supportCards, lanes.support, supportGapShare);
   useFieldMotion(ref, previous, cards, isSuspended, size);
   useLayoutEffect(() => {
     splitKeys.current = new Set(cards.filter((drawn) => drawn.splitOff).map((drawn) => drawn.fieldKey));
@@ -1131,7 +1146,7 @@ export function OrganizedBattleRow({
             ? lanes.support + 2 * PORTRAIT_LANE_INLINE_PADDING
             : undefined,
         display: "flex",
-        gap: laneGap(lanes.support, size.preferStacked, SUPPORT_GAP_SHARE),
+        gap: laneGap(lanes.support, size.preferStacked, supportGapShare),
         justifyContent: "flex-start",
         alignItems: "center",
         ...({

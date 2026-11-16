@@ -1157,7 +1157,7 @@ const interfaceMessages = {
   "game.roomCodeInvalid": "このルームコードは間違っているか、期限切れです。コードを確認して再試行してください。",
   "game.accountRequired": "この対戦に参加するにはログインしてください。",
   "game.alreadyInMatch":
-    "このアカウントはすでに別の対戦に参加しています。その対戦を終えるか、ほかのAegisタブを閉じて再試行してください。",
+    "このアカウントはすでに別の対戦に参加しています。ここで再開するか、先にその対戦を終えてください。接続が切れた対戦は、1分以内にアカウントを解放します。",
   "game.rankedSearchActive": "このアカウントはランクマッチを検索中です。検索をキャンセルしてから再試行してください。",
   "game.joinRefused": "サーバーが参加を受け付けませんでした。ロビーに戻って再試行してください。",
   "game.seatTransferred": "この対戦は別のデバイスで続行されました。",
@@ -1647,6 +1647,8 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "先に誘発した効果がまだ処理待ちです。上の効果が終わると処理されます。",
   "overlay.presetMandatory": "強制",
   "overlay.triggerReason": "誘発: {reason}",
+  "overlay.triggerOpponentEffect": "相手の効果",
+  "overlay.orderOpponentEffectsNote": "あなたがターンプレイヤーのため、相手の効果を含むこれらの効果の順番を選びます。",
   "overlay.presetLabel": "{name}の任意効果への回答",
   "overlay.triggerSourceField": "場",
   "overlay.triggerSourceInherited": "{name}の進化元効果",

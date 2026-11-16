@@ -1158,7 +1158,7 @@ const interfaceMessages = {
   "game.roomCodeInvalid": "Kode ruangan ini salah atau sudah kedaluwarsa. Periksa kodenya dan coba lagi.",
   "game.accountRequired": "Masuk ke akun Anda untuk bergabung ke pertandingan ini.",
   "game.alreadyInMatch":
-    "Akun Anda sudah ada di pertandingan lain. Selesaikan pertandingan itu atau tutup tab Aegis lain, lalu coba lagi.",
+    "Akun Anda sudah ada di pertandingan lain. Lanjutkan di sini atau selesaikan dulu. Pertandingan yang kehilangan koneksi membebaskan akun Anda dalam satu menit.",
   "game.rankedSearchActive": "Akun Anda sedang mencari pertandingan ranked. Batalkan pencarian itu, lalu coba lagi.",
   "game.joinRefused": "Server tidak menerima permintaan bergabung. Kembali ke lobi dan coba lagi.",
   "game.seatTransferred": "Anda melanjutkan pertandingan ini di perangkat lain.",
@@ -1654,6 +1654,9 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "Efek sebelumnya masih tertunda. Efek tersebut diproses setelah efek di atas selesai.",
   "overlay.presetMandatory": "Wajib",
   "overlay.triggerReason": "Dipicu oleh: {reason}",
+  "overlay.triggerOpponentEffect": "Efek lawan",
+  "overlay.orderOpponentEffectsNote":
+    "Anda adalah pemain giliran, jadi Anda memilih urutan efek ini, termasuk efek lawan.",
   "overlay.presetLabel": "Jawaban untuk pilihan opsional {name}",
   "overlay.triggerSourceField": "Field",
   "overlay.triggerSourceInherited": "Diwarisi oleh {name}",

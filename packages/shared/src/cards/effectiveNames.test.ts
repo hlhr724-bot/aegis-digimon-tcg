@@ -30,6 +30,11 @@ describe("effectiveStaticNames", () => {
     expect(effectiveExactNames(getCardDefinition(cardId)!)).toEqual(expect.arrayContaining(aliases));
   });
 
+  it.each(["EX9-062", "P-101", "BT17-068"])("grants no name from %s's printed level or trait treatment", (cardId) => {
+    const definition = getCardDefinition(cardId)!;
+    expect(effectiveStaticNames(definition)).toEqual([definition.nameEn]);
+  });
+
   it("grants BT9-051's pre-standard Leomon wording as a substring name only", () => {
     const panjyamon = getCardDefinition("BT9-051")!;
     expect(effectiveSubstringOnlyNames(panjyamon)).toEqual(["Leomon"]);

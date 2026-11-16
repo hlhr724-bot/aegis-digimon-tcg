@@ -67,6 +67,10 @@ export async function resolveDeletionReactions(
     const simultaneousPending =
       engine.activeWindowToken === undefined ? [] : armedAsPendingCollected(engine, battleWonSubTriggers);
     if (deletionSubTriggers.length === 0) return fire(trigger, simultaneousPending);
+    if (engine.payingPlayCost) {
+      engine.pendingPlayCostDeletionEffects.push(...armedAsPendingCollected(engine, deletionSubTriggers));
+      return fire(trigger, simultaneousPending);
+    }
     const enclosing = engine.pendingWindowSubTriggers;
     engine.pendingWindowSubTriggers = [...enclosing, ...deletionSubTriggers];
     engine.subTriggerWindowDepth += 1;

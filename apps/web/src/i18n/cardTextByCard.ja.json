@@ -12299,7 +12299,7 @@
     "<Piercing>.": "≪貫通≫（このデジモンがアタックしたバトルで相手のデジモンを消滅させたとき、アタック終了前にチェックする）"
   },
   "EX7-034": {
-    "<Vortex>(Attheendofyourturn,thisDigimonmayattackanopponent'sDigimon.Withthiseffect,itcanattacktheturnitwasplayed)[WhenDigivolving]Suspend1Digimon.IfthiseffectsuspendsyourDigimon,thisDigimonisn'taffectedbyyouropponent'sDigimon'seffectsuntiltheendoftheirturn.": "≪ヴォルテクス≫（自分のターン終了時、このデジモンで相手のデジモンにアタックできる。この効果では、登場したターンでもアタックできる）\n【進化時】デジモン1体をレストできる。この効果で自分のデジモンがレストしたなら、相手のターン終了まで、このデジモンは相手のデジモンの効果を受けない。",
+    "<Vortex>(Attheendofyourturn,thisDigimonmayattackanopponent'sDigimon.Withthiseffect,itcanattacktheturnitwasplayed)[WhenDigivolving]Youmaysuspend1Digimon.IfthiseffectsuspendsyourDigimon,thisDigimonisn'taffectedbyyouropponent'sDigimon'seffectsuntiltheendoftheirturn.": "≪ヴォルテクス≫（自分のターン終了時、このデジモンで相手のデジモンにアタックできる。この効果では、登場したターンでもアタックできる）\n【進化時】デジモン1体をレストできる。この効果で自分のデジモンがレストしたなら、相手のターン終了まで、このデジモンは相手のデジモンの効果を受けない。",
     "[YourTurn][OncePerTurn]WhenthisDigimonattacksyouropponent'sDigimon,youmayunsuspendthisDigimon.": "【自分のターン】[ターンに1回]このデジモンが相手のデジモンにアタックしたとき、このデジモンをアクティブにできる。"
   },
   "EX7-035": {
@@ -15764,5 +15764,12 @@
   "BT27-014": {
     "[Digivolve]Lv.4w/[Gemmon]intext:Cost3<Engage>[OnPlay][WhenDigivolving]1ofyourDigimongains<Piercing>and+3000DPfortheturn.[YourTurn]ThisDigimonwith12000DPormoregains<Rush>.": "〔進化〕「ジェムモン」の記述があるLv.4:コスト3\n≪急襲≫\n【登場時】【進化時】ターン終了まで、自分のデジモン1体は≪貫通≫を得て、DP+3000。\n【自分のターン】DP12000以上のこのデジモンは≪速攻≫を得る。",
     "[YourTurn]ThisDigimonwith[Gemmon]initstextgains<Engage>.(Attheendofyourturn,thisDigimonmayattack.)": "【自分のターン】「ジェムモン」の記述があるこのデジモンは≪急襲≫（自分のターン終了時、このデジモンでアタックできる）を得る。"
+  },
+  "BT27-018": {
+    "[Digivolve]Lv.5w/[Gemmon]intext:Cost3<Rush><Progress>[WhenDigivolving][WhenAttacking][OncePerTurn]Forevery8000DPthisDigimonhas,youmayactivatetheeffectbelow:・Delete1ofyouropponent'slowestDPDigimon.[AllTurns][OncePerTurn]Whenanyofyouropponent'sDigimonaredeleted,trashtheirtopsecuritycard.[Assembly-5]Lv.5×Lv.4×Lv.3,allRedw/[Gemmon]intext": "〔進化〕「ジェムモン」の記述があるLv.5:コスト3\n≪速攻≫ ≪プログレス≫\n【進化時】【アタック時】[ターン1回]このデジモンのDP8000ごとに、以下の効果を発揮できる。\n・最もDPの低い相手のデジモン1体を消滅させる。\n【お互いのターン】[ターン1回]相手のデジモンが消滅したとき、相手のセキュリティを上から1枚破棄する。\nアセンブリ-5:「ジェムモン」の記述がある赤の、Lv.5×Lv.4×Lv.3"
+  },
+  "BT27-086": {
+    "[StartofYourMainPhase]IfyouhaveaDigimonwith[Gemmon]initstext,gain1memory.[YourTurn]WhenyourDigimonareplayedordigivolve,ifanyofthemhavethe[ALYSION]trait,bysuspendingthisTamer,1ofyourDigimongets+3000DPfortheturn.After,ifyouhaveaDigimonwith8000DPormore,<Draw1>.": "【自分のメインフェイズ開始時】「ジェムモン」の記述がある自分のデジモンがいるなら、メモリー+1。\n【自分のターン】自分のデジモンが登場/進化したとき、そのデジモンが特徴「アリシオン」を持つなら、このテイマーをレストさせることで、ターン終了まで、自分のデジモン1体をDP+3000。さらに、DP8000以上の自分のデジモンがいるなら、≪1ドロー≫。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
   }
 }

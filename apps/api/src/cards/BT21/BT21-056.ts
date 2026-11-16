@@ -16,6 +16,7 @@ export const compiled: CompiledCard = {
               nameOrTrait: [{ tokens: ["Vemmon"], match: "text" }],
             },
             count: 1,
+            upTo: true,
           },
           to: "hand",
           cost: {

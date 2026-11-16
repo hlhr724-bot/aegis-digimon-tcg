@@ -21,6 +21,7 @@ export const compiled: CompiledCard = {
               ],
             },
             count: 1,
+            upTo: true,
           },
           to: "hand",
           cost: {

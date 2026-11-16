@@ -858,9 +858,7 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
                 effectSourceCardId: ctx.source.cardId,
                 ...(action.playedByDecode === true ? { playedByDecode: true } : {}),
                 ...(costReduction !== undefined ? { costDelta: costReduction } : {}),
-                ...((action as typeof action & { costOverride?: number }).costOverride !== undefined
-                  ? { costOverride: (action as typeof action & { costOverride?: number }).costOverride }
-                  : {}),
+                ...(action.costOverride !== undefined ? { costOverride: action.costOverride } : {}),
                 ...(action.suppressOnPlayEffects === true ? { suppressOnPlayEffects: true } : {}),
                 hostPermanentIds,
               })

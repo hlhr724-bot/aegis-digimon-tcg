@@ -1,0 +1,1 @@
+export const ARCHETYPE_CLASSIFIER_VERSION = 1;

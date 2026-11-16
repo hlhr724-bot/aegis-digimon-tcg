@@ -40,6 +40,7 @@ import { PermanentSummoningRing } from "./PermanentSummoningRing";
 import { originalDP, permanentTransformation } from "../transformation";
 import type { DropAttrs } from "./types";
 import { usePermanentInspection } from "./usePermanentInspection";
+import { getTurnedCardInlineMargin } from "@/game/getTurnedCardInlineMargin";
 import "./fieldBadges.css";
 
 export function PermanentView({
@@ -143,7 +144,12 @@ export function PermanentView({
     heldDeletion || fate?.fate === "delete" || fate?.fate === "trash" || fate?.fate === "effectTarget";
   const permanentWidth = width ?? (compact ? 76 : 116);
   const isVisuallySuspended = heldSuspended || perm.isSuspended;
-  const suspendedInlineMargin = Math.ceil(permanentWidth * 0.2);
+  const turnedCardInlineMargin = getTurnedCardInlineMargin(permanentWidth);
+  const trailingOverhang =
+    linkCardOverhang(perm.linked.length, permanentWidth) + copyEdgeCount(copies) * COPY_EDGE_STEP;
+  const reservedTurnMargin = isVisuallySuspended
+    ? `${turnedCardInlineMargin}px`
+    : `calc((1 - var(--field-prefer-stacked, 0)) * ${turnedCardInlineMargin}px)`;
   const { t } = useTranslation();
   const translations = useCardTranslations();
   const beginInspection = usePermanentInspection(onInspect);
@@ -289,14 +295,10 @@ export function PermanentView({
         visibility: pending ? "hidden" : undefined,
         transform: !stationaryDeparture && (highlight || effectSource || effectLinked) ? "translateY(-6px)" : "none",
         marginInlineStart: perm.stack.length
-          ? `max(${isVisuallySuspended ? suspendedInlineMargin : 0}px, calc(4px + ${perm.stack.length - 1} * min(var(--arena-source-step, 4px), ${sourceFanStepLimit(permanentWidth, perm.stack.length)}px)))`
-          : isVisuallySuspended
-            ? suspendedInlineMargin
-            : 0,
+          ? `max(${reservedTurnMargin}, calc(4px + ${perm.stack.length - 1} * min(var(--arena-source-step, 4px), ${sourceFanStepLimit(permanentWidth, perm.stack.length)}px)))`
+          : reservedTurnMargin,
         marginInlineEnd:
-          (isVisuallySuspended ? suspendedInlineMargin : 0) +
-          linkCardOverhang(perm.linked.length, permanentWidth) +
-          copyEdgeCount(copies) * COPY_EDGE_STEP,
+          trailingOverhang > 0 ? `calc(${reservedTurnMargin} + ${trailingOverhang}px)` : reservedTurnMargin,
         transition: stationaryDeparture
           ? "opacity 160ms"
           : "transform 160ms, opacity 160ms, margin-inline-start 200ms, margin-inline-end 200ms",

@@ -1177,7 +1177,7 @@ const interfaceMessages = {
   "game.roomCodeInvalid": "Ce code de salle est incorrect ou a expiré. Vérifiez le code et réessayez.",
   "game.accountRequired": "Connectez-vous pour rejoindre cette partie.",
   "game.alreadyInMatch":
-    "Votre compte est déjà dans une autre partie. Terminez-la ou fermez les autres onglets Aegis, puis réessayez.",
+    "Votre compte est déjà dans une autre partie. Reprenez-la ici ou terminez-la d'abord. Une partie qui a perdu la connexion libère votre compte en moins d'une minute.",
   "game.rankedSearchActive": "Votre compte recherche une partie classée. Annulez cette recherche, puis réessayez.",
   "game.joinRefused": "Le serveur a refusé la connexion. Retournez au lobby et réessayez.",
   "game.seatTransferred": "Vous avez poursuivi cette partie sur un autre appareil.",
@@ -1680,6 +1680,9 @@ const interfaceMessages = {
     "Des effets antérieurs sont encore en attente. Ils se résolvent une fois les effets ci-dessus terminés.",
   "overlay.presetMandatory": "Obligatoire",
   "overlay.triggerReason": "Déclenché par : {reason}",
+  "overlay.triggerOpponentEffect": "Effet de l'adversaire",
+  "overlay.orderOpponentEffectsNote":
+    "Vous êtes le joueur du tour : vous choisissez l'ordre de ces effets, y compris ceux de votre adversaire.",
   "overlay.presetLabel": "Réponse aux choix facultatifs de {name}",
   "overlay.triggerSourceField": "Terrain",
   "overlay.triggerSourceInherited": "Hérité par {name}",

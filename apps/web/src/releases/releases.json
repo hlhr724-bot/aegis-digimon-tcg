@@ -1,5 +1,77 @@
 [
   {
+    "version": "1.75.1-beta",
+    "releasedAt": "2026-11-16",
+    "summaryKey": "releases.1.75.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.75.1-beta.fix.playCostDeletion"
+      },
+      {
+        "textKey": "releases.1.75.1-beta.fix.unsuspendLockShown"
+      },
+      {
+        "textKey": "releases.1.75.1-beta.fix.opponentEffectOrder"
+      }
+    ]
+  },
+  {
+    "version": "1.75.0-beta",
+    "releasedAt": "2026-11-15",
+    "summaryKey": "releases.1.75.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.75.0-beta.feature.rankedMetaDecks"
+      },
+      {
+        "textKey": "releases.1.75.0-beta.feature.resumeMatch",
+        "issue": 6896
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.75.0-beta.fix.kimeramonAssembly",
+        "issue": 6888
+      },
+      {
+        "textKey": "releases.1.75.0-beta.fix.optionalReturn",
+        "issue": 6897
+      },
+      {
+        "textKey": "releases.1.75.0-beta.fix.luiFixedCost",
+        "issue": 6863
+      },
+      {
+        "textKey": "releases.1.75.0-beta.fix.dualOptionPrompt",
+        "issue": 6857
+      }
+    ]
+  },
+  {
+    "version": "1.74.0-beta",
+    "releasedAt": "2026-11-15",
+    "summaryKey": "releases.1.74.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.74.0-beta.feature.bt27Rubeusdramon"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.74.0-beta.fix.valnerDraw",
+        "issue": 6882
+      },
+      {
+        "textKey": "releases.1.74.0-beta.fix.grandGalemonOptional",
+        "issue": 6884
+      },
+      {
+        "textKey": "releases.1.74.0-beta.fix.battleRowColumns"
+      }
+    ]
+  },
+  {
     "version": "1.73.0-beta",
     "releasedAt": "2026-11-14",
     "summaryKey": "releases.1.73.0-beta.summary",

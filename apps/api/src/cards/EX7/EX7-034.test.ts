@@ -28,7 +28,7 @@ describe("EX7-034 GrandGalemon", () => {
       attributes: ["Data"],
       types: ["Bird Dragon", "Vortex Warriors", "LIBERATOR"],
       effectText:
-        "＜Vortex＞ (At the end of your turn, this Digimon may attack an opponent's Digimon. With this effect, it can attack the turn it was played)\n[When Digivolving] Suspend 1 Digimon. If this effect suspends your Digimon, this Digimon isn't affected by your opponent's Digimon's effects until the end of their turn.",
+        "＜Vortex＞ (At the end of your turn, this Digimon may attack an opponent's Digimon. With this effect, it can attack the turn it was played)\n[When Digivolving] You may suspend 1 Digimon. If this effect suspends your Digimon, this Digimon isn't affected by your opponent's Digimon's effects until the end of their turn.",
       inheritedEffectText:
         "[Your Turn] [Once Per Turn] When this Digimon attacks your opponent's Digimon, you may unsuspend this Digimon.",
     });
@@ -38,7 +38,11 @@ describe("EX7-034 GrandGalemon", () => {
         {
           trigger: "WhenDigivolving",
           actions: [
-            { kind: "Suspend", target: { filter: { controllerDefault: "any", kind: ["Digimon"] }, count: 1 } },
+            {
+              kind: "Suspend",
+              target: { filter: { controllerDefault: "any", kind: ["Digimon"] }, count: 1 },
+              optional: true,
+            },
             {
               kind: "Restrict",
               target: { filter: { isSelfRef: true }, count: 1, isSelf: true },
@@ -61,6 +65,7 @@ describe("EX7-034 GrandGalemon", () => {
                 filter: { controller: "opponent", kind: ["Digimon"] },
                 raw: "when this Digimon attacks your opponent's Digimon",
               },
+              optional: true,
             },
           ],
           isInherited: true,
@@ -156,6 +161,51 @@ describe("EX7-034 GrandGalemon", () => {
     ).toEqual({ ok: true });
     await settle(() => s.perm("opponent").isSuspended);
     expect(observe(s.engine).isRestrictedByEffect(s.perm("base"), "beAffected", "Digimon")).toBe(false);
+  });
+
+  it("suspends nothing and grants no protection when the player declines the optional suspend", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "EX7-033", as: "base" }],
+          hand: [{ card: "EX7-034", as: "grand" }],
+          deck: ["BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT1-010", as: "opponent" }] },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    s.state.memory = 4;
+    await s.ready();
+    const grandId = s.inst("grand").instanceId;
+    expect(
+      s.engine.applyIntent(0, { type: "digivolve", permanentId: s.perm("base").permanentId, instanceId: grandId }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("base").topCard.instanceId === grandId && s.state.pendingDecision === undefined);
+    expect(s.perm("opponent").isSuspended).toBe(false);
+    expect(s.perm("base").isSuspended).toBe(false);
+    expect(observe(s.engine).isRestrictedByEffect(s.perm("base"), "beAffected", "Digimon")).toBe(false);
+    expect(s.state.memory).toBe(1);
+  });
+
+  it("stays suspended when the player declines the inherited unsuspend", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: "BT1-080", as: "host", dp: 9000, under: ["EX7-034"] }], security: ["BT1-009"] },
+        1: { battleArea: [{ card: "BT1-010", as: "first", dp: 3000, suspended: true }] },
+      },
+      { autoDeclineOptional: true, autoSelectCards: true },
+    );
+    await s.ready();
+    expect(
+      s.engine.applyIntent(0, {
+        type: "attack",
+        attackerPermanentId: s.perm("host").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("first").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.state.players[1]!.battleArea.length === 0 && s.state.pendingDecision === undefined);
+    expect(s.perm("host").isSuspended).toBe(true);
   });
 
   it("uses Vortex at end of turn to attack a suspended opposing Digimon", async () => {

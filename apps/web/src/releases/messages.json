@@ -1,4 +1,100 @@
 {
+  "releases.1.75.1-beta.summary": {
+    "en": "This update fixes three player-reported problems: effects that react to a deletion paid as a play cost, a lock that did not show on a Digimon, and the prompt for ordering effects that are not yours.",
+    "pt-BR": "Esta atualização corrige três problemas relatados pelos jogadores: efeitos que reagem a uma deleção paga como custo de jogo, um bloqueio que não aparecia no Digimon e a tela para ordenar efeitos que não são seus.",
+    "es": "Esta actualización corrige tres problemas reportados por los jugadores: efectos que reaccionan a una eliminación pagada como coste de juego, un bloqueo que no aparecía en el Digimon y la pantalla para ordenar efectos que no son tuyos.",
+    "it": "Questo aggiornamento corregge tre problemi segnalati dai giocatori: effetti che reagiscono a un'eliminazione pagata come costo di gioco, un blocco che non compariva sul Digimon e la schermata per ordinare effetti che non sono tuoi."
+  },
+  "releases.1.75.1-beta.fix.playCostDeletion": {
+    "en": "When you delete a Digimon to pay a play cost, as with Gizmon: AT (BT27-068), effects that react to that deletion now resolve after the played Digimon enters play. Gizmon (BT27-102) also reacts to a Digimon deleted in the breeding area.",
+    "pt-BR": "Quando você deleta um Digimon para pagar um custo de jogo, como com Gizmon: AT (BT27-068), os efeitos que reagem a essa deleção agora resolvem depois que o Digimon jogado entra em jogo. Gizmon (BT27-102) também reage a um Digimon deletado na área de criação.",
+    "es": "Cuando eliminas un Digimon para pagar un coste de juego, como con Gizmon: AT (BT27-068), los efectos que reaccionan a esa eliminación ahora se resuelven después de que el Digimon jugado entra en juego. Gizmon (BT27-102) también reacciona a un Digimon eliminado en el área de crianza.",
+    "it": "Quando elimini un Digimon per pagare un costo di gioco, come con Gizmon: AT (BT27-068), gli effetti che reagiscono a quell'eliminazione ora si risolvono dopo che il Digimon giocato entra in gioco. Gizmon (BT27-102) reagisce anche a un Digimon eliminato nell'area di allevamento."
+  },
+  "releases.1.75.1-beta.fix.unsuspendLockShown": {
+    "en": "A Digimon that cannot unsuspend in its next unsuspend phase, as after Groundramon (EX13-034), now shows that lock on the board.",
+    "pt-BR": "Um Digimon que não pode desvirar na sua próxima fase de desvirar, como depois de Groundramon (EX13-034), agora mostra esse bloqueio no campo.",
+    "es": "Un Digimon que no puede enderezarse en su próxima fase de enderezamiento, como después de Groundramon (EX13-034), ahora muestra ese bloqueo en el tablero.",
+    "it": "Un Digimon che non può essere riattivato nella sua prossima fase di riattivazione, come dopo Groundramon (EX13-034), ora mostra quel blocco sul campo."
+  },
+  "releases.1.75.1-beta.fix.opponentEffectOrder": {
+    "en": "When the rules have you order effects that belong to your opponent, the prompt now marks them as your opponent's and explains why you choose. Digimon set to be deleted at the end of the turn show that pending effect.",
+    "pt-BR": "Quando as regras fazem você ordenar efeitos que pertencem ao oponente, a tela agora os marca como do oponente e explica por que a escolha é sua. Digimon que serão deletados no fim do turno mostram esse efeito pendente.",
+    "es": "Cuando las reglas te hacen ordenar efectos que pertenecen a tu oponente, la pantalla ahora los marca como de tu oponente y explica por qué eliges tú. Los Digimon que serán eliminados al final del turno muestran ese efecto pendiente.",
+    "it": "Quando le regole ti fanno ordinare effetti che appartengono al tuo avversario, la schermata ora li indica come dell'avversario e spiega perché scegli tu. I Digimon che verranno eliminati alla fine del turno mostrano quell'effetto in sospeso."
+  },
+  "releases.1.75.0-beta.summary": {
+    "en": "This update names the decks on the ranked Meta tab, lets you resume a match from a refused join and fixes four player-reported card problems.",
+    "pt-BR": "Esta atualização identifica os decks na aba Meta do ranqueado, permite retomar uma partida quando a entrada é recusada e corrige quatro problemas de cartas relatados pelos jogadores.",
+    "es": "Esta actualización identifica los mazos en la pestaña Meta de clasificatorias, te permite reanudar una partida cuando se rechaza la entrada y corrige cuatro problemas de cartas reportados por los jugadores.",
+    "it": "Questo aggiornamento identifica i mazzi nella scheda Meta delle classificate, ti permette di riprendere una partita quando l'ingresso viene rifiutato e corregge quattro problemi di carte segnalati dai giocatori."
+  },
+  "releases.1.75.0-beta.feature.rankedMetaDecks": {
+    "en": "The ranked Meta tab now names each deck and shows the ten most played decks as bars, with their cover card and colors. Decks from past matches are named within about an hour of the update.",
+    "pt-BR": "A aba Meta do ranqueado agora identifica cada deck e mostra os dez decks mais jogados em barras, com a carta de capa e as cores. Os decks de partidas anteriores são identificados em até cerca de uma hora após a atualização.",
+    "es": "La pestaña Meta de clasificatorias ahora identifica cada mazo y muestra los diez mazos más jugados en barras, con su carta de portada y sus colores. Los mazos de partidas anteriores se identifican en aproximadamente una hora tras la actualización.",
+    "it": "La scheda Meta delle classificate ora identifica ogni mazzo e mostra i dieci mazzi più giocati come barre, con la carta di copertina e i colori. I mazzi delle partite precedenti vengono identificati entro circa un'ora dall'aggiornamento."
+  },
+  "releases.1.75.0-beta.feature.resumeMatch": {
+    "en": "When you cannot join because your account is already in another match, the message now offers a Resume match button and explains that a match that lost its connection frees your account within a minute.",
+    "pt-BR": "Quando você não consegue entrar porque sua conta já está em outra partida, a mensagem agora oferece o botão Retomar partida e explica que uma partida que perdeu a conexão libera sua conta em até um minuto.",
+    "es": "Cuando no puedes entrar porque tu cuenta ya está en otra partida, el mensaje ahora ofrece el botón Reanudar partida y explica que una partida que perdió la conexión libera tu cuenta en un minuto como máximo.",
+    "it": "Quando non puoi entrare perché il tuo account è già in un'altra partita, il messaggio ora offre il pulsante Riprendi partita e spiega che una partita che ha perso la connessione libera il tuo account entro un minuto."
+  },
+  "releases.1.75.0-beta.fix.kimeramonAssembly": {
+    "en": "Kimeramon (EX9-074) no longer accepts two cards with the same name for Assembly. Text that treats a card as a level or as having a trait no longer counts as an extra name.",
+    "pt-BR": "Kimeramon (EX9-074) não aceita mais duas cartas com o mesmo nome no Assembly. Um texto que trata a carta como de um nível ou como tendo uma característica não conta mais como um nome extra.",
+    "es": "Kimeramon (EX9-074) ya no acepta dos cartas con el mismo nombre para Assembly. Un texto que trata la carta como de un nivel o como si tuviera un rasgo ya no cuenta como un nombre adicional.",
+    "it": "Kimeramon (EX9-074) non accetta più due carte con lo stesso nome per Assembly. Un testo che tratta la carta come di un livello o come dotata di un tratto non conta più come un nome aggiuntivo."
+  },
+  "releases.1.75.0-beta.fix.optionalReturn": {
+    "en": "Vemmon (BT21-056) and seven other cards with \"you may return\" effects now let you return nothing.",
+    "pt-BR": "Vemmon (BT21-056) e outras sete cartas com efeitos \"você pode devolver\" agora deixam você não devolver nada.",
+    "es": "Vemmon (BT21-056) y otras siete cartas con efectos \"puedes devolver\" ahora te dejan no devolver nada.",
+    "it": "Vemmon (BT21-056) e altre sette carte con effetti \"puoi far tornare\" ora ti lasciano non far tornare nulla."
+  },
+  "releases.1.75.0-beta.fix.luiFixedCost": {
+    "en": "Lui Ohwada (BT16-090) now plays Big Ukkomon for its fixed cost of 3 while Psychemon stops play cost reductions. A fixed cost is not a reduction.",
+    "pt-BR": "Lui Ohwada (BT16-090) agora joga Big Ukkomon pelo custo fixo de 3 enquanto Psychemon impede reduções de custo de jogo. Um custo fixo não é uma redução.",
+    "es": "Lui Ohwada (BT16-090) ahora juega a Big Ukkomon por su coste fijo de 3 mientras Psychemon impide las reducciones de coste de juego. Un coste fijo no es una reducción.",
+    "it": "Lui Ohwada (BT16-090) ora gioca Big Ukkomon al costo fisso di 3 mentre Psychemon impedisce le riduzioni del costo di gioco. Un costo fisso non è una riduzione."
+  },
+  "releases.1.75.0-beta.fix.dualOptionPrompt": {
+    "en": "Cards that are both a Digimon and an Option, such as Mickey Bullet, no longer ask whether to use them as an Option when you cannot play them. The game shows why the play is not allowed instead.",
+    "pt-BR": "Cartas que são Digimon e Option ao mesmo tempo, como Mickey Bullet, não perguntam mais se você quer usá-las como Option quando você não pode jogá-las. O jogo mostra o motivo de a jogada não ser permitida.",
+    "es": "Las cartas que son Digimon y Option a la vez, como Mickey Bullet, ya no preguntan si quieres usarlas como Option cuando no puedes jugarlas. El juego muestra por qué la jugada no está permitida.",
+    "it": "Le carte che sono sia Digimon sia Option, come Mickey Bullet, non chiedono più se usarle come Option quando non puoi giocarle. Il gioco mostra perché la giocata non è consentita."
+  },
+  "releases.1.74.0-beta.summary": {
+    "en": "This update adds two more BT27 cards, fixes two player-reported card problems and keeps the battle area columns steady.",
+    "pt-BR": "Esta atualização adiciona mais duas cartas de BT27, corrige dois problemas de cartas relatados pelos jogadores e mantém as colunas da área de batalha no lugar.",
+    "es": "Esta actualización añade dos cartas más de BT27, corrige dos problemas de cartas reportados por los jugadores y mantiene en su sitio las columnas del área de batalla.",
+    "it": "Questo aggiornamento aggiunge altre due carte di BT27, corregge due problemi di carte segnalati dai giocatori e mantiene ferme le colonne dell'area di battaglia."
+  },
+  "releases.1.74.0-beta.feature.bt27Rubeusdramon": {
+    "en": "Added Rubeusdramon (BT27-018) and Kanata Hondo (BT27-086) from BT27.",
+    "pt-BR": "Adicionados Rubeusdramon (BT27-018) e Kanata Hondo (BT27-086) de BT27.",
+    "es": "Se añadieron Rubeusdramon (BT27-018) y Kanata Hondo (BT27-086) de BT27.",
+    "it": "Aggiunti Rubeusdramon (BT27-018) e Kanata Hondo (BT27-086) di BT27."
+  },
+  "releases.1.74.0-beta.fix.valnerDraw": {
+    "en": "Valner Dragnogh (ST26-06) now draws after you suspend it, even when the chosen Digimon has no digivolution cards to trash.",
+    "pt-BR": "Valner Dragnogh (ST26-06) agora compra a carta depois que você o suspende, mesmo quando o Digimon escolhido não tem cartas de digievolução para descartar.",
+    "es": "Valner Dragnogh (ST26-06) ahora roba la carta después de que lo suspendes, incluso cuando el Digimon elegido no tiene cartas de digievolución para descartar.",
+    "it": "Valner Dragnogh (ST26-06) ora pesca la carta dopo che lo sospendi, anche quando il Digimon scelto non ha carte di digievoluzione da scartare."
+  },
+  "releases.1.74.0-beta.fix.grandGalemonOptional": {
+    "en": "GrandGalemon (EX7-034) lets you choose whether to suspend a Digimon when it digivolves and whether to unsuspend when it attacks, as printed.",
+    "pt-BR": "GrandGalemon (EX7-034) deixa você escolher se suspende um Digimon ao digievoluir e se ativa novamente ao atacar, como impresso.",
+    "es": "GrandGalemon (EX7-034) te deja elegir si suspendes un Digimon al digievolucionar y si lo reactivas al atacar, como está impreso.",
+    "it": "GrandGalemon (EX7-034) ti lascia scegliere se sospendere un Digimon quando digievolve e se riattivarlo quando attacca, come stampato."
+  },
+  "releases.1.74.0-beta.fix.battleRowColumns": {
+    "en": "On wide screens, the battle area columns stay in place when a card suspends, and the second lane lines up with the Digimon lane.",
+    "pt-BR": "Em telas largas, as colunas da área de batalha ficam no lugar quando uma carta é suspensa, e a segunda fileira fica alinhada com a fileira dos Digimon.",
+    "es": "En pantallas anchas, las columnas del área de batalla se quedan en su sitio cuando una carta se suspende, y la segunda fila queda alineada con la fila de los Digimon.",
+    "it": "Sugli schermi larghi, le colonne dell'area di battaglia restano ferme quando una carta viene sospesa, e la seconda corsia è allineata con quella dei Digimon."
+  },
   "releases.1.73.0-beta.summary": {
     "en": "This update adds the ST26 Viximon starter deck and three more BT27 cards, and fixes a batch of player-reported card problems.",
     "pt-BR": "Esta atualização adiciona o deck inicial ST26 de Viximon e mais três cartas de BT27, e corrige vários problemas de cartas relatados pelos jogadores.",

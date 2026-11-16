@@ -362,10 +362,13 @@ export async function runModal(ctx: EffectContext, action: Extract<Action, { kin
     for (let i = 0; i < rawChoose; i += 1) {
       const currentAvailable = availableOptionIndices(ctx, action);
       if (currentAvailable.length === 0) break;
-      const chosen = await askModalOption(ctx, action, currentAvailable, clauses, headerCtx, {
-        index: i + 1,
-        total: rawChoose,
-      });
+      const chosen =
+        action.options.length === 1
+          ? currentAvailable[0]!
+          : await askModalOption(ctx, action, currentAvailable, clauses, headerCtx, {
+              index: i + 1,
+              total: rawChoose,
+            });
       await runOption(ctx, action, chosen, clauses);
     }
     return false;

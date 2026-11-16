@@ -50,8 +50,14 @@ export function triggerDetailsFor({
       summary: triggerClauseSummary(clause),
       ...(fieldReference ? { fieldReference } : {}),
       ...(source?.zone === Zone.BattleArea && source.inherited ? { hostCardId: source.hostCardId } : {}),
+      ...(isControlledByOpponent(decision, index) ? { controlledByOpponent: true } : {}),
     };
   });
+}
+
+function isControlledByOpponent(decision: DecisionRequest, index: number): boolean {
+  const controllerSeat = decision.options?.triggerControllerSeats?.[index];
+  return controllerSeat !== undefined && controllerSeat !== decision.seat;
 }
 
 function withCopy(

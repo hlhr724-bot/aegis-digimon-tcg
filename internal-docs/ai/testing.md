@@ -1,6 +1,6 @@
 # Testing
 
-- Put game scenarios and bug regressions in `apps/api/src/engine/scenarios/<behavior>.test.ts`, card tests in `apps/api/src/cards/<SET>/`, and mechanism tests beside their implementation. Name files and suites after behavior; keep external IDs out of scenario identities and necessary provenance in Markdown. Do not add code comments.
+- Put game scenarios and bug regressions in `apps/api/src/engine/scenarios/<behavior>.test.ts`, card tests in `apps/api/src/cards/<SET>/`, and mechanism tests beside their implementation. Name files and suites after behavior; keep external IDs out of scenario identities and necessary provenance in the PR description. Do not add code comments.
 - Share reusable preparation in `<behavior>.fixture.ts` through `engine/scenario` and `setupScenario` from `engine/testkit`; E2E uses `ScenarioPage.openFixture`. Resolve card identities through aliases and keep assertions and actions in each runner. See [regression fixtures](../../docs/TESTING.md).
 - Fixtures need no arena registration. Open one with `pnpm scenario open <behavior>` or an ignored `.local/scenarios/<name>.fixture.ts`; add a permanent demo only when requested.
 - Reuse `engine/testkit`; exercise public intents and assert costs, card identities, destinations, effect order, and turn progression, including relevant refusal or illegal-action branches.

@@ -904,7 +904,7 @@ export const en = {
   "game.roomCodeInvalid": "This room code is wrong or has expired. Check the code and try again.",
   "game.accountRequired": "Sign in to join this match.",
   "game.alreadyInMatch":
-    "Your account is already in another match. Finish it or close other Aegis tabs, then try again.",
+    "Your account is already in another match. Resume it here, or finish it first. A match that lost its connection frees your account within a minute.",
   "game.rankedSearchActive": "Your account is searching for a ranked match. Cancel that search, then try again.",
   "game.joinRefused": "The server did not accept this join. Return to the lobby and try again.",
   "game.seatTransferred": "You continued this match on another device.",
@@ -1397,6 +1397,9 @@ export const en = {
   "overlay.waitingEffectsHint": "Earlier effects still pending. They resolve once the effects above are done.",
   "overlay.presetMandatory": "Mandatory",
   "overlay.triggerReason": "Triggered by: {reason}",
+  "overlay.triggerOpponentEffect": "Opponent's effect",
+  "overlay.orderOpponentEffectsNote":
+    "You are the turn player, so you choose the order of these effects, including your opponent's.",
   "overlay.presetLabel": "Answer for {name}'s optional choices",
   "overlay.triggerSourceField": "Field",
   "overlay.triggerSourceInherited": "Inherited by {name}",

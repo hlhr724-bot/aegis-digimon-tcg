@@ -66,7 +66,8 @@ export function prePlayPromptFor({
 }): PrePlayPrompt | undefined {
   if (!entry) return undefined;
   const { instanceId, cardId } = entry;
-  if (getCardDefinition(cardId)?.isDualCard) return { kind: "dual", instanceId, cardId };
+  if (getCardDefinition(cardId)?.isDualCard)
+    return entry.playableFromHand ? { kind: "dual", instanceId, cardId } : undefined;
   const routes = entry.dnaDigivolveRoutes ?? [];
   if (preferDna && routes.length > 0) return { kind: "dna", instanceId, cardId, routes };
   const requirements = digiXrosRequirementFor(cardId);

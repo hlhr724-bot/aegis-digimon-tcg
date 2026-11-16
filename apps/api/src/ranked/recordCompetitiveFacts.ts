@@ -1,5 +1,6 @@
 import type { PoolClient } from "pg";
 import type { DeckSnapshot } from "#api/accounts/AccountStore";
+import { UNIDENTIFIED_ARCHETYPE } from "#api/ranked/archetypes/UNIDENTIFIED_ARCHETYPE";
 
 type Params = {
   db: PoolClient;
@@ -43,8 +44,8 @@ export async function recordCompetitiveFacts({
         origin,
         format,
         regions.find((region) => region.account_id === accountId)?.region ?? null,
-        "unknown",
-        "unknown",
+        UNIDENTIFIED_ARCHETYPE,
+        UNIDENTIFIED_ARCHETYPE,
         result,
         finishedAt,
       ],

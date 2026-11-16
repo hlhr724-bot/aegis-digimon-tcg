@@ -561,6 +561,21 @@ body:has(.decision-overlay--selection) .narration-slot {
   outline: 2px solid var(--ds-focus);
   outline-offset: 2px;
 }
+.trigger-chooser__opponent {
+  padding: 1px var(--ds-space-2);
+  border: 1px solid var(--ds-warning);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-warning);
+  font-size: var(--ds-text-xs);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.trigger-chooser__turn-player-note {
+  margin: 0 0 var(--ds-space-3);
+  color: var(--ds-text-2);
+  font-size: var(--ds-text-sm);
+}
 .trigger-chooser__reason {
   color: var(--ds-accent, var(--ds-text-3));
   font-size: var(--ds-text-xs);

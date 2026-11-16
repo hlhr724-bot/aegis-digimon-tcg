@@ -31,7 +31,7 @@ export const compiled: CompiledCard = {
         {
           kind: "SubTrigger",
           event: "onDeletionOf",
-          sourceFilter: { controller: "any", kind: ["Digimon"] },
+          sourceFilter: { controller: "any", kind: ["Digimon"], zone: ["battleArea", "breeding"] },
           actions: [
             {
               effectTextPart:
