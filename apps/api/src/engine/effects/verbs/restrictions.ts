@@ -225,6 +225,14 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
       // other end-of-turn effects even when the deleted Digimon is the opponent's
       // (KB Q5564/Q5566/Q5568).
       orderedByTurnPlayer: true,
+      ...(timing === "endOfOpponentTurn"
+        ? {}
+        : {
+            printedClause:
+              timing === "endOfCurrentTurn"
+                ? "[Pending] At turn end, delete the Digimon this effect played."
+                : "[Pending] At the end of your turn, delete the Digimon this effect played.",
+          }),
       ...(expiresOnTurnEndOf !== undefined && deferredToTurnCount === undefined ? { expiresOnTurnEndOf } : {}),
       matches: (subCtx) =>
         (deferredToTurnCount === undefined || state.turnCount === deferredToTurnCount) &&

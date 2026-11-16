@@ -1680,6 +1680,9 @@ const interfaceMessages = {
     "Des effets antérieurs sont encore en attente. Ils se résolvent une fois les effets ci-dessus terminés.",
   "overlay.presetMandatory": "Obligatoire",
   "overlay.triggerReason": "Déclenché par : {reason}",
+  "overlay.triggerOpponentEffect": "Effet de l'adversaire",
+  "overlay.orderOpponentEffectsNote":
+    "Vous êtes le joueur du tour : vous choisissez l'ordre de ces effets, y compris ceux de votre adversaire.",
   "overlay.presetLabel": "Réponse aux choix facultatifs de {name}",
   "overlay.triggerSourceField": "Terrain",
   "overlay.triggerSourceInherited": "Hérité par {name}",

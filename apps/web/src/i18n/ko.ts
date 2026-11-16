@@ -1633,6 +1633,8 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "앞서 발동한 효과가 아직 대기 중입니다. 위의 효과가 끝나면 처리됩니다.",
   "overlay.presetMandatory": "필수",
   "overlay.triggerReason": "발동 원인: {reason}",
+  "overlay.triggerOpponentEffect": "상대의 효과",
+  "overlay.orderOpponentEffectsNote": "턴 플레이어이므로 상대의 효과를 포함해 이 효과들의 순서를 직접 선택합니다.",
   "overlay.presetLabel": "{name}의 선택 효과에 대한 응답",
   "overlay.triggerSourceField": "필드",
   "overlay.triggerSourceInherited": "{name}의 진화원 효과",

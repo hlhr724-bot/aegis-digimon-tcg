@@ -12,6 +12,7 @@ export interface TriggerDetail {
   hostCardId?: string;
   fieldReference?: string;
   summary?: string;
+  controlledByOpponent?: boolean;
 }
 
 export interface StackCard {

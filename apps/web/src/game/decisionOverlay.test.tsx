@@ -1108,6 +1108,66 @@ describe("order-trigger chooser identity", () => {
     expect(screen.getByText("Field")).toBeTruthy();
   });
 
+  it("labels the opponent's pending turn-end deletions and shows their pending clause", () => {
+    const request: DecisionRequest = {
+      decisionId: "turn-end-deletions",
+      seat: 1,
+      kind: "orderTriggers",
+      promptText: "Choose the next pending effect to resolve.",
+      options: {
+        triggerKeys: [
+          buildTriggerKey("puppetmon", "subtrigger/endOfTurn~perm-47"),
+          buildTriggerKey("metalseadramon", "subtrigger/endOfTurn~perm-45"),
+        ],
+        triggerCardIds: ["EX10-020", "EX10-012"],
+        triggerControllerSeats: [0, 0],
+        triggerDescriptions: [
+          "[Pending] At turn end, delete the Digimon this effect played.",
+          "[Pending] At turn end, delete the Digimon this effect played.",
+        ],
+        triggerTimings: ["endOfTurn", "endOfTurn"],
+        timing: "OnEndTurn",
+        acceptsResolutionPlan: true,
+      },
+    };
+    const { container, rerender } = render(
+      <I18nProvider>
+        <DecisionOverlay
+          request={request}
+          candidates={[]}
+          picks={[]}
+          triggerDetails={[{ controlledByOpponent: true }, { controlledByOpponent: true }]}
+          onTogglePick={vi.fn()}
+          onRespond={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    expect(screen.getAllByText("Opponent's effect")).toHaveLength(2);
+    expect(screen.getByText(/You are the turn player/)).toBeTruthy();
+    const texts = [...container.querySelectorAll(".trigger-chooser__effect-text")].map((node) => node.textContent);
+    expect(texts).toHaveLength(2);
+    for (const text of texts) {
+      expect(text).toContain("At turn end, delete the Digimon this effect played.");
+      expect(text).not.toContain("[On Deletion]");
+    }
+
+    rerender(
+      <I18nProvider>
+        <DecisionOverlay
+          request={request}
+          candidates={[]}
+          picks={[]}
+          triggerDetails={[{}, {}]}
+          onTogglePick={vi.fn()}
+          onRespond={vi.fn()}
+        />
+      </I18nProvider>,
+    );
+    expect(screen.queryByText("Opponent's effect")).toBeNull();
+    expect(screen.queryByText(/You are the turn player/)).toBeNull();
+  });
+
   it("uses full catalog text instead of shortened summaries", () => {
     render(
       <I18nProvider>

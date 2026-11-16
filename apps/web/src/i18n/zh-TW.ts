@@ -1585,6 +1585,8 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "先前的效果仍在等待中。上方的效果處理完後，它們才會結算。",
   "overlay.presetMandatory": "強制",
   "overlay.triggerReason": "觸發原因：{reason}",
+  "overlay.triggerOpponentEffect": "對手的效果",
+  "overlay.orderOpponentEffectsNote": "你是回合玩家，因此由你決定這些效果的順序，包括對手的效果。",
   "overlay.presetLabel": "為{name}的可選選擇預設回答",
   "overlay.triggerSourceField": "場上",
   "overlay.triggerSourceInherited": "{name}的繼承效果",
