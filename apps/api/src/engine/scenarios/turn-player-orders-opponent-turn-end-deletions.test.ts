@@ -6,7 +6,7 @@ import { settle, settleAcrossTimers } from "#api/engine/testkit/harness";
 import { observe } from "#api/engine/testkit/observe";
 import { advance } from "#api/engine/testkit/advance";
 
-const PENDING_DELETION = "[Pending] At turn end, delete the Digimon this effect played.";
+const PENDING_DELETION = "[Pending] At turn end, delete this Digimon.";
 
 it("asks the turn player to order the opponent's turn-end deletions and names them as pending processing", async () => {
   const s = setupScenario(fixture, {

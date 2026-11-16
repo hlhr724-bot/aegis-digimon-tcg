@@ -1122,8 +1122,8 @@ describe("order-trigger chooser identity", () => {
         triggerCardIds: ["EX10-020", "EX10-012"],
         triggerControllerSeats: [0, 0],
         triggerDescriptions: [
-          "[Pending] At turn end, delete the Digimon this effect played.",
-          "[Pending] At turn end, delete the Digimon this effect played.",
+          "[Pending] At turn end, delete this Digimon.",
+          "[Pending] At turn end, delete this Digimon.",
         ],
         triggerTimings: ["endOfTurn", "endOfTurn"],
         timing: "OnEndTurn",
@@ -1148,7 +1148,7 @@ describe("order-trigger chooser identity", () => {
     const texts = [...container.querySelectorAll(".trigger-chooser__effect-text")].map((node) => node.textContent);
     expect(texts).toHaveLength(2);
     for (const text of texts) {
-      expect(text).toContain("At turn end, delete the Digimon this effect played.");
+      expect(text).toContain("At turn end, delete this Digimon.");
       expect(text).not.toContain("[On Deletion]");
     }
 

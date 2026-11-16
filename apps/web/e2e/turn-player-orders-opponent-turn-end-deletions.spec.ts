@@ -38,7 +38,7 @@ test("the order prompt marks the opponent's pending turn-end deletions and shows
         const clauses = panel.locator(".trigger-chooser__effect-text");
         await expect(clauses).toHaveCount(2);
         for (const clause of await clauses.all()) {
-          await expect(clause).toContainText("At turn end, delete the Digimon this effect played.");
+          await expect(clause).toContainText("At turn end, delete this Digimon.");
           await expect(clause).not.toContainText("[Hand]");
         }
       }

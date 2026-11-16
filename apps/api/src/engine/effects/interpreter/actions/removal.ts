@@ -25,6 +25,12 @@ import { COLOR_MAP } from "../maps.js";
 import { redirectDigivolutionTrash } from "../digivolutionTrashRedirect.js";
 import { isOptionPermanent, trashOptionPermanents } from "../optionTrash.js";
 
+const PENDING_DELETION_CLAUSES = {
+  endOfCurrentTurn: "[Pending] At turn end, delete this Digimon.",
+  endOfOwnerTurn: "[Pending] At the end of your turn, delete this Digimon.",
+  endOfOpponentTurn: undefined,
+} as const;
+
 function isCompleteCardOrder(candidates: readonly string[], order: readonly string[]): order is string[] {
   return (
     order.length === candidates.length &&
@@ -1074,18 +1080,14 @@ export async function runRemovalAction(ctx: EffectContext, action: Action, scope
       // EX10-035: "at turn end, delete the Digimon this effect played." The played permanent is
       // deletes it at the owner's turn end, expiring at that same boundary.
       const playedIds = ctx.lastPlayedPermanentIds ?? [];
-      if (playedIds.length > 0) {
-        for (const permanentId of playedIds)
-          ctx.fx.delayedDeletePlayed?.(
-            permanentId,
-            action.timing === "endOfCurrentTurn"
-              ? "endOfCurrentTurn"
-              : action.timing === "endOfOpponentTurn"
-                ? "endOfOpponentTurn"
-                : "endOfOwnerTurn",
-            ctx.source.cardId,
-          );
-      }
+      const timing =
+        action.timing === "endOfCurrentTurn"
+          ? "endOfCurrentTurn"
+          : action.timing === "endOfOpponentTurn"
+            ? "endOfOpponentTurn"
+            : "endOfOwnerTurn";
+      for (const permanentId of playedIds)
+        ctx.fx.delayedDeletePlayed?.(permanentId, timing, ctx.source.cardId, PENDING_DELETION_CLAUSES[timing]);
       return false;
     }
     default:
