@@ -1,4 +1,4 @@
-import { CardInstance, Permanent, type Seat } from "@aegis/shared";
+import { CardInstance, getCardDefinition, Permanent, type Seat } from "@aegis/shared";
 import { describe, expect, it } from "vitest";
 import { digiXrosMatches, materialSaveCountOf, printedKeywordsOf, resolveKeywords } from "./keywords.js";
 import { setupEngine, settle } from "../testkit/harness.js";
@@ -106,6 +106,17 @@ describe("resolved keyword contract", () => {
       expect(printedKeywordsOf(`＜${keyword}＞`)).toContain(keyword);
     },
   );
+
+  it.each([
+    ["EX10-008", "Collision"],
+    ["BT21-077", "Collision"],
+    ["BT22-031", "SecurityAttack"],
+    ["EX13-026", "SecurityAttack"],
+  ] as const)("does not treat the keyword %s gives an opponent's Digimon as its own %s", (cardId, keyword) => {
+    const definition = getCardDefinition(cardId);
+    expect(printedKeywordsOf(definition?.effectText)).not.toContain(keyword);
+    expect(printedKeywordsOf(definition?.inheritedEffectText)).not.toContain(keyword);
+  });
 
   it.each([
     ["BT1-094", "Blocker"],

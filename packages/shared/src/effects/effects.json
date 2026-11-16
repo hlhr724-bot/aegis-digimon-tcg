@@ -225162,7 +225162,7 @@
           {
             "effectTextPart": "Then, by suspending 1 Digimon, if it's your turn, you may play or use 1 [Vegetation] or [TS] trait card from your hand with the cost reduced by 5.",
             "kind": "Suspend",
-            "target": { "filter": { "controller": "any", "kind": ["Digimon"] }, "count": 1 },
+            "target": { "filter": { "controller": "any", "kind": ["Digimon"], "suspended": false }, "count": 1 },
             "optional": true
           },
           {
