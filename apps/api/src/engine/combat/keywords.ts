@@ -73,7 +73,7 @@ const GLOBAL_PRINTED_MATCHERS: ReadonlyArray<readonly [Keyword, RegExp]> = PRINT
  */
 const printedKeywordCache = new Map<string, readonly string[]>();
 
-const GRANT_CLAUSE = /\b(?:gain|gains|gained|getting|gets|has)\b/i;
+const GRANT_CLAUSE = /\b(?:gain|gains|gained|getting|gets|has|give|gives|giving)\b/i;
 /** "Change ＜Security Attack -＞ to ＜Security Attack +＞" (EX6-031) rewrites other Digimon's keywords. */
 const CHANGE_CLAUSE = /\]\s*Change\b/;
 const CONDITIONAL_CLAUSE = /\b(?:if|unless|as long as|while)\b/i;
