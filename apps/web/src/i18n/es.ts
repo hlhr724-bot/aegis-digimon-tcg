@@ -1390,6 +1390,9 @@ export const es: Record<keyof typeof en, string> = {
     "Hay efectos anteriores pendientes. Se resuelven cuando terminen los efectos de arriba.",
   "overlay.presetMandatory": "Obligatorio",
   "overlay.triggerReason": "Activado por: {reason}",
+  "overlay.triggerOpponentEffect": "Efecto del oponente",
+  "overlay.orderOpponentEffectsNote":
+    "Eres el jugador del turno, así que eliges el orden de estos efectos, incluidos los de tu oponente.",
   "overlay.presetLabel": "Respuesta para las elecciones opcionales de {name}",
   "overlay.triggerSourceField": "Campo",
   "overlay.triggerSourceInherited": "Heredado por {name}",

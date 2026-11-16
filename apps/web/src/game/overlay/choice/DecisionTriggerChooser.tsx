@@ -237,6 +237,9 @@ export function DecisionTriggerChooser({
           ) : null}
         </div>
       ) : null}
+      {triggerDetails.some((detail) => detail.controlledByOpponent) ? (
+        <p className="trigger-chooser__turn-player-note">{t("overlay.orderOpponentEffectsNote")}</p>
+      ) : null}
       <div
         ref={drag.listRef}
         role={acceptsResolutionPlan ? "list" : undefined}
@@ -307,6 +310,9 @@ export function DecisionTriggerChooser({
                       <span className="trigger-chooser__copy">{triggerCopyLabels[i]}</span>
                     ) : null}
                     <span className="trigger-chooser__id">{cardId}</span>
+                    {detail?.controlledByOpponent ? (
+                      <span className="trigger-chooser__opponent">{t("overlay.triggerOpponentEffect")}</span>
+                    ) : null}
                     {detail?.hostCardId ? (
                       <span className="trigger-chooser__host">
                         <span className="trigger-chooser__host-art">

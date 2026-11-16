@@ -1654,6 +1654,9 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "Efek sebelumnya masih tertunda. Efek tersebut diproses setelah efek di atas selesai.",
   "overlay.presetMandatory": "Wajib",
   "overlay.triggerReason": "Dipicu oleh: {reason}",
+  "overlay.triggerOpponentEffect": "Efek lawan",
+  "overlay.orderOpponentEffectsNote":
+    "Anda adalah pemain giliran, jadi Anda memilih urutan efek ini, termasuk efek lawan.",
   "overlay.presetLabel": "Jawaban untuk pilihan opsional {name}",
   "overlay.triggerSourceField": "Field",
   "overlay.triggerSourceInherited": "Diwarisi oleh {name}",
