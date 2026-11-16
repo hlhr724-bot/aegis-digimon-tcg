@@ -1,4 +1,28 @@
 {
+  "releases.1.75.1-beta.summary": {
+    "en": "This update fixes three player-reported problems: effects that react to a deletion paid as a play cost, a lock that did not show on a Digimon, and the prompt for ordering effects that are not yours.",
+    "pt-BR": "Esta atualização corrige três problemas relatados pelos jogadores: efeitos que reagem a uma deleção paga como custo de jogo, um bloqueio que não aparecia no Digimon e a tela para ordenar efeitos que não são seus.",
+    "es": "Esta actualización corrige tres problemas reportados por los jugadores: efectos que reaccionan a una eliminación pagada como coste de juego, un bloqueo que no aparecía en el Digimon y la pantalla para ordenar efectos que no son tuyos.",
+    "it": "Questo aggiornamento corregge tre problemi segnalati dai giocatori: effetti che reagiscono a un'eliminazione pagata come costo di gioco, un blocco che non compariva sul Digimon e la schermata per ordinare effetti che non sono tuoi."
+  },
+  "releases.1.75.1-beta.fix.playCostDeletion": {
+    "en": "When you delete a Digimon to pay a play cost, as with Gizmon: AT (BT27-068), effects that react to that deletion now resolve after the played Digimon enters play. Gizmon (BT27-102) also reacts to a Digimon deleted in the breeding area.",
+    "pt-BR": "Quando você deleta um Digimon para pagar um custo de jogo, como com Gizmon: AT (BT27-068), os efeitos que reagem a essa deleção agora resolvem depois que o Digimon jogado entra em jogo. Gizmon (BT27-102) também reage a um Digimon deletado na área de criação.",
+    "es": "Cuando eliminas un Digimon para pagar un coste de juego, como con Gizmon: AT (BT27-068), los efectos que reaccionan a esa eliminación ahora se resuelven después de que el Digimon jugado entra en juego. Gizmon (BT27-102) también reacciona a un Digimon eliminado en el área de crianza.",
+    "it": "Quando elimini un Digimon per pagare un costo di gioco, come con Gizmon: AT (BT27-068), gli effetti che reagiscono a quell'eliminazione ora si risolvono dopo che il Digimon giocato entra in gioco. Gizmon (BT27-102) reagisce anche a un Digimon eliminato nell'area di allevamento."
+  },
+  "releases.1.75.1-beta.fix.unsuspendLockShown": {
+    "en": "A Digimon that cannot unsuspend in its next unsuspend phase, as after Groundramon (EX13-034), now shows that lock on the board.",
+    "pt-BR": "Um Digimon que não pode desvirar na sua próxima fase de desvirar, como depois de Groundramon (EX13-034), agora mostra esse bloqueio no campo.",
+    "es": "Un Digimon que no puede enderezarse en su próxima fase de enderezamiento, como después de Groundramon (EX13-034), ahora muestra ese bloqueo en el tablero.",
+    "it": "Un Digimon che non può essere riattivato nella sua prossima fase di riattivazione, come dopo Groundramon (EX13-034), ora mostra quel blocco sul campo."
+  },
+  "releases.1.75.1-beta.fix.opponentEffectOrder": {
+    "en": "When the rules have you order effects that belong to your opponent, the prompt now marks them as your opponent's and explains why you choose. Digimon set to be deleted at the end of the turn show that pending effect.",
+    "pt-BR": "Quando as regras fazem você ordenar efeitos que pertencem ao oponente, a tela agora os marca como do oponente e explica por que a escolha é sua. Digimon que serão deletados no fim do turno mostram esse efeito pendente.",
+    "es": "Cuando las reglas te hacen ordenar efectos que pertenecen a tu oponente, la pantalla ahora los marca como de tu oponente y explica por qué eliges tú. Los Digimon que serán eliminados al final del turno muestran ese efecto pendiente.",
+    "it": "Quando le regole ti fanno ordinare effetti che appartengono al tuo avversario, la schermata ora li indica come dell'avversario e spiega perché scegli tu. I Digimon che verranno eliminati alla fine del turno mostrano quell'effetto in sospeso."
+  },
   "releases.1.75.0-beta.summary": {
     "en": "This update names the decks on the ranked Meta tab, lets you resume a match from a refused join and fixes four player-reported card problems.",
     "pt-BR": "Esta atualização identifica os decks na aba Meta do ranqueado, permite retomar uma partida quando a entrada é recusada e corrige quatro problemas de cartas relatados pelos jogadores.",

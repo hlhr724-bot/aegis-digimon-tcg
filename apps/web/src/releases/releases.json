@@ -1,5 +1,22 @@
 [
   {
+    "version": "1.75.1-beta",
+    "releasedAt": "2026-11-16",
+    "summaryKey": "releases.1.75.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.75.1-beta.fix.playCostDeletion"
+      },
+      {
+        "textKey": "releases.1.75.1-beta.fix.unsuspendLockShown"
+      },
+      {
+        "textKey": "releases.1.75.1-beta.fix.opponentEffectOrder"
+      }
+    ]
+  },
+  {
     "version": "1.75.0-beta",
     "releasedAt": "2026-11-15",
     "summaryKey": "releases.1.75.0-beta.summary",
