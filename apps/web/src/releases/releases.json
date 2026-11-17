@@ -1,5 +1,31 @@
 [
   {
+    "version": "1.76.0-beta",
+    "releasedAt": "2026-11-17",
+    "summaryKey": "releases.1.76.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.76.0-beta.feature.bt27IceSnow"
+      },
+      {
+        "textKey": "releases.1.76.0-beta.feature.homeScreenApp"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.76.0-beta.fix.readyEffectAttackers",
+        "issue": 6946
+      },
+      {
+        "textKey": "releases.1.76.0-beta.fix.keenanOwnStack",
+        "issue": 6944
+      },
+      {
+        "textKey": "releases.1.76.0-beta.fix.replayOpponentHand"
+      }
+    ]
+  },
+  {
     "version": "1.75.2-beta",
     "releasedAt": "2026-11-16",
     "summaryKey": "releases.1.75.2-beta.summary",

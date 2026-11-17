@@ -1,4 +1,40 @@
 {
+  "releases.1.76.0-beta.summary": {
+    "en": "This update adds five BT27 Ice-Snow cards, lets the home screen shortcut open as an app that keeps you signed in, and fixes three player-reported problems.",
+    "pt-BR": "Esta atualização adiciona cinco cartas Ice-Snow do BT27, faz o atalho da tela inicial abrir como app e manter você conectado, e corrige três problemas relatados pelos jogadores.",
+    "es": "Esta actualización añade cinco cartas Ice-Snow de BT27, hace que el acceso directo de la pantalla de inicio se abra como app y mantenga tu sesión, y corrige tres problemas reportados por los jugadores.",
+    "it": "Questo aggiornamento aggiunge cinque carte Ice-Snow di BT27, fa aprire il collegamento nella schermata Home come app che mantiene l'accesso e corregge tre problemi segnalati dai giocatori."
+  },
+  "releases.1.76.0-beta.feature.bt27IceSnow": {
+    "en": "New BT27 cards: Renamon (BT27-022), Tenkomon (BT27-027), Sekkamon (BT27-029), Yukinamon (BT27-033) and Valner Dragnogh (BT27-088), with English and Japanese art.",
+    "pt-BR": "Novas cartas do BT27: Renamon (BT27-022), Tenkomon (BT27-027), Sekkamon (BT27-029), Yukinamon (BT27-033) e Valner Dragnogh (BT27-088), com arte em inglês e japonês.",
+    "es": "Nuevas cartas de BT27: Renamon (BT27-022), Tenkomon (BT27-027), Sekkamon (BT27-029), Yukinamon (BT27-033) y Valner Dragnogh (BT27-088), con arte en inglés y japonés.",
+    "it": "Nuove carte BT27: Renamon (BT27-022), Tenkomon (BT27-027), Sekkamon (BT27-029), Yukinamon (BT27-033) e Valner Dragnogh (BT27-088), con illustrazioni in inglese e giapponese."
+  },
+  "releases.1.76.0-beta.feature.homeScreenApp": {
+    "en": "Aegis added to your phone's home screen now opens as an app, without the browser bar. Your session now renews while you keep playing, so you stay signed in as long as you open the game at least once every 30 days. Remove the old shortcut and add it again to get the app view.",
+    "pt-BR": "O Aegis adicionado à tela inicial do celular agora abre como app, sem a barra do navegador. Sua sessão agora se renova enquanto você joga, então você continua conectado se abrir o jogo pelo menos uma vez a cada 30 dias. Remova o atalho antigo e adicione de novo para ter a visualização de app.",
+    "es": "Aegis añadido a la pantalla de inicio del móvil ahora se abre como app, sin la barra del navegador. Tu sesión ahora se renueva mientras sigues jugando, así que sigues conectado si abres el juego al menos una vez cada 30 días. Elimina el acceso directo antiguo y añádelo de nuevo para ver la app.",
+    "it": "Aegis aggiunto alla schermata Home del telefono ora si apre come app, senza la barra del browser. La sessione ora si rinnova mentre continui a giocare, quindi resti connesso se apri il gioco almeno una volta ogni 30 giorni. Rimuovi il vecchio collegamento e aggiungilo di nuovo per la vista app."
+  },
+  "releases.1.76.0-beta.fix.readyEffectAttackers": {
+    "en": "An effect that lets 1 of your Digimon attack now offers only Digimon that can attack. Before, it also offered a Digimon played this turn, and choosing it made the attack do nothing.",
+    "pt-BR": "Um efeito que deixa 1 dos seus Digimon atacar agora oferece apenas Digimon que podem atacar. Antes, ele também oferecia um Digimon jogado neste turno, e escolhê-lo fazia o ataque não acontecer.",
+    "es": "Un efecto que permite atacar a 1 de tus Digimon ahora ofrece solo Digimon que pueden atacar. Antes también ofrecía un Digimon jugado este turno, y elegirlo hacía que el ataque no ocurriera.",
+    "it": "Un effetto che permette a 1 dei tuoi Digimon di attaccare ora offre solo Digimon che possono attaccare. Prima offriva anche un Digimon giocato in questo turno, e sceglierlo faceva fallire l'attacco."
+  },
+  "releases.1.76.0-beta.fix.keenanOwnStack": {
+    "en": "Keenan Crier (BT26-094) now reacts only when a card is trashed from under itself, as printed. Before, it also reacted to cards trashed from under your other Tamers.",
+    "pt-BR": "Keenan Crier (BT26-094) agora só reage quando uma carta é descartada de baixo dele mesmo, como está na carta. Antes, ele também reagia a cartas descartadas de baixo dos seus outros Tamers.",
+    "es": "Keenan Crier (BT26-094) ahora solo reacciona cuando se descarta una carta de debajo de sí mismo, como indica la carta. Antes también reaccionaba a cartas descartadas de debajo de tus otros Tamers.",
+    "it": "Keenan Crier (BT26-094) ora reagisce solo quando una carta viene scartata da sotto di sé, come stampato. Prima reagiva anche alle carte scartate da sotto gli altri tuoi Tamer."
+  },
+  "releases.1.76.0-beta.fix.replayOpponentHand": {
+    "en": "In replays on desktop, the opponent's revealed hand now shows larger cards that are easier to read.",
+    "pt-BR": "Nos replays no computador, a mão revelada do oponente agora mostra cartas maiores e mais fáceis de ler.",
+    "es": "En las repeticiones en ordenador, la mano revelada del oponente ahora muestra cartas más grandes y fáciles de leer.",
+    "it": "Nei replay su computer, la mano rivelata dell'avversario ora mostra carte più grandi e facili da leggere."
+  },
   "releases.1.75.2-beta.summary": {
     "en": "This update fixes four player-reported problems: a Digimon that kept ＜Collision＞ after giving it away, a suspend cost that offered suspended Digimon, a match that froze after an end-of-turn attack, and a Digimon left on the board at 0 DP.",
     "pt-BR": "Esta atualização corrige quatro problemas relatados pelos jogadores: um Digimon que mantinha ＜Collision＞ depois de concedê-lo, um custo de suspender que oferecia Digimon já suspensos, uma partida que travava depois de um ataque no fim do turno e um Digimon que ficava em campo com 0 DP.",
