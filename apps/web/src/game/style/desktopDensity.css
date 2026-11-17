@@ -28,6 +28,11 @@
     --arena-opponent-card-height: 3.5rem;
   }
 
+  .aegis-arena .game-board .game-opponent-hand[data-revealed] {
+    --arena-opponent-card-width: 4.5rem;
+    --arena-opponent-card-height: 6.3rem;
+  }
+
   .aegis-arena .game-board .game-battle-zones > .game-battle-row {
     /* The opponent's breeding slots, their gap and a gutter must clear a full lane.
        Both rows keep that inset on both sides so their cards share one centre. */
