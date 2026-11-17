@@ -402,6 +402,7 @@ export async function resolvePermanentTargets(
     /** Let an otherwise fixed-count selection answer an optional processing condition with zero picks. */
     allowDecline?: boolean;
     promptKey?: "digivolveHost";
+    askWhenEligibilityNarrows?: boolean;
   },
 ): Promise<string[]> {
   // SourceRef: resolve to the permanent that triggered this SubTrigger event.
@@ -512,6 +513,7 @@ export async function resolvePermanentTargets(
     ctx.payingDeclinableCost !== true &&
     !(ctx.pickingAcceptedOptional === true && ctx.presetOptionalAnswer === true) &&
     !holdsUnaffectableCandidate &&
+    !(opts?.askWhenEligibilityNarrows === true && candidates.length < visibleCandidates.length) &&
     (target as Target & { forceSelection?: boolean }).forceSelection !== true
   ) {
     const result = finalize(candidates.map((p) => p.permanentId));

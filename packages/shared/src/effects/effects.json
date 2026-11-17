@@ -231292,7 +231292,7 @@
           {
             "kind": "SubTrigger",
             "event": "whenDigivolutionTrashed",
-            "sourceFilter": { "controller": "mine", "kind": ["Tamer"], "byEffect": true },
+            "sourceFilter": { "controller": "mine", "kind": ["Tamer"], "isSelfRef": true, "byEffect": true },
             "hostFilter": { "isSelfRef": true },
             "actions": [
               {
