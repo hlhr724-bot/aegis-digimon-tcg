@@ -100,6 +100,13 @@
     object-fit: contain !important;
   }
 
+  .game-opponent-hand .game-hand-reveal img {
+    width: var(--arena-opponent-card-width) !important;
+    height: var(--arena-opponent-card-height) !important;
+    border-radius: 0.25rem !important;
+    box-shadow: 0 3px 5px rgb(0 0 0 / 30%);
+  }
+
   .game-opponent-hand > span {
     display: block;
     position: absolute;

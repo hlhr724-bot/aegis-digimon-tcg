@@ -181,6 +181,7 @@ export function OpponentBar({
         title={t("game.counter.hand", { count: handCount })}
         data-testid="opponent-hand"
         data-hand-count={handCount}
+        data-revealed={revealedHand ? "" : undefined}
         style={
           {
             display: "flex",
