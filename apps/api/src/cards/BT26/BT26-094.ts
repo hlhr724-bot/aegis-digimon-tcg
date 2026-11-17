@@ -53,7 +53,7 @@ export const compiled: CompiledCard = {
         {
           kind: "SubTrigger",
           event: "whenDigivolutionTrashed",
-          sourceFilter: { controller: "mine", kind: ["Tamer"], byEffect: true },
+          sourceFilter: { controller: "mine", kind: ["Tamer"], isSelfRef: true, byEffect: true },
           hostFilter: { isSelfRef: true },
           actions: executeReaction,
           raw: "When effects trash cards from under this Tamer, by suspending this Tamer, 1 of your DATA SQUAD Digimon gains Execute for the turn.",
