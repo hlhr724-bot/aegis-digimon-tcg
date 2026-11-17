@@ -436,7 +436,7 @@ describe("BT21-044 RizeGreymon — KB Q&A rulings", () => {
           battleArea: [
             { card: RIZEGREYMON, as: "rize", suspended: true },
             { card: MARCUS_DAMON, as: "marcus", suspended: true },
-            { card: YELLOW_AGUMON, as: "yellowDigimon" },
+            { card: YELLOW_AGUMON, as: "yellowDigimon", suspended: true },
           ],
           trash: [{ card: MARCUS_WITHOUT_SUSPEND_TRIGGER, as: "trashedMarcus" }],
           security: [FILLER],
