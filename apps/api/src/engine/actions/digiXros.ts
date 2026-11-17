@@ -269,8 +269,12 @@ export function validateDigiXros(
   // same quota rule — a grant carrying no explicit count is worth one material — so the direct
   // playCard/DigiXros verb must not be the stricter of the two.
   const ledgerZones = deps.digiXrosExpandedZones?.(seat, instance.instanceId) ?? [];
+  const ledgerCounts = deps.digiXrosExpandedZoneCounts?.(seat, instance.instanceId);
+  const ledgerUnderTamerQuota = ["underTamers", "underMyTamers", "underTamer", "digivolutionCards"]
+    .filter((zone) => ledgerZones.includes(zone))
+    .reduce((total, zone) => total + (ledgerCounts?.[zone] ?? 1), 0);
+  underTamerMax += ledgerUnderTamerQuota;
   if (ledgerZones.includes("trash")) {
-    const ledgerCounts = deps.digiXrosExpandedZoneCounts?.(seat, instance.instanceId);
     trashMax += ledgerCounts === undefined ? 1 : (ledgerCounts.trash ?? 1);
   }
   const expanderPermanentIds = intent.digiXros.expanderPermanentIds ?? [];
@@ -309,7 +313,8 @@ export function validateDigiXros(
       return { ok: false, reason: "invalid-expander" };
     }
   }
-  const requiresSingleUnderTamerHost = singleUnderTamerHost && !unrestrictedUnderTamerHost;
+  const requiresSingleUnderTamerHost =
+    singleUnderTamerHost && !unrestrictedUnderTamerHost && ledgerUnderTamerQuota === 0;
   let resolvedUnderTamerHost = selectedUnderTamerHost;
 
   // Resolve each chosen material to its source zone, gated by the unlocked maxima.

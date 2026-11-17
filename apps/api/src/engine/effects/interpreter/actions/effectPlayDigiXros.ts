@@ -1,5 +1,5 @@
 import type { EffectContext } from "../../EffectContext.js";
-import { materialsSatisfyRecipe } from "../../../actions/digiXros.js";
+import { materialsSatisfyRecipe, type DigiXrosPlanInput } from "#api/engine/actions/digiXros";
 import { digiXrosZoneExpanderActiveOnTurn, digiXrosZoneExpanderFor } from "../../../digiXros/zoneExpanders.js";
 import { type LooseCandidate, looseCardsInZone } from "../targeting/loose.js";
 import { digiXrosRequirementFor, type Permanent, type ZoneRef } from "@aegis/shared";
@@ -39,8 +39,7 @@ export interface EffectPlayDigiXrosOptions {
    * (BT10-104: "you may also place cards from your trash").
    */
   extraMaterialZones?: readonly ZoneRef[];
-  /** Manual plays validate and consume paid grants when the actual play finishes. */
-  retainPlayExpansions?: boolean;
+  capturePlayPlan?: (plan: DigiXrosPlanInput) => void;
   /** The resolving source counts as this named material when a ruling permits it (AD1-006). */
   sourceMaterial?: { instanceId: string; nameEn: string };
 }
@@ -96,7 +95,7 @@ export async function prepareEffectPlayDigiXros(
   } catch (error) {
     for (const pendingId of eligibleDigiXrosIds) {
       const candidate = playedCards.find((entry) => entry.instanceId === pendingId);
-      if (candidate !== undefined && !options.retainPlayExpansions)
+      if (candidate !== undefined && options.capturePlayPlan === undefined)
         ctx.fx.consumeDigiXrosPlayExpansions?.(candidate.ownerSeat, pendingId);
     }
     for (const pendingId of eligibleDigiXrosIds) ctx.fx.clearPreparedDigiXrosPlay?.(pendingId);
@@ -220,6 +219,7 @@ export async function prepareEffectPlayDigiXros(
           const underTamerCandidates =
             expansion.underTamerMax > 0 ? looseCardsInZone(ctx, ownerSeat, "underTamers") : [];
           let scopedUnderTamerCandidates = underTamerCandidates;
+          let underTamerHostPermanentId: string | undefined;
           if (singleUnderTamerHost && !grantsUnderTamers) {
             const hostIds = [...new Set(underTamerCandidates.map((candidate) => candidate.hostPermanentId))].filter(
               (hostId): hostId is string => hostId !== undefined,
@@ -237,6 +237,7 @@ export async function prepareEffectPlayDigiXros(
                     { candidates: hostIds, min: 1, max: 1 },
                   );
             const selectedHostId = selectedHostIds[0];
+            underTamerHostPermanentId = selectedHostId;
             scopedUnderTamerCandidates =
               selectedHostId === undefined
                 ? []
@@ -301,8 +302,16 @@ export async function prepareEffectPlayDigiXros(
             selectedTrash <= expansion.trashMax &&
             materialsSatisfyRecipe(definitions, requirement.materials)
           ) {
-            if ((selectedUnderTamer > 0 && !grantsUnderTamers) || (selectedTrash > 0 && !grantsTrash)) {
-              const expanderIds = selectedExpanders.map((permanent) => permanent.permanentId);
+            const usesExpandedZone =
+              (selectedUnderTamer > 0 && !grantsUnderTamers) || (selectedTrash > 0 && !grantsTrash);
+            const expanderIds = usesExpandedZone ? selectedExpanders.map((permanent) => permanent.permanentId) : [];
+            if (options.capturePlayPlan !== undefined) {
+              options.capturePlayPlan({
+                materialInstanceIds: selected,
+                expanderPermanentIds: expanderIds,
+                underTamerHostPermanentId,
+              });
+            } else if (expanderIds.length > 0) {
               if (expanderIds.some((id) => ctx.fx.canSuspend?.(id, ownerSeat) === false)) {
                 continue;
               }
@@ -320,7 +329,7 @@ export async function prepareEffectPlayDigiXros(
         } finally {
           // A failed/aborted picker must not leak an expansion into a later play. Persistent
           // grants are retained by the primitive and are not part of this cleanup.
-          if (!options.retainPlayExpansions)
+          if (options.capturePlayPlan === undefined)
             ctx.fx.consumeDigiXrosPlayExpansions?.(playedCard.ownerSeat, playedCard.instanceId);
         }
       }
@@ -331,7 +340,7 @@ export async function prepareEffectPlayDigiXros(
   } finally {
     for (const pendingId of eligibleDigiXrosIds) {
       const candidate = playedCards.find((entry) => entry.instanceId === pendingId);
-      if (candidate !== undefined && !options.retainPlayExpansions)
+      if (candidate !== undefined && options.capturePlayPlan === undefined)
         ctx.fx.consumeDigiXrosPlayExpansions?.(candidate.ownerSeat, pendingId);
     }
   }
