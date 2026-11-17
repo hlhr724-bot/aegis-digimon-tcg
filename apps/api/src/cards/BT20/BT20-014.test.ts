@@ -93,6 +93,7 @@ describe("BT20-014 SaviorHuckmon", () => {
             { card: "BT20-017", as: "jesmon" },
           ],
         },
+        1: { security: ["BT1-010", "BT1-010"] },
       },
       { autoAcceptOptional: true, autoSelectCards: true },
     );
@@ -106,9 +107,13 @@ describe("BT20-014 SaviorHuckmon", () => {
     const turn = s.engine.runOneTurn();
     await advance(s.engine).waitForMainPhase(0);
     expect(s.engine.applyIntent(0, { type: "endPhase" })).toEqual({ ok: true });
+    await settle(() => s.state.combatWindow?.kind === "alliance");
+    expect(s.engine.applyIntent(0, { type: "respondAlliance" })).toEqual({ ok: true });
     await turn;
 
     expect(s.perm("other").isSuspended).toBe(true);
+    expect(s.perm("savior").isSuspended).toBe(true);
+    expect(s.state.players[1]!.security).toHaveLength(1);
     expect(s.perm("savior").topCard.cardId).toBe("BT20-017");
     expect(s.perm("savior").stack.map((card) => card.cardId)).toContain("BT20-014");
     expect(s.state.memory).toBe(-3);
