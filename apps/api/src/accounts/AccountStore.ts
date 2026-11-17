@@ -219,6 +219,8 @@ export class DeckLimitError extends Error {}
 export class DisplayNameTakenError extends Error {}
 export class InvalidDisplayNameError extends Error {}
 
+const SESSION_LIFETIME_MS = 2_592_000_000;
+const SESSION_RENEWAL_INTERVAL_MS = 86_400_000;
 const MAGIC_LINK_SHORT_WINDOW_MS = 900_000;
 const MAGIC_LINK_DAY_WINDOW_MS = 86_400_000;
 
@@ -345,7 +347,7 @@ export class AccountStore {
   async issueSession(account: Account): Promise<AuthSession> {
     await this.ensureReady();
     const id = randomBytes(32).toString("base64url");
-    const expiresAt = Date.now() + 2_592_000_000;
+    const expiresAt = Date.now() + SESSION_LIFETIME_MS;
     await this.pool.query("INSERT INTO sessions (id, account_id, expires_at) VALUES ($1,$2,$3)", [
       id,
       account.id,
@@ -416,6 +418,16 @@ export class AccountStore {
   async setAvatarUrl(accountId: string, avatarUrl: string | null): Promise<void> {
     await this.ensureReady();
     await this.pool.query("UPDATE accounts SET avatar_url=$1 WHERE id=$2", [avatarUrl, accountId]);
+  }
+  async renewSession(session: AuthSession): Promise<AuthSession | undefined> {
+    const now = Date.now();
+    if (session.expiresAt - now > SESSION_LIFETIME_MS - SESSION_RENEWAL_INTERVAL_MS) return undefined;
+    const expiresAt = now + SESSION_LIFETIME_MS;
+    const result = await this.pool.query(
+      "UPDATE sessions SET expires_at=$1 WHERE id=$2 AND revoked_at IS NULL AND expires_at>$3",
+      [expiresAt, session.id, now],
+    );
+    return result.rowCount ? { ...session, expiresAt } : undefined;
   }
   async revokeSession(id: string | undefined): Promise<void> {
     if (id) {
