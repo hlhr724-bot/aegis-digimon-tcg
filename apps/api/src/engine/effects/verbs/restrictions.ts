@@ -36,6 +36,7 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
       fromSourceKind?: string[];
       byOpponentEffectsOnly?: boolean;
       byEffectsOnly?: boolean;
+      exceptInBattle?: boolean;
       continuous?: boolean;
     },
   ): void => {
@@ -47,6 +48,7 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
       fromSourceKind: opts?.fromSourceKind,
       byOpponentEffectsOnly: opts?.byOpponentEffectsOnly,
       byEffectsOnly: opts?.byEffectsOnly,
+      exceptInBattle: opts?.exceptInBattle,
       originSeat: effectSeatStack.at(-1) ?? engine.controllerSeat(),
       sourceKinds: effectSourceKindsStack.at(-1) ?? [],
     });
@@ -79,6 +81,7 @@ export function createRestrictionsVerbs(pc: PrimitivesContext) {
       fromSourceKind: opts?.fromSourceKind,
       byOpponentEffectsOnly: opts?.byOpponentEffectsOnly,
       byEffectsOnly: opts?.byEffectsOnly,
+      exceptInBattle: opts?.exceptInBattle,
     });
     if (restriction === "beAffected") {
       for (const permanent of state.players[seat]?.battleArea ?? []) ledger.recomputeDP(state, permanent.permanentId);

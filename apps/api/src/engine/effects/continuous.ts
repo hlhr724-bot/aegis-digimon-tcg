@@ -367,6 +367,7 @@ export class ContinuousEffectLedger {
       fromSourceKind?: string[];
       byOpponentEffectsOnly?: boolean;
       byEffectsOnly?: boolean;
+      exceptInBattle?: boolean;
       originSeat?: Seat;
       sourceKinds?: string[];
     },
@@ -382,6 +383,7 @@ export class ContinuousEffectLedger {
         fromSourceKind: opts?.fromSourceKind,
         byOpponentEffectsOnly: opts?.byOpponentEffectsOnly,
         byEffectsOnly: opts?.byEffectsOnly,
+        ...(opts?.exceptInBattle === true ? { exceptInBattle: true } : {}),
       }),
     );
   }
@@ -441,6 +443,7 @@ export class ContinuousEffectLedger {
       fromSourceKind?: string[];
       byOpponentEffectsOnly?: boolean;
       byEffectsOnly?: boolean;
+      exceptInBattle?: boolean;
     },
   ): void {
     this.playerRestrictions.push(
@@ -457,6 +460,7 @@ export class ContinuousEffectLedger {
         ...(opts?.fromSourceKind === undefined ? {} : { fromSourceKind: opts.fromSourceKind }),
         ...(opts?.byOpponentEffectsOnly === true ? { byOpponentEffectsOnly: true } : {}),
         ...(opts?.byEffectsOnly === true ? { byEffectsOnly: true } : {}),
+        ...(opts?.exceptInBattle === true ? { exceptInBattle: true } : {}),
       }),
     );
   }
@@ -502,7 +506,7 @@ export class ContinuousEffectLedger {
     permanentId: string,
     restriction: Restriction,
     sourceKind?: string,
-    opts?: { byOpponentEffect?: boolean; byEffect?: boolean },
+    opts?: { byOpponentEffect?: boolean; byEffect?: boolean; inBattle?: boolean },
   ): boolean {
     // Printed "can't suspend" effects are recorded as `beSuspended` by the
     // interpreter so effect-driven suspension can honor them. The combat
@@ -516,10 +520,12 @@ export class ContinuousEffectLedger {
     const scopeBlocks = (entry: {
       byOpponentEffectsOnly?: boolean;
       byEffectsOnly?: boolean;
+      exceptInBattle?: boolean;
       fromSourceKind?: string[];
     }): boolean => {
       if (entry.byOpponentEffectsOnly === true && opts?.byOpponentEffect === false) return false;
       if (entry.byEffectsOnly === true && opts?.byEffect === false) return false;
+      if (entry.exceptInBattle === true && opts?.inBattle === true) return false;
       if (entry.fromSourceKind === undefined) return true;
       // Qualified entry: block only when sourceKind is known and matches.
       return sourceKind !== undefined && entry.fromSourceKind.includes(sourceKind);

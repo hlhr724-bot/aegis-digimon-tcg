@@ -34,6 +34,7 @@ export interface RestrictionEntry {
    * ("prevent effects from deleting it", BT7-064).
    */
   byEffectsOnly?: boolean;
+  exceptInBattle?: boolean;
 }
 
 export interface PlayerRestrictionEntry {
@@ -57,6 +58,7 @@ export interface PlayerRestrictionEntry {
   byOpponentEffectsOnly?: boolean;
   /** Same scoping as a per-permanent restriction: rule processing and battle are not blocked. */
   byEffectsOnly?: boolean;
+  exceptInBattle?: boolean;
 }
 
 export interface AttackTargetRestriction {
