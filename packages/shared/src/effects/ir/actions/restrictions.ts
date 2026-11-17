@@ -71,6 +71,7 @@ export interface RestrictAction extends ActionBase {
    * deleting it" wording (BT7-064). Absent also blocks rule and battle deletion (BT18-086).
    */
   byEffectsOnly?: boolean;
+  exceptInBattle?: boolean;
   /**
    * Board-state gate re-evaluated every continuous pass ("while you have 1 or more memory",
    * EX8-026). Unlike `condition`, which is checked once at resolution, `while` marks the

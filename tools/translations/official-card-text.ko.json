@@ -1,7 +1,7 @@
 {
   "fetchedAt": "2026-10-16T13:45:11.694Z",
   "language": "ko",
-  "catalogCards": 4611,
+  "catalogCards": 4616,
   "sourceCards": 3814,
   "translatedCards": 3595,
   "translatedFields": 5487,
@@ -7738,6 +7738,51 @@
     },
     {
       "cardId": "BT27-086",
+      "field": "securityEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-022",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-022",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-027",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-027",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-029",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-029",
+      "field": "inheritedEffectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-033",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-088",
+      "field": "effectText",
+      "reason": "unavailable-source-card"
+    },
+    {
+      "cardId": "BT27-088",
       "field": "securityEffectText",
       "reason": "unavailable-source-card"
     }

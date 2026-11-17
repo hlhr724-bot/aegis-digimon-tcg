@@ -31,6 +31,7 @@ export interface ContinuousPrimitives {
       fromSourceKind?: string[];
       byOpponentEffectsOnly?: boolean;
       byEffectsOnly?: boolean;
+      exceptInBattle?: boolean;
       continuous?: boolean;
     },
   ): void;
@@ -51,6 +52,7 @@ export interface ContinuousPrimitives {
       fromSourceKind?: string[];
       byOpponentEffectsOnly?: boolean;
       byEffectsOnly?: boolean;
+      exceptInBattle?: boolean;
     },
   ): void;
   /**

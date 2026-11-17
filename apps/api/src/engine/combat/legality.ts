@@ -33,7 +33,7 @@ export interface ContinuousLegalityReader {
     permanentId: string,
     restriction: Restriction,
     sourceKind?: string,
-    opts?: { byOpponentEffect?: boolean; byEffect?: boolean },
+    opts?: { byOpponentEffect?: boolean; byEffect?: boolean; inBattle?: boolean },
   ): boolean;
   hasKeyword(permanentId: string, keyword: string): boolean;
   /** Parameters of conferred keywords, including Fragment's trash count. */
