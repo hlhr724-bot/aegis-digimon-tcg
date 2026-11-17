@@ -112387,5 +112387,125 @@
     "rarity": "R",
     "maxCountInDeck": 4,
     "imageId": "BT27-086"
+  },
+  {
+    "cardId": "BT27-022",
+    "set": "BT27",
+    "nameEn": "Renamon",
+    "nameJp": "レナモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 3,
+    "playCost": 3,
+    "dp": 2000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 2,
+        "memoryCost": 0
+      }
+    ],
+    "forms": ["Rookie"],
+    "attributes": ["Data"],
+    "types": ["Beastkin", "ALYSION"],
+    "effectText": "[On Play] Reveal the top 3 cards of your deck. Add 1 [Ice-Snow] or [ALYSION] trait card and 1 blue Tamer card among them to the hand. Return the rest to the bottom of the deck.\n[Rule] Trait: Has [Ice-Snow] Type.",
+    "inheritedEffectText": "[When Attacking] If this Digimon has the [Ice-Snow] trait, you may change the attack target to 1 of your opponent's unsuspended Digimon with the fewest digivolution cards.",
+    "rarity": "U",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-022"
+  },
+  {
+    "cardId": "BT27-027",
+    "set": "BT27",
+    "nameEn": "Tenkomon",
+    "nameJp": "テンコモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 4,
+    "playCost": 5,
+    "dp": 5000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 3,
+        "memoryCost": 2
+      }
+    ],
+    "forms": ["Champion"],
+    "attributes": ["Virus"],
+    "types": ["Mysterious Beast", "ALYSION"],
+    "effectText": "＜Iceclad＞\n[On Play] [When Digivolving] Trash the bottom 2 digivolution cards of 1 of your opponent's Digimon. Then, you may place 1 level 4 or lower [Ice-Snow] trait Digimon card from your hand as any of your Digimon's bottom digivolution card.\n[Rule] Trait: Has [Ice-Snow] Type.",
+    "inheritedEffectText": "[End of Attack] [Once Per Turn] Gain 1 memory.",
+    "rarity": "C",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-027"
+  },
+  {
+    "cardId": "BT27-029",
+    "set": "BT27",
+    "nameEn": "Sekkamon",
+    "nameJp": "セッカモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 5,
+    "playCost": 7,
+    "dp": 7000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 4,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Ultimate"],
+    "attributes": ["Virus"],
+    "types": ["Beastkin", "ALYSION"],
+    "effectText": "＜Iceclad＞\n[On Play] [When Digivolving] Trash any 3 digivolution cards from your opponent's Digimon. Then, if they don't have a Digimon with digivolution cards, this Digimon gains ＜Blocker＞ and can't be deleted other than in battle until their turn ends.\n[Rule] Trait: Has [Ice-Snow] Type.",
+    "inheritedEffectText": "[End of Your Turn] [Once Per Turn] Trash the bottom 2 digivolution cards of 1 of your opponent's Digimon. If this effect didn't trash, this [Ice-Snow] trait Digimon may unsuspend.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-029"
+  },
+  {
+    "cardId": "BT27-033",
+    "set": "BT27",
+    "nameEn": "Yukinamon",
+    "nameJp": "ユキナモン",
+    "colors": ["Blue"],
+    "kinds": ["Digimon"],
+    "level": 6,
+    "playCost": 12,
+    "dp": 12000,
+    "evoCosts": [
+      {
+        "color": "Blue",
+        "level": 5,
+        "memoryCost": 3
+      }
+    ],
+    "forms": ["Mega"],
+    "attributes": ["Virus"],
+    "types": ["Ice-Snow", "ALYSION"],
+    "effectText": "＜Iceclad＞ ＜Piercing＞ ＜Blocker＞\n[On Play] [When Digivolving] Trash the top 2 digivolution cards of all of your opponent's Digimon. Then, until their turn ends, none of their Digimon without digivolution cards can digivolve or suspend.\n[End of Your Turn] [Once Per Turn] If your opponent has no Digimon with digivolution cards, 1 of your [Ice-Snow] trait Digimon may gain ＜Rush＞ for the turn and attack.\n[Assembly -5] Lv.5 × Lv.4 × Lv.3, all w/[Ice-Snow] trait",
+    "rarity": "SR",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-033"
+  },
+  {
+    "cardId": "BT27-088",
+    "set": "BT27",
+    "nameEn": "Valner Dragnogh",
+    "nameJp": "ヴァルナー・ドラグノフ",
+    "colors": ["Blue"],
+    "kinds": ["Tamer"],
+    "playCost": 3,
+    "dp": 0,
+    "evoCosts": [],
+    "types": ["ALYSION"],
+    "effectText": "[Start of Your Main Phase] If you have a Digimon with the [Ice-Snow] trait, gain 1 memory.\n[All Turns] When your Digimon are played or digivolve, if any of them have the [Ice-Snow] trait, by suspending this Tamer, trash the bottom 2 digivolution cards from 1 of your opponent's Digimon. After, if they don't have a Digimon with digivolution cards, gain 1 memory.",
+    "securityEffectText": "[Security] Play this card without paying the cost.",
+    "rarity": "R",
+    "maxCountInDeck": 4,
+    "imageId": "BT27-088"
   }
 ]

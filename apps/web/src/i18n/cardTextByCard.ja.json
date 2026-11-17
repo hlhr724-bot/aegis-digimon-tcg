@@ -15771,5 +15771,24 @@
   "BT27-086": {
     "[StartofYourMainPhase]IfyouhaveaDigimonwith[Gemmon]initstext,gain1memory.[YourTurn]WhenyourDigimonareplayedordigivolve,ifanyofthemhavethe[ALYSION]trait,bysuspendingthisTamer,1ofyourDigimongets+3000DPfortheturn.After,ifyouhaveaDigimonwith8000DPormore,<Draw1>.": "【自分のメインフェイズ開始時】「ジェムモン」の記述がある自分のデジモンがいるなら、メモリー+1。\n【自分のターン】自分のデジモンが登場/進化したとき、そのデジモンが特徴「アリシオン」を持つなら、このテイマーをレストさせることで、ターン終了まで、自分のデジモン1体をDP+3000。さらに、DP8000以上の自分のデジモンがいるなら、≪1ドロー≫。",
     "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
+  },
+  "BT27-022": {
+    "[OnPlay]Revealthetop3cardsofyourdeck.Add1[Ice-Snow]or[ALYSION]traitcardand1blueTamercardamongthemtothehand.Returntheresttothebottomofthedeck.[Rule]Trait:Has[Ice-Snow]Type.": "【登場時】自分のデッキの上から3枚オープンする。その中の特徴「氷雪型」/「アリシオン」を持つカード1枚と青のテイマーカード1枚を手札に加える。残りはデッキの下に戻す。\n〈ルール〉特徴:タイプ「氷雪型」を持つ。",
+    "[WhenAttacking]IfthisDigimonhasthe[Ice-Snow]trait,youmaychangetheattacktargetto1ofyouropponent'sunsuspendedDigimonwiththefewestdigivolutioncards.": "【アタック時】このデジモンが特徴「氷雪型」を持つなら、アタックの対象を最も進化元枚数の少ないアクティブ状態の相手のデジモン1体に変更できる。"
+  },
+  "BT27-027": {
+    "<Iceclad>[OnPlay][WhenDigivolving]Trashthebottom2digivolutioncardsof1ofyouropponent'sDigimon.Then,youmayplace1level4orlower[Ice-Snow]traitDigimoncardfromyourhandasanyofyourDigimon'sbottomdigivolutioncard.[Rule]Trait:Has[Ice-Snow]Type.": "≪氷装≫\n【登場時】【進化時】相手のデジモン1体の進化元を下から2枚破棄する。その後、自分の手札から、特徴「氷雪型」を持つLv.4以下のデジモンカード1枚を自分のデジモンの進化元の下に置ける。\n〈ルール〉特徴:タイプ「氷雪型」を持つ。",
+    "[EndofAttack][OncePerTurn]Gain1memory.": "【アタック終了時】［ターン1回］メモリー+1。"
+  },
+  "BT27-029": {
+    "<Iceclad>[OnPlay][WhenDigivolving]Trashany3digivolutioncardsfromyouropponent'sDigimon.Then,iftheydon'thaveaDigimonwithdigivolutioncards,thisDigimongains<Blocker>andcan'tbedeletedotherthaninbattleuntiltheirturnends.[Rule]Trait:Has[Ice-Snow]Type.": "≪氷装≫\n【登場時】【進化時】相手のデジモンの進化元を選んで3枚破棄する。その後、進化元を持つ相手のデジモンがいないなら、相手のターン終了まで、このデジモンは≪ブロッカー≫を得て、バトル以外で消滅しない。\n〈ルール〉特徴:タイプ「氷雪型」を持つ。",
+    "[EndofYourTurn][OncePerTurn]Trashthebottom2digivolutioncardsof1ofyouropponent'sDigimon.Ifthiseffectdidn'ttrash,this[Ice-Snow]traitDigimonmayunsuspend.": "【自分のターン終了時】［ターン1回］相手のデジモン1体の進化元を下から2枚破棄する。この効果で破棄しなかったなら、特徴「氷雪型」を持つこのデジモンをアクティブにできる。"
+  },
+  "BT27-033": {
+    "<Iceclad><Piercing><Blocker>[OnPlay][WhenDigivolving]Trashthetop2digivolutioncardsofallofyouropponent'sDigimon.Then,untiltheirturnends,noneoftheirDigimonwithoutdigivolutioncardscandigivolveorsuspend.[EndofYourTurn][OncePerTurn]IfyouropponenthasnoDigimonwithdigivolutioncards,1ofyour[Ice-Snow]traitDigimonmaygain<Rush>fortheturnandattack.[Assembly-5]Lv.5×Lv.4×Lv.3,allw/[Ice-Snow]trait": "≪氷装≫ ≪貫通≫ ≪ブロッカー≫\n【登場時】【進化時】相手のデジモン全ての進化元を上から2枚破棄する。その後、相手のターン終了まで、進化元を持たない相手のデジモン全ては進化できず、レストできない。\n【自分のターン終了時】［ターン1回］進化元を持つ相手のデジモンがいないなら、ターン終了まで、特徴「氷雪型」を持つ自分のデジモン1体は≪速攻≫を得て、そのデジモンでアタックできる。\nアセンブリ-5:特徴「氷雪型」を持つ、Lv.5×Lv.4×Lv.3"
+  },
+  "BT27-088": {
+    "[StartofYourMainPhase]IfyouhaveaDigimonwiththe[Ice-Snow]trait,gain1memory.[AllTurns]WhenyourDigimonareplayedordigivolve,ifanyofthemhavethe[Ice-Snow]trait,bysuspendingthisTamer,trashthebottom2digivolutioncardsfrom1ofyouropponent'sDigimon.After,iftheydon'thaveaDigimonwithdigivolutioncards,gain1memory.": "【自分のメインフェイズ開始時】特徴「氷雪型」を持つ自分のデジモンがいるなら、メモリー+1。\n【お互いのターン】自分のデジモンが登場/進化したとき、そのデジモンが特徴「氷雪型」を持つなら、このテイマーをレストさせることで、相手のデジモン1体の進化元を下から2枚破棄する。さらに、進化元を持つ相手のデジモンがいないなら、メモリー+1。",
+    "[Security]Playthiscardwithoutpayingthecost.": "【セキュリティ】このカードをコストを支払わず登場させる。"
   }
 }

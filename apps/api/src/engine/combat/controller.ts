@@ -1413,7 +1413,11 @@ export class CombatController {
     if (continuous === undefined) return false;
     return (
       continuous.hasRestriction(permanentId, "beDeletedInBattle") ||
-      continuous.hasRestriction(permanentId, "beDeleted", undefined, { byOpponentEffect: false, byEffect: false })
+      continuous.hasRestriction(permanentId, "beDeleted", undefined, {
+        byOpponentEffect: false,
+        byEffect: false,
+        inBattle: true,
+      })
     );
   }
 

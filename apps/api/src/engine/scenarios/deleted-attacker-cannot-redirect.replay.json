@@ -1170,10 +1170,10 @@
         "response": {
           "kind": "orderTriggers",
           "order": [
-            "s0-7::subtrigger/whenDigivolutionTrashed~perm-2~s0-7~s0-7%2FBT26-094%2Fir-35-0%2F1/When effects trash cards from under this Tamer, by suspending this Tamer, 1 of your DATA SQUAD Digimon gains Execute for the turn."
+            "s0-7::subtrigger/whenHandTrashed~perm-2~s0-7~s0-7%2FBT26-094%2Fir-35-0%2F0/When your opponent's hand is trashed from, by suspending this Tamer, 1 of your DATA SQUAD Digimon gains Execute for the turn."
           ],
           "optionalAnswers": {
-            "s0-7::subtrigger/whenDigivolutionTrashed~perm-2~s0-7~s0-7%2FBT26-094%2Fir-35-0%2F1/When effects trash cards from under this Tamer, by suspending this Tamer, 1 of your DATA SQUAD Digimon gains Execute for the turn.": true
+            "s0-7::subtrigger/whenHandTrashed~perm-2~s0-7~s0-7%2FBT26-094%2Fir-35-0%2F0/When your opponent's hand is trashed from, by suspending this Tamer, 1 of your DATA SQUAD Digimon gains Execute for the turn.": true
           }
         },
         "decisionId": "dec-29"
@@ -1988,31 +1988,10 @@
       "intent": {
         "type": "respondDecision",
         "response": {
-          "kind": "orderTriggers",
-          "order": [
-            "hidden-s0-fe539c61cdf6c96abca397f9::BT26-072/ir-6-0",
-            "s0-7::subtrigger/whenDigivolutionTrashed~perm-2~s0-7~s0-7%2FBT26-094%2Fir-35-0%2F1/When effects trash cards from under this Tamer, by suspending this Tamer, 1 of your DATA SQUAD Digimon gains Execute for the turn."
-          ],
-          "optionalAnswers": {
-            "hidden-s0-fe539c61cdf6c96abca397f9::BT26-072/ir-6-0": true
-          }
-        },
-        "decisionId": "dec-77"
-      },
-      "engineEvents": 331,
-      "stateVersion": 251
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
           "kind": "chooseOption",
           "optionIndex": 0
         },
-        "decisionId": "dec-78"
+        "decisionId": "dec-77"
       },
       "engineEvents": 332,
       "stateVersion": 252
@@ -2027,25 +2006,10 @@
           "kind": "selectCards",
           "instanceIds": ["s0-38"]
         },
-        "decisionId": "dec-79"
+        "decisionId": "dec-78"
       },
       "engineEvents": 333,
       "stateVersion": 253
-    },
-    {
-      "ok": true,
-      "kind": "intent",
-      "seat": 0,
-      "intent": {
-        "type": "respondDecision",
-        "response": {
-          "kind": "optional",
-          "accept": false
-        },
-        "decisionId": "dec-80"
-      },
-      "engineEvents": 335,
-      "stateVersion": 255
     },
     {
       "ok": true,
@@ -2057,7 +2021,7 @@
           "kind": "orderTriggers",
           "order": ["s1-10::subtrigger/opt/s1-10/printed/BT25-055/ir-35-1/s1-10/BT25-055/ir-35-1/0"]
         },
-        "decisionId": "dec-81"
+        "decisionId": "dec-79"
       },
       "engineEvents": 336,
       "stateVersion": 256
@@ -2072,7 +2036,7 @@
           "kind": "optional",
           "accept": true
         },
-        "decisionId": "dec-82"
+        "decisionId": "dec-80"
       },
       "engineEvents": 337,
       "stateVersion": 257
@@ -2087,7 +2051,7 @@
           "kind": "chooseTargets",
           "instanceIds": ["perm-13"]
         },
-        "decisionId": "dec-83"
+        "decisionId": "dec-81"
       },
       "engineEvents": 338,
       "stateVersion": 258

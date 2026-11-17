@@ -130,6 +130,7 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
               fromSourceKind: action.fromSourceKind as string[] | undefined,
               byOpponentEffectsOnly: action.byOpponentEffectsOnly === true ? true : undefined,
               byEffectsOnly: action.byEffectsOnly === true ? true : undefined,
+              exceptInBattle: action.exceptInBattle === true ? true : undefined,
             },
           );
         }
@@ -143,6 +144,7 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
             fromSourceKind: action.fromSourceKind as string[] | undefined,
             byOpponentEffectsOnly: action.byOpponentEffectsOnly === true ? true : undefined,
             byEffectsOnly: action.byEffectsOnly === true ? true : undefined,
+            exceptInBattle: action.exceptInBattle === true ? true : undefined,
             matchesAsDigimon: matchesAsDigimon(seat, false),
           });
         }
@@ -170,11 +172,13 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
       const fromSourceKind = action.fromSourceKind as string[] | undefined;
       const byOpponentEffectsOnly = action.byOpponentEffectsOnly === true ? true : undefined;
       const byEffectsOnly = action.byEffectsOnly === true ? true : undefined;
+      const exceptInBattle = action.exceptInBattle === true ? true : undefined;
       for (const id of ids) {
         ctx.fx.restrict(id, restriction, duration, {
           fromSourceKind,
           byOpponentEffectsOnly,
           byEffectsOnly,
+          exceptInBattle,
           continuous,
         });
         if (blocksCombatSuspend) {
@@ -182,6 +186,7 @@ export async function runRestrictionAction(ctx: EffectContext, action: Action, s
             fromSourceKind,
             byOpponentEffectsOnly,
             byEffectsOnly,
+            exceptInBattle,
             continuous,
           });
         }

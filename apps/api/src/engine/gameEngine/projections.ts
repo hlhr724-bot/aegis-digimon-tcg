@@ -321,6 +321,7 @@ export class BoardProjection {
       this.deps.continuous.hasRestriction(perm.permanentId, "beDeleted", undefined, {
         byOpponentEffect: false,
         byEffect: false,
+        inBattle: true,
       });
     perm.protectedFromEffectReturn = this.deps.continuous.hasRestriction(perm.permanentId, "beReturned", undefined, {
       byOpponentEffect: true,
