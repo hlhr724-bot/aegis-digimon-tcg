@@ -77,7 +77,7 @@ export function createResolverDecisions(
       // those derived fields first: the decision itself causes the room to flush state,
       // and clients must not see a legal attacker as summoning-sick during the pause.
       await beforeRequest();
-      const triggerCardIds = active.map((c) => c.source.cardId);
+      const triggerCardIds = active.map((c) => c.presentedSourceCardId ?? c.source.cardId);
       // One permanent can put two effects on the stack at once (Megadramon's [On Play]
       // and [When Digivolving]). They share an instanceId and a card, so the chooser can
       // only name them apart by the window each one fired in.

@@ -101,11 +101,14 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
         top.instanceId,
       );
       const retainedAllianceGrantAt = (index: number) => retainedAllianceGrants[index - gainedAllianceCount];
+      const inheritedAllianceCardAt = (index: number) =>
+        attacker.stack.find((card) => card.instanceId === retainedAllianceGrantAt(index)?.sourceInstanceId);
       const allianceEffects: CollectedEffect[] = Array.from({ length: allianceCount }, (_, index) => ({
         source:
           index < gainedAllianceCount || retainedAllianceGrantAt(index) !== undefined
             ? gainedKeywordSource
             : allianceSource,
+        presentedSourceCardId: inheritedAllianceCardAt(index)?.cardId,
         timing: EffectTiming.OnUseAttack,
         effect: {
           effectKey: `${top.instanceId}/alliance/${index}`,
@@ -129,7 +132,7 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
             engine.combat.hasAllianceAlly(attacker.permanentId) &&
             (index < gainedAllianceCount
               ? engine.continuous.gainedKeywordCount(attacker.permanentId, "Alliance") > index
-              : (retainedAllianceGrantAt(index)?.() ?? true)),
+              : (retainedAllianceGrantAt(index)?.isActive() ?? true)),
           resolve: async (ctx) => engine.combat.resolveAllianceEffect(attacker.permanentId, ctx.presetOptionalAnswer),
         },
       }));
