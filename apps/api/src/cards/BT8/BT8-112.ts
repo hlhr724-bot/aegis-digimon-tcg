@@ -76,7 +76,7 @@ export const compiled: CompiledCard = {
       ],
     },
     { trigger: "WhenDigivolving", actions: sharedBody },
-    { trigger: "WhenAttacking", actions: sharedBody, frequency: "OncePerTurn" },
+    { trigger: "WhenAttacking", actions: sharedBody },
   ],
   coverage: "full",
   residual: [],

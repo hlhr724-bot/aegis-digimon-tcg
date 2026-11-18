@@ -129,7 +129,7 @@ export async function runDigivolutionAction(ctx: EffectContext, action: Action, 
               : (action.amount ?? 1)
             : (action.amount ?? 1) * (scale ?? 1),
       });
-      return action.abortOnDecline === true && !completed;
+      return action.abortOnDecline === true && action.cost === undefined && !completed;
     }
     case "Link": {
       await runLink(ctx, action);
