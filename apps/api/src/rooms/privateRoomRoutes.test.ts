@@ -117,6 +117,21 @@ describe("private room lookup over HTTP", () => {
     expect(matchMaker.remoteRoomCall).toHaveBeenCalledWith("old-room", "privateRoomInfo", []);
   });
 
+  it("shows a guest the host's turn order without the host's account", async () => {
+    available();
+    vi.mocked(matchMaker.remoteRoomCall).mockResolvedValue({
+      unlimited: false,
+      turnOrder: "hostFirst",
+      hostAccountId: "host-account",
+      waiting: true,
+    } as never);
+    expect((await request({ roomCode: "ABC234" })).body).toEqual({
+      roomId: "old-room",
+      unlimited: false,
+      turnOrder: "hostFirst",
+    });
+  });
+
   it("requires a room code", async () => {
     expect((await request({})).status).toBe(400);
     expect(matchMaker.query).not.toHaveBeenCalled();

@@ -21,12 +21,18 @@ const randomCommunityDeck = vi.hoisted(() =>
 vi.mock("@/community/client", () => ({ communityApi: { randomDeck: randomCommunityDeck } }));
 
 const lookupPrivateRoom = vi.hoisted(() =>
-  vi.fn<() => Promise<{ roomId: string; unlimited: boolean; format?: import("@aegis/shared").DeckFormat }>>(
-    async () => ({
-      roomId: "private-room",
-      unlimited: false,
-    }),
-  ),
+  vi.fn<
+    () => Promise<{
+      roomId: string;
+      unlimited: boolean;
+      format?: import("@aegis/shared").DeckFormat;
+      turnOrder?: import("@aegis/shared/protocol/PrivateTurnOrder").PrivateTurnOrder;
+    }>
+  >(async () => ({
+    roomId: "private-room",
+    unlimited: false,
+    turnOrder: "random",
+  })),
 );
 const liveMatches = vi.hoisted(() =>
   vi.fn<(limit: number) => Promise<{ matches: never[]; total: number }>>(async () => ({ matches: [], total: 0 })),
@@ -115,7 +121,7 @@ beforeEach(() => {
   }));
   vi.spyOn(providerApi, "detail").mockResolvedValue(providerDetail);
   randomCommunityDeck.mockResolvedValue({ deck: null, eligibleCount: 0 });
-  lookupPrivateRoom.mockResolvedValue({ roomId: "private-room", unlimited: false });
+  lookupPrivateRoom.mockResolvedValue({ roomId: "private-room", unlimited: false, turnOrder: "random" });
   liveMatches.mockResolvedValue({ matches: [], total: 0 });
   matchQueueCounts.mockResolvedValue({ buckets: [], waiting: [] });
   vi.useFakeTimers({ toFake: ["Date"] });
@@ -1547,5 +1553,58 @@ describe("queue button while a ranked season is open", () => {
     const { deckBar } = renderRankedLobby({ initialRanked: true });
 
     expect(within(deckBar).getByRole("button", { name: "Enter ranked queue" })).toBeTruthy();
+  });
+});
+
+describe("private room turn order", () => {
+  function renderTurnOrderLobby(props: Partial<ComponentProps<typeof Lobby>> = {}) {
+    renderConfiguredLobby(
+      <I18nProvider>
+        <Lobby
+          player={{ name: "Tamer", color: "Blue", shards: 0 }}
+          decks={[DECKS[0]!]}
+          activeDeckId={DECKS[0]!.id}
+          onSelectDeck={() => undefined}
+          onCopyDeck={() => undefined}
+          onNav={() => undefined}
+          onStart={() => undefined}
+          {...props}
+        />
+      </I18nProvider>,
+    );
+  }
+
+  it("lets the host pick random, first or second, only for a private room", () => {
+    const onTurnOrderChange = vi.fn<NonNullable<ComponentProps<typeof Lobby>["onTurnOrderChange"]>>();
+    renderTurnOrderLobby({ onTurnOrderChange });
+    expect(screen.queryByRole("combobox", { name: "Turn order" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Private Match/ }));
+    const turnOrder = screen.getByRole("combobox", { name: "Turn order" }) as HTMLSelectElement;
+    expect(turnOrder.value).toBe("random");
+    expect(
+      within(turnOrder)
+        .getAllByRole("option")
+        .map((option) => option.textContent),
+    ).toEqual(["Random", "Host goes first", "Host goes second"]);
+    expect(screen.getByText(/first turn of game 1/)).toBeTruthy();
+    fireEvent.change(turnOrder, { target: { value: "hostSecond" } });
+    expect(onTurnOrderChange).toHaveBeenLastCalledWith("hostSecond");
+  });
+
+  it("shows the host's chosen value in the control", () => {
+    renderTurnOrderLobby({ turnOrder: "hostFirst", initialMode: "private" });
+    expect((screen.getByRole("combobox", { name: "Turn order" }) as HTMLSelectElement).value).toBe("hostFirst");
+  });
+
+  it.each([
+    ["random", "Game 1 turn order: Random"],
+    ["hostFirst", "Game 1 turn order: Host goes first"],
+    ["hostSecond", "Game 1 turn order: Host goes second"],
+  ] as const)("shows a guest the host's %s turn order before joining", async (turnOrder, text) => {
+    lookupPrivateRoom.mockResolvedValue({ roomId: "private-room", unlimited: false, turnOrder });
+    renderTurnOrderLobby({ invitedRoomCode: "ABC234" });
+    expect(screen.queryByText(/Game 1 turn order/)).toBeNull();
+    expect(await screen.findByText(text)).toBeTruthy();
+    expect(screen.queryByRole("combobox", { name: "Turn order" })).toBeNull();
   });
 });

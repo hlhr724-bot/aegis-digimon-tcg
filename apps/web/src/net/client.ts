@@ -32,6 +32,8 @@ import {
   type MatchQueueCounts,
 } from "@aegis/shared/matchmaking/MatchQueueCounts";
 import { getMatchQueueKey } from "@aegis/shared/matchmaking/getMatchQueueKey";
+import type { PrivateTurnOrder } from "@aegis/shared/protocol/PrivateTurnOrder";
+import { getPrivateTurnOrderEntry } from "@aegis/shared/protocol/getPrivateTurnOrderEntry";
 import { MATCH_QUEUE_WAITING_LIMIT } from "@aegis/shared/matchmaking/MatchQueueWaitingPlayer";
 import { sortLiveMatches } from "@aegis/shared/protocol/sortLiveMatches";
 import type { ReconnectSession } from "./reconnectSession";
@@ -528,6 +530,7 @@ export interface PrivateRoomRules {
   roomId: string;
   unlimited: boolean;
   format: DeckFormat;
+  turnOrder: PrivateTurnOrder;
 }
 
 function privateRoomRules(value: {
@@ -535,12 +538,14 @@ function privateRoomRules(value: {
   unlimited?: boolean;
   format?: DeckFormat;
   gameMode?: GameMode;
+  turnOrder?: unknown;
 }): PrivateRoomRules {
   return {
     roomId: value.roomId,
     ...(value.gameMode === GameMode.MANUAL.value ? { gameMode: GameMode.MANUAL.value } : {}),
     unlimited: value.unlimited === true,
     format: deckFormat(value.format, value.unlimited),
+    turnOrder: getPrivateTurnOrderEntry({ turnOrder: value.turnOrder }).value,
   };
 }
 

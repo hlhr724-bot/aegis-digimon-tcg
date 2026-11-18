@@ -70,6 +70,9 @@ import type { ReplayLibrary } from "../replays/ReplayLibrary.js";
 import { LiveReplayAnnotator } from "#api/replays/annotations/LiveReplayAnnotator";
 import type { ReplayAnnotationStore } from "#api/replays/annotations/ReplayAnnotationStore";
 import { LIVE_REPLAY_ANNOTATION_CHANNEL } from "@aegis/shared/replays/annotations/LiveReplayAnnotation";
+import { ChatReportStatus } from "@aegis/shared/chat/ChatReportStatus";
+import { CHAT_REPORT_CHANNEL, type ChatReportUpdate } from "@aegis/shared/chat/ChatReportUpdate";
+import { MatchChatReports } from "#api/messages/MatchChatReports";
 import {
   GameState,
   MATCH_EXPIRED_CLOSE_CODE,
@@ -144,6 +147,8 @@ import type { SeriesRecord } from "./series/SeriesDirectory.js";
 import { RematchOffer } from "#api/rooms/series/RematchOffer";
 import { GuestApprovalGate } from "#api/rooms/guestApproval/GuestApprovalGate";
 import { GUEST_APPROVAL_CHANNEL } from "@aegis/shared/protocol/GuestApprovalMessage";
+import { PrivateTurnOrder } from "@aegis/shared/protocol/PrivateTurnOrder";
+import { getPrivateTurnOrderEntry } from "@aegis/shared/protocol/getPrivateTurnOrderEntry";
 import { GUEST_DECLINED_CLOSE_CODE, HOST_LEFT_CLOSE_CODE } from "@aegis/shared/protocol/closeCodes";
 import { TOURNAMENT_CANCELLED_CLOSE_CODE } from "@aegis/shared/protocol/tournamentCancelledCloseCode";
 import { REMATCH_BEST_OF } from "@aegis/shared/protocol/RematchStatus";
@@ -206,6 +211,7 @@ interface RoomCreateOptions extends Partial<SeriesContinuationOptions> {
   seed?: number;
   private?: boolean;
   requireApproval?: boolean;
+  turnOrder?: unknown;
   /** Reopens a private room under the code of the one that just finished. */
   roomCode?: unknown;
   botRoom?: boolean;
@@ -406,6 +412,7 @@ export class AegisRoom extends Room<{
   private presentationLogWindows = new Map<Seat, { start: number; count: number }>();
   /** Keyed by `seat:<n>` for players and by session id for spectators. */
   private lastChatAtBySender = new Map<string, number>();
+  private chatReports = new MatchChatReports(() => this.accounts());
   private spokenBotLines = new Set<string>();
   /** The number in each spectator's chat name, given the first time that spectator writes. */
   private spectatorNumbers = new Map<string, number>();
@@ -481,6 +488,7 @@ export class AegisRoom extends Room<{
   private readonly BOT_SEAT = 1 as Seat;
   private isPrivate = false;
   private guestApproval: GuestApprovalGate | undefined;
+  private turnOrder: PrivateTurnOrder = PrivateTurnOrder.RANDOM.value;
   private isRankedRoom = false;
   private isBetaBattleRoom = false;
   private isUnlimitedRoom = false;
@@ -1134,12 +1142,17 @@ export class AegisRoom extends Room<{
         afterSeries: this.casualSeries !== undefined,
       });
     }
+    const turnOrder = getPrivateTurnOrderEntry({
+      turnOrder: this.isPrivate && !continuation && options.manualRoom !== true ? options.turnOrder : undefined,
+    });
+    this.turnOrder = turnOrder.value;
+    const fixedFirstSeat = this.casualSeries?.fixedFirstSeat ?? turnOrder.firstSeat;
     this.state.allowRollback = options.allowRollback === true && !this.isRankedRoom && !this.isTournamentRoom;
     if (this.state.allowRollback)
       this.rollbackHistory = new RollbackHistory({
         seed,
         randomKey,
-        firstSeat: this.casualSeries?.fixedFirstSeat,
+        firstSeat: fixedFirstSeat,
         matchId: this.state.matchLogId,
         rules: {
           gameMode: this.state.gameMode,
@@ -1162,7 +1175,7 @@ export class AegisRoom extends Room<{
       },
       seed,
       randomKey,
-      ...(this.casualSeries?.fixedFirstSeat !== undefined ? { firstSeat: this.casualSeries.fixedFirstSeat } : {}),
+      ...(fixedFirstSeat !== undefined ? { firstSeat: fixedFirstSeat } : {}),
       requestDecision: (seat, req) => this.requestDecision(seat, req),
       onBothReady: () => this.atReplaySite("bothReady", () => this.startMatchNow()),
       onActionSettled: (seat, intentType) => {
@@ -1288,7 +1301,7 @@ export class AegisRoom extends Room<{
     };
     this.engine = new GameEngine(this.state, this.guardedEngineHooks());
     this.engine.reuseUnchangedContinuousRecomputes = liveContinuousRecomputeReuse;
-    const firstSeat = this.casualSeries?.fixedFirstSeat;
+    const firstSeat = fixedFirstSeat;
     const serverRevision = process.env.AEGIS_REVISION;
     this.debug("replay.header", {
       gameMode: this.state.gameMode,
@@ -1361,6 +1374,10 @@ export class AegisRoom extends Room<{
       }
       if (type === CHAT_CHANNEL) {
         this.handleChat(client, payload);
+        return;
+      }
+      if (type === CHAT_REPORT_CHANNEL) {
+        this.handleChatReport(client);
         return;
       }
       if (type === LIVE_REPLAY_ANNOTATION_CHANNEL) {
@@ -1943,6 +1960,7 @@ export class AegisRoom extends Room<{
   }
 
   override onDispose(): void {
+    this.chatReports.clear();
     this.releaseActiveMatches();
     for (const [accountId, receive] of this.spectatorPrivacySubscriptions) {
       void this.presence?.unsubscribe(`social:account:${accountId}`, receive);
@@ -2168,10 +2186,12 @@ export class AegisRoom extends Room<{
     unlimited: boolean;
     format: DeckFormat;
     gameMode?: GameMode;
+    turnOrder: PrivateTurnOrder;
     hostAccountId?: string;
     waiting: boolean;
   } {
     return {
+      turnOrder: this.turnOrder,
       hostAccountId: this.deckOwnerBySeat.get(0),
       waiting: !this.matchStartRequested && !this.state.gameOver && this.seatByClient.size === 1,
       unlimited: this.isUnlimitedRoom,
@@ -3820,6 +3840,41 @@ export class AegisRoom extends Room<{
         recipient.send(CHAT_CHANNEL, broadcast);
       }
     }
+    if (sender.kind === "player" && message.kind === "text") {
+      this.chatReports.record({
+        seat: sender.seat,
+        accountId: this.accountByClient.get(client.sessionId),
+        text: message.text,
+      });
+      this.offerChatReport(sender.seat);
+    }
+  }
+
+  private offerChatReport(senderSeat: Seat): void {
+    const update: ChatReportUpdate = { status: ChatReportStatus.AVAILABLE.value };
+    for (const recipient of this.clients) {
+      const seat = this.seatByClient.get(recipient.sessionId);
+      const accountId = this.accountByClient.get(recipient.sessionId);
+      if (seat !== undefined && seat !== senderSeat && accountId && this.chatReports.canReport({ seat, accountId })) {
+        recipient.send(CHAT_REPORT_CHANNEL, update);
+      }
+    }
+  }
+
+  private handleChatReport(client: Client): void {
+    const seat = this.seatByClient.get(client.sessionId);
+    const accountId = this.accountByClient.get(client.sessionId);
+    if (seat === undefined || !accountId) {
+      return;
+    }
+    void this.chatReports
+      .report({ seat, accountId, roomId: this.roomId, matchId: this.state.matchLogId })
+      .then((reported) => {
+        if (this.clients.includes(client)) {
+          const status = reported ? ChatReportStatus.REPORTED.value : ChatReportStatus.FAILED.value;
+          client.send(CHAT_REPORT_CHANNEL, { status } satisfies ChatReportUpdate);
+        }
+      });
   }
 
   private speakBotLines(event: ServerEvent): void {
