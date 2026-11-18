@@ -1,7 +1,7 @@
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
 
-export function TriggerChooserScrollCue({ onClick }: { onClick: () => void }) {
+export function TriggerChooserScrollCue({ onClick, label }: { onClick: () => void; label?: string }) {
   const { t } = useTranslation();
   return (
     <button
@@ -11,7 +11,7 @@ export function TriggerChooserScrollCue({ onClick }: { onClick: () => void }) {
       onClick={onClick}
     >
       <Icons.ChevronDown size={16} />
-      <span>{t("overlay.moreEffectsBelow")}</span>
+      <span>{label ?? t("overlay.moreEffectsBelow")}</span>
     </button>
   );
 }

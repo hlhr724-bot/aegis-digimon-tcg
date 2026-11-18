@@ -153,7 +153,8 @@ export function DecisionOverlay({
     candidates.length > 0 &&
     request.options?.digivolveCostChoice === undefined;
   const previewsCards = isOptional && candidates.length > 0;
-  const showsCardGallery = isCardChoice || previewsCards;
+  const endangersDigimon = (request.options?.affectedPermanentIds?.length ?? 0) > 0;
+  const showsCardGallery = isCardChoice || (previewsCards && !endangersDigimon);
   const choosesPrintedBullet =
     isChoose &&
     choiceEffects === undefined &&
@@ -219,6 +220,7 @@ export function DecisionOverlay({
 
   const [isViewingBoard, setIsViewingBoard] = useState(false);
   const [cardOrder, setCardOrder] = useState<string[]>([]);
+  const [slotEmphasis, setSlotEmphasis] = useState<string>();
   const panelRef = useRef<HTMLDivElement>(null);
   const returnControlRef = useRef<HTMLDivElement>(null);
   const drag = useDraggableWindow(panelRef, { viewportGutter: 16, resetKey: `${request.decisionId}:${surface}` });
@@ -314,7 +316,7 @@ export function DecisionOverlay({
   // Older decisions may carry their only effect description in the question.
   // Keep that context in the body while all activations share the same heading.
   const displayedEffectText = sourceEffectText ?? (isOptional ? specificPrompt : undefined);
-  const emphasis = groupsSlots ? undefined : request.options?.effectTextEmphasis;
+  const emphasis = groupsSlots ? slotEmphasis : request.options?.effectTextEmphasis;
   const renderedEffectText = displayedEffectText ? (
     <EffectStepText
       timing={request.options?.timing}
@@ -533,7 +535,9 @@ export function DecisionOverlay({
               slots={selectionSlots}
               candidates={candidates}
               cardId={request.options?.effectTextCardId ?? sourceCardId}
+              effectText={displayedEffectText}
               wideDialog={wideDialog}
+              onEmphasise={setSlotEmphasis}
               onRespond={onRespond}
               onOpenBoard={() => setIsViewingBoard(true)}
             />

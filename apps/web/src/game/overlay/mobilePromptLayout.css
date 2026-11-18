@@ -275,6 +275,9 @@
     ~ .decision-overlay__footer {
     grid-area: footer;
   }
+  .game-modal__panel.decision-overlay.effect-prompt-family[data-prompt-surface]:has(> .decision-overlay__slots) {
+    grid-template-columns: minmax(12rem, 1fr) minmax(0, 1.25fr);
+  }
 }
 
 /* An attack on a single security pile needs one compact target, not a card grid. */

@@ -3,7 +3,7 @@ import { friendsApi } from "@/friends/friendsApi";
 import { getFriendErrorKey } from "@/friends/getFriendErrorKey";
 import type { TranslationKey } from "@/i18n/translationTypes";
 import { useArenaInputCancel } from "@/game/input/useArenaInputCancel";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { Switch } from "../../design/primitives";
 import { useTranslation } from "../../i18n";
 import { setChatSoundEnabled, useChatSoundEnabled } from "./chatSound";
@@ -17,6 +17,22 @@ const REPORT_NOTICE_BY_STATUS: Partial<Record<ChatReportStatus, TranslationKey>>
   [ChatReportStatus.REPORTED.value]: "chat.reported",
   [ChatReportStatus.FAILED.value]: "chat.reportFailed",
 };
+
+type MenuPlacement = "start" | "end" | "inside";
+
+const WINDOW_GAP_PIXELS = 8;
+
+function placementBesideWindow(menu: HTMLElement): MenuPlacement {
+  const chatWindow = menu.parentElement?.getBoundingClientRect();
+  const room = menu.offsetWidth + WINDOW_GAP_PIXELS * 2;
+  if (!chatWindow) {
+    return "inside";
+  }
+  if (chatWindow.left >= room) {
+    return "start";
+  }
+  return window.innerWidth - chatWindow.right >= room ? "end" : "inside";
+}
 
 /** The chat's settings, opened from the kebab button in the title bar. */
 export function ChatSettingsMenu({
@@ -49,6 +65,17 @@ export function ChatSettingsMenu({
     }
   }
   const menuRef = useRef<HTMLDivElement>(null);
+  const [placement, setPlacement] = useState<MenuPlacement>("inside");
+  useLayoutEffect(() => {
+    const place = () => {
+      if (menuRef.current) {
+        setPlacement(placementBesideWindow(menuRef.current));
+      }
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, []);
   useArenaInputCancel({
     ref: menuRef,
     onCancel: () => {
@@ -70,6 +97,7 @@ export function ChatSettingsMenu({
       ref={menuRef}
       data-arena-surface
       className="match-chat-settings"
+      data-placement={placement}
       role="group"
       aria-label={t("chat.settings")}
       onKeyDown={(event) => {

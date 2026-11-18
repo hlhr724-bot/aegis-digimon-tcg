@@ -202,13 +202,12 @@
   border-radius: var(--ds-radius-sm);
 }
 
-/* ---- Settings menu ----
-   Hangs from the kebab button, just under the 2.75rem title bar. */
+/* ---- Settings menu ---- */
 .match-chat-settings {
   position: absolute;
   z-index: 2;
-  top: 2.75rem;
   right: var(--ds-space-2);
+  bottom: var(--ds-space-2);
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-2);
@@ -219,6 +218,21 @@
   background: var(--ds-sheet);
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.28);
   animation: match-chat-picker-in 120ms ease-out;
+}
+
+.match-chat-settings[data-placement="start"],
+.match-chat-settings[data-placement="end"] {
+  top: 0;
+  bottom: auto;
+}
+
+.match-chat-settings[data-placement="start"] {
+  right: calc(100% + var(--ds-space-2));
+}
+
+.match-chat-settings[data-placement="end"] {
+  right: auto;
+  left: calc(100% + var(--ds-space-2));
 }
 
 .match-chat-window__empty {

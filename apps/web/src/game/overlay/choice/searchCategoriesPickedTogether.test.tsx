@@ -13,6 +13,9 @@ const revealed = [
 ];
 const handSlot = "add 1 card with the [DM] trait to the hand";
 const underSlot = "place 1 card with the [Ver.4] trait face down as the bottom digivolution card";
+const handTitle = "Add 1 card with the [DM]\u00a0trait to the hand";
+const underTitle =
+  "Place 1 card with the [Ver.4]\u00a0trait face down as the bottom digivolution card of any of your Digimon with the [DM]\u00a0trait";
 
 const request: DecisionRequest = {
   decisionId: "two-category-search",
@@ -26,6 +29,7 @@ const request: DecisionRequest = {
     visibleCards: revealed,
     min: 1,
     max: 1,
+    timing: "OnPlay",
     selectionSlots: [
       { description: handSlot, candidateInstanceIds: ["reapermon", "palmon"], max: 1, isMandatory: true },
       { description: underSlot, candidateInstanceIds: ["palmon"], max: 1, isMandatory: true },
@@ -55,8 +59,8 @@ function renderSearch() {
   );
   return {
     onRespond,
-    hand: screen.getByRole("region", { name: handSlot }),
-    under: screen.getByRole("region", { name: underSlot }),
+    hand: screen.getByRole("region", { name: handTitle }),
+    under: screen.getByRole("region", { name: underTitle }),
     confirm: screen.getByRole("button", { name: "Confirm targets" }),
   };
 }
@@ -91,4 +95,12 @@ it("moves a card that fits two categories to the category picked last", () => {
   expect(getCardButton(hand, "palmon").getAttribute("aria-pressed")).toBe("false");
   expect(getCardButton(under, "palmon").getAttribute("aria-pressed")).toBe("true");
   expect(confirm).toHaveProperty("disabled", true);
+});
+
+it("titles each category with its whole printed clause and highlights that clause in the effect text", () => {
+  const { under } = renderSearch();
+  fireEvent.focusIn(getCardButton(under, "palmon"));
+  expect(document.querySelector(".decision-overlay__effect-step")?.textContent).toBe(
+    underTitle.replace("Place", "place"),
+  );
 });

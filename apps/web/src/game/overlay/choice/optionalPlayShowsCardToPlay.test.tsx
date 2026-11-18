@@ -88,6 +88,17 @@ it("lays out every card of an optional prompt that previews several cards in the
   expect(dialog.querySelectorAll(".decision-overlay__grid > .decision-candidate-tile")).toHaveLength(2);
 });
 
+it("keeps an optional play that endangers a Digimon docked beside the board with the card to play", () => {
+  const dialog = renderOptional({
+    optionalRequest: { ...request, options: { ...request.options, affectedPermanentIds: ["endangered-digimon"] } },
+    candidates: [greymon],
+  });
+  expect(dialog.dataset.promptSurface).toBe("left");
+  expect(dialog.classList.contains("decision-overlay--card-choice")).toBe(false);
+  expect(dialog.classList.contains("decision-overlay--side")).toBe(true);
+  expect(dialog.querySelector(".decision-overlay__choice-cards")?.textContent).toContain("Card to play");
+});
+
 it("keeps an optional prompt without a previewed card docked as a compact activation prompt", () => {
   const dialog = renderOptional({
     optionalRequest: { ...request, options: { activationConfirmation: true } },
