@@ -48,6 +48,7 @@
 }
 .profile-identity,
 .profile-history,
+.profile-ranked,
 .profile-playtest,
 .profile-page .account-panel {
   background: var(--ds-sheet);
@@ -61,6 +62,33 @@
   display: grid;
   gap: 0.75rem;
   padding: var(--ds-space-5);
+}
+.profile-ranked .profile-history__header > a {
+  margin-left: auto;
+}
+.profile-ranked__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: var(--ds-space-4);
+  margin: 0;
+  padding: var(--ds-space-5);
+}
+.profile-ranked__stats > div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--ds-space-1);
+  min-width: 0;
+}
+.profile-ranked__stats dt {
+  color: var(--ds-text-3);
+  font-size: var(--ds-text-sm);
+}
+.profile-ranked__stats dd {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin: 0;
+  font: 800 var(--ds-text-xl) / 1.2 var(--ds-font-display);
 }
 
 /* ---- Identity ---- */

@@ -1,5 +1,6 @@
 import { useProfileTrophiesShown } from "@/achievements/useProfileTrophiesShown";
 import { TrophyCabinet } from "@/achievements/TrophyCabinet";
+import { ProfileRankedSection } from "@/ranked/ProfileRankedSection";
 import type { DeckListing } from "@/game/decks";
 import { useCallback, useEffect, useState } from "react";
 import type { MatchHistorySummary, MatchWinRate } from "@aegis/shared";
@@ -90,6 +91,7 @@ export function ProfileScreen({
         <p role="status">{t("account.loading")}</p>
       ) : account ? (
         <>
+          <ProfileRankedSection key={account.id} />
           {trophiesShown ? <TrophyCabinet accountId={account.id} /> : null}
           <DriveConnectCard signedIn />
           <MatchHistory
