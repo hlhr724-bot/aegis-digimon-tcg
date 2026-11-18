@@ -192,6 +192,39 @@ describe("BT26-088 Hiroko Sagisaka", () => {
     expect(s.perm("hiroko").isSuspended).toBe(true);
   });
 
+  it("offers no reduction when a TS Digimon is played during the opponent's turn", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT26-088", as: "hiroko" },
+            { card: "EX10-031", as: "darkKnightmon", suspended: true, under: [{ card: "BT26-008", as: "kotemon" }] },
+          ],
+        },
+        1: { battleArea: [{ card: "BT1-025", as: "attacker", dp: 15000 }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    s.state.turnSeat = 1;
+    await s.ready();
+
+    expect(
+      s.engine.applyIntent(1, {
+        type: "attack",
+        attackerPermanentId: s.perm("attacker").permanentId,
+        target: { kind: "permanent", permanentId: s.perm("darkKnightmon").permanentId },
+      }),
+    ).toEqual({ ok: true });
+    await settle(
+      () =>
+        s.state.pendingDecision === undefined &&
+        s.state.players[0]!.battleArea.some(({ topCard }) => topCard.instanceId === s.inst("kotemon").instanceId),
+    );
+
+    expect(s.state.players[0]!.battleArea.map(({ topCard }) => topCard.cardId)).toContain("BT26-008");
+    expect(s.decisions.filter(({ req }) => (req.promptText ?? "").includes("Hiroko Sagisaka"))).toEqual([]);
+    expect(s.perm("hiroko").isSuspended).toBe(false);
+  });
   it("plays itself without paying its cost when checked in security", async () => {
     const s = setupEngine({
       0: { security: [{ card: "BT26-088", as: "hiroko" }], deck: ["BT1-011", "BT1-012"] },
