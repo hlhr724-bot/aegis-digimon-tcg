@@ -182,11 +182,14 @@ describe("AD1-021 Marcus Damon & Agumon", () => {
     await loop;
   });
 
-  it("does not offer the trailing attack without the yellow Agumon/Greymon gate", async () => {
+  it("offers the trailing attack without the yellow Agumon/Greymon gate, leaving Marcus a Tamer", async () => {
     const s = setupEngine(
       {
         0: {
-          battleArea: [{ card: "AD1-021", as: "marcus" }],
+          battleArea: [
+            { card: "AD1-021", as: "marcus" },
+            { card: "BT1-013", as: "redDigimon" },
+          ],
           hand: ["BT1-009"],
           deck: ["BT1-009", "BT1-009", "BT1-009", "BT1-009", "BT1-009"],
         },
@@ -201,7 +204,9 @@ describe("AD1-021 Marcus Damon & Agumon", () => {
 
     await advance(s.engine).runTurn(0);
 
-    expect(s.state.players[1]!.security).toHaveLength(2);
+    expect(s.state.players[1]!.security).toHaveLength(1);
+    expect(s.perm("marcus").currentDP).not.toBe(6000);
+    expect(observe(s.engine).hasKeyword(s.perm("marcus"), "Rush")).toBe(false);
   });
 
   it("binds every Marcus grant to one selection and declares exactly one optional attack", () => {
