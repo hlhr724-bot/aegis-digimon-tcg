@@ -1396,6 +1396,7 @@ export class AegisRoom extends Room<{
     });
 
     // Optional clocks belong to casual/private rooms. Ignore crafted ranked/tournament options.
+    // The per-decision inactivity limit applies to public casual and ranked rooms only.
     const devTimer = this.scenarioFixture?.presentation?.timed === true;
     this.matchClock = new MatchClock(
       this.state,
@@ -1411,11 +1412,7 @@ export class AegisRoom extends Room<{
       },
       this.isPrivate || devTimer,
       performance.now(),
-      !this.isPrivate &&
-        !this.isBotRoom &&
-        !this.isRankedRoom &&
-        !this.isTournamentRoom &&
-        this.state.gameMode !== GameMode.MANUAL.value,
+      !this.isPrivate && !this.isBotRoom && !this.isTournamentRoom && this.state.gameMode !== GameMode.MANUAL.value,
     );
     if (this.state.matchTimer) {
       this.matchClockInterval = this.clock.setInterval(() => this.syncMatchClock(), 100);

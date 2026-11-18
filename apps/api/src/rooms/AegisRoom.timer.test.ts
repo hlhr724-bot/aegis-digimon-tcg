@@ -599,6 +599,59 @@ describe("public inactivity enforcement", () => {
   });
 });
 
+describe("ranked inactivity enforcement", () => {
+  const ranked = { rankedRoom: true, rankedPairId: "ranked-pair" };
+
+  it("ends a ranked match when the awaited player takes no action for ninety seconds", () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const game = room(ranked);
+    begin(game, 0);
+    sync(game);
+    expect(game.state.matchTimer).toBe(true);
+    expect(game.state.inactivitySeat).toBe(0);
+    expect(game.state.inactivityRemainingSeconds).toBe(90);
+    now.mockReturnValue(89_999);
+    sync(game);
+    expect(game.state.gameOver).toBe(false);
+    now.mockReturnValue(90_000);
+    sync(game);
+    expect(game.state.gameOver).toBe(true);
+    expect(game.state.winnerSeat).toBe(1);
+    expect(game.state.timerRemaining0).toBe(210);
+    expect(game.broadcast).toHaveBeenCalledWith(
+      EVENT_CHANNEL,
+      expect.objectContaining({ kind: "gameOver", reason: "timeout" }),
+    );
+  });
+
+  it("keeps a ranked player who answers each new decision within ninety seconds in the match", async () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(0);
+    const game = room(ranked);
+    begin(game, 0);
+    const answer = (
+      game as unknown as { applyLoggedIntent(seat: Seat, intent: object): { ok: boolean } }
+    ).applyLoggedIntent.bind(game);
+    for (let decision = 1; decision <= 3; decision += 1) {
+      const waiting = engine(game).decisions.request({ seat: 0, kind: "optional", promptText: "Activate?" });
+      sync(game);
+      expect(game.state.inactivityRemainingSeconds).toBe(90);
+      now.mockReturnValue(decision * 80_000);
+      sync(game);
+      expect(game.state.inactivityRemainingSeconds).toBe(10);
+      expect(
+        answer(0, {
+          type: "respondDecision",
+          decisionId: game.state.pendingDecision!.decisionId,
+          response: { kind: "optional", accept: false },
+        }).ok,
+      ).toBe(true);
+      await waiting;
+      expect(game.state.gameOver).toBe(false);
+    }
+    expect(game.state.timerRemaining0).toBeLessThan(MATCH_TIMER_START_SECONDS - 200);
+  });
+});
+
 it("refreshes inactivity after a legal Main play without resetting the match clock", async () => {
   const now = vi.spyOn(performance, "now").mockReturnValue(0);
   const game = room({ matchTimer: true });
