@@ -127,8 +127,9 @@ export function crossPermanentPlayReducerWatchers(
   if (player === undefined) return [];
   const isBossOrTsDigimon =
     def.kinds.includes(CardKind.Digimon) && (cardHasTrait(def, "Boss") || cardHasTrait(def, "TS"));
+  const isOwnTurn = engine.state.turnSeat === seat;
   return player.battleArea.filter((perm) => {
-    if (perm.inBreeding) return false;
+    if (perm.inBreeding || !isOwnTurn) return false;
     // "When you would play 1 ... Digimon card": not when 2 or more cards are played at once (Q2026).
     if (perm.topCard?.cardId === "BT10-093") return isLv4PlusBagraArmy && simultaneousPlayCount === 1;
     if (perm.topCard?.cardId === "BT26-088") {
