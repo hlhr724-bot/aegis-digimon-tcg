@@ -15,6 +15,7 @@ import { EffectText } from "../../EffectText";
 import { CardZoomOverlay } from "./CardZoomOverlay";
 import type { EffectSourceMark } from "@/game/effectMarks/EffectSourceMark";
 import { getEffectSourceMarkLabelKey } from "@/game/effectMarks/getEffectSourceMarkLabelKey";
+import { compareCardIdsByLevel } from "@/game/overlay/viewer/compareCardIdsByLevel";
 import { compareCardIdsByName } from "@/game/overlay/viewer/compareCardIdsByName";
 
 /**
@@ -57,7 +58,7 @@ export function TrashViewerOverlay({
   const getCardName = useTranslatedCardName();
   const { t } = useTranslation();
   const translateCardText = useTranslatedCardText();
-  const [sort, setSort] = useState<"recent" | "name">("recent");
+  const [sort, setSort] = useState<"recent" | "name" | "level">("recent");
   const countText = countLabel ?? t("overlay.trashCount", { count: cardIds.length });
   const emptyText = emptyLabel ?? t("overlay.trashEmpty");
   // Sort entries together: art and executable effects belong to a physical copy.
@@ -65,6 +66,7 @@ export function TrashViewerOverlay({
   if (!preserveOrder) {
     entries.reverse();
     if (sort === "name") entries.sort((a, b) => compareCardIdsByName(a.cardId, b.cardId) || b.index - a.index);
+    if (sort === "level") entries.sort((a, b) => compareCardIdsByLevel(a.cardId, b.cardId) || b.index - a.index);
   }
   const ordered = entries.map((entry) => entry.cardId);
   const orderedArts = entries.map((entry) => artIds?.[entry.index]);
@@ -110,7 +112,7 @@ export function TrashViewerOverlay({
         <select
           value={sort}
           onChange={(event) => {
-            setSort(event.target.value as "recent" | "name");
+            setSort(event.target.value as "recent" | "name" | "level");
             setActiveKey(entries[0]?.key);
             setMenuKey(null);
             setZoomedKey(null);
@@ -118,6 +120,7 @@ export function TrashViewerOverlay({
         >
           <option value="recent">{t("overlay.trashSortRecent")}</option>
           <option value="name">{t("overlay.trashSortName")}</option>
+          <option value="level">{t("overlay.trashSortLevel")}</option>
         </select>
       </label>
     ) : null;

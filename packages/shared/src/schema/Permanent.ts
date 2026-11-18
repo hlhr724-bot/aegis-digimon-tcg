@@ -92,9 +92,7 @@ export class Permanent extends Schema {
   // legality seam consults (`hasRestriction(id, "attack" | "block")`). Deliberately NOT
   // the same question as `summoningSick`: that is a rule about entering the field, this
   // is an imposed restriction, and the client animates only the latter (a freeze pulse
-  // when one lands). Blanket only — target-scoped restrictions ("can't attack players",
-  // "can't attack Digimon") stay inside `attackablePermanentIds` / `canAttackPlayer`,
-  // which already resolve them; surfacing them here too would double-count.
+  // when one lands).
   @type("boolean") cannotAttack = false;
   @type("boolean") cannotBlock = false;
   @type("boolean") cannotSuspend = false;
@@ -154,4 +152,6 @@ export class Permanent extends Schema {
   @type("string") manualMarker = "";
   @type(["string"]) manualStatuses = new ArraySchema<string>();
   @type("int32") retainedDpDelta = 0;
+  @type("boolean") cannotUnsuspendAtAll = false;
+  @type("boolean") cannotAttackPlayers = false;
 }

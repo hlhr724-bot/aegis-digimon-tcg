@@ -6,6 +6,7 @@ import { ArenaPermanentInspector, type ArenaInspectionOptions } from "../../Aren
 import { type PermanentDetail } from "../../permanentDetail";
 import { type PendingFateBadge } from "../../pendingFate";
 import { CardZoomOverlay } from "./CardZoomOverlay";
+import { CardActionEffectLabel } from "./CardActionEffectLabel";
 import type { CardActionEffect, CardActionLink, CardActionPromote } from "./cardActionMenuTypes";
 
 /** The arena branch: the permanent's inspector, its actions, and the card zoom over it. */
@@ -79,11 +80,9 @@ export function ArenaCardActions({
                   icon={Icons.Sparkles}
                   className="arena-permanent-inspector__activate"
                   onClick={effect.onActivate}
-                  aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId: detail.cardId })}`}
-                  title={translateCardText({ text: effect.label, cardId: detail.cardId })}
+                  aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId: effect.sourceCardId ?? detail.cardId })}`}
                 >
-                  {t("game.activateMainEffect")}
-                  {(effects?.length ?? 0) > 1 ? ` ${index + 1}` : ""}
+                  <CardActionEffectLabel effect={effect} cardId={detail.cardId} />
                 </Button>
               ))}
               {promote ? (

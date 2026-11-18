@@ -48,6 +48,9 @@ export const arenaEs: Record<keyof typeof arenaEn, string> = {
   "redesign.arena.restriction.attacksAtStartOfMainPhase":
     "Un efecto hace que este Digimon ataque al inicio de su fase principal, si puede.",
   "redesign.arena.restriction.attacksAtStartOfMainPhaseGranted": "{card} otorgó: {clause}",
+  "redesign.arena.restriction.cannotAttackPlayers": "Un efecto impide que este Digimon ataque a jugadores.",
+  "redesign.arena.restriction.cannotUnsuspendAtAll":
+    "Un efecto impide que este Digimon se reactive, tanto en la fase de reactivación como por efectos.",
   "redesign.arena.restriction.cannotAttack": "Un efecto impide que este Digimon ataque.",
   "redesign.arena.restriction.cannotBlock": "Un efecto impide que este Digimon bloquee.",
   "redesign.arena.restriction.cannotSuspend": "Un efecto impide que este Digimon se suspenda.",

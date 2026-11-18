@@ -334,8 +334,10 @@ export class BoardProjection {
     perm.cannotBlock = this.deps.continuous.hasRestriction(perm.permanentId, "block");
     perm.cannotSuspend = this.deps.continuous.hasRestriction(perm.permanentId, "suspend");
     perm.cannotDigivolve = this.deps.continuous.hasRestriction(perm.permanentId, "digivolve");
+    perm.cannotAttackPlayers = this.deps.continuous.hasRestriction(perm.permanentId, "attackPlayers");
+    perm.cannotUnsuspendAtAll = this.deps.continuous.hasRestriction(perm.permanentId, "unsuspend");
     perm.cannotUnsuspend =
-      this.deps.continuous.hasRestriction(perm.permanentId, "unsuspend") ||
+      perm.cannotUnsuspendAtAll ||
       this.deps.continuous.hasRestriction(perm.permanentId, "unsuspendDuringOwnUnsuspendPhase") ||
       this.deps.continuous.hasRestriction(perm.permanentId, "unsuspendDuringUnsuspendPhase");
     perm.cannotActivateWhenDigivolving = this.deps.continuous.hasRestriction(

@@ -5,7 +5,8 @@
 import type { Permanent, Seat } from "@aegis/shared";
 import { useTranslation } from "../../../i18n";
 import { CardActionMenu } from "../../overlay";
-import { canAttackWith, canVortexAttackWith, parseActivatable } from "../../boardModel";
+import { canAttackWith, canVortexAttackWith } from "../../boardModel";
+import { activatableEffectsTopToBottom } from "@/game/screen/model/activatableEffectsTopToBottom";
 import { buildPermanentDetail } from "../../permanentDetail";
 import type { PendingFateBadge } from "../../pendingFate";
 import { Side } from "../../side";
@@ -83,8 +84,9 @@ export function FieldCardMenu({
       promote={promotable ? { label: t("game.moveToBattle"), onPromote } : undefined}
       effects={
         activatable
-          ? parseActivatable(permanent.activatableEffectsJson).map((entry) => ({
+          ? activatableEffectsTopToBottom({ permanent }).map((entry) => ({
               label: entry.description,
+              sourceCardId: entry.sourceCardId,
               onActivate: () => onActivateEffect(entry.instanceId, entry.effectKey),
             }))
           : []
