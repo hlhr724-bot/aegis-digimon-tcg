@@ -223,4 +223,7 @@ export const tournamentDetailJa = {
   "tournaments.format.pointsLoss": "負け",
   "tournaments.format.pointsValue": "勝ち {win}・引き分け {draw}・負け {loss}",
   "tournaments.create.pointsAuto": "自動(3/1/0)",
+  "notifications.tournament.started": "{name}が開始されました。トーナメントを開いて対戦組み合わせを確認してください。",
+  "notifications.tournament.matchReady":
+    "{name}のラウンド {round} の準備ができました。今すぐテーブルに参加してください。",
 };

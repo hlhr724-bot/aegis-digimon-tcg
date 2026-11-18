@@ -46,3 +46,31 @@ describe("tournament organizer notifications", () => {
     );
   });
 });
+
+describe("tournament player notifications", () => {
+  it("tells a player their tournament started", () => {
+    renderItem({
+      id: 3,
+      kind: "tournament_started",
+      payload: { tournamentId: "t1", tournamentName: "AEGIS CUP" },
+      createdAt,
+      readAt: null,
+    });
+
+    expect(screen.getByRole("button").textContent).toContain(
+      "AEGIS CUP has started. Open the tournament to see your pairing.",
+    );
+  });
+
+  it("tells a player their match is ready to play", () => {
+    renderItem({
+      id: 4,
+      kind: "tournament_match_ready",
+      payload: { tournamentId: "t1", tournamentName: "AEGIS CUP", round: 2 },
+      createdAt,
+      readAt: null,
+    });
+
+    expect(screen.getByRole("button").textContent).toContain("Round 2 of AEGIS CUP is ready. Join your table now.");
+  });
+});

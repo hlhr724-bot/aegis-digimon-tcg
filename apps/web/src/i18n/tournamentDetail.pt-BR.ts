@@ -228,4 +228,6 @@ export const tournamentDetailPtBR = {
   "tournaments.format.pointsLoss": "Derrota",
   "tournaments.format.pointsValue": "Vitória {win} · Empate {draw} · Derrota {loss}",
   "tournaments.create.pointsAuto": "Automático (3/1/0)",
+  "notifications.tournament.started": "{name} começou. Abra o torneio para ver seu emparelhamento.",
+  "notifications.tournament.matchReady": "A rodada {round} de {name} está pronta. Entre na sua mesa agora.",
 };

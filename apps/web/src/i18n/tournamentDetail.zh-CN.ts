@@ -208,4 +208,6 @@ export const tournamentDetailZhCN = {
   "tournaments.format.pointsLoss": "负",
   "tournaments.format.pointsValue": "胜 {win} · 平 {draw} · 负 {loss}",
   "tournaments.create.pointsAuto": "自动(3/1/0)",
+  "notifications.tournament.started": "{name} 已开始。请打开比赛查看对阵。",
+  "notifications.tournament.matchReady": "{name} 第 {round} 轮已准备就绪，请立即加入对局。",
 };
