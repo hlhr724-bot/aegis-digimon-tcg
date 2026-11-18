@@ -517,6 +517,7 @@ export class AegisRoom extends Room<{
   private seriesEarlyReady = new Set<string>();
   /** Set while a departure is being turned into a concession, so the series can tell it from a surrender. */
   private departingSeat: Seat | undefined;
+  private closedByServer = false;
 
   /** Position of the last event put on the wire; the first event of a room is `seq` 1. */
   private eventSeq = 0;
@@ -1931,6 +1932,17 @@ export class AegisRoom extends Room<{
     );
   }
 
+  override disconnect(closeCode?: number): ReturnType<Room["disconnect"]> {
+    const wasClosedByServer = this.closedByServer;
+    this.closedByServer = true;
+    try {
+      return super.disconnect(closeCode);
+    } catch (error) {
+      this.closedByServer = wasClosedByServer;
+      throw error;
+    }
+  }
+
   override onDispose(): void {
     this.releaseActiveMatches();
     for (const [accountId, receive] of this.spectatorPrivacySubscriptions) {
@@ -2549,6 +2561,11 @@ export class AegisRoom extends Room<{
       return;
     }
 
+    if (this.closedByServer && this.matchStartRequested && !this.state.gameOver) {
+      await this.releaseSeatWithoutResult(client, accountId);
+      return;
+    }
+
     // Unexpected drop: mark the seat disconnected (so the opponent sees it) and
     // hold it open for a grace period. The client keeps its seat mapping so a
     // reconnect via token resumes here without going through onJoin.
@@ -2608,6 +2625,17 @@ export class AegisRoom extends Room<{
       this.chainPacingClients.delete(client.sessionId);
       if (!this.matchStartRequested) await this.unlock();
     }
+  }
+
+  private async releaseSeatWithoutResult(client: Client, accountId: string | undefined): Promise<void> {
+    this.seatByClient.delete(client.sessionId);
+    this.releaseActiveMatch(accountId);
+    this.accountByClient.delete(client.sessionId);
+    await this.releaseAccountRoom(accountId);
+    this.liveAvatarUrlByClient.delete(client.sessionId);
+    this.equippedRankedTierByClient.delete(client.sessionId);
+    this.rankedByClient.delete(client.sessionId);
+    this.chainPacingClients.delete(client.sessionId);
   }
 
   private async holdSeatForReconnect(client: Client): Promise<Client> {
