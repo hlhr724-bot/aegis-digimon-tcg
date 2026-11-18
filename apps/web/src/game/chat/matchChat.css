@@ -164,6 +164,33 @@
   font-weight: 500;
 }
 
+.match-chat-window__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.match-chat-window__translation {
+  color: var(--ds-text-2);
+  font-style: italic;
+}
+
+.match-chat-window__text > button,
+.match-chat-window__text > small {
+  padding: 0;
+  color: var(--ds-text-3);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  border: 0;
+  background: none;
+}
+
+.match-chat-window__text > button {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 .match-chat-window__tag {
   flex: none;
   padding: 0 var(--ds-space-1);

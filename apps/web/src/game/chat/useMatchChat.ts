@@ -5,6 +5,8 @@ import type { AegisRoom } from "../../net/client";
 import { isChatSoundEnabled } from "./chatSound";
 import { isMatchChatEnabled } from "@/game/chat/matchChatEnabled/isMatchChatEnabled";
 import { useLiveReplayAnnotations, type LiveReplayAnnotations } from "@/replays/annotations/useLiveReplayAnnotations";
+import type { ChatReportStatus } from "@aegis/shared/chat/ChatReportStatus";
+import { CHAT_REPORT_CHANNEL, type ChatReportUpdate } from "@aegis/shared/chat/ChatReportUpdate";
 
 const HISTORY_LIMIT = 50;
 /** Network jitter can bring two sends closer together on the server than they left the client. */
@@ -31,6 +33,8 @@ export interface MatchChat {
   /** True while the server would drop a new message from this sender. */
   coolingDown: boolean;
   replayAnnotations?: LiveReplayAnnotations;
+  reportStatus?: ChatReportStatus;
+  reportOpponent?: () => void;
 }
 
 /**
@@ -50,6 +54,7 @@ export function useMatchChat({
   const [mutedOpponent, setMutedOpponent] = useState(false);
   const [mutedSpectators, setMutedSpectators] = useState(false);
   const [coolingDown, setCoolingDown] = useState(false);
+  const [reportStatus, setReportStatus] = useState<ChatReportStatus>();
   const nextIdRef = useRef(0);
   const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -67,6 +72,20 @@ export function useMatchChat({
       }
     });
   }, [room, viewerSeat, spectating, mutedOpponent, mutedSpectators]);
+
+  useEffect(() => {
+    setReportStatus(undefined);
+    if (!room) {
+      return;
+    }
+    return room.onMessage<ChatReportUpdate>(CHAT_REPORT_CHANNEL, ({ status }) => setReportStatus(status));
+  }, [room]);
+
+  const reportOpponent = useCallback(() => {
+    if (room?.connection?.isOpen) {
+      room.send(CHAT_REPORT_CHANNEL);
+    }
+  }, [room]);
 
   useEffect(() => () => clearTimeout(cooldownTimerRef.current), []);
 
@@ -100,6 +119,8 @@ export function useMatchChat({
     send: room ? send : undefined,
     coolingDown,
     replayAnnotations,
+    reportStatus,
+    reportOpponent: reportStatus ? reportOpponent : undefined,
   };
 }
 

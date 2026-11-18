@@ -9,6 +9,14 @@ import { useTranslation } from "../../i18n";
 import { setChatSoundEnabled, useChatSoundEnabled } from "./chatSound";
 import { useDismissOnOutsidePress } from "./useDismissOnOutsidePress";
 import type { MatchChat } from "./useMatchChat";
+import { ChatReportStatus } from "@aegis/shared/chat/ChatReportStatus";
+import { getBrowserTranslationApi } from "@/game/chat/translation/getBrowserTranslationApi";
+import { useChatAutoTranslate } from "@/game/chat/translation/useChatAutoTranslate";
+
+const REPORT_NOTICE_BY_STATUS: Partial<Record<ChatReportStatus, TranslationKey>> = {
+  [ChatReportStatus.REPORTED.value]: "chat.reported",
+  [ChatReportStatus.FAILED.value]: "chat.reportFailed",
+};
 
 /** The chat's settings, opened from the kebab button in the title bar. */
 export function ChatSettingsMenu({
@@ -49,6 +57,8 @@ export function ChatSettingsMenu({
     },
   });
   const chatSoundEnabled = useChatSoundEnabled();
+  const [autoTranslate, setAutoTranslate] = useChatAutoTranslate();
+  const reportNotice = chat.reportStatus ? REPORT_NOTICE_BY_STATUS[chat.reportStatus] : undefined;
   useDismissOnOutsidePress(menuRef, anchor, onClose);
 
   useEffect(() => {
@@ -81,7 +91,16 @@ export function ChatSettingsMenu({
         </button>
       ) : null}
       {blockNotice ? <span role="status">{t(blockNotice)}</span> : null}
+      {!spectating && chat.reportOpponent ? (
+        <button disabled={chat.reportStatus === ChatReportStatus.REPORTED.value} onClick={chat.reportOpponent}>
+          {t("chat.report")}
+        </button>
+      ) : null}
+      {!spectating && reportNotice ? <span role="status">{t(reportNotice)}</span> : null}
       <Switch checked={chatSoundEnabled} label={t("chat.sound")} onChange={setChatSoundEnabled} />
+      {getBrowserTranslationApi() ? (
+        <Switch checked={autoTranslate} label={t("chat.autoTranslate")} onChange={setAutoTranslate} />
+      ) : null}
     </div>
   );
 }
