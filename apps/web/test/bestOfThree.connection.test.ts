@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Client, type Room } from "@colyseus/sdk";
+import { matchMaker } from "colyseus";
 import {
   DECISION_CHANNEL,
   GameState,
@@ -13,6 +14,7 @@ import { RematchMode } from "@aegis/shared/protocol/RematchMode";
 import { RematchStatus } from "@aegis/shared/protocol/RematchStatus";
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { RED_DECK, BLUE_DECK } from "@aegis-api/engine/testDecks.js";
+import { roomCodeDirectory } from "@aegis-api/rooms/AegisRoom.js";
 import { startTestServer, type TestServer } from "./scenarioHarness/server";
 
 let server: TestServer | undefined;
@@ -98,6 +100,21 @@ async function hopToNextGame(players: Player[]) {
   }
 }
 
+async function spectate(spectatorCode: string): Promise<Room<GameState>> {
+  const roomId = await roomCodeDirectory().resolve(spectatorCode);
+  const [listing] = await matchMaker.query({ roomId });
+  const reservation = await matchMaker.reserveSeatFor(listing!, {
+    displayName: "Observer",
+    deck: { mainDeck: [], eggDeck: [] },
+    spectator: true,
+    roomCode: spectatorCode,
+  });
+  const room = await new Client(server!.endpoint).consumeSeatReservation<GameState>(reservation, GameState);
+  rooms.push(room);
+  await vi.waitFor(() => expect(room.state?.players.length).toBe(2));
+  return room;
+}
+
 function chooseDeck(player: Player, deck?: typeof RED_DECK) {
   player.room.send(SERIES_CHANNEL, {
     action: "chooseSeriesDeck",
@@ -162,6 +179,29 @@ describe("casual best-of-three websocket contract", () => {
     expect(alice.room.state.series.endReason).toBe("won");
     expect([...alice.room.state.series.results]).toEqual([1 - aliceSeat(), aliceSeat(), aliceSeat()]);
   }, 60_000);
+
+  it("lets a spectator follow the series into game 2 with the same code", async () => {
+    server = await startTestServer();
+    const alice = await queue(server.endpoint, "Alice", 3);
+    const bob = await queue(server.endpoint, "Bob", 3, BLUE_DECK);
+    const players = [alice, bob];
+    await startedGame(players);
+    const spectatorCode = alice.room.state.spectatorCode;
+    const firstGameRoomId = alice.room.roomId;
+    const watchedFirstGame = await spectate(spectatorCode);
+    expect(watchedFirstGame.roomId).toBe(firstGameRoomId);
+
+    await concede(alice, players);
+    await nextGame(players, alice, true);
+    await startedGame(players);
+
+    expect(alice.room.roomId).not.toBe(firstGameRoomId);
+    expect(alice.room.state.spectatorCode).toBe(spectatorCode);
+    const watchedSecondGame = await vi.waitFor(() => spectate(spectatorCode), { timeout: 5000 });
+    expect(watchedSecondGame.roomId).toBe(alice.room.roomId);
+    expect(watchedSecondGame.state.series.gameNumber).toBe(2);
+    expect(watchedSecondGame.state.players.every((player) => player.hand.length === 0)).toBe(true);
+  }, 40_000);
 
   it("forfeits the series when a seat leaves between games", async () => {
     server = await startTestServer();

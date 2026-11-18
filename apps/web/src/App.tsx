@@ -631,6 +631,7 @@ function LoadedAegisClient({
   const [bestOf, setBestOf] = useState(loadMatchFormatPreference);
   /** Set between the games of a best-of-three: the next GameScreen takes this seat. */
   const [seriesGame, setSeriesGame] = useState<SeriesGameTicket>();
+  const [awaitNextSeriesGame, setAwaitNextSeriesGame] = useState(false);
   const [tournamentGame, setTournamentGame] = useState<TournamentGameTicket>();
   const [spectatedTournamentMatch, setSpectatedTournamentMatch] = useState<TournamentSpectateTarget>();
   const [storyBattleId, setStoryBattleId] = useState<string>();
@@ -765,6 +766,7 @@ function LoadedAegisClient({
     // reload left a resumable seat from the previous match in storage.
     clearReconnectSession();
     setSeriesGame(undefined);
+    setAwaitNextSeriesGame(false);
     setTournamentGame(undefined);
     setSpectatedTournamentMatch(undefined);
     if (mode !== "private_host" && mode !== "private_guest") setPrivateRoom(undefined);
@@ -1389,6 +1391,12 @@ function LoadedAegisClient({
                   onSeriesNext={(ticket) => {
                     clearReconnectSession();
                     setSeriesGame(ticket);
+                    setMatchNumber((current) => current + 1);
+                  }}
+                  awaitNextSeriesGame={awaitNextSeriesGame}
+                  onSpectateNextSeriesGame={() => {
+                    clearReconnectSession();
+                    setAwaitNextSeriesGame(true);
                     setMatchNumber((current) => current + 1);
                   }}
                   presentationPacing={SEQUENTIAL_PACING_ENABLED ? "sequential" : "current"}

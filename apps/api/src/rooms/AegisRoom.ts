@@ -1106,7 +1106,7 @@ export class AegisRoom extends Room<{
       }
     }
     if (!this.isBotRoom && !this.isRankedRoom && !this.isTournamentRoom) {
-      this.state.spectatorCode = this.state.roomCode || generateRoomCode();
+      this.state.spectatorCode = this.state.roomCode || continuation?.spectatorCode || generateRoomCode();
       if (!this.isPrivate) roomCodes.claim(this.state.spectatorCode, this.roomId);
     }
     if (!this.isTournamentRoom && this.devScenario === undefined) {
@@ -1126,6 +1126,7 @@ export class AegisRoom extends Room<{
           matchTimer: options.matchTimer === true,
           timerStartSeconds: options.timerStartSeconds ?? MATCH_TIMER_START_SECONDS,
           ...(this.isPrivate ? { roomCode: this.state.roomCode } : {}),
+          ...(this.state.spectatorCode ? { spectatorCode: this.state.spectatorCode } : {}),
         });
       this.rematchOffer = new RematchOffer({
         readState: () => this.state,
@@ -1460,6 +1461,7 @@ export class AegisRoom extends Room<{
         matchTimer: this.state.matchTimer,
         timerStartSeconds: this.state.timerStartSeconds,
         ...(this.isPrivate ? { roomCode: this.state.roomCode } : {}),
+        ...(this.state.spectatorCode ? { spectatorCode: this.state.spectatorCode } : {}),
       },
       opening,
     );

@@ -36,6 +36,7 @@ export interface SeriesRecord {
   format?: import("@aegis/shared").DeckFormat;
   /** A private series reopens every game under the same code. */
   roomCode?: string;
+  spectatorCode?: string;
   results: GameResult[];
   seats: [SeriesSeat, SeriesSeat];
   /** Who goes first in the game being opened. */
