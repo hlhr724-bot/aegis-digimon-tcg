@@ -1621,7 +1621,6 @@ const interfaceMessages = {
   "overlay.choiceRevealedCards": "Cartes révélées",
   "overlay.choiceHandCards": "Carte en question",
   "overlay.cardToPlay": "Carte à jouer",
-  "overlay.affectedDigimon": "Digimon concerné",
   "overlay.selectTargets": "Sélectionnez {range} cible(s)",
   "overlay.sourceCountOne": "{count} source",
   "overlay.sourceCountMany": "{count} sources",

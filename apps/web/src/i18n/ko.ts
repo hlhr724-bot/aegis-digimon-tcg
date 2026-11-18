@@ -1576,7 +1576,6 @@ const interfaceMessages = {
   "overlay.choiceRevealedCards": "공개된 카드",
   "overlay.choiceHandCards": "해당 카드",
   "overlay.cardToPlay": "등장시킬 카드",
-  "overlay.affectedDigimon": "대상 디지몬",
   "overlay.selectTargets": "대상 {range}개 선택",
   "overlay.sourceCountOne": "진화원 {count}장",
   "overlay.sourceCountMany": "진화원 {count}장",

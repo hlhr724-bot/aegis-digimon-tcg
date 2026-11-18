@@ -1528,7 +1528,6 @@ const interfaceMessages = {
   "overlay.choiceRevealedCards": "公開的卡片",
   "overlay.choiceHandCards": "相關卡片",
   "overlay.cardToPlay": "將登場的卡牌",
-  "overlay.affectedDigimon": "受影響的數碼寶貝",
   "overlay.selectTargets": "選擇 {range} 個目標",
   "overlay.sourceCountOne": "{count} 張進化源",
   "overlay.sourceCountMany": "{count} 張進化源",

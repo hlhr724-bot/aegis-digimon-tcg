@@ -1347,7 +1347,6 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.choiceRevealedCards": "Cartas reveladas",
   "overlay.choiceHandCards": "Carta em questão",
   "overlay.cardToPlay": "Carta a ser jogada",
-  "overlay.affectedDigimon": "Digimon afetado",
   "overlay.selectTargets": "Escolha {range}",
   "overlay.sourceCountOne": "{count} fonte",
   "overlay.sourceCountMany": "{count} fontes",

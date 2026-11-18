@@ -6,7 +6,7 @@ import { EffectText } from "@/game/EffectText";
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
 import { isAllowedTargetSelection } from "@/game/screen/model/isAllowedTargetSelection";
 import { EffectStepText } from "@/game/overlay/choice/EffectStepText";
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { printedModalPreamble, type DecisionRequest, type DecisionResponse } from "@aegis/shared";
 import { CardMini } from "../../../design/cards";
 import { Icons } from "../../../design/icons";
@@ -66,7 +66,7 @@ function dialogWidth({ docksOnRail, isResolutionPlan, wideDialog, itemCount }: D
 type DecisionSurfaceParams = {
   request: DecisionRequest;
   position: EffectPromptPosition;
-  isCardChoice: boolean;
+  showsCardGallery: boolean;
   isOrdering: boolean;
   isSecurityChoice: boolean;
 };
@@ -74,11 +74,11 @@ type DecisionSurfaceParams = {
 function getDecisionSurface({
   request,
   position,
-  isCardChoice,
+  showsCardGallery,
   isOrdering,
   isSecurityChoice,
 }: DecisionSurfaceParams): EffectPromptPosition {
-  if (isCardChoice || isOrdering) {
+  if (showsCardGallery || isOrdering) {
     return "center";
   }
   if (isSecurityChoice) {
@@ -111,12 +111,10 @@ export function DecisionOverlay({
   sourcePicker = onChangeSourceHost !== undefined,
   confirmLabel,
   contextText,
-  affected,
 }: {
   request: DecisionRequest;
   confirmLabel?: string;
   contextText?: string;
-  affected?: ReactNode;
   sourceCardId?: string;
   candidates: DecisionCandidate[];
   picks: string[];
@@ -154,6 +152,8 @@ export function DecisionOverlay({
     choiceEffects === undefined &&
     candidates.length > 0 &&
     request.options?.digivolveCostChoice === undefined;
+  const previewsCards = isOptional && candidates.length > 0;
+  const showsCardGallery = isCardChoice || previewsCards;
   const choosesPrintedBullet =
     isChoose &&
     choiceEffects === undefined &&
@@ -184,12 +184,12 @@ export function DecisionOverlay({
   const surface = getDecisionSurface({
     request,
     position: effectPromptPosition,
-    isCardChoice,
+    showsCardGallery,
     isOrdering,
     isSecurityChoice,
   });
   const docksOnRail = surface === "left";
-  const draggableActivation = isEffectActivationDecision(request) && !isCardChoice;
+  const draggableActivation = isEffectActivationDecision(request) && !showsCardGallery;
   const triggerKeys = request.options?.triggerKeys ?? [];
   const triggerCardIds = request.options?.triggerCardIds ?? [];
   const maxTotalPlayCost = request.options?.maxTotalPlayCost;
@@ -438,7 +438,7 @@ export function DecisionOverlay({
           data-effect-activation={draggableActivation || undefined}
           data-prompt-dragged={(draggableActivation && drag.position !== undefined) || undefined}
           data-source-clear={sourceClear?.["data-source-clear"]}
-          className={`game-modal__panel game-modal__panel--bare decision-overlay effect-prompt-family${wideDialog ? " decision-overlay--wide" : ""}${isCardChoice ? " decision-overlay--card-choice" : ""}${isOrdering ? " decision-overlay--ordering" : ""}${isSecurityChoice ? " decision-overlay--security-choice" : ""}${isSelect ? " decision-overlay--selection" : ""}${sourcePicker ? " decision-overlay--source-picker" : ""}${isOrderTriggers ? " decision-overlay--trigger-chooser" : ""}${isResolutionPlan ? " decision-overlay--resolution-plan" : ""}${docksOnRail ? " decision-overlay--side" : ""}`}
+          className={`game-modal__panel game-modal__panel--bare decision-overlay effect-prompt-family${wideDialog ? " decision-overlay--wide" : ""}${showsCardGallery ? " decision-overlay--card-choice" : ""}${isOrdering ? " decision-overlay--ordering" : ""}${isSecurityChoice ? " decision-overlay--security-choice" : ""}${isSelect ? " decision-overlay--selection" : ""}${sourcePicker ? " decision-overlay--source-picker" : ""}${isOrderTriggers ? " decision-overlay--trigger-chooser" : ""}${isResolutionPlan ? " decision-overlay--resolution-plan" : ""}${docksOnRail ? " decision-overlay--side" : ""}`}
           onKeyDown={(event) => trapDialogFocus({ event, panelRef })}
           /* Geometry, surface and entrance all live in game.css: inline values could not be
          overridden by the phone bottom-sheet rules, and an inline `animation` shorthand
@@ -515,7 +515,6 @@ export function DecisionOverlay({
                 {isOptional && request.options?.promptKey === "attackAlreadyResolving" && sourceEffectText ? (
                   <p className="decision-overlay__effect-text">{specificPrompt}</p>
                 ) : null}
-                {affected}
               </div>
               {onChangeSourceHost ? (
                 <Button size="sm" variant="ghost" icon={Icons.ArrowLeft} onClick={onChangeSourceHost}>
@@ -599,7 +598,7 @@ export function DecisionOverlay({
             />
           ) : null}
 
-          {isOptional && candidates.length > 0 ? (
+          {previewsCards ? (
             <DecisionChoiceCards candidates={candidates} wideDialog={wideDialog} label={t("overlay.cardToPlay")} />
           ) : null}
 

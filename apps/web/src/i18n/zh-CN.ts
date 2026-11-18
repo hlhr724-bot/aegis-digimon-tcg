@@ -1522,7 +1522,6 @@ const interfaceMessages = {
   "overlay.choiceRevealedCards": "公开的卡牌",
   "overlay.choiceHandCards": "手牌中的目标卡",
   "overlay.cardToPlay": "将登场的卡牌",
-  "overlay.affectedDigimon": "受影响的数码宝贝",
   "overlay.selectTargets": "选择 {range} 个目标",
   "overlay.sourceCountOne": "{count} 个素材",
   "overlay.sourceCountMany": "{count} 个素材",

@@ -3,9 +3,14 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { DecisionRequest, DecisionResponse } from "@aegis/shared";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { I18nProvider } from "@/i18n/I18nProvider";
+import { setEffectPromptPosition } from "@/game/effectPromptPosition";
 import { DecisionOverlay } from "@/game/overlay/choice/DecisionOverlay";
+import type { DecisionCandidate } from "@/game/overlay/choice/decisionTypes";
 
-beforeEach(() => localStorage.setItem("aegis.locale", "en"));
+beforeEach(() => {
+  localStorage.setItem("aegis.locale", "en");
+  setEffectPromptPosition("left");
+});
 afterEach(cleanup);
 
 const request: DecisionRequest = {
@@ -23,40 +28,74 @@ const request: DecisionRequest = {
   },
 };
 
-it("shows the card an optional play will play before the player accepts", () => {
-  const onRespond = vi.fn<(response: DecisionResponse) => void>();
-  const { container } = render(
+const greymon: DecisionCandidate = {
+  instanceId: "discarded-greymon",
+  cardId: "BT24-010",
+  selectable: false,
+  zone: "trash",
+};
+
+type RenderOptionalParams = {
+  optionalRequest: DecisionRequest;
+  candidates: DecisionCandidate[];
+  onRespond?: (response: DecisionResponse) => void;
+};
+
+function renderOptional({
+  optionalRequest,
+  candidates,
+  onRespond = vi.fn<(response: DecisionResponse) => void>(),
+}: RenderOptionalParams) {
+  render(
     <I18nProvider>
       <DecisionOverlay
-        request={request}
+        request={optionalRequest}
         sourceCardId="BT24-007"
-        candidates={[{ instanceId: "discarded-greymon", cardId: "BT24-010", selectable: false, zone: "trash" }]}
+        candidates={candidates}
         picks={[]}
         onTogglePick={vi.fn<(instanceId: string) => void>()}
         onRespond={onRespond}
       />
     </I18nProvider>,
   );
-  const strip = container.querySelector(".decision-overlay__choice-cards");
+  return screen.getByRole("dialog");
+}
+
+it("shows the card an optional play will play in the centered card gallery", () => {
+  const onRespond = vi.fn<(response: DecisionResponse) => void>();
+  const dialog = renderOptional({ optionalRequest: request, candidates: [greymon], onRespond });
+  expect(dialog.dataset.promptSurface).toBe("center");
+  expect(dialog.dataset.effectActivation).toBeUndefined();
+  expect(dialog.classList.contains("decision-overlay--card-choice")).toBe(true);
+  expect(dialog.classList.contains("decision-overlay--side")).toBe(false);
+  const strip = dialog.querySelector(".decision-overlay__choice-cards");
   expect(strip?.textContent).toContain("Card to play");
   expect(strip?.textContent).toContain("Greymon");
   expect(strip?.textContent).toContain("BT24-010");
+  expect(dialog.querySelector(".decision-overlay__source-art")).toBeTruthy();
+  expect(dialog.querySelector(".decision-overlay__effect-text")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "View board" })).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: /^Yes, activate$/ }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
 });
 
-it("keeps an optional prompt without a previewed card free of the card strip", () => {
-  const { container } = render(
-    <I18nProvider>
-      <DecisionOverlay
-        request={{ ...request, options: { activationConfirmation: true } }}
-        sourceCardId="BT24-007"
-        candidates={[]}
-        picks={[]}
-        onTogglePick={vi.fn<(instanceId: string) => void>()}
-        onRespond={vi.fn<(response: DecisionResponse) => void>()}
-      />
-    </I18nProvider>,
-  );
-  expect(container.querySelector(".decision-overlay__choice-cards")).toBeNull();
+it("lays out every card of an optional prompt that previews several cards in the gallery grid", () => {
+  const dialog = renderOptional({
+    optionalRequest: request,
+    candidates: [greymon, { ...greymon, instanceId: "discarded-agumon", cardId: "BT24-008" }],
+  });
+  expect(dialog.dataset.promptSurface).toBe("center");
+  expect(dialog.querySelectorAll(".decision-overlay__grid > .decision-candidate-tile")).toHaveLength(2);
+});
+
+it("keeps an optional prompt without a previewed card docked as a compact activation prompt", () => {
+  const dialog = renderOptional({
+    optionalRequest: { ...request, options: { activationConfirmation: true } },
+    candidates: [],
+  });
+  expect(dialog.dataset.promptSurface).toBe("left");
+  expect(dialog.dataset.effectActivation).toBe("true");
+  expect(dialog.classList.contains("decision-overlay--card-choice")).toBe(false);
+  expect(dialog.classList.contains("decision-overlay--side")).toBe(true);
+  expect(dialog.querySelector(".decision-overlay__choice-cards")).toBeNull();
 });

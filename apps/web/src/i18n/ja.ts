@@ -1590,7 +1590,6 @@ const interfaceMessages = {
   "overlay.choiceRevealedCards": "公開されたカード",
   "overlay.choiceHandCards": "対象のカード",
   "overlay.cardToPlay": "登場させるカード",
-  "overlay.affectedDigimon": "対象のデジモン",
   "overlay.selectTargets": "対象を{range}つ選んでください",
   "overlay.sourceCountOne": "進化元{count}枚",
   "overlay.sourceCountMany": "進化元{count}枚",

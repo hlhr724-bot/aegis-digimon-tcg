@@ -1598,7 +1598,6 @@ const interfaceMessages = {
   "overlay.choiceRevealedCards": "Kartu yang dibuka",
   "overlay.choiceHandCards": "Kartu yang dimaksud",
   "overlay.cardToPlay": "Kartu yang dimainkan",
-  "overlay.affectedDigimon": "Digimon yang terkena",
   "overlay.selectTargets": "Pilih {range} target",
   "overlay.sourceCountOne": "{count} digivolution card",
   "overlay.sourceCountMany": "{count} digivolution card",

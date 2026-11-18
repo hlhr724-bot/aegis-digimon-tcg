@@ -27,7 +27,6 @@ import {
 import type { DigiXrosCandidate, TriggerDetail } from "../../overlay";
 import { totalPlayCost } from "../../overlay/choice/decisionPlayCost";
 import { totalDP } from "../../overlay/choice/decisionDpBudget";
-import { AffectedDigimonList } from "@/game/overlay/choice/AffectedDigimonList";
 
 /**
  * A pick from several Digimon's digivolution cards: the viewer picks the Digimon
@@ -147,9 +146,6 @@ export function DecisionPrompts({
   ]
     .filter(Boolean)
     .join(" · ");
-  const affected = (
-    <AffectedDigimonList permanentIds={decision?.options?.affectedPermanentIds} permanents={permanents} />
-  );
   return (
     <>
       {decision && !answerOnBoard && !isArmorPurgeDecision && sourceHost?.picking ? (
@@ -219,7 +215,6 @@ export function DecisionPrompts({
                     };
                   })}
                 picks={picks}
-                affected={affected}
                 triggerDetails={triggerDetails}
                 onTogglePick={onTogglePick}
                 onRespond={onRespond}
@@ -351,7 +346,6 @@ export function DecisionPrompts({
           prompt={t("overlay.armorPurgePrompt")}
           clause={clause}
           clauseEmphasis={decision.options?.effectTextEmphasis}
-          affected={affected}
           onUse={() => onRespond({ kind: "selectCards", instanceIds: [armorPurgeInstanceId] })}
           onDecline={() => onRespond({ kind: "selectCards", instanceIds: [] })}
         />
@@ -371,7 +365,6 @@ export function DecisionPrompts({
           sourcePermanentId={decision.sourcePermanentId}
           clause={clause}
           clauseEmphasis={decision.options?.effectTextEmphasis}
-          affected={affected}
           onUse={() => onRespond({ kind: "optional", accept: true })}
           onDecline={() => onRespond({ kind: "optional", accept: false })}
           onOpenDialog={onOpenDialog}

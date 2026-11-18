@@ -1341,7 +1341,6 @@ export const en = {
   "overlay.choiceRevealedCards": "Revealed cards",
   "overlay.choiceHandCards": "Card in question",
   "overlay.cardToPlay": "Card to play",
-  "overlay.affectedDigimon": "Affected Digimon",
   "overlay.selectTargets": "Select {range} target(s)",
   "overlay.sourceCountOne": "{count} source",
   "overlay.sourceCountMany": "{count} sources",

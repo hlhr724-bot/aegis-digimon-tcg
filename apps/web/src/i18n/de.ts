@@ -1634,7 +1634,6 @@ const interfaceMessages = {
   "overlay.choiceRevealedCards": "Aufgedeckte Karten",
   "overlay.choiceHandCards": "Betreffende Karte",
   "overlay.cardToPlay": "Zu spielende Karte",
-  "overlay.affectedDigimon": "Betroffenes Digimon",
   "overlay.selectTargets": "{range} Ziel(e) wählen",
   "overlay.sourceCountOne": "{count} Digitationskarte",
   "overlay.sourceCountMany": "{count} Digitationskarten",

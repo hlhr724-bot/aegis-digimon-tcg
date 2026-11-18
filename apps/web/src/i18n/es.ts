@@ -1331,7 +1331,6 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.choiceRevealedCards": "Cartas reveladas",
   "overlay.choiceHandCards": "Carta en cuestión",
   "overlay.cardToPlay": "Carta que se jugará",
-  "overlay.affectedDigimon": "Digimon afectado",
   "overlay.selectTargets": "Selecciona {range} objetivo(s)",
   "overlay.sourceCountOne": "{count} fuente",
   "overlay.sourceCountMany": "{count} fuentes",
