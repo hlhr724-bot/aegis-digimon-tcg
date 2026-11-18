@@ -1,4 +1,5 @@
 import type { CardDefinition } from "@aegis/shared/cards/types";
+import { activeDualFaceDefinition } from "#api/engine/cards/activeDualFaceDefinition";
 import type { Permanent } from "@aegis/shared/schema/Permanent";
 import type { ZoneRef } from "@aegis/shared/effects/ir/filters/zones";
 import type { EffectContext } from "#api/engine/effects/context/effectContext";
@@ -251,7 +252,10 @@ function matchesInteractiveCostTarget({ ctx, target, replacementSourceFilter, or
   }
   return (
     (replacementSourceFilter?.isSelfRef !== true || target.topCard.instanceId === ctx.source.instanceId) &&
-    definitionMatches(replacementSourceFilter ?? {}, ctx.game.definitionOf(target.topCard)) &&
+    definitionMatches(
+      replacementSourceFilter ?? {},
+      activeDualFaceDefinition(ctx.game.definitionOf(target.topCard), target.placedByEffect),
+    ) &&
     isOriginZoneAllowed({ filter: replacementSourceFilter, originZone })
   );
 }

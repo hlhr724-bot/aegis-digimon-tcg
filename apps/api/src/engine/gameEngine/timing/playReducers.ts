@@ -7,6 +7,7 @@ import {
   type CardInstance,
   type Seat,
 } from "@aegis/shared";
+import { activeDualFaceDefinition } from "#api/engine/cards/activeDualFaceDefinition";
 import { cardHasTrait, lookupDefinition } from "../../cards/cardData.js";
 import { effectsOf } from "../../effects/collect.js";
 import { potentialWouldBePlayedSelfReduction, wouldBePlayedSelfReducersFor } from "../../effects/interpreter.js";
@@ -19,10 +20,11 @@ import { buildEffectContext, cardSourceOf } from "../effectContext.js";
 import { setTopCard } from "../../state/access.js";
 
 /** A detached payment target must never reparent the live card out of its hand schema. */
-export function pendingPlayTarget(instance: CardInstance, source: CardSource): Permanent {
+export function pendingPlayTarget(instance: CardInstance, source: CardSource, useAsOption = false): Permanent {
   const target = new Permanent();
   target.permanentId = `pending-play-${instance.instanceId}`;
   target.controllerSeat = source.ownerSeat;
+  target.placedByEffect = useAsOption && source.definition.isDualCard === true;
   const enteringCard = instance.clone();
   enteringCard.faceUp = true;
   setTopCard(target, enteringCard);
@@ -115,9 +117,11 @@ export function crossPermanentPlayReducerWatchers(
   instance: CardInstance,
   seat: Seat,
   simultaneousPlayCount = 1,
+  useAsOption = false,
 ): Permanent[] {
-  const def = lookupDefinition(instance.cardId);
-  if (def === undefined) return [];
+  const printedDefinition = lookupDefinition(instance.cardId);
+  if (printedDefinition === undefined) return [];
+  const def = activeDualFaceDefinition(printedDefinition, useAsOption);
   const isLv4PlusBagraArmy =
     def.kinds.includes(CardKind.Digimon) &&
     def.level !== undefined &&

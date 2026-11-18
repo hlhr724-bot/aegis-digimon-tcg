@@ -99,6 +99,34 @@ describe("BT26-088 Hiroko Sagisaka", () => {
     expect(s.perm("hiroko").isSuspended).toBe(false);
   });
 
+  it("does not reduce the use cost of a TS DUAL card used as an Option", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          battleArea: [{ card: "BT26-088", as: "hiroko" }],
+          hand: [
+            { card: "BT26-056", as: "dual" },
+            { card: "BT1-010", as: "handTrash" },
+          ],
+        },
+        1: { battleArea: [{ card: "BT2-064", as: "target", under: ["BT1-009"] }] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, declinePrompts: ["Arts Digivolve"] },
+    );
+    s.state.memory = 10;
+    await s.ready();
+
+    const dualId = s.inst("dual").instanceId;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: dualId, useAs: "option" })).toEqual({ ok: true });
+    await settle(
+      () => s.state.players[0]!.trash.some((card) => card.instanceId === dualId) && !s.state.pendingDecision,
+    );
+
+    expect(s.decisions.filter(({ req }) => req.sourceCardId === "BT26-088")).toEqual([]);
+    expect(s.perm("hiroko").isSuspended).toBe(false);
+    expect(s.state.memory).toBe(7);
+  });
+
   it("reduces the cost by only 1 when its controller already has a Digimon", async () => {
     const s = setupEngine(
       {
