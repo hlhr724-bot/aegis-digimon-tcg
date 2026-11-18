@@ -735,7 +735,9 @@ export function buildPrimitives(engine: GameEngine): Primitives {
         // Settle the already-armed watcher tier before exposing the Option's older
         // printed entry/attack effects. Then settle the interrupted Option's rule
         // check in that same parent pool before Counter Timing/security can proceed.
-        await drain();
+        if (options?.poolWatchersWithArtsEntryEffects !== true) {
+          await drain();
+        }
         engine.optionResolutionDepth = 0;
         const remainingRulePending = await collectRuleProcessPending(engine);
         engine.pendingNestedTimingEffects.push(...remainingRulePending);

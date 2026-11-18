@@ -63,7 +63,7 @@ describe("BT8-112 Imperialdramon: Paladin Mode", () => {
   it("reuses the same optional stack-removal sequence for When Attacking", () => {
     const digivolving = compiled.effects?.find((entry) => entry.trigger === "WhenDigivolving");
     const attacking = compiled.effects?.find((entry) => entry.trigger === "WhenAttacking");
-    expect(attacking?.frequency).toBe("OncePerTurn");
+    expect(attacking?.frequency).toBeUndefined();
     expect(attacking?.actions).toEqual(digivolving?.actions);
   });
 });

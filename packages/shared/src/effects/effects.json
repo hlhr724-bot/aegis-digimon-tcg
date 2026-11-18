@@ -130760,8 +130760,7 @@
             "to": "deckBottom",
             "order": "any"
           }
-        ],
-        "frequency": "OncePerTurn"
+        ]
       }
     ],
     "coverage": "full",

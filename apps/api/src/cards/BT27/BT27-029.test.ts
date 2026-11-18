@@ -8,6 +8,7 @@ import "#api/cards/index";
 
 const cardId = "BT27-029";
 const tenkomon = "BT27-027";
+const viximon = "ST26-01";
 const vanillaIceSnowLevel4 = "BT11-026";
 const vanillaBlueLevel3 = "BT1-027";
 const vanillaBlueLevel5 = "BT1-038";
@@ -177,6 +178,40 @@ describe("BT27-029 Sekkamon", () => {
 
     expect(s.state.players[0]!.battleArea).toHaveLength(0);
     expect(s.state.players[1]!.security).toHaveLength(0);
+  });
+
+  it("publishes its protection as deletion protection and not as battle protection", async () => {
+    const s = await playSekkamon([]);
+    expect(sekkamonOf(s)).toMatchObject({
+      protectedFromEffectDeletion: true,
+      protectedFromBattleDeletion: false,
+    });
+  });
+
+  it("publishes battle protection only from an inherited Viximon and only on its owner's turn", async () => {
+    const s = setupEngine(
+      {
+        0: { battleArea: [{ card: tenkomon, as: "base", under: [viximon] }], hand: [{ card: cardId, as: "sekkamon" }] },
+        1: {},
+      },
+      { autoSelectCards: true },
+    );
+    s.state.memory = 3;
+    await s.ready();
+    expect(s.perm("base")).toMatchObject({ protectedFromEffectDeletion: false, protectedFromBattleDeletion: true });
+    expect(
+      s.engine.applyIntent(0, {
+        type: "digivolve",
+        permanentId: s.perm("base").permanentId,
+        instanceId: s.inst("sekkamon").instanceId,
+      }),
+    ).toEqual({ ok: true });
+    await settle(() => s.perm("base").topCard.cardId === cardId && s.state.pendingDecision === undefined);
+    expect(s.perm("base")).toMatchObject({ protectedFromEffectDeletion: true, protectedFromBattleDeletion: true });
+
+    s.state.turnSeat = 1;
+    await s.engine.recomputeContinuousEffects();
+    expect(s.perm("base")).toMatchObject({ protectedFromEffectDeletion: true, protectedFromBattleDeletion: false });
   });
 
   it("loses Blocker and the protection when the opponent's turn ends", async () => {

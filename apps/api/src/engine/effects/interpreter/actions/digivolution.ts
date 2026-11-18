@@ -15,9 +15,8 @@ function hasDeDigivolvableCandidate(ctx: EffectContext, target: Target, stopAtLe
   const levelFloor = stopAtLevel ?? 3;
   return candidatePermanents(ctx, target).some((permanent) => {
     if (permanent.stack.length === 0 || permanent.topCard === undefined) return false;
-    const definition = ctx.game.definitionOf(permanent.topCard);
-    const isDigimonOrEgg = definition.kinds.includes(CardKind.Digimon) || definition.kinds.includes(CardKind.DigiEgg);
-    return isDigimonOrEgg && (definition.level === undefined || definition.level > levelFloor);
+    const level = ctx.game.definitionOf(permanent.topCard).level;
+    return level === undefined || level > levelFloor;
   });
 }
 
@@ -129,7 +128,7 @@ export async function runDigivolutionAction(ctx: EffectContext, action: Action, 
               : (action.amount ?? 1)
             : (action.amount ?? 1) * (scale ?? 1),
       });
-      return action.abortOnDecline === true && !completed;
+      return action.abortOnDecline === true && action.cost === undefined && !completed;
     }
     case "Link": {
       await runLink(ctx, action);

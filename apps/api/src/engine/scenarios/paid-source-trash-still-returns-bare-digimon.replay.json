@@ -1,0 +1,1131 @@
+{
+  "format": "aegis-replay-inputs/1",
+  "matchId": "118c472b-75fa-4ab8-89ae-a3fdd7f559c0",
+  "serverRevision": "e74d153176c1017f3d62ac31ecd63051def5bf88",
+  "seed": 3607554962,
+  "randomKey": "2de13d559b5970fef8f27070c0fba8363c0d854a6f6e5abb2d61dc2c173e4551",
+  "rules": {
+    "deckFormat": "standard",
+    "unlimited": false,
+    "betaBattle": true
+  },
+  "seats": [
+    {
+      "deck": {
+        "mainDeck": [
+          "BT8-088",
+          "BT8-088",
+          "BT3-093",
+          "BT3-093",
+          "BT8-099",
+          "BT8-099",
+          "BT8-099",
+          "BT3-104",
+          "BT3-104",
+          "BT3-104",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "EX1-038",
+          "EX1-038",
+          "EX1-038",
+          "EX1-038",
+          "BT3-021",
+          "BT3-021",
+          "BT3-021",
+          "BT3-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-053",
+          "BT8-053",
+          "BT8-053",
+          "BT8-053",
+          "EX1-014",
+          "EX1-014",
+          "EX1-014",
+          "EX1-014",
+          "BT12-028",
+          "BT12-028",
+          "BT12-028",
+          "BT12-028",
+          "BT12-055",
+          "BT12-055",
+          "BT12-055",
+          "BT12-055",
+          "BT8-032",
+          "BT8-032",
+          "BT8-032",
+          "EX1-022",
+          "EX1-022",
+          "EX1-022",
+          "BT8-112",
+          "BT8-112"
+        ],
+        "eggDeck": ["BT12-002", "BT3-002", "BT3-002", "BT3-002", "BT3-002"],
+        "mainDeckArts": [
+          "BT8-088",
+          "BT8-088",
+          "BT3-093",
+          "BT3-093",
+          "BT8-099",
+          "BT8-099",
+          "BT8-099",
+          "BT3-104",
+          "BT3-104",
+          "BT3-104",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "EX1-038",
+          "EX1-038",
+          "EX1-038",
+          "EX1-038",
+          "BT3-021",
+          "BT3-021",
+          "BT3-021",
+          "BT3-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-053",
+          "BT8-053",
+          "BT8-053",
+          "BT8-053",
+          "EX1-014",
+          "EX1-014",
+          "EX1-014",
+          "EX1-014",
+          "BT12-028",
+          "BT12-028",
+          "BT12-028",
+          "BT12-028",
+          "BT12-055",
+          "BT12-055",
+          "BT12-055",
+          "BT12-055",
+          "BT8-032",
+          "BT8-032",
+          "BT8-032",
+          "EX1-022",
+          "EX1-022",
+          "EX1-022",
+          "BT8-112",
+          "BT8-112"
+        ],
+        "eggDeckArts": ["BT12-002", "BT3-002", "BT3-002", "BT3-002", "BT3-002"]
+      }
+    },
+    {
+      "deck": {
+        "mainDeck": [
+          "EX5-007",
+          "EX5-007",
+          "EX5-007",
+          "EX5-007",
+          "EX5-016",
+          "EX5-016",
+          "EX5-016",
+          "EX5-016",
+          "EX5-008",
+          "EX5-008",
+          "EX5-008",
+          "EX5-008",
+          "EX5-017",
+          "EX5-017",
+          "EX5-017",
+          "EX5-017",
+          "EX5-012",
+          "EX5-012",
+          "EX5-012",
+          "EX5-012",
+          "EX5-020",
+          "EX5-020",
+          "EX5-020",
+          "EX5-020",
+          "EX5-014",
+          "EX5-014",
+          "EX5-014",
+          "EX5-014",
+          "EX5-025",
+          "EX5-025",
+          "EX5-025",
+          "EX5-025",
+          "EX5-073",
+          "EX5-073",
+          "EX5-073",
+          "EX5-073",
+          "EX5-064",
+          "EX5-064",
+          "EX5-064",
+          "EX5-064",
+          "EX5-066",
+          "EX5-066",
+          "EX5-066",
+          "EX5-066",
+          "EX5-067",
+          "EX5-067",
+          "EX5-067",
+          "EX5-067",
+          "P-036",
+          "P-036"
+        ],
+        "eggDeck": ["EX5-001", "EX5-001", "EX5-001", "EX5-001"]
+      },
+      "bot": true
+    }
+  ],
+  "inputs": [
+    {
+      "kind": "seat",
+      "seat": 0,
+      "deck": {
+        "mainDeck": [
+          "BT8-088",
+          "BT8-088",
+          "BT3-093",
+          "BT3-093",
+          "BT8-099",
+          "BT8-099",
+          "BT8-099",
+          "BT3-104",
+          "BT3-104",
+          "BT3-104",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "EX1-038",
+          "EX1-038",
+          "EX1-038",
+          "EX1-038",
+          "BT3-021",
+          "BT3-021",
+          "BT3-021",
+          "BT3-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-053",
+          "BT8-053",
+          "BT8-053",
+          "BT8-053",
+          "EX1-014",
+          "EX1-014",
+          "EX1-014",
+          "EX1-014",
+          "BT12-028",
+          "BT12-028",
+          "BT12-028",
+          "BT12-028",
+          "BT12-055",
+          "BT12-055",
+          "BT12-055",
+          "BT12-055",
+          "BT8-032",
+          "BT8-032",
+          "BT8-032",
+          "EX1-022",
+          "EX1-022",
+          "EX1-022",
+          "BT8-112",
+          "BT8-112"
+        ],
+        "eggDeck": ["BT12-002", "BT3-002", "BT3-002", "BT3-002", "BT3-002"],
+        "mainDeckArts": [
+          "BT8-088",
+          "BT8-088",
+          "BT3-093",
+          "BT3-093",
+          "BT8-099",
+          "BT8-099",
+          "BT8-099",
+          "BT3-104",
+          "BT3-104",
+          "BT3-104",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "BT12-047",
+          "EX1-038",
+          "EX1-038",
+          "EX1-038",
+          "EX1-038",
+          "BT3-021",
+          "BT3-021",
+          "BT3-021",
+          "BT3-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-021",
+          "BT8-053",
+          "BT8-053",
+          "BT8-053",
+          "BT8-053",
+          "EX1-014",
+          "EX1-014",
+          "EX1-014",
+          "EX1-014",
+          "BT12-028",
+          "BT12-028",
+          "BT12-028",
+          "BT12-028",
+          "BT12-055",
+          "BT12-055",
+          "BT12-055",
+          "BT12-055",
+          "BT8-032",
+          "BT8-032",
+          "BT8-032",
+          "EX1-022",
+          "EX1-022",
+          "EX1-022",
+          "BT8-112",
+          "BT8-112"
+        ],
+        "eggDeckArts": ["BT12-002", "BT3-002", "BT3-002", "BT3-002", "BT3-002"]
+      },
+      "deckRules": {
+        "betaBattleMode": true,
+        "unlimited": false,
+        "format": "standard"
+      },
+      "stateVersion": 0,
+      "engineEvents": 0
+    },
+    {
+      "kind": "seat",
+      "seat": 1,
+      "deck": {
+        "mainDeck": [
+          "EX5-007",
+          "EX5-007",
+          "EX5-007",
+          "EX5-007",
+          "EX5-016",
+          "EX5-016",
+          "EX5-016",
+          "EX5-016",
+          "EX5-008",
+          "EX5-008",
+          "EX5-008",
+          "EX5-008",
+          "EX5-017",
+          "EX5-017",
+          "EX5-017",
+          "EX5-017",
+          "EX5-012",
+          "EX5-012",
+          "EX5-012",
+          "EX5-012",
+          "EX5-020",
+          "EX5-020",
+          "EX5-020",
+          "EX5-020",
+          "EX5-014",
+          "EX5-014",
+          "EX5-014",
+          "EX5-014",
+          "EX5-025",
+          "EX5-025",
+          "EX5-025",
+          "EX5-025",
+          "EX5-073",
+          "EX5-073",
+          "EX5-073",
+          "EX5-073",
+          "EX5-064",
+          "EX5-064",
+          "EX5-064",
+          "EX5-064",
+          "EX5-066",
+          "EX5-066",
+          "EX5-066",
+          "EX5-066",
+          "EX5-067",
+          "EX5-067",
+          "EX5-067",
+          "EX5-067",
+          "P-036",
+          "P-036"
+        ],
+        "eggDeck": ["EX5-001", "EX5-001", "EX5-001", "EX5-001"]
+      },
+      "deckRules": {
+        "betaBattleMode": true,
+        "unlimited": false,
+        "format": "standard"
+      },
+      "bot": true,
+      "stateVersion": 0,
+      "engineEvents": 0
+    },
+    {
+      "kind": "startMatch",
+      "stateVersion": 0,
+      "engineEvents": 0
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "ready"
+      },
+      "ok": true,
+      "stateVersion": 1,
+      "engineEvents": 5
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "mulligan",
+        "keep": true
+      },
+      "ok": true,
+      "stateVersion": 1,
+      "engineEvents": 5
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "mulligan",
+        "keep": true
+      },
+      "ok": true,
+      "stateVersion": 1,
+      "engineEvents": 5
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "hatchEgg"
+      },
+      "ok": true,
+      "stateVersion": 4,
+      "engineEvents": 8
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-1",
+        "instanceId": "s0-cbf40498fe3be61ac3112738e284da690d4acb6d5c4a11a864d387ed0ea09d93"
+      },
+      "ok": true,
+      "stateVersion": 6,
+      "engineEvents": 11
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "s0-5aed656672cdd0e3490a18f6521eac6fc4233d3e1f83c57c441b55d77370cbc3"
+      },
+      "ok": true,
+      "stateVersion": 8,
+      "engineEvents": 14
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-1",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-3c2616769debc0cec4216347d97eb4aa8fd2951e35b37f7a51d7f7596d89b1b9"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 10,
+      "engineEvents": 22
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-2",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-39f98afd4ebbb01341bad69892b4277a442c52cfec83e1d28b75629463900054"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 10,
+      "engineEvents": 22
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "hatchEgg"
+      },
+      "ok": true,
+      "stateVersion": 17,
+      "engineEvents": 29
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-3",
+        "instanceId": "s1-d5f10d9e3de189e29e77c88d27660de2e23e266dc165e63b465b45868350d68f"
+      },
+      "ok": true,
+      "stateVersion": 19,
+      "engineEvents": 32
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-3",
+        "instanceId": "s1-e69fad83c78be0a314b5cd1354f8235c53484175a264d44f2316743940ee1fe9"
+      },
+      "ok": true,
+      "stateVersion": 21,
+      "engineEvents": 35
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "s1-ef6f80683854778b349f857ba3863984fe0d22c545e50a323aea96ca8a03f68c"
+      },
+      "ok": true,
+      "stateVersion": 23,
+      "engineEvents": 40
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "moveFromBreeding",
+        "permanentId": "perm-1"
+      },
+      "ok": true,
+      "stateVersion": 28,
+      "engineEvents": 48
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "attack",
+        "attackerPermanentId": "perm-1",
+        "target": {
+          "kind": "player"
+        },
+        "vortex": false
+      },
+      "ok": true,
+      "stateVersion": 30,
+      "engineEvents": 51
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-1",
+        "instanceId": "s0-248eabe15566a213c19a1fc1728c408406dd20534d8237ee5c294a9204bf7ee8"
+      },
+      "ok": true,
+      "stateVersion": 36,
+      "engineEvents": 59
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "s0-39f98afd4ebbb01341bad69892b4277a442c52cfec83e1d28b75629463900054"
+      },
+      "ok": true,
+      "stateVersion": 38,
+      "engineEvents": 64
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "dnaDigivolve",
+        "materialPermanentIds": ["perm-1", "perm-6"],
+        "instanceId": "s0-e635a8599e9944acb94c733b03a06cbbf70b4ee6a91db009d5cc098b59d65152"
+      },
+      "ok": true,
+      "stateVersion": 39,
+      "engineEvents": 68
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "attack",
+        "attackerPermanentId": "perm-7",
+        "target": {
+          "kind": "player"
+        },
+        "vortex": false
+      },
+      "ok": true,
+      "stateVersion": 43,
+      "engineEvents": 73
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-7",
+        "instanceId": "s0-3fc70ad06cd69fb0b4a1b7d2bf8eb5b34fe2d241030cbcaf108cf40e5130d3ff"
+      },
+      "ok": true,
+      "stateVersion": 50,
+      "engineEvents": 84
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "attack",
+        "attackerPermanentId": "perm-7",
+        "target": {
+          "kind": "permanent",
+          "permanentId": "perm-4"
+        },
+        "vortex": false
+      },
+      "ok": true,
+      "stateVersion": 56,
+      "engineEvents": 94
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "s0-d246d2f127fe24bc09c89623ab8a91af551a53cafc419edd14bb24a5859b3704"
+      },
+      "ok": true,
+      "stateVersion": 64,
+      "engineEvents": 104
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "moveFromBreeding",
+        "permanentId": "perm-3"
+      },
+      "ok": true,
+      "stateVersion": 69,
+      "engineEvents": 112
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "attack",
+        "attackerPermanentId": "perm-3",
+        "target": {
+          "kind": "player"
+        }
+      },
+      "ok": true,
+      "stateVersion": 71,
+      "engineEvents": 115
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "activateEffect",
+        "sourceInstanceId": "s1-fdf72961f224947c046ba741bcd6ca3ec98e9212ff43f99ee1879be60d47d8a7",
+        "effectKey": "P-036/ir-27-0"
+      },
+      "ok": true,
+      "stateVersion": 75,
+      "engineEvents": 120
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "s1-d06f86e8d5072634f1c5540e0bd8acd2a5b23986c90552e4b9c6441c74b9f483"
+      },
+      "ok": true,
+      "stateVersion": 80,
+      "engineEvents": 125
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "hatchEgg"
+      },
+      "ok": true,
+      "stateVersion": 86,
+      "engineEvents": 134
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-11",
+        "instanceId": "s0-3c2616769debc0cec4216347d97eb4aa8fd2951e35b37f7a51d7f7596d89b1b9"
+      },
+      "ok": true,
+      "stateVersion": 90,
+      "engineEvents": 140
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "s0-9a905eafb665e1be0690597045d033f1ab9c60785fd82b54843b9d0eadffb352"
+      },
+      "ok": true,
+      "stateVersion": 92,
+      "engineEvents": 143
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-3",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-9d261d252e541155d31a3bf38dea8e643e31e82a5cf9261311f82631e4c1eed1"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 94,
+      "engineEvents": 151
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-4",
+        "response": {
+          "kind": "orderCards",
+          "order": [
+            "s0-20c26f3b2b803fb2cff2044fe82de33ad0430ec3a8b8537938945c466383f7eb",
+            "s0-7326200929cf4be07b23cf87b9431348d8f24c9b153eaa8d43aa2b4dad5e8ab2"
+          ]
+        }
+      },
+      "ok": true,
+      "stateVersion": 95,
+      "engineEvents": 152
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "attack",
+        "attackerPermanentId": "perm-7",
+        "target": {
+          "kind": "player"
+        },
+        "vortex": false
+      },
+      "ok": true,
+      "stateVersion": 97,
+      "engineEvents": 154
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "declineBlock"
+      },
+      "ok": true,
+      "stateVersion": 101,
+      "engineEvents": 159
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-11",
+        "instanceId": "s0-5659819cf831b69a84ad543c5300132b88b1d0896436b423f32184ee7652707a"
+      },
+      "ok": true,
+      "stateVersion": 105,
+      "engineEvents": 164
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "s0-12cfbd5bf16948dc359f73afd07e66592a2ea72a5748d875996ab6de5621b561"
+      },
+      "ok": true,
+      "stateVersion": 107,
+      "engineEvents": 169
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-5",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-df7bdda66cfdb196d9d58e0aa0c5a35b9c11ba9bc71aa7ba739831141c434152"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 109,
+      "engineEvents": 178
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-6",
+        "response": {
+          "kind": "orderCards",
+          "order": [
+            "s0-a97a96066ed79e5d893aadfe65ff284790604249fc80ba2eac0822b559480f53",
+            "s0-d578e3335960d35d362ce093e5a7574a3880af8b64149b11558403c327d6bbc6",
+            "s0-c297c59ecbe0f62e1a2f8f739e4fcc39a3ca2392a5316b0b18256c02c69d5b0e"
+          ]
+        }
+      },
+      "ok": true,
+      "stateVersion": 110,
+      "engineEvents": 179
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "s0-3d5d80eca6e43d22daf0ac72b7160e69db39d2de2392ee8693e956447db66d4f"
+      },
+      "ok": true,
+      "stateVersion": 112,
+      "engineEvents": 181
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-7",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-9e765f526b555f24c21aecb19c19123bfd559d8c4216f996ae03cfaa32f6e1b7"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 114,
+      "engineEvents": 189
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-8",
+        "response": {
+          "kind": "orderCards",
+          "order": [
+            "s0-478950144975dabe951bd2047fe89cb6340cb6331b492460352059a3da9b3868",
+            "s0-c52b31be73e318a0a8a8d55621911305b5df98f5c1ce58be364bad046f6a9354"
+          ]
+        }
+      },
+      "ok": true,
+      "stateVersion": 115,
+      "engineEvents": 190
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "hatchEgg"
+      },
+      "ok": true,
+      "stateVersion": 121,
+      "engineEvents": 196
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "attack",
+        "attackerPermanentId": "perm-10",
+        "target": {
+          "kind": "player"
+        }
+      },
+      "ok": true,
+      "stateVersion": 123,
+      "engineEvents": 199
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "playCard",
+        "instanceId": "s1-c72e03708d28e6099adf9952ee0dfa003e15279c5eccc641b0dc8c7416be6652"
+      },
+      "ok": true,
+      "stateVersion": 129,
+      "engineEvents": 205
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-9",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s1-15a1a48d58b8348d74c25fa5619773238c41b5246bda67fd4a28af02bef70069"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 131,
+      "engineEvents": 213
+    },
+    {
+      "kind": "intent",
+      "seat": 1,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-10",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s1-e528e456da364b169cdc6800be42a3d201361447a7708036f3bc10ba4494a80a"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 131,
+      "engineEvents": 213
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "moveFromBreeding",
+        "permanentId": "perm-11"
+      },
+      "ok": true,
+      "stateVersion": 140,
+      "engineEvents": 223
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-13",
+        "instanceId": "s0-50df97037f5cb2129131170f6d675740445fe219b8c03eea71a40dd37a45eb05"
+      },
+      "ok": true,
+      "stateVersion": 145,
+      "engineEvents": 230
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "dnaDigivolve",
+        "materialPermanentIds": ["perm-13", "perm-11"],
+        "instanceId": "s0-36790ee745be2a32af5f7da4878ca571015c1d3748c9297e7d26ca7ab6b8d45e"
+      },
+      "ok": true,
+      "stateVersion": 147,
+      "engineEvents": 235
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-11",
+        "response": {
+          "kind": "orderTriggers",
+          "order": [],
+          "orderIndexes": [0, 1],
+          "optionalAnswersByIndex": [true]
+        }
+      },
+      "ok": true,
+      "stateVersion": 148,
+      "engineEvents": 237
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-12",
+        "response": {
+          "kind": "chooseTargets",
+          "instanceIds": ["perm-16"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 150,
+      "engineEvents": 239
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-13",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": []
+        }
+      },
+      "ok": true,
+      "stateVersion": 151,
+      "engineEvents": 241
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-14",
+        "response": {
+          "kind": "optional",
+          "accept": false
+        }
+      },
+      "ok": true,
+      "stateVersion": 152,
+      "engineEvents": 242
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-17",
+        "instanceId": "s0-35c54e7983233b92b54d03aec1010a9cc61b54973335f2bc4a2839609b40ae50"
+      },
+      "ok": true,
+      "stateVersion": 152,
+      "engineEvents": 242
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-15",
+        "response": {
+          "kind": "chooseTargets",
+          "instanceIds": ["perm-10"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 155,
+      "engineEvents": 248
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "digivolve",
+        "permanentId": "perm-17",
+        "instanceId": "s0-9d261d252e541155d31a3bf38dea8e643e31e82a5cf9261311f82631e4c1eed1"
+      },
+      "ok": true,
+      "stateVersion": 156,
+      "engineEvents": 249
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-16",
+        "response": {
+          "kind": "optional",
+          "accept": false
+        }
+      },
+      "ok": true,
+      "stateVersion": 156,
+      "engineEvents": 249
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-17",
+        "response": {
+          "kind": "optional",
+          "accept": true
+        }
+      },
+      "ok": true,
+      "stateVersion": 158,
+      "engineEvents": 254
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-18",
+        "response": {
+          "kind": "selectCards",
+          "instanceIds": ["s0-5659819cf831b69a84ad543c5300132b88b1d0896436b423f32184ee7652707a"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 159,
+      "engineEvents": 255
+    },
+    {
+      "kind": "intent",
+      "seat": 0,
+      "intent": {
+        "type": "respondDecision",
+        "decisionId": "dec-19",
+        "response": {
+          "kind": "chooseTargets",
+          "instanceIds": ["perm-16"]
+        }
+      },
+      "ok": true,
+      "stateVersion": 160,
+      "engineEvents": 256
+    }
+  ]
+}
