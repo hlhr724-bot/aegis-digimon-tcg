@@ -46,6 +46,7 @@ export interface SeriesSettings {
   unlimited?: boolean;
   format?: import("@aegis/shared").DeckFormat;
   roomCode?: string;
+  spectatorCode?: string;
 }
 
 export type SeriesSeatDeck = Pick<SeriesSeat, "deck" | "deckId" | "deckName" | "community">;
@@ -340,6 +341,7 @@ export class CasualSeries {
       unlimited: this.settings.unlimited === true,
       format: this.settings.format,
       ...(this.settings.roomCode ? { roomCode: this.settings.roomCode } : {}),
+      ...(this.settings.spectatorCode ? { spectatorCode: this.settings.spectatorCode } : {}),
       results: [...this.results],
       seats: [
         { ...seats[0], token: token() },
