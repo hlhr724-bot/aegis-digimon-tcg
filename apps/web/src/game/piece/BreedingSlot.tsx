@@ -116,6 +116,7 @@ export function BreedingSlot({
             keywordLabels={keywordLabels}
             compact={compact}
             width={w}
+            reserveRowInlineSpace={false}
             effectSource={effectSource}
             effectLinked={effectLinked}
             highlight={highlight || picked}
