@@ -119,7 +119,6 @@ const compiled: CompiledCard = {
           },
           withoutSuspending: false,
           optional: true,
-          condition: agumonGate,
         },
       ] as unknown as Actions,
       frequency: "OncePerTurn",

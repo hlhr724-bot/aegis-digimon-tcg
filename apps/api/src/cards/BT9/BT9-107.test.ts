@@ -196,7 +196,7 @@ describe("BT9-107 Metal Impulse", () => {
     expect(s.state.players[0]!.hand.some(({ instanceId }) => instanceId === s.inst("kept").instanceId)).toBe(true);
   });
 
-  it("stops repeated De-Digivolve at an exposed X Antibody and rule-trashes its remaining stack (Q1921)", async () => {
+  it("trashes an exposed X Antibody with the second De-Digivolve 1, then deletes the level 3 under it (Q1916)", async () => {
     const s = setupEngine({
       0: {
         battleArea: ["BT9-070", "BT10-022"],
@@ -247,7 +247,12 @@ describe("BT9-107 Metal Impulse", () => {
     ).toEqual({ ok: true });
     await settle(() => !s.state.players[1]!.battleArea.some(({ permanentId }) => permanentId === hostPermanentId));
 
-    expect(s.state.players[1]!.trash.map(({ instanceId }) => instanceId)).toEqual(expect.arrayContaining(hostCardIds));
+    expect(s.state.players[1]!.trash.map(({ instanceId }) => instanceId)).toEqual(hostCardIds);
+    expect(
+      s.events.flatMap((event) =>
+        event.kind === "cardsMoved" && event.strippedStackTops?.reason === "deDigivolve" ? event.instanceIds : [],
+      ),
+    ).toEqual(hostCardIds.slice(0, 2));
   });
 });
 

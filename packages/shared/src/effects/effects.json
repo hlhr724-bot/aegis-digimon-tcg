@@ -2276,17 +2276,7 @@
             "kind": "Attack",
             "target": { "filter": { "controller": "mine", "kind": ["Digimon"] }, "count": 1 },
             "withoutSuspending": false,
-            "optional": true,
-            "condition": {
-              "kind": "youHave",
-              "filter": {
-                "controllerDefault": "mine",
-                "kind": ["Digimon"],
-                "colors": ["Yellow"],
-                "nameOrTrait": [{ "tokens": ["Agumon", "Greymon"], "match": "name" }]
-              },
-              "raw": "you have a yellow Digimon with [Agumon] or [Greymon] in its name"
-            }
+            "optional": true
           }
         ],
         "frequency": "OncePerTurn"
@@ -130770,8 +130760,7 @@
             "to": "deckBottom",
             "order": "any"
           }
-        ],
-        "frequency": "OncePerTurn"
+        ]
       }
     ],
     "coverage": "full",

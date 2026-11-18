@@ -33,3 +33,20 @@ it("keeps battle protection and unsuspend restrictions visible independently", (
   ]);
   expect(readStatusFlags(permanent)).toMatchObject({ buffs: 1, debuffs: 1 });
 });
+
+it("labels deletion protection that still allows battle deletion apart from battle protection", () => {
+  const permanent = new Permanent();
+  permanent.protectedFromEffectDeletion = true;
+  expect(restrictionBadges(permanent)).toEqual([
+    expect.objectContaining({
+      kind: "protectedFromEffectDeletion",
+      labelKey: "game.restriction.protectedFromEffectDeletion",
+    }),
+  ]);
+  permanent.protectedFromBattleDeletion = true;
+  expect(restrictionBadges(permanent).map(({ labelKey }) => labelKey)).toEqual([
+    "game.restriction.protectedFromBattleDeletion",
+    "game.restriction.protectedFromEffectDeletion",
+  ]);
+  expect(readStatusFlags(permanent).buffs).toBe(2);
+});

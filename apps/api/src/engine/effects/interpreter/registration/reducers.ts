@@ -107,6 +107,7 @@ const VERIFIED_SELF_REDUCER_CARDS = new Set([
   "P-174", // face-up [Nightmare Soldiers] in security -> -4
   "P-186", // 13000+ DP Digimon present -> self play cost -2 per five total trash cards
   "ST14-09", // reduce this card's play cost by 4 for every 10 cards in your trash
+  "BT7-111",
   "BT12-112", // place 1 [Shoutmon] as digivolution material -> -1 (KB Q2249-Q2256)
   "BT21-030", // place 1 [Shoutmon] under itself -> -1 and enable trash DigiXros materials
   "BT8-043", // delete 1 purple [Cherubimon] -> -8

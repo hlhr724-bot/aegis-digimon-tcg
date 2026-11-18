@@ -134,7 +134,7 @@ describe("removal reports", () => {
     expect(s.perm("host").stack).toHaveLength(0);
   });
 
-  it("separate De-Digivolve 1 instances stop after revealing Rie", async () => {
+  it("separate De-Digivolve 1 instances continue through Rie and preserve her underlying Digimon", async () => {
     const s = setupEngine(
       {
         0: { battleArea: [{ card: "BT24-019" }], hand: [{ card: "BT24-041", as: "minerva" }] },
@@ -152,9 +152,9 @@ describe("removal reports", () => {
         s.events.some((e) => e.kind === "effectResolved" && e.sourceCardId === "BT24-041") &&
         s.state.pendingDecision === undefined,
     );
-    expect(s.perm("host").topCard.cardId).toBe("EX13-074");
-    expect(s.perm("host").stack.map((c) => c.cardId)).toEqual(["BT1-009"]);
-    expect(s.state.players[1]!.trash.map((c) => c.cardId)).toEqual(["EX13-064"]);
+    expect(s.perm("host").topCard.cardId).toBe("BT1-009");
+    expect(s.perm("host").stack).toHaveLength(0);
+    expect(s.state.players[1]!.trash.map((c) => c.cardId)).toEqual(["EX13-064", "EX13-074"]);
   });
 
   for (const discounted of [true, false]) {

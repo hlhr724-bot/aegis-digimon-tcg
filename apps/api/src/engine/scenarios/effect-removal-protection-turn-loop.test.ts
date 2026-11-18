@@ -57,7 +57,7 @@ const scenarios = [
   [fixtureOverflowFullCost, "BT24-030", (s) => checkOverflow(s, false), 0],
   [fixtureSenbon, "BT8-106", (s) => checkProtection(s, 2), 0],
   [fixtureIronSlash, "BT25-100", (s) => checkRie(s, "BT1-009", []), 0],
-  [fixtureMinervamon, "BT24-041", (s) => checkRie(s, "EX13-074", ["BT1-009"]), 0],
+  [fixtureMinervamon, "BT24-041", (s) => checkRie(s, "BT1-009", []), 0],
   [fixtureOverflow, "BT24-030", checkOverflow, 5],
   [fixtureOverflowBt20060Bt1020, "BT24-030", checkOverflow, 5],
   [fixtureJunomon, "BT26-083", checkProtection, 4],
