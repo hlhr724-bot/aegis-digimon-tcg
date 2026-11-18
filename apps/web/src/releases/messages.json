@@ -1,4 +1,52 @@
 {
+  "releases.1.76.1-beta.summary": {
+    "en": "This update fixes seven problems with card effects and match results, including Imperialdramon: Paladin Mode, Lucemon: Chaos Mode, repeated ＜De-Digivolve＞ and the effect order after an Arts Digivolve.",
+    "pt-BR": "Esta atualização corrige sete problemas com efeitos de cartas e resultados de partidas, incluindo Imperialdramon: Paladin Mode, Lucemon: Chaos Mode, ＜De-Digivolve＞ repetido e a ordem dos efeitos depois de um Arts Digivolve.",
+    "es": "Esta actualización corrige siete problemas con efectos de cartas y resultados de partidas, entre ellos Imperialdramon: Paladin Mode, Lucemon: Chaos Mode, ＜De-Digivolve＞ repetido y el orden de los efectos después de un Arts Digivolve.",
+    "it": "Questo aggiornamento corregge sette problemi con effetti delle carte e risultati delle partite, tra cui Imperialdramon: Paladin Mode, Lucemon: Chaos Mode, ＜De-Digivolve＞ ripetuto e l'ordine degli effetti dopo un Arts Digivolve."
+  },
+  "releases.1.76.1-beta.fix.paladinModeReturn": {
+    "en": "Imperialdramon: Paladin Mode (BT8-112) now returns your opponent's Digimon with no digivolution cards to the bottom of the deck even when the Digimon you chose had no digivolution cards to trash. Before, the cost was paid and nothing happened. Its [When Attacking] effect is also no longer limited to once per turn.",
+    "pt-BR": "Imperialdramon: Paladin Mode (BT8-112) agora devolve os Digimon do oponente sem cartas de digievolução para o fundo do deck mesmo quando o Digimon escolhido não tinha cartas de digievolução para descartar. Antes, o custo era pago e nada acontecia. O efeito [When Attacking] também deixou de ser limitado a uma vez por turno.",
+    "es": "Imperialdramon: Paladin Mode (BT8-112) ahora devuelve los Digimon del oponente sin cartas de digievolución al fondo del mazo incluso cuando el Digimon elegido no tenía cartas de digievolución que descartar. Antes se pagaba el coste y no ocurría nada. Su efecto [When Attacking] tampoco está ya limitado a una vez por turno.",
+    "it": "Imperialdramon: Paladin Mode (BT8-112) ora rimette in fondo al mazzo i Digimon dell'avversario senza carte digievoluzione anche quando il Digimon scelto non aveva carte digievoluzione da scartare. Prima il costo veniva pagato e non succedeva nulla. Inoltre il suo effetto [When Attacking] non è più limitato a una volta per turno."
+  },
+  "releases.1.76.1-beta.fix.lucemonTrashCost": {
+    "en": "Lucemon: Chaos Mode (BT7-111) now costs 3 less to play from your hand for every 10 cards in your trash, as printed. Before, it always cost the full 14.",
+    "pt-BR": "Lucemon: Chaos Mode (BT7-111) agora custa 3 a menos para ser jogado da mão a cada 10 cartas no seu lixo, como está na carta. Antes, ele sempre custava os 14 completos.",
+    "es": "Lucemon: Chaos Mode (BT7-111) ahora cuesta 3 menos al jugarlo desde la mano por cada 10 cartas en tu descarte, como indica la carta. Antes siempre costaba los 14 completos.",
+    "it": "Lucemon: Chaos Mode (BT7-111) ora costa 3 in meno quando lo giochi dalla mano per ogni 10 carte nei tuoi scarti, come stampato. Prima costava sempre 14."
+  },
+  "releases.1.76.1-beta.fix.deDigivolveTamer": {
+    "en": "When one effect uses ＜De-Digivolve 1＞ more than once, a later use now trashes a Tamer or Option card that an earlier use left on top of the stack. Before, the effect stopped there.",
+    "pt-BR": "Quando um efeito usa ＜De-Digivolve 1＞ mais de uma vez, um uso posterior agora descarta uma carta de Tamer ou Option que um uso anterior deixou no topo da pilha. Antes, o efeito parava ali.",
+    "es": "Cuando un efecto usa ＜De-Digivolve 1＞ más de una vez, un uso posterior ahora descarta una carta de Tamer u Option que un uso anterior dejó en la parte superior de la pila. Antes, el efecto se detenía ahí.",
+    "it": "Quando un effetto usa ＜De-Digivolve 1＞ più di una volta, un uso successivo ora scarta una carta Tamer o Option che un uso precedente ha lasciato in cima alla pila. Prima l'effetto si fermava lì."
+  },
+  "releases.1.76.1-beta.fix.artsDigivolveOrder": {
+    "en": "When an Option makes your Digimon attack and it then Arts Digivolves, your [When Digivolving] effects now activate before your opponent's effects that react to the digivolution, such as Dianamon (BT25-028). Before, the opponent's effect went first.",
+    "pt-BR": "Quando uma Option faz seu Digimon atacar e ele então faz Arts Digivolve, seus efeitos [When Digivolving] agora ativam antes dos efeitos do oponente que reagem à digievolução, como Dianamon (BT25-028). Antes, o efeito do oponente vinha primeiro.",
+    "es": "Cuando una Option hace atacar a tu Digimon y este hace Arts Digivolve, tus efectos [When Digivolving] ahora se activan antes que los efectos del oponente que reaccionan a la digievolución, como Dianamon (BT25-028). Antes, el efecto del oponente iba primero.",
+    "it": "Quando una Option fa attaccare il tuo Digimon e questo fa Arts Digivolve, i tuoi effetti [When Digivolving] ora si attivano prima degli effetti dell'avversario che reagiscono alla digievoluzione, come Dianamon (BT25-028). Prima l'effetto dell'avversario veniva per primo."
+  },
+  "releases.1.76.1-beta.fix.yuuAmanoTurn": {
+    "en": "Yuu Amano (BT10-093) and Hiroko Sagisaka (BT26-088) now offer their [Your Turn] play cost reduction only on your turn. Before, they also asked during your opponent's turn.",
+    "pt-BR": "Yuu Amano (BT10-093) e Hiroko Sagisaka (BT26-088) agora oferecem a redução de custo de [Your Turn] apenas no seu turno. Antes, eles também perguntavam durante o turno do oponente.",
+    "es": "Yuu Amano (BT10-093) e Hiroko Sagisaka (BT26-088) ahora ofrecen su reducción de coste de [Your Turn] solo en tu turno. Antes también preguntaban durante el turno del oponente.",
+    "it": "Yuu Amano (BT10-093) e Hiroko Sagisaka (BT26-088) ora offrono la riduzione di costo di [Your Turn] solo nel tuo turno. Prima la chiedevano anche nel turno dell'avversario."
+  },
+  "releases.1.76.1-beta.fix.marcusAgumonAttack": {
+    "en": "Marcus Damon & Agumon (AD1-021) now offers \"1 of your Digimon may attack\" even when you have no yellow [Agumon] or [Greymon] Digimon. Before, the attack was never offered in that case.",
+    "pt-BR": "Marcus Damon & Agumon (AD1-021) agora oferece \"1 dos seus Digimon pode atacar\" mesmo quando você não tem um Digimon amarelo [Agumon] ou [Greymon]. Antes, o ataque nunca era oferecido nesse caso.",
+    "es": "Marcus Damon & Agumon (AD1-021) ahora ofrece \"1 de tus Digimon puede atacar\" incluso cuando no tienes un Digimon amarillo [Agumon] o [Greymon]. Antes, el ataque nunca se ofrecía en ese caso.",
+    "it": "Marcus Damon & Agumon (AD1-021) ora offre \"1 dei tuoi Digimon può attaccare\" anche quando non hai un Digimon giallo [Agumon] o [Greymon]. Prima l'attacco non veniva mai offerto in quel caso."
+  },
+  "releases.1.76.1-beta.fix.serverClosureNoResult": {
+    "en": "A match that the server has to close before it ends no longer counts as a loss for one of the players. It now ends with no result.",
+    "pt-BR": "Uma partida que o servidor precisa encerrar antes do fim não conta mais como derrota para um dos jogadores. Agora ela termina sem resultado.",
+    "es": "Una partida que el servidor tiene que cerrar antes de que termine ya no cuenta como derrota para uno de los jugadores. Ahora termina sin resultado.",
+    "it": "Una partita che il server deve chiudere prima della fine non conta più come sconfitta per uno dei giocatori. Ora termina senza risultato."
+  },
   "releases.1.76.0-beta.summary": {
     "en": "This update adds five BT27 Ice-Snow cards, lets the home screen shortcut open as an app that keeps you signed in, and fixes three player-reported problems.",
     "pt-BR": "Esta atualização adiciona cinco cartas Ice-Snow do BT27, faz o atalho da tela inicial abrir como app e manter você conectado, e corrige três problemas relatados pelos jogadores.",

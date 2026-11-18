@@ -1,5 +1,38 @@
 [
   {
+    "version": "1.76.1-beta",
+    "releasedAt": "2026-11-18",
+    "summaryKey": "releases.1.76.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.76.1-beta.fix.paladinModeReturn",
+        "issue": 6963
+      },
+      {
+        "textKey": "releases.1.76.1-beta.fix.lucemonTrashCost",
+        "issue": 6962
+      },
+      {
+        "textKey": "releases.1.76.1-beta.fix.deDigivolveTamer",
+        "issue": 6961
+      },
+      {
+        "textKey": "releases.1.76.1-beta.fix.artsDigivolveOrder",
+        "issue": 6959
+      },
+      {
+        "textKey": "releases.1.76.1-beta.fix.yuuAmanoTurn"
+      },
+      {
+        "textKey": "releases.1.76.1-beta.fix.marcusAgumonAttack"
+      },
+      {
+        "textKey": "releases.1.76.1-beta.fix.serverClosureNoResult"
+      }
+    ]
+  },
+  {
     "version": "1.76.0-beta",
     "releasedAt": "2026-11-17",
     "summaryKey": "releases.1.76.0-beta.summary",
