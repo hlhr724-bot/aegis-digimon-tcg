@@ -1,5 +1,6 @@
 import { deckMatchupZhTW } from "@/i18n/deckMatchup.zh-TW";
 import { deckOddsZhTW } from "@/i18n/deckOdds.zh-TW";
+import { chatActionsZhTW } from "@/i18n/chatActions.zh-TW";
 import { tournamentCircuitsZhTW } from "@/i18n/tournamentCircuits.zh-TW";
 import { tournamentOfficialRequestZhTW } from "@/i18n/tournamentOfficialRequest.zh-TW";
 import { matchQueueZhTW } from "@/i18n/matchQueue.zh-TW";
@@ -1156,6 +1157,12 @@ const interfaceMessages = {
   "game.guestApproval.hostLeft": "房主在對戰開始前離開了房間。",
   "game.tournamentCancelledTitle": "比賽已取消",
   "game.tournamentCancelled": "主辦方取消了本次比賽，因此這場對局沒有結果。",
+  "lobby.turnOrder.label": "先後攻",
+  "lobby.turnOrder.random": "隨機",
+  "lobby.turnOrder.hostFirst": "房主先攻",
+  "lobby.turnOrder.hostSecond": "房主後攻",
+  "lobby.turnOrder.hint": "決定第 1 局由誰先攻。三局兩勝時，之後各局沿用系列賽的一般規則。",
+  "lobby.turnOrder.guest": "第 1 局先後攻：{order}",
   "lobby.approval.label": "需要審核",
   "lobby.approval.hint": "有人用你的房間碼加入時，你可以看到對方是誰，並在對戰開始前接受或拒絕。",
   "game.opponent": "對手",
@@ -1520,6 +1527,8 @@ const interfaceMessages = {
   "overlay.useEffectPrompt": "使用這個效果？",
   "overlay.choiceRevealedCards": "公開的卡片",
   "overlay.choiceHandCards": "相關卡片",
+  "overlay.cardToPlay": "將登場的卡牌",
+  "overlay.affectedDigimon": "受影響的數碼寶貝",
   "overlay.selectTargets": "選擇 {range} 個目標",
   "overlay.sourceCountOne": "{count} 張進化源",
   "overlay.sourceCountMany": "{count} 張進化源",
@@ -1588,6 +1597,7 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "先前的效果仍在等待中。上方的效果處理完後，它們才會結算。",
   "overlay.presetMandatory": "強制",
   "overlay.triggerReason": "觸發原因：{reason}",
+  "overlay.triggerSubject": "觸發卡牌：{name}",
   "overlay.triggerOpponentEffect": "對手的效果",
   "overlay.orderOpponentEffectsNote": "你是回合玩家，因此由你決定這些效果的順序，包括對手的效果。",
   "overlay.presetLabel": "為{name}的可選選擇預設回答",
@@ -2889,6 +2899,7 @@ const interfaceMessages = {
   ...matchQueueZhTW,
   ...deckMatchupZhTW,
   ...deckOddsZhTW,
+  ...chatActionsZhTW,
   ...matchIntroZhTW,
   ...staffRolesZhTW,
   ...achievementsZhTw,

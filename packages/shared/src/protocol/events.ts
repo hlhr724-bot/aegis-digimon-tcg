@@ -3,6 +3,7 @@ import type { SingleHandCostBenefit } from "#shared/protocol/SingleHandCostBenef
 import { CardMovePosition } from "#shared/protocol/CardMovePosition";
 import type { DecisionEffectSummary } from "#shared/protocol/DecisionEffectSummary";
 import type { DecisionSelectionGoal } from "#shared/protocol/DecisionSelectionGoal";
+import type { DecisionSelectionSlot } from "#shared/protocol/DecisionSelectionSlot";
 import type { Seat } from "../schema/enums.js";
 import type { AttackTarget } from "./intents.js";
 
@@ -727,6 +728,7 @@ export interface DecisionRequest {
     pendingEffectInstanceIds?: string[];
     min?: number;
     max?: number; // selection count bounds
+    selectionSlots?: DecisionSelectionSlot[];
     maxTotalPlayCost?: number; // summed printed play-cost budget for multi-card selections
     allowedTargetCombinations?: string[][];
     maxTotalDP?: number; // summed live-DP budget for aggregate permanent selections
@@ -791,6 +793,7 @@ export interface DecisionRequest {
      * for an entry marked false is accepted and simply never consulted.
      */
     triggerIsOptional?: boolean[];
+    triggerSubjectPermanentIds?: string[];
     /**
      * `orderTriggers` only: the controller's older pending effects. They triggered earlier and
      * resolve after every offered entry (CR §15-4-5-2/3), so the prompt lists them without

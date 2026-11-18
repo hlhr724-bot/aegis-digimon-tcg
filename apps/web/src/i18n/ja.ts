@@ -1,5 +1,6 @@
 import { deckMatchupJa } from "@/i18n/deckMatchup.ja";
 import { deckOddsJa } from "@/i18n/deckOdds.ja";
+import { chatActionsJa } from "@/i18n/chatActions.ja";
 import { tournamentCircuitsJa } from "@/i18n/tournamentCircuits.ja";
 import { tournamentOfficialRequestJa } from "@/i18n/tournamentOfficialRequest.ja";
 import { matchQueueJa } from "@/i18n/matchQueue.ja";
@@ -1210,6 +1211,12 @@ const interfaceMessages = {
   "game.guestApproval.hostLeft": "対戦開始前にホストがルームを退出しました。",
   "game.tournamentCancelledTitle": "大会が中止されました",
   "game.tournamentCancelled": "主催者がこの大会を中止したため、この対戦は結果なしで終了しました。",
+  "lobby.turnOrder.label": "先攻・後攻",
+  "lobby.turnOrder.random": "ランダム",
+  "lobby.turnOrder.hostFirst": "ホストが先攻",
+  "lobby.turnOrder.hostSecond": "ホストが後攻",
+  "lobby.turnOrder.hint": "第1ゲームの先攻を決めます。3本勝負では、第2ゲーム以降は通常のシリーズルールに従います。",
+  "lobby.turnOrder.guest": "第1ゲームの先攻・後攻: {order}",
   "lobby.approval.label": "参加を承認制にする",
   "lobby.approval.hint": "コードで誰かが参加すると、相手を確認して対戦開始前に承認または拒否できます。",
   "game.opponent": "対戦相手",
@@ -1582,6 +1589,8 @@ const interfaceMessages = {
   "overlay.useEffectPrompt": "この効果を使用しますか？",
   "overlay.choiceRevealedCards": "公開されたカード",
   "overlay.choiceHandCards": "対象のカード",
+  "overlay.cardToPlay": "登場させるカード",
+  "overlay.affectedDigimon": "対象のデジモン",
   "overlay.selectTargets": "対象を{range}つ選んでください",
   "overlay.sourceCountOne": "進化元{count}枚",
   "overlay.sourceCountMany": "進化元{count}枚",
@@ -1650,6 +1659,7 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "先に誘発した効果がまだ処理待ちです。上の効果が終わると処理されます。",
   "overlay.presetMandatory": "強制",
   "overlay.triggerReason": "誘発: {reason}",
+  "overlay.triggerSubject": "誘発元: {name}",
   "overlay.triggerOpponentEffect": "相手の効果",
   "overlay.orderOpponentEffectsNote": "あなたがターンプレイヤーのため、相手の効果を含むこれらの効果の順番を選びます。",
   "overlay.presetLabel": "{name}の任意効果への回答",
@@ -2993,6 +3003,7 @@ const interfaceMessages = {
   ...matchQueueJa,
   ...deckMatchupJa,
   ...deckOddsJa,
+  ...chatActionsJa,
   ...matchIntroJa,
   ...staffRolesJa,
   ...achievementsJa,

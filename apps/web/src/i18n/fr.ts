@@ -1,5 +1,6 @@
 import { deckMatchupFr } from "@/i18n/deckMatchup.fr";
 import { deckOddsFr } from "@/i18n/deckOdds.fr";
+import { chatActionsFr } from "@/i18n/chatActions.fr";
 import { tournamentCircuitsFr } from "@/i18n/tournamentCircuits.fr";
 import { tournamentOfficialRequestFr } from "@/i18n/tournamentOfficialRequest.fr";
 import { matchQueueFr } from "@/i18n/matchQueue.fr";
@@ -1232,6 +1233,13 @@ const interfaceMessages = {
   "game.guestApproval.hostLeft": "L'hôte a quitté la salle avant le début du match.",
   "game.tournamentCancelledTitle": "Tournoi annulé",
   "game.tournamentCancelled": "L'organisateur a annulé ce tournoi : cette partie s'est terminée sans résultat.",
+  "lobby.turnOrder.label": "Ordre de jeu",
+  "lobby.turnOrder.random": "Aléatoire",
+  "lobby.turnOrder.hostFirst": "L'hôte commence",
+  "lobby.turnOrder.hostSecond": "L'hôte joue en second",
+  "lobby.turnOrder.hint":
+    "Définit qui joue le premier tour de la partie 1. Dans un meilleur des 3, les parties suivantes suivent la règle habituelle de la série.",
+  "lobby.turnOrder.guest": "Ordre de jeu de la partie 1 : {order}",
   "lobby.approval.label": "Exiger une approbation",
   "lobby.approval.hint":
     "Quand quelqu'un rejoint avec votre code, vous voyez qui c'est et l'acceptez ou le refusez avant le début du match.",
@@ -1612,6 +1620,8 @@ const interfaceMessages = {
   "overlay.useEffectPrompt": "Utiliser cet effet ?",
   "overlay.choiceRevealedCards": "Cartes révélées",
   "overlay.choiceHandCards": "Carte en question",
+  "overlay.cardToPlay": "Carte à jouer",
+  "overlay.affectedDigimon": "Digimon concerné",
   "overlay.selectTargets": "Sélectionnez {range} cible(s)",
   "overlay.sourceCountOne": "{count} source",
   "overlay.sourceCountMany": "{count} sources",
@@ -1683,6 +1693,7 @@ const interfaceMessages = {
     "Des effets antérieurs sont encore en attente. Ils se résolvent une fois les effets ci-dessus terminés.",
   "overlay.presetMandatory": "Obligatoire",
   "overlay.triggerReason": "Déclenché par : {reason}",
+  "overlay.triggerSubject": "Carte déclencheuse : {name}",
   "overlay.triggerOpponentEffect": "Effet de l'adversaire",
   "overlay.orderOpponentEffectsNote":
     "Vous êtes le joueur du tour : vous choisissez l'ordre de ces effets, y compris ceux de votre adversaire.",
@@ -3066,6 +3077,7 @@ const interfaceMessages = {
   ...matchQueueFr,
   ...deckMatchupFr,
   ...deckOddsFr,
+  ...chatActionsFr,
   ...matchIntroFr,
   ...staffRolesFr,
   ...achievementsFr,

@@ -10,6 +10,7 @@ import { instanceCardId, instancePermanentId, permCardId } from "../../decisionM
 import { BarrierOverlay, BlockOverlay, CounterOverlay, EvadeOverlay } from "../../overlay";
 import { AllianceOverlay } from "../../overlay/combat/AllianceOverlay";
 import { findPermanentInState } from "../../decisionModel";
+import { AffectedDigimonList } from "@/game/overlay/choice/AffectedDigimonList";
 import type { CombatWindows } from "../model/combatWindows";
 
 export function CombatWindowPrompts({
@@ -47,6 +48,7 @@ export function CombatWindowPrompts({
     handInstanceIds: readonly string[];
   };
 }) {
+  const battleAreaPermanents = Array.from(state.players).flatMap((player) => Array.from(player.battleArea));
   return (
     <>
       {blockWindow ? (
@@ -104,6 +106,8 @@ export function CombatWindowPrompts({
 
       {evadeWindow ? (
         <EvadeOverlay
+          permanentId={evadeWindow.permanentId}
+          affected={<AffectedDigimonList permanentIds={[evadeWindow.permanentId]} permanents={battleAreaPermanents} />}
           onAccept={() => onEvade(evadeWindow.permanentId, true)}
           onDecline={() => onEvade(evadeWindow.permanentId, false)}
         />
@@ -111,6 +115,10 @@ export function CombatWindowPrompts({
 
       {barrierWindow ? (
         <BarrierOverlay
+          permanentId={barrierWindow.permanentId}
+          affected={
+            <AffectedDigimonList permanentIds={[barrierWindow.permanentId]} permanents={battleAreaPermanents} />
+          }
           onAccept={() => onBarrier(barrierWindow.permanentId, true)}
           onDecline={() => onBarrier(barrierWindow.permanentId, false)}
         />

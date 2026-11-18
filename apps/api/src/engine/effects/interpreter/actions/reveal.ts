@@ -435,6 +435,33 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
         !plan.spec.orDispositions?.length,
     );
   let deferredInstanceId: string | undefined;
+  const offeredSlotIndexes = slotPlans.flatMap((plan, slotIndex) =>
+    plan !== undefined && plan.eligible.length > 0 ? [slotIndex] : [],
+  );
+  const sharedCardMayDefer =
+    canDeferToSecond &&
+    slotPlans[0]!.eligible.length === 1 &&
+    slotPlans[1]!.eligible.some((card) => card.instanceId === slotPlans[0]!.eligible[0]!.instanceId);
+  const selectionSlots = offeredSlotIndexes.flatMap((slotIndex) => {
+    const { spec, allocation } = slotPlans[slotIndex]!;
+    if (allocation === undefined || spec.effectTextPart === undefined) {
+      return [];
+    }
+    return [
+      {
+        description: spec.effectTextPart,
+        candidateInstanceIds: [...allocation.eligible],
+        max: allocation.capacity,
+        isMandatory: allocation.mandatory,
+      },
+    ];
+  });
+  const groupsSlots =
+    selectionSlots.length > 1 &&
+    selectionSlots.length === offeredSlotIndexes.length &&
+    action.reserveForLaterSlots !== true &&
+    !sharedCardMayDefer;
+  const followingSlotSelections = new Map<number, string[]>();
 
   for (const [slotIndex, plan] of slotPlans.entries()) {
     if (plan === undefined) continue;
@@ -521,20 +548,32 @@ export async function runRevealAdd(ctx: EffectContext, action: Extract<Action, {
     // the player inspect the full reveal, including ineligible cards shown as disabled. Slots
     // that take every matching card remain forced; optional/up-to slots still allow 0.
     if (matches.length > 0 && (spec.optional || spec.upTo || spec.count !== "all")) {
-      const ids = await ctx.ask.selectCards(selectionCtx, {
-        ...(selectionGoal === undefined ? {} : { selectionGoal }),
-        candidates: matches.map((c) => c.instanceId),
-        visible: revealed.map((c) => c.instanceId),
-        visibleCards: revealed.map((c) => ({
-          instanceId: c.instanceId,
-          cardId: c.cardId,
-          ...(c.artId ? { artId: c.artId } : {}),
-        })),
-        min: minimum ?? (spec.optional || spec.upTo ? 0 : Math.min(want, matches.length)),
-        max: want,
-        differentColors: requireDifferentColors,
-      });
-      chosen = matches.filter((c) => ids.includes(c.instanceId));
+      const ids =
+        followingSlotSelections.get(slotIndex) ??
+        (await ctx.ask.selectCards(selectionCtx, {
+          ...(selectionGoal === undefined ? {} : { selectionGoal }),
+          candidates: matches.map((c) => c.instanceId),
+          visible: revealed.map((c) => c.instanceId),
+          visibleCards: revealed.map((c) => ({
+            instanceId: c.instanceId,
+            cardId: c.cardId,
+            ...(c.artId ? { artId: c.artId } : {}),
+          })),
+          min: minimum ?? (spec.optional || spec.upTo ? 0 : Math.min(want, matches.length)),
+          max: want,
+          differentColors: requireDifferentColors,
+          ...(groupsSlots && slotIndex === offeredSlotIndexes[0]
+            ? {
+                selectionSlots,
+                onFollowingSlotsSelected: (following: string[][]) => {
+                  following.forEach((instanceIds, position) => {
+                    followingSlotSelections.set(offeredSlotIndexes[position + 1]!, instanceIds);
+                  });
+                },
+              }
+            : {}),
+        }));
+      chosen = matches.filter((c) => ids.includes(c.instanceId)).slice(0, want);
     }
     // Selection responses are untrusted, and the testkit's deterministic auto-picker does not
     // infer every card-level constraint.  Sanitize a distinct-colors pick through the same

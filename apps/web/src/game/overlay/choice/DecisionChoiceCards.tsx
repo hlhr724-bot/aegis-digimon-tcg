@@ -14,10 +14,12 @@ export function DecisionChoiceCards({
   candidates,
   wideDialog,
   largeCards = false,
+  label,
 }: {
   candidates: readonly DecisionCandidate[];
   wideDialog: boolean;
   largeCards?: boolean;
+  label?: string;
 }) {
   const { t } = useTranslation();
   const cardWidth =
@@ -37,7 +39,7 @@ export function DecisionChoiceCards({
           marginBottom: 10,
         }}
       >
-        {t(allInHand ? "overlay.choiceHandCards" : "overlay.choiceRevealedCards")}
+        {label ?? t(allInHand ? "overlay.choiceHandCards" : "overlay.choiceRevealedCards")}
       </div>
       <div className="decision-overlay__grid">
         {candidates.map((candidate) => (

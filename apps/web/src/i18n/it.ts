@@ -1,5 +1,6 @@
 import { deckMatchupIt } from "@/i18n/deckMatchup.it";
 import { deckOddsIt } from "@/i18n/deckOdds.it";
+import { chatActionsIt } from "@/i18n/chatActions.it";
 import { tournamentCircuitsIt } from "@/i18n/tournamentCircuits.it";
 import { tournamentOfficialRequestIt } from "@/i18n/tournamentOfficialRequest.it";
 import { matchQueueIt } from "@/i18n/matchQueue.it";
@@ -1110,6 +1111,13 @@ const interfaceMessages = {
   "game.tournamentCancelledTitle": "Torneo annullato",
   "game.tournamentCancelled":
     "L'organizzatore ha annullato questo torneo, quindi questa partita è terminata senza risultato.",
+  "lobby.turnOrder.label": "Ordine di turno",
+  "lobby.turnOrder.random": "Casuale",
+  "lobby.turnOrder.hostFirst": "L'host gioca per primo",
+  "lobby.turnOrder.hostSecond": "L'host gioca per secondo",
+  "lobby.turnOrder.hint":
+    "Stabilisce chi gioca il primo turno della partita 1. In un al meglio di 3, le partite successive seguono la regola abituale della serie.",
+  "lobby.turnOrder.guest": "Ordine di turno della partita 1: {order}",
   "lobby.approval.label": "Richiedi approvazione",
   "lobby.approval.hint":
     "Quando qualcuno entra con il tuo codice, vedi chi è e lo accetti o rifiuti prima che inizi la partita.",
@@ -1486,6 +1494,8 @@ const interfaceMessages = {
   "overlay.useEffectPrompt": "Usare questo effetto?",
   "overlay.choiceRevealedCards": "Carte rivelate",
   "overlay.choiceHandCards": "Carta in questione",
+  "overlay.cardToPlay": "Carta da giocare",
+  "overlay.affectedDigimon": "Digimon interessato",
   "overlay.selectTargets": "Seleziona {range} bersagli",
   "overlay.sourceCountOne": "{count} fonte",
   "overlay.sourceCountMany": "{count} fonti",
@@ -1555,6 +1565,7 @@ const interfaceMessages = {
     "Effetti precedenti ancora in attesa. Si risolvono quando terminano gli effetti qui sopra.",
   "overlay.presetMandatory": "Obbligatorio",
   "overlay.triggerReason": "Innescato da: {reason}",
+  "overlay.triggerSubject": "Carta che ha innescato: {name}",
   "overlay.triggerOpponentEffect": "Effetto dell'avversario",
   "overlay.orderOpponentEffectsNote":
     "Sei il giocatore di turno, quindi scegli l'ordine di questi effetti, compresi quelli dell'avversario.",
@@ -2769,6 +2780,7 @@ const interfaceMessages = {
   ...matchQueueIt,
   ...deckMatchupIt,
   ...deckOddsIt,
+  ...chatActionsIt,
   ...matchIntroIt,
   ...staffRolesIt,
   ...achievementsIt,

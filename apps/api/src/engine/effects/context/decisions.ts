@@ -1,6 +1,7 @@
 import type { EffectContext } from "./effectContext.js";
 import type { DecisionEffectSummary } from "@aegis/shared/protocol/DecisionEffectSummary";
 import type { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
+import type { DecisionSelectionSlot } from "@aegis/shared/protocol/DecisionSelectionSlot";
 
 /**
  * Extra context a binary/modal choice can carry.
@@ -88,6 +89,8 @@ export interface SeatScopedDecisionApi {
       /** Paid source cards that will enter trash before this DigiXros is placed. */
       digiXrosRuleTrashInstanceIds?: string[];
       promptKey?: "armorPurge";
+      selectionSlots?: DecisionSelectionSlot[];
+      onFollowingSlotsSelected?: (instanceIds: string[][]) => void;
     },
   ): Promise<string[]>;
   /** Arrange every offered card in deck order; the first id is nearest the deck top. */

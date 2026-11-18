@@ -82,6 +82,7 @@ export function BoardPromptRail({
   clauseEmphasis,
   clauseLang,
   detail,
+  affected,
   budgetText,
   handClearance,
   handSpace,
@@ -102,6 +103,7 @@ export function BoardPromptRail({
   clauseEmphasis?: string;
   clauseLang?: string;
   detail?: string;
+  affected?: ReactNode;
   budgetText?: string;
   handClearance?: number;
   /** On phones, whether the rail stays above the hand only while its cards answer, or always. */
@@ -207,6 +209,7 @@ export function BoardPromptRail({
             {art ? <BoardPromptArt cardId={art} width={artWidth} /> : null}
           </div>
         ) : null}
+        {affected}
         {detail ? <p className="board-prompt__detail">{detail}</p> : null}
         {budgetText ? (
           <p className="board-prompt__detail board-prompt__budget" role="status">
@@ -527,6 +530,7 @@ export function BoardOptionalPrompt({
   contextText,
   clause,
   clauseEmphasis,
+  affected,
   onUse,
   onDecline,
   onOpenDialog,
@@ -538,6 +542,7 @@ export function BoardOptionalPrompt({
   contextText?: string;
   clause?: string;
   clauseEmphasis?: string;
+  affected?: ReactNode;
   onUse: () => void;
   onDecline: () => void;
   onOpenDialog?: () => void;
@@ -559,6 +564,7 @@ export function BoardOptionalPrompt({
       clause={clause ?? contextText}
       clauseEmphasis={clauseEmphasis}
       detail={clause ? contextText : undefined}
+      affected={affected}
       // The dialog shows nothing the rail does not, so Escape is the only way back to it.
       onOpenDialog={onOpenDialog}
     >

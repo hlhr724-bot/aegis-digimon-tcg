@@ -1,5 +1,6 @@
 import { deckMatchupEs } from "@/i18n/deckMatchup.es";
 import { deckOddsEs } from "@/i18n/deckOdds.es";
+import { chatActionsEs } from "@/i18n/chatActions.es";
 import { tournamentCircuitsEs } from "@/i18n/tournamentCircuits.es";
 import { tournamentOfficialRequestEs } from "@/i18n/tournamentOfficialRequest.es";
 import { matchQueueEs } from "@/i18n/matchQueue.es";
@@ -940,6 +941,13 @@ export const es: Record<keyof typeof en, string> = {
   "game.guestApproval.hostLeft": "El anfitrión salió de la sala antes de que empezara la partida.",
   "game.tournamentCancelledTitle": "Torneo cancelado",
   "game.tournamentCancelled": "El organizador canceló este torneo, así que esta partida terminó sin resultado.",
+  "lobby.turnOrder.label": "Orden de turno",
+  "lobby.turnOrder.random": "Aleatorio",
+  "lobby.turnOrder.hostFirst": "El anfitrión empieza",
+  "lobby.turnOrder.hostSecond": "El anfitrión juega segundo",
+  "lobby.turnOrder.hint":
+    "Define quién juega el primer turno de la partida 1. En un al mejor de 3, las partidas siguientes usan la regla habitual de la serie.",
+  "lobby.turnOrder.guest": "Orden de turno de la partida 1: {order}",
   "lobby.approval.label": "Requerir aprobación",
   "lobby.approval.hint":
     "Cuando alguien entre con tu código, verás quién es y podrás aceptarlo o rechazarlo antes de que empiece la partida.",
@@ -1322,6 +1330,8 @@ export const es: Record<keyof typeof en, string> = {
   "overlay.useEffectPrompt": "¿Usar este efecto?",
   "overlay.choiceRevealedCards": "Cartas reveladas",
   "overlay.choiceHandCards": "Carta en cuestión",
+  "overlay.cardToPlay": "Carta que se jugará",
+  "overlay.affectedDigimon": "Digimon afectado",
   "overlay.selectTargets": "Selecciona {range} objetivo(s)",
   "overlay.sourceCountOne": "{count} fuente",
   "overlay.sourceCountMany": "{count} fuentes",
@@ -1393,6 +1403,7 @@ export const es: Record<keyof typeof en, string> = {
     "Hay efectos anteriores pendientes. Se resuelven cuando terminen los efectos de arriba.",
   "overlay.presetMandatory": "Obligatorio",
   "overlay.triggerReason": "Activado por: {reason}",
+  "overlay.triggerSubject": "Carta que lo activó: {name}",
   "overlay.triggerOpponentEffect": "Efecto del oponente",
   "overlay.orderOpponentEffectsNote":
     "Eres el jugador del turno, así que eliges el orden de estos efectos, incluidos los de tu oponente.",
@@ -2466,6 +2477,7 @@ export const es: Record<keyof typeof en, string> = {
   ...matchQueueEs,
   ...deckMatchupEs,
   ...deckOddsEs,
+  ...chatActionsEs,
   ...matchIntroEs,
   ...staffRolesEs,
   ...achievementsEs,

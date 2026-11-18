@@ -146,6 +146,17 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
 .game-modal__panel.effect-prompt-family[data-prompt-surface] .decision-overlay__zone {
   min-width: 0;
 }
+.decision-overlay__slot + .decision-overlay__slot,
+.decision-overlay__slot + .decision-overlay__choice-cards {
+  margin-top: var(--ds-space-4);
+}
+.decision-overlay__slot-title {
+  margin: 0 0 var(--ds-space-2);
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-2);
+  overflow-wrap: anywhere;
+}
 .game-modal__panel.effect-prompt-family[data-prompt-surface]
   .decision-overlay__zones--mixed
   .decision-overlay__zone

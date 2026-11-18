@@ -1563,7 +1563,14 @@ function GameScreenSession({
   // What the resolving effect will do to each target the viewer has picked. The
   // fate is the server's own projection (`options.targetFate`); a prompt that
   // carries none badges nothing.
-  const fateBadges = pendingFateBadges({ decision: viewerDecision, picks, viewerSeat });
+  const fateBadges = pendingFateBadges({
+    decision: viewerDecision,
+    picks,
+    viewerSeat,
+    wouldBeDeletedPermanentIds: [combatWindows.evadeWindow, combatWindows.barrierWindow].flatMap((keywordWindow) =>
+      keywordWindow ? [keywordWindow.permanentId] : [],
+    ),
+  });
 
   const spotlight = spotlightRequest({
     breedingWindow,
@@ -1601,7 +1608,9 @@ function GameScreenSession({
     getCardName,
     showFieldReferences,
   });
-  const triggerNeedsFieldReferences = triggerDetails.some((detail) => detail.fieldReference !== undefined);
+  const triggerNeedsFieldReferences = triggerDetails.some(
+    (detail) => detail.fieldReference !== undefined || detail.subjectFieldReference !== undefined,
+  );
   const effectSourceMarks = findEffectSourceMarks({
     events,
     presentedStateVersion: cues.presentedStateVersion,

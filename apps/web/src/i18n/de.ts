@@ -1,5 +1,6 @@
 import { deckMatchupDe } from "@/i18n/deckMatchup.de";
 import { deckOddsDe } from "@/i18n/deckOdds.de";
+import { chatActionsDe } from "@/i18n/chatActions.de";
 import { tournamentCircuitsDe } from "@/i18n/tournamentCircuits.de";
 import { tournamentOfficialRequestDe } from "@/i18n/tournamentOfficialRequest.de";
 import { matchQueueDe } from "@/i18n/matchQueue.de";
@@ -1243,6 +1244,13 @@ const interfaceMessages = {
   "game.guestApproval.hostLeft": "Der Gastgeber hat den Raum vor Matchbeginn verlassen.",
   "game.tournamentCancelledTitle": "Turnier abgesagt",
   "game.tournamentCancelled": "Der Veranstalter hat dieses Turnier abgesagt. Dieses Spiel endet ohne Ergebnis.",
+  "lobby.turnOrder.label": "Zugreihenfolge",
+  "lobby.turnOrder.random": "Zufällig",
+  "lobby.turnOrder.hostFirst": "Gastgeber beginnt",
+  "lobby.turnOrder.hostSecond": "Gastgeber spielt als Zweiter",
+  "lobby.turnOrder.hint":
+    "Legt fest, wer in Spiel 1 den ersten Zug hat. In einem Best of 3 gilt für spätere Spiele die übliche Serienregel.",
+  "lobby.turnOrder.guest": "Zugreihenfolge in Spiel 1: {order}",
   "lobby.approval.label": "Zustimmung erforderlich",
   "lobby.approval.hint":
     "Wenn jemand mit Ihrem Code beitritt, sehen Sie, wer es ist, und können die Person vor Matchbeginn annehmen oder ablehnen.",
@@ -1625,6 +1633,8 @@ const interfaceMessages = {
   "overlay.useEffectPrompt": "Diesen Effekt verwenden?",
   "overlay.choiceRevealedCards": "Aufgedeckte Karten",
   "overlay.choiceHandCards": "Betreffende Karte",
+  "overlay.cardToPlay": "Zu spielende Karte",
+  "overlay.affectedDigimon": "Betroffenes Digimon",
   "overlay.selectTargets": "{range} Ziel(e) wählen",
   "overlay.sourceCountOne": "{count} Digitationskarte",
   "overlay.sourceCountMany": "{count} Digitationskarten",
@@ -1695,6 +1705,7 @@ const interfaceMessages = {
     "Frühere Effekte stehen noch aus. Sie werden abgehandelt, sobald die Effekte oben erledigt sind.",
   "overlay.presetMandatory": "Pflicht",
   "overlay.triggerReason": "Ausgelöst durch: {reason}",
+  "overlay.triggerSubject": "Auslösende Karte: {name}",
   "overlay.triggerOpponentEffect": "Effekt des Gegners",
   "overlay.orderOpponentEffectsNote":
     "Sie sind der Spieler am Zug und bestimmen die Reihenfolge dieser Effekte, auch die Ihres Gegners.",
@@ -3082,6 +3093,7 @@ const interfaceMessages = {
   ...matchQueueDe,
   ...deckMatchupDe,
   ...deckOddsDe,
+  ...chatActionsDe,
   ...matchIntroDe,
   ...staffRolesDe,
   ...achievementsDe,

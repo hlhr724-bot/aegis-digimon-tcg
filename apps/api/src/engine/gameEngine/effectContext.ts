@@ -504,13 +504,20 @@ export async function engineConsultLeavePrevention(
                 isDecoySourceProtecting(source, targetDefinition),
               );
             },
-            select: async (seat, candidateInstanceIds, min, promptText, source) => {
+            select: async (seat, candidateInstanceIds, min, promptText, source, affectedPermanentIds) => {
               const response = await engine.decisions.request({
                 seat,
                 kind: "selectCards",
                 promptText,
                 sourceCardId: source.sourceCardId,
-                options: { candidateInstanceIds, min, max: 1, timing: "Static", effectText: source.effectText },
+                options: {
+                  candidateInstanceIds,
+                  min,
+                  max: 1,
+                  timing: "Static",
+                  effectText: source.effectText,
+                  ...(affectedPermanentIds.length > 0 ? { affectedPermanentIds: [...affectedPermanentIds] } : {}),
+                },
               });
               return response.kind === "selectCards" ? response.instanceIds : [];
             },

@@ -104,4 +104,7 @@ export const decisionChoicesZhCN = {
   "decision.choice.counterBlastDnaTitle": "突风合步进化",
   "decision.choice.counterBlastDnaShort": "突风合步",
   "decision.choice.counterMarker": "[反击]",
+  "decision.choice.digivolveRoyalKnightUnderTamer": "进化成这名驯兽师下方拥有“皇家骑士”特征的卡牌",
+  "decision.choice.useRoyalKnightOption": "使用1张拥有“皇家骑士”特征的选项卡牌",
+  "decision.choice.deleteOpponentLowestDp": "消灭对方1只DP最低的数码宝贝",
 } satisfies Record<keyof typeof decisionChoicesEn, string>;

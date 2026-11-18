@@ -283,7 +283,9 @@ export async function consultLeavePrevention(
         opts.reentryGuard.activeReplacementKeys.add(activationKey);
         let activated: boolean | void;
         try {
-          activated = await (host.resolveInsteadBody?.(repl, ctx, () => repl.apply(ctx)) ?? repl.apply(ctx));
+          const insteadCtx = { ...ctx, affectedPermanentIds: [leavingId] };
+          activated = await (host.resolveInsteadBody?.(repl, insteadCtx, () => repl.apply(insteadCtx)) ??
+            repl.apply(insteadCtx));
         } finally {
           opts.reentryGuard.activeReplacementKeys.delete(activationKey);
         }

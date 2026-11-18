@@ -1,5 +1,6 @@
 import { deckMatchupId } from "@/i18n/deckMatchup.id";
 import { deckOddsId } from "@/i18n/deckOdds.id";
+import { chatActionsId } from "@/i18n/chatActions.id";
 import { tournamentCircuitsId } from "@/i18n/tournamentCircuits.id";
 import { tournamentOfficialRequestId } from "@/i18n/tournamentOfficialRequest.id";
 import { matchQueueId } from "@/i18n/matchQueue.id";
@@ -1211,6 +1212,13 @@ const interfaceMessages = {
   "game.guestApproval.hostLeft": "Tuan rumah keluar dari ruangan sebelum pertandingan dimulai.",
   "game.tournamentCancelledTitle": "Turnamen dibatalkan",
   "game.tournamentCancelled": "Penyelenggara membatalkan turnamen ini, jadi permainan ini berakhir tanpa hasil.",
+  "lobby.turnOrder.label": "Urutan giliran",
+  "lobby.turnOrder.random": "Acak",
+  "lobby.turnOrder.hostFirst": "Host jalan pertama",
+  "lobby.turnOrder.hostSecond": "Host jalan kedua",
+  "lobby.turnOrder.hint":
+    "Menentukan siapa yang mengambil giliran pertama di game 1. Dalam Best of 3, game berikutnya mengikuti aturan seri yang biasa.",
+  "lobby.turnOrder.guest": "Urutan giliran game 1: {order}",
   "lobby.approval.label": "Wajib persetujuan",
   "lobby.approval.hint":
     "Saat seseorang bergabung dengan kode Anda, Anda dapat melihat siapa dia lalu menerima atau menolaknya sebelum pertandingan dimulai.",
@@ -1589,6 +1597,8 @@ const interfaceMessages = {
   "overlay.useEffectPrompt": "Gunakan efek ini?",
   "overlay.choiceRevealedCards": "Kartu yang dibuka",
   "overlay.choiceHandCards": "Kartu yang dimaksud",
+  "overlay.cardToPlay": "Kartu yang dimainkan",
+  "overlay.affectedDigimon": "Digimon yang terkena",
   "overlay.selectTargets": "Pilih {range} target",
   "overlay.sourceCountOne": "{count} digivolution card",
   "overlay.sourceCountMany": "{count} digivolution card",
@@ -1657,6 +1667,7 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "Efek sebelumnya masih tertunda. Efek tersebut diproses setelah efek di atas selesai.",
   "overlay.presetMandatory": "Wajib",
   "overlay.triggerReason": "Dipicu oleh: {reason}",
+  "overlay.triggerSubject": "Kartu pemicu: {name}",
   "overlay.triggerOpponentEffect": "Efek lawan",
   "overlay.orderOpponentEffectsNote":
     "Anda adalah pemain giliran, jadi Anda memilih urutan efek ini, termasuk efek lawan.",
@@ -3018,6 +3029,7 @@ const interfaceMessages = {
   ...matchQueueId,
   ...deckMatchupId,
   ...deckOddsId,
+  ...chatActionsId,
   ...matchIntroId,
   ...staffRolesId,
   ...achievementsId,
