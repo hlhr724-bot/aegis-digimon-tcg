@@ -69,7 +69,7 @@ export function minimumDeferredPlayCost(
         (reducer.cost === undefined || (reducer.cost.kind === "suspend" && !canPayCost(ctx, reducer.cost))),
     );
     if (!inertEffects || !stableReducers) return undefined;
-    const target = pendingPlayTarget(instance, source);
+    const target = pendingPlayTarget(instance, source, trigger.wouldBePlayedAsOption);
     if (
       engine.subTriggers.hasApplicablePlayReductions(
         seat,

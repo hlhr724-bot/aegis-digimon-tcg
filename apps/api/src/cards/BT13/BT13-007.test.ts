@@ -15,6 +15,7 @@ import "../BT14/BT14-088.js";
 import "../BT17/BT17-078.js";
 import "../ST1/ST1-10.js";
 import "../EX13/EX13-014.js";
+import "../BT27/BT27-068.js";
 
 async function playFromHand(s: ReturnType<typeof setupEngine>, alias: string, battleAreaSize: number): Promise<number> {
   const memoryBefore = s.state.memory;
@@ -401,6 +402,40 @@ describe("BT13-007 King Drasil_7D6", () => {
     expect(await playFromHand(s, "secondJesmon", 2)).toBe(4);
     advance(s.engine).endMainPhaseIfOpen(0);
     await secondTurn;
+  });
+
+  it("does not reduce the use cost of a Royal Knight DUAL card used as an Option, keeping its once-per-turn budget", async () => {
+    const s = setupEngine(
+      {
+        0: {
+          breeding: { card: "BT13-007", as: "drasil" },
+          hand: [
+            { card: "BT27-068", as: "dual" },
+            { card: "BT13-040", as: "knight" },
+          ],
+          deck: ["BT1-009", "BT1-009"],
+        },
+        1: { battleArea: [{ card: "BT2-064", as: "big" }], deck: ["BT1-009", "BT1-009"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true, declinePrompts: ["Arts Digivolve"] },
+    );
+    s.state.memory = 10;
+    await s.ready();
+
+    const dualId = s.inst("dual").instanceId;
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: dualId, useAs: "option" })).toEqual({ ok: true });
+    await settle(
+      () => s.state.players[0]!.trash.some((card) => card.instanceId === dualId) && !s.state.pendingDecision,
+    );
+    expect(s.decisions.filter(({ req }) => req.sourceCardId === "BT13-007")).toEqual([]);
+    expect(s.state.memory).toBe(5);
+    expect(s.state.players[1]!.deck[0]!.cardId).toBe("BT2-064");
+
+    expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("knight").instanceId })).toEqual({
+      ok: true,
+    });
+    await settle(() => s.state.players[0]!.battleArea.length === 1 && !s.state.pendingDecision);
+    expect(s.state.memory).toBe(5 - (7 - 4));
   });
 });
 
