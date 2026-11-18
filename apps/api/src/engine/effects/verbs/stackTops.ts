@@ -42,17 +42,6 @@ export function createStackTopsVerbs(pc: PrimitivesContext) {
       if (permanent.stack.length === 0) break; // no source to revert to
       const currentTopDefinition =
         permanent.topCard !== undefined ? requireCardDefinition(permanent.topCard.cardId) : undefined;
-      // CR 16-12-6: one declared De-Digivolve N continues even when an intermediate
-      // top changes category. Only a NEW instance must start on a Digimon; separate
-      // De-Digivolve 1 repetitions recheck the target between calls (16-12-7/8).
-      if (
-        i === 0 &&
-        !opts?.stackedCards &&
-        currentTopDefinition !== undefined &&
-        !currentTopDefinition.kinds.includes(CardKind.Digimon) &&
-        !currentTopDefinition.kinds.includes(CardKind.DigiEgg)
-      )
-        break;
       // De-Digivolve may promote a level-N card, then must stop once that card is
       // the current top. Checking the prospective new top stopped one step too
       // early (a level-4 top never reached level 3). An unusually ordered stack

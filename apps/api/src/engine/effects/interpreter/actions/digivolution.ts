@@ -15,9 +15,8 @@ function hasDeDigivolvableCandidate(ctx: EffectContext, target: Target, stopAtLe
   const levelFloor = stopAtLevel ?? 3;
   return candidatePermanents(ctx, target).some((permanent) => {
     if (permanent.stack.length === 0 || permanent.topCard === undefined) return false;
-    const definition = ctx.game.definitionOf(permanent.topCard);
-    const isDigimonOrEgg = definition.kinds.includes(CardKind.Digimon) || definition.kinds.includes(CardKind.DigiEgg);
-    return isDigimonOrEgg && (definition.level === undefined || definition.level > levelFloor);
+    const level = ctx.game.definitionOf(permanent.topCard).level;
+    return level === undefined || level > levelFloor;
   });
 }
 
