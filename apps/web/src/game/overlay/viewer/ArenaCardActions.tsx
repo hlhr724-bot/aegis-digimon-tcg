@@ -82,7 +82,12 @@ export function ArenaCardActions({
                   onClick={effect.onActivate}
                   aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId: effect.sourceCardId ?? detail.cardId })}`}
                 >
-                  <CardActionEffectLabel effect={effect} cardId={detail.cardId} />
+                  <CardActionEffectLabel
+                    effect={effect}
+                    cardId={detail.cardId}
+                    position={index + 1}
+                    total={effects?.length ?? 0}
+                  />
                 </Button>
               ))}
               {promote ? (

@@ -146,7 +146,12 @@ export function CardActionSheetPanel({
                   aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId: effect.sourceCardId ?? cardId })}`}
                 >
                   <span aria-hidden="true">⚡</span>
-                  <CardActionEffectLabel effect={effect} cardId={cardId} />
+                  <CardActionEffectLabel
+                    effect={effect}
+                    cardId={cardId}
+                    position={index + 1}
+                    total={effects?.length ?? 0}
+                  />
                 </Button>
               ))}
               {promote ? (

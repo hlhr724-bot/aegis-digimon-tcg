@@ -114,7 +114,8 @@ export function CardActionPopupMenu({
             aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId: effect.sourceCardId ?? cardId })}`}
             {...hoverBackground("var(--ds-fill)")}
           >
-            <span aria-hidden="true">⚡</span> <CardActionEffectLabel effect={effect} cardId={cardId} />
+            <span aria-hidden="true">⚡</span>{" "}
+            <CardActionEffectLabel effect={effect} cardId={cardId} position={index + 1} total={effects?.length ?? 0} />
           </button>
         ))}
       </div>

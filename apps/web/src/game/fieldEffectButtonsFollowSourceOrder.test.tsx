@@ -30,7 +30,7 @@ function boltmonWithTwoMainSources(): Permanent {
   return permanent;
 }
 
-it("labels each [Main] button with its source card and effect, ordered like the displayed sources", () => {
+it("numbers the [Main] buttons in the order of the displayed sources", () => {
   vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
     matches: false,
     media: query,
@@ -74,9 +74,10 @@ it("labels each [Main] button with its source card and effect, ordered like the 
   );
 
   const buttons = screen.getAllByRole("button", { name: /^Activate effect:/ });
-  expect(buttons.map((button) => button.textContent)).toEqual([
-    `Activate [Main] effect · ${getCardDefinition("BT22-095")!.nameEn}[Main] Upper source effect.`,
-    `Activate [Main] effect · ${getCardDefinition("BT22-010")!.nameEn}[Main] Bottom source effect.`,
+  expect(buttons.map((button) => button.textContent)).toEqual(["Activate [Main] effect 1", "Activate [Main] effect 2"]);
+  expect(buttons.map((button) => button.querySelector("[title]")?.getAttribute("title"))).toEqual([
+    `${getCardDefinition("BT22-095")!.nameEn}: [Main] Upper source effect.`,
+    `${getCardDefinition("BT22-010")!.nameEn}: [Main] Bottom source effect.`,
   ]);
 
   fireEvent.click(buttons[0]!);
