@@ -15,7 +15,7 @@ export const rankedId = {
   "ranked.season.beta": "Musim Beta",
   "ranked.season.betaBadge": "Beta",
   "ranked.season.betaNotice":
-    "Ini adalah musim uji coba ranked. Elo dan hadiahmu nyata dan berlanjut ke Musim 1. Aturan dapat berubah berdasarkan masukan kalian.",
+    "Ini adalah musim uji coba ranked. Elo dan hadiah Anda nyata dan berlanjut ke Musim 1. Aturan dapat berubah berdasarkan masukan Anda.",
   "ranked.season.leaderboard": "Papan peringkat",
   "ranked.season.matchups": "Matchup",
   "ranked.season.rewards": "Hadiah",
@@ -182,7 +182,7 @@ export const rankedId = {
   "ranked.deck.result.draw": "Seri",
   "ranked.settings.hideDecks": "Sembunyikan deck ranked saya",
   "ranked.settings.hideDecksDesc":
-    "Pemain lain melihat rating dan rekormu, tetapi tidak melihat deck yang kamu pakai di ranked.",
+    "Pemain lain melihat rating dan rekor Anda, tetapi tidak melihat deck yang Anda pakai di ranked.",
   "ranked.settings.hideDecksFailed":
     "Gagal memuat atau menyimpan pengaturan ini. Coba lagi atau buka ulang pengaturan.",
   "ranked.deck.hidden": "Pemain ini merahasiakan deck ranked miliknya.",
