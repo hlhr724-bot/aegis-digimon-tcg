@@ -40,7 +40,7 @@ export interface PrimitivesEngine {
   /** Pause enclosing card bodies while an effect-directed attack drains pending effects. */
   resolveAttackTimingWindow?(
     drain: (options?: { retireUnactivatable?: boolean }) => Promise<void>,
-    options?: { retireUnactivatable?: boolean },
+    options?: { retireUnactivatable?: boolean; poolWatchersWithArtsEntryEffects?: boolean },
   ): Promise<void>;
   /**
    * Pause enclosing card bodies for the whole Counter -> End of Attack stretch of an

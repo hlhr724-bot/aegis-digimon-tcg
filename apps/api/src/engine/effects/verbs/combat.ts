@@ -103,6 +103,7 @@ export function createCombatVerbs(pc: PrimitivesContext) {
     const pick = opts?.chooseTarget === undefined ? await promptTarget() : await opts.chooseTarget(candidates);
     if (pick === undefined) return;
     const target: AttackTarget = pick === PLAYER ? { kind: "player" } : { kind: "permanent", permanentId: pick };
+    let artsDigivolvedAfterDeclaration = false;
 
     await combat.resolveAttack(controllerSeat, attacker, target, {
       withoutTap: opts?.withoutSuspending ?? false,
@@ -134,7 +135,8 @@ export function createCombatVerbs(pc: PrimitivesContext) {
         if (option !== undefined && option.instanceId === opts?.artsDigivolveOptionInstanceId) {
           const definition = requireCardDefinition(option.cardId);
           if (definition.isDualCard && !state.gameOver) {
-            await engine.artsDigivolve?.(controllerSeat, option, definition, true);
+            artsDigivolvedAfterDeclaration =
+              (await engine.artsDigivolve?.(controllerSeat, option, definition, true)) === true;
           }
         }
       },
@@ -150,7 +152,14 @@ export function createCombatVerbs(pc: PrimitivesContext) {
       drainTimingWindow: ((): ForceAttackOptions["drainTimingWindow"] => {
         const drain = opts?.drainTimingWindow ?? engine.drainPendingAttackTriggers;
         if (drain === undefined) return undefined;
-        return (options) => engine.resolveAttackTimingWindow?.(drain, options) ?? drain(options);
+        return (options) => {
+          const poolWatchersWithArtsEntryEffects = artsDigivolvedAfterDeclaration;
+          artsDigivolvedAfterDeclaration = false;
+          return (
+            engine.resolveAttackTimingWindow?.(drain, { ...options, poolWatchersWithArtsEntryEffects }) ??
+            drain(options)
+          );
+        };
       })(),
       // Counter Timing through End of Attack interrupt the ordering effect (§11-1), so the
       // triggers each step produces resolve as their own windows instead of being parked in
