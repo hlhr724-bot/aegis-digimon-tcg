@@ -1,5 +1,70 @@
 [
   {
+    "version": "1.77.0-beta",
+    "releasedAt": "2026-11-19",
+    "summaryKey": "releases.1.77.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.77.0-beta.feature.bt27Online"
+      },
+      {
+        "textKey": "releases.1.77.0-beta.feature.profileRanked"
+      },
+      {
+        "textKey": "releases.1.77.0-beta.feature.chatReportTranslate"
+      },
+      {
+        "textKey": "releases.1.77.0-beta.feature.privateTurnOrder"
+      },
+      {
+        "textKey": "releases.1.77.0-beta.feature.tournamentNotifications"
+      },
+      {
+        "textKey": "releases.1.77.0-beta.feature.clearerPrompts"
+      },
+      {
+        "textKey": "releases.1.77.0-beta.feature.rankedDecisionLimit"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.77.0-beta.fix.rarities"
+      },
+      {
+        "textKey": "releases.1.77.0-beta.fix.seriesSpectators"
+      },
+      {
+        "textKey": "releases.1.77.0-beta.fix.dualOptionCost",
+        "issue": 6970
+      },
+      {
+        "textKey": "releases.1.77.0-beta.fix.opponentHandHidden",
+        "issue": 6974
+      },
+      {
+        "textKey": "releases.1.77.0-beta.fix.freeDigivolveReducers",
+        "issue": 6978
+      },
+      {
+        "textKey": "releases.1.77.0-beta.fix.pendingTriggerKept",
+        "issue": 6980
+      },
+      {
+        "textKey": "releases.1.77.0-beta.fix.coverArt",
+        "issue": 6981
+      },
+      {
+        "textKey": "releases.1.77.0-beta.fix.alliancesource"
+      },
+      {
+        "textKey": "releases.1.77.0-beta.fix.startOfTurnBanner"
+      },
+      {
+        "textKey": "releases.1.77.0-beta.fix.matchEndReadable"
+      }
+    ]
+  },
+  {
     "version": "1.76.1-beta",
     "releasedAt": "2026-11-18",
     "summaryKey": "releases.1.76.1-beta.summary",
