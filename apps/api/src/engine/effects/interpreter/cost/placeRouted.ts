@@ -221,7 +221,9 @@ export async function payRoutedPlaceCost(
   const srcCandidates = candidateLooseInstances(ctx, cost.target, srcZones);
   const visibleSourceIds = srcZones.every((zone) => zone === "hand" || zone === "trash")
     ? seatsForController(ctx, cost.target.filter).flatMap((seat) =>
-        srcZones.flatMap((zone) => looseCardsInZone(ctx, seat, zone).map((candidate) => candidate.instanceId)),
+        srcZones
+          .filter((zone) => zone === "trash" || seat === ctx.source.ownerSeat)
+          .flatMap((zone) => looseCardsInZone(ctx, seat, zone).map((candidate) => candidate.instanceId)),
       )
     : undefined;
   const wantN = cost.target.count === "all" ? srcCandidates.length : (cost.target.count ?? 1);

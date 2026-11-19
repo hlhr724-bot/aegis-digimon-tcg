@@ -583,9 +583,15 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
         zones,
         costReduction,
       } = await resolveFilteredPlayCandidates({ ctx, action });
+      const chooserSeat =
+        playCostAdjustedTarget.chooser === "opponent"
+          ? ctx.game.opponentOf(ctx.source.ownerSeat)
+          : ctx.source.ownerSeat;
       const visibleZoneIds = zones.every((zone) => zone === "trash" || zone === "hand")
         ? seatsForController(ctx, playCostAdjustedTarget.filter).flatMap((seat) =>
-            zones.flatMap((zone) => looseCardsInZone(ctx, seat, zone).map((candidate) => candidate.instanceId)),
+            zones
+              .filter((zone) => zone === "trash" || seat === chooserSeat)
+              .flatMap((zone) => looseCardsInZone(ctx, seat, zone).map((candidate) => candidate.instanceId)),
           )
         : zones.every((zone) => zone === "digivolutionCards")
           ? [
