@@ -31,7 +31,7 @@ export const compiled: CompiledCard = {
         },
         {
           effectTextPart:
-            "Then, you may use 1 Option card with [Plug-In] in its name in its name or 1 yellow Option card with a cost of 5 or less from your hand without paying the cost.",
+            "Then, you may use 1 Option card with [Plug-In] in its name or 1 yellow Option card with a cost of 5 or less from your hand without paying the cost.",
           kind: "UseOptionWithoutCost",
           filter: {
             controller: "mine",
