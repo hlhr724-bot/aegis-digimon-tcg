@@ -45,7 +45,7 @@ import { Alert, Button, Dialog, Field, IconButton, type PlayerIdentity, type Scr
 import { CoverThumb } from "../design/cards";
 import { Panel } from "../design/surfaces";
 import { Icons, type IconComponent } from "../design/icons";
-import { displayCoverCard, type DeckListing } from "../game/decks";
+import { displayCoverArt, displayCoverCard, type DeckListing } from "../game/decks";
 import { FAMOUS_DECKS, FAMOUS_DECK_GROUPS } from "@/game/famousDecks";
 import { selectableDecks } from "@/game/selectableDecks";
 import { RANDOM_SET_BOT_DECK_PREFIX } from "@aegis/shared/decks/randomSetBotDeckPrefix";
@@ -862,6 +862,7 @@ export function Lobby({
                   <CoverThumb
                     key={displayCoverCard(active)}
                     coverCardId={displayCoverCard(active)}
+                    artId={displayCoverArt(active)}
                     sigilColor={active.color}
                     sigilSize={22}
                   />

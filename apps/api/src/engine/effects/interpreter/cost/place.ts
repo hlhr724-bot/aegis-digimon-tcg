@@ -80,7 +80,9 @@ export async function payPlaceCost(ctx: EffectContext, cost: Cost, out?: { paidC
   const candidates = candidateLooseInstances(ctx, cost.target, zones);
   const visibleSourceIds = zones.every((zone) => zone === "hand" || zone === "trash")
     ? seatsForController(ctx, cost.target.filter).flatMap((seat) =>
-        zones.flatMap((zone) => looseCardsInZone(ctx, seat, zone).map((candidate) => candidate.instanceId)),
+        zones
+          .filter((zone) => zone === "trash" || seat === ctx.source.ownerSeat)
+          .flatMap((zone) => looseCardsInZone(ctx, seat, zone).map((candidate) => candidate.instanceId)),
       )
     : undefined;
   const want = cost.target.count === "all" ? candidates.length : (cost.target.count ?? 1);
