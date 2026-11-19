@@ -1,7 +1,5 @@
 import type { DecisionManagerState } from "#api/engine/decisions/DecisionManagerState";
 import { decodeTriggerResolutionPlan } from "@aegis/shared/protocol/decodeTriggerResolutionPlan";
-import type { DecisionSelectionSlot } from "@aegis/shared/protocol/DecisionSelectionSlot";
-import { isValidSlotSelection } from "@aegis/shared/protocol/isValidSlotSelection";
 import {
   type DecisionRequest,
   type DecisionResponse,
@@ -63,7 +61,6 @@ interface OpenDecision {
   acceptsIndexedResolutionPlan: boolean;
   /** The `chooseOption` entry that declines an optional effect — the safe default when present. */
   declineIndex: number | undefined;
-  selectionSlots: readonly DecisionSelectionSlot[] | undefined;
   resolve: (response: DecisionResponse) => void;
   timer: ReturnType<typeof setTimeout> | undefined;
 }
@@ -247,7 +244,6 @@ export class DecisionManager {
         acceptsResolutionPlan: spec.options?.acceptsResolutionPlan === true,
         acceptsIndexedResolutionPlan: spec.options?.acceptsIndexedResolutionPlan === true,
         declineIndex: spec.options?.declineIndex,
-        selectionSlots: spec.options?.selectionSlots,
         resolve,
         timer,
       };
@@ -289,9 +285,6 @@ export class DecisionManager {
     if (!satisfiesDistinctNames(open, normalized)) return false;
     if (!choosesOfferedTriggers(open, normalized)) return false;
     if (!ordersEveryCard(open, normalized)) return false;
-    if (!satisfiesSelectionSlots(open, normalized)) {
-      return false;
-    }
 
     this.resolveOpen(decisionId, normalized);
     return true;
@@ -324,16 +317,7 @@ function hasValidResponseShape(response: DecisionResponse): boolean {
   switch (response.kind) {
     case "chooseTargets":
     case "selectCards":
-      return (
-        Array.isArray(response.instanceIds) &&
-        response.instanceIds.every((id) => typeof id === "string") &&
-        (response.kind !== "selectCards" ||
-          response.followingSlotInstanceIds === undefined ||
-          (Array.isArray(response.followingSlotInstanceIds) &&
-            response.followingSlotInstanceIds.every(
-              (slot) => Array.isArray(slot) && slot.every((id) => typeof id === "string"),
-            )))
-      );
+      return Array.isArray(response.instanceIds) && response.instanceIds.every((id) => typeof id === "string");
     case "orderCards":
       return Array.isArray(response.order) && response.order.every((id) => typeof id === "string");
     case "optional":
@@ -489,19 +473,6 @@ function namesAnOfferedCardUnlessEmpty(open: OpenDecision, response: DecisionRes
   if (response.instanceIds.length === 0) return true;
   const offered = new Set(open.candidateInstanceIds ?? []);
   return response.instanceIds.some((instanceId) => offered.has(instanceId));
-}
-
-function satisfiesSelectionSlots(open: OpenDecision, response: DecisionResponse): boolean {
-  if (response.kind !== "selectCards" || response.followingSlotInstanceIds === undefined) {
-    return true;
-  }
-  if (open.selectionSlots === undefined) {
-    return false;
-  }
-  return isValidSlotSelection({
-    slots: open.selectionSlots,
-    selections: [response.instanceIds, ...response.followingSlotInstanceIds],
-  });
 }
 
 function satisfiesMin(open: OpenDecision, response: DecisionResponse): boolean {

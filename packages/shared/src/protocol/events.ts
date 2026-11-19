@@ -3,7 +3,6 @@ import type { SingleHandCostBenefit } from "#shared/protocol/SingleHandCostBenef
 import { CardMovePosition } from "#shared/protocol/CardMovePosition";
 import type { DecisionEffectSummary } from "#shared/protocol/DecisionEffectSummary";
 import type { DecisionSelectionGoal } from "#shared/protocol/DecisionSelectionGoal";
-import type { DecisionSelectionSlot } from "#shared/protocol/DecisionSelectionSlot";
 import type { Seat } from "../schema/enums.js";
 import type { AttackTarget } from "./intents.js";
 
@@ -728,7 +727,6 @@ export interface DecisionRequest {
     pendingEffectInstanceIds?: string[];
     min?: number;
     max?: number; // selection count bounds
-    selectionSlots?: DecisionSelectionSlot[];
     maxTotalPlayCost?: number; // summed printed play-cost budget for multi-card selections
     allowedTargetCombinations?: string[][];
     maxTotalDP?: number; // summed live-DP budget for aggregate permanent selections

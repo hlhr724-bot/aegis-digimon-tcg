@@ -36,7 +36,6 @@ import { reorderDecisionItems } from "./useDecisionReorder";
 import { totalPlayCost } from "./decisionPlayCost";
 import { totalDP } from "./decisionDpBudget";
 import { DecisionSelectFooter } from "./DecisionSelectFooter";
-import { DecisionSlotSelection } from "./DecisionSlotSelection";
 import { DecisionTriggerChooser, type WaitingTrigger } from "./DecisionTriggerChooser";
 import type { DecisionCandidate } from "./decisionTypes";
 import "../effectPromptFamily.css";
@@ -161,8 +160,6 @@ export function DecisionOverlay({
     choiceClauses.length === choices.length &&
     choiceClauses.some(Boolean);
   const isSelect = request.kind === "chooseTargets" || request.kind === "selectCards";
-  const selectionSlots = request.kind === "selectCards" ? (request.options?.selectionSlots ?? []) : [];
-  const groupsSlots = selectionSlots.length > 1;
   const isSecurityChoice =
     isSelect &&
     candidates.length === 1 &&
@@ -219,7 +216,6 @@ export function DecisionOverlay({
 
   const [isViewingBoard, setIsViewingBoard] = useState(false);
   const [cardOrder, setCardOrder] = useState<string[]>([]);
-  const [slotEmphasis, setSlotEmphasis] = useState<string>();
   const panelRef = useRef<HTMLDivElement>(null);
   const returnControlRef = useRef<HTMLDivElement>(null);
   const drag = useDraggableWindow(panelRef, { viewportGutter: 16, resetKey: `${request.decisionId}:${surface}` });
@@ -261,10 +257,9 @@ export function DecisionOverlay({
           cardId: request.options?.effectTextCardId ?? sourceCardId,
           timing: request.options?.timing,
           description: request.options?.effectText,
-          effectTextPart:
-            request.options?.effectTextEmphasis || groupsSlots
-              ? (request.options?.effectText ?? request.options?.effectTextPart)
-              : request.options?.effectTextPart,
+          effectTextPart: request.options?.effectTextEmphasis
+            ? (request.options.effectText ?? request.options.effectTextPart)
+            : request.options?.effectTextPart,
           isInherited: request.options?.isInherited,
         })
       : undefined);
@@ -315,7 +310,7 @@ export function DecisionOverlay({
   // Older decisions may carry their only effect description in the question.
   // Keep that context in the body while all activations share the same heading.
   const displayedEffectText = sourceEffectText ?? (isOptional ? specificPrompt : undefined);
-  const emphasis = groupsSlots ? slotEmphasis : request.options?.effectTextEmphasis;
+  const emphasis = request.options?.effectTextEmphasis;
   const renderedEffectText = displayedEffectText ? (
     <EffectStepText
       timing={request.options?.timing}
@@ -528,18 +523,6 @@ export function DecisionOverlay({
 
           {isKeywordActivation ? (
             <DecisionChoiceCards candidates={candidates} wideDialog={wideDialog} />
-          ) : groupsSlots ? (
-            <DecisionSlotSelection
-              key={request.decisionId}
-              slots={selectionSlots}
-              candidates={candidates}
-              cardId={request.options?.effectTextCardId ?? sourceCardId}
-              effectText={displayedEffectText}
-              wideDialog={wideDialog}
-              onEmphasise={setSlotEmphasis}
-              onRespond={onRespond}
-              onOpenBoard={() => setIsViewingBoard(true)}
-            />
           ) : isSelect ? (
             <DecisionCandidateGrid
               candidates={candidates}
@@ -617,7 +600,7 @@ export function DecisionOverlay({
               }}
               onOpenBoard={() => setIsViewingBoard(true)}
             />
-          ) : isSelect && !groupsSlots ? (
+          ) : isSelect ? (
             <DecisionSelectFooter
               canConfirm={canConfirm}
               confirmLabel={

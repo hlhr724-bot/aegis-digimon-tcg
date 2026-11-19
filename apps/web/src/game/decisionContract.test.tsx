@@ -56,7 +56,6 @@ const OPTION_CONSUMERS: Record<DecisionOptionKey, string | null> = {
   triggerKeys: "screen/model/triggerDetails.ts",
   triggerCardIds: "screen/model/triggerDetails.ts",
   triggerSubjectPermanentIds: "screen/model/triggerDetails.ts",
-  selectionSlots: "overlay/choice/DecisionOverlay.tsx",
   triggerTimings: "screen/model/triggerDetails.ts",
   triggerDescriptions: "screen/model/triggerDetails.ts",
   triggerReasons: "overlay/choice/DecisionOverlay.tsx",

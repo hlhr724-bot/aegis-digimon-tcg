@@ -127,7 +127,7 @@ export interface OrderTriggersResponse {
 export type DecisionResponse =
   | { kind: "optional"; accept: boolean } // use this optional effect?
   | { kind: "chooseTargets"; instanceIds: string[] } // pick targets (count enforced server-side)
-  | { kind: "selectCards"; instanceIds: string[]; followingSlotInstanceIds?: string[][] } // pick from a revealed set / search
+  | { kind: "selectCards"; instanceIds: string[] } // pick from a revealed set / search
   | { kind: "orderCards"; order: string[] } // arrange a complete offered card set in destination order
   | OrderTriggersResponse
   | { kind: "chooseOption"; optionIndex: number }; // pick one of several modal choices

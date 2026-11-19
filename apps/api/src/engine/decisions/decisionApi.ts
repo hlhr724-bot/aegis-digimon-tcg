@@ -5,7 +5,6 @@ import type { ChooseOptionExtras } from "../effects/context/decisions.js";
 import type { DecisionManager } from "./index.js";
 import { getEffectDecisionText } from "#api/engine/decisions/getEffectDecisionText";
 import { DecisionSelectionGoal } from "@aegis/shared/protocol/DecisionSelectionGoal";
-import type { DecisionSelectionSlot } from "@aegis/shared/protocol/DecisionSelectionSlot";
 
 /**
  * Concrete {@link DecisionApi} (`ctx.ask.*`) backed by the {@link DecisionManager}
@@ -259,8 +258,6 @@ function buildSeatScopedApi(
         /** Paid source cards that will enter trash before this DigiXros is placed. */
         digiXrosRuleTrashInstanceIds?: string[];
         promptKey?: "armorPurge";
-        selectionSlots?: DecisionSelectionSlot[];
-        onFollowingSlotsSelected?: (instanceIds: string[][]) => void;
       },
     ): Promise<string[]> {
       const min = pickMinimum(ctx, opts.min, opts.max);
@@ -297,21 +294,10 @@ function buildSeatScopedApi(
           ...provenance(ctx),
           ...(selectionGoal === undefined ? {} : { selectionGoal }),
           ...(opts.promptKey !== undefined ? { promptKey: opts.promptKey } : {}),
-          ...(opts.selectionSlots === undefined
-            ? {}
-            : {
-                selectionSlots: opts.selectionSlots.map((slot) => ({
-                  ...slot,
-                  isMandatory: slot.isMandatory && !(slot.max === 1 && backsOutOfAcceptedOptional(ctx)),
-                })),
-              }),
           ...backOutPurpose(min, opts.min),
           ...(asksController && ctx.payingDeclinableCost === true ? { declinesCost: true } : {}),
         },
       });
-      if (response.kind === "selectCards" && response.followingSlotInstanceIds !== undefined) {
-        opts.onFollowingSlotsSelected?.(response.followingSlotInstanceIds);
-      }
       const selected = clampSelection(
         response.kind === "selectCards" ? response.instanceIds : [],
         opts.candidates,

@@ -146,25 +146,6 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
 .game-modal__panel.effect-prompt-family[data-prompt-surface] .decision-overlay__zone {
   min-width: 0;
 }
-.decision-overlay__slot + .decision-overlay__slot,
-.decision-overlay__slot + .decision-overlay__choice-cards {
-  margin-top: var(--ds-space-4);
-}
-.decision-overlay__slot-title {
-  margin: 0 0 var(--ds-space-2);
-  font-size: var(--ds-text-sm);
-  font-weight: 700;
-  color: var(--ds-text-2);
-  overflow-wrap: anywhere;
-}
-.decision-overlay__slots > .trigger-chooser__scroll-cue {
-  position: sticky;
-  bottom: var(--ds-space-1);
-  z-index: 3;
-  display: flex;
-  width: max-content;
-  margin: var(--ds-space-2) auto 0;
-}
 .game-modal__panel.effect-prompt-family[data-prompt-surface]
   .decision-overlay__zones--mixed
   .decision-overlay__zone
@@ -1228,11 +1209,6 @@ body:has([data-prompt-surface]:not([hidden] *), .mulligan-sheet) .game-battle-sc
   .game-modal__panel.effect-prompt-family.decision-overlay--selection[data-prompt-surface="center"]
     .decision-overlay__selection {
     flex: 0 1 auto;
-  }
-  .game-modal__panel.effect-prompt-family.decision-overlay--selection[data-prompt-surface="center"]:has(
-      .decision-overlay__slots
-    ) {
-    max-height: calc(100dvh - var(--ds-space-8)) !important;
   }
 }
 .aegis-stage .game-log-ticker__status > span:first-child,
