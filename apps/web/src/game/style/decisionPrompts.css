@@ -661,6 +661,19 @@ body:has(.decision-overlay--selection) .narration-slot {
   .trigger-chooser--plan .trigger-chooser__mandatory {
     justify-self: start;
   }
+  .trigger-chooser--plan .trigger-chooser__host-art {
+    display: none;
+  }
+  .trigger-chooser--plan .trigger-chooser__host {
+    max-width: 100%;
+  }
+  .trigger-chooser--plan .trigger-chooser__source {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   /* Both actions share one thumb-reach row so the list keeps the height. */
   .decision-overlay--resolution-plan .trigger-chooser__footer {
     display: grid;

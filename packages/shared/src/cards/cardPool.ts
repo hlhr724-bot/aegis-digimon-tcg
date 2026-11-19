@@ -8,6 +8,7 @@ type CardReference = Readonly<Pick<CardDefinition, "cardId" | "set">>;
 interface ProductRelease {
   date: ReleaseDate;
   label: string;
+  onlineDate?: ReleaseDate;
 }
 
 /**
@@ -107,7 +108,7 @@ const PRODUCT_RELEASES: Readonly<Record<string, ProductRelease>> = {
   ED01: { date: "2026-12-04", label: "ED01" },
   ST25: { date: "2026-12-04", label: "ST25" },
   ST26: { date: "2026-12-04", label: "ST26" },
-  BT27: { date: "2026-12-11", label: "BT27" },
+  BT27: { date: "2026-12-11", label: "BT27", onlineDate: "2026-12-04" },
   EX14: { date: "2027-01-22", label: "EX14" },
 };
 
@@ -214,7 +215,7 @@ export function releaseDateForCard(card: CardReference): ReleaseDate | undefined
  * ahead of its 2026-10-02 street date), not to silently hide every uncatalogued card.
  */
 export function isBetaOnlyCard(card: CardReference, asOf: string = new Date().toISOString().slice(0, 10)): boolean {
-  const date = releaseDateForCard(card);
+  const date = PRODUCT_RELEASES[card.set]?.onlineDate ?? releaseDateForCard(card);
   return date !== undefined && date > asOf;
 }
 

@@ -492,7 +492,7 @@ export function useMatchCues({
   const [heldSuspendedIds, setHeldSuspendedIds] = useState<ReadonlySet<string>>(new Set());
   const previousDrawStateRef = useRef<GameState | undefined>(undefined);
   const phaseBaselineRef = useRef(false);
-  const lastPhaseEventRef = useRef<Extract<ServerEvent, { kind: "phaseChanged" | "turnEnded" }> | undefined>(undefined);
+  const lastPhaseEventRef = useRef<ServerEvent | undefined>(undefined);
   /** The seat whose turn-start draw is held back, or null while nothing is held. */
   const drawPhaseWaitingRef = useRef<DrawPhaseOwner | null>(null);
   const [combatImpactIds, setCombatImpactIds] = useState<ReadonlySet<string>>(new Set());

@@ -11,6 +11,9 @@ export interface TriggerDetail {
   sourceShowsCopy?: boolean;
   hostCardId?: string;
   fieldReference?: string;
+  subjectCardId?: string;
+  subjectLabel?: string;
+  subjectFieldReference?: string;
   summary?: string;
   controlledByOpponent?: boolean;
 }

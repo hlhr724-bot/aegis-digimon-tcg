@@ -1,5 +1,6 @@
 import { deckMatchupKo } from "@/i18n/deckMatchup.ko";
 import { deckOddsKo } from "@/i18n/deckOdds.ko";
+import { chatActionsKo } from "@/i18n/chatActions.ko";
 import { tournamentCircuitsKo } from "@/i18n/tournamentCircuits.ko";
 import { tournamentOfficialRequestKo } from "@/i18n/tournamentOfficialRequest.ko";
 import { matchQueueKo } from "@/i18n/matchQueue.ko";
@@ -725,6 +726,7 @@ const interfaceMessages = {
   "common.export": "내보내기",
   "game.hiddenCard": "뒷면 카드",
   "game.faceDownSource": "뒷면",
+  "game.faceDownSourceCount": "뒷면 {count}장",
   "game.debugId": "대전 ID",
   "game.debugCopyFailed": "복사하지 못했습니다. ID를 선택해 복사하세요.",
   "common.copy": "복사",
@@ -1198,6 +1200,12 @@ const interfaceMessages = {
   "game.guestApproval.hostLeft": "대전이 시작되기 전에 방장이 방을 나갔습니다.",
   "game.tournamentCancelledTitle": "대회가 취소되었습니다",
   "game.tournamentCancelled": "주최자가 이 대회를 취소하여 이 대전은 결과 없이 종료되었습니다.",
+  "lobby.turnOrder.label": "선공·후공",
+  "lobby.turnOrder.random": "랜덤",
+  "lobby.turnOrder.hostFirst": "호스트 선공",
+  "lobby.turnOrder.hostSecond": "호스트 후공",
+  "lobby.turnOrder.hint": "1게임의 선공을 정합니다. 3판 2선승에서는 이후 게임이 기존 시리즈 규칙을 따릅니다.",
+  "lobby.turnOrder.guest": "1게임 선공·후공: {order}",
   "lobby.approval.label": "참가 승인 필요",
   "lobby.approval.hint": "누군가 코드로 참가하면 누구인지 확인하고 대전 시작 전에 수락하거나 거절할 수 있습니다.",
   "game.opponent": "상대",
@@ -1367,6 +1375,7 @@ const interfaceMessages = {
   "game.fieldEffects.untilYourActivePhase": "내 액티브 페이즈까지",
   "game.fieldEffects.untilOpponentActivePhase": "상대의 액티브 페이즈까지",
   "game.restriction.cannotAttack": "어택할 수 없음",
+  "game.restriction.cannotAttackPlayers": "플레이어를 어택할 수 없음",
   "game.restriction.cannotPlayByEffects": "효과로 등장할 수 없음",
   "game.restriction.cannotPlay": "등장할 수 없음",
   "game.restriction.immuneToOpponentDigimonEffects": "상대 디지몬의 효과를 받지 않음",
@@ -1409,6 +1418,7 @@ const interfaceMessages = {
   "game.restriction.cannotBlock": "블록할 수 없음",
   "game.restriction.cannotSuspend": "레스트할 수 없음",
   "game.restriction.cannotUnsuspend": "액티브가 되지 않음",
+  "game.restriction.cannotUnsuspendAtAll": "액티브가 될 수 없음",
   "game.restriction.cannotDigivolve": "진화할 수 없음",
   "game.restriction.cannotActivateWhenDigivolving": "【진화 시】 효과 없음",
   "game.digivolutionSources": "진화원 {count}장",
@@ -1565,6 +1575,7 @@ const interfaceMessages = {
   "overlay.useEffectPrompt": "이 효과를 사용하시겠습니까?",
   "overlay.choiceRevealedCards": "공개된 카드",
   "overlay.choiceHandCards": "해당 카드",
+  "overlay.cardToPlay": "등장시킬 카드",
   "overlay.selectTargets": "대상 {range}개 선택",
   "overlay.sourceCountOne": "진화원 {count}장",
   "overlay.sourceCountMany": "진화원 {count}장",
@@ -1633,6 +1644,7 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "앞서 발동한 효과가 아직 대기 중입니다. 위의 효과가 끝나면 처리됩니다.",
   "overlay.presetMandatory": "필수",
   "overlay.triggerReason": "발동 원인: {reason}",
+  "overlay.triggerSubject": "발동시킨 카드: {name}",
   "overlay.triggerOpponentEffect": "상대의 효과",
   "overlay.orderOpponentEffectsNote": "턴 플레이어이므로 상대의 효과를 포함해 이 효과들의 순서를 직접 선택합니다.",
   "overlay.presetLabel": "{name}의 선택 효과에 대한 응답",
@@ -1737,6 +1749,7 @@ const interfaceMessages = {
   "overlay.trashSort": "트래시 정렬",
   "overlay.trashSortRecent": "최신순",
   "overlay.trashSortName": "카드명별로 묶기",
+  "overlay.trashSortLevel": "레벨순",
   "overlay.trashCount": "{count}장",
   "overlay.securityCount": "{count}장 중 앞면 {faceUp}장",
   "overlay.securityNoFaceUp": "앞면 카드 없음",
@@ -2810,6 +2823,9 @@ const interfaceMessages = {
   "redesign.arena.restriction.attacksAtStartOfMainPhase":
     "효과로 인해 이 디지몬은 가능하면 메인 페이즈 시작 시 어택합니다.",
   "redesign.arena.restriction.attacksAtStartOfMainPhaseGranted": "{card}의 효과: {clause}",
+  "redesign.arena.restriction.cannotAttackPlayers": "효과로 인해 이 디지몬은 플레이어를 어택할 수 없습니다.",
+  "redesign.arena.restriction.cannotUnsuspendAtAll":
+    "효과로 인해 이 디지몬은 액티브 페이즈에도, 효과로도 액티브가 될 수 없습니다.",
   "redesign.arena.restriction.cannotAttack": "효과로 인해 이 디지몬은 어택할 수 없습니다.",
   "redesign.arena.restriction.cannotBlock": "효과로 인해 이 디지몬은 블록할 수 없습니다.",
   "redesign.arena.restriction.cannotSuspend": "효과로 인해 이 디지몬은 레스트할 수 없습니다.",
@@ -2961,6 +2977,7 @@ const interfaceMessages = {
   ...matchQueueKo,
   ...deckMatchupKo,
   ...deckOddsKo,
+  ...chatActionsKo,
   ...matchIntroKo,
   ...staffRolesKo,
   ...achievementsKo,

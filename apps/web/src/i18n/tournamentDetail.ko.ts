@@ -224,4 +224,6 @@ export const tournamentDetailKo = {
   "tournaments.format.pointsLoss": "패",
   "tournaments.format.pointsValue": "승 {win} · 무 {draw} · 패 {loss}",
   "tournaments.create.pointsAuto": "자동 (3/1/0)",
+  "notifications.tournament.started": "{name}이(가) 시작되었습니다. 토너먼트를 열어 대진을 확인하세요.",
+  "notifications.tournament.matchReady": "{name}의 라운드 {round}이(가) 준비되었습니다. 지금 테이블에 참가하세요.",
 };

@@ -2,7 +2,6 @@
 
 import type { EffectContext } from "../../EffectContext.js";
 import { requireOpponentAsk } from "../../../decisions/decisionApi.js";
-import { evaluateCondition } from "../conditions.js";
 import type { ActionScope } from "../dispatch.js";
 import { definitionMatches, hasExactName } from "../matching/definition.js";
 import { permanentMatchesFilter, seatsForController } from "../matching/permanent.js";
@@ -16,11 +15,11 @@ import {
 } from "#api/engine/effects/interpreter/targeting/loose";
 import { stackHostMatches } from "../targeting/stackHostMatches.js";
 import { runPlayPerLevel } from "./dna.js";
-import { optionUseDefinition } from "#api/engine/effects/interpreter/actions/optionUseDefinition";
 import { CardKind, effectiveStaticNames, getCardDefinition, resolveTokenCardId } from "@aegis/shared";
 import type { Action, Filter, Scaling, Seat, Target } from "@aegis/shared";
-import { availableEffectPlayAssembly, playEffectInstances } from "./effectPlayAssembly.js";
-import { availableEffectPlayDigiXrosReduction } from "./effectPlayDigiXrosAvailability.js";
+import { playEffectInstances } from "./effectPlayAssembly.js";
+import { getPaidPlayCostReduction } from "#api/engine/effects/interpreter/actions/getPaidPlayCostReduction";
+import { resolveFilteredPlayCandidates } from "#api/engine/effects/interpreter/actions/resolveFilteredPlayCandidates";
 
 type HandPlaySelectionParams = {
   ctx: EffectContext;
@@ -221,20 +220,6 @@ export function materializePlayCostLteScaling(ctx: EffectContext, target: Target
       playCostLteScaling: undefined,
     },
   };
-}
-
-function paidReduction(ctx: EffectContext, action: Extract<Action, { kind: "PlayWithoutCost" }>): number | undefined {
-  const base = action.reduceCostBy;
-  const scaling = action.reduceCostByScaling === undefined ? 0 : scaleFactor(ctx, action.reduceCostByScaling);
-  const conditional = (
-    action as typeof action & { reduceCostByIf?: { amount: number; condition: import("@aegis/shared").Condition } }
-  ).reduceCostByIf;
-  if (base === undefined && action.reduceCostByScaling === undefined && conditional === undefined) return undefined;
-  return (
-    (base ?? 0) +
-    scaling +
-    (conditional !== undefined && evaluateCondition(ctx, conditional.condition) ? conditional.amount : 0)
-  );
 }
 
 /**
@@ -536,7 +521,7 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
           // A scaled reduction ("with the play cost reduced by the play cost of the returned
           // Tamer" — LM-006) resolves against the live context, which already carries the
           // receipts written while this action's own cost was paid.
-          const scaledReduction = paidReduction(ctx, action);
+          const scaledReduction = getPaidPlayCostReduction({ ctx, action });
           const played = await playEffectInstances(ctx, [self], {
             payCost: action.payCost,
             ...(action.breeding === true ? { breeding: true } : {}),
@@ -550,7 +535,7 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
           // This is an effect-driven play, not a bare zone move. Route through the
           // generalized play seam so the card's [On Play] window and `whenPlayed`
           // watchers both fire (the same contract used by filtered plays).
-          const selfReduction = paidReduction(ctx, action);
+          const selfReduction = getPaidPlayCostReduction({ ctx, action });
           const played = await playEffectInstances(ctx, [self], {
             payCost: action.payCost,
             ...(action.breeding === true ? { breeding: true } : {}),
@@ -592,193 +577,21 @@ export async function runPlayAction(ctx: EffectContext, action: Action, scope: A
         bindPlayWithoutCost();
         return false;
       }
-      // Filtered "play N [X] from <zones> without paying the cost". Resolve the
-      // candidate loose cards by filter across the stated zones (defaulting to the
-      // hand), prompt the controller, and play the chosen instances.
-      //
-      // dpCeilingModifier: raise or lower the dp filter's value ceiling before resolving
-      // candidates. The scaled count comes from either a prior Trash action's `trackCount`
-      // (`scalingSource`, CAP-E13, BT20-077) or a live board count (`scaling`, EX11-032's
-      // "for each suspended Digimon"). If the adjusted ceiling is ≤ 0 the candidate pool is
-      // empty and no card can be played.
-      const scaledPlayTarget: Target =
-        action.scaling !== undefined && typeof action.target.count === "number"
-          ? {
-              ...action.target,
-              count: action.target.count * scaleFactor(ctx, action.scaling),
-            }
-          : action.target;
-      const playTarget = applyPlayDpCeilingModifier(ctx, action, scaledPlayTarget);
-      const levelCeilingAdjustedTarget =
-        ctx.playLevelCeilingDelta === undefined || ctx.playLevelCeilingDelta === 0
-          ? playTarget
-          : {
-              ...playTarget,
-              filter: {
-                ...playTarget.filter,
-                levelComparison:
-                  playTarget.filter.levelComparison?.op === "lte" &&
-                  playTarget.filter.levelComparison.value !== undefined
-                    ? {
-                        ...playTarget.filter.levelComparison,
-                        value: playTarget.filter.levelComparison.value + ctx.playLevelCeilingDelta,
-                      }
-                    : playTarget.filter.levelComparison,
-              },
-            };
-      const scaledCostAdjustedTarget = materializePlayCostLteScaling(ctx, levelCeilingAdjustedTarget);
-      // playCostCeiling: dynamically raise the playCostLte ceiling before resolving candidates.
-      // Counts cards matching filter.zone/controller across all applicable seats, then computes:
-      //   ceiling = base + Math.floor(totalCards / per) * raise
-      // and overrides the target filter's playCostLte with the result. (CAP-E16, BT21-079)
-      const levelComparison = scaledCostAdjustedTarget.filter.levelComparison;
-      const levelScaledTarget = materializeLevelComparisonScaling(
-        scaledCostAdjustedTarget,
-        levelComparison?.scaling === undefined ? 0 : scaleFactor(ctx, levelComparison.scaling),
-      );
-      const adjustedTarget = applyDecodeHostScope(action, applyPlayCostCeiling(ctx, action, levelScaledTarget));
-      const playCostAdjustedTarget =
-        action.ignorePlayCostLimit === true
-          ? {
-              ...adjustedTarget,
-              filter: {
-                ...adjustedTarget.filter,
-                playCostLte: undefined,
-                playCostLteScaling: undefined,
-              },
-            }
-          : adjustedTarget;
-      const zones = action.from && action.from.length > 0 ? action.from : DEFAULT_PLAY_ZONES;
-      let candidates = playableCandidates(
-        ctx,
-        playCostAdjustedTarget,
-        candidateLooseInstances(ctx, playCostAdjustedTarget, zones, optionUseDefinition),
-        action.chooseDualMode,
-      );
-      if (action.fromTriggerHandTrash === true) {
-        const triggeringIds = new Set(ctx.trigger.handTrashedInstanceIds ?? []);
-        candidates = candidates.filter((candidate) => triggeringIds.has(candidate.instanceId));
-      }
-      // Seat-level RestrictPlay: drop candidates the resolving effect's owner is forbidden
-      // from playing (the effect is attributed to ctx.source.ownerSeat, so the prohibition on
-      // THAT seat applies — Q4676; the source player's own effects are unaffected — Q4675).
-      candidates = candidates.filter((c) => !isEffectPlayProhibited(ctx, c));
-      if (action.target?.filter?.excludeSameNameAsOwnTamers === true) {
-        const ownTamerNames = new Set<string>();
-        for (const permanent of ctx.game.player(ctx.source.ownerSeat).battleArea) {
-          if (permanent.topCard === undefined) continue;
-          const definition = ctx.game.definitionOf(permanent.topCard);
-          if (!definition.kinds.includes(CardKind.Tamer)) continue;
-          for (const name of effectiveStaticNames(definition)) ownTamerNames.add(name);
-        }
-        candidates = candidates.filter((candidate) => {
-          const names = effectiveStaticNames(ctx.game.definitionOf({ cardId: candidate.cardId } as never));
-          return !names.some((name) => ownTamerNames.has(name));
-        });
-      }
-      candidates = candidatesAllowedBySameNameRestriction(ctx, candidates);
-      // sameLevelAsAttacker: restrict to cards whose printed level matches the open attacker
-      // (EX12-069 "of the same level as the attacking Digimon"). Return no candidates when
-      // no attack is open (no subject/attacker id in the trigger).
-      if (action.target?.filter?.sameLevelAsAttacker === true) {
-        const attackerId = ctx.trigger.subjectPermanentId ?? ctx.trigger.attackerPermanentId;
-        const attackerPermanent = attackerId !== undefined ? ctx.game.permanentById(attackerId) : undefined;
-        const attackerLevel =
-          attackerPermanent?.topCard !== undefined ? ctx.game.definitionOf(attackerPermanent.topCard).level : undefined;
-        candidates =
-          attackerLevel !== undefined
-            ? candidates.filter((c) => ctx.game.definitionOf({ cardId: c.cardId } as never).level === attackerLevel)
-            : [];
-      }
-      // notSameNameAs: "without the same name as cards in the battle area or trash" (EX5 Deva
-      // Security effects). Drop any candidate whose card name already appears among the
-      // controller's permanents (top cards) and/or trash in the listed zones.
-      if (action.notSameNameAs && action.notSameNameAs.length > 0) {
-        const seat = ctx.source.ownerSeat;
-        const player = ctx.game.player(seat);
-        const excludedNames = new Set<string>();
-        for (const zone of action.notSameNameAs) {
-          if (zone === "battleArea") {
-            for (const permanent of player.battleArea) {
-              if (permanent.topCard === undefined) continue;
-              const n = ctx.game.definitionOf(permanent.topCard).nameEn;
-              if (n) excludedNames.add(n);
-            }
-          } else {
-            for (const card of player.trash) {
-              const n = ctx.game.definitionOf(card).nameEn;
-              if (n) excludedNames.add(n);
-            }
-          }
-        }
-        candidates = candidates.filter(
-          (c) => !excludedNames.has(ctx.game.definitionOf({ cardId: c.cardId } as never).nameEn),
-        );
-      }
-      const excludedTriggerSubjectName = (action as typeof action & { excludeNameOfTriggerSubject?: boolean })
-        .excludeNameOfTriggerSubject
-        ? ctx.trigger.subjectPermanentId !== undefined
-          ? ctx.game.permanentById(ctx.trigger.subjectPermanentId)?.topCard !== undefined
-            ? ctx.game.definitionOf(ctx.game.permanentById(ctx.trigger.subjectPermanentId)!.topCard!).nameEn
-            : undefined
-          : undefined
-        : undefined;
-      if (excludedTriggerSubjectName !== undefined) {
-        candidates = candidates.filter(
-          (c) => ctx.game.definitionOf({ cardId: c.cardId } as never).nameEn !== excludedTriggerSubjectName,
-        );
-      }
-      const costReduction = paidReduction(ctx, action) ?? action.costReduction;
-      if (action.payCost === true && ctx.fx.canAffordEffectPlay !== undefined) {
-        const affordability: { candidate: (typeof candidates)[number]; play: boolean; use: boolean }[] = [];
-        for (const candidate of candidates) {
-          const definition = ctx.game.definitionOf({ cardId: candidate.cardId } as never);
-          const hasOption = definition.kinds.includes(CardKind.Option);
-          const hasPermanent =
-            !hasOption && (definition.kinds.includes(CardKind.Digimon) || definition.kinds.includes(CardKind.Tamer));
-          const canUseByColor =
-            hasOption &&
-            ctx.game.optionColorRequirementMet?.(ctx.source.ownerSeat, candidate.instanceId, definition) !== false;
-          // Project single-card choices only: simultaneous plays reserve other played cards
-          // and cannot use expanders that require playing exactly one Digimon.
-          const digiXrosReduction =
-            hasPermanent && playCostAdjustedTarget.count === 1
-              ? availableEffectPlayDigiXrosReduction(ctx, candidate)
-              : 0;
-          const basePlayAffordable =
-            hasPermanent &&
-            (await ctx.fx.canAffordEffectPlay!(candidate.instanceId, {
-              costDelta: (costReduction ?? 0) + digiXrosReduction,
-              controllerSeat: ctx.source.ownerSeat,
-            }));
-          const assembly = basePlayAffordable ? undefined : availableEffectPlayAssembly(ctx, candidate);
-          const play =
-            basePlayAffordable ||
-            (hasPermanent &&
-              assembly !== undefined &&
-              (await ctx.fx.canAffordEffectPlay!(candidate.instanceId, {
-                costDelta: (costReduction ?? 0) + assembly.reduction,
-                controllerSeat: ctx.source.ownerSeat,
-              })));
-          const use =
-            canUseByColor &&
-            (await ctx.fx.canAffordEffectPlay!(candidate.instanceId, {
-              costDelta: costReduction,
-              useAsOption: true,
-              controllerSeat: ctx.source.ownerSeat,
-            }));
-          affordability.push({ candidate, play, use });
-        }
-        candidates = affordability
-          .filter(({ candidate, play, use }) => {
-            const kinds = ctx.game.definitionOf({ cardId: candidate.cardId } as never).kinds;
-            return kinds.includes(CardKind.Option) ? use : play;
-          })
-          .map(({ candidate }) => candidate);
-      }
+      const {
+        candidates,
+        target: playCostAdjustedTarget,
+        zones,
+        costReduction,
+      } = await resolveFilteredPlayCandidates({ ctx, action });
+      const chooserSeat =
+        playCostAdjustedTarget.chooser === "opponent"
+          ? ctx.game.opponentOf(ctx.source.ownerSeat)
+          : ctx.source.ownerSeat;
       const visibleZoneIds = zones.every((zone) => zone === "trash" || zone === "hand")
         ? seatsForController(ctx, playCostAdjustedTarget.filter).flatMap((seat) =>
-            zones.flatMap((zone) => looseCardsInZone(ctx, seat, zone).map((candidate) => candidate.instanceId)),
+            zones
+              .filter((zone) => zone === "trash" || seat === chooserSeat)
+              .flatMap((zone) => looseCardsInZone(ctx, seat, zone).map((candidate) => candidate.instanceId)),
           )
         : zones.every((zone) => zone === "digivolutionCards")
           ? [

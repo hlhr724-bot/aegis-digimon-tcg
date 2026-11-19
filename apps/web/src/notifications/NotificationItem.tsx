@@ -84,6 +84,28 @@ export function NotificationItem({ notification, onSelect }: NotificationItemPar
       </button>
     );
   }
+  if (notification.kind === "tournament_started" || notification.kind === "tournament_match_ready") {
+    const headline =
+      notification.kind === "tournament_started"
+        ? t("notifications.tournament.started", { name: notification.payload.tournamentName })
+        : t("notifications.tournament.matchReady", {
+            name: notification.payload.tournamentName,
+            round: notification.payload.round,
+          });
+    return (
+      <button className="aegis-notifications__item" data-unread={unread || undefined} onClick={onSelect}>
+        <span className="aegis-notifications__dot" aria-hidden="true" />
+        <span className="aegis-notifications__copy">
+          <span className="aegis-notifications__headline">
+            {unread ? <span className="aegis-sr-only">{t("notifications.unread")} </span> : null}
+            {headline}
+          </span>
+          {when}
+        </span>
+        <Badge tone="primary">{t("notifications.tournament.badge")}</Badge>
+      </button>
+    );
+  }
   if (notification.kind === "friend_request" || notification.kind === "friend_accepted") {
     return (
       <button className="aegis-notifications__item" data-unread={unread || undefined} onClick={onSelect}>

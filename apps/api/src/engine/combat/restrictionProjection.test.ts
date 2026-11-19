@@ -165,6 +165,24 @@ describe("Permanent combat-restriction projection", () => {
   });
 });
 
+describe("Permanent player-attack restriction projection", () => {
+  it("publishes a can't-attack-players lock for both seats without a blanket attack lock", async () => {
+    const s = setup();
+    const { continuous } = internalsOf(s.engine);
+    for (const seat of [0, 1] as const) {
+      const perm = digimon(seat, 5000, VANILLA_CARD);
+      s.state.players[seat]!.battleArea.push(perm);
+      await s.engine.recomputeContinuousEffects();
+      expect(perm.cannotAttackPlayers).toBe(false);
+
+      continuous.addRestriction(perm.permanentId, "attackPlayers", EffectDuration.UntilEachTurnEnd);
+      await s.engine.recomputeContinuousEffects();
+      expect(perm.cannotAttackPlayers).toBe(true);
+      expect(perm.cannotAttack).toBe(false);
+    }
+  });
+});
+
 describe("Permanent non-combat restriction projection", () => {
   it("publishes the unsuspend lock the unsuspend step itself reads", async () => {
     const s = setup();
@@ -179,6 +197,7 @@ describe("Permanent non-combat restriction projection", () => {
     continuous.addRestriction(perm.permanentId, "unsuspend", EffectDuration.UntilEachTurnEnd);
     await s.engine.recomputeContinuousEffects();
     expect(perm.cannotUnsuspend).toBe(true);
+    expect(perm.cannotUnsuspendAtAll).toBe(true);
     // Neither combat lock rides along with it.
     expect(perm.cannotAttack).toBe(false);
     expect(perm.cannotBlock).toBe(false);

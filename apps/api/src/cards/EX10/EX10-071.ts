@@ -28,7 +28,7 @@ export const compiled: CompiledCard = {
                 },
               ],
             },
-            raw: "you have a Digimon with [Lucemon] in its name in its name on the field",
+            raw: "you have a Digimon with [Lucemon] in its name on the field",
           },
         },
       ],
@@ -42,7 +42,7 @@ export const compiled: CompiledCard = {
           kind: ["Digimon"],
           nameOrTrait: [{ tokens: ["Lucemon"], match: "name" }],
         },
-        raw: "you have a Digimon with [Lucemon] in its name in its name",
+        raw: "you have a Digimon with [Lucemon] in its name",
       },
       actions: [
         {
@@ -56,7 +56,7 @@ export const compiled: CompiledCard = {
               kind: ["Digimon"],
               nameOrTrait: [{ tokens: ["Lucemon"], match: "name" }],
             },
-            raw: "you have a Digimon with [Lucemon] in its name in its name",
+            raw: "you have a Digimon with [Lucemon] in its name",
           },
           cost: {
             kind: "return",

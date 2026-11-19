@@ -1,6 +1,7 @@
 import { EffectTiming, type Permanent, type CardInstance, type Seat, type ZoneRef } from "@aegis/shared";
 import { canActivate, canTrigger } from "../../effects/kernel.js";
 import { effectsOf } from "../../effects/collect.js";
+import { activeDualFaceDefinition } from "#api/engine/cards/activeDualFaceDefinition";
 import { createResidentCostSourceActive } from "#api/engine/gameEngine/timing/createResidentCostSourceActive";
 import {
   applyWouldBePlayedSelfReducer,
@@ -58,6 +59,7 @@ export async function fireBeforePayCost(
   reservedInstanceIds: readonly string[] = [],
 ): Promise<number> {
   const source = cardSourceOf(engine, instance);
+  const playedDefinition = activeDualFaceDefinition(source.definition, useAsOption);
   const reservedCostInstanceIds = new Set(reservedInstanceIds);
   for (const [playedId, materialIds] of engine.pendingPlayReducerPlacements) {
     if (playedId !== instance.instanceId) {
@@ -95,7 +97,13 @@ export async function fireBeforePayCost(
   // Cross-permanent reducers: a permanent OTHER than the played card (BT10-093 / EX3-040)
   // that reduces the cost of a matching played card. Scanned so the early-return below does not
   // skip the pay-time window when only such a reducer applies.
-  const crossWatchers = crossPermanentPlayReducerWatchers(engine, instance, source.ownerSeat, simultaneousPlayCount);
+  const crossWatchers = crossPermanentPlayReducerWatchers(
+    engine,
+    instance,
+    source.ownerSeat,
+    simultaneousPlayCount,
+    useAsOption,
+  );
   const residentEffects = residentPlayCostEffects(engine, source.ownerSeat);
   const breedingResidentEffects = breedingPlayCostEffects(engine, source.ownerSeat);
   if (
@@ -122,7 +130,7 @@ export async function fireBeforePayCost(
     reservedCostInstanceIds,
     playCostDelta: prepared?.delta ?? 0,
   };
-  const playTarget = pendingPlayTarget(instance, source);
+  const playTarget = pendingPlayTarget(instance, source, useAsOption);
   if (projectOnly) {
     const selfReduction = selfReducers.reduce(
       (total, reducer) => total + potentialWouldBePlayedSelfReduction(ctx, reducer),
@@ -132,7 +140,7 @@ export async function fireBeforePayCost(
       "wouldBePlayed",
       source.ownerSeat,
       playTarget,
-      source.definition,
+      playedDefinition,
       {
         hasFired: (key) => engine.tracker.count(key, "replacement") > 0,
         markFired: (key) => engine.tracker.register(key, "replacement"),
@@ -252,7 +260,7 @@ export async function fireBeforePayCost(
           "wouldBePlayed",
           source.ownerSeat,
           playTarget,
-          source.definition,
+          playedDefinition,
           undefined,
           (sourcePermanentId, sourceInstanceId) => {
             const resident =
@@ -288,7 +296,7 @@ export async function fireBeforePayCost(
     const passiveReduction =
       !useAsOption && engine.continuous.blocksCostReduction(source.ownerSeat, "play")
         ? 0
-        : engine.subTriggers.costReductionFor("wouldBePlayed", playTarget, source.definition, {
+        : engine.subTriggers.costReductionFor("wouldBePlayed", playTarget, playedDefinition, {
             consume: true,
             hasFired: (key) => engine.tracker.count(key, "replacement") > 0,
             markFired: (key) => engine.tracker.register(key, "replacement"),

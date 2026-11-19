@@ -194,6 +194,7 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     presentationPacing,
     seriesGame,
     tournamentMatch,
+    awaitNextSeriesGame,
     demoConnection,
     replayMode,
   } = props;
@@ -201,13 +202,15 @@ export function GameScreen(props: Omit<Parameters<typeof GameScreenSession>[0], 
     () => replayMode || startMode === "spectator" || (!demoConnection && loadReconnectSession()?.spectator === true),
   );
   const matchConfig = useMemo(() => {
-    if (startMode === "spectator") return { mode: "spectator" as const, roomCode, spectatorFriendId, tournamentMatch };
+    if (startMode === "spectator") {
+      return { mode: "spectator" as const, roomCode, spectatorFriendId, tournamentMatch, awaitNextSeriesGame };
+    }
     if (seriesGame) return { mode: "series" as const, seriesGame };
     if (startMode === "casual" || startMode === "unlimited" || startMode === "ranked" || startMode === "beta")
       return undefined;
     if (startMode === "bot") return { mode: "bot" as MatchMode };
     return { mode: startMode, roomCode, waitForHost };
-  }, [startMode, roomCode, spectatorFriendId, waitForHost, seriesGame, tournamentMatch]);
+  }, [startMode, roomCode, spectatorFriendId, waitForHost, seriesGame, tournamentMatch, awaitNextSeriesGame]);
   const roomOptions = useMemo(
     () => ({
       ...joinOptions,
@@ -262,6 +265,7 @@ function GameScreenSession({
   devProbe,
   presentationPacing,
   onSeriesNext,
+  onSpectateNextSeriesGame,
   onLeaveForfeitsChange,
   renderSeriesDeckPicker,
 }: {
@@ -326,6 +330,8 @@ function GameScreenSession({
   seriesGame?: SeriesGameTicket;
   /** The series opened its next game; the caller remounts this screen on that ticket. */
   onSeriesNext?: (ticket: SeriesGameTicket) => void;
+  awaitNextSeriesGame?: boolean;
+  onSpectateNextSeriesGame?: () => void;
   /**
    * Receives a way to concede while leaving would forfeit a live match, and `undefined` once it
    * would not. Conceding keeps the player on the result so they can still keep the replay.
@@ -373,6 +379,21 @@ function GameScreenSession({
     );
     return () => clearTimeout(hop);
   }, [nextSeriesRoomId, seriesSeat]);
+  const spectatedSeriesContinues =
+    startMode === "spectator" &&
+    !replayMode &&
+    !demoConnection &&
+    state?.series?.phase === "starting" &&
+    !!state.series.nextRoomId;
+  const onSpectateNextSeriesGameRef = useRef(onSpectateNextSeriesGame);
+  onSpectateNextSeriesGameRef.current = onSpectateNextSeriesGame;
+  useEffect(() => {
+    if (!spectatedSeriesContinues) {
+      return;
+    }
+    const hop = setTimeout(() => onSpectateNextSeriesGameRef.current?.(), SERIES_HOP_DELAY_MS);
+    return () => clearTimeout(hop);
+  }, [spectatedSeriesContinues]);
   // A demo or showcase fabricates events with no batch boundary of their own, so its list
   // is presented as the one moment it describes.
   const cueBatches = useMemo(() => batches ?? [singleServerBatch(events)], [batches, events]);
@@ -1542,7 +1563,14 @@ function GameScreenSession({
   // What the resolving effect will do to each target the viewer has picked. The
   // fate is the server's own projection (`options.targetFate`); a prompt that
   // carries none badges nothing.
-  const fateBadges = pendingFateBadges({ decision: viewerDecision, picks, viewerSeat });
+  const fateBadges = pendingFateBadges({
+    decision: viewerDecision,
+    picks,
+    viewerSeat,
+    wouldBeDeletedPermanentIds: [combatWindows.evadeWindow, combatWindows.barrierWindow].flatMap((keywordWindow) =>
+      keywordWindow ? [keywordWindow.permanentId] : [],
+    ),
+  });
 
   const spotlight = spotlightRequest({
     breedingWindow,
@@ -1580,7 +1608,9 @@ function GameScreenSession({
     getCardName,
     showFieldReferences,
   });
-  const triggerNeedsFieldReferences = triggerDetails.some((detail) => detail.fieldReference !== undefined);
+  const triggerNeedsFieldReferences = triggerDetails.some(
+    (detail) => detail.fieldReference !== undefined || detail.subjectFieldReference !== undefined,
+  );
   const effectSourceMarks = findEffectSourceMarks({
     events,
     presentedStateVersion: cues.presentedStateVersion,

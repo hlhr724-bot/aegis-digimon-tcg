@@ -47,6 +47,21 @@ describe("rarity data across the legacy enum boundary", () => {
     }
   });
 
+  it("lists the secret rares printed before the UR rarity existed as SEC", () => {
+    const beforeUltraRare = cardList.filter((card) =>
+      /^(BT(?:1[1-9]|2[0-4])|EX(?:[3-9]|1[01])|AD1|RB1|LM)$/.test(card.set),
+    );
+
+    expect(beforeUltraRare.filter((card) => card.rarity === "UR").map((card) => card.cardId)).toEqual([]);
+    const secretRares = ["BT11-111", "BT24-102", "EX4-073", "EX11-074", "AD1-024", "RB1-036", "LM-020"];
+    expect(secretRares.filter((cardId) => cardData[cardId]?.rarity !== "SEC")).toEqual([]);
+  });
+
+  it("lists the limited pack promos LM-021 through LM-062 as P", () => {
+    const limitedPackPromos = Array.from({ length: 42 }, (_, index) => `LM-${String(index + 21).padStart(3, "0")}`);
+    expect(limitedPackPromos.filter((cardId) => cardData[cardId]?.rarity !== "P")).toEqual([]);
+  });
+
   it("preserves modern UR separately from SEC", () => {
     expect(cardData["BT25-043"]?.rarity).toBe("UR");
     expect(cardData["BT25-103"]?.rarity).toBe("SEC");

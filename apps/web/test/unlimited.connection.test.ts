@@ -74,6 +74,7 @@ describe("authoritative bot/private Unlimited over websockets", () => {
     expect(await matchMaker.remoteRoomCall(host.roomId, "privateRoomInfo", [])).toEqual({
       unlimited: true,
       format: "unlimited",
+      turnOrder: "random",
       waiting: true,
     });
   });

@@ -263,6 +263,10 @@ export function createDigivolveVerbs(pc: PrimitivesContext) {
       if (!(await payPlacement(seat, placementRequirement, sourceDef))) return undefined;
     }
     if (!opts?.payCost) {
+      if (sourceZone !== "security") {
+        await engine.activateFreeDigivolveReductions?.(permanent, sourceInstanceId, definition, asDigimon);
+        if (access.permanentById(permanent.permanentId) !== permanent) return undefined;
+      }
       await engine.fireWouldDigivolve?.(seat, permanent, definition);
       if (access.permanentById(permanent.permanentId) !== permanent) return undefined;
     }

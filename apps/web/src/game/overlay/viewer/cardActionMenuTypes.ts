@@ -1,6 +1,7 @@
 /** Activatable [Main] effect of a permanent, one entry per effect. */
 export interface CardActionEffect {
   label: string;
+  sourceCardId?: string;
   onActivate: () => void;
 }
 

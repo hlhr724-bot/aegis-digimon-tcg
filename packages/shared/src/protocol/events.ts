@@ -791,6 +791,7 @@ export interface DecisionRequest {
      * for an entry marked false is accepted and simply never consulted.
      */
     triggerIsOptional?: boolean[];
+    triggerSubjectPermanentIds?: string[];
     /**
      * `orderTriggers` only: the controller's older pending effects. They triggered earlier and
      * resolve after every offered entry (CR §15-4-5-2/3), so the prompt lists them without

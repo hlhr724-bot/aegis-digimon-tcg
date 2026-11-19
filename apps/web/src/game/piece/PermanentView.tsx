@@ -77,6 +77,7 @@ export function PermanentView({
   onKeyboardActivate,
   onInspect,
   showInspect = false,
+  reserveRowInlineSpace = true,
   useSelectedSleeve = true,
 }: {
   perm: Permanent;
@@ -138,6 +139,7 @@ export function PermanentView({
   onInspect?: () => void;
   /** Show the magnifier while the board is being used to choose a card or effect. */
   showInspect?: boolean;
+  reserveRowInlineSpace?: boolean;
   useSelectedSleeve?: boolean;
 }) {
   const stationaryDeparture =
@@ -150,6 +152,11 @@ export function PermanentView({
   const reservedTurnMargin = isVisuallySuspended
     ? `${turnedCardInlineMargin}px`
     : `calc((1 - var(--field-prefer-stacked, 0)) * ${turnedCardInlineMargin}px)`;
+  const leadingMargin = perm.stack.length
+    ? `max(${reservedTurnMargin}, calc(4px + ${perm.stack.length - 1} * min(var(--arena-source-step, 4px), ${sourceFanStepLimit(permanentWidth, perm.stack.length)}px)))`
+    : reservedTurnMargin;
+  const trailingMargin =
+    trailingOverhang > 0 ? `calc(${reservedTurnMargin} + ${trailingOverhang}px)` : reservedTurnMargin;
   const { t } = useTranslation();
   const translations = useCardTranslations();
   const beginInspection = usePermanentInspection(onInspect);
@@ -294,11 +301,8 @@ export function PermanentView({
         // announcement is over, rather than flying the card across the board.
         visibility: pending ? "hidden" : undefined,
         transform: !stationaryDeparture && (highlight || effectSource || effectLinked) ? "translateY(-6px)" : "none",
-        marginInlineStart: perm.stack.length
-          ? `max(${reservedTurnMargin}, calc(4px + ${perm.stack.length - 1} * min(var(--arena-source-step, 4px), ${sourceFanStepLimit(permanentWidth, perm.stack.length)}px)))`
-          : reservedTurnMargin,
-        marginInlineEnd:
-          trailingOverhang > 0 ? `calc(${reservedTurnMargin} + ${trailingOverhang}px)` : reservedTurnMargin,
+        marginInlineStart: reserveRowInlineSpace ? leadingMargin : undefined,
+        marginInlineEnd: reserveRowInlineSpace ? trailingMargin : undefined,
         transition: stationaryDeparture
           ? "opacity 160ms"
           : "transform 160ms, opacity 160ms, margin-inline-start 200ms, margin-inline-end 200ms",

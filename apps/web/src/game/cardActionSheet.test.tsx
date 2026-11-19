@@ -394,6 +394,26 @@ describe("trash [Main] activation", () => {
     ).toContain("EX10-011");
   });
 
+  it.each([false, true])("sorts the trash by level, with cards that have no level last (sheet=%s)", (sheet) => {
+    render(
+      <I18nProvider>
+        <TrashViewerOverlay
+          cardIds={["BT1-085", "EX10-011", "BT1-001", "ST1-03"]}
+          title="Your trash"
+          sheet={sheet}
+          onClose={noop}
+        />
+      </I18nProvider>,
+    );
+    fireEvent.change(screen.getByRole("combobox", { name: "Sort trash" }), { target: { value: "level" } });
+    const sources = [...document.querySelectorAll(sheet ? ".trash-sheet__row img" : ".trash-viewer__slot img")].map(
+      (image) => image.getAttribute("src"),
+    );
+    expect(
+      sources.map((source) => ["BT1-001", "ST1-03", "EX10-011", "BT1-085"].find((id) => source?.includes(id))),
+    ).toEqual(["BT1-001", "ST1-03", "EX10-011", "BT1-085"]);
+  });
+
   it("keeps the confirmed physical copy when live trash positions change", () => {
     const second = { ...malomyotismon, instanceId: "second-copy" };
     const onActivateEffect = vi.fn<(effect: ActivatableEntry) => void>();

@@ -106,4 +106,7 @@ export const decisionChoicesEn = {
   "decision.choice.counterBlastDnaTitle": "Blast DNA Digivolve",
   "decision.choice.counterBlastDnaShort": "Blast DNA",
   "decision.choice.counterMarker": "[Counter]",
+  "decision.choice.digivolveRoyalKnightUnderTamer": "Digivolve into a [Royal Knight] card under this Tamer",
+  "decision.choice.useRoyalKnightOption": "Use a [Royal Knight] Option",
+  "decision.choice.deleteOpponentLowestDp": "Delete 1 of your opponent's lowest DP Digimon",
 } as const;

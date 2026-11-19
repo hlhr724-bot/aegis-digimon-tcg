@@ -1,4 +1,5 @@
 import { prepareEffectPlayDigiXros } from "../../effects/interpreter/actions/effectPlayDigiXros.js";
+import type { DigiXrosPlanInput } from "#api/engine/actions/digiXros";
 import { buildEffectContext, cardSourceOf } from "../effectContext.js";
 import { clearPreparedDigiXrosPlay, hasOtherDigiXrosPlayCosts } from "../timing/payCost.js";
 import { maximumPreparedDigiXrosReduction, prepareDigiXrosPlay } from "../timing/digiXros.js";
@@ -79,16 +80,15 @@ export function handlePlayCard(engine: GameEngine, seat: Seat, intent: PlayCardI
       async () => {
         try {
           const ctx = buildEffectContext(engine, cardSourceOf(engine, instance), {});
-          const plans = await prepareEffectPlayDigiXros(ctx, [instance], [], { retainPlayExpansions: true });
-          const materials = plans[instance.instanceId] ?? [];
+          let digiXros: DigiXrosPlanInput | undefined;
+          await prepareEffectPlayDigiXros(ctx, [instance], [], {
+            capturePlayPlan: (plan) => {
+              digiXros = plan;
+            },
+          });
           const outcome =
-            materials.length > 0
-              ? await applyDigiXros(
-                  engine.state,
-                  seat,
-                  { ...intent, digiXros: { materialInstanceIds: materials } },
-                  digiXrosDeps(engine),
-                )
+            digiXros !== undefined
+              ? await applyDigiXros(engine.state, seat, { ...intent, digiXros }, digiXrosDeps(engine))
               : await applyPlayCard(engine.state, seat, intent, deps);
           if (!outcome.ok) engine.hooks.emit({ kind: "actionRejected", intent: "playCard", reason: outcome.reason });
           else if (engine.memory.hasCrossedToOpponent()) {

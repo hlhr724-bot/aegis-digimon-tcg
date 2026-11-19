@@ -16,7 +16,12 @@ export function openNotification({ notification, onOpenFeedback }: OpenNotificat
     }
     return;
   }
-  if (notification.kind === "tournament_start_overdue" || notification.kind === "tournament_expired") {
+  if (
+    notification.kind === "tournament_start_overdue" ||
+    notification.kind === "tournament_expired" ||
+    notification.kind === "tournament_started" ||
+    notification.kind === "tournament_match_ready"
+  ) {
     window.location.assign(
       pathForRoute({ screen: "tournaments", tournament: { kind: "detail", id: notification.payload.tournamentId } }),
     );

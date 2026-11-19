@@ -893,7 +893,7 @@ export function createSubTriggerInstall({
       : undefined;
   const addedDigivolutionCardGate =
     event === "onAddDigivolutionCards" && action.addedDigivolutionCardFilter !== undefined
-      ? (subCtx: EffectContext): boolean => {
+      ? matchedAtEvent((subCtx: EffectContext): boolean => {
           const subjectId = subCtx.trigger?.subjectPermanentId;
           const ids = subCtx.trigger?.addedDigivolutionCardInstanceIds ?? [];
           if (subjectId === undefined || ids.length === 0) {
@@ -910,7 +910,7 @@ export function createSubTriggerInstall({
               (action.addedDigivolutionCardFilter!.faceUp !== true || card.faceUp === true) &&
               definitionMatches(action.addedDigivolutionCardFilter!, subCtx.game.definitionOf(card)),
           );
-        }
+        })
       : undefined;
   const addedDigivolutionPositionGate =
     event === "onAddDigivolutionCards" && action.addedDigivolutionCardsPosition !== undefined
@@ -951,7 +951,7 @@ export function createSubTriggerInstall({
       : undefined;
   const linkedCardGate =
     event === "whenLinked" && action.linkedCardFilter !== undefined
-      ? (subCtx: EffectContext): boolean => {
+      ? matchedAtEvent((subCtx: EffectContext): boolean => {
           const subjectId = subCtx.trigger.subjectPermanentId;
           const linkedIds = subCtx.trigger.linkedCardInstanceIds ?? [];
           const subject = subjectId === undefined ? undefined : subCtx.game.permanentById(subjectId);
@@ -963,7 +963,7 @@ export function createSubTriggerInstall({
               linkedIds.includes(card.instanceId) &&
               definitionMatches(action.linkedCardFilter!, subCtx.game.definitionOf(card)),
           );
-        }
+        })
       : undefined;
   // A linked card's "when this card is linked" effect is physically scoped to that card,
   // not merely to the Digimon carrying it. All linked cards share the recipient permanent,
@@ -1517,6 +1517,16 @@ function subjectMatchSettledAtEvent({
     if (matched && subjectsOnField) {
       matchedEvents.add(subCtx.trigger);
     }
+    return matched;
+  };
+}
+
+function matchedAtEvent(gate: (subCtx: EffectContext) => boolean): (subCtx: EffectContext) => boolean {
+  const matchedEvents = new WeakSet<object>();
+  return (subCtx) => {
+    if (matchedEvents.has(subCtx.trigger)) return true;
+    const matched = gate(subCtx);
+    if (matched) matchedEvents.add(subCtx.trigger);
     return matched;
   };
 }

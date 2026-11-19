@@ -1,4 +1,112 @@
 {
+  "releases.1.77.0-beta.summary": {
+    "en": "This update opens BT27 in ranked play on its pre-release date, shows your ranked standing on your profile, adds chat reports and translation, lets the private host choose the turn order, makes match prompts clearer and fixes several player-reported problems.",
+    "pt-BR": "Esta atualização libera o BT27 nas partidas ranqueadas na data de pré-lançamento, mostra sua posição ranqueada no perfil, adiciona denúncia e tradução no chat, permite que o anfitrião da sala privada escolha a ordem dos turnos, deixa os avisos da partida mais claros e corrige vários problemas relatados pelos jogadores.",
+    "es": "Esta actualización habilita BT27 en partidas clasificatorias en su fecha de preestreno, muestra tu posición clasificatoria en tu perfil, añade denuncias y traducción en el chat, permite que el anfitrión de la sala privada elija el orden de turnos, aclara los avisos de la partida y corrige varios problemas comunicados por los jugadores.",
+    "it": "Questo aggiornamento apre BT27 nelle partite classificate alla data di pre-release, mostra la tua posizione classificata nel profilo, aggiunge segnalazione e traduzione in chat, permette all'host della stanza privata di scegliere l'ordine dei turni, rende più chiari i prompt della partita e corregge diversi problemi segnalati dai giocatori."
+  },
+  "releases.1.77.0-beta.feature.bt27Online": {
+    "en": "BT27 cards are legal in ranked, public queues and Standard tournaments from 2026-12-04, the pre-release date.",
+    "pt-BR": "As cartas do BT27 ficam liberadas nas ranqueadas, filas públicas e torneios Standard a partir de 04/12/2026, a data de pré-lançamento.",
+    "es": "Las cartas de BT27 son legales en clasificatorias, colas públicas y torneos Standard desde el 04/12/2026, la fecha de preestreno.",
+    "it": "Le carte BT27 sono legali nelle classificate, nelle code pubbliche e nei tornei Standard dal 04/12/2026, data della pre-release."
+  },
+  "releases.1.77.0-beta.feature.profileRanked": {
+    "en": "Your profile shows your ranked tier, rating, position, record and peak for the current season.",
+    "pt-BR": "Seu perfil mostra seu tier ranqueado, rating, posição, histórico e pico da temporada atual.",
+    "es": "Tu perfil muestra tu rango clasificatorio, puntuación, posición, historial y máximo de la temporada actual.",
+    "it": "Il tuo profilo mostra tier classificato, punteggio, posizione, risultati e picco della stagione in corso."
+  },
+  "releases.1.77.0-beta.feature.chatReportTranslate": {
+    "en": "You can report your opponent's match chat, and translate messages on supported desktop browsers.",
+    "pt-BR": "Você pode denunciar o chat do oponente na partida e traduzir mensagens nos navegadores de computador compatíveis.",
+    "es": "Puedes denunciar el chat de tu oponente en la partida y traducir mensajes en navegadores de escritorio compatibles.",
+    "it": "Puoi segnalare la chat dell'avversario in partita e tradurre i messaggi nei browser desktop supportati."
+  },
+  "releases.1.77.0-beta.feature.privateTurnOrder": {
+    "en": "The host of a private room can choose who goes first in game 1.",
+    "pt-BR": "O anfitrião de uma sala privada pode escolher quem começa na partida 1.",
+    "es": "El anfitrión de una sala privada puede elegir quién empieza en la partida 1.",
+    "it": "L'host di una stanza privata può scegliere chi inizia nella partita 1."
+  },
+  "releases.1.77.0-beta.feature.tournamentNotifications": {
+    "en": "Tournament players get a notification when the tournament starts and when their match is ready.",
+    "pt-BR": "Os jogadores de torneio recebem uma notificação quando o torneio começa e quando a partida deles está pronta.",
+    "es": "Los jugadores de un torneo reciben una notificación cuando empieza el torneo y cuando su partida está lista.",
+    "it": "I giocatori dei tornei ricevono una notifica quando il torneo inizia e quando la loro partita è pronta."
+  },
+  "releases.1.77.0-beta.feature.clearerPrompts": {
+    "en": "Match prompts are clearer: effect buttons follow the order of the sources, the card to play and the endangered Digimon are shown, the order prompt names the triggering Digimon, new field chips explain attack and unsuspend restrictions, the stack badge counts face-down cards, and the trash can be sorted by level.",
+    "pt-BR": "Os avisos da partida estão mais claros: os botões de efeito seguem a ordem das fontes, a carta a jogar e o Digimon ameaçado aparecem, o aviso de ordem mostra o Digimon que ativou o efeito, novos indicadores explicam restrições de ataque e de desvirar, o contador da pilha mostra cartas viradas para baixo e o lixo pode ser ordenado por nível.",
+    "es": "Los avisos de la partida son más claros: los botones de efecto siguen el orden de las fuentes, se muestran la carta que se va a jugar y el Digimon amenazado, el aviso de orden indica el Digimon que activó el efecto, nuevos indicadores explican las restricciones de ataque y de enderezar, el contador de la pila cuenta las cartas boca abajo y el descarte se puede ordenar por nivel.",
+    "it": "I prompt della partita sono più chiari: i pulsanti degli effetti seguono l'ordine delle fonti, vengono mostrati la carta da giocare e il Digimon in pericolo, il prompt di ordine indica il Digimon che ha attivato l'effetto, nuovi indicatori spiegano le restrizioni di attacco e di raddrizzamento, il contatore della pila conta le carte coperte e gli scarti si possono ordinare per livello."
+  },
+  "releases.1.77.0-beta.feature.rankedDecisionLimit": {
+    "en": "Ranked matches use the 90-second limit per decision already used in public casual rooms.",
+    "pt-BR": "As partidas ranqueadas usam o limite de 90 segundos por decisão que já existia nas salas casuais públicas.",
+    "es": "Las partidas clasificatorias usan el límite de 90 segundos por decisión que ya existía en las salas casuales públicas.",
+    "it": "Le partite classificate usano il limite di 90 secondi per decisione già presente nelle stanze casual pubbliche."
+  },
+  "releases.1.77.0-beta.fix.rarities": {
+    "en": "The rarity filter no longer mixes rarities. 89 secret rare and promo cards had the wrong rarity.",
+    "pt-BR": "O filtro de raridade não mistura mais raridades. 89 cartas secretas e promocionais estavam com a raridade errada.",
+    "es": "El filtro de rareza ya no mezcla rarezas. 89 cartas secretas y promocionales tenían la rareza equivocada.",
+    "it": "Il filtro di rarità non mescola più le rarità. 89 carte segrete e promo avevano la rarità sbagliata."
+  },
+  "releases.1.77.0-beta.fix.seriesSpectators": {
+    "en": "Spectators stay with a best-of-3 when game 1 ends and follow it into the next game.",
+    "pt-BR": "Os espectadores continuam em uma melhor de 3 quando a partida 1 termina e acompanham a próxima partida.",
+    "es": "Los espectadores siguen en un mejor de 3 cuando termina la partida 1 y pasan a la siguiente partida.",
+    "it": "Gli spettatori restano in un meglio di 3 quando finisce la partita 1 e seguono la partita successiva."
+  },
+  "releases.1.77.0-beta.fix.dualOptionCost": {
+    "en": "Using the Option side of a DUAL card no longer triggers play cost reductions for Digimon, such as King Drasil_7D6 (BT13-007).",
+    "pt-BR": "Usar o lado Option de uma carta DUAL não ativa mais reduções de custo para jogar Digimon, como King Drasil_7D6 (BT13-007).",
+    "es": "Usar el lado Option de una carta DUAL ya no activa reducciones del coste de juego de Digimon, como King Drasil_7D6 (BT13-007).",
+    "it": "Usare il lato Option di una carta DUAL non attiva più le riduzioni del costo di gioco dei Digimon, come King Drasil_7D6 (BT13-007)."
+  },
+  "releases.1.77.0-beta.fix.opponentHandHidden": {
+    "en": "Effects that let you choose from your hand or trash no longer show your opponent's hand.",
+    "pt-BR": "Efeitos que permitem escolher da mão ou do lixo não mostram mais a mão do oponente.",
+    "es": "Los efectos que te permiten elegir de tu mano o descarte ya no muestran la mano del oponente.",
+    "it": "Gli effetti che ti fanno scegliere dalla mano o dagli scarti non mostrano più la mano dell'avversario."
+  },
+  "releases.1.77.0-beta.fix.freeDigivolveReducers": {
+    "en": "Digivolution cost reductions such as BT25-087 are offered when you digivolve with an Arts Digivolve or another free digivolution.",
+    "pt-BR": "Reduções de custo de digievolução como a do BT25-087 são oferecidas quando você digievolui com Arts Digivolve ou outra digievolução gratuita.",
+    "es": "Las reducciones del coste de digievolución como la de BT25-087 se ofrecen cuando digievolucionas con Arts Digivolve u otra digievolución gratuita.",
+    "it": "Le riduzioni del costo di digievoluzione come quella di BT25-087 vengono offerte quando digievolvi con Arts Digivolve o un'altra digievoluzione gratuita."
+  },
+  "releases.1.77.0-beta.fix.pendingTriggerKept": {
+    "en": "An effect triggered by a card added to a stack still activates when another effect removes that card first, as with Pagumon and Gundramon.",
+    "pt-BR": "Um efeito ativado por uma carta adicionada a uma pilha ainda ativa quando outro efeito remove essa carta antes, como com Pagumon e Gundramon.",
+    "es": "Un efecto activado por una carta añadida a una pila se sigue activando cuando otro efecto retira antes esa carta, como con Pagumon y Gundramon.",
+    "it": "Un effetto attivato da una carta aggiunta a una pila si attiva ancora quando un altro effetto rimuove prima quella carta, come con Pagumon e Gundramon."
+  },
+  "releases.1.77.0-beta.fix.coverArt": {
+    "en": "The Play screen shows the alternative art chosen as the deck cover.",
+    "pt-BR": "A tela Jogar mostra a arte alternativa escolhida como capa do deck.",
+    "es": "La pantalla Jugar muestra el arte alternativo elegido como portada del mazo.",
+    "it": "La schermata Gioca mostra l'arte alternativa scelta come copertina del mazzo."
+  },
+  "releases.1.77.0-beta.fix.alliancesource": {
+    "en": "＜Alliance＞ gained from a digivolution card now shows that card in the effect order prompt.",
+    "pt-BR": "＜Alliance＞ herdado de uma carta de digievolução agora mostra essa carta no aviso de ordem dos efeitos.",
+    "es": "＜Alliance＞ heredado de una carta de digievolución ahora muestra esa carta en el aviso de orden de efectos.",
+    "it": "＜Alliance＞ ereditato da una carta digievoluzione ora mostra quella carta nel prompt di ordine degli effetti."
+  },
+  "releases.1.77.0-beta.fix.startOfTurnBanner": {
+    "en": "The Unsuspend Phase banner now appears after ＜Start of Turn＞ effects resolve, matching the rules.",
+    "pt-BR": "O aviso da Fase de Desvirar agora aparece depois que os efeitos ＜Start of Turn＞ são resolvidos, como dizem as regras.",
+    "es": "El aviso de la Fase de Enderezar ahora aparece después de resolver los efectos ＜Start of Turn＞, como indican las reglas.",
+    "it": "Il banner della Fase di Raddrizzamento ora appare dopo la risoluzione degli effetti ＜Start of Turn＞, come previsto dalle regole."
+  },
+  "releases.1.77.0-beta.fix.matchEndReadable": {
+    "en": "The match-end screen is opaque and readable in both themes, and raising-area Digimon are centered in their slots.",
+    "pt-BR": "A tela de fim de partida é opaca e legível nos dois temas, e os Digimon da área de criação ficam centralizados.",
+    "es": "La pantalla de fin de partida es opaca y legible en ambos temas, y los Digimon de la zona de crianza quedan centrados.",
+    "it": "La schermata di fine partita è opaca e leggibile in entrambi i temi, e i Digimon dell'area di allevamento sono centrati."
+  },
   "releases.1.76.1-beta.summary": {
     "en": "This update fixes seven problems with card effects and match results, including Imperialdramon: Paladin Mode, Lucemon: Chaos Mode, repeated ＜De-Digivolve＞ and the effect order after an Arts Digivolve.",
     "pt-BR": "Esta atualização corrige sete problemas com efeitos de cartas e resultados de partidas, incluindo Imperialdramon: Paladin Mode, Lucemon: Chaos Mode, ＜De-Digivolve＞ repetido e a ordem dos efeitos depois de um Arts Digivolve.",

@@ -353,7 +353,15 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
       );
       return liveReduction + intrinsicReduction;
     },
-    activateInteractiveDigivolveReduction: async (_state, seat, target, into, evolvingInstanceId, baseAsDigimon) => {
+    activateInteractiveDigivolveReduction: async (
+      _state,
+      seat,
+      target,
+      into,
+      evolvingInstanceId,
+      baseAsDigimon,
+      remainingCost,
+    ) => {
       if (engine.continuous.blocksCostReduction(seat, "digivolve")) return 0;
       const liveReduction = await engine.subTriggers.activateInteractiveReductionsFor(
         "wouldDigivolve",
@@ -378,6 +386,7 @@ export function digivolveDeps(engine: GameEngine): DigivolveDeps {
         undefined,
         looseZoneOfInstance(engine.state, evolvingInstanceId),
         baseAsDigimon,
+        remainingCost,
       );
       const evolving = findLooseInstance(engine, evolvingInstanceId);
       if (evolving === undefined) return liveReduction;

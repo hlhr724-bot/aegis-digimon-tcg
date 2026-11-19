@@ -104,6 +104,7 @@ export function CombatWindowPrompts({
 
       {evadeWindow ? (
         <EvadeOverlay
+          permanentId={evadeWindow.permanentId}
           onAccept={() => onEvade(evadeWindow.permanentId, true)}
           onDecline={() => onEvade(evadeWindow.permanentId, false)}
         />
@@ -111,6 +112,7 @@ export function CombatWindowPrompts({
 
       {barrierWindow ? (
         <BarrierOverlay
+          permanentId={barrierWindow.permanentId}
           onAccept={() => onBarrier(barrierWindow.permanentId, true)}
           onDecline={() => onBarrier(barrierWindow.permanentId, false)}
         />

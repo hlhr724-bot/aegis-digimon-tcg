@@ -1,5 +1,6 @@
 import { deckMatchupIt } from "@/i18n/deckMatchup.it";
 import { deckOddsIt } from "@/i18n/deckOdds.it";
+import { chatActionsIt } from "@/i18n/chatActions.it";
 import { tournamentCircuitsIt } from "@/i18n/tournamentCircuits.it";
 import { tournamentOfficialRequestIt } from "@/i18n/tournamentOfficialRequest.it";
 import { matchQueueIt } from "@/i18n/matchQueue.it";
@@ -628,6 +629,7 @@ const interfaceMessages = {
   "common.export": "Esporta",
   "game.hiddenCard": "Carta coperta",
   "game.faceDownSource": "Coperta",
+  "game.faceDownSourceCount": "{count} coperte",
   "game.debugId": "ID partita",
   "game.debugCopyFailed": "Copia non riuscita; seleziona l'ID per copiarlo.",
   "common.copy": "Copia",
@@ -1109,6 +1111,13 @@ const interfaceMessages = {
   "game.tournamentCancelledTitle": "Torneo annullato",
   "game.tournamentCancelled":
     "L'organizzatore ha annullato questo torneo, quindi questa partita è terminata senza risultato.",
+  "lobby.turnOrder.label": "Ordine di turno",
+  "lobby.turnOrder.random": "Casuale",
+  "lobby.turnOrder.hostFirst": "L'host gioca per primo",
+  "lobby.turnOrder.hostSecond": "L'host gioca per secondo",
+  "lobby.turnOrder.hint":
+    "Stabilisce chi gioca il primo turno della partita 1. In un al meglio di 3, le partite successive seguono la regola abituale della serie.",
+  "lobby.turnOrder.guest": "Ordine di turno della partita 1: {order}",
   "lobby.approval.label": "Richiedi approvazione",
   "lobby.approval.hint":
     "Quando qualcuno entra con il tuo codice, vedi chi è e lo accetti o rifiuti prima che inizi la partita.",
@@ -1279,6 +1288,7 @@ const interfaceMessages = {
   "game.fieldEffects.untilYourActivePhase": "Fino alla tua fase di attivazione",
   "game.fieldEffects.untilOpponentActivePhase": "Fino alla fase di attivazione dell'avversario",
   "game.restriction.cannotAttack": "Non può attaccare",
+  "game.restriction.cannotAttackPlayers": "Non può attaccare i giocatori",
   "game.restriction.cannotPlayByEffects": "Non può giocare tramite effetti",
   "game.restriction.cannotPlay": "Non può giocare",
   "game.restriction.immuneToOpponentDigimonEffects": "Protetto dagli effetti dei Digimon avversari",
@@ -1324,6 +1334,7 @@ const interfaceMessages = {
   "game.restriction.cannotBlock": "Non può bloccare",
   "game.restriction.cannotSuspend": "Non può essere sospeso",
   "game.restriction.cannotUnsuspend": "Non si riattiva",
+  "game.restriction.cannotUnsuspendAtAll": "Non può riattivarsi",
   "game.restriction.cannotDigivolve": "Non può digievolvere",
   "game.restriction.cannotActivateWhenDigivolving": "Nessun [When Digivolving]",
   "game.digivolutionSources": "{count} carte di digievoluzione",
@@ -1483,6 +1494,7 @@ const interfaceMessages = {
   "overlay.useEffectPrompt": "Usare questo effetto?",
   "overlay.choiceRevealedCards": "Carte rivelate",
   "overlay.choiceHandCards": "Carta in questione",
+  "overlay.cardToPlay": "Carta da giocare",
   "overlay.selectTargets": "Seleziona {range} bersagli",
   "overlay.sourceCountOne": "{count} fonte",
   "overlay.sourceCountMany": "{count} fonti",
@@ -1552,6 +1564,7 @@ const interfaceMessages = {
     "Effetti precedenti ancora in attesa. Si risolvono quando terminano gli effetti qui sopra.",
   "overlay.presetMandatory": "Obbligatorio",
   "overlay.triggerReason": "Innescato da: {reason}",
+  "overlay.triggerSubject": "Carta che ha innescato: {name}",
   "overlay.triggerOpponentEffect": "Effetto dell'avversario",
   "overlay.orderOpponentEffectsNote":
     "Sei il giocatore di turno, quindi scegli l'ordine di questi effetti, compresi quelli dell'avversario.",
@@ -1659,6 +1672,7 @@ const interfaceMessages = {
   "overlay.trashSort": "Ordina scarti",
   "overlay.trashSortRecent": "Più recenti",
   "overlay.trashSortName": "Raggruppa per nome",
+  "overlay.trashSortLevel": "Ordina per livello",
   "overlay.trashCount": "{count} carte",
   "overlay.securityCount": "{faceUp} scoperte su {count} carte",
   "overlay.securityNoFaceUp": "nessuna carta scoperta",
@@ -2650,6 +2664,9 @@ const interfaceMessages = {
   "redesign.arena.restriction.attacksAtStartOfMainPhase":
     "Un effetto fa attaccare questo Digimon all'inizio della sua fase principale, se può farlo.",
   "redesign.arena.restriction.attacksAtStartOfMainPhaseGranted": "{card} ha concesso: {clause}",
+  "redesign.arena.restriction.cannotAttackPlayers": "Un effetto impedisce a questo Digimon di attaccare i giocatori.",
+  "redesign.arena.restriction.cannotUnsuspendAtAll":
+    "Un effetto impedisce a questo Digimon di riattivarsi, sia nella fase di riattivazione sia tramite effetti.",
   "redesign.arena.restriction.cannotAttack": "Un effetto impedisce a questo Digimon di attaccare.",
   "redesign.arena.restriction.cannotBlock": "Un effetto impedisce a questo Digimon di bloccare.",
   "redesign.arena.restriction.cannotSuspend": "Un effetto impedisce a questo Digimon di essere sospeso.",
@@ -2762,6 +2779,7 @@ const interfaceMessages = {
   ...matchQueueIt,
   ...deckMatchupIt,
   ...deckOddsIt,
+  ...chatActionsIt,
   ...matchIntroIt,
   ...staffRolesIt,
   ...achievementsIt,

@@ -232,4 +232,6 @@ export const tournamentDetailDe = {
   "tournaments.format.pointsLoss": "Niederlage",
   "tournaments.format.pointsValue": "Sieg {win} · Unentschieden {draw} · Niederlage {loss}",
   "tournaments.create.pointsAuto": "Automatisch (3/1/0)",
+  "notifications.tournament.started": "{name} hat begonnen. Öffnen Sie das Turnier, um Ihre Paarung zu sehen.",
+  "notifications.tournament.matchReady": "Runde {round} von {name} ist bereit. Gehen Sie jetzt an Ihren Tisch.",
 };

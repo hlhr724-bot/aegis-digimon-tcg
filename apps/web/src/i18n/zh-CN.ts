@@ -1,5 +1,6 @@
 import { deckMatchupZhCN } from "@/i18n/deckMatchup.zh-CN";
 import { deckOddsZhCN } from "@/i18n/deckOdds.zh-CN";
+import { chatActionsZhCN } from "@/i18n/chatActions.zh-CN";
 import { tournamentCircuitsZhCN } from "@/i18n/tournamentCircuits.zh-CN";
 import { tournamentOfficialRequestZhCN } from "@/i18n/tournamentOfficialRequest.zh-CN";
 import { matchQueueZhCN } from "@/i18n/matchQueue.zh-CN";
@@ -695,6 +696,7 @@ const interfaceMessages = {
   "common.export": "导出",
   "game.hiddenCard": "盖放的卡牌",
   "game.faceDownSource": "盖放",
+  "game.faceDownSourceCount": "{count} 张盖放",
   "game.debugId": "对局 ID",
   "game.debugCopyFailed": "复制失败，请选中 ID 后复制。",
   "common.copy": "复制",
@@ -1149,6 +1151,12 @@ const interfaceMessages = {
   "game.guestApproval.hostLeft": "房主在对战开始前离开了房间。",
   "game.tournamentCancelledTitle": "比赛已取消",
   "game.tournamentCancelled": "主办方取消了本次比赛，因此这场对局没有结果。",
+  "lobby.turnOrder.label": "先后手",
+  "lobby.turnOrder.random": "随机",
+  "lobby.turnOrder.hostFirst": "房主先手",
+  "lobby.turnOrder.hostSecond": "房主后手",
+  "lobby.turnOrder.hint": "决定第 1 局由谁先手。三局两胜时，之后各局沿用系列赛的常规规则。",
+  "lobby.turnOrder.guest": "第 1 局先后手：{order}",
   "lobby.approval.label": "需要审核",
   "lobby.approval.hint": "有人用你的房间码加入时，你可以看到对方是谁，并在对战开始前接受或拒绝。",
   "game.opponent": "对手",
@@ -1317,6 +1325,7 @@ const interfaceMessages = {
   "game.fieldEffects.untilYourActivePhase": "直到你的解除休息阶段",
   "game.fieldEffects.untilOpponentActivePhase": "直到对手的解除休息阶段",
   "game.restriction.cannotAttack": "无法攻击",
+  "game.restriction.cannotAttackPlayers": "无法攻击玩家",
   "game.restriction.cannotPlayByEffects": "无法通过效果登场",
   "game.restriction.cannotPlay": "无法登场",
   "game.restriction.immuneToOpponentDigimonEffects": "不受对方数码宝贝效果影响",
@@ -1357,6 +1366,7 @@ const interfaceMessages = {
   "game.restriction.cannotBlock": "无法格挡",
   "game.restriction.cannotSuspend": "不能休息",
   "game.restriction.cannotUnsuspend": "不能解除休息",
+  "game.restriction.cannotUnsuspendAtAll": "无法解除休息",
   "game.restriction.cannotDigivolve": "无法进化",
   "game.restriction.cannotActivateWhenDigivolving": "无【进化时】",
   "game.digivolutionSources": "{count} 张进化源",
@@ -1511,6 +1521,7 @@ const interfaceMessages = {
   "overlay.useEffectPrompt": "使用这个效果？",
   "overlay.choiceRevealedCards": "公开的卡牌",
   "overlay.choiceHandCards": "手牌中的目标卡",
+  "overlay.cardToPlay": "将登场的卡牌",
   "overlay.selectTargets": "选择 {range} 个目标",
   "overlay.sourceCountOne": "{count} 个素材",
   "overlay.sourceCountMany": "{count} 个素材",
@@ -1579,6 +1590,7 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "较早的效果仍在等待。上述效果处理完后才会处理它们。",
   "overlay.presetMandatory": "必发",
   "overlay.triggerReason": "触发原因：{reason}",
+  "overlay.triggerSubject": "触发卡牌：{name}",
   "overlay.triggerOpponentEffect": "对手的效果",
   "overlay.orderOpponentEffectsNote": "你是回合玩家，因此由你决定这些效果的顺序，包括对手的效果。",
   "overlay.presetLabel": "为 {name} 的可选项作答",
@@ -1683,6 +1695,7 @@ const interfaceMessages = {
   "overlay.trashSort": "弃牌排序",
   "overlay.trashSortRecent": "最新优先",
   "overlay.trashSortName": "按卡名分组",
+  "overlay.trashSortLevel": "按等级排序",
   "overlay.trashCount": "{count} 张卡",
   "overlay.securityCount": "{count} 张中有 {faceUp} 张正面朝上",
   "overlay.securityNoFaceUp": "没有正面朝上的卡牌",
@@ -2730,6 +2743,9 @@ const interfaceMessages = {
   "redesign.arena.restriction.protectedFromEffectReturn": "对手的效果无法将此数码宝贝返回手牌或卡组。",
   "redesign.arena.restriction.attacksAtStartOfMainPhase": "某个效果使此数码宝贝在其主阶段开始时若能则进行攻击。",
   "redesign.arena.restriction.attacksAtStartOfMainPhaseGranted": "{card} 赋予：{clause}",
+  "redesign.arena.restriction.cannotAttackPlayers": "某个效果使此数码宝贝无法攻击玩家。",
+  "redesign.arena.restriction.cannotUnsuspendAtAll":
+    "某个效果使此数码宝贝无法解除休息，无论是在解除休息阶段还是通过效果。",
   "redesign.arena.restriction.cannotAttack": "某个效果使此数码宝贝无法攻击。",
   "redesign.arena.restriction.cannotBlock": "某个效果使此数码宝贝无法 Block。",
   "redesign.arena.restriction.cannotSuspend": "某个效果使此数码宝贝无法休息。",
@@ -2877,6 +2893,7 @@ const interfaceMessages = {
   ...matchQueueZhCN,
   ...deckMatchupZhCN,
   ...deckOddsZhCN,
+  ...chatActionsZhCN,
   ...matchIntroZhCN,
   ...staffRolesZhCN,
   ...achievementsZhCn,

@@ -14,6 +14,7 @@ import { CONNECTION_REPORT_CHANNEL, type ConnectionReport } from "@aegis/shared/
 import { OPPONENT_DECK_CHANNEL } from "@aegis/shared/decks/OPPONENT_DECK_CHANNEL";
 import { USED_DECK_CHANNEL, type UsedDeck } from "@aegis/shared/decks/UsedDeck";
 import { spectate } from "./client";
+import { spectateNextSeriesGame } from "@/net/spectateNextSeriesGame";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { CloseCode } from "@colyseus/sdk";
 import type { GameState } from "@aegis/shared";
@@ -182,6 +183,7 @@ export interface MatchConfig {
   /** The `series` mode's seat in a later game of a best-of-three. */
   seriesGame?: SeriesGameTicket;
   tournamentMatch?: TournamentSpectateTarget;
+  awaitNextSeriesGame?: boolean;
 }
 
 const HOST_REOPEN_POLL_MS = 2000;
@@ -219,6 +221,14 @@ function connectRoom(
         return spectate(match.tournamentMatch);
       }
       if (!match.roomCode) throw new Error("roomCode required for spectator");
+      if (match.awaitNextSeriesGame) {
+        const target = {
+          roomCode: match.roomCode,
+          displayName: options.displayName,
+          accountId: match.spectatorFriendId,
+        };
+        return spectateNextSeriesGame({ spectate: () => spectate(target), isCancelled });
+      }
       return spectate({
         roomCode: match.roomCode,
         displayName: options.displayName,

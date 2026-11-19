@@ -233,4 +233,6 @@ export const tournamentDetailId = {
   "tournaments.format.pointsLoss": "Kalah",
   "tournaments.format.pointsValue": "Menang {win} · Seri {draw} · Kalah {loss}",
   "tournaments.create.pointsAuto": "Otomatis (3/1/0)",
+  "notifications.tournament.started": "{name} telah dimulai. Buka turnamen untuk melihat lawan Anda.",
+  "notifications.tournament.matchReady": "Ronde {round} di {name} sudah siap. Masuk ke meja Anda sekarang.",
 };

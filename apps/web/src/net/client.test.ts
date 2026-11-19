@@ -452,6 +452,7 @@ it("reads the private host rules from a draining slot before joining there", asy
     roomId: joined.roomId,
     unlimited: true,
     format: "unlimited",
+    turnOrder: "random",
   });
   await client.joinPrivateByCode("abc234", { ...OPTIONS, unlimited: true });
   expect(joinById).toHaveBeenCalledWith(

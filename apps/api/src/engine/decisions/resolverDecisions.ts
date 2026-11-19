@@ -77,7 +77,7 @@ export function createResolverDecisions(
       // those derived fields first: the decision itself causes the room to flush state,
       // and clients must not see a legal attacker as summoning-sick during the pause.
       await beforeRequest();
-      const triggerCardIds = active.map((c) => c.source.cardId);
+      const triggerCardIds = active.map((c) => c.presentedSourceCardId ?? c.source.cardId);
       // One permanent can put two effects on the stack at once (Megadramon's [On Play]
       // and [When Digivolving]). They share an instanceId and a card, so the chooser can
       // only name them apart by the window each one fired in.
@@ -93,6 +93,7 @@ export function createResolverDecisions(
           "",
       );
       const triggerReasons = active.map((c) => c.triggerReason ?? "");
+      const triggerSubjectPermanentIds = active.map(findTriggerSubjectPermanentId);
       const sharedSourceCardId = triggerCardIds.every((cardId) => cardId === triggerCardIds[0])
         ? triggerCardIds[0]
         : undefined;
@@ -109,6 +110,9 @@ export function createResolverDecisions(
           triggerDescriptions: active.map((c) => c.effect.description ?? ""),
           ...(triggerReasons.some((reason) => reason !== "") ? { triggerReasons } : {}),
           triggerIsInherited: active.map(presentsAsInherited),
+          ...(triggerSubjectPermanentIds.some((permanentId) => permanentId !== "")
+            ? { triggerSubjectPermanentIds }
+            : {}),
           ...(plan !== undefined
             ? {
                 acceptsResolutionPlan: true,
@@ -203,6 +207,18 @@ function publicOrderEntry(collected: CollectedEffect, timing: string): Resolutio
         }
       : {}),
   };
+}
+
+function findTriggerSubjectPermanentId(collected: CollectedEffect): string {
+  const subjectPermanentId = collected.triggerInfo?.subjectPermanentId;
+  if (subjectPermanentId === undefined) {
+    return "";
+  }
+  const ownPermanentId = collected.conferredToPermanentId ?? collected.source.permanent()?.permanentId;
+  if (subjectPermanentId === ownPermanentId) {
+    return "";
+  }
+  return subjectPermanentId;
 }
 
 /**

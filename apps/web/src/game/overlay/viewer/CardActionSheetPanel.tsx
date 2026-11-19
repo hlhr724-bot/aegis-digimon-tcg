@@ -14,6 +14,7 @@ import type { StackCard } from "../types";
 import { CardZoomOverlay } from "./CardZoomOverlay";
 import type { CardActionEffect, CardActionLink, CardActionPromote } from "./cardActionMenuTypes";
 import { stackCardCaption } from "./stackCardCaption";
+import { CardActionEffectLabel } from "./CardActionEffectLabel";
 
 /** Bottom sheet (touch layouts) for a permanent's actions, with its live stats and stack. */
 export function CardActionSheetPanel({
@@ -135,18 +136,22 @@ export function CardActionSheetPanel({
                   {t("overlay.link")}
                 </Button>
               ) : null}
-              {(effects ?? []).map((effect) => (
+              {(effects ?? []).map((effect, index) => (
                 <Button
-                  key={effect.label}
+                  key={index}
                   size="md"
                   full
                   variant="secondary"
                   onClick={effect.onActivate}
-                  aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId })}`}
-                  title={translateCardText({ text: effect.label, cardId })}
+                  aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId: effect.sourceCardId ?? cardId })}`}
                 >
                   <span aria-hidden="true">⚡</span>
-                  <span>{t("game.activateMainEffect")}</span>
+                  <CardActionEffectLabel
+                    effect={effect}
+                    cardId={cardId}
+                    position={index + 1}
+                    total={effects?.length ?? 0}
+                  />
                 </Button>
               ))}
               {promote ? (

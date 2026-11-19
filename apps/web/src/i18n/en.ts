@@ -1,5 +1,6 @@
 import { deckMatchupEn } from "@/i18n/deckMatchup.en";
 import { deckOddsEn } from "@/i18n/deckOdds.en";
+import { chatActionsEn } from "@/i18n/chatActions.en";
 import { tournamentCircuitsEn } from "@/i18n/tournamentCircuits.en";
 import { tournamentOfficialRequestEn } from "@/i18n/tournamentOfficialRequest.en";
 import { matchQueueEn } from "@/i18n/matchQueue.en";
@@ -453,6 +454,7 @@ export const en = {
   "common.export": "Export",
   "game.hiddenCard": "Face-down card",
   "game.faceDownSource": "Face down",
+  "game.faceDownSourceCount": "{count} face-down",
   "game.debugId": "Match ID",
   "game.debugCopyFailed": "Copy failed; select the ID to copy.",
   "common.copy": "Copy",
@@ -955,6 +957,13 @@ export const en = {
   "game.guestApproval.hostLeft": "The host left the room before the match started.",
   "game.tournamentCancelledTitle": "Tournament cancelled",
   "game.tournamentCancelled": "The organizer cancelled this tournament, so this game ended without a result.",
+  "lobby.turnOrder.label": "Turn order",
+  "lobby.turnOrder.random": "Random",
+  "lobby.turnOrder.hostFirst": "Host goes first",
+  "lobby.turnOrder.hostSecond": "Host goes second",
+  "lobby.turnOrder.hint":
+    "Sets who takes the first turn of game 1. In a best-of-three, later games follow the usual series rule.",
+  "lobby.turnOrder.guest": "Game 1 turn order: {order}",
   "lobby.approval.label": "Require approval",
   "lobby.approval.hint":
     "When someone joins with your code, you see who it is and accept or decline them before the match starts.",
@@ -1126,6 +1135,7 @@ export const en = {
   "game.fieldEffects.untilYourActivePhase": "Until your unsuspend phase",
   "game.fieldEffects.untilOpponentActivePhase": "Until your opponent’s unsuspend phase",
   "game.restriction.cannotAttack": "Can't attack",
+  "game.restriction.cannotAttackPlayers": "Can't attack players",
   "game.restriction.cannotPlayByEffects": "Can't play by effects",
   "game.restriction.cannotPlay": "Can't play",
   "game.restriction.immuneToOpponentDigimonEffects": "Protected from opposing Digimon effects",
@@ -1170,6 +1180,7 @@ export const en = {
   "game.restriction.cannotBlock": "Can't block",
   "game.restriction.cannotSuspend": "Can't suspend",
   "game.restriction.cannotUnsuspend": "Won't unsuspend",
+  "game.restriction.cannotUnsuspendAtAll": "Can't unsuspend",
   "game.restriction.cannotDigivolve": "Can't digivolve",
   "game.restriction.cannotActivateWhenDigivolving": "No [When Digivolving]",
   "game.digivolutionSources": "{count} digivolution cards",
@@ -1329,6 +1340,7 @@ export const en = {
   "overlay.useEffectPrompt": "Use this effect?",
   "overlay.choiceRevealedCards": "Revealed cards",
   "overlay.choiceHandCards": "Card in question",
+  "overlay.cardToPlay": "Card to play",
   "overlay.selectTargets": "Select {range} target(s)",
   "overlay.sourceCountOne": "{count} source",
   "overlay.sourceCountMany": "{count} sources",
@@ -1397,6 +1409,7 @@ export const en = {
   "overlay.waitingEffectsHint": "Earlier effects still pending. They resolve once the effects above are done.",
   "overlay.presetMandatory": "Mandatory",
   "overlay.triggerReason": "Triggered by: {reason}",
+  "overlay.triggerSubject": "Triggering card: {name}",
   "overlay.triggerOpponentEffect": "Opponent's effect",
   "overlay.orderOpponentEffectsNote":
     "You are the turn player, so you choose the order of these effects, including your opponent's.",
@@ -1503,6 +1516,7 @@ export const en = {
   "overlay.trashSort": "Sort trash",
   "overlay.trashSortRecent": "Newest first",
   "overlay.trashSortName": "Group by card name",
+  "overlay.trashSortLevel": "Sort by level",
   "overlay.trashCount": "{count} cards",
   "overlay.securityCount": "{faceUp} face-up of {count} cards",
   "overlay.securityNoFaceUp": "no face-up cards",
@@ -2245,6 +2259,7 @@ export const en = {
   ...matchQueueEn,
   ...deckMatchupEn,
   ...deckOddsEn,
+  ...chatActionsEn,
   ...matchIntroEn,
   ...staffRolesEn,
   ...achievementsEn,

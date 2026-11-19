@@ -1263,7 +1263,7 @@ export class ContinuousEffectLedger {
     permanentId: string,
     keyword: string,
     excludedSourceInstanceId: string,
-  ): (() => boolean)[] {
+  ): { sourceInstanceId: string; isActive: () => boolean }[] {
     const continuousKey = (grant: KeywordGrant) =>
       JSON.stringify([grant.sourceInstanceId, grant.sourceCardId, grant.sourceEffectText]);
     const liveKeys = () =>
@@ -1288,9 +1288,11 @@ export class ContinuousEffectLedger {
           grant.sourceInstanceId !== excludedSourceInstanceId &&
           this.keywordGrantIsActive(grant),
       )
-      .map((grant) => {
+      .flatMap((grant) => {
         const key = continuousKey(grant);
-        return () => liveKeys().has(key);
+        return grant.sourceInstanceId === undefined
+          ? []
+          : [{ sourceInstanceId: grant.sourceInstanceId, isActive: () => liveKeys().has(key) }];
       });
   }
 

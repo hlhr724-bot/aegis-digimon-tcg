@@ -17,6 +17,7 @@ type DecoyReactionDeps = {
     min: number,
     promptText: string,
     source: DecoySource,
+    affectedPermanentIds: readonly string[],
   ): Promise<string[]>;
   deleteAsCost(holderId: string): Promise<boolean>;
 };
@@ -76,6 +77,7 @@ export function decoyLeaveReplacements(
         1,
         DECOY_TARGET_CHOICE_TEXT,
         first.source,
+        [],
       );
       return protectable.find(({ target }) => target.topCard.instanceId === chosenInstanceId) ?? first;
     };
@@ -89,7 +91,14 @@ export function decoyLeaveReplacements(
         return undefined;
       }
       if (ctx.presetOptionalAnswer !== true) {
-        const confirmed = await deps.select(ownerSeat, [holderInstanceId], 0, DECOY_CONFIRMATION_TEXT, first.source);
+        const confirmed = await deps.select(
+          ownerSeat,
+          [holderInstanceId],
+          0,
+          DECOY_CONFIRMATION_TEXT,
+          first.source,
+          protectable.map(({ target }) => target.permanentId),
+        );
         if (!confirmed.includes(holderInstanceId)) {
           return undefined;
         }

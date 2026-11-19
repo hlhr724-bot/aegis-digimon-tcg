@@ -10,6 +10,7 @@ import { EmotePicker } from "./EmotePicker";
 import { useDraggableWindow } from "./useDraggableWindow";
 import type { ChatEntry, MatchChat } from "./useMatchChat";
 import { LiveReplayAnnotationBar } from "@/replays/annotations/LiveReplayAnnotationBar";
+import { TranslatableChatText } from "@/game/chat/translation/TranslatableChatText";
 
 /**
  * The chat window: docked on the right, draggable by its title bar, with the history, a
@@ -148,7 +149,7 @@ export function MatchChatWindow({
                   <EmoteIcon emote={entry.message.emote} size={24} />
                 </span>
               ) : (
-                <span>{messageText(entry.message)}</span>
+                <ChatHistoryText entry={entry} text={messageText(entry.message)} />
               )}
             </li>
           ))}
@@ -199,4 +200,13 @@ export function MatchChatWindow({
     </section>,
     document.body,
   );
+}
+
+type ChatHistoryTextParams = { entry: ChatEntry; text: string };
+
+function ChatHistoryText({ entry, text }: ChatHistoryTextParams) {
+  if (entry.own || entry.message.kind !== "text") {
+    return <span>{text}</span>;
+  }
+  return <TranslatableChatText text={text} />;
 }

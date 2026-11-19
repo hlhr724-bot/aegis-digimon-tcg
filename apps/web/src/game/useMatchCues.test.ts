@@ -1461,6 +1461,7 @@ describe("match cues", () => {
       },
       { kind: "turnEnded", endingSeat: 0, nextSeat: 1, turnCount: 1 },
       { kind: "phaseChanged", phase: "Active", turnSeat: 1, turnCount: 1 },
+      { kind: "phaseChanged", phase: "Draw", turnSeat: 1, turnCount: 1 },
     ]);
     await advance(TIMINGS.turnBanner + TIMINGS.phaseBannerGap);
 
@@ -1524,7 +1525,7 @@ describe("match cues", () => {
     expect(result.current.heldPhaseState?.players[0]?.battleArea[0]?.isSuspended).toBe(false);
   });
 
-  it("releases a permanent whose unsuspend move arrives after the ribbon read the timeline", async () => {
+  it("holds the Unsuspend ribbon until a late unsuspend move arrives", async () => {
     const state = {
       phase: Phase.Main,
       players: [0, 1].map(() => ({
@@ -1546,8 +1547,7 @@ describe("match cues", () => {
     await advance(0);
     rerender([{ kind: "phaseChanged", phase: "Active", turnSeat: 1, turnCount: 2 }]);
     await advance(0);
-    expect(result.current.phaseBanner?.phase).toBe("Active");
-    expect(result.current.heldPhaseState?.players[1]?.battleArea[0]?.isSuspended).toBe(true);
+    expect(result.current.phaseBanner).toBeNull();
 
     rerender([
       { kind: "phaseChanged", phase: "Active", turnSeat: 1, turnCount: 2 },
@@ -1559,6 +1559,7 @@ describe("match cues", () => {
       },
     ]);
     await advance(0);
+    expect(result.current.phaseBanner?.phase).toBe("Active");
     expect(result.current.heldPhaseState?.players[1]?.battleArea[0]?.isSuspended).toBe(false);
     expect(result.current.heldSuspendedIds.has("late")).toBe(false);
   });
@@ -3619,7 +3620,7 @@ describe("match cues", () => {
     const { result, rerender } = renderCues();
     await advance(0);
 
-    rerender([UNSUSPEND_PHASE]);
+    rerender([UNSUSPEND_PHASE, { kind: "phaseChanged", phase: "Draw", turnSeat: 0, turnCount: 5 }]);
     await advance(0);
     expect(result.current.unsuspendSweep?.seat).toBe(0);
 
