@@ -206,6 +206,7 @@ export interface DigivolveDeps {
     into: CardDefinition,
     evolvingInstanceId: string,
     baseAsDigimon?: CardDefinition,
+    remainingCost?: number,
   ): Promise<number>;
   /**
    * Whether the evolving instance's color requirement is currently waived

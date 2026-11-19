@@ -922,6 +922,17 @@ export function buildPrimitives(engine: GameEngine): Primitives {
         )) ?? 0;
       return Math.max(0, passiveCost - interactiveReduction);
     },
+    activateFreeDigivolveReductions: async (target, evolvingInstanceId, into, baseAsDigimon) => {
+      await digivolveDeps(engine).activateInteractiveDigivolveReduction?.(
+        engine.state,
+        target.controllerSeat,
+        target,
+        into,
+        evolvingInstanceId,
+        baseAsDigimon,
+        0,
+      );
+    },
     effectiveLooseUseCost: (instanceId, controllerSeat) => projectLooseUseCost(engine, instanceId, controllerSeat),
     inHandCost: (instanceId, controllerSeat) => projectInHandCost(engine, instanceId, controllerSeat),
     fireLinkEvent: async (instanceIds, targetPermanentId) => {
