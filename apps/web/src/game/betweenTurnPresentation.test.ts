@@ -432,7 +432,7 @@ it.each([
   { presentationPacing: "sequential", advancedTurnCount: false },
   { presentationPacing: "sequential", advancedTurnCount: true },
 ] as const)(
-  "updates the held hand after a start-of-turn search and discard before drawing ($presentationPacing, counter advanced=$advancedTurnCount)",
+  "shows a start-of-turn search and discard live before the Unsuspend ribbon ($presentationPacing, counter advanced=$advancedTurnCount)",
   async ({ presentationPacing, advancedTurnCount }) => {
     const before = snapshotGameState(createArenaDemoState());
     before.phase = Phase.End;
@@ -513,15 +513,11 @@ it.each([
     await advance(2000);
     rerender({ state: searched, count: 2 });
     await advance(2000);
-    expect(result.current.heldDrawState?.state.players[0]!.hand.map((entry) => entry.instanceId)).toContain(
-      card.instanceId,
-    );
+    expect(result.current.heldDrawState).toBeUndefined();
     rerender({ state: discarded, count: 3 });
     await advance(2000);
-    expect(result.current.heldDrawState?.state.players[0]!.hand.map((entry) => entry.instanceId)).toEqual(
-      discarded.players[0]!.hand.map((entry) => entry.instanceId),
-    );
-    expect(result.current.heldDrawState?.state.players[0]!.handCount).toBe(discarded.players[0]!.handCount);
+    expect(result.current.heldDrawState).toBeUndefined();
+    expect(result.current.phaseBanner).toBeNull();
     rerender({ state: drawn, count: 4 });
     expect(result.current.heldDrawState?.state.players[0]!.hand.map((entry) => entry.instanceId)).not.toContain(
       "turn-draw",

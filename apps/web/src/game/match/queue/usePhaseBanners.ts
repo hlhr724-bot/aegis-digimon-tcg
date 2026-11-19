@@ -21,6 +21,7 @@ import { UNSUSPEND_PHASE, UNSUSPEND_SWEEP_MS } from "../constants";
 import { CueTrack } from "../enums";
 import { OPTION_DOCK_TRACKS } from "../tracks";
 import { waitsForPhaseRibbons } from "./waitsForPhaseRibbons";
+import { findUnsuspendBoundary } from "./findUnsuspendBoundary";
 import { buildInstanceSeatIndex } from "../../sidePanels";
 import type { DrawPhaseOwner, MatchCues, TurnTransitionCue, UnsuspendSweep } from "../types";
 
@@ -155,7 +156,7 @@ export function usePhaseBanners({
   completedPhaseOrderRef: MutableRefObject<number>;
   stepPhaseOrdersRef: MutableRefObject<WeakMap<AnimationStep, number>>;
   /** Mutated: the phase event the previous pass ended at. */
-  lastPhaseEventRef: MutableRefObject<Extract<ServerEvent, { kind: "phaseChanged" | "turnEnded" }> | undefined>;
+  lastPhaseEventRef: MutableRefObject<ServerEvent | undefined>;
   /** Mutated: false until the first pass has recorded the history it joined mid-match. */
   phaseBaselineRef: MutableRefObject<boolean>;
   /** Mutated: true while a ribbon is on screen. */
@@ -186,6 +187,7 @@ export function usePhaseBanners({
   const appliedUnsuspendsRef = useRef(new WeakSet<ServerEvent>());
   /** The Unsuspend phase whose ribbon has not released that phase's moves yet. */
   const unreleasedUnsuspendPhaseRef = useRef<ServerEvent | undefined>(undefined);
+  const deferredUnsuspendRef = useRef<{ phase: ServerEvent; last: ServerEvent | undefined } | undefined>(undefined);
 
   /**
    * Release permanents whose unsuspend move reaches the client after the Unsuspend ribbon
@@ -237,11 +239,7 @@ export function usePhaseBanners({
   const phaseBatchesRef = useRef(batches);
   phaseBatchesRef.current = batches;
 
-  function boardBeforePhase(openedPhase: ServerEvent, previous: GameState | undefined): GameState | undefined {
-    const openedAt =
-      "stateVersion" in openedPhase && typeof openedPhase.stateVersion === "number"
-        ? openedPhase.stateVersion
-        : undefined;
+  function boardBeforePhase(openedAt: number | undefined, previous: GameState | undefined): GameState | undefined {
     if (openedAt === undefined) return previous;
     const snapshot = phaseStateRef.current.snapshots?.filter((candidate) => candidate.stateVersion <= openedAt).at(-1);
     if (snapshot === undefined) return previous;
@@ -324,7 +322,10 @@ export function usePhaseBanners({
   const phaseHistory = useMemo(
     () =>
       (phaseEvents ?? batches.flatMap((batch) => batch.events)).filter(
-        (event) => event.kind === "phaseChanged" || event.kind === "turnEnded",
+        (event) =>
+          event.kind === "phaseChanged" ||
+          event.kind === "turnEnded" ||
+          (event.kind === "cardsMoved" && event.from === "suspended" && event.to === "unsuspended"),
       ),
     [phaseEvents, batches],
   );
@@ -342,13 +343,28 @@ export function usePhaseBanners({
       return;
     }
     const fresh = phaseHistory.slice(last ? phaseHistory.lastIndexOf(last) + 1 : 0);
-    for (const openedPhase of fresh) {
+    const deferred = deferredUnsuspendRef.current;
+    deferredUnsuspendRef.current = undefined;
+    const opened = deferred && eventTimeline.includes(deferred.phase) ? [deferred.phase, ...fresh] : fresh;
+    for (const openedPhase of opened) {
+      if (openedPhase.kind === "cardsMoved") continue;
       if (openedPhase.kind === "phaseChanged" && !isAnnouncedPhase(openedPhase.phase)) continue;
+      const precedingFrom = openedPhase === deferred?.phase ? deferred.last : last;
+      let unsuspendBoundary: ServerEvent | undefined;
+      if (openedPhase.kind === "phaseChanged" && openedPhase.phase === UNSUSPEND_PHASE) {
+        const boundary = findUnsuspendBoundary({ activePhase: openedPhase, eventTimeline });
+        if (boundary === "skipped") continue;
+        if (boundary === "pending") {
+          deferredUnsuspendRef.current = { phase: openedPhase, last: precedingFrom };
+          continue;
+        }
+        unsuspendBoundary = boundary;
+      }
       const phaseOrder = ++nextPhaseOrderRef.current;
       phaseOrdersRef.current.set(openedPhase, phaseOrder);
       const preceding = eventTimeline.slice(
-        last ? eventTimeline.lastIndexOf(last) + 1 : 0,
-        eventTimeline.indexOf(openedPhase),
+        precedingFrom ? eventTimeline.lastIndexOf(precedingFrom) + 1 : 0,
+        eventTimeline.indexOf(unsuspendBoundary ?? openedPhase),
       );
       const isArrival = (event: ServerEvent) =>
         event.kind === "cardPlayed" ||
@@ -422,14 +438,25 @@ export function usePhaseBanners({
         if (banner.phase === UNSUSPEND_PHASE) {
           drawPhaseWaitingRef.current = { seat: openedPhase.turnSeat, phaseOrder };
           unreleasedUnsuspendPhaseRef.current = openedPhase;
-          const drawState = boardBeforePhase(openedPhase, previousDrawStateRef.current);
+          const versionOf = (event: ServerEvent) =>
+            "stateVersion" in event && typeof event.stateVersion === "number" ? event.stateVersion : undefined;
+          const boundaryVersion = unsuspendBoundary && versionOf(unsuspendBoundary);
+          const boardAtBoundary =
+            boundaryVersion === undefined
+              ? undefined
+              : phaseStateRef.current.snapshots?.filter((candidate) => candidate.stateVersion < boundaryVersion).at(-1)
+                  ?.state;
+          const drawState = boardBeforePhase(
+            boundaryVersion === undefined ? versionOf(openedPhase) : boundaryVersion - 1,
+            previousDrawStateRef.current,
+          );
           // The held revision can predate an unsuspend the ending turn made before its End
           // phase (EX13-006): the move reached an earlier pass, and the state patch lags the
           // events. Release every move the held revision does not show yet, not only this
           // pass's arrivals, or the permanent stays rotated until the hold lifts.
           const unsuspendedBeforeActive = new Set(
             eventTimeline
-              .slice(0, eventTimeline.indexOf(openedPhase))
+              .slice(0, eventTimeline.indexOf(unsuspendBoundary ?? openedPhase))
               .flatMap((event) =>
                 event.kind === "cardsMoved" &&
                 event.from === "suspended" &&
@@ -449,7 +476,7 @@ export function usePhaseBanners({
                   ...drawState,
                   players: drawState.players.map((player) => releaseUnsuspended(player, unsuspendedBeforeActive)),
                 } as GameState,
-                live: state,
+                live: boardAtBoundary ?? state,
                 moves: arrivals,
               })
             : undefined;
