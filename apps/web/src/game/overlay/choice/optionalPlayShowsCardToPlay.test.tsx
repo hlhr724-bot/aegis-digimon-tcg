@@ -61,42 +61,18 @@ function renderOptional({
   return screen.getByRole("dialog");
 }
 
-it("shows the card an optional play will play in the centered card gallery", () => {
+it("shows the card an optional play will play in the docked decision prompt", () => {
   const onRespond = vi.fn<(response: DecisionResponse) => void>();
   const dialog = renderOptional({ optionalRequest: request, candidates: [greymon], onRespond });
-  expect(dialog.dataset.promptSurface).toBe("center");
-  expect(dialog.dataset.effectActivation).toBeUndefined();
-  expect(dialog.classList.contains("decision-overlay--card-choice")).toBe(true);
-  expect(dialog.classList.contains("decision-overlay--side")).toBe(false);
+  expect(dialog.dataset.promptSurface).toBe("left");
+  expect(dialog.classList.contains("decision-overlay--card-choice")).toBe(false);
+  expect(dialog.classList.contains("decision-overlay--side")).toBe(true);
   const strip = dialog.querySelector(".decision-overlay__choice-cards");
   expect(strip?.textContent).toContain("Card to play");
   expect(strip?.textContent).toContain("Greymon");
   expect(strip?.textContent).toContain("BT24-010");
-  expect(dialog.querySelector(".decision-overlay__source-art")).toBeTruthy();
-  expect(dialog.querySelector(".decision-overlay__effect-text")).toBeTruthy();
-  expect(screen.getByRole("button", { name: "View board" })).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: /^Yes, activate$/ }));
   expect(onRespond).toHaveBeenCalledWith({ kind: "optional", accept: true });
-});
-
-it("lays out every card of an optional prompt that previews several cards in the gallery grid", () => {
-  const dialog = renderOptional({
-    optionalRequest: request,
-    candidates: [greymon, { ...greymon, instanceId: "discarded-agumon", cardId: "BT24-008" }],
-  });
-  expect(dialog.dataset.promptSurface).toBe("center");
-  expect(dialog.querySelectorAll(".decision-overlay__grid > .decision-candidate-tile")).toHaveLength(2);
-});
-
-it("keeps an optional play that endangers a Digimon docked beside the board with the card to play", () => {
-  const dialog = renderOptional({
-    optionalRequest: { ...request, options: { ...request.options, affectedPermanentIds: ["endangered-digimon"] } },
-    candidates: [greymon],
-  });
-  expect(dialog.dataset.promptSurface).toBe("left");
-  expect(dialog.classList.contains("decision-overlay--card-choice")).toBe(false);
-  expect(dialog.classList.contains("decision-overlay--side")).toBe(true);
-  expect(dialog.querySelector(".decision-overlay__choice-cards")?.textContent).toContain("Card to play");
 });
 
 it("keeps an optional prompt without a previewed card docked as a compact activation prompt", () => {

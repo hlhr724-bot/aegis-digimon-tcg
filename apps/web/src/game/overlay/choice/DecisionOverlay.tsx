@@ -153,8 +153,7 @@ export function DecisionOverlay({
     candidates.length > 0 &&
     request.options?.digivolveCostChoice === undefined;
   const previewsCards = isOptional && candidates.length > 0;
-  const endangersDigimon = (request.options?.affectedPermanentIds?.length ?? 0) > 0;
-  const showsCardGallery = isCardChoice || (previewsCards && !endangersDigimon);
+  const showsCardGallery = isCardChoice;
   const choosesPrintedBullet =
     isChoose &&
     choiceEffects === undefined &&
