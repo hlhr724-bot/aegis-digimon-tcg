@@ -804,7 +804,8 @@
   padding: 1.5rem;
   overflow: auto;
   overflow-x: hidden;
-  background: rgb(0 0 0 / 82%);
+  color: var(--ds-on-ink);
+  background: var(--ds-ink);
 }
 
 .game-result--loss {
@@ -837,7 +838,7 @@
   font-weight: 700;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgb(226 232 240 / 62%);
+  color: var(--ds-on-ink-2);
 }
 
 .game-result__title {
@@ -857,7 +858,7 @@
 .game-result__reason {
   margin: 0 0 1.4rem;
   font-size: 0.9rem;
-  color: rgb(226 232 240 / 82%);
+  color: var(--ds-on-ink);
 }
 
 .game-result__stats {
@@ -872,7 +873,7 @@
   flex: 1;
   min-width: 0;
   padding: 0.6rem 0.4rem;
-  background: rgb(255 255 255 / 7%);
+  background: var(--ds-ink-raised);
   border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 0.7rem;
 }
@@ -882,14 +883,14 @@
   font-family: var(--ds-font-mono);
   font-size: 1.25rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--ds-on-ink);
 }
 
 .game-result__stat-label {
   display: block;
   margin-top: 0.15rem;
-  font-size: 0.66rem;
-  color: rgb(226 232 240 / 62%);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-on-ink-2);
   overflow-wrap: anywhere;
 }
 
@@ -917,11 +918,11 @@
 
 /* The theme's ghost text is tuned for light paper; the splash scrim is always dark. */
 .game-result .game-result__link {
-  color: rgb(226 232 240 / 82%);
+  color: var(--ds-on-ink-2);
 }
 
 .game-result .game-result__link:is(:hover, :active, :focus-visible) {
-  color: #fff;
+  color: var(--ds-on-ink);
   background: rgb(255 255 255 / 10%);
 }
 
@@ -1110,19 +1111,26 @@
 }
 
 .game-result__decks {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--ds-space-3) var(--ds-space-5);
-  margin-block: var(--ds-space-3);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: var(--ds-space-3);
+  margin: 0 0 var(--ds-space-3);
   text-align: center;
 }
+.game-result__decks > div {
+  min-width: 0;
+  padding: var(--ds-space-3);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 0.7rem;
+  background: var(--ds-ink-raised);
+}
 .game-result__decks dt {
-  color: var(--ds-text-3);
+  color: var(--ds-on-ink-2);
   font-size: var(--ds-text-xs);
 }
 .game-result__decks dd {
   margin: var(--ds-space-1) 0 0;
+  color: var(--ds-on-ink);
   font-size: var(--ds-text-sm);
   font-weight: 600;
   overflow-wrap: anywhere;

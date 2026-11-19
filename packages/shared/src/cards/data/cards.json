@@ -99,7 +99,7 @@
     "attributes": ["Vaccine"],
     "types": ["Dragonkin", "ADVENTURE", "Hero"],
     "effectText": "[Digivolve] Lv.5 w/[Greymon] in name: Cost 3\n[Digivolve] Lv.5 w/[ADVENTURE]/[Hero] trait: Cost 3 \n\n＜Raid＞ \n＜Piercing＞ \n[On Play] [When Digivolving] Delete 1 of your opponent's Digimon with as much or less DP as this Digimon.\n[All Turns] This Digimon gets +1000 DP for each of your Tamers' colors, and gains ＜Security A. +1＞ for every 3 of their colors.\n[End of Your Turn] 1 of your Digimon may attack.",
-    "inheritedEffectText": "[When Attacking] [Once Per Turn] Delete 1 of your opponent's Digimon with as much or less DP as this Digimon with [Greymon] or [Omnimon] in its name in its name.",
+    "inheritedEffectText": "[When Attacking] [Once Per Turn] Delete 1 of your opponent's Digimon with as much or less DP as this Digimon with [Greymon] or [Omnimon] in its name.",
     "rarity": "SR",
     "maxCountInDeck": 4,
     "imageId": "AD1-004"
@@ -22565,7 +22565,7 @@
     "forms": ["Mega"],
     "attributes": ["Data"],
     "types": ["Shaman"],
-    "effectText": "[Digivolve][Sakuyamon: Maid Mode]: Cost 1 \n\n＜Barrier＞ \n[When Digivolving] 1 of your opponent's Digimon gets -6000 DP for the turn. Then, you may use 1 Option card with [Plug-In] in its name in its name or 1 yellow Option card with a cost of 5 or less from your hand without paying the cost.\n[Your Turn] [Once Per Turn] When you use an Option card with a cost of 2 or more, this Digimon can't be returned to hand or deck by your opponent's effects until the end of their turn.",
+    "effectText": "[Digivolve][Sakuyamon: Maid Mode]: Cost 1 \n\n＜Barrier＞ \n[When Digivolving] 1 of your opponent's Digimon gets -6000 DP for the turn. Then, you may use 1 Option card with [Plug-In] in its name or 1 yellow Option card with a cost of 5 or less from your hand without paying the cost.\n[Your Turn] [Once Per Turn] When you use an Option card with a cost of 2 or more, this Digimon can't be returned to hand or deck by your opponent's effects until the end of their turn.",
     "rarity": "R",
     "maxCountInDeck": 4,
     "imageId": "BT17-038"
@@ -36740,7 +36740,7 @@
     "forms": ["-"],
     "attributes": ["-"],
     "types": ["Option"],
-    "effectText": "[Main] Reveal the top 3 cards of your deck. Add 1 card with [Davis Motomiya] in its name in its name and 1 card with the [Free] trait among them to the hand. Trash the rest. Then, place this card in the battle area.\n[All Turns] When the top stacked card of any your [Armor Form] trait Digimon is trashed, ＜Delay＞.\n・1 of your Digimon may digivolve into a Digimon card with the [Armor Form] in the hand without paying the cost.",
+    "effectText": "[Main] Reveal the top 3 cards of your deck. Add 1 card with [Davis Motomiya] in its name and 1 card with the [Free] trait among them to the hand. Trash the rest. Then, place this card in the battle area.\n[All Turns] When the top stacked card of any your [Armor Form] trait Digimon is trashed, ＜Delay＞.\n・1 of your Digimon may digivolve into a Digimon card with the [Armor Form] in the hand without paying the cost.",
     "securityEffectText": "[Security] Activate this card's [Main] effect.",
     "rarity": "C",
     "maxCountInDeck": 4,

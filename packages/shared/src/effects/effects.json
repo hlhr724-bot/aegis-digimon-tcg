@@ -45459,7 +45459,7 @@
             "duration": "forTheTurn"
           },
           {
-            "effectTextPart": "Then, you may use 1 Option card with [Plug-In] in its name in its name or 1 yellow Option card with a cost of 5 or less from your hand without paying the cost.",
+            "effectTextPart": "Then, you may use 1 Option card with [Plug-In] in its name or 1 yellow Option card with a cost of 5 or less from your hand without paying the cost.",
             "kind": "UseOptionWithoutCost",
             "filter": {
               "controller": "mine",
@@ -78575,7 +78575,7 @@
         "trigger": "Main",
         "actions": [
           {
-            "effectTextPart": "[Main] Reveal the top 3 cards of your deck. Add 1 card with [Davis Motomiya] in its name in its name and 1 card with the [Free] trait among them to the hand. Trash the rest.",
+            "effectTextPart": "[Main] Reveal the top 3 cards of your deck. Add 1 card with [Davis Motomiya] in its name and 1 card with the [Free] trait among them to the hand. Trash the rest.",
             "kind": "RevealAdd",
             "revealCount": 3,
             "add": [
@@ -143138,7 +143138,7 @@
                 "zone": ["battleArea", "breeding"],
                 "nameOrTrait": [{ "tokens": ["Lucemon"], "match": "name" }]
               },
-              "raw": "you have a Digimon with [Lucemon] in its name in its name on the field"
+              "raw": "you have a Digimon with [Lucemon] in its name on the field"
             }
           }
         ]
@@ -143152,7 +143152,7 @@
             "kind": ["Digimon"],
             "nameOrTrait": [{ "tokens": ["Lucemon"], "match": "name" }]
           },
-          "raw": "you have a Digimon with [Lucemon] in its name in its name"
+          "raw": "you have a Digimon with [Lucemon] in its name"
         },
         "actions": [
           {
@@ -143166,7 +143166,7 @@
                 "kind": ["Digimon"],
                 "nameOrTrait": [{ "tokens": ["Lucemon"], "match": "name" }]
               },
-              "raw": "you have a Digimon with [Lucemon] in its name in its name"
+              "raw": "you have a Digimon with [Lucemon] in its name"
             },
             "cost": {
               "kind": "return",

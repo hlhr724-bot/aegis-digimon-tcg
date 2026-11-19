@@ -139,6 +139,29 @@ describe("trigger chooser source labels", () => {
     expect(marked.map((detail) => detail.controlledByOpponent)).toEqual([true, undefined, undefined]);
   });
 
+  it("names the Digimon that triggered each entry of identical source cards", () => {
+    const { viewer, opponent } = players();
+    const decision = orderTriggers(["delay-card", "trash-card", "field-a", "security-card"]);
+    const subjects = triggerDetailsFor({
+      decision: {
+        ...decision,
+        options: { ...decision.options, triggerSubjectPermanentIds: ["perm-1", "perm-4", "", "perm-gone"] },
+      },
+      viewer,
+      opponent,
+      handInstanceIds: [],
+      t: translator("en"),
+    });
+    expect(subjects.map((detail) => detail.subjectLabel)).toEqual([
+      "Triggering card: Yokomon",
+      "Triggering card: Omnimon #4",
+      undefined,
+      undefined,
+    ]);
+    expect(subjects.map((detail) => detail.subjectCardId)).toEqual(["BT1-001", "BT1-084", undefined, undefined]);
+    expect(subjects.map((detail) => detail.subjectFieldReference)).toEqual([undefined, "#4", undefined, undefined]);
+  });
+
   it("leaves a source it cannot place unlabelled", () => {
     expect(sourceLabels(["unknown-card"])).toEqual([undefined]);
   });

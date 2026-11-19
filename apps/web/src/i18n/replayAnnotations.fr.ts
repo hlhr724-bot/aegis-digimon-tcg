@@ -51,6 +51,6 @@ export const replayAnnotationsFr: Record<keyof typeof replayAnnotationsEn, strin
   "replayAnnotations.moreEmoji": "Autres emojis",
   "replayAnnotations.customEmoji": "Ou saisis n’importe quel emoji",
   "replayAnnotations.useEmoji": "Utiliser",
-  "replayAnnotations.customEmojiInvalid": "Saisis un seul emoji.",
+  "replayAnnotations.customEmojiInvalid": "Saisissez un seul emoji.",
   "replayAnnotations.chapterEmoji": "{emoji} · Tour {turn}",
 };

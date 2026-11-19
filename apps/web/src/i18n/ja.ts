@@ -1,5 +1,6 @@
 import { deckMatchupJa } from "@/i18n/deckMatchup.ja";
 import { deckOddsJa } from "@/i18n/deckOdds.ja";
+import { chatActionsJa } from "@/i18n/chatActions.ja";
 import { tournamentCircuitsJa } from "@/i18n/tournamentCircuits.ja";
 import { tournamentOfficialRequestJa } from "@/i18n/tournamentOfficialRequest.ja";
 import { matchQueueJa } from "@/i18n/matchQueue.ja";
@@ -733,6 +734,7 @@ const interfaceMessages = {
   "common.export": "エクスポート",
   "game.hiddenCard": "裏向きのカード",
   "game.faceDownSource": "裏向き",
+  "game.faceDownSourceCount": "裏向き{count}枚",
   "game.debugId": "対戦ID",
   "game.debugCopyFailed": "コピーに失敗しました。IDを選択してコピーしてください。",
   "common.copy": "コピー",
@@ -1209,6 +1211,12 @@ const interfaceMessages = {
   "game.guestApproval.hostLeft": "対戦開始前にホストがルームを退出しました。",
   "game.tournamentCancelledTitle": "大会が中止されました",
   "game.tournamentCancelled": "主催者がこの大会を中止したため、この対戦は結果なしで終了しました。",
+  "lobby.turnOrder.label": "先攻・後攻",
+  "lobby.turnOrder.random": "ランダム",
+  "lobby.turnOrder.hostFirst": "ホストが先攻",
+  "lobby.turnOrder.hostSecond": "ホストが後攻",
+  "lobby.turnOrder.hint": "第1ゲームの先攻を決めます。3本勝負では、第2ゲーム以降は通常のシリーズルールに従います。",
+  "lobby.turnOrder.guest": "第1ゲームの先攻・後攻: {order}",
   "lobby.approval.label": "参加を承認制にする",
   "lobby.approval.hint": "コードで誰かが参加すると、相手を確認して対戦開始前に承認または拒否できます。",
   "game.opponent": "対戦相手",
@@ -1379,6 +1387,7 @@ const interfaceMessages = {
   "game.fieldEffects.untilYourActivePhase": "あなたのアクティブフェイズまで",
   "game.fieldEffects.untilOpponentActivePhase": "相手のアクティブフェイズまで",
   "game.restriction.cannotAttack": "アタックできない",
+  "game.restriction.cannotAttackPlayers": "プレイヤーにアタックできない",
   "game.restriction.cannotPlayByEffects": "効果で登場できない",
   "game.restriction.cannotPlay": "登場できない",
   "game.restriction.immuneToOpponentDigimonEffects": "相手のデジモンの効果を受けない",
@@ -1421,6 +1430,7 @@ const interfaceMessages = {
   "game.restriction.cannotBlock": "ブロックできない",
   "game.restriction.cannotSuspend": "レストできない",
   "game.restriction.cannotUnsuspend": "アクティブにならない",
+  "game.restriction.cannotUnsuspendAtAll": "アクティブにできない",
   "game.restriction.cannotDigivolve": "進化できない",
   "game.restriction.cannotActivateWhenDigivolving": "【進化時】効果なし",
   "game.digivolutionSources": "進化元 {count}枚",
@@ -1579,6 +1589,7 @@ const interfaceMessages = {
   "overlay.useEffectPrompt": "この効果を使用しますか？",
   "overlay.choiceRevealedCards": "公開されたカード",
   "overlay.choiceHandCards": "対象のカード",
+  "overlay.cardToPlay": "登場させるカード",
   "overlay.selectTargets": "対象を{range}つ選んでください",
   "overlay.sourceCountOne": "進化元{count}枚",
   "overlay.sourceCountMany": "進化元{count}枚",
@@ -1647,6 +1658,7 @@ const interfaceMessages = {
   "overlay.waitingEffectsHint": "先に誘発した効果がまだ処理待ちです。上の効果が終わると処理されます。",
   "overlay.presetMandatory": "強制",
   "overlay.triggerReason": "誘発: {reason}",
+  "overlay.triggerSubject": "誘発元: {name}",
   "overlay.triggerOpponentEffect": "相手の効果",
   "overlay.orderOpponentEffectsNote": "あなたがターンプレイヤーのため、相手の効果を含むこれらの効果の順番を選びます。",
   "overlay.presetLabel": "{name}の任意効果への回答",
@@ -1752,6 +1764,7 @@ const interfaceMessages = {
   "overlay.trashSort": "トラッシュの並べ替え",
   "overlay.trashSortRecent": "新しい順",
   "overlay.trashSortName": "カード名でまとめる",
+  "overlay.trashSortLevel": "レベル順",
   "overlay.trashCount": "{count}枚",
   "overlay.securityCount": "{count}枚中{faceUp}枚が表向き",
   "overlay.securityNoFaceUp": "表向きのカードはありません",
@@ -2832,6 +2845,9 @@ const interfaceMessages = {
   "redesign.arena.restriction.attacksAtStartOfMainPhase":
     "効果により、このデジモンは可能ならメインフェイズ開始時にアタックします。",
   "redesign.arena.restriction.attacksAtStartOfMainPhaseGranted": "{card}による付与: {clause}",
+  "redesign.arena.restriction.cannotAttackPlayers": "効果により、このデジモンはプレイヤーにアタックできません。",
+  "redesign.arena.restriction.cannotUnsuspendAtAll":
+    "効果により、このデジモンはアクティブフェイズでも効果でもアクティブになりません。",
   "redesign.arena.restriction.cannotAttack": "効果により、このデジモンはアタックできません。",
   "redesign.arena.restriction.cannotBlock": "効果により、このデジモンはブロックできません。",
   "redesign.arena.restriction.cannotSuspend": "効果により、このデジモンはレストできません。",
@@ -2986,6 +3002,7 @@ const interfaceMessages = {
   ...matchQueueJa,
   ...deckMatchupJa,
   ...deckOddsJa,
+  ...chatActionsJa,
   ...matchIntroJa,
   ...staffRolesJa,
   ...achievementsJa,

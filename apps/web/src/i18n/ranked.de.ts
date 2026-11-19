@@ -15,7 +15,7 @@ export const rankedDe = {
   "ranked.season.beta": "Beta-Saison",
   "ranked.season.betaBadge": "Beta",
   "ranked.season.betaNotice":
-    "Dies ist die Testsaison von Ranked. Dein Elo und deine Belohnungen sind echt und bleiben in Saison 1 erhalten. Die Regeln können sich durch euer Feedback ändern.",
+    "Dies ist die Testsaison von Ranked. Ihr Elo und Ihre Belohnungen sind echt und bleiben in Saison 1 erhalten. Die Regeln können sich durch Ihr Feedback ändern.",
   "ranked.season.leaderboard": "Rangliste",
   "ranked.season.matchups": "Matchups",
   "ranked.season.rewards": "Belohnungen",
@@ -188,8 +188,8 @@ export const rankedDe = {
   "ranked.deck.result.draw": "Unentschieden",
   "ranked.settings.hideDecks": "Meine Ranked-Decks verbergen",
   "ranked.settings.hideDecksDesc":
-    "Andere Spieler sehen dein Rating und deine Bilanz, aber nicht die Decks, die du in Ranked gespielt hast.",
+    "Andere Spieler sehen Ihr Rating und Ihre Bilanz, aber nicht die Decks, die Sie in Ranked gespielt haben.",
   "ranked.settings.hideDecksFailed":
-    "Diese Einstellung konnte nicht geladen oder gespeichert werden. Versuche es erneut oder öffne die Einstellungen neu.",
+    "Diese Einstellung konnte nicht geladen oder gespeichert werden. Versuchen Sie es erneut oder öffnen Sie die Einstellungen neu.",
   "ranked.deck.hidden": "Dieser Spieler hält seine Ranked-Decks privat.",
 } as const;

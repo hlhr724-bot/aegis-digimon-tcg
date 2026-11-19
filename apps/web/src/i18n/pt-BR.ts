@@ -1,5 +1,6 @@
 import { deckMatchupPtBR } from "@/i18n/deckMatchup.pt-BR";
 import { deckOddsPtBR } from "@/i18n/deckOdds.pt-BR";
+import { chatActionsPtBR } from "@/i18n/chatActions.pt-BR";
 import { tournamentCircuitsPtBR } from "@/i18n/tournamentCircuits.pt-BR";
 import { tournamentOfficialRequestPtBR } from "@/i18n/tournamentOfficialRequest.pt-BR";
 import { matchQueuePtBR } from "@/i18n/matchQueue.pt-BR";
@@ -456,6 +457,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "common.export": "Exportar",
   "game.hiddenCard": "Carta virada para baixo",
   "game.faceDownSource": "Virada para baixo",
+  "game.faceDownSourceCount": "{count} viradas para baixo",
   "game.debugId": "ID da partida",
   "game.debugCopyFailed": "Falha ao copiar; selecione o ID para copiar.",
   "common.copy": "Copiar",
@@ -951,6 +953,13 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.guestApproval.hostLeft": "O anfitrião saiu da sala antes de a partida começar.",
   "game.tournamentCancelledTitle": "Torneio cancelado",
   "game.tournamentCancelled": "O organizador cancelou este torneio, então esta partida terminou sem resultado.",
+  "lobby.turnOrder.label": "Ordem dos turnos",
+  "lobby.turnOrder.random": "Aleatório",
+  "lobby.turnOrder.hostFirst": "Anfitrião começa",
+  "lobby.turnOrder.hostSecond": "Anfitrião joga em segundo",
+  "lobby.turnOrder.hint":
+    "Define quem joga o primeiro turno da partida 1. Em uma melhor de 3, as partidas seguintes usam a regra normal da série.",
+  "lobby.turnOrder.guest": "Ordem dos turnos da partida 1: {order}",
   "lobby.approval.label": "Exigir aprovação",
   "lobby.approval.hint":
     "Quando alguém entrar com seu código, você vê quem é e aceita ou recusa antes de a partida começar.",
@@ -1130,11 +1139,13 @@ export const ptBR: Record<keyof typeof en, string> = {
   "game.fieldEffects.untilYourActivePhase": "Até a sua ativação",
   "game.fieldEffects.untilOpponentActivePhase": "Até a ativação do oponente",
   "game.restriction.cannotAttack": "Não pode atacar",
+  "game.restriction.cannotAttackPlayers": "Não pode atacar jogadores",
   "game.restriction.cannotPlayByEffects": "Não pode jogar por efeitos",
   "game.restriction.cannotPlay": "Não pode jogar",
   "game.restriction.cannotBlock": "Não pode bloquear",
   "game.restriction.cannotSuspend": "Não pode suspender",
   "game.restriction.cannotUnsuspend": "Não reativa",
+  "game.restriction.cannotUnsuspendAtAll": "Não pode reativar",
   "game.restriction.cannotDigivolve": "Não digivolve",
   "game.restriction.cannotActivateWhenDigivolving": "Sem [When Digivolving]",
   "game.restriction.immuneToOpponentDigimonEffects": "Protegido contra efeitos de Digimon adversários",
@@ -1335,6 +1346,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.useEffectPrompt": "Usar este efeito?",
   "overlay.choiceRevealedCards": "Cartas reveladas",
   "overlay.choiceHandCards": "Carta em questão",
+  "overlay.cardToPlay": "Carta a ser jogada",
   "overlay.selectTargets": "Escolha {range}",
   "overlay.sourceCountOne": "{count} fonte",
   "overlay.sourceCountMany": "{count} fontes",
@@ -1403,6 +1415,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.waitingEffectsHint": "Efeitos anteriores ainda pendentes. Eles resolvem quando os efeitos acima terminarem.",
   "overlay.presetMandatory": "Obrigatório",
   "overlay.triggerReason": "Motivo: {reason}",
+  "overlay.triggerSubject": "Carta que ativou: {name}",
   "overlay.triggerOpponentEffect": "Efeito do oponente",
   "overlay.orderOpponentEffectsNote":
     "Você é o jogador do turno, então escolhe a ordem destes efeitos, incluindo os do oponente.",
@@ -1509,6 +1522,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   "overlay.trashSort": "Ordenar descarte",
   "overlay.trashSortRecent": "Mais recentes",
   "overlay.trashSortName": "Agrupar por nome",
+  "overlay.trashSortLevel": "Ordenar por nível",
   "overlay.trashCount": "{count} cartas",
   "overlay.securityCount": "{faceUp} viradas para cima de {count} cartas",
   "overlay.securityNoFaceUp": "nenhuma carta virada para cima",
@@ -2259,6 +2273,7 @@ export const ptBR: Record<keyof typeof en, string> = {
   ...matchQueuePtBR,
   ...deckMatchupPtBR,
   ...deckOddsPtBR,
+  ...chatActionsPtBR,
   ...matchIntroPtBR,
   ...staffRolesPtBR,
   ...achievementsPt,

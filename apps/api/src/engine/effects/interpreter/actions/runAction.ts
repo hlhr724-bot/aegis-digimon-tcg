@@ -59,6 +59,7 @@ import { canDetachPermanentTop, isDetachTopAction } from "../targeting/detachTop
 import { printedPassage } from "#api/engine/decisions/printedPassage";
 import { isSameAttackTarget } from "#api/engine/combat/isSameAttackTarget";
 import type { DecisionApi } from "#api/engine/effects/context/decisions";
+import { getOptionalPlayPreviewCards } from "#api/engine/effects/interpreter/actions/getOptionalPlayPreviewCards";
 
 function clearDeleteOutcome(ctx: EffectContext, action: Extract<Action, { kind: "Delete" }>): void {
   ctx.lastDeleteCount = 0;
@@ -1753,8 +1754,12 @@ async function askOptionalWithPrintedCost({
   const outerPresetOptionalAnswer = ctx.presetOptionalAnswer;
   if (asksIndependentlyOfYesPreset(ctx, action)) ctx.presetOptionalAnswer = undefined;
   try {
+    if (chooser === ctx.ask && ctx.presetOptionalAnswer === undefined) {
+      ctx.optionalPlayPreviewCards = await getOptionalPlayPreviewCards({ ctx, action });
+    }
     return await chooser.optional(ctx, describeAction(action));
   } finally {
+    ctx.optionalPlayPreviewCards = undefined;
     ctx.presetOptionalAnswer = outerPresetOptionalAnswer;
     ctx.activeEffectTextPart = outerEffectTextPart;
     ctx.activeEffectTextEmphasis = outerEffectTextEmphasis;

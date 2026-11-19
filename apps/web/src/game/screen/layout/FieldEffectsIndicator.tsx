@@ -15,7 +15,7 @@ const restrictionLabels: Record<string, TranslationKey> = {
   block: "game.restriction.cannotBlock",
   suspend: "game.restriction.cannotSuspend",
   beSuspended: "game.restriction.cannotSuspend",
-  unsuspend: "game.restriction.cannotUnsuspend",
+  unsuspend: "game.restriction.cannotUnsuspendAtAll",
   digivolve: "game.restriction.cannotDigivolve",
   dpImmune: "game.restriction.protectedFromDpReduction",
   beAffected: "game.restriction.immuneToOpponentEffects",

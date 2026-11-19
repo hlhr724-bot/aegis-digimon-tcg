@@ -285,7 +285,14 @@ export function DecisionTriggerChooser({
               <button
                 type="button"
                 className={`trigger-chooser__option${chosen ? " trigger-chooser__option--chosen" : ""}`}
-                aria-label={[timingLabel, triggerKeyLabels[i], triggerCopyLabels[i], detail?.sourceLabel, reason]
+                aria-label={[
+                  timingLabel,
+                  triggerKeyLabels[i],
+                  triggerCopyLabels[i],
+                  detail?.sourceLabel,
+                  detail?.subjectLabel,
+                  reason,
+                ]
                   .filter(Boolean)
                   .join(", ")}
                 aria-pressed={chosen}
@@ -322,6 +329,14 @@ export function DecisionTriggerChooser({
                       </span>
                     ) : detail?.sourceLabel ? (
                       <span className="trigger-chooser__source">{detail.sourceLabel}</span>
+                    ) : null}
+                    {detail?.subjectCardId ? (
+                      <span className="trigger-chooser__host">
+                        <span className="trigger-chooser__host-art">
+                          <CardFull cardId={detail.subjectCardId} width={28} zoomOnHover={false} />
+                        </span>
+                        <span className="trigger-chooser__source">{detail.subjectLabel}</span>
+                      </span>
                     ) : null}
                     {reason ? (
                       <span className="trigger-chooser__reason">{t("overlay.triggerReason", { reason })}</span>

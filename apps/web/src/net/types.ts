@@ -15,6 +15,7 @@ export interface AegisJoinOptions {
   storyGuestToken?: string;
   allowRollback?: boolean;
   requireApproval?: boolean;
+  turnOrder?: import("@aegis/shared/protocol/PrivateTurnOrder").PrivateTurnOrder;
   spectator?: boolean;
   displayName: string;
   avatarId?: string;

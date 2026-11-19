@@ -8,7 +8,7 @@ export const compiled: CompiledCard = {
       actions: [
         {
           effectTextPart:
-            "[Main] Reveal the top 3 cards of your deck. Add 1 card with [Davis Motomiya] in its name in its name and 1 card with the [Free] trait among them to the hand. Trash the rest.",
+            "[Main] Reveal the top 3 cards of your deck. Add 1 card with [Davis Motomiya] in its name and 1 card with the [Free] trait among them to the hand. Trash the rest.",
           kind: "RevealAdd",
           revealCount: 3,
           add: [

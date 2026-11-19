@@ -8,11 +8,13 @@ import { DecisionViewBoardButton } from "../choice/DecisionViewBoardButton";
 export function KeywordSavePrompt({
   keyword,
   rulesText,
+  permanentId,
   onAccept,
   onDecline,
 }: {
   keyword: string;
   rulesText: string;
+  permanentId?: string;
   onAccept: () => void;
   onDecline: () => void;
 }) {
@@ -23,6 +25,7 @@ export function KeywordSavePrompt({
     <BoardPromptRail
       variant="prompt"
       className="keyword-save-overlay"
+      sourcePermanentId={permanentId}
       label={keyword}
       prompt={keyword}
       clause={rulesText}

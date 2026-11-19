@@ -21,7 +21,13 @@ export async function requestCardSelection(
     kind: "selectCards",
     promptText,
     ...source,
-    options: { candidateInstanceIds, min, max, ...(selectionGoal === undefined ? {} : { selectionGoal }) },
+    options: {
+      candidateInstanceIds,
+      min,
+      max,
+      ...(selectionGoal === undefined ? {} : { selectionGoal }),
+      affectedPermanentIds: [source.sourcePermanentId],
+    },
   });
   return response.kind === "selectCards" ? response.instanceIds : [];
 }

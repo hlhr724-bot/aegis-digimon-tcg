@@ -54,11 +54,16 @@ export function pendingFateBadges({
   decision,
   picks,
   viewerSeat,
+  wouldBeDeletedPermanentIds = [],
 }: {
   decision: DecisionRequest | undefined;
   picks: readonly string[];
   viewerSeat: number;
+  wouldBeDeletedPermanentIds?: readonly string[];
 }): ReadonlyMap<string, PendingFateBadge> {
+  if (wouldBeDeletedPermanentIds.length > 0) {
+    return new Map(wouldBeDeletedPermanentIds.map((id) => [id, pendingFateBadge("delete")]));
+  }
   if (!decision || decision.seat !== viewerSeat) return new Map();
   if (decision.options?.affectedPermanentIds?.length) {
     const badge: PendingFateBadge = {

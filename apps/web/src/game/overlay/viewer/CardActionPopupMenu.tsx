@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { Icons } from "../../../design/icons";
 import { useTranslation } from "../../../i18n";
 import type { CardActionEffect, CardActionLink } from "./cardActionMenuTypes";
+import { CardActionEffectLabel } from "./CardActionEffectLabel";
 
 const item: CSSProperties = {
   display: "flex",
@@ -105,16 +106,16 @@ export function CardActionPopupMenu({
             <Icons.Link2 size={15} /> {t("overlay.link")}
           </button>
         ) : null}
-        {(effects ?? []).map((effect) => (
+        {(effects ?? []).map((effect, index) => (
           <button
-            key={effect.label}
+            key={index}
             style={item}
             onClick={effect.onActivate}
-            title={translateCardText({ text: effect.label, cardId })}
-            aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId })}`}
+            aria-label={`${t("game.activateEffect")}: ${translateCardText({ text: effect.label, cardId: effect.sourceCardId ?? cardId })}`}
             {...hoverBackground("var(--ds-fill)")}
           >
-            <span aria-hidden="true">⚡</span> {t("game.activateMainEffect")}
+            <span aria-hidden="true">⚡</span>{" "}
+            <CardActionEffectLabel effect={effect} cardId={cardId} position={index + 1} total={effects?.length ?? 0} />
           </button>
         ))}
       </div>

@@ -15,7 +15,7 @@ export const rankedFr = {
   "ranked.season.beta": "Saison bêta",
   "ranked.season.betaBadge": "Bêta",
   "ranked.season.betaNotice":
-    "Ceci est la saison de test du classé. Ton Elo et tes récompenses sont réels et sont conservés en Saison 1. Les règles peuvent changer selon vos retours.",
+    "Ceci est la saison de test du classé. Votre Elo et vos récompenses sont réels et sont conservés en Saison 1. Les règles peuvent changer selon vos retours.",
   "ranked.season.leaderboard": "Classement",
   "ranked.season.matchups": "Matchups",
   "ranked.season.rewards": "Récompenses",
@@ -187,8 +187,8 @@ export const rankedFr = {
   "ranked.deck.result.draw": "Égalité",
   "ranked.settings.hideDecks": "Masquer mes decks classés",
   "ranked.settings.hideDecksDesc":
-    "Les autres joueurs voient ton classement et ton bilan, mais pas les decks que tu as joués en classé.",
+    "Les autres joueurs voient votre classement et votre bilan, mais pas les decks que vous avez joués en classé.",
   "ranked.settings.hideDecksFailed":
-    "Impossible de charger ou d'enregistrer ce réglage. Réessaie ou rouvre les réglages.",
+    "Impossible de charger ou d'enregistrer ce réglage. Réessayez ou rouvrez les réglages.",
   "ranked.deck.hidden": "Ce joueur garde ses decks classés privés.",
 } as const;

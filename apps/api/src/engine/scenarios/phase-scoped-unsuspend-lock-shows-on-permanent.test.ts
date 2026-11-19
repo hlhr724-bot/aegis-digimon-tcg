@@ -23,6 +23,7 @@ it("publishes a lock on the next unsuspend phase as a standing restriction until
 
   expect(s.perm("lockedDigimon").isSuspended).toBe(true);
   expect(s.perm("lockedDigimon").cannotUnsuspend).toBe(true);
+  expect(s.perm("lockedDigimon").cannotUnsuspendAtAll).toBe(false);
   expect(s.perm("groundramon").cannotUnsuspend).toBe(false);
 
   s.state.turnSeat = 1;

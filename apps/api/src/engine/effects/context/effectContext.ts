@@ -110,6 +110,7 @@ export interface EffectContext {
    */
   pickingAcceptedOptional?: boolean;
   optionalActivationCancellation?: { available: boolean };
+  optionalPlayPreviewCards?: readonly { instanceId: string; cardId: string }[];
   /** This target selection is the optional action's activation choice. */
   selectingOptionalTarget?: boolean;
   /** Temporary restrictions installed by a RestrictEffect action in this resolution. */

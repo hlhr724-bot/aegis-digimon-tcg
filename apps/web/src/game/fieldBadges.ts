@@ -31,6 +31,7 @@ export function hasBlocker(permanent: Pick<Permanent, "keywords">): boolean {
 export interface SourceCountBadge {
   /** How many digivolution cards sit under the top card. */
   count: number;
+  faceDown: number;
   /** Palette key of the top card's first colour, which tints the badge. */
   color: ColorName;
 }
@@ -44,7 +45,8 @@ export function sourceCountBadge(permanent: Pick<Permanent, "stack" | "topCard">
   const count = permanent.stack.length;
   if (count === 0) return null;
   const topId = permanent.topCard?.cardId;
-  return { count, color: colorKey(getCardDefinition(topId ?? "")?.colors[0]) };
+  const faceDown = [...permanent.stack].filter((card) => !card.faceUp).length;
+  return { count, faceDown, color: colorKey(getCardDefinition(topId ?? "")?.colors[0]) };
 }
 
 /**
@@ -69,9 +71,11 @@ export function dpChipColors(permanent: Pick<Permanent, "topCard">): DpChipColor
 export type RestrictionBadgeKind =
   | "immuneToOpponentEffects"
   | "cannotAttack"
+  | "cannotAttackPlayers"
   | "cannotBlock"
   | "cannotSuspend"
   | "cannotUnsuspend"
+  | "cannotUnsuspendAtAll"
   | "cannotDigivolve"
   | "cannotActivateWhenDigivolving"
   | "immuneToOpponentDigimonEffects"
@@ -194,9 +198,11 @@ const RESTRICTION_BADGES: readonly RestrictionBadge[] = [
     icon: "digimon",
   },
   { kind: "cannotAttack", labelKey: "game.restriction.cannotAttack", icon: "attackOff" },
+  { kind: "cannotAttackPlayers", labelKey: "game.restriction.cannotAttackPlayers", icon: "attackOff" },
   { kind: "cannotBlock", labelKey: "game.restriction.cannotBlock", icon: "blockOff" },
   { kind: "cannotSuspend", labelKey: "game.restriction.cannotSuspend", icon: "suspendOff" },
   { kind: "cannotUnsuspend", labelKey: "game.restriction.cannotUnsuspend", icon: "unsuspendOff" },
+  { kind: "cannotUnsuspendAtAll", labelKey: "game.restriction.cannotUnsuspendAtAll", icon: "unsuspendOff" },
   { kind: "cannotDigivolve", labelKey: "game.restriction.cannotDigivolve", icon: "digivolveOff" },
   {
     kind: "cannotActivateWhenDigivolving",
@@ -210,10 +216,6 @@ const RESTRICTION_BADGES: readonly RestrictionBadge[] = [
  * the server's projection. Each flag is re-derived by the engine on every
  * continuous-effect pass from the same ledger the rule itself consults, so a chip
  * appears exactly while the restriction applies and no card text is parsed here.
- *
- * Target-scoped restrictions ("can't attack players") are deliberately absent: the
- * server resolves those into `attackablePermanentIds` / `canAttackPlayer`, and a chip
- * would double-count them.
  */
 export interface ForcedAttackGrant {
   clause: string;
@@ -265,6 +267,8 @@ export function restrictionBadges(
     ) {
       return false;
     }
+    if (badge.kind === "cannotAttackPlayers" && permanent.cannotAttack) return false;
+    if (badge.kind === "cannotUnsuspend" && permanent.cannotUnsuspendAtAll) return false;
     return permanent[badge.kind];
   });
   if (!immuneToAllOpponentEffects) return badges;

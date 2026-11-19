@@ -162,6 +162,12 @@ function buildSeatScopedApi(
           ...provenance(ctx),
           ...(attackAlreadyResolving ? { promptKey: "attackAlreadyResolving" as const } : {}),
           activationConfirmation: asksController && ctx.isActivationPending?.() === true,
+          ...(asksController && ctx.optionalPlayPreviewCards?.length
+            ? {
+                visibleInstanceIds: ctx.optionalPlayPreviewCards.map((card) => card.instanceId),
+                visibleCards: [...ctx.optionalPlayPreviewCards],
+              }
+            : {}),
         },
       });
       const accepted = response.kind === "optional" && response.accept;

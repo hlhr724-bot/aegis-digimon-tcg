@@ -51,6 +51,6 @@ export const replayAnnotationsDe: Record<keyof typeof replayAnnotationsEn, strin
   "replayAnnotations.moreEmoji": "Andere Emojis",
   "replayAnnotations.customEmoji": "Oder ein beliebiges Emoji eingeben",
   "replayAnnotations.useEmoji": "Verwenden",
-  "replayAnnotations.customEmojiInvalid": "Gib genau ein Emoji ein.",
+  "replayAnnotations.customEmojiInvalid": "Geben Sie genau ein Emoji ein.",
   "replayAnnotations.chapterEmoji": "{emoji} · Zug {turn}",
 };
