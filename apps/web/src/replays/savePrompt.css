@@ -36,7 +36,7 @@
 .replay-prompt .drive-how-link {
   display: inline;
   min-height: 0;
-  color: var(--ds-accent);
+  color: var(--ds-ink-accent);
   font-size: inherit;
   line-height: inherit;
 }
@@ -165,7 +165,7 @@
   min-height: 44px;
   padding: 0 var(--ds-space-2);
   border: 0;
-  color: var(--ds-accent);
+  color: var(--ds-ink-accent);
   background: none;
   font: 600 var(--ds-text-sm) / 1 var(--ds-font-body);
   white-space: nowrap;
