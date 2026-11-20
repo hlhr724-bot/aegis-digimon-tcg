@@ -505,6 +505,8 @@ export class AegisRoom extends Room<{
   private matchLimitInterval: Delayed | undefined;
   private gameOverAt: number | undefined;
   private lastPlayerActionAt: number | undefined;
+  private readonly seatsThatActed = new Set<Seat>();
+  private rankedResultVoided = false;
   /** How many games this room's match runs to; only casual and private rooms play more than one. */
   private bestOf: MatchBestOf = 1;
   private casualSeries: CasualSeries | undefined;
@@ -1686,6 +1688,10 @@ export class AegisRoom extends Room<{
       return;
     }
     if (!ranked) return;
+    if (this.rankedResultVoided && this.rankedPairId) {
+      await new RankedStore(this.accounts()).voidStartedPair(this.rankedPairId, this.roomId);
+      return;
+    }
     if (event.result.outcome === "draw") {
       await this.accounts().recordMatch({
         roomId: this.roomId,
@@ -2548,6 +2554,7 @@ export class AegisRoom extends Room<{
         await this.unlock();
       }
       this.seatByClient.delete(client.sessionId);
+      if (countsAsDodge && !this.seatsThatActed.has(seat)) this.rankedResultVoided = true;
       this.concede(seat);
       this.settleGuestApprovalDeparture(client.sessionId);
       this.releaseActiveMatch(accountId);
@@ -2613,6 +2620,7 @@ export class AegisRoom extends Room<{
       this.seatByClient.delete(client.sessionId);
       this.readyTimeout?.clear();
       this.readyTimeout = undefined;
+      if (countsAsDodge && !this.seatsThatActed.has(seat)) this.rankedResultVoided = true;
       this.concede(seat);
       this.settleGuestApprovalDeparture(client.sessionId);
       this.releaseActiveMatch(accountId);
@@ -4276,7 +4284,10 @@ export class AegisRoom extends Room<{
           ? this.state.pendingDecision?.decisionId
           : undefined;
     const result = this.applyLoggedIntent(seat, intent);
-    if (result.ok) this.lastPlayerActionAt = Date.now();
+    if (result.ok) {
+      this.lastPlayerActionAt = Date.now();
+      if (intent.type !== "ready") this.seatsThatActed.add(seat);
+    }
     if (!result.ok) {
       // A refusal is the offending client's alone, so it travels in its own batch rather
       // than in the (empty) batch of the intent it refused.
