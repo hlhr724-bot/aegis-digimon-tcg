@@ -1,4 +1,40 @@
 {
+  "releases.1.78.0-beta.summary": {
+    "en": "This update lets organizers allow beta cards in Standard tournaments, makes the MASTER bot stronger, and stops a ranked disconnect from costing rating twice.",
+    "pt-BR": "Esta atualização permite que organizadores liberem cartas beta em torneios Standard, deixa o bot MASTER mais forte e impede que uma desconexão na ranqueada custe rating duas vezes.",
+    "es": "Esta actualización permite a los organizadores habilitar cartas beta en torneos Standard, hace más fuerte al bot MASTER y evita que una desconexión en clasificatoria cueste puntuación dos veces.",
+    "it": "Questo aggiornamento permette agli organizzatori di consentire carte beta nei tornei Standard, rende più forte il bot MASTER ed evita che una disconnessione in classificata costi punteggio due volte."
+  },
+  "releases.1.78.0-beta.feature.tournamentBetaCards": {
+    "en": "Organizers can allow beta cards when creating a Standard tournament. The tournament page shows it in the format details.",
+    "pt-BR": "Organizadores podem liberar cartas beta ao criar um torneio Standard. A página do torneio mostra isso nos detalhes do formato.",
+    "es": "Los organizadores pueden habilitar cartas beta al crear un torneo Standard. La página del torneo lo muestra en los detalles del formato.",
+    "it": "Gli organizzatori possono consentire le carte beta quando creano un torneo Standard. La pagina del torneo lo indica nei dettagli del formato."
+  },
+  "releases.1.78.0-beta.feature.masterBot": {
+    "en": "The MASTER bot evaluates board positions better and plays stronger.",
+    "pt-BR": "O bot MASTER avalia melhor a posição na mesa e joga com mais força.",
+    "es": "El bot MASTER evalúa mejor la posición en la mesa y juega con más fuerza.",
+    "it": "Il bot MASTER valuta meglio la posizione sul tavolo e gioca in modo più forte."
+  },
+  "releases.1.78.0-beta.fix.rankedEarlyLeave": {
+    "en": "Leaving a ranked match before taking any action now cancels it instead of counting a loss. Neither player's rating changes; the dodge still counts.",
+    "pt-BR": "Sair de uma partida ranqueada antes de fazer qualquer ação agora cancela a partida em vez de contar derrota. O rating de nenhum dos jogadores muda; a fuga continua sendo contada.",
+    "es": "Salir de una partida clasificatoria antes de hacer cualquier acción ahora la anula en lugar de contar una derrota. La puntuación de ningún jugador cambia; el abandono sigue contando.",
+    "it": "Uscire da una partita classificata prima di fare qualsiasi azione ora la annulla invece di contare una sconfitta. Il punteggio di nessun giocatore cambia; l'abbandono viene comunque conteggiato."
+  },
+  "releases.1.78.0-beta.fix.rankedOneSearch": {
+    "en": "Only one ranked search runs per browser. Starting a search in another tab cancels the old one, so a forgotten tab can no longer start a second match.",
+    "pt-BR": "Só uma busca ranqueada roda por navegador. Começar uma busca em outra aba cancela a antiga, então uma aba esquecida não inicia mais uma segunda partida.",
+    "es": "Solo hay una búsqueda clasificatoria por navegador. Empezar una búsqueda en otra pestaña cancela la anterior, así que una pestaña olvidada ya no inicia una segunda partida.",
+    "it": "È attiva una sola ricerca classificata per browser. Avviare una ricerca in un'altra scheda annulla quella vecchia, così una scheda dimenticata non avvia più una seconda partita."
+  },
+  "releases.1.78.0-beta.fix.p167": {
+    "en": "P-167's inherited De-Digivolve now resolves even when its host is deleted before the effect resolves.",
+    "pt-BR": "O De-Digivolve herdado do P-167 agora é resolvido mesmo quando o hospedeiro é deletado antes da resolução do efeito.",
+    "es": "El De-Digivolve heredado de P-167 ahora se resuelve aunque su anfitrión sea eliminado antes de resolver el efecto.",
+    "it": "Il De-Digivolve ereditato di P-167 ora si risolve anche quando l'ospite viene eliminato prima della risoluzione dell'effetto."
+  },
   "releases.1.77.0-beta.summary": {
     "en": "This update opens BT27 in ranked play on its pre-release date, shows your ranked standing on your profile, adds chat reports and translation, lets the private host choose the turn order, makes match prompts clearer and fixes several player-reported problems.",
     "pt-BR": "Esta atualização libera o BT27 nas partidas ranqueadas na data de pré-lançamento, mostra sua posição ranqueada no perfil, adiciona denúncia e tradução no chat, permite que o anfitrião da sala privada escolha a ordem dos turnos, deixa os avisos da partida mais claros e corrige vários problemas relatados pelos jogadores.",
