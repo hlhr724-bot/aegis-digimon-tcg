@@ -1,5 +1,5 @@
 import { useTranslatedCardName } from "@/i18n/useTranslatedCardName";
-import { useEffect, useState, type CSSProperties } from "react";
+import { memo, useEffect, useState, type CSSProperties } from "react";
 import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
 import { CardBack } from "../design/cards";
 import { securityCardEffects } from "./securityCardEffects";
@@ -9,7 +9,7 @@ export const SECURITY_FLIP_DURATION = 420;
 
 type PublicCard = { cardId: string; artId?: string; faceUp: boolean };
 
-export function SecurityCardSlot({
+export const SecurityCardSlot = memo(function SecurityCardSlot({
   cardId = "",
   artId,
   faceUp = false,
@@ -68,4 +68,4 @@ export function SecurityCardSlot({
         : null}
     </i>
   );
-}
+});

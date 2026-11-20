@@ -163,7 +163,7 @@
 @media (width < 600px) and (orientation: portrait) {
   /* The strips always leave room for a lifted, badged raising Digimon. Growing them
      only while one is there would shrink the battle rows, and every card in them. */
-  .aegis-arena .game-board:has([data-field-layout="organized"]) {
+  .aegis-arena .game-board[data-organized-field] {
     --arena-pile-width: 36px;
     --arena-utility-height: 78px;
     --arena-header-height: 44px;
@@ -178,11 +178,11 @@
     --field-fixed-width: 64;
     min-height: 78px !important;
   }
-  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field {
+  .aegis-arena .game-board[data-organized-field] .game-field {
     grid-template-rows: var(--arena-utility-height) minmax(0, 1fr) var(--arena-utility-height);
     overflow: hidden !important;
   }
-  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-battle-zones {
+  .aegis-arena .game-board[data-organized-field] .game-field .game-battle-zones {
     display: grid !important;
     grid-area: 2 / 1 / 3 / -1;
     grid-template-columns: minmax(0, 1fr);
@@ -192,45 +192,45 @@
     overflow-x: hidden;
     overflow-y: clip;
   }
-  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-battle-zones > .game-battle-row--opp {
+  .aegis-arena .game-board[data-organized-field] .game-field .game-battle-zones > .game-battle-row--opp {
     grid-row: 1;
   }
-  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-battle-zones > .game-battle-row--you {
+  .aegis-arena .game-board[data-organized-field] .game-field .game-battle-zones > .game-battle-row--you {
     grid-row: 3;
   }
-  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-battle-zones > .game-memory-band {
+  .aegis-arena .game-board[data-organized-field] .game-field .game-battle-zones > .game-memory-band {
     grid-area: 2 / 1;
   }
-  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-utility-slot[class*="--you-"],
-  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-security-shield--you,
+  .aegis-arena .game-board[data-organized-field] .game-field .game-utility-slot[class*="--you-"],
+  .aegis-arena .game-board[data-organized-field] .game-field .game-security-shield--you,
   .aegis-arena
-    .game-board:has([data-field-layout="organized"])
+    .game-board[data-organized-field]
     .game-field
     .game-security-shield-wrap:has(.game-security-shield--you) {
     grid-row: 3;
   }
-  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field::after {
+  .aegis-arena .game-board[data-organized-field] .game-field::after {
     grid-row: 3;
   }
   .game-board .game-field .game-battle-zones > .game-battle-row[data-field-layout="organized"] > .game-battle-lane {
     padding-inline: 4px !important;
   }
-  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-utility-slot {
+  .aegis-arena .game-board[data-organized-field] .game-field .game-utility-slot {
     display: flex !important;
     flex-direction: column;
     align-items: center;
     align-self: stretch;
     justify-content: center;
   }
-  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-utility-slot > .game-breeding-slot {
+  .aegis-arena .game-board[data-organized-field] .game-field .game-utility-slot > .game-breeding-slot {
     height: 100%;
     justify-content: center;
   }
-  .aegis-arena .game-board:has([data-field-layout="organized"]) .game-field .game-security-shield {
+  .aegis-arena .game-board[data-organized-field] .game-field .game-security-shield {
     grid-template-rows: minmax(0, 1fr);
   }
   .aegis-arena
-    .game-board:has([data-field-layout="organized"])
+    .game-board[data-organized-field]
     .game-field
     :is(
       .game-utility-slot .game-pile + span,
@@ -249,7 +249,7 @@
     translate: -50% 0;
   }
   .aegis-arena
-    .game-board:has([data-field-layout="organized"])
+    .game-board[data-organized-field]
     .game-field
     :is(
       [class*="game-utility-slot--opp-"] .game-pile + span,
@@ -260,7 +260,7 @@
     bottom: -5px;
   }
   .aegis-arena
-    .game-board:has([data-field-layout="organized"])
+    .game-board[data-organized-field]
     .game-field
     :is(
       [class*="game-utility-slot--you-"] .game-pile + span,
@@ -281,7 +281,7 @@
 
 /* Tall phones trade some battle-row height for a larger raising area. */
 @media (width < 600px) and (orientation: portrait) and (min-height: 760px) {
-  .aegis-arena .game-board:has([data-field-layout="organized"]) {
+  .aegis-arena .game-board[data-organized-field] {
     --arena-utility-height: 90px;
   }
   .game-board .game-field .game-battle-zones > .game-battle-row[data-field-layout="organized"] {
@@ -291,7 +291,7 @@
 /* Two lanes stack a phone's Digimon over its support lane, so the strips and the
    memory band give that height back to the battle rows. */
 @media (width < 600px) and (orientation: portrait) {
-  .aegis-arena .game-board[data-battle-lanes="two"]:has([data-field-layout="organized"]) {
+  .aegis-arena .game-board[data-battle-lanes="two"][data-organized-field] {
     --arena-utility-height: 64px;
     --arena-memory-height: 30px;
   }

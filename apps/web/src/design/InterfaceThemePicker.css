@@ -119,13 +119,13 @@
   visibility: hidden;
 }
 
-.aegis-theme-picker__preset:has(:checked) .aegis-theme-picker__check {
+.aegis-theme-picker__preset > input:checked ~ .aegis-theme-picker__check {
   color: var(--ds-on-accent);
   background: var(--ds-accent);
   border-color: var(--ds-accent);
 }
 
-.aegis-theme-picker__preset:has(:checked) .aegis-theme-picker__check svg {
+.aegis-theme-picker__preset > input:checked ~ .aegis-theme-picker__check svg {
   visibility: visible;
 }
 

@@ -17,6 +17,7 @@ import { canAttackWith } from "../../boardModel";
 import { pressGesture, swallowNextClick } from "../../pressGesture";
 import { dropZoneAt } from "../dropZones";
 import { DragKind } from "../enums";
+import { createDragPointer } from "./createDragPointer";
 import type { DragState, DropZoneHit } from "../types";
 import type { HandEntry } from "../../piece";
 
@@ -25,9 +26,15 @@ type Params = { manual?: boolean };
 export function useDragPlumbing({ manual = false }: Params = {}) {
   const dragRef = useRef<DragState | null>(null);
   const [drag, setDragState] = useState<DragState | null>(null);
+  const [pointer] = useState(createDragPointer);
   const setDrag = (d: DragState | null) => {
     dragRef.current = d;
+    if (d) pointer.set(d.x, d.y);
     setDragState(d);
+  };
+  const moveDrag = (d: DragState) => {
+    dragRef.current = d;
+    pointer.set(d.x, d.y);
   };
   /** Assigned every render, so the listeners below reach the current handlers. */
   const handleTapRef = useRef<((d: DragState) => void) | null>(null);
@@ -37,6 +44,13 @@ export function useDragPlumbing({ manual = false }: Params = {}) {
   // The drop area the pointer is currently over, so the ghost can carry the name
   // of the game action or local reorder that release would perform.
   const [dragHover, setDragHover] = useState<DropZoneHit | null>(null);
+  const dragHoverRef = useRef<DropZoneHit | null>(null);
+  const updateDragHover = (hit: DropZoneHit | null) => {
+    const current = dragHoverRef.current;
+    if (current?.target === hit?.target && current?.id === hit?.id) return;
+    dragHoverRef.current = hit;
+    setDragHover(hit);
+  };
 
   useEffect(() => {
     const move = (e: PointerEvent) => {
@@ -52,26 +66,27 @@ export function useDragPlumbing({ manual = false }: Params = {}) {
         panY: !!d.capture && (getComputedStyle(d.capture).touchAction?.includes("pan-y") ?? false),
       });
       if (!d.started && gesture === "press") {
-        setDrag({ ...d, x: e.clientX, y: e.clientY });
+        moveDrag({ ...d, x: e.clientX, y: e.clientY });
         return;
       }
       if (!d.started && gesture === "scroll") {
         setDrag(null);
-        setDragHover(null);
+        updateDragHover(null);
         return;
       }
       if (canDragRef.current?.(d) !== true) {
         setDrag(null);
-        setDragHover(null);
+        updateDragHover(null);
         return;
       }
       if (!d.started) {
         e.preventDefault();
         d.capture?.setPointerCapture?.(e.pointerId);
       }
-      setDrag({ ...d, x: e.clientX, y: e.clientY, started: true });
+      if (d.started) moveDrag({ ...d, x: e.clientX, y: e.clientY });
+      else setDrag({ ...d, x: e.clientX, y: e.clientY, started: true });
       const hit = dropZoneAt(e.clientX, e.clientY);
-      setDragHover((current) => (current?.target === hit?.target && current?.id === hit?.id ? current : (hit ?? null)));
+      updateDragHover(hit ?? null);
     };
     const up = (e: PointerEvent) => {
       const d = dragRef.current;
@@ -85,11 +100,11 @@ export function useDragPlumbing({ manual = false }: Params = {}) {
         }
       }
       setDrag(null);
-      setDragHover(null);
+      updateDragHover(null);
     };
     const cancel = () => {
       setDrag(null);
-      setDragHover(null);
+      updateDragHover(null);
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
@@ -106,7 +121,7 @@ export function useDragPlumbing({ manual = false }: Params = {}) {
   useEffect(() => {
     if (dragRef.current?.started && canDragRef.current?.(dragRef.current) !== true) {
       setDrag(null);
-      setDragHover(null);
+      updateDragHover(null);
     }
   });
 
@@ -159,8 +174,18 @@ export function useDragPlumbing({ manual = false }: Params = {}) {
 
   const cancelDrag = () => {
     setDrag(null);
-    setDragHover(null);
+    updateDragHover(null);
   };
 
-  return { drag, dragHover, handleTapRef, handleDropRef, canDragRef, startHandDrag, startPermDrag, cancelDrag };
+  return {
+    drag,
+    dragPointer: pointer,
+    dragHover,
+    handleTapRef,
+    handleDropRef,
+    canDragRef,
+    startHandDrag,
+    startPermDrag,
+    cancelDrag,
+  };
 }

@@ -1,11 +1,11 @@
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { memoryCellCenterFraction, shouldDrawMemoryArc, shouldDrawMemoryPrediction } from "../memoryArc";
 import { useTranslation } from "../../i18n";
 import { MEMORY_SWEEP_CHIP_MS, MEMORY_SWEEP_MS, traversedChips } from "./memoryChips";
 import { MemoryArc } from "./MemoryArc";
 import { MemoryPredictionArc } from "./MemoryPredictionArc";
 
-export function MemoryGauge({
+export const MemoryGauge = memo(function MemoryGauge({
   value,
   compact,
   phaseLabel,
@@ -103,4 +103,4 @@ export function MemoryGauge({
       </div>
     </div>
   );
-}
+});

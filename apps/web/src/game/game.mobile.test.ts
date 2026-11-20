@@ -103,7 +103,7 @@ describe("mobile portrait match layout", () => {
     // The log, the memory readout and the phase list are all reachable elsewhere on
     // mobile; only the action buttons (2nd child) survive.
     expect(portraitRules).toMatch(
-      /\.game-sidebar > div:first-child,\s*\.game-sidebar > div:nth-child\(3\),\s*\.game-sidebar > div:last-child \{\s*display:\s*none/,
+      /\.game-sidebar > \.game-sidebar__status,\s*\.game-sidebar > \.game-sidebar__log,\s*\.game-sidebar > \.game-sidebar__footer \{\s*display:\s*none/,
     );
     // The idle bar only repeats the viewer's own name and hand count.
     expect(portraitRules).toMatch(/\.game-action-bar--idle \{\s*display:\s*none/);
@@ -377,7 +377,7 @@ describe("nothing on the phone board is clipped by its neighbour", () => {
 
   it("drops the action strip while it holds no action", () => {
     expect(portraitRules).toMatch(
-      /\.game-sidebar > div:nth-child\(2\):not\(:has\(button\)\) \{\s*display:\s*none !important/,
+      /\.game-sidebar > \.game-sidebar__actions:not\(:has\(button\)\) \{\s*display:\s*none !important/,
     );
   });
 
@@ -386,7 +386,7 @@ describe("nothing on the phone board is clipped by its neighbour", () => {
     // floor at 44px, and the sidebar's own clip took the missing 8px off the
     // bottom of the breeding step's only action.
     expect(phonePortraitRules).toMatch(
-      /\.game-sidebar > div:nth-child\(2\) \{[^}]*height:\s*auto[^}]*min-height:\s*calc\(44px/,
+      /\.game-sidebar > \.game-sidebar__actions \{[^}]*height:\s*auto[^}]*min-height:\s*calc\(44px/,
     );
   });
 
@@ -808,10 +808,10 @@ describe("landscape phone match layout", () => {
   it("gives the strip a column of its own beside the board", () => {
     expect(landscapeRules).toBeDefined();
     expect(landscapeRules).toMatch(/\.game-layout \{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) auto/);
-    expect(landscapeRules).toMatch(/\.game-sidebar > div:nth-child\(2\) \{[^}]*width:\s*9rem/);
+    expect(landscapeRules).toMatch(/\.game-sidebar > \.game-sidebar__actions \{[^}]*width:\s*9rem/);
     // Same collapse as portrait: no action, no column.
     expect(landscapeRules).toMatch(
-      /\.game-sidebar > div:nth-child\(2\):not\(:has\(button\)\) \{\s*display:\s*none !important/,
+      /\.game-sidebar > \.game-sidebar__actions:not\(:has\(button\)\) \{\s*display:\s*none !important/,
     );
   });
 

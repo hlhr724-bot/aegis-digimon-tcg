@@ -6,7 +6,7 @@ import { Sigil } from "@/design/Sigil";
 import { formatDp } from "@/design/formatDp";
 import { useCardImageUrls } from "@/design/tokenArt/useCardImageUrls";
 import { getCardDefinition, type CardColor, type CardDefinition } from "@aegis/shared";
-import { useEffect, useState, type ReactNode } from "react";
+import { memo, useEffect, useState, type ReactNode } from "react";
 import { DEFAULT_CARD_SLEEVE, DEFAULT_EGG_SLEEVE, useCardSleeve, useEggSleeve } from "./sleeve";
 import { COLORS, colorKey, paletteFor, palettePairFor } from "./theme";
 import { CARD_SUSPEND_MOTION } from "./cardMotion";
@@ -34,7 +34,7 @@ export function LevelPips({ level, color }: { level?: number; color: string }) {
 }
 
 /** Card back — a faceted shield over a muted field (security / opponent cards). */
-export function CardBack({
+export const CardBack = memo(function CardBack({
   width = 70,
   label,
   useSelectedSleeve = true,
@@ -121,7 +121,7 @@ export function CardBack({
       ) : null}
     </div>
   );
-}
+});
 
 /** Full card (≈200×280 baseline; scale via `width`). For grids and detail. */
 export function CardFull({
@@ -445,6 +445,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta, reference }: TokenI
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: px(3) }}>
           <span
             data-card-name
+            data-field-referenced={!!reference || undefined}
             style={{
               color: "#fff",
               fontSize: px(9.5),

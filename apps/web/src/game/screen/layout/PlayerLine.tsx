@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { RankedTier } from "@aegis/shared/ranked/RankedTier";
 import "@/ranked/ranked.css";
 import type { ReactNode } from "react";
@@ -9,7 +10,7 @@ import { useAnchoredTooltip } from "../../useAnchoredTooltip";
 import { botPersonaById } from "@aegis/shared/bot/personas/botPersonaById";
 import { BotPortrait } from "@/bot/personas/BotPortrait";
 
-export function PlayerLine({
+export const PlayerLine = memo(function PlayerLine({
   name,
   avatarId,
   avatarUrl,
@@ -107,4 +108,4 @@ export function PlayerLine({
         )}
     </div>
   );
-}
+});

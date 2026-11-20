@@ -416,14 +416,13 @@ function useArenaHalfAnchor({
       // column and the action row past the right edge.
       const left = Math.min(Math.max(rect?.left ?? 0, 0), viewportWidth);
       const top = Math.min(Math.max(halfTop, 0), viewportHeight);
-      setAnchor({
-        position: "fixed",
-        left,
-        width: Math.min(rect?.width ?? viewportWidth, viewportWidth - left),
-        top,
-        height: Math.min(boardHeight / 2 - (top - halfTop), viewportHeight - top),
-        bottom: "auto",
-      });
+      const width = Math.min(rect?.width ?? viewportWidth, viewportWidth - left);
+      const height = Math.min(boardHeight / 2 - (top - halfTop), viewportHeight - top);
+      setAnchor((previous) =>
+        previous.left === left && previous.top === top && previous.width === width && previous.height === height
+          ? previous
+          : { position: "fixed", left, width, top, height, bottom: "auto" },
+      );
     };
     measure();
     // The board resizes without the window doing so — the hand dock grows, an

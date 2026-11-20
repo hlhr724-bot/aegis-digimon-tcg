@@ -41,8 +41,11 @@ describe("breeding area on the 3D field", () => {
   });
 
   it("dims the DOM above the canvas during the breeding step but leaves the viewer's eggs and raising slots lit", () => {
-    const start = fieldStyles.indexOf(":has(.arena-3d-field > .game-breeding-mode)");
+    const start = fieldStyles.indexOf(
+      '.game-board[data-board-style="arena3d"][data-arena-3d-live][data-breeding-mode]',
+    );
     expect(start).toBeGreaterThan(-1);
+    expect(boardStageSource).toContain("data-breeding-mode={guards.breedingActionsOpen || undefined}");
     const rule = fieldStyles.slice(start, fieldStyles.indexOf("}", start));
     expect(rule).toContain("filter: brightness(0.38) !important");
     expect(rule).toContain(".game-player-dock");

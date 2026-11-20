@@ -51,3 +51,40 @@ it("keeps ordinary Tamers and server-prohibited Digimon from opening attack inpu
     unmount();
   }
 });
+it("follows the pointer without re-rendering the board on every move", () => {
+  const perm = new Permanent();
+  perm.permanentId = "attacker";
+  perm.topCard = new CardInstance();
+  perm.topCard.cardId = "BT1-009";
+  perm.canAttackPlayer = true;
+  let renders = 0;
+  const { result } = renderHook(() => {
+    renders += 1;
+    return useDragPlumbing();
+  });
+  result.current.canDragRef.current = () => true;
+  act(() =>
+    result.current.startPermDrag(perm, {
+      pointerType: "touch",
+      clientX: 100,
+      clientY: 100,
+      currentTarget: document.createElement("div"),
+      preventDefault: vi.fn<() => void>(),
+    } as unknown as ReactPointerEvent),
+  );
+  const move = (clientX: number, clientY: number) =>
+    act(() => {
+      window.dispatchEvent(new MouseEvent("pointermove", { clientX, clientY }));
+    });
+  const afterPress = renders;
+  move(101, 101);
+  expect(renders).toBe(afterPress);
+  expect(result.current.dragPointer.get()).toEqual({ x: 101, y: 101 });
+  move(100, 200);
+  expect(result.current.drag).toMatchObject({ kind: "attack", started: true });
+  const afterStart = renders;
+  move(110, 220);
+  move(120, 240);
+  expect(renders).toBe(afterStart);
+  expect(result.current.dragPointer.get()).toEqual({ x: 120, y: 240 });
+});
