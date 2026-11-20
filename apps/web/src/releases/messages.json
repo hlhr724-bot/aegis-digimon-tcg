@@ -1,4 +1,16 @@
 {
+  "releases.1.78.2-beta.summary": {
+    "en": "This update puts the security count back on the security stack on the 3D board on phones.",
+    "pt-BR": "Esta atualização coloca o número da segurança de volta sobre a pilha de segurança no tabuleiro 3D no celular.",
+    "es": "Esta actualización vuelve a colocar el número de seguridad sobre la pila de seguridad en el tablero 3D en el móvil.",
+    "it": "Questo aggiornamento riporta il numero della sicurezza sulla pila di sicurezza nel tabellone 3D sul telefono."
+  },
+  "releases.1.78.2-beta.fix.arena3dSecurityCount": {
+    "en": "On the 3D board on phones, the security count sat next to the deck instead of on the security stack. It now sits under each player's security stack again.",
+    "pt-BR": "No tabuleiro 3D no celular, o número da segurança aparecia ao lado do deck, e não sobre a pilha de segurança. Agora ele volta a ficar embaixo da pilha de segurança de cada jogador.",
+    "es": "En el tablero 3D en el móvil, el número de seguridad aparecía junto al mazo y no sobre la pila de seguridad. Ahora vuelve a estar debajo de la pila de seguridad de cada jugador.",
+    "it": "Nel tabellone 3D sul telefono, il numero della sicurezza compariva accanto al mazzo invece che sulla pila di sicurezza. Ora è di nuovo sotto la pila di sicurezza di ogni giocatore."
+  },
   "releases.1.78.1-beta.summary": {
     "en": "This update makes matches smoother on phones and updates KingEtemon to its latest errata.",
     "pt-BR": "Esta atualização deixa as partidas mais fluidas no celular e atualiza KingEtemon para a errata mais recente.",
