@@ -74,6 +74,7 @@ export const rankedId = {
   "ranked.season.invalidDeck": "Pilih deck tersimpan yang legal untuk format ini.",
   "ranked.season.alreadyPlaying": "Akun Anda sudah punya pertandingan yang sedang berjalan.",
   "ranked.season.queueExpired": "Reservasi Anda sudah kedaluwarsa. Kembali ke lobi untuk mencari lagi.",
+  "ranked.season.searchMoved": "Anda memulai pencarian peringkat di tab lain, jadi pencarian ini dibatalkan.",
   "ranked.season.discordRetry": "Discord gagal disinkronkan. Percobaan berikutnya sudah dijadwalkan secara otomatis.",
   "ranked.season.duration": "8 minggu",
   "ranked.season.qualification": "Kualifikasi musim",

@@ -69,6 +69,7 @@ export const rankedZhCn = {
   "ranked.season.invalidDeck": "请选择一副已保存且符合此赛制的卡组。",
   "ranked.season.alreadyPlaying": "你的账号已有进行中的对局。",
   "ranked.season.queueExpired": "你的匹配预留已过期。请返回大厅重新匹配。",
+  "ranked.season.searchMoved": "你已在另一个标签页开始排位搜索，因此此搜索已取消。",
   "ranked.season.discordRetry": "无法同步 Discord。系统会自动安排重试。",
   "ranked.season.duration": "8 周",
   "ranked.season.qualification": "赛季资格",

@@ -75,6 +75,8 @@ export const rankedIt = {
   "ranked.season.invalidDeck": "Seleziona un mazzo salvato e valido per questo formato.",
   "ranked.season.alreadyPlaying": "Il tuo account ha già una partita in corso.",
   "ranked.season.queueExpired": "La tua prenotazione è scaduta. Torna alla lobby per cercare di nuovo.",
+  "ranked.season.searchMoved":
+    "Hai avviato una ricerca classificata in un'altra scheda, quindi questa ricerca è stata annullata.",
   "ranked.season.discordRetry": "Impossibile sincronizzare Discord. Un nuovo tentativo è programmato automaticamente.",
   "ranked.season.duration": "8 settimane",
   "ranked.season.qualification": "Qualificazione stagionale",

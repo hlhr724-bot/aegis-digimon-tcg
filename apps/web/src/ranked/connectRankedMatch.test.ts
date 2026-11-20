@@ -96,4 +96,28 @@ describe("ranked reservation recovery", () => {
       expect.objectContaining({ method: "DELETE" }),
     );
   });
+  it("cancels a waiting search when the same browser starts a ranked search in another tab", async () => {
+    const waiting = () => new Response(JSON.stringify({ status: "waiting" }));
+    const firstFetcher = vi.fn<typeof fetch>().mockImplementation(async () => waiting());
+    const secondController = new AbortController();
+    const joinRoom = vi.fn<() => Promise<AegisRoom>>();
+    const first = connectRankedMatch({ http: "https://aegis.test", options, fetcher: firstFetcher, joinRoom });
+    await vi.waitFor(() => expect(firstFetcher).toHaveBeenCalled());
+
+    const second = connectRankedMatch({
+      http: "https://aegis.test",
+      options,
+      signal: secondController.signal,
+      fetcher: vi.fn<typeof fetch>().mockImplementation(async () => waiting()),
+      joinRoom,
+    });
+
+    await expect(first).rejects.toThrow("ranked_search_moved");
+    expect(firstFetcher).toHaveBeenCalledWith(
+      expect.stringMatching(/queue\?search=/),
+      expect.objectContaining({ method: "DELETE" }),
+    );
+    secondController.abort();
+    await expect(second).rejects.toThrow(/aborted/i);
+  });
 });

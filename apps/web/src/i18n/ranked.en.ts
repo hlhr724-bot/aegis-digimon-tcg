@@ -71,6 +71,7 @@ export const rankedEn = {
   "ranked.season.invalidDeck": "Select a saved, legal deck for this format.",
   "ranked.season.alreadyPlaying": "Your account already has an active match.",
   "ranked.season.queueExpired": "Your reservation expired. Return to the lobby to search again.",
+  "ranked.season.searchMoved": "You started a ranked search in another tab, so this search was canceled.",
   "ranked.season.discordRetry": "Discord could not be synchronized. A new attempt is scheduled automatically.",
   "ranked.season.duration": "8 weeks",
   "ranked.season.qualification": "Season qualification",
