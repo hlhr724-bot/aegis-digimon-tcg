@@ -34,6 +34,7 @@ export function validateCompetitiveDeck(
   deck: CompetitiveDeck,
   banlistCards: readonly TournamentBanlistCard[] = [],
   format: DeckFormat = "standard",
+  allowBetaCards = false,
 ): DeckLegality {
   const restrictions = new Map(banlistCards.map((card) => [card.cardId, card]));
   const violations: DeckViolation[] = [
@@ -44,7 +45,7 @@ export function validateCompetitiveDeck(
     ...[...new Set([...deck.mainDeck, ...deck.eggDeck])]
       .filter((cardId) => {
         const card = getCardDefinition(cardId);
-        return card && (isBetaOnlyCard(card) || formatCardViolation(cardId, format));
+        return card && ((!allowBetaCards && isBetaOnlyCard(card)) || formatCardViolation(cardId, format));
       })
       .map((cardId): DeckViolation => ({ kind: "outside_format", cardId })),
   ];

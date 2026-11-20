@@ -15,6 +15,12 @@ export const tournamentDetailEs = {
   "tournaments.myMatch.roundTable": "Ronda {round} · Mesa {table}",
   "tournaments.myMatch.you": "Tú",
   "tournaments.myMatch.versus": "contra {opponent}",
+  "tournaments.create.allowBetaCards": "Permitir cartas beta",
+  "tournaments.create.allowBetaCardsDesc": "Los mazos pueden usar cartas de productos aún no lanzados.",
+  "tournaments.betaCards.label": "Cartas beta",
+  "tournaments.betaCards.allowed": "Permitidas",
+  "tournaments.betaCards.warning":
+    "Se permiten cartas beta. Los mazos pueden usar cartas de productos no lanzados, y esas cartas aún pueden cambiar antes del lanzamiento.",
   "tournaments.detail.cardPool": "Cartas válidas",
   "tournaments.create.randomBotStyles": "Estilos de bot aleatorios",
   "tournaments.create.randomBotStylesDesc":

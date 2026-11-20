@@ -35,6 +35,9 @@ Base schema: [001](apps/api/src/db/migrations/001-initial-schema.ts).
 Migration [052](apps/api/src/db/migrations/052-tournament-round-start-mode.ts) adds
 `tournaments.round_start_mode` (`automatic` or `manual`, default `automatic`). Manual
 rounds wait for organizer release, including Swiss, elimination and the Top Cut transition.
+Migration [060](apps/api/src/db/migrations/060-tournament-beta-cards.ts) adds
+`tournaments.allow_beta_cards` (boolean, default `false`). It is set at creation, only for
+Standard events, and lets decks and match rooms use cards from unreleased products.
 The participant's selected saved deck can be replaced until check-in closes. The frozen
 `deck_snapshot` remains authoritative afterward and is exposed only to its owner through
 the private tournament detail response.

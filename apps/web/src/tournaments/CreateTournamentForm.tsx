@@ -101,6 +101,7 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
   const [points, setPoints] = useState<TournamentPoints | null>(null);
   const [allowBots, setAllowBots] = useState(false);
   const [randomBotStyles, setRandomBotStyles] = useState(false);
+  const [allowBetaCards, setAllowBetaCards] = useState(false);
   const [banlistMode, setBanlistMode] = useState<BanlistMode>("none");
   const [banlistSetId, setBanlistSetId] = useState(() => banlistSetOptions()[0] ?? "BT10");
   const [errors, setErrors] = useState<TournamentValidationError[]>([]);
@@ -174,6 +175,7 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
       maxPlayers,
       allowBots,
       randomBotStyles: allowBots && randomBotStyles,
+      allowBetaCards: format === "standard" && allowBetaCards,
       banlist,
     };
     const result = await tournamentApi.create(input);
@@ -396,6 +398,23 @@ export function CreateTournamentForm({ onCreated, onCancel, canCreateOfficial = 
             <div className="create-tournament__wide">
               <DeckFormatSelector value={format} onChange={setFormat} showBanlist={false} />
             </div>
+
+            {format === "standard" ? (
+              <div className="create-tournament__toggle create-tournament__wide">
+                <Switch
+                  checked={allowBetaCards}
+                  onChange={setAllowBetaCards}
+                  label={t("tournaments.create.allowBetaCards")}
+                  description={t("tournaments.create.allowBetaCardsDesc")}
+                />
+                {allowBetaCards ? (
+                  <p className="create-tournament__callout create-tournament__callout--warning" role="note">
+                    <Icons.CircleAlert size={16} aria-hidden="true" />
+                    {t("tournaments.betaCards.warning")}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="aegis-field">
               <label className="aegis-field__label" htmlFor={`${formId}-banlist`}>

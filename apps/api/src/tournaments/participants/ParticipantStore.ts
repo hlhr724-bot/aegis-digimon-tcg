@@ -257,7 +257,7 @@ export class ParticipantStore {
     return this.mutate(input.tournamentId, async (client) => {
       const tournament = (
         await client.query<TournamentRow & { check_in_closes_at: string | null }>(
-          "SELECT id, status, format, check_in_closes_at FROM tournaments WHERE id=$1 FOR UPDATE",
+          "SELECT id, status, format, check_in_closes_at, allow_beta_cards FROM tournaments WHERE id=$1 FOR UPDATE",
           [input.tournamentId],
         )
       ).rows[0];
@@ -285,6 +285,7 @@ export class ParticipantStore {
         deck,
         await this.readBanlist(client, input.tournamentId),
         tournament.format,
+        tournament.allow_beta_cards,
       );
       if (!legality.legal) {
         return { ok: false, reason: "deck_illegal", violations: legality.violations } as const;
@@ -401,7 +402,7 @@ export class ParticipantStore {
     return this.mutate(input.tournamentId, async (client) => {
       const tournament = (
         await client.query<TournamentRow>(
-          "SELECT id, status, max_players, registration_closes_at, password_hash, format FROM tournaments WHERE id=$1 FOR UPDATE",
+          "SELECT id, status, max_players, registration_closes_at, password_hash, format, allow_beta_cards FROM tournaments WHERE id=$1 FOR UPDATE",
           [input.tournamentId],
         )
       ).rows[0];
@@ -428,6 +429,7 @@ export class ParticipantStore {
         deck,
         await this.readBanlist(client, input.tournamentId),
         tournament.format,
+        tournament.allow_beta_cards,
       );
       if (!legality.legal) return { ok: false, reason: "deck_illegal", violations: legality.violations } as const;
 
@@ -528,7 +530,7 @@ export class ParticipantStore {
     return this.mutate(input.tournamentId, async (client) => {
       const tournament = (
         await client.query<TournamentRow>(
-          "SELECT id, status, check_in_opens_at, check_in_closes_at, format FROM tournaments WHERE id=$1 FOR UPDATE",
+          "SELECT id, status, check_in_opens_at, check_in_closes_at, format, allow_beta_cards FROM tournaments WHERE id=$1 FOR UPDATE",
           [input.tournamentId],
         )
       ).rows[0];
@@ -552,7 +554,7 @@ export class ParticipantStore {
         const updated =
           participant.status === "registered"
             ? await this.dropNoShow(client, participant, now)
-            : await this.freezeDeck(client, participant, banlist, now, tournament.format);
+            : await this.freezeDeck(client, participant, banlist, now, tournament.format, tournament.allow_beta_cards);
         if (updated) frozen.push(updated);
       }
       return { ok: true, value: frozen } as const;
@@ -577,6 +579,7 @@ export class ParticipantStore {
     banlist: readonly TournamentBanlistCard[],
     now: number,
     format: DeckFormat,
+    allowBetaCards: boolean,
   ): Promise<ParticipantRecord | undefined> {
     const deck = participant.accountId
       ? await this.savedDeck(client, participant.accountId, participant.savedDeckId)
@@ -597,7 +600,7 @@ export class ParticipantStore {
       eggDeckArts: deck.eggDeckArts?.slice(),
       revision: deck.revision,
     };
-    const legal = validateCompetitiveDeck(snapshot, banlist, format).legal;
+    const legal = validateCompetitiveDeck(snapshot, banlist, format, allowBetaCards).legal;
     const updated = await client.query(
       `UPDATE tournament_participants
          SET status=$1, deck_snapshot=$2, deck_version=$3, dropped_at=$4
@@ -869,6 +872,7 @@ type ParticipantRow = {
 
 type TournamentRow = {
   format: DeckFormat;
+  allow_beta_cards: boolean;
   password_hash: string | null;
   id: string;
   status: string;
