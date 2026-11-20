@@ -18,7 +18,11 @@ describe("a source trashed by ＜Fragment＞ before its host is deleted by 0 DP"
       expect(s.engine.applyIntent(0, { type: "playCard", instanceId: s.inst("dpReducer").instanceId })).toEqual({
         ok: true,
       });
-      await settle(() => s.state.pendingDecision === undefined && s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "P-167"));
+      await settle(
+        () =>
+          s.state.pendingDecision === undefined &&
+          s.events.some((event) => event.kind === "effectResolved" && event.sourceCardId === "P-167"),
+      );
 
       expect(s.state.players[1]!.battleArea.map((permanent) => permanent.topCard.cardId)).toEqual([]);
       expect(s.events.some((event) => event.kind === "effectTriggered" && event.sourceCardId === "P-167")).toBe(true);
