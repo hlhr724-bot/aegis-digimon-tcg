@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { createPortal } from "react-dom";
 import { usePileCountsShown } from "../design/pileCounts";
 import { useTranslation } from "../i18n";
@@ -5,7 +6,7 @@ import { Side } from "./side";
 import { useAnchoredTooltip } from "./useAnchoredTooltip";
 import "./arenaControls.css";
 
-export function ArenaCounters({
+export const ArenaCounters = memo(function ArenaCounters({
   side,
   eggs,
   hand,
@@ -123,4 +124,4 @@ export function ArenaCounters({
       </div>
     </>
   );
-}
+});

@@ -4,7 +4,7 @@ import { PermanentDpDeltaHint } from "@/game/piece/PermanentDpDeltaHint";
 import { CardAceBadge } from "@/design/CardAceBadge";
 import { CardZoomPreview } from "@/design/CardZoomPreview";
 import { useBoardHoverZoom } from "@/game/piece/useBoardHoverZoom";
-import { useRef, useState, type CSSProperties } from "react";
+import { memo, useRef, useState, type CSSProperties } from "react";
 import { useCardTranslations } from "@/i18n/useCardTranslations";
 import { formatFieldReference } from "@/design/fieldReference/formatFieldReference";
 import { useBoardFieldReferenceVisible } from "@/design/fieldReference/useBoardFieldReferenceVisible";
@@ -43,7 +43,7 @@ import { usePermanentInspection } from "./usePermanentInspection";
 import { getTurnedCardInlineMargin } from "@/game/getTurnedCardInlineMargin";
 import "./fieldBadges.css";
 
-export function PermanentView({
+function PermanentViewBody({
   perm,
   copies = 1,
   fieldReferenceIds,
@@ -141,6 +141,7 @@ export function PermanentView({
   showInspect?: boolean;
   reserveRowInlineSpace?: boolean;
   useSelectedSleeve?: boolean;
+  permSignature?: string;
 }) {
   const stationaryDeparture =
     heldDeletion || fate?.fate === "delete" || fate?.fate === "trash" || fate?.fate === "effectTarget";
@@ -447,5 +448,61 @@ export function PermanentView({
         </button>
       ) : null}
     </div>
+  );
+}
+
+type PermanentViewProps = Parameters<typeof PermanentViewBody>[0];
+
+function sameEntries(previous: unknown, next: unknown): boolean {
+  if (previous === next) return true;
+  if (!previous || !next || typeof previous !== "object" || typeof next !== "object") return false;
+  if (
+    Array.isArray(previous) !== Array.isArray(next) ||
+    Object.getPrototypeOf(previous) !== Object.getPrototypeOf(next)
+  )
+    return false;
+  const previousKeys = Object.keys(previous);
+  return (
+    previousKeys.length === Object.keys(next).length &&
+    previousKeys.every((key) => Reflect.get(previous, key) === Reflect.get(next, key))
+  );
+}
+
+function samePermanentViewProps(previous: PermanentViewProps, next: PermanentViewProps): boolean {
+  const keys = new Set([...Object.keys(previous), ...Object.keys(next)] as (keyof PermanentViewProps)[]);
+  for (const key of keys) {
+    const before = previous[key];
+    const after = next[key];
+    if (before === after) continue;
+    if (key === "perm") continue;
+    if (key === "refCb") {
+      if (!before || !after || !sameEntries(previous.fieldReferenceIds, next.fieldReferenceIds)) return false;
+      continue;
+    }
+    if (!sameEntries(before, after)) return false;
+  }
+  return true;
+}
+
+const MemoizedPermanentView = memo(PermanentViewBody, samePermanentViewProps);
+
+export function PermanentView(props: PermanentViewProps) {
+  const latest = useRef(props);
+  latest.current = props;
+  const [handlers] = useState(() => ({
+    onClick: () => latest.current.onClick?.(),
+    onPointerDown: (event: React.PointerEvent) => latest.current.onPointerDown?.(event),
+    onKeyboardActivate: () => latest.current.onKeyboardActivate?.(),
+    onInspect: () => latest.current.onInspect?.(),
+  }));
+  return (
+    <MemoizedPermanentView
+      {...props}
+      permSignature={JSON.stringify(props.perm)}
+      onClick={props.onClick && handlers.onClick}
+      onPointerDown={props.onPointerDown && handlers.onPointerDown}
+      onKeyboardActivate={props.onKeyboardActivate && handlers.onKeyboardActivate}
+      onInspect={props.onInspect && handlers.onInspect}
+    />
   );
 }
