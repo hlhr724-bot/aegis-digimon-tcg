@@ -1,5 +1,16 @@
 [
   {
+    "version": "1.78.2-beta",
+    "releasedAt": "2026-11-20",
+    "summaryKey": "releases.1.78.2-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.78.2-beta.fix.arena3dSecurityCount"
+      }
+    ]
+  },
+  {
     "version": "1.78.1-beta",
     "releasedAt": "2026-11-20",
     "summaryKey": "releases.1.78.1-beta.summary",
