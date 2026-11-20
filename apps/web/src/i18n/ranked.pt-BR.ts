@@ -74,6 +74,8 @@ export const rankedPt = {
   "ranked.season.invalidDeck": "Selecione um deck salvo e válido para este formato.",
   "ranked.season.alreadyPlaying": "Sua conta já tem uma partida em andamento.",
   "ranked.season.queueExpired": "Sua reserva expirou. Volte ao lobby para buscar novamente.",
+  "ranked.season.searchMovedTitle": "Busca cancelada",
+  "ranked.season.searchMoved": "Você iniciou uma busca ranqueada em outra aba, então esta busca foi cancelada.",
   "ranked.season.discordRetry":
     "Não foi possível sincronizar com o Discord. Uma nova tentativa será feita automaticamente.",
   "ranked.season.duration": "8 semanas",

@@ -4,6 +4,8 @@ import type { RankedQueueView } from "@aegis/shared/ranked/RankedContracts";
 import { RankedQueueStatus } from "@aegis/shared/ranked/RankedQueueStatus";
 import { waitForRankedReservation } from "@/ranked/waitForRankedReservation";
 
+const RANKED_SEARCH_CHANNEL = "aegis:ranked-search";
+
 type Params = {
   http: string;
   options: AegisJoinOptions;
@@ -28,16 +30,26 @@ export async function connectRankedMatch({
 }: Params): Promise<AegisRoom> {
   const searchId = crypto.randomUUID();
   const endpoint = `${http}/ranked/queue?search=${searchId}`;
+  const takeover = new AbortController();
+  const searchSignal = signal ? AbortSignal.any([signal, takeover.signal]) : takeover.signal;
+  const releaseClaim = claimRankedSearch(searchId, () => takeover.abort(new Error("ranked_search_moved")));
   let resume = false;
   let room: AegisRoom | undefined;
   try {
     for (;;) {
-      const reservation = await waitForRankedReservation({ http, options, signal, fetcher, searchId, resume });
+      const reservation = await waitForRankedReservation({
+        http,
+        options,
+        signal: searchSignal,
+        fetcher,
+        searchId,
+        resume,
+      });
       try {
         room = await joinRoom(reservation);
       } catch (error) {
-        signal?.throwIfAborted();
-        const response = await fetcher(endpoint, { credentials: "include", signal });
+        searchSignal.throwIfAborted();
+        const response = await fetcher(endpoint, { credentials: "include", signal: searchSignal });
         const current = (await response.json()) as RankedQueueView;
         if (
           response.ok &&
@@ -53,7 +65,7 @@ export async function connectRankedMatch({
       room.send("ready", {});
       let playing: boolean;
       try {
-        playing = await monitorReservation({ room, reservation, endpoint, signal, fetcher });
+        playing = await monitorReservation({ room, reservation, endpoint, signal: searchSignal, fetcher });
       } finally {
         removeMessages();
       }
@@ -71,8 +83,24 @@ export async function connectRankedMatch({
       await room.leave().catch(() => undefined);
     }
     await fetcher(endpoint, { method: "DELETE", credentials: "include", keepalive: true }).catch(() => undefined);
-    throw error;
+    throw takeover.signal.aborted ? takeover.signal.reason : error;
+  } finally {
+    releaseClaim();
   }
+}
+
+function claimRankedSearch(searchId: string, onTakenOver: () => void): () => void {
+  if (typeof BroadcastChannel === "undefined") {
+    return () => {};
+  }
+  const channel = new BroadcastChannel(RANKED_SEARCH_CHANNEL);
+  channel.onmessage = (event: MessageEvent<unknown>) => {
+    if (event.data !== searchId) {
+      onTakenOver();
+    }
+  };
+  channel.postMessage(searchId);
+  return () => channel.close();
 }
 
 function monitorReservation({ room, reservation, endpoint, signal, fetcher }: MonitorParams): Promise<boolean> {
