@@ -268,6 +268,7 @@
 }
 
 .game-board[data-board-style="arena3d"][data-arena-3d-live] .arena-3d-field .game-security-shield__count {
+  grid-area: auto !important;
   position: absolute !important;
   inset: auto auto -0.5rem 50% !important;
   translate: -50% 0 !important;
