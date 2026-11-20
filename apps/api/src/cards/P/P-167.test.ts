@@ -42,8 +42,8 @@ describe("P-167 Landramon", () => {
       actions: [
         {
           kind: "SubTrigger",
-          event: "onDigivolutionCardDiscarded",
-          sourceFilter: { matchTrashedSource: true },
+          event: "onDigivolutionCardsDiscardedBatch",
+          sourceFilter: { isSelfRef: true },
           requireByEffect: true,
           hostFilter: { controller: "mine", nameOrTrait: [{ tokens: ["Mineral", "Rock"], match: "trait" }] },
           actions: [
