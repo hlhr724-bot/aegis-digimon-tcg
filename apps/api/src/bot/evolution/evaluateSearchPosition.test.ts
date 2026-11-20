@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { setupEngine } from "#api/engine/testkit/harness";
+import { advance } from "#api/engine/testkit/advance";
 import { trainingObservation } from "#api/bot/training/observation";
 import { evaluateSearchPosition } from "#api/bot/evolution/evaluateSearchPosition";
-import { BOT_PROFILES } from "#api/bot/profiles";
+import { BOT_PROFILES, DEFAULT_BOT_PROFILE } from "#api/bot/profiles";
+import "#api/cards/BT12/BT12-034";
+import "#api/cards/BT12/BT12-092";
+
+const logit = (probability: number): number => Math.log(probability / (1 - probability));
 
 describe("bounded public-position evaluation", () => {
   it("reverses advantage between seats and values extra security", async () => {
@@ -40,5 +45,213 @@ describe("bounded public-position evaluation", () => {
     const readyGain = (profile: (typeof BOT_PROFILES)[keyof typeof BOT_PROFILES]) =>
       evaluateSearchPosition(ready, profile) - evaluateSearchPosition(waiting, profile);
     expect(readyGain(BOT_PROFILES.aggressive)).toBeGreaterThan(readyGain(BOT_PROFILES.defensive));
+  });
+
+  it("scores zero-security tie at 0.5 and increases monotonically across security 0 to 6", async () => {
+    const setup = setupEngine({ 0: { security: ["BT1-010"] }, 1: { security: ["BT1-010"] } });
+    await setup.ready();
+    const base = trainingObservation(setup.state, 0);
+    base.memory = 0;
+    base.turnSeat = 0;
+
+    const zeroBoth = structuredClone(base);
+    zeroBoth.players[0]!.securityCount = 0;
+    zeroBoth.players[1]!.securityCount = 0;
+    expect(evaluateSearchPosition(zeroBoth)).toBeCloseTo(0.5, 9);
+
+    const scores: number[] = [];
+    for (let securityCount = 0; securityCount <= 6; securityCount += 1) {
+      const obs = structuredClone(zeroBoth);
+      obs.players[0]!.securityCount = securityCount;
+      scores.push(evaluateSearchPosition(obs));
+    }
+    for (let index = 1; index < scores.length; index += 1) {
+      expect(scores[index]).toBeGreaterThan(scores[index - 1]!);
+    }
+  });
+
+  it("keeps an empty zero-security tie neutral under all styles", async () => {
+    const setup = setupEngine({ 0: { security: [] }, 1: { security: [] } });
+    await setup.ready();
+    const observation = trainingObservation(setup.state, 0);
+    observation.memory = 0;
+
+    for (const profile of Object.values(BOT_PROFILES)) {
+      expect(evaluateSearchPosition(observation, profile)).toBeCloseTo(0.5, 9);
+    }
+  });
+
+  it("bounds the score contribution of memory in either direction", async () => {
+    const setup = setupEngine({});
+    await setup.ready();
+    const observation = trainingObservation(setup.state, 0);
+    const scoreAt = (memory: number) => evaluateSearchPosition({ ...observation, memory });
+
+    expect(scoreAt(-100)).toBe(scoreAt(-10));
+    expect(scoreAt(100)).toBe(scoreAt(10));
+    expect(scoreAt(0)).toBeGreaterThan(scoreAt(-10));
+    expect(scoreAt(10)).toBeGreaterThan(scoreAt(0));
+  });
+
+  it("values security advantage more under the defensive style weights", async () => {
+    const setup = setupEngine({ 0: { security: ["BT1-010", "BT1-011"] }, 1: { security: ["BT1-010"] } });
+    await setup.ready();
+    const ahead = trainingObservation(setup.state, 0);
+    ahead.memory = 0;
+    ahead.turnSeat = 0;
+    const even = structuredClone(ahead);
+    even.players[0]!.securityCount = 1;
+    const securityGain = (profile: (typeof BOT_PROFILES)[keyof typeof BOT_PROFILES]) =>
+      evaluateSearchPosition(ahead, profile) - evaluateSearchPosition(even, profile);
+    expect(securityGain(BOT_PROFILES.defensive)).toBeGreaterThan(securityGain(BOT_PROFILES.aggressive));
+  });
+
+  it("does not overestimate attackers with securityAttack <= 0", async () => {
+    const lethalSetup = setupEngine({
+      0: { battleArea: [{ card: "BT1-015", as: "attacker" }], security: ["BT1-010"] },
+      1: { security: [] },
+    });
+    await lethalSetup.ready();
+    const sa1 = trainingObservation(lethalSetup.state, 0);
+    sa1.memory = 0;
+    sa1.turnSeat = 0;
+    sa1.players[0]!.board[0]!.canAttackPlayer = true;
+    sa1.players[0]!.board[0]!.securityAttack = 1;
+
+    const sa0 = structuredClone(sa1);
+    sa0.players[0]!.board[0]!.securityAttack = 0;
+    const saNeg = structuredClone(sa1);
+    saNeg.players[0]!.board[0]!.securityAttack = -1;
+
+    expect(evaluateSearchPosition(sa0)).toBeLessThan(evaluateSearchPosition(sa1));
+    expect(evaluateSearchPosition(saNeg)).toBeLessThan(evaluateSearchPosition(sa1));
+
+    const nonLethalSetup = setupEngine({
+      0: { battleArea: [{ card: "BT1-015", as: "attacker" }], security: ["BT1-010"] },
+      1: { security: ["BT1-010", "BT1-011"] },
+    });
+    await nonLethalSetup.ready();
+    const nonLethalSa1 = trainingObservation(nonLethalSetup.state, 0);
+    nonLethalSa1.memory = 0;
+    nonLethalSa1.turnSeat = 0;
+    nonLethalSa1.players[0]!.board[0]!.canAttackPlayer = true;
+    nonLethalSa1.players[0]!.board[0]!.securityAttack = 1;
+
+    const nonLethalSa0 = structuredClone(nonLethalSa1);
+    nonLethalSa0.players[0]!.board[0]!.securityAttack = 0;
+    expect(evaluateSearchPosition(nonLethalSa0)).toBeLessThan(evaluateSearchPosition(nonLethalSa1));
+  });
+
+  it("credits a Tamer treated as a Digimon as the ready attacker behind a zero-security lethal threat", async () => {
+    const setup = setupEngine(
+      {
+        0: {
+          battleArea: [
+            { card: "BT12-092", as: "marcus" },
+            { card: "BT12-034", as: "agumon" },
+          ],
+          deck: ["BT1-009", "BT1-010", "BT1-011"],
+          security: ["BT1-009"],
+        },
+        1: { deck: ["BT1-009", "BT1-010", "BT1-011"] },
+      },
+      { autoAcceptOptional: true, autoSelectCards: true },
+    );
+    await setup.ready();
+    setup.state.memory = 3;
+    const loop = setup.engine.startTurnLoop();
+    await advance(setup.engine).waitForMainPhase(0);
+    expect(setup.perm("marcus").currentDP).toBe(3000);
+
+    const marcusId = setup.perm("marcus").permanentId;
+    const agumonId = setup.perm("agumon").permanentId;
+    const observation = trainingObservation(setup.state, 0);
+    const observedMarcus = observation.players[0]!.board.find((unit) => unit.permanentId === marcusId)!;
+    expect(observedMarcus.top.kinds).toEqual(["Tamer"]);
+    expect(observedMarcus.dp).toBe(3000);
+    expect(observedMarcus.canAttackPlayer).toBe(true);
+    observation.players[0]!.board.find((unit) => unit.permanentId === agumonId)!.canAttackPlayer = false;
+
+    const idle = structuredClone(observation);
+    idle.players[0]!.board.find((unit) => unit.permanentId === marcusId)!.canAttackPlayer = false;
+    expect(logit(evaluateSearchPosition(observation)) - logit(evaluateSearchPosition(idle))).toBeGreaterThan(1.5);
+
+    const covered = structuredClone(observation);
+    covered.players[1]!.securityCount = 1;
+    expect(logit(evaluateSearchPosition(observation)) - logit(evaluateSearchPosition(covered))).toBeGreaterThan(3);
+
+    setup.engine.applyIntent(0, { type: "surrender" });
+    await loop;
+  }, 60_000);
+
+  it("accounts for cannotBlock, cannotAttack, and suspended statuses", async () => {
+    const setup = setupEngine({
+      0: { battleArea: [{ card: "BT1-015", as: "attacker" }], security: [] },
+      1: { battleArea: [{ card: "BT1-015", as: "attacker" }], security: ["BT1-010"] },
+    });
+    await setup.ready();
+    const base = trainingObservation(setup.state, 0);
+    base.memory = 0;
+    base.turnSeat = 0;
+    base.players[0]!.board[0]!.keywords = ["Blocker"];
+    base.players[0]!.board[0]!.suspended = false;
+    base.players[0]!.board[0]!.statuses.cannotBlock = false;
+    base.players[0]!.board[0]!.canAttackPlayer = false;
+    base.players[1]!.board[0]!.suspended = false;
+    base.players[1]!.board[0]!.statuses.cannotAttack = false;
+    base.players[1]!.board[0]!.canAttackPlayer = false;
+
+    const blockedStatus = structuredClone(base);
+    blockedStatus.players[0]!.board[0]!.statuses.cannotBlock = true;
+    expect(evaluateSearchPosition(base)).toBeGreaterThan(evaluateSearchPosition(blockedStatus));
+
+    const suspendedBlocker = structuredClone(base);
+    suspendedBlocker.players[0]!.board[0]!.suspended = true;
+    expect(evaluateSearchPosition(base)).toBeGreaterThan(evaluateSearchPosition(suspendedBlocker));
+
+    const suspendedEnemy = structuredClone(base);
+    suspendedEnemy.turnSeat = 1;
+    suspendedEnemy.players[0]!.board = [];
+    suspendedEnemy.players[1]!.board[0]!.suspended = true;
+    suspendedEnemy.players[1]!.board[0]!.canAttackPlayer = false;
+    suspendedEnemy.players[1]!.board[0]!.statuses.cannotAttack = false;
+
+    const cannotAttackEnemy = structuredClone(suspendedEnemy);
+    cannotAttackEnemy.players[1]!.board[0]!.statuses.cannotAttack = true;
+    expect(evaluateSearchPosition(cannotAttackEnemy)).toBeGreaterThan(evaluateSearchPosition(suspendedEnemy));
+  });
+
+  it("preserves seat-swap zero-sum symmetry on lethal and non-lethal boards", async () => {
+    const lethalSetup = setupEngine({
+      0: { battleArea: [{ card: "BT1-015", as: "attacker" }], security: ["BT1-010"] },
+      1: { security: [] },
+    });
+    await lethalSetup.ready();
+    const lethalSeat0 = trainingObservation(lethalSetup.state, 0);
+    lethalSeat0.memory = 3;
+    lethalSeat0.turnSeat = 0;
+    lethalSeat0.players[0]!.board[0]!.canAttackPlayer = true;
+    lethalSeat0.players[0]!.board[0]!.suspended = false;
+    const lethalSeat1 = { ...lethalSeat0, seat: 1 as const };
+    expect(
+      evaluateSearchPosition(lethalSeat0, DEFAULT_BOT_PROFILE) +
+        evaluateSearchPosition(lethalSeat1, DEFAULT_BOT_PROFILE),
+    ).toBeCloseTo(1, 6);
+
+    const normalSetup = setupEngine({
+      0: { battleArea: [{ card: "BT1-015", as: "attacker" }], security: ["BT1-010"] },
+      1: { security: ["BT1-010"] },
+    });
+    await normalSetup.ready();
+    const normalSeat0 = trainingObservation(normalSetup.state, 0);
+    normalSeat0.memory = 2;
+    normalSeat0.turnSeat = 0;
+    normalSeat0.players[0]!.board[0]!.canAttackPlayer = true;
+    normalSeat0.players[0]!.board[0]!.suspended = false;
+    const normalSeat1 = { ...normalSeat0, seat: 1 as const };
+    expect(
+      evaluateSearchPosition(normalSeat0, DEFAULT_BOT_PROFILE) +
+        evaluateSearchPosition(normalSeat1, DEFAULT_BOT_PROFILE),
+    ).toBeCloseTo(1, 6);
   });
 });

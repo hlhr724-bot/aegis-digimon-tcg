@@ -6,38 +6,37 @@ import { runMctsResidualMatch } from "#api/bot/evolution/runMctsResidualMatch";
 
 const PINNED_SEARCHES = [
   [
-    [4, 1, 0.634136],
-    [5, 1, 0.460085],
-    [0, 1, 0.445221],
-    [1, 1, 0.408541],
-    [2, 1, 0.406127],
-    [3, 1, 0.270912],
+    [5, 1, 0.62567],
+    [4, 1, 0.533233],
+    [1, 1, 0.476053],
+    [0, 1, 0.459611],
+    [2, 1, 0.40127],
+    [3, 1, 0.313388],
     [6, 0, 0],
     [7, 0, 0],
   ],
   [
-    [1, 1, 0.450166],
-    [5, 1, 0.415809],
-    [0, 1, 0.408541],
-    [2, 1, 0.336261],
-    [3, 1, 0.295254],
-    [4, 1, 0.191545],
+    [5, 1, 0.384535],
+    [1, 1, 0.34585],
+    [0, 1, 0.24343],
+    [3, 1, 0.16556],
+    [2, 1, 0.133113],
+    [4, 1, 0.08475],
+    [6, 0, 0],
+    [7, 0, 0],
+  ],
+  [
+    [1, 1, 0.217693],
+    [2, 1, 0.156703],
+    [3, 1, 0.125865],
+    [4, 1, 0.109699],
+    [0, 1, 0.098222],
+    [5, 1, 0.03671],
     [6, 0, 0],
     [7, 0, 0],
     [8, 0, 0],
     [9, 0, 0],
     [10, 0, 0],
-    [11, 0, 0],
-  ],
-  [
-    [5, 1, 0.522485],
-    [1, 1, 0.480011],
-    [0, 1, 0.46257],
-    [4, 1, 0.406127],
-    [2, 1, 0.354344],
-    [3, 1, 0.310026],
-    [6, 0, 0],
-    [7, 0, 0],
   ],
 ];
 
@@ -66,6 +65,6 @@ async function playPinnedMatch() {
 describe("residual MCTS decision identity", () => {
   it("keeps the pinned root statistics and chosen actions for a fixed seed and rollout count", async () => {
     const game = await playPinnedMatch();
-    expect(game).toEqual({ valid: true, decisions: 54, winnerSeat: 1, searches: PINNED_SEARCHES });
+    expect(game).toEqual({ valid: true, decisions: 35, winnerSeat: 1, searches: PINNED_SEARCHES });
   }, 180_000);
 });
