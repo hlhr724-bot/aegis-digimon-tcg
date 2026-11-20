@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.78.1-beta",
+    "releasedAt": "2026-11-20",
+    "summaryKey": "releases.1.78.1-beta.summary",
+    "features": [],
+    "fixes": [
+      {
+        "textKey": "releases.1.78.1-beta.fix.mobilePerformance"
+      },
+      {
+        "textKey": "releases.1.78.1-beta.fix.kingEtemonErrata"
+      }
+    ]
+  },
+  {
     "version": "1.78.0-beta",
     "releasedAt": "2026-11-20",
     "summaryKey": "releases.1.78.0-beta.summary",
