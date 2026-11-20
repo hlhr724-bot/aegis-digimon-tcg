@@ -1,9 +1,9 @@
 {
   "errata": {
     "url": "https://world.digimoncard.com/rule/errata_card/",
-    "count": 91,
+    "count": 94,
     "cached": false,
-    "fetchedAt": "2026-08-19T00:03:57.578Z"
+    "fetchedAt": "2026-11-20T17:46:39.173Z"
   },
   "banlist": {
     "url": "https://world.digimoncard.com/rule/restriction_card/",

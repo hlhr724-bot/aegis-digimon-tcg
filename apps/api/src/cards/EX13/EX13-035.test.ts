@@ -45,7 +45,7 @@ describe("EX13-035 KingEtemon", () => {
     });
     expect(getCardDefinition(cardId)!.effectText).toBe(
       "[Digivolve] Lv.5 w/[Sukamon]/[Etemon] in name: Cost 4 \n\n" +
-        "[On Play] [When Digivolving] You may play up to 2 Digimon cards with [Chuumon], [Sukamon] or [Etemon] in their names and up to 6 total play cost from your hand or trash without paying the costs. By returning 10 such cards from your trash to the bottom of the deck, add 6 to the play cost maximum.\n" +
+        "[On Play] [When Digivolving] You may play up to 2 Digimon cards with [Chuumon], [Sukamon] or [Etemon] in their names and up to 6 total play cost from your hand or trash without paying the costs. By returning 10 cards with [Chuumon], [Sukamon] or [Etemon] in their names from your trash to the bottom of the deck, add 6 to the play cost maximum.\n" +
         "[All Turns] While there are 3 or more Digimon with [Sukamon] or [Etemon] in their names, give all of your opponent's Digimon ＜Security A. -1＞ and -3000 DP.",
     );
     expect(getCardDefinition(cardId)!.inheritedEffectText).toBeUndefined();
