@@ -76,6 +76,7 @@ export const rankedDe = {
   "ranked.season.invalidDeck": "Wählen Sie ein gespeichertes, legales Deck für dieses Format.",
   "ranked.season.alreadyPlaying": "Ihr Konto hat bereits ein aktives Match.",
   "ranked.season.queueExpired": "Ihre Reservierung ist abgelaufen. Kehren Sie zur Lobby zurück, um erneut zu suchen.",
+  "ranked.season.searchMovedTitle": "Suche abgebrochen",
   "ranked.season.searchMoved":
     "Sie haben in einem anderen Tab eine Ranglistensuche gestartet, daher wurde diese Suche abgebrochen.",
   "ranked.season.discordRetry":

@@ -73,6 +73,7 @@ export const rankedKo = {
   "ranked.season.invalidDeck": "이 포맷에서 사용할 수 있는 저장된 덱을 선택하세요.",
   "ranked.season.alreadyPlaying": "이 계정은 이미 진행 중인 대전이 있습니다.",
   "ranked.season.queueExpired": "예약이 만료되었습니다. 로비로 돌아가 다시 검색하세요.",
+  "ranked.season.searchMovedTitle": "검색 취소됨",
   "ranked.season.searchMoved": "다른 탭에서 랭크 검색을 시작해 이 검색은 취소되었습니다.",
   "ranked.season.discordRetry": "Discord를 동기화하지 못했습니다. 다음 시도가 자동으로 예약되었습니다.",
   "ranked.season.duration": "8주",

@@ -19,6 +19,14 @@ function getNotice(params: Params) {
 }
 
 describe("connection notices", () => {
+  it("explains a ranked search canceled by another tab instead of a lost connection", () => {
+    expect(getNotice({ startMode: "ranked", error: "ranked_search_moved" })).toMatchObject({
+      title: "Search canceled",
+      detail: "You started a ranked search in another tab, so this search was canceled.",
+      exitTo: "lobby",
+    });
+  });
+
   it("explains an oversized selection while preserving automatic recovery", () => {
     expect(getNotice({ status: "reconnecting", error: "AEGIS_MESSAGE_TOO_LARGE" })).toMatchObject({
       title: "Reconnecting…",

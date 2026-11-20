@@ -69,6 +69,7 @@ export const rankedZhTw = {
   "ranked.season.invalidDeck": "請選擇一副已儲存且符合此賽制的卡組。",
   "ranked.season.alreadyPlaying": "你的帳戶已有進行中的對局。",
   "ranked.season.queueExpired": "你的保留位置已過期。請返回大廳重新搜尋。",
+  "ranked.season.searchMovedTitle": "搜尋已取消",
   "ranked.season.searchMoved": "你已在另一個分頁開始排位搜尋，因此此搜尋已取消。",
   "ranked.season.discordRetry": "無法同步 Discord。系統已自動排定重試。",
   "ranked.season.duration": "8 週",

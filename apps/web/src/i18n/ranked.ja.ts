@@ -72,6 +72,7 @@ export const rankedJa = {
   "ranked.season.invalidDeck": "このフォーマットで使用可能な保存済みデッキを選んでください。",
   "ranked.season.alreadyPlaying": "このアカウントはすでに対戦中です。",
   "ranked.season.queueExpired": "予約の有効期限が切れました。ロビーに戻って、もう一度検索してください。",
+  "ranked.season.searchMovedTitle": "検索をキャンセルしました",
   "ranked.season.searchMoved": "別のタブでランク戦の検索を開始したため、この検索はキャンセルされました。",
   "ranked.season.discordRetry": "Discordと同期できませんでした。自動で再試行します。",
   "ranked.season.duration": "8週間",
