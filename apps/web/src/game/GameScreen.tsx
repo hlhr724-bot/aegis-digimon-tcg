@@ -525,8 +525,17 @@ function GameScreenSession({
   }>();
   const blockConfirmationSubmittedRef = useRef(false);
 
-  const { drag, dragHover, handleTapRef, handleDropRef, canDragRef, startHandDrag, startPermDrag, cancelDrag } =
-    useDragPlumbing({ manual: state?.gameMode === GameMode.MANUAL.value });
+  const {
+    drag,
+    dragPointer,
+    dragHover,
+    handleTapRef,
+    handleDropRef,
+    canDragRef,
+    startHandDrag,
+    startPermDrag,
+    cancelDrag,
+  } = useDragPlumbing({ manual: state?.gameMode === GameMode.MANUAL.value });
   canDragRef.current = null;
   const playDragStarted = drag?.kind === DragKind.Play && drag.started;
   useEffect(() => {
@@ -2236,7 +2245,13 @@ function GameScreenSession({
                     : actions
       }
       senders={matchSenders}
-      drag={{ state: drag, isPlay: dragIsPlay, cardId: dragCardId, hoveredIntent: hoveredDragIntent ?? undefined }}
+      drag={{
+        state: drag,
+        pointer: dragPointer,
+        isPlay: dragIsPlay,
+        cardId: dragCardId,
+        hoveredIntent: hoveredDragIntent ?? undefined,
+      }}
       breedingDock={yourBreedingDock}
       overlayStack={overlays}
       stageEl={stageEl}

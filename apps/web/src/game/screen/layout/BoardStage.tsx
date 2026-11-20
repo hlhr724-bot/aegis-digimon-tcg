@@ -90,6 +90,7 @@ import { readFieldEffects } from "@/game/readFieldEffects";
 import { BattleZones } from "./BattleZones";
 import { BoardBurstLayer } from "./BoardBurstLayer";
 import { DragGhost } from "./DragGhost";
+import type { DragPointer } from "../hooks/createDragPointer";
 import { FieldClashGhosts } from "./FieldClashGhosts";
 import { LeftPileColumn } from "./LeftPileColumn";
 import { LogTicker } from "./LogTicker";
@@ -271,6 +272,7 @@ export function BoardStage({
   senders: ReturnType<typeof matchIntents>;
   drag: {
     state: DragState | null;
+    pointer: DragPointer;
     isPlay: boolean;
     cardId: string | undefined;
     /** What releasing here would do, or nothing while the pointer is over no drop area. */
@@ -1029,8 +1031,7 @@ export function BoardStage({
           <DragGhost
             cardId={drag.cardId}
             artId={drag.state?.artId}
-            x={drag.state!.x}
-            y={drag.state!.y}
+            pointer={drag.pointer}
             intent={drag.hoveredIntent}
             coarsePointer={layout.coarsePointer}
           />

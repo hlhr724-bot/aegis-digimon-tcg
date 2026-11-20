@@ -3,28 +3,29 @@
    overflow can clip them, and the label is floated clear of the ghost and of the
    finger holding it. */
 
+import { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "../../../i18n";
 import { CardFull } from "../../../design/cards";
 import { dragIntentLabelKey, dragIntentLabelOffsetPx, type DragIntent } from "../../dragIntents";
+import type { DragPointer } from "../hooks/createDragPointer";
 
 export function DragGhost({
   cardId,
   artId,
-  x,
-  y,
+  pointer,
   intent,
   coarsePointer,
 }: {
   cardId: string;
   artId?: string;
-  x: number;
-  y: number;
+  pointer: DragPointer;
   /** What releasing here would do, or nothing while the pointer is over no drop area. */
   intent: DragIntent | undefined;
   coarsePointer: boolean;
 }) {
   const { t } = useTranslation();
+  const { x, y } = useSyncExternalStore(pointer.subscribe, pointer.get);
   return (
     <>
       {createPortal(
