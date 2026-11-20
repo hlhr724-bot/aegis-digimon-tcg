@@ -21,12 +21,16 @@ function readMode(): MotionMode {
 
 let current = readMode();
 let systemListenerInstalled = false;
+let cachedSystemQuery: { matchMedia: Window["matchMedia"]; list: MediaQueryList } | undefined;
 
 function findSystemQuery(): MediaQueryList | undefined {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
     return undefined;
   }
-  return window.matchMedia(REDUCED_MOTION_QUERY);
+  if (cachedSystemQuery?.matchMedia !== window.matchMedia) {
+    cachedSystemQuery = { matchMedia: window.matchMedia, list: window.matchMedia(REDUCED_MOTION_QUERY) };
+  }
+  return cachedSystemQuery.list;
 }
 
 function getMode(): MotionMode {

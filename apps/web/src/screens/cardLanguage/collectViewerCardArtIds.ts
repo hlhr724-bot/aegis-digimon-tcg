@@ -25,13 +25,23 @@ function listPublicCards(player: PlayerState): CardInstance[] {
   ];
 }
 
+type Deck = NonNullable<AegisJoinOptions["deck"]>;
+
+const deckArtIdsByDeck = new WeakMap<Deck, string[]>();
+
+function listDeckArtIds(deck: Deck): string[] {
+  const cached = deckArtIdsByDeck.get(deck);
+  if (cached) return cached;
+  const artIds = [
+    ...deck.mainDeck.map((cardId, index) => resolveCardArt(cardId, deck.mainDeckArts?.[index]).artId),
+    ...deck.eggDeck.map((cardId, index) => resolveCardArt(cardId, deck.eggDeckArts?.[index]).artId),
+  ];
+  deckArtIdsByDeck.set(deck, artIds);
+  return artIds;
+}
+
 export function collectViewerCardArtIds({ deck, players, viewerSeat }: Params): string[] {
-  const deckArtIds = deck
-    ? [
-        ...deck.mainDeck.map((cardId, index) => resolveCardArt(cardId, deck.mainDeckArts?.[index]).artId),
-        ...deck.eggDeck.map((cardId, index) => resolveCardArt(cardId, deck.eggDeckArts?.[index]).artId),
-      ]
-    : [];
+  const deckArtIds = deck ? listDeckArtIds(deck) : [];
   const ownedCards = players
     .flatMap(listPublicCards)
     .filter((card) => card?.cardId && card.ownerSeat === viewerSeat)
