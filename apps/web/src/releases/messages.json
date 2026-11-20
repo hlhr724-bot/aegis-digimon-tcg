@@ -1,4 +1,22 @@
 {
+  "releases.1.78.1-beta.summary": {
+    "en": "This update makes matches smoother on phones and updates KingEtemon to its latest errata.",
+    "pt-BR": "Esta atualização deixa as partidas mais fluidas no celular e atualiza KingEtemon para a errata mais recente.",
+    "es": "Esta actualización hace que las partidas vayan más fluidas en el móvil y actualiza KingEtemon a su errata más reciente.",
+    "it": "Questo aggiornamento rende le partite più fluide sul telefono e aggiorna KingEtemon alla sua errata più recente."
+  },
+  "releases.1.78.1-beta.fix.mobilePerformance": {
+    "en": "Matches stutter much less on phones, on both the 2D and 3D boards. Tapping a Digimon, attacking, dragging cards and watching your opponent's turn now take noticeably less work for your phone.",
+    "pt-BR": "As partidas travam bem menos no celular, tanto no tabuleiro 2D quanto no 3D. Tocar em um Digimon, atacar, arrastar cartas e acompanhar o turno do oponente agora exigem bem menos do seu celular.",
+    "es": "Las partidas se traban mucho menos en el móvil, tanto en el tablero 2D como en el 3D. Tocar un Digimon, atacar, arrastrar cartas y seguir el turno del oponente ahora exigen bastante menos a tu móvil.",
+    "it": "Le partite scattano molto meno sul telefono, sia sul tabellone 2D sia su quello 3D. Toccare un Digimon, attaccare, trascinare carte e seguire il turno dell'avversario ora richiedono molto meno al tuo telefono."
+  },
+  "releases.1.78.1-beta.fix.kingEtemonErrata": {
+    "en": "KingEtemon (EX13-035) now shows its errata text from 2026-11-13: its cost returns 10 cards with [Chuumon], [Sukamon] or [Etemon] in their names. How the card plays did not change.",
+    "pt-BR": "KingEtemon (EX13-035) agora mostra o texto da errata de 13/11/2026: o custo devolve 10 cartas com [Chuumon], [Sukamon] ou [Etemon] no nome. O funcionamento da carta não mudou.",
+    "es": "KingEtemon (EX13-035) ahora muestra el texto de su errata del 13/11/2026: su coste devuelve 10 cartas con [Chuumon], [Sukamon] o [Etemon] en su nombre. El funcionamiento de la carta no cambió.",
+    "it": "KingEtemon (EX13-035) ora mostra il testo della sua errata del 13/11/2026: il suo costo rimette 10 carte con [Chuumon], [Sukamon] o [Etemon] nel nome. Il funzionamento della carta non è cambiato."
+  },
   "releases.1.78.0-beta.summary": {
     "en": "This update lets organizers allow beta cards in Standard tournaments, makes the MASTER bot stronger, and stops a ranked disconnect from costing rating twice.",
     "pt-BR": "Esta atualização permite que organizadores liberem cartas beta em torneios Standard, deixa o bot MASTER mais forte e impede que uma desconexão na ranqueada custe rating duas vezes.",
