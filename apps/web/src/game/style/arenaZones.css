@@ -484,7 +484,7 @@
    only the breeding dock and the memory band, which holds the end control, rise
    above it. The board isolates, so notices and dialogs portalled outside it stay lit. */
 @media (min-width: 1024px) and (min-height: 760px) {
-  .aegis-arena .game-board:has(.game-breeding-mode) {
+  .aegis-arena .game-board[data-breeding-mode] {
     isolation: isolate;
   }
 
@@ -494,7 +494,7 @@
     bottom: -13rem;
   }
 
-  .aegis-arena .game-board:has(.game-breeding-mode) :is(.game-breeding-dock, .game-memory-band) {
+  .aegis-arena .game-board[data-breeding-mode] :is(.game-breeding-dock, .game-memory-band) {
     z-index: 21;
   }
 }

@@ -6,6 +6,7 @@ import { createArenaFieldStore } from "@/game/arena3d/field/createArenaFieldStor
 import { arenaAppearancePreference } from "@/design/arenaAppearance/arenaAppearancePreference";
 import { ArenaUiScale } from "@/design/arenaAppearance/ArenaUiScale";
 import { useBattleLanePreference } from "@/design/battleLanes";
+import { FieldLayout, useFieldLayout } from "@/design/fieldLayout";
 import { useArenaViewport } from "@/game/screen/hooks/useArenaViewport";
 import "@/design/arenaAppearance/arenaAppearance.css";
 import { getGamePhase } from "@/game/screen/model/getGamePhase";
@@ -307,6 +308,7 @@ export function BoardStage({
   const arenaInputEnabled = useArenaInputEnabled();
   const battleLanes = useBattleLanePreference();
   const arena3d = boardStyle === BoardStyle.ARENA_3D.value;
+  const organizedField = useFieldLayout() === FieldLayout.Organized && !arena3d;
   const dockViewerPiles = layout.dockViewerPiles && !arena3d;
   const breedingMode = guards.breedingActionsOpen ? <div className="game-breeding-mode" aria-hidden="true" /> : null;
   const arenaFieldStore = useMemo(createArenaFieldStore, []);
@@ -652,6 +654,8 @@ export function BoardStage({
           data-arena-enlarged={scaleFactor > 1 || undefined}
           data-art={look.hasArt || undefined}
           data-board-style={boardStyle}
+          data-organized-field={organizedField || undefined}
+          data-breeding-mode={guards.breedingActionsOpen || undefined}
           data-battle-lanes={battleLanes}
           data-timer-decision={viewerDecisionTimed(state, viewerSeat) || undefined}
           style={{

@@ -275,15 +275,15 @@
     border-left: 1px solid var(--ds-line);
     background: var(--ds-ink) !important;
   }
-  .game-sidebar > div:first-child,
-  .game-sidebar > div:nth-child(3),
-  .game-sidebar > div:last-child {
+  .game-sidebar > .game-sidebar__status,
+  .game-sidebar > .game-sidebar__log,
+  .game-sidebar > .game-sidebar__footer {
     display: none;
   }
-  .game-sidebar > div:nth-child(2):not(:has(button)) {
+  .game-sidebar > .game-sidebar__actions:not(:has(button)) {
     display: none !important;
   }
-  .game-sidebar > div:nth-child(2) {
+  .game-sidebar > .game-sidebar__actions {
     width: 9rem;
     min-width: 0;
     height: 100dvh;
@@ -294,10 +294,10 @@
     overflow-y: auto;
     border: 0 !important;
   }
-  .game-sidebar > div:nth-child(2) > div {
+  .game-sidebar__actions > .game-sidebar__actions-heading {
     display: none;
   }
-  .game-sidebar > div:nth-child(2) > button {
+  .game-sidebar__actions > button {
     min-width: 0;
     flex: 0 0 auto;
     min-height: 44px;

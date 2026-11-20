@@ -290,6 +290,7 @@ export function PermanentView({
       data-combat-impact={(shake && claw) || undefined}
       data-permanent-id={perm.permanentId}
       data-inspectable={!!onInspect || undefined}
+      data-inspect-shown={(!!onInspect && showInspect) || undefined}
       style={{
         // The badges size themselves from the card, so a phone's smaller card gets smaller badges.
         ...({ "--permanent-width": `${permanentWidth}px` } as CSSProperties),

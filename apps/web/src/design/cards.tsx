@@ -445,6 +445,7 @@ function TokenInfo({ def, width, dp, dpDelta, renderDpDelta, reference }: TokenI
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: px(3) }}>
           <span
             data-card-name
+            data-field-referenced={!!reference || undefined}
             style={{
               color: "#fff",
               fontSize: px(9.5),

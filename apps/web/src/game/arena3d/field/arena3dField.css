@@ -744,7 +744,7 @@
   transition: filter var(--t-dialog-in, 180ms) ease-out;
 }
 
-.game-board[data-board-style="arena3d"][data-arena-3d-live]:has(.arena-3d-field > .game-breeding-mode)
+.game-board[data-board-style="arena3d"][data-arena-3d-live][data-breeding-mode]
   :is(
     .game-opponent-bar,
     .game-player-dock,

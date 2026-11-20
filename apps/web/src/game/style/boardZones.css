@@ -421,7 +421,7 @@
   min-height: 0;
 }
 
-.game-board .game-permanent:has(.game-permanent__inspect) [data-card-name]:has([data-field-reference]) {
+.game-board .game-permanent[data-inspect-shown] [data-card-name][data-field-referenced] {
   padding-inline-start: 1.5rem;
 }
 

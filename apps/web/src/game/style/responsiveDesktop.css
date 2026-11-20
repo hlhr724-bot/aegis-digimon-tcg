@@ -100,39 +100,39 @@
   /* The turn panel has to fit the strip whole: it is the one panel whose content
      cannot be scrolled to without hiding the phase the player is in. Its width is
      set by the five phase chips. */
-  .game-sidebar > div:first-child {
+  .game-sidebar > .game-sidebar__status {
     min-width: 220px;
   }
-  .game-sidebar > div:first-child > div:first-child {
+  .game-sidebar__status > .game-sidebar__status-header {
     margin-bottom: var(--ds-space-1) !important;
   }
-  .game-sidebar > div:first-child > div:nth-child(2) > div {
+  .game-sidebar__phases > .game-sidebar__phase {
     padding: 4px 1px !important;
     font-size: 8.5px !important;
   }
   /* Side by side, so the strip costs one button's height instead of two. */
-  .game-sidebar > div:nth-child(2) {
+  .game-sidebar > .game-sidebar__actions {
     min-width: 250px;
     flex-direction: row !important;
     align-items: center;
     gap: var(--ds-space-2) !important;
   }
-  .game-sidebar > div:nth-child(2) > div {
+  .game-sidebar__actions > .game-sidebar__actions-heading {
     display: none;
   }
-  .game-sidebar > div:nth-child(2) > button {
+  .game-sidebar__actions > button {
     flex: 1;
     min-width: 0;
     min-height: 44px;
   }
   /* The log scrolls; the fade tells the reader the last line continues below. */
-  .game-sidebar > div:nth-child(3) {
+  .game-sidebar > .game-sidebar__log {
     flex: 1;
     min-width: 190px;
     mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent);
   }
   /* Surrender needs no column of its own. */
-  .game-sidebar > div:last-child {
+  .game-sidebar > .game-sidebar__footer {
     min-width: 0;
     flex: 0 0 auto;
   }
