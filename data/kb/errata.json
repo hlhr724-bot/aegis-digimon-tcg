@@ -1,4 +1,43 @@
 {
+  "SD01-03": {
+    "cardId": "SD01-03",
+    "name": "Liskmon",
+    "date": "2026-11-20",
+    "changes": [
+      {
+        "before": "-",
+        "after": "[When Digivolving] This Digimon gets +2000 DP for the turn."
+      }
+    ],
+    "notes": null,
+    "source": "https://world.digimoncard.com/rule/errata_card/"
+  },
+  "EX9-026": {
+    "cardId": "EX9-026",
+    "name": "Angemon",
+    "date": "2026-11-13",
+    "changes": [
+      {
+        "before": "[On Play] [When Digivolving] By placing 1 Digimon card in your hand face down as this Digimon's bottom digivolution card, give 1 of your opponent's Digimon ＜Security A. -1＞ and -3000 DP until their turn ends.",
+        "after": "[On Play] [When Digivolving] By placing 1 card in your hand face down as this Digimon's bottom digivolution card, give 1 of your opponent's Digimon ＜Security A. -1＞ and -3000 DP until their turn ends."
+      }
+    ],
+    "notes": null,
+    "source": "https://world.digimoncard.com/rule/errata_card/"
+  },
+  "EX13-035": {
+    "cardId": "EX13-035",
+    "name": "KingEtemon",
+    "date": "2026-11-13",
+    "changes": [
+      {
+        "before": "[On Play] [When Digivolving] You may play up to 2 Digimon cards with [Chuumon], [Sukamon] or [Etemon] in their names and up to 6 total play cost from your hand or trash without paying the costs. By returning 10 such cards from your trash to the bottom of the deck, add 6 to the play cost maximum.",
+        "after": "[On Play] [When Digivolving] You may play up to 2 Digimon cards with [Chuumon], [Sukamon] or [Etemon] in their names and up to 6 total play cost from your hand or trash without paying the costs. By returning 10 cards with [Chuumon], [Sukamon] or [Etemon] in their names from your trash to the bottom of the deck, add 6 to the play cost maximum."
+      }
+    ],
+    "notes": null,
+    "source": "https://world.digimoncard.com/rule/errata_card/"
+  },
   "EX4-072": {
     "cardId": "EX4-072",
     "name": "Digital Translator",
