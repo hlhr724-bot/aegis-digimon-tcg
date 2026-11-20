@@ -50,8 +50,11 @@ export function Sidebar({
         overflow: "hidden",
       }}
     >
-      <div style={{ padding: "16px 18px", borderBottom: "1px solid var(--ds-line)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+      <div className="game-sidebar__status" style={{ padding: "16px 18px", borderBottom: "1px solid var(--ds-line)" }}>
+        <div
+          className="game-sidebar__status-header"
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}
+        >
           <Logo size={18} sub={false} />
           <Badge tone={isMyTurn ? "primary" : "neutral"}>
             <span
@@ -65,10 +68,11 @@ export function Sidebar({
             {isMyTurn ? t("game.yourTurn") : t("game.opponentsTurn")}
           </Badge>
         </div>
-        <div style={{ display: "flex", gap: 3 }}>
+        <div className="game-sidebar__phases" style={{ display: "flex", gap: 3 }}>
           {PHASES.map((p) => (
             <div
               key={p}
+              className="game-sidebar__phase"
               style={{
                 flex: 1,
                 textAlign: "center",
@@ -98,6 +102,7 @@ export function Sidebar({
       </div>
 
       <div
+        className="game-sidebar__actions"
         style={{
           padding: "14px 18px",
           borderBottom: "1px solid var(--ds-line)",
@@ -107,6 +112,7 @@ export function Sidebar({
         }}
       >
         <div
+          className="game-sidebar__actions-heading"
           style={{
             fontSize: 10.5,
             fontWeight: 700,
@@ -127,7 +133,7 @@ export function Sidebar({
         )}
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto", padding: "14px 18px" }}>
+      <div className="game-sidebar__log" style={{ flex: 1, overflowY: "auto", padding: "14px 18px" }}>
         <div
           style={{
             fontSize: 10.5,

@@ -21,7 +21,7 @@ const returnTenSuchCards: Cost = {
     count: 10,
   },
   to: "deckBottom",
-  raw: "by returning 10 such cards from your trash to the bottom of the deck",
+  raw: "by returning 10 cards with [Chuumon], [Sukamon] or [Etemon] in their names from your trash to the bottom of the deck",
 };
 
 const playFree = (playCostMaximum: number, cost?: Cost): Action => ({
@@ -47,10 +47,10 @@ const playClause = (trigger: "OnPlay" | "WhenDigivolving"): CardEffect => ({
       optional: true,
       labels: [
         "play up to 2 such cards with up to 6 total play cost",
-        "return 10 such cards from your trash to the bottom of the deck, then play up to 2 such cards with up to 12 total play cost",
+        "return 10 cards with [Chuumon], [Sukamon] or [Etemon] in their names from your trash to the bottom of the deck, then play up to 2 such cards with up to 12 total play cost",
       ],
       options: [[playFree(6)], [playFree(12, returnTenSuchCards)]],
-      raw: "You may play up to 2 Digimon cards with [Chuumon], [Sukamon] or [Etemon] in their names and up to 6 total play cost from your hand or trash without paying the costs. By returning 10 such cards from your trash to the bottom of the deck, add 6 to the play cost maximum.",
+      raw: "You may play up to 2 Digimon cards with [Chuumon], [Sukamon] or [Etemon] in their names and up to 6 total play cost from your hand or trash without paying the costs. By returning 10 cards with [Chuumon], [Sukamon] or [Etemon] in their names from your trash to the bottom of the deck, add 6 to the play cost maximum.",
     },
   ],
 });

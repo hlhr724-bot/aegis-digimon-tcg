@@ -4,7 +4,7 @@
   .game-opponent-bar {
     min-height: 0;
   }
-  .game-sidebar > div:nth-child(2) > button {
+  .game-sidebar__actions > button {
     min-height: 44px;
   }
 }
@@ -214,7 +214,7 @@
   /* Sized by the button it holds. At 3.25rem the row left a 36px content box for
      a control the touch rules floor at 44px, and the sidebar's own clip took the
      missing 8px off the bottom of the breeding step's only action. */
-  .game-sidebar > div:nth-child(2) {
+  .game-sidebar > .game-sidebar__actions {
     height: auto;
     min-height: calc(44px + var(--ds-space-2) * 2);
   }
