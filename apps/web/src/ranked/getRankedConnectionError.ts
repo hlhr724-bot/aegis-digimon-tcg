@@ -7,6 +7,7 @@ const messages: Record<string, TranslationKey> = {
   ranked_invalid_queue: "ranked.season.unsupportedFormat",
   ranked_already_playing: "ranked.season.alreadyPlaying",
   ranked_queue_expired: "ranked.season.queueExpired",
+  ranked_search_moved: "ranked.season.searchMoved",
 };
 
 export function getRankedConnectionError({ error, t }: Params): string | undefined {

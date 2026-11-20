@@ -108,8 +108,8 @@ const compiled: CompiledCard = {
       actions: [
         {
           kind: "SubTrigger",
-          event: "onDigivolutionCardDiscarded",
-          sourceFilter: { matchTrashedSource: true },
+          event: "onDigivolutionCardsDiscardedBatch",
+          sourceFilter: { isSelfRef: true },
           requireByEffect: true,
           hostFilter: {
             controller: "mine",

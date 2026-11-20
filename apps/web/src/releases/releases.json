@@ -1,5 +1,29 @@
 [
   {
+    "version": "1.78.0-beta",
+    "releasedAt": "2026-11-20",
+    "summaryKey": "releases.1.78.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.78.0-beta.feature.tournamentBetaCards"
+      },
+      {
+        "textKey": "releases.1.78.0-beta.feature.masterBot"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.78.0-beta.fix.rankedEarlyLeave"
+      },
+      {
+        "textKey": "releases.1.78.0-beta.fix.rankedOneSearch"
+      },
+      {
+        "textKey": "releases.1.78.0-beta.fix.p167"
+      }
+    ]
+  },
+  {
     "version": "1.77.0-beta",
     "releasedAt": "2026-11-19",
     "summaryKey": "releases.1.77.0-beta.summary",

@@ -150,5 +150,8 @@ function getConnectionFailureTitle(error: string | undefined): TranslationKey {
   if (error === ConnectionErrorCode.ALREADY_IN_MATCH.value) {
     return "resumeMatch.title";
   }
+  if (error === "ranked_search_moved") {
+    return "ranked.season.searchMovedTitle";
+  }
   return "game.connectionLost";
 }

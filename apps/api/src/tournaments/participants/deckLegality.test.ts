@@ -1,5 +1,5 @@
 import type { TournamentBanlistCard } from "@aegis/shared";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { RED_DECK } from "../../engine/testDecks.js";
 import { type CompetitiveDeck, validateCompetitiveDeck } from "./deckLegality.js";
 
@@ -196,5 +196,23 @@ it("rejects cards outside the event's historical pool", () => {
   expect(validateCompetitiveDeck(deck, [], "BT10").violations).toContainEqual({
     kind: "outside_format",
     cardId: "BT20-037",
+  });
+});
+
+describe("unreleased product cards", () => {
+  const BETA_CARD = "EX13-020";
+  const deck = { mainDeck: [BETA_CARD, ...LEGAL.mainDeck.slice(1)], eggDeck: LEGAL.eggDeck };
+  const betaViolation = { kind: "outside_format", cardId: BETA_CARD };
+
+  afterEach(() => vi.useRealTimers());
+
+  it("rejects them by default", () => {
+    vi.useFakeTimers({ now: new Date("2026-09-11T12:00:00Z") });
+    expect(validateCompetitiveDeck(deck).violations).toContainEqual(betaViolation);
+  });
+
+  it("accepts them when the event allows beta cards", () => {
+    vi.useFakeTimers({ now: new Date("2026-09-11T12:00:00Z") });
+    expect(validateCompetitiveDeck(deck, [], "standard", true).violations).not.toContainEqual(betaViolation);
   });
 });

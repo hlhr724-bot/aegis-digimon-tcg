@@ -227,14 +227,39 @@ describe("ranked departure", () => {
     }
   }
 
-  it("records the win and frees both accounts when a player leaves a started ranked match", async () => {
+  it("records the win and frees both accounts when a player leaves a started ranked match after acting", async () => {
+    const { room, clients, pairId, players } = await seatPair();
+    sendReady(room, clients);
+    await vi.waitFor(() => expect(room.state.rankedDeadlineAt).toBeGreaterThan(0));
+    const internals = room as unknown as { handleIntent(client: Client, intent: Intent): void };
+    for (const client of clients) internals.handleIntent(client, { type: "mulligan", keep: true });
+    await vi.waitFor(() => expect(room.state.pendingDecision?.kind).not.toBe("mulligan"));
+
+    await leave(room, clients[1]!);
+
+    await expectRecordedWinAndFreedPlayers(pairId, players[0]!.id, [players[0]!.id, players[1]!.id]);
+  });
+
+  it("voids the pair without rating anyone when a player leaves a started ranked match before acting", async () => {
     const { room, clients, pairId, players } = await seatPair();
     sendReady(room, clients);
     await vi.waitFor(() => expect(room.state.rankedDeadlineAt).toBeGreaterThan(0));
 
     await leave(room, clients[1]!);
 
-    await expectRecordedWinAndFreedPlayers(pairId, players[0]!.id, [players[0]!.id, players[1]!.id]);
+    await vi.waitFor(async () => {
+      const pair = (
+        await accounts.pool.query<{ status: string }>("SELECT status FROM ranked_pairs WHERE id=$1", [pairId])
+      ).rows[0];
+      expect(pair?.status).toBe(RankedQueueStatus.VOID.value);
+    });
+    expect((await accounts.pool.query("SELECT 1 FROM ranked_ratings")).rowCount).toBe(0);
+    expect((await accounts.pool.query("SELECT 1 FROM ranked_queue")).rowCount).toBe(0);
+    for (const player of players) {
+      expect(await claimAccountRoom({ accounts, accountId: player.id, roomId: "next-casual-room" })).toBe(
+        AccountRoomClaim.CLAIMED.value,
+      );
+    }
   });
 
   it("voids the pair and frees both accounts when a player leaves while the ranked start is pending", async () => {
