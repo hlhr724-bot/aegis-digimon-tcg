@@ -236,6 +236,12 @@ export function TournamentFormatPanel({ detail }: Props) {
           {deckFormatLabel(format, t)}
         </FormatRow>
 
+        {detail.allowBetaCards ? (
+          <FormatRow label={t("tournaments.betaCards.label")} help={<p>{t("tournaments.betaCards.warning")}</p>}>
+            {t("tournaments.betaCards.allowed")}
+          </FormatRow>
+        ) : null}
+
         <FormatRow
           label={t("tournaments.create.bestOf")}
           help={<p>{t(detail.bestOf === 3 ? "tournaments.formatHelp.bestOf3" : "tournaments.formatHelp.bestOf1")}</p>}

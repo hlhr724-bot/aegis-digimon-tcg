@@ -15,6 +15,12 @@ export const tournamentDetailKo = {
   "tournaments.myMatch.roundTable": "라운드 {round} · 테이블 {table}",
   "tournaments.myMatch.you": "나",
   "tournaments.myMatch.versus": "{opponent}와 대전",
+  "tournaments.create.allowBetaCards": "베타 카드 허용",
+  "tournaments.create.allowBetaCardsDesc": "아직 출시되지 않은 제품의 카드를 덱에 넣을 수 있습니다.",
+  "tournaments.betaCards.label": "베타 카드",
+  "tournaments.betaCards.allowed": "허용",
+  "tournaments.betaCards.warning":
+    "베타 카드가 허용됩니다. 미출시 제품의 카드를 쓸 수 있으며, 출시 전에 바뀔 수 있습니다.",
   "tournaments.detail.cardPool": "사용 가능 카드",
   "tournaments.create.randomBotStyles": "봇 스타일 무작위",
   "tournaments.create.randomBotStylesDesc":

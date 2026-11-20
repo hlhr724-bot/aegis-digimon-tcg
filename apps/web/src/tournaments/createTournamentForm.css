@@ -166,6 +166,15 @@
   color: var(--ds-accent);
 }
 
+.create-tournament__callout--warning {
+  color: var(--ds-text-1);
+  background: var(--ds-warning-soft);
+}
+
+.create-tournament__callout--warning svg {
+  color: var(--ds-warning);
+}
+
 .create-tournament__options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

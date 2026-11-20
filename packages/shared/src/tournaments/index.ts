@@ -43,6 +43,7 @@ export type TournamentBanlistCard = {
 };
 
 export type CreateTournamentInput = {
+  allowBetaCards?: boolean;
   roundStartMode?: TournamentRoundStartMode;
   category?: TournamentCategory;
   format?: DeckFormat;
@@ -184,6 +185,7 @@ export type ParticipantView = {
 };
 
 export type TournamentSummary = {
+  allowBetaCards?: boolean;
   roundStartMode?: TournamentRoundStartMode;
   category?: TournamentCategory;
   myEntry?: {

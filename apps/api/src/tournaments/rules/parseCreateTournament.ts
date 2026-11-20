@@ -38,12 +38,15 @@ export function parseCreateTournament(
   if (body.roundStartMode !== undefined && !isTournamentRoundStartMode(body.roundStartMode)) {
     return undefined;
   }
+  if (body.allowBetaCards !== undefined && typeof body.allowBetaCards !== "boolean") return undefined;
+  if (body.allowBetaCards === true && body.format !== undefined && body.format !== "standard") return undefined;
   const policy = banlist === undefined ? ({ mode: "none" } as const) : parseBanlistPolicy(banlist);
   if (!policy) return undefined;
   return {
     input: {
       name,
       roundStartMode: body.roundStartMode,
+      allowBetaCards: body.allowBetaCards === true,
       description: body.description as string | undefined,
       category: body.category ?? TournamentCategory.COMMUNITY.value,
       clocks: body.clocks as CreateTournamentInput["clocks"],

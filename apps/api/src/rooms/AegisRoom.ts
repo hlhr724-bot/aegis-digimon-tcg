@@ -660,12 +660,13 @@ export class AegisRoom extends Room<{
     if (!this.isPrivate && this.state.gameMode !== (options.gameMode ?? GameMode.AUTOMATIC.value)) {
       return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
     }
-    // Private and bot rooms allow beta cards without the client asking for them, so only the
-    // public queues have to agree with the joiner's beta flag.
+    // Private, bot and tournament rooms set beta cards themselves, so only the public queues have
+    // to agree with the joiner's beta flag.
     if (
       this.state.gameMode !== GameMode.MANUAL.value &&
       !this.isPrivate &&
       !this.isBotRoom &&
+      !this.isTournamentRoom &&
       (options.betaBattleMode === true) !== this.isBetaBattleRoom
     ) {
       return refuseJoin({ roomId: this.roomId, reason: ConnectionErrorCode.ROOM_SETTINGS_MISMATCH.value });
@@ -961,6 +962,7 @@ export class AegisRoom extends Room<{
       format: tournament.format,
       unlimitedRoom: formatIsUnlimited(tournament.format),
       allowFormatSelection: true,
+      betaBattleRoom: tournament.allowBetaCards,
     });
     await this.publishRoomRules();
   }
