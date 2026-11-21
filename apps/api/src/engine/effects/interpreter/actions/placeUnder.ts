@@ -778,6 +778,7 @@ export async function runTrashDigivolution(
     if (
       action.optional === true &&
       action.abortOnDecline === true &&
+      action.cost === undefined &&
       typeof amount === "number" &&
       pool.length < (action.upTo === true ? (action.minAmount ?? 1) : amount)
     ) {
@@ -844,6 +845,7 @@ export async function runTrashDigivolution(
   if (
     (action.optional === true || isDigiBurst) &&
     action.abortOnDecline === true &&
+    action.cost === undefined &&
     typeof amount === "number" &&
     permanentIds.some((pid) => (ctx.game.permanentById(pid)?.stack.filter(stackCardMatches).length ?? 0) < amount)
   ) {

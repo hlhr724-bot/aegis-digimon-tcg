@@ -47,6 +47,33 @@ describe("createPresentationProgress", () => {
     await vi.waitFor(() => expect(progress.current()).toBeUndefined());
   });
 
+  it("keeps a later batch's result off the board while a ribbon holds an earlier revision", async () => {
+    const progress = createPresentationProgress(vi.fn<() => void>());
+
+    const releaseRibbon = progress.hold(124);
+    progress.present("bot-play", 126);
+    const showcase = runTracked(progress.track(step("showcase")));
+    expect(progress.current()).toBe(124);
+
+    releaseRibbon();
+    expect(progress.current()).toBe(126);
+    releaseRibbon();
+    expect(progress.current()).toBe(126);
+
+    showcase();
+    await vi.waitFor(() => expect(progress.current()).toBeUndefined());
+  });
+
+  it("drops ribbon holds when it settles", () => {
+    const progress = createPresentationProgress(vi.fn<() => void>());
+
+    progress.hold(3);
+    expect(progress.current()).toBe(3);
+
+    progress.settle();
+    expect(progress.current()).toBeUndefined();
+  });
+
   it("reports nothing once it has settled, whatever became of the steps", () => {
     const progress = createPresentationProgress(vi.fn<() => void>());
 
