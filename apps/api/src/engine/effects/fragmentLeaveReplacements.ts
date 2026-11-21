@@ -15,7 +15,7 @@ type FragmentReactionDeps = {
   select(
     seat: Seat,
     candidateInstanceIds: string[],
-    bounds: { min: number; max: number },
+    bounds: { min: number; max: number; declinesCost: boolean },
     promptText: string,
     source: FragmentReactionSource,
   ): Promise<string[]>;
@@ -70,7 +70,7 @@ export function fragmentLeaveReplacements(
               : await deps.select(
                   ownerSeat,
                   candidateInstanceIds,
-                  { min: accepted ? liveCount : 0, max: liveCount },
+                  { min: liveCount, max: liveCount, declinesCost: !accepted },
                   accepted
                     ? `＜Fragment (${liveCount})＞: choose ${liveCount} of this Digimon's digivolution cards to trash.`
                     : `＜Fragment (${liveCount})＞: trash ${liveCount} of this Digimon's digivolution cards to prevent its deletion?`,
