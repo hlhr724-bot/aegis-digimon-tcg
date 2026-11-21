@@ -43,6 +43,7 @@ export interface PresentationProgress {
    * caught up (or spent its budget): the viewer must never answer over an older board.
    */
   raiseFloor(stateVersion: number): void;
+  hold(stateVersion: number): () => void;
   /** Nothing is running: the presentation is caught up with the live state. */
   settle(): void;
   /** The revision to render, or undefined when the live state is what to render. */
@@ -57,13 +58,16 @@ export function createPresentationProgress(
   let entries: Entry[] = [];
   let presenting: Entry | undefined;
   let floor = -1;
+  const holds = new Set<{ stateVersion: number }>();
 
   function reported(): number | undefined {
     const oldest = entries.find((entry) => entry.outstanding > 0);
-    if (!oldest) return undefined;
+    const versions = [...holds].map((held) => held.stateVersion);
+    if (oldest) versions.push(oldest.stateVersion);
+    if (versions.length === 0) return undefined;
     // A prompt's floor raises the narrated snapshot; it does not make later unresolved
     // effects visible. Undefined selects the complete live board, beyond that floor.
-    return Math.max(oldest.stateVersion, floor);
+    return Math.max(Math.min(...versions), floor);
   }
 
   function publish(before: number | undefined) {
@@ -113,6 +117,18 @@ export function createPresentationProgress(
       floor = stateVersion;
       publish(before);
     },
+    hold(stateVersion) {
+      const before = reported();
+      const held = { stateVersion };
+      holds.add(held);
+      publish(before);
+      return () => {
+        if (!holds.has(held)) return;
+        const previous = reported();
+        holds.delete(held);
+        publish(previous);
+      };
+    },
     settle() {
       // A step whose track was replaced before it ever started runs no `finally`, so its
       // count would hold the board back for the rest of the match. An idle queue is the
@@ -121,6 +137,7 @@ export function createPresentationProgress(
       telemetry?.settle();
       entries = [];
       presenting = undefined;
+      holds.clear();
       if (before !== undefined) onChange();
     },
     current: reported,

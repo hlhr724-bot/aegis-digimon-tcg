@@ -13,7 +13,7 @@ import type { StateSnapshot } from "../../../net/presentedState";
 import type { NarrationItem } from "../../narration";
 import type { ServerBatch } from "../../../net/serverBatches";
 import { isAnnouncedPhase, phaseBannerFrom, type PhaseBanner } from "../../phaseBanner";
-import { PRESENTED_BOARD_BUDGET_MS } from "../../presentationProgress";
+import { PRESENTED_BOARD_BUDGET_MS, type PresentationProgress } from "../../presentationProgress";
 import { TIMINGS } from "../../timings";
 import { waitForPaintedAnimation } from "../../paintedAnimationClock";
 import { Side } from "../../side";
@@ -117,6 +117,7 @@ export function usePhaseBanners({
   eventTimeline,
   viewerSeat,
   queue,
+  progress,
   phaseOrdersRef,
   nextPhaseOrderRef,
   completedPhaseOrderRef,
@@ -148,6 +149,7 @@ export function usePhaseBanners({
   eventTimeline: readonly ServerEvent[];
   viewerSeat: Seat;
   queue: AnimationQueue;
+  progress: PresentationProgress;
   /** Mutated: which ribbon each phase event belongs to, pruned as the log is rewritten. */
   phaseOrdersRef: MutableRefObject<Map<ServerEvent, number>>;
   /** Mutated: the last ribbon number handed out. */
@@ -238,6 +240,11 @@ export function usePhaseBanners({
   }, [eventTimeline]);
   const phaseBatchesRef = useRef(batches);
   phaseBatchesRef.current = batches;
+
+  function holdBoardAt(phaseEvent: ServerEvent): () => void {
+    const phaseBatch = phaseBatchesRef.current.find((batch) => batch.events.some((event) => event === phaseEvent));
+    return phaseBatch ? progress.hold(phaseBatch.stateVersion) : () => {};
+  }
 
   function boardBeforePhase(openedAt: number | undefined, previous: GameState | undefined): GameState | undefined {
     if (openedAt === undefined) return previous;
@@ -391,9 +398,11 @@ export function usePhaseBanners({
           side: openedPhase.nextSeat === viewerSeat ? Side.Viewer : Side.Opponent,
           track: "phaseBanner",
           async run(context) {
+            let releaseBoard = () => {};
             try {
               await waitForPhasePrerequisites(context, awaitedEvents, phaseOrder);
               if (context.cancelled || context.mode !== "live") return;
+              releaseBoard = holdBoardAt(openedPhase);
               visiblePhaseBannerRef.current = true;
               // The count belongs to the turn that just ended; the new one arrives with the
               // phase ribbons that follow, which carry it.
@@ -416,6 +425,7 @@ export function usePhaseBanners({
               setTurnTransition((current) => (current === transition ? null : current));
               await context.wait(TIMINGS.phaseBannerGap);
             } finally {
+              releaseBoard();
               visiblePhaseBannerRef.current = false;
               completedPhaseOrderRef.current = phaseOrder;
               setTurnTransition((current) => (current === transition ? null : current));
@@ -506,6 +516,7 @@ export function usePhaseBanners({
           side: banner.side,
           track: "phaseBanner",
           async run(context) {
+            let releaseBoard = () => {};
             try {
               if (context.mode !== "live") {
                 setHeldSuspendedIds(new Set());
@@ -516,6 +527,7 @@ export function usePhaseBanners({
               }
               await waitForPhasePrerequisites(context, awaitedEvents, phaseOrder);
               if (context.cancelled || context.mode !== "live") return;
+              releaseBoard = holdBoardAt(openedPhase);
               visiblePhaseBannerRef.current = true;
               if (isAnnouncedPhase(openedPhase.phase)) setAnnouncedPhase(openedPhase.phase);
               setAnnouncedTurn({ seat: openedPhase.turnSeat, count: openedPhase.turnCount });
@@ -634,6 +646,7 @@ export function usePhaseBanners({
               setPhaseBanner((current) => (current?.key === banner.key ? null : current));
               await context.wait(TIMINGS.phaseBannerGap);
             } finally {
+              releaseBoard();
               visiblePhaseBannerRef.current = false;
               completedPhaseOrderRef.current = phaseOrder;
               setPhaseBanner((current) => (current?.key === banner.key ? null : current));
