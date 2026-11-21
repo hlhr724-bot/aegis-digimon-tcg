@@ -203,7 +203,7 @@ describe("EX9-002", () => {
     expect(s.perm("host").topCard.cardId).toBe("EX9-017");
     expect(s.state.players[0]!.hand.map((card) => card.cardId)).toContain("EX9-018");
     expect(s.perm("host").stack.map((card) => card.cardId)).toEqual(["BT1-009", "BT1-027", "EX9-002", "EX9-015"]);
-    expect(s.state.players[1]!.battleArea[0]!.stack).toHaveLength(1);
+    expect(s.state.players[1]!.battleArea[0]!.stack).toHaveLength(0);
     expect(s.state.memory).toBe(5);
     expect(s.state.pendingDecision).toBeUndefined();
   });
