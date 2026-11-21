@@ -221,7 +221,9 @@ export function sidePanelFromEvent(
       // A draw already has a deck-to-hand flight. Showing the private drawn card
       // in a narration panel duplicates that motion (and, for effect draws, the
       // effect notice itself). Digivolution draws are never separate effects.
-      if (event.from === "deck" && event.to === "hand") return null;
+      const opponentTookPublicCards =
+        event.cardIds !== undefined && event.seat !== undefined && event.seat !== viewerSeat;
+      if (event.from === "deck" && event.to === "hand" && !opponentTookPublicCards) return null;
       const titleKey = event.strippedStackTops
         ? event.strippedStackTops.reason === "deDigivolve"
           ? "panel.deDigivolvedCards"
