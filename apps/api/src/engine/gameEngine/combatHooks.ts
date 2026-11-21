@@ -455,8 +455,9 @@ export function buildCombatHooks(engine: GameEngine): CombatHooks {
         ...source,
         options: {
           candidateInstanceIds,
-          min: 0,
+          min: count,
           max: count,
+          declinesCost: true,
           ...(selectionGoal === undefined ? {} : { selectionGoal }),
         },
       });

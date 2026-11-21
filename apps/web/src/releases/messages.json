@@ -1,4 +1,40 @@
 {
+  "releases.1.79.0-beta.summary": {
+    "en": "This update adds new alternate arts and fixes Fragment, source trashing, the turn-start memory display and revealed cards.",
+    "pt-BR": "Esta atualização adiciona novas artes alternativas e corrige Fragment, o descarte de cartas de digievolução, a exibição da memória no início do turno e as cartas reveladas.",
+    "es": "Esta actualización añade nuevos artes alternativos y corrige Fragment, el descarte de cartas de digievolución, la memoria al inicio del turno y las cartas reveladas.",
+    "it": "Questo aggiornamento aggiunge nuove arti alternative e corregge Fragment, lo scarto delle carte digievoluzione, la memoria a inizio turno e le carte rivelate."
+  },
+  "releases.1.79.0-beta.feature.alternateArts": {
+    "en": "Added alternate arts for BT27 and starter deck cards. English arts are now listed before Japanese ones.",
+    "pt-BR": "Adicionamos artes alternativas para cartas da BT27 e dos starter decks. As artes em inglês agora aparecem antes das japonesas.",
+    "es": "Añadimos artes alternativos para cartas de BT27 y de los mazos de inicio. Los artes en inglés ahora aparecen antes que los japoneses.",
+    "it": "Abbiamo aggiunto arti alternative per carte di BT27 e dei mazzi base. Le arti in inglese ora compaiono prima di quelle giapponesi."
+  },
+  "releases.1.79.0-beta.fix.fragmentFullCount": {
+    "en": "<Fragment> now asks for exactly the required number of digivolution cards, or lets you decline. Before, picking fewer cards was accepted and the Digimon was deleted anyway.",
+    "pt-BR": "<Fragment> agora pede exatamente o número exigido de cartas de digievolução, ou deixa você recusar. Antes, escolher menos cartas era aceito e o Digimon era deletado mesmo assim.",
+    "es": "<Fragment> ahora pide exactamente el número requerido de cartas de digievolución, o te deja rechazar. Antes se aceptaba elegir menos cartas y el Digimon se eliminaba igualmente.",
+    "it": "<Fragment> ora chiede esattamente il numero richiesto di carte digievoluzione, oppure ti permette di rifiutare. Prima veniva accettata una scelta con meno carte e il Digimon veniva eliminato comunque."
+  },
+  "releases.1.79.0-beta.fix.scaledSourceTrash": {
+    "en": "Effects like Garurumon (EX9-017) that trash several of the opponent's digivolution cards after a paid cost now trash as many as possible when the opponent has fewer.",
+    "pt-BR": "Efeitos como o de Garurumon (EX9-017), que descartam várias cartas de digievolução do oponente depois de um custo pago, agora descartam o máximo possível quando o oponente tem menos.",
+    "es": "Efectos como el de Garurumon (EX9-017), que descartan varias cartas de digievolución del rival tras pagar un coste, ahora descartan todas las posibles cuando el rival tiene menos.",
+    "it": "Effetti come quello di Garurumon (EX9-017), che scartano diverse carte digievoluzione dell'avversario dopo un costo pagato, ora ne scartano il più possibile quando l'avversario ne ha meno."
+  },
+  "releases.1.79.0-beta.fix.turnBannerMemory": {
+    "en": "The memory gauge no longer jumps to the bot's next play while the turn-start banner is still showing.",
+    "pt-BR": "O marcador de memória não pula mais para a próxima jogada do bot enquanto o aviso de início de turno ainda está na tela.",
+    "es": "El indicador de memoria ya no salta a la siguiente jugada del bot mientras el aviso de inicio de turno sigue en pantalla.",
+    "it": "L'indicatore della memoria non salta più alla mossa successiva del bot mentre l'avviso di inizio turno è ancora visibile."
+  },
+  "releases.1.79.0-beta.fix.revealedPicks": {
+    "en": "When your opponent adds revealed cards to their hand, a panel now shows which cards they took.",
+    "pt-BR": "Quando o oponente adiciona cartas reveladas à mão, um painel agora mostra quais cartas ele pegou.",
+    "es": "Cuando tu rival añade cartas reveladas a su mano, ahora un panel muestra qué cartas tomó.",
+    "it": "Quando l'avversario aggiunge carte rivelate alla mano, ora un pannello mostra quali carte ha preso."
+  },
   "releases.1.78.2-beta.summary": {
     "en": "This update puts the security count back on the security stack on the 3D board on phones.",
     "pt-BR": "Esta atualização coloca o número da segurança de volta sobre a pilha de segurança no tabuleiro 3D no celular.",

@@ -450,12 +450,13 @@ export async function engineConsultLeavePrevention(
             }
             return fragmentCountOf(permanent.topCard.cardId, engine.continuous.grantedKeywords(id));
           },
-          select: (seat, candidateInstanceIds, { min, max }, promptText, source) =>
+          select: (seat, candidateInstanceIds, { min, max, declinesCost }, promptText, source) =>
             requestCardSelection(engine, {
               seat,
               candidateInstanceIds,
               min,
               max,
+              declinesCost,
               promptText,
               source,
               selectionGoal: DecisionSelectionGoal.PROTECT.value,

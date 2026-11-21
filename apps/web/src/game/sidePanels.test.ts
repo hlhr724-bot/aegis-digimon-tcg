@@ -121,6 +121,40 @@ describe("sidePanelFromEvent", () => {
     expect(sidePanelFromEvent(event, VIEWER, lookup({ a: "BT1-010" }, { a: 0 }), "id", 0)).toBeNull();
   });
 
+  it("shows the opponent's public picks from a reveal as cards added to hand", () => {
+    const event: ServerEvent = {
+      kind: "cardsMoved",
+      instanceIds: ["a", "b"],
+      from: "deck",
+      to: "hand",
+      seat: 1,
+      handAddition: "transfer",
+      cardIds: ["BT26-081", "BT26-092"],
+      artIds: ["BT26-081", "BT26-092"],
+    };
+    expect(sidePanelFromEvent(event, VIEWER, lookup({}, {}), "id", 0)).toMatchObject({
+      titleKey: "panel.cardsAddedToHand",
+      side: Side.Opponent,
+      cards: [
+        { cardId: "BT26-081", badge: 1 },
+        { cardId: "BT26-092", badge: 2 },
+      ],
+    });
+  });
+
+  it("does not repeat the viewer's own public picks from a reveal in a hand panel", () => {
+    const event: ServerEvent = {
+      kind: "cardsMoved",
+      instanceIds: ["a"],
+      from: "deck",
+      to: "hand",
+      seat: VIEWER,
+      handAddition: "transfer",
+      cardIds: ["BT26-081"],
+    };
+    expect(sidePanelFromEvent(event, VIEWER, lookup({}, {}), "id", 0)).toBeNull();
+  });
+
   it("ignores movements the board already shows", () => {
     const event: ServerEvent = { kind: "cardsMoved", instanceIds: ["a"], from: "hand", to: "battleArea" };
     expect(sidePanelFromEvent(event, VIEWER, lookup({ a: "BT1-010" }, { a: 0 }), "id", 0)).toBeNull();

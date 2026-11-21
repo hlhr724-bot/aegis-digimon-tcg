@@ -1073,6 +1073,7 @@ export function useMatchCues({
     eventTimeline,
     viewerSeat,
     queue,
+    progress,
     phaseOrdersRef,
     nextPhaseOrderRef,
     completedPhaseOrderRef,
