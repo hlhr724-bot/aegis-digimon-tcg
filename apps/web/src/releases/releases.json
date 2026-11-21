@@ -1,5 +1,29 @@
 [
   {
+    "version": "1.79.0-beta",
+    "releasedAt": "2026-11-21",
+    "summaryKey": "releases.1.79.0-beta.summary",
+    "features": [
+      {
+        "textKey": "releases.1.79.0-beta.feature.alternateArts"
+      }
+    ],
+    "fixes": [
+      {
+        "textKey": "releases.1.79.0-beta.fix.fragmentFullCount"
+      },
+      {
+        "textKey": "releases.1.79.0-beta.fix.scaledSourceTrash"
+      },
+      {
+        "textKey": "releases.1.79.0-beta.fix.turnBannerMemory"
+      },
+      {
+        "textKey": "releases.1.79.0-beta.fix.revealedPicks"
+      }
+    ]
+  },
+  {
     "version": "1.78.2-beta",
     "releasedAt": "2026-11-20",
     "summaryKey": "releases.1.78.2-beta.summary",
