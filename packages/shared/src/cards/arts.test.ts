@@ -40,10 +40,10 @@ it("offers the Japanese printing, where Sistermon Ciel is still Sistermon Noir",
 it("offers Atratusmon alternate artwork in both languages while keeping original printings", () => {
   expect(getCardArts("BT27-052").map((art) => art.artId)).toEqual([
     "BT27-052",
-    "BT27-052-J",
     "BT27-052_P1",
-    "BT27-052_P1-J",
     "BT27-052_P2",
+    "BT27-052-J",
+    "BT27-052_P1-J",
   ]);
   expect(cardImageUrls("BT27-052")[0]).toContain("/BT27-052.webp");
   expect(cardImageUrls("BT27-052", "BT27-052_P1")[0]).toContain("/BT27-052_P1.webp");
@@ -149,10 +149,10 @@ it("offers Japanese printings for the ST25 and ST26 reveal cards", () => {
 it("offers King Drasil alternate artwork in both languages while keeping original printings", () => {
   expect(getCardArts("BT27-104").map((art) => art.artId)).toEqual([
     "BT27-104",
-    "BT27-104-J",
     "BT27-104_P1",
-    "BT27-104_P1-J",
     "BT27-104_P2",
+    "BT27-104-J",
+    "BT27-104_P1-J",
   ]);
   expect(cardImageUrls("BT27-104")[0]).toContain("/BT27-104.webp");
   expect(cardImageUrls("BT27-104", "BT27-104_P1")[0]).toContain("/BT27-104_P1.webp");
