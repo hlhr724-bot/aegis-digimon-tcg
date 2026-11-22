@@ -164,11 +164,12 @@ export function evaluateSearchPosition(observation: TrainingObservation, profile
     throw new Error("Search evaluation requires both seats");
   }
   const isOwnTurn = observation.turnSeat === observation.seat;
-  const memoryFactor = isOwnTurn ? 0.12547 * profile.weights.memoryHandover : -0.12547;
+  const memoryScale = profile.weights.memoryHandover / DEFAULT_BOT_PROFILE.weights.memoryHandover;
+  const memoryFactor = isOwnTurn ? 0.12547 * memoryScale : -0.12547 * memoryScale;
   const clampedMemory = Math.max(-10, Math.min(10, observation.memory));
   const advantage =
     evaluatePlayer(own, opponent, profile.weights, isOwnTurn) -
-    evaluatePlayer(opponent, own, DEFAULT_BOT_PROFILE.weights, !isOwnTurn) +
+    evaluatePlayer(opponent, own, profile.weights, !isOwnTurn) +
     clampedMemory * memoryFactor;
   return 1 / (1 + Math.exp(-Math.max(-12, Math.min(12, advantage))));
 }

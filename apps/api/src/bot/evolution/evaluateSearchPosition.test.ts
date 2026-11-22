@@ -254,4 +254,50 @@ describe("bounded public-position evaluation", () => {
         evaluateSearchPosition(normalSeat1, DEFAULT_BOT_PROFILE),
     ).toBeCloseTo(1, 6);
   });
+
+  it("preserves non-zero-security mirror balance and seat-swap symmetry under all styles", async () => {
+    const mirrorSetup = setupEngine({
+      0: {
+        battleArea: [{ card: "BT1-015", as: "attacker0" }],
+        security: ["BT1-010", "BT1-011", "BT1-012", "BT1-013", "BT1-014"],
+      },
+      1: {
+        battleArea: [{ card: "BT1-015", as: "attacker1" }],
+        security: ["BT1-010", "BT1-011", "BT1-012", "BT1-013", "BT1-014"],
+      },
+    });
+    await mirrorSetup.ready();
+    const mirrorSeat0 = trainingObservation(mirrorSetup.state, 0);
+    mirrorSeat0.memory = 0;
+    mirrorSeat0.turnSeat = 0;
+    mirrorSeat0.players[0]!.board[0]!.canAttackPlayer = true;
+    mirrorSeat0.players[0]!.board[0]!.suspended = false;
+    mirrorSeat0.players[1]!.board[0]!.canAttackPlayer = false;
+    mirrorSeat0.players[1]!.board[0]!.suspended = false;
+    const mirrorSeat1 = { ...mirrorSeat0, seat: 1 as const };
+
+    const asymmetricSetup = setupEngine({
+      0: { battleArea: [{ card: "BT1-015", as: "attacker0" }], security: ["BT1-010"] },
+      1: { security: [] },
+    });
+    await asymmetricSetup.ready();
+    const lethalSeat0 = trainingObservation(asymmetricSetup.state, 0);
+    lethalSeat0.memory = 3;
+    lethalSeat0.turnSeat = 0;
+    lethalSeat0.players[0]!.board[0]!.canAttackPlayer = true;
+    lethalSeat0.players[0]!.board[0]!.suspended = false;
+    const lethalSeat1 = { ...lethalSeat0, seat: 1 as const };
+
+    for (const profile of Object.values(BOT_PROFILES)) {
+      const score0 = evaluateSearchPosition(mirrorSeat0, profile);
+      const score1 = evaluateSearchPosition(mirrorSeat1, profile);
+      expect(score0).toBeGreaterThan(0.45);
+      expect(score0).toBeLessThan(0.55);
+      expect(score0 + score1).toBeCloseTo(1, 6);
+      expect(evaluateSearchPosition(lethalSeat0, profile) + evaluateSearchPosition(lethalSeat1, profile)).toBeCloseTo(
+        1,
+        6,
+      );
+    }
+  });
 });
