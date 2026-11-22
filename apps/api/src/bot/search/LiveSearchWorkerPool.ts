@@ -156,7 +156,7 @@ export class LiveSearchWorkerPool {
       import.meta.url.endsWith(".ts") ? "./searchWorker.ts" : "./searchWorker.js",
       import.meta.url,
     );
-    const worker = new Worker(workerUrl);
+    const worker = new Worker(workerUrl, { env: { ...process.env, AEGIS_SILENCE_INFO_LOGS: "1" } });
     let resolveReady!: () => void;
     let rejectReady!: (error: Error) => void;
     const readyPromise = new Promise<void>((resolve, reject) => {
